@@ -1,0 +1,91 @@
+name: nightly refresh
+
+# Pull weekly stats from nflverse, compute the posterior summary under
+# the default PPR league, and upload the resulting Parquet files as
+# build artifacts. Runs every weekday during NFL season (Sept-Jan).
+# Can also be triggered manually from the Actions tab.
+
+on:
+  schedule:
+    # 11:00 UTC = ~07:00 ET, after the previous day's stats land.
+    - cron: "0 11 * * 2-6"
+  workflow_dispatch:
+    inputs:
+      season:
+        description: "Season to refresh"
+        required: true
+        default: "2025"
+      lookback:
+        description: "Lookback seasons"
+        required: true
+        default: "3"
+
+permissions:
+  contents: read
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: "pip"
+          cache-dependency-path: pyproject.toml
+
+      - name: Install
+        run: pip install -e .
+
+      - name: Compute season and lookback
+        id: cfg
+        run: |
+          SEASON="${{ github.event.inputs.season }}"
+          LOOKBACK="${{ github.event.inputs.lookback }}"
+          if [ -z "$SEASON" ]; then
+            SEASON="$(date -u +%Y)"
+          fi
+          if [ -z "$LOOKBACK" ]; then
+            LOOKBACK="3"
+          fi
+          echo "season=$SEASON" >> "$GITHUB_OUTPUT"
+          echo "lookback=$LOOKBACK" >> "$GITHUB_OUTPUT"
+
+      - name: Ingest weekly stats
+        run: |
+          SEASON=${{ steps.cfg.outputs.season }}
+          LOOKBACK=${{ steps.cfg.outputs.lookback }}
+          START=$((SEASON - LOOKBACK))
+          ARGS=""
+          for s in $(seq $START $SEASON); do
+            ARGS="$ARGS --season $s"
+          done
+          echo "Ingesting seasons: $ARGS"
+          ffa ingest $ARGS
+
+      - name: Simulate + write Parquet artifacts
+        run: |
+          mkdir -p artifacts
+          ffa simulate \
+            --league configs/ppr.yaml \
+            --season ${{ steps.cfg.outputs.season }} \
+            --lookback ${{ steps.cfg.outputs.lookback }} \
+            --samples 1000 \
+            --out artifacts/posterior_ppr.parquet \
+            --limit 5
+          ffa simulate \
+            --league configs/standard.yaml \
+            --season ${{ steps.cfg.outputs.season }} \
+            --lookback ${{ steps.cfg.outputs.lookback }} \
+            --samples 1000 \
+            --out artifacts/posterior_standard.parquet \
+            --limit 5
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: posterior-${{ steps.cfg.outputs.season }}-${{ github.run_id }}
+          path: artifacts/*.parquet
+          retention-days: 14

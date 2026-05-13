@@ -1,0 +1,7 @@
+name: standard
+# Defaults match a typical non-PPR league:
+#   pass: 1pt/25yd, 4pt TD, -2 INT
+#   rush/rec: 1pt/10yd, 6pt TD
+#   reception: 0 pts
+#   fumble lost: -2
+# Override below only what your league does differently.

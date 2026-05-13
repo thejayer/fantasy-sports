@@ -1,0 +1,50 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "ffa"
+version = "0.1.0"
+description = "Fantasy football analytics: model-driven projections, scoring, and roster optimization"
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "GPL-3.0-or-later" }
+dependencies = [
+    "duckdb>=1.0",
+    "nfl-data-py>=0.3.2",
+    "pandas>=2.1",
+    "pulp>=2.8",
+    "pyarrow>=15.0",
+    "pydantic>=2.6",
+    "pyyaml>=6.0",
+    "scikit-learn>=1.4",
+    "typer>=0.12",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0",
+    "pytest-cov>=5.0",
+    "ruff>=0.5",
+]
+dashboard = [
+    "altair>=5.0",
+    "streamlit>=1.30",
+]
+
+[project.scripts]
+ffa = "ffa.cli:app"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/ffa"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-ra -q"
+filterwarnings = [
+    "ignore:Constructing LpVariable.*:DeprecationWarning:pulp",
+]
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"
