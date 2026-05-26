@@ -10,14 +10,14 @@ or directly:
 
 Sections:
     - Sidebar: league config, season, generator, sample count.
-    - Ranked board: VOR + tier + 5/95 quantiles, filterable by position.
+    - Ranked board: VOR + tier + floor/median/ceiling, filterable by position.
     - Per-player distribution: histogram of simulated season points.
     - Lineup optimizer: best lineup under the configured roster.
-    - Draft sim: pick-rate table from your draft slot.
+    - Draft sim: pick-rate table + "available at my next pick" matrix.
 
 The dashboard is a thin presentation layer over the pure-Python API in
-:mod:`ffa`. It intentionally avoids re-implementing analysis logic --
-that all lives in the library so the CLI and dashboard share behavior.
+:mod:`ffa`. Analysis logic lives in the library; chart/table builders here
+are kept as small pure helpers so they can be unit-tested without a browser.
 """
 
 from __future__ import annotations
@@ -27,6 +27,7 @@ import os
 from pathlib import Path
 from typing import Iterable
 
+import altair as alt
 import pandas as pd
 import streamlit as st
 
@@ -47,6 +48,29 @@ _GENERATORS = {
     "quantile": simulate_seasons_quantile_calibrated,
 }
 
+# Friendly labels + inline help for the cryptic posterior columns.
+def _ranked_column_config() -> dict:
+    return {
+        "player_display_name": st.column_config.TextColumn("Player"),
+        "position": st.column_config.TextColumn("Pos"),
+        "recent_team": st.column_config.TextColumn("Team"),
+        "tier": st.column_config.NumberColumn(
+            "Tier", help="Players grouped by scoring gaps; 1 = top group at the position."
+        ),
+        "points_mean": st.column_config.NumberColumn(
+            "Proj Pts", format="%.1f", help="Mean projected season fantasy points."
+        ),
+        "vor": st.column_config.NumberColumn(
+            "VOR",
+            format="%.1f",
+            help="Value over replacement: points above a freely-available "
+            "player at the same position. Compare across positions with this.",
+        ),
+        "q05": st.column_config.NumberColumn("Floor", format="%.0f", help="5th-percentile outcome."),
+        "q50": st.column_config.NumberColumn("Median", format="%.0f", help="50th-percentile outcome."),
+        "q95": st.column_config.NumberColumn("Ceiling", format="%.0f", help="95th-percentile outcome."),
+    }
+
 
 def _parse_args() -> argparse.Namespace:
     """Streamlit passes everything after `--` to sys.argv; parse defaults."""
@@ -57,6 +81,54 @@ def _parse_args() -> argparse.Namespace:
     p.add_argument("--raw-dir", type=Path, default=Path("data/raw"))
     args, _ = p.parse_known_args()
     return args
+
+
+def distribution_chart(points: pd.Series, floor: float, median: float, ceiling: float):
+    """Build a histogram of simulated season points with floor/median/ceiling rules.
+
+    Pure helper: returns an Altair chart and never touches Streamlit, so it
+    can be validated in tests via ``.to_dict()`` (which is what surfaces the
+    SchemaValidationError that the old ``st.bar_chart(pd.cut(...))`` produced).
+    """
+    data = pd.DataFrame({"points": points.astype(float).to_numpy()})
+    hist = (
+        alt.Chart(data)
+        .mark_bar(opacity=0.85, color="#4c78a8")
+        .encode(
+            x=alt.X("points:Q", bin=alt.Bin(maxbins=40), title="Projected season points"),
+            y=alt.Y("count():Q", title="Simulations"),
+            tooltip=[alt.Tooltip("count():Q", title="Simulations")],
+        )
+    )
+    rule_data = pd.DataFrame(
+        {
+            "value": [float(floor), float(median), float(ceiling)],
+            "label": ["Floor (q05)", "Median (q50)", "Ceiling (q95)"],
+        }
+    )
+    rules = (
+        alt.Chart(rule_data)
+        .mark_rule(strokeDash=[5, 4], color="#e45756", size=2)
+        .encode(x="value:Q", tooltip=["label", alt.Tooltip("value:Q", format=".1f")])
+    )
+    return (hist + rules).properties(height=320)
+
+
+def availability_view(availability: pd.DataFrame, ranked: pd.DataFrame, top: int = 40) -> pd.DataFrame:
+    """Join the draft availability matrix to player names; values as percentages.
+
+    Pure helper. ``availability`` has one row per player_id and one column per
+    user draft round (probability still on the board at that pick).
+    """
+    meta_cols = [c for c in ("player_display_name", "position", "vor") if c in ranked.columns]
+    merged = availability.merge(ranked[["player_id", *meta_cols]], on="player_id", how="left")
+    round_cols = [c for c in merged.columns if c.startswith("round_")]
+    for rc in round_cols:
+        merged[rc] = (merged[rc] * 100).round(0)
+    sort_col = "vor" if "vor" in merged.columns else round_cols[0] if round_cols else "player_id"
+    merged = merged.sort_values(sort_col, ascending=False).head(top)
+    display_cols = [c for c in ("player_display_name", "position") if c in merged.columns]
+    return merged[[*display_cols, *round_cols]].reset_index(drop=True)
 
 
 @st.cache_data(show_spinner="Loading weekly history...")
@@ -91,20 +163,8 @@ def _simulate(
     )
 
 
-def _score_summary(samples_df: pd.DataFrame, league_path: Path) -> tuple[object, pd.DataFrame]:
-    league = load_league(league_path)
-    summary = summarize_seasons(samples_df, league)
-    return league, summary
-
-
 def _password_gate() -> None:
-    """Block the app behind a shared password when DASHBOARD_PASSWORD is set.
-
-    Designed for ~10-15 friends in one league: a single shared secret is
-    plenty. For anything bigger, swap this out for Google sign-in via IAP
-    or Firebase Auth. The env var is *opt-in*: unset means no gate, which
-    is the right behavior for local development.
-    """
+    """Block the app behind a shared password when DASHBOARD_PASSWORD is set."""
     expected = os.environ.get("DASHBOARD_PASSWORD", "")
     if not expected:
         return
@@ -127,25 +187,46 @@ def main() -> None:
     st.set_page_config(page_title="ffa", layout="wide")
     _password_gate()
     st.title("Fantasy Football Analytics")
-    st.caption("Posterior-driven projections, rankings, and draft tooling.")
 
     # ---------------- Sidebar ----------------
     with st.sidebar:
         st.header("Inputs")
-        league_path = Path(
-            st.text_input("League config (YAML)", value=str(args.league))
-        )
+        league_path = Path(st.text_input("League config (YAML)", value=str(args.league)))
         season = int(st.number_input("Target season", value=args.season, step=1))
         lookback = int(st.slider("Lookback seasons", 1, 5, 3))
         generator = st.selectbox(
             "Generator",
             options=list(_GENERATORS),
-            help="bootstrap=phase 3, learned=phase 5, quantile=phase 6 (calibrated tails).",
+            help="bootstrap = empirical resample; learned = ML mean; "
+            "quantile = ML with calibrated floor/ceiling.",
         )
         samples = int(st.slider("Samples per player", 100, 5000, 1000, step=100))
         decay = float(st.slider("Recency decay", 0.0, 2.0, 0.5, step=0.1))
         expected_games = float(st.slider("Expected games", 8.0, 17.0, 17.0, step=0.5))
         seed = int(st.number_input("Seed", value=0, step=1))
+
+    # Load the league config up front so a bad path shows a friendly message
+    # instead of white-screening the whole app.
+    try:
+        league = load_league(league_path)
+    except Exception as e:  # noqa: BLE001
+        st.error(f"Couldn't load league config `{league_path}`: {e}")
+        st.stop()
+
+    st.caption(
+        f"Season {season} · {league.name} scoring · {generator} generator · "
+        f"{samples:,} sims/player · lookback {lookback}"
+    )
+    with st.expander("What do these numbers mean?"):
+        st.markdown(
+            "- **Proj Pts** — mean projected fantasy points for the season.\n"
+            "- **VOR** — value over replacement: points above a freely-available "
+            "player at the same position. The right way to compare across positions.\n"
+            "- **Tier** — players grouped by natural scoring gaps; tier 1 is the top "
+            "group at a position. When a tier is about to empty, grab from it.\n"
+            "- **Floor / Median / Ceiling** — 5th / 50th / 95th-percentile outcomes "
+            "across the simulations. A wide floor-to-ceiling gap means boom-or-bust."
+        )
 
     db_path = str(args.db)
     raw_dir = str(args.raw_dir)
@@ -156,7 +237,8 @@ def main() -> None:
     if weekly.empty:
         st.error(
             f"No weekly history found for seasons {list(seasons)}. "
-            "Run `ffa ingest` to populate the warehouse."
+            "Run `ffa ingest` to populate the warehouse, or pick a season "
+            "your data covers."
         )
         return
 
@@ -164,14 +246,13 @@ def main() -> None:
         weekly, season, generator, samples, lookback, decay, expected_games, seed
     )
     if samples_df.empty:
-        st.error("Simulation produced no samples (try lowering min_history_games?).")
+        st.error("Simulation produced no samples. Try a different season or generator.")
         return
 
-    league, summary = _score_summary(samples_df, league_path)
+    summary = summarize_seasons(samples_df, league)
     ranked = compute_vor(summary, league.roster)
     ranked = assign_tiers(ranked, n_tiers=5)
 
-    # ---------------- Tabs ----------------
     tab_board, tab_player, tab_optimize, tab_draft = st.tabs(
         ["Ranked board", "Player distribution", "Lineup optimizer", "Draft sim"]
     )
@@ -197,7 +278,12 @@ def main() -> None:
             )
             if c in df.columns
         ]
-        st.dataframe(df[show_cols].round(1), use_container_width=True, hide_index=True)
+        st.dataframe(
+            df[show_cols],
+            use_container_width=True,
+            hide_index=True,
+            column_config=_ranked_column_config(),
+        )
 
     # ----- Player distribution -----
     with tab_player:
@@ -205,51 +291,54 @@ def main() -> None:
         player_options = (
             ranked.sort_values("vor", ascending=False)[name_col].dropna().unique().tolist()
         )
-        selected = st.selectbox("Player", player_options)
-        # Resolve back to player_id since IDs are unique while display names may not be.
-        candidates = ranked.loc[ranked[name_col] == selected]
-        if not candidates.empty:
-            player_id = candidates.iloc[0]["player_id"]
-            player_samples = samples_df[samples_df["player_id"] == player_id].copy()
-            player_samples["fantasy_points"] = score_player_weeks(player_samples, league)
-            qs = (
-                player_samples["fantasy_points"]
-                .quantile([0.05, 0.5, 0.95])
-                .rename({0.05: "q05", 0.5: "q50", 0.95: "q95"})
-            )
-            c1, c2, c3 = st.columns(3)
-            c1.metric("Floor (q05)", f"{qs['q05']:.1f}")
-            c2.metric("Median (q50)", f"{qs['q50']:.1f}")
-            c3.metric("Ceiling (q95)", f"{qs['q95']:.1f}")
-            st.bar_chart(
-                pd.cut(player_samples["fantasy_points"], bins=40)
-                .value_counts()
-                .sort_index()
-                .rename_axis("bin")
-                .reset_index(name="count"),
-                x="bin",
-                y="count",
-            )
+        if not player_options:
+            st.info("No players to show.")
+        else:
+            selected = st.selectbox("Player", player_options)
+            candidates = ranked.loc[ranked[name_col] == selected]
+            if not candidates.empty:
+                row = candidates.iloc[0]
+                player_id = row["player_id"]
+                context = " · ".join(
+                    str(row[c]) for c in ("position", "recent_team") if c in row and pd.notna(row[c])
+                )
+                if context:
+                    st.caption(f"{selected} — {context}")
+                player_samples = samples_df[samples_df["player_id"] == player_id].copy()
+                if player_samples.empty:
+                    st.info("No simulated samples for this player.")
+                else:
+                    player_samples["fantasy_points"] = score_player_weeks(player_samples, league)
+                    pts = player_samples["fantasy_points"]
+                    q05, q50, q95 = pts.quantile([0.05, 0.5, 0.95])
+                    c1, c2, c3 = st.columns(3)
+                    c1.metric("Floor (q05)", f"{q05:.1f}")
+                    c2.metric("Median (q50)", f"{q50:.1f}")
+                    c3.metric("Ceiling (q95)", f"{q95:.1f}")
+                    st.altair_chart(
+                        distribution_chart(pts, q05, q50, q95), use_container_width=True
+                    )
 
     # ----- Lineup optimizer -----
     with tab_optimize:
         st.write(
-            "Maximize total VOR under the roster slots in your league YAML. "
-            "Add costs and a budget for auction leagues."
+            "Maximize total VOR under your league's roster slots. For auction "
+            "leagues, upload a costs CSV (`player_id,cost`) and set a budget."
         )
         col1, col2 = st.columns([1, 2])
         with col1:
-            budget = st.number_input("Budget (optional)", value=0.0, step=1.0)
+            budget = st.number_input("Budget (0 = no cap)", value=0.0, step=1.0, min_value=0.0)
         with col2:
-            costs_csv = st.text_input(
-                "Costs CSV (player_id,cost; required if budget > 0)", value=""
-            )
+            costs_file = st.file_uploader("Costs CSV (player_id, cost)", type=["csv"])
 
         try:
-            if budget > 0 and costs_csv:
-                costs_df = pd.read_csv(costs_csv)
+            if budget > 0 and costs_file is not None:
+                costs_df = pd.read_csv(costs_file)
                 costs = costs_df.set_index("player_id")["cost"]
                 lineup = optimize_lineup(ranked, league.roster, costs=costs, budget=budget)
+            elif budget > 0 and costs_file is None:
+                st.info("Upload a costs CSV to optimize under a budget.")
+                lineup = optimize_lineup(ranked, league.roster)
             else:
                 lineup = optimize_lineup(ranked, league.roster)
         except Exception as e:  # noqa: BLE001
@@ -259,17 +348,17 @@ def main() -> None:
         if not lineup.empty:
             cols = [
                 c
-                for c in (
-                    "slot",
-                    "player_display_name",
-                    "position",
-                    "recent_team",
-                    "points_mean",
-                    "vor",
-                )
+                for c in ("slot", "player_display_name", "position", "recent_team", "points_mean", "vor")
                 if c in lineup.columns
             ]
-            st.dataframe(lineup[cols].round(1), use_container_width=True, hide_index=True)
+            st.dataframe(
+                lineup[cols],
+                use_container_width=True,
+                hide_index=True,
+                column_config=_ranked_column_config() | {"slot": st.column_config.TextColumn("Slot")},
+            )
+            if "points_mean" in lineup.columns:
+                st.metric("Projected starting points", f"{lineup['points_mean'].sum():.1f}")
 
     # ----- Draft sim -----
     with tab_draft:
@@ -278,9 +367,7 @@ def main() -> None:
             user_slot = int(st.number_input("Your draft slot", value=1, min_value=1, step=1))
             n_sims = int(st.slider("Number of sims", 50, 2000, 300, step=50))
         with c2:
-            opponent_noise = float(
-                st.slider("Opponent ADP noise", 0.05, 0.6, 0.25, step=0.05)
-            )
+            opponent_noise = float(st.slider("Opponent ADP noise", 0.05, 0.6, 0.25, step=0.05))
 
         try:
             result = simulate_draft(
@@ -291,10 +378,33 @@ def main() -> None:
                 opponent_noise=opponent_noise,
                 seed=seed,
             )
-            summary_picks = summarize_user_picks(result.user_picks, top=40)
-            st.dataframe(summary_picks.round(2), use_container_width=True, hide_index=True)
         except Exception as e:  # noqa: BLE001
             st.error(f"Draft sim error: {e}")
+            result = None
+
+        if result is not None:
+            st.subheader("Who you tend to land")
+            st.caption("Across all simulated drafts from your slot.")
+            picks = summarize_user_picks(result.user_picks, top=40)
+            st.dataframe(picks, use_container_width=True, hide_index=True)
+
+            st.subheader("Availability at each of your picks")
+            st.caption(
+                "Probability (%) a player is still on the board when your pick "
+                "comes up in each round. The planning view for two picks ahead."
+            )
+            avail = availability_view(result.availability, ranked, top=40)
+            round_cols = [c for c in avail.columns if c.startswith("round_")]
+            avail_cfg = {
+                "player_display_name": st.column_config.TextColumn("Player"),
+                "position": st.column_config.TextColumn("Pos"),
+            }
+            for rc in round_cols:
+                n = rc.replace("round_", "")
+                avail_cfg[rc] = st.column_config.NumberColumn(f"R{n} %", format="%.0f")
+            st.dataframe(
+                avail, use_container_width=True, hide_index=True, column_config=avail_cfg
+            )
 
 
 if __name__ == "__main__":
