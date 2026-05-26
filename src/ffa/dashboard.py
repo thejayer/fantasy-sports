@@ -23,6 +23,7 @@ that all lives in the library so the CLI and dashboard share behavior.
 from __future__ import annotations
 
 import argparse
+import os
 from pathlib import Path
 from typing import Iterable
 
@@ -96,9 +97,35 @@ def _score_summary(samples_df: pd.DataFrame, league_path: Path) -> tuple[object,
     return league, summary
 
 
+def _password_gate() -> None:
+    """Block the app behind a shared password when DASHBOARD_PASSWORD is set.
+
+    Designed for ~10-15 friends in one league: a single shared secret is
+    plenty. For anything bigger, swap this out for Google sign-in via IAP
+    or Firebase Auth. The env var is *opt-in*: unset means no gate, which
+    is the right behavior for local development.
+    """
+    expected = os.environ.get("DASHBOARD_PASSWORD", "")
+    if not expected:
+        return
+    if st.session_state.get("_ffa_auth"):
+        return
+    st.markdown("### Sign in")
+    st.caption("This dashboard is gated. Enter the league password to continue.")
+    pwd = st.text_input("Password", type="password", key="_ffa_pwd_input")
+    if st.button("Continue"):
+        if pwd == expected:
+            st.session_state["_ffa_auth"] = True
+            st.rerun()
+        else:
+            st.error("Incorrect password.")
+    st.stop()
+
+
 def main() -> None:
     args = _parse_args()
     st.set_page_config(page_title="ffa", layout="wide")
+    _password_gate()
     st.title("Fantasy Football Analytics")
     st.caption("Posterior-driven projections, rankings, and draft tooling.")
 
