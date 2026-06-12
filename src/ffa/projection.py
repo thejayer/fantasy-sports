@@ -49,6 +49,21 @@ def _present_stats(df: pd.DataFrame, stats: Iterable[str]) -> list[str]:
     return [s for s in stats if s in df.columns]
 
 
+def regular_season_only(weekly: pd.DataFrame) -> pd.DataFrame:
+    """Drop postseason rows when a ``season_type`` column is present.
+
+    nflverse weekly data includes playoff games (``season_type == "POST"``).
+    Projections and simulations should train on regular-season rows only:
+    playoff games are played against stronger opponents and only by playoff
+    teams, so leaving them in skews recent-history weights for players on
+    deep playoff runs. Frames without a ``season_type`` column (synthetic
+    test data, pre-filtered inputs) pass through unchanged.
+    """
+    if "season_type" not in weekly.columns:
+        return weekly
+    return weekly[weekly["season_type"] == "REG"]
+
+
 def project_per_game(
     weekly: pd.DataFrame,
     target_season: int,
@@ -89,6 +104,7 @@ def project_per_game(
     if missing:
         raise ValueError(f"weekly is missing required columns: {sorted(missing)}")
 
+    weekly = regular_season_only(weekly)
     seasons = list(range(target_season - lookback, target_season))
     history = weekly[weekly["season"].isin(seasons)]
     if history.empty:

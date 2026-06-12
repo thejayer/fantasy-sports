@@ -31,6 +31,7 @@ import numpy as np
 import pandas as pd
 
 from ffa.league import LeagueConfig
+from ffa.projection import regular_season_only
 from ffa.scoring import STAT_COLUMNS, score_player_weeks
 
 
@@ -86,6 +87,7 @@ def simulate_seasons(
     if missing:
         raise ValueError(f"weekly is missing required columns: {sorted(missing)}")
 
+    weekly = regular_season_only(weekly)
     seasons = list(range(target_season - lookback, target_season))
     history = weekly[weekly["season"].isin(seasons)]
     stat_cols = _present(history, stats)

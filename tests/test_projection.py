@@ -260,3 +260,18 @@ def weekly_fixture() -> pd.DataFrame:
                     ),
                 )
     return pd.DataFrame(rows)
+
+
+# ---------- Regular-season filtering ----------
+
+
+def test_postseason_rows_are_excluded_from_history():
+    """Playoff rows (season_type == "POST") must not contribute to projections."""
+    rows = [_wk("A", 2024, w, season_type="REG", receiving_yards=50) for w in range(1, 11)]
+    rows += [_wk("A", 2024, w, season_type="POST", receiving_yards=200) for w in (19, 20)]
+    weekly = pd.DataFrame(rows)
+
+    proj = project_per_game(weekly, target_season=2025, lookback=3, decay=0.5)
+
+    yds = proj.loc[proj["player_id"] == "A", "receiving_yards"].iloc[0]
+    assert yds == pytest.approx(50.0)

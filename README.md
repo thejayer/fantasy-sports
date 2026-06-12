@@ -32,7 +32,7 @@ breaking and league variants stop being code changes.
 ## Quick start
 
 ```bash
-cd ffa
+cd fantasy-sports
 python -m venv .venv && source .venv/bin/activate
 pip install -e ".[dev]"
 
@@ -74,7 +74,7 @@ URL, password-gated, Cloud Run, ~$0/month for a 10-15 person league.
 ## Layout
 
 ```
-ffa/
+fantasy-sports/
   configs/            League scoring YAMLs (standard, ppr, half_ppr, ...)
   src/ffa/
     league.py         Pydantic schema; load_league(path) -> LeagueConfig
@@ -92,7 +92,7 @@ ffa/
   tests/              Pytest; runs offline on synthetic frames
 .github/workflows/
   refresh.yml         Scheduled nflverse ingest + posterior write
-  ffa-tests.yml       Run pytest on every push/PR touching ffa/
+  tests.yml           Ruff + pytest on pushes to main and every PR
 ```
 
 ## Design notes
@@ -104,6 +104,11 @@ ffa/
 - **Stat column names match `nfl_data_py.import_weekly_data`.** Missing
   columns are silently treated as zero so the same engine scores both
   per-game actuals and projection frames that only carry a subset of stats.
+- **Postseason rows are excluded from modeling.** When the weekly frame
+  carries a `season_type` column, projections and simulations use `REG`
+  rows only -- playoff games would otherwise skew recent-history weights
+  for players on deep playoff runs. `ffa score` still scores any ingested
+  week, playoffs included.
 - **Storage is Parquet + DuckDB views.** The `.duckdb` file is tiny; the data
   lives in Parquet on disk, refreshable via `ffa ingest` and inspectable by
   any tool that speaks Parquet.
@@ -269,7 +274,7 @@ pick-rate table.
 
 Two GitHub Actions workflows ship in `.github/workflows/`:
 
-- `ffa-tests.yml`: runs `pytest` on every push/PR that touches `ffa/`.
+- `tests.yml`: runs `ruff` + `pytest` on pushes to main and every PR.
 - `refresh.yml`: scheduled (weekday mornings during NFL season) and
   manual; ingests the current season + lookback from nflverse, computes
   the posterior summary under PPR and Standard, and uploads the Parquet

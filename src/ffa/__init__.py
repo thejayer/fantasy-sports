@@ -7,6 +7,7 @@ from ffa.projection import (
     latest_depth_chart,
     project_per_game,
     project_season,
+    regular_season_only,
 )
 from ffa.quantile import QuantileGenerator, simulate_seasons_quantile_calibrated
 from ffa.ranking import assign_tiers, compute_vor
@@ -28,6 +29,7 @@ __all__ = [
     "optimize_lineup",
     "project_per_game",
     "project_season",
+    "regular_season_only",
     "score_player_weeks",
     "score_stat_line",
     "simulate_draft",

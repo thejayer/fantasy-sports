@@ -52,6 +52,7 @@ import numpy as np
 import pandas as pd
 from sklearn.ensemble import GradientBoostingRegressor
 
+from ffa.projection import regular_season_only
 from ffa.scoring import STAT_COLUMNS
 
 _META_COLUMNS: Final[tuple[str, ...]] = (
@@ -272,6 +273,7 @@ def simulate_seasons_learned(
     if missing:
         raise ValueError(f"weekly is missing required columns: {sorted(missing)}")
 
+    weekly = regular_season_only(weekly)
     stat_cols = [s for s in stats if s in weekly.columns]
     history = weekly[
         weekly["season"].between(target_season - lookback, target_season - 1)
