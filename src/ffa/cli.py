@@ -11,28 +11,18 @@ from pathlib import Path
 
 import typer
 
+from ffa.backtest import GENERATORS as _GENERATORS
+from ffa.backtest import run_backtest
 from ffa.draft import simulate_draft, summarize_user_picks
 from ffa.ingest import ingest_seasons, open_warehouse
-from ffa.learned import simulate_seasons_learned
 from ffa.league import load_league
 from ffa.optimize import optimize_lineup
 from ffa.projection import project_per_game, project_season
-from ffa.quantile import simulate_seasons_quantile_calibrated
 from ffa.ranking import assign_tiers, compute_vor
 from ffa.scoring import score_player_weeks
-from ffa.simulation import simulate_seasons, summarize_seasons
+from ffa.simulation import summarize_seasons
 
 app = typer.Typer(add_completion=False, help="Fantasy football analytics pipeline.")
-
-
-# Generator name -> (simulator function, history multiplier for training).
-# The learned/quantile generators need more history (training data) than the
-# pure bootstrap, so we pull extra seasons when those are selected.
-_GENERATORS = {
-    "bootstrap": (simulate_seasons, 0),
-    "learned": (simulate_seasons_learned, 2),
-    "quantile": (simulate_seasons_quantile_calibrated, 2),
-}
 
 
 @app.command()
@@ -300,6 +290,104 @@ def draft_sim(
         seed=seed,
     )
     typer.echo(summarize_user_picks(result.user_picks, top=limit).round(2).to_string(index=False))
+
+
+@app.command()
+def backtest(
+    league: Path = typer.Option(..., "--league"),
+    start: int = typer.Option(..., "--start", help="First holdout season to evaluate."),
+    end: int | None = typer.Option(None, "--end", help="Last holdout season (inclusive); defaults to --start."),
+    generator: list[str] = typer.Option(
+        ["bootstrap"], "--generator", help="Repeatable: compare several generators in one run."
+    ),
+    samples: int = typer.Option(500, "--samples"),
+    lookback: int = typer.Option(3, "--lookback"),
+    decay: float = typer.Option(0.5, "--decay"),
+    expected_games: float = typer.Option(17.0, "--expected-games"),
+    min_games: int = typer.Option(1, "--min-games", help="Realized games required to count a player."),
+    by_position: bool = typer.Option(False, "--by-position", help="Also print per-position metrics."),
+    seed: int = typer.Option(0, "--seed"),
+    out: Path | None = typer.Option(None, "--out", help="Optional Parquet path for player-level rows."),
+    db: Path = typer.Option(Path("data/ffa.duckdb"), "--db"),
+    raw_dir: Path = typer.Option(Path("data/raw"), "--raw-dir"),
+) -> None:
+    """Walk-forward backtest: project each holdout season, compare to reality."""
+    import pandas as pd
+
+    cfg = load_league(league)
+    last = start if end is None else end
+    if last < start:
+        typer.echo(f"--end ({last}) must be >= --start ({start}).")
+        raise typer.Exit(code=2)
+    unknown = [g for g in generator if g not in _GENERATORS]
+    if unknown:
+        typer.echo(f"Unknown generator(s): {unknown}. Choose from: {list(_GENERATORS)}.")
+        raise typer.Exit(code=2)
+
+    # Pull enough history for the hungriest generator's first holdout season,
+    # plus the holdout seasons themselves for realized totals.
+    max_pad = max(_GENERATORS[g][1] for g in generator)
+    seasons_needed = list(range(start - (lookback + max_pad), last + 1))
+    con = open_warehouse(db_path=db, raw_dir=raw_dir)
+    placeholders = ",".join("?" for _ in seasons_needed)
+    weekly = con.execute(
+        f"SELECT * FROM weekly WHERE season IN ({placeholders})", seasons_needed
+    ).df()
+    if weekly.empty:
+        typer.echo(f"No weekly history for seasons {seasons_needed}. Run `ffa ingest` first.")
+        raise typer.Exit(code=1)
+
+    holdouts = list(range(start, last + 1))
+    metrics_frames = []
+    players_frames = []
+    for gen_name in generator:
+        result = run_backtest(
+            weekly,
+            holdouts,
+            cfg,
+            generator=gen_name,
+            n_samples=samples,
+            lookback=lookback,
+            decay=decay,
+            expected_games=expected_games,
+            min_realized_games=min_games,
+            seed=seed,
+        )
+        if result.metrics.empty:
+            typer.echo(
+                f"{gen_name}: no projected players overlapped reality -- "
+                f"is history ingested for seasons {seasons_needed}?"
+            )
+            continue
+        metrics_frames.append(result.metrics)
+        players_frames.append(result.players)
+
+    if not metrics_frames:
+        raise typer.Exit(code=1)
+    metrics = pd.concat(metrics_frames, ignore_index=True)
+
+    show = [
+        c
+        for c in (
+            "generator", "season", "position", "n_players", "n_unprojected",
+            "mae", "rmse", "bias", "spearman", "cover_q05_q95",
+            "pinball_q05", "pinball_q50", "pinball_q95",
+        )
+        if c in metrics.columns
+    ]
+    view = metrics if by_position else metrics[metrics["position"] == "ALL"]
+    typer.echo(view[show].round(2).to_string(index=False))
+
+    if len(holdouts) > 1:
+        overall = metrics[metrics["position"] == "ALL"]
+        means = overall.groupby("generator", sort=False)[show[3:]].mean().reset_index()
+        typer.echo("\nAverage across seasons:")
+        typer.echo(means.round(2).to_string(index=False))
+
+    if out is not None:
+        out.parent.mkdir(parents=True, exist_ok=True)
+        pd.concat(players_frames, ignore_index=True).to_parquet(out, index=False)
+        typer.echo(f"\nWrote player-level rows -> {out}")
 
 
 @app.command()
