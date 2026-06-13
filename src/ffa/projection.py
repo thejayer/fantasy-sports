@@ -85,8 +85,8 @@ def project_per_game(
     suppresses noisy projections for cup-of-coffee NFL careers.
 
     Args:
-        weekly: per-player per-game stats matching ``nfl_data_py`` weekly
-            schema; must contain ``player_id``, ``season``, and ``week``.
+        weekly: per-player per-game stats matching the canonical nflverse
+            weekly schema; must contain ``player_id``, ``season``, and ``week``.
         target_season: season being projected (excluded from history).
         lookback: number of prior seasons to use.
         decay: exponential decay rate; 0 = uniform, larger = sharper recency.

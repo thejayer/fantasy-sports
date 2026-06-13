@@ -11,7 +11,7 @@ requires-python = ">=3.10"
 license = { text = "GPL-3.0-or-later" }
 dependencies = [
     "duckdb>=1.0",
-    "nfl-data-py>=0.3.2",
+    "nflreadpy>=0.1.5",
     "pandas>=2.1",
     "pulp>=2.8,<4",  # 4.0 removes PULP_CBC_CMD, which optimize.py uses
     "pyarrow>=15.0",

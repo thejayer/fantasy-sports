@@ -28,9 +28,12 @@ rebuild is in:
 
 The legacy R pipeline depends on scraping ~15 projection sites whose HTML
 shifts every season. This package replaces that with a single ingest from
-[nflverse](https://github.com/nflverse) (via `nfl_data_py`) and a pure
-scoring engine driven by a YAML league config -- so the data layer stops
-breaking and league variants stop being code changes.
+[nflverse](https://github.com/nflverse) (via `nflreadpy`, the maintained
+client) and a pure scoring engine driven by a YAML league config -- so the
+data layer stops breaking and league variants stop being code changes.
+Ingest normalizes nflverse's column names to a canonical schema and
+validates them, so an upstream rename fails loudly at the boundary instead
+of silently scoring a stat as zero.
 
 ## Quick start
 
@@ -95,7 +98,7 @@ fantasy-sports/
     draft.py          simulate_draft (Monte Carlo snake) + summarize_user_picks
     backtest.py       Walk-forward evaluation: MAE, rank corr, pinball, coverage
     dashboard.py      Streamlit UI (rankings, distributions, optimizer, draft)
-    ingest.py         nfl_data_py -> Parquet; DuckDB views over the Parquet
+    ingest.py         nflreadpy -> normalize + validate -> Parquet; DuckDB views
     cli.py            `ffa ingest|score|project|simulate|rank|optimize|draft-sim|backtest|dashboard`
   tests/              Pytest; runs offline on synthetic frames
 .github/workflows/
@@ -109,9 +112,13 @@ fantasy-sports/
   `LeagueConfig`, returns a Series, and never mutates its input. League
   variants (PPR, half-PPR, bonuses, 6pt pass TDs) are pure data; no `if
   league.name == "ppr"` branches anywhere in the code.
-- **Stat column names match `nfl_data_py.import_weekly_data`.** Missing
-  columns are silently treated as zero so the same engine scores both
-  per-game actuals and projection frames that only carry a subset of stats.
+- **Stat column names are the canonical nflverse names**, normalized at
+  ingest from `nflreadpy.load_player_stats` (which renamed e.g.
+  `interceptions` -> `passing_interceptions` and `recent_team` -> `team`).
+  Missing columns are silently treated as zero *in scoring* so the same
+  engine scores both per-game actuals and projection frames that carry only
+  a subset of stats -- but `ffa.ingest.validate_weekly_schema` rejects a
+  full pull that's missing them, so a future rename surfaces at ingest.
 - **Postseason rows are excluded from modeling.** When the weekly frame
   carries a `season_type` column, projections and simulations use `REG`
   rows only -- playoff games would otherwise skew recent-history weights

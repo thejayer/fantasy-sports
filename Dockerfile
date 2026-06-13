@@ -20,7 +20,7 @@ COPY src/ ./src/
 COPY configs/ ./configs/
 RUN pip install --no-cache-dir -e ".[dashboard]"
 
-# Bake the warehouse into the image. Cloud Build has internet; nfl_data_py
+# Bake the warehouse into the image. Cloud Build has internet; nflreadpy
 # fetches Parquet from nflverse on GitHub. Override at build time with
 #   --build-arg INGEST_SEASONS="2021 2022 2023 2024"
 ARG INGEST_SEASONS="2022 2023 2024"
