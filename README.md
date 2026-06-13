@@ -20,6 +20,9 @@ rebuild is in:
    marginal tails while preserving cross-stat correlations.
 7. **Streamlit dashboard + GitHub Actions nightly refresh** -- one
    command to launch the UI; one workflow to keep the warehouse fresh.
+8. **Walk-forward backtesting** -- project each holdout season from
+   strictly-prior data and score accuracy (MAE, rank correlation) and
+   calibration (pinball loss, interval coverage) per generator.
 
 ## Why this exists
 
@@ -57,6 +60,10 @@ ffa simulate --season 2025 --league configs/ppr.yaml --generator quantile
 # VOR + tiers across positions, posterior-driven
 ffa rank --season 2025 --league configs/ppr.yaml --samples 1000 --tiers 5
 
+# Walk-forward backtest: how good are the projections, really?
+ffa backtest --league configs/ppr.yaml --start 2023 --end 2024 \
+    --generator bootstrap --generator learned
+
 # ILP-optimal lineup under an auction budget
 ffa optimize --season 2025 --league configs/ppr.yaml --budget 200 --costs costs.csv
 
@@ -86,9 +93,10 @@ fantasy-sports/
     ranking.py        compute_vor + assign_tiers
     optimize.py       optimize_lineup (PuLP ILP), greedy_lineup
     draft.py          simulate_draft (Monte Carlo snake) + summarize_user_picks
+    backtest.py       Walk-forward evaluation: MAE, rank corr, pinball, coverage
     dashboard.py      Streamlit UI (rankings, distributions, optimizer, draft)
     ingest.py         nfl_data_py -> Parquet; DuckDB views over the Parquet
-    cli.py            `ffa ingest|score|project|simulate|rank|optimize|draft-sim|dashboard`
+    cli.py            `ffa ingest|score|project|simulate|rank|optimize|draft-sim|backtest|dashboard`
   tests/              Pytest; runs offline on synthetic frames
 .github/workflows/
   refresh.yml         Scheduled nflverse ingest + posterior write
@@ -280,8 +288,49 @@ Two GitHub Actions workflows ship in `.github/workflows/`:
   the posterior summary under PPR and Standard, and uploads the Parquet
   files as build artifacts.
 
-## What's next, post-phase-7
+## Backtesting (phase 8)
 
+Every modeling claim above is testable one way: project a season using
+only data available beforehand, compare against what happened. `ffa
+backtest` walks forward over holdout seasons doing exactly that:
+
+    ffa backtest --league configs/ppr.yaml --start 2023 --end 2024 \
+        --generator bootstrap --generator learned --generator quantile
+
+For each (generator, holdout season) it slices history strictly before
+the holdout, runs the generator, and joins the posterior summary against
+realized regular-season totals. Metrics per season and per position:
+
+- **mae / rmse / bias** -- error of the posterior mean in fantasy
+  points. Positive bias = optimistic: the fixed `--expected-games 17`
+  assumption shows up here, since real players miss games.
+- **spearman** -- rank correlation of projected vs realized points.
+  Drafts consume ranks, so this is the headline accuracy number.
+- **pinball_qXX** -- quantile loss per reported quantile column; the
+  proper score for whether `q95` behaves like a real 95th percentile.
+- **cover_q05_q95 / cover_q25_q75** -- fraction of players whose
+  realized points landed inside the interval (nominal 90% / 50%).
+- **n_unprojected** -- players who scored in the holdout season but
+  were never projected (no history: rookies, mostly). The size of the
+  model's blind spot, reported instead of silently dropped.
+
+`--min-games` defaults to 1: injury-shortened seasons are real downside
+outcomes the posterior should cover, so excluding them inflates
+calibration. `--out` writes the player-level projected-vs-realized rows
+to Parquet for deeper slicing; the same machinery is available as
+`ffa.run_backtest(...)` for notebooks.
+
+Note the learned/quantile generators need `lookback + 2` seasons of
+ingested history before the first holdout season (the pad covers their
+training pairs); the CLI computes and reports the required range.
+
+## What's next, post-phase-8
+
+- Tune `decay` and `expected_games` against the backtest instead of
+  eyeballing them; per-player games-played distributions are the
+  natural fix for the optimism `bias` exposes.
+- Rookie handling: cohort priors from draft position, so first-year
+  players stop being invisible (`n_unprojected`).
 - Per-position joint-distribution learning (deep generator over stat
   vectors so the *copula* stops being purely the player's own).
 - Schedule-aware adjustments: opponent defense rank, bye-week handling,
