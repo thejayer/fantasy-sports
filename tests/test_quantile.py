@@ -223,3 +223,24 @@ def test_pretrained_quantile_generator_can_be_reused(multi_season_weekly):
         seed=7,
     )
     pd.testing.assert_frame_equal(a, b)
+
+
+# ---------- Regular-season filtering ----------
+
+
+def test_postseason_rows_are_excluded_from_history():
+    """POST rows must contribute to neither training nor the sampling pool."""
+    rows = [
+        _wk("A", season, w, season_type="REG", receiving_yards=50)
+        for season in (2023, 2024)
+        for w in range(1, 11)
+    ]
+    rows += [_wk("A", 2024, w, season_type="POST", receiving_yards=999) for w in (19, 20)]
+    weekly = pd.DataFrame(rows)
+
+    samples = simulate_seasons_quantile_calibrated(
+        weekly, target_season=2025, n_samples=100, expected_games=17, seed=0
+    )
+
+    assert samples["receiving_yards"].nunique() == 1
+    assert samples["receiving_yards"].iloc[0] == pytest.approx(17 * 50.0)

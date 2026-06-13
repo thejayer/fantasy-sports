@@ -10,7 +10,10 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from ffa.dashboard import availability_view, distribution_chart
+pytest.importorskip("altair", reason="dashboard extras not installed")
+pytest.importorskip("streamlit", reason="dashboard extras not installed")
+
+from ffa.dashboard import availability_view, distribution_chart  # noqa: E402
 
 
 def test_distribution_chart_produces_valid_altair_spec():

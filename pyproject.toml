@@ -13,7 +13,7 @@ dependencies = [
     "duckdb>=1.0",
     "nfl-data-py>=0.3.2",
     "pandas>=2.1",
-    "pulp>=2.8",
+    "pulp>=2.8,<4",  # 4.0 removes PULP_CBC_CMD, which optimize.py uses
     "pyarrow>=15.0",
     "pydantic>=2.6",
     "pyyaml>=6.0",
@@ -43,6 +43,7 @@ testpaths = ["tests"]
 addopts = "-ra -q"
 filterwarnings = [
     "ignore:Constructing LpVariable.*:DeprecationWarning:pulp",
+    "ignore:PULP_CBC_CMD is deprecated.*:DeprecationWarning:pulp",
 ]
 
 [tool.ruff]

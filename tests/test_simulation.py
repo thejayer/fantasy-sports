@@ -227,3 +227,20 @@ def small_weekly() -> pd.DataFrame:
                 jittered = {k: float(max(0, v + rng.normal(0, v * 0.2))) for k, v in stats.items()}
                 rows.append(_wk(player_id, season, week, position=position, **jittered))
     return pd.DataFrame(rows)
+
+
+# ---------- Regular-season filtering ----------
+
+
+def test_postseason_rows_are_excluded_from_sampling():
+    """With constant REG games, a POST row leaking in would break the constant total."""
+    rows = [_wk("A", 2024, w, season_type="REG", receiving_yards=50) for w in range(1, 11)]
+    rows += [_wk("A", 2024, w, season_type="POST", receiving_yards=999) for w in (19, 20)]
+    weekly = pd.DataFrame(rows)
+
+    samples = simulate_seasons(
+        weekly, target_season=2025, n_samples=200, expected_games=17, seed=0
+    )
+
+    assert samples["receiving_yards"].nunique() == 1
+    assert samples["receiving_yards"].iloc[0] == pytest.approx(17 * 50.0)
