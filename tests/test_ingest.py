@@ -16,6 +16,7 @@ from ffa.ingest import (
     _to_pandas,
     normalize_weekly_columns,
     open_warehouse,
+    validate_draft_picks_schema,
     validate_weekly_schema,
 )
 from ffa.scoring import STAT_COLUMNS, score_player_weeks
@@ -128,6 +129,20 @@ def test_raw_nflverse_shape_round_trips_through_normalize_then_validate():
     validate_weekly_schema(normalized)
     assert "interceptions" in normalized.columns
     assert "recent_team" in normalized.columns
+
+
+# ---------- validate_draft_picks_schema ----------
+
+
+def test_validate_draft_picks_accepts_full_frame():
+    df = pd.DataFrame([{"player_id": "00-1", "season": 2024, "round": 1, "position": "RB"}])
+    validate_draft_picks_schema(df)  # should not raise
+
+
+def test_validate_draft_picks_raises_on_missing_column():
+    df = pd.DataFrame([{"player_id": "00-1", "season": 2024, "round": 1}])  # no position
+    with pytest.raises(ValueError, match="draft_picks data is missing"):
+        validate_draft_picks_schema(df)
 
 
 # ---------- warehouse ----------

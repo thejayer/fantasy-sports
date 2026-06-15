@@ -110,7 +110,9 @@ def draft_class(
         return rows.assign(bucket=pd.Series(dtype=str))
     rows["bucket"] = rows["round"].map(bucket_fn)
     keep = ["player_id", "position", "bucket", *_present(rows, _META_COLUMNS)]
-    return rows[keep].reset_index(drop=True)
+    # Stable order so a seeded simulate_rookies is invariant to the row order
+    # of the upstream draft_picks frame (DuckDB SELECT order isn't guaranteed).
+    return rows[keep].sort_values("player_id", kind="mergesort").reset_index(drop=True)
 
 
 def build_cohort_pool(
@@ -160,6 +162,9 @@ def build_cohort_pool(
     if merged.empty:
         return pd.DataFrame(columns=["position", "bucket", *stat_cols])
 
+    # Stable row order so the pool a seeded bootstrap indexes into doesn't
+    # depend on the row order of the weekly/draft frames it was merged from.
+    merged = merged.sort_values(["player_id", "season", "week"], kind="mergesort")
     out = merged[["_cohort_pos", "bucket", *stat_cols]].rename(columns={"_cohort_pos": "position"})
     return out.reset_index(drop=True)
 

@@ -155,6 +155,26 @@ def test_simulate_rookies_falls_back_to_position_pool_when_cohort_thin():
     assert rb["rushing_yards"].mean() > 0
 
 
+def test_simulate_rookies_invariant_to_input_row_order():
+    """Seeded output must not depend on draft_picks / weekly row order."""
+    weekly, draft = _cohort_fixture()
+    draft = pd.concat(
+        [draft, pd.DataFrame([_draft("newWR", 2022, 1, "WR"), _draft("newRB", 2022, 1, "RB")])],
+        ignore_index=True,
+    )
+    ordered = simulate_rookies(weekly, draft, target_season=2022, n_samples=80, seed=3)
+
+    weekly_shuf = weekly.sample(frac=1.0, random_state=1).reset_index(drop=True)
+    draft_shuf = draft.sample(frac=1.0, random_state=2).reset_index(drop=True)
+    shuffled = simulate_rookies(weekly_shuf, draft_shuf, target_season=2022, n_samples=80, seed=3)
+
+    # Same player set and identical samples regardless of input ordering.
+    pd.testing.assert_frame_equal(
+        ordered.sort_values(["player_id", "sample_idx"]).reset_index(drop=True),
+        shuffled.sort_values(["player_id", "sample_idx"]).reset_index(drop=True),
+    )
+
+
 def test_simulate_rookies_skips_position_with_no_pool():
     weekly, draft = _cohort_fixture()
     # No QB has ever appeared -> a new QB rookie has no cohort and is skipped.

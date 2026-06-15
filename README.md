@@ -342,10 +342,9 @@ see exactly the players a draft turns on. `ffa.rookies` fills that hole
 with the same block bootstrap, sourced from a *draft cohort* instead of
 the player's own history:
 
-    1. Bucket the incoming rookie by position and draft round (R1, R2,
-       R3, R4+).
-    2. Pool every prior-class rookie-season game row in that cohort.
-    3. Bootstrap-sample whole rows and sum -- one simulated season.
+1. Bucket the incoming rookie by position and draft round (R1, R2, R3, R4+).
+2. Pool every prior-class rookie-season game row in that cohort.
+3. Bootstrap-sample whole rows and sum -- one simulated season.
 
 Whole-row sampling preserves cross-stat correlation and skew, and the
 spread across a cohort (busts next to breakouts) becomes the rookie's
@@ -354,8 +353,10 @@ generator returns, so rookie samples concatenate onto veteran samples
 and flow through scoring / VOR / tiers / draft-sim unchanged. Add them
 anywhere with `--include-rookies`:
 
-    ffa rank --season 2025 --league configs/ppr.yaml --include-rookies
-    ffa backtest --league configs/ppr.yaml --start 2023 --include-rookies
+```bash
+ffa rank --season 2025 --league configs/ppr.yaml --include-rookies
+ffa backtest --league configs/ppr.yaml --start 2023 --include-rookies
+```
 
 Draft capital is the only signal -- coarse, but the one that most
 separates rookie outcomes and the only one available before a snap.
