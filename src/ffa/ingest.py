@@ -36,6 +36,9 @@ DEFAULT_RAW_DIR = Path("data/raw")
 # Structural columns every downstream query and groupby relies on.
 REQUIRED_WEEKLY_KEYS: Final[tuple[str, ...]] = ("player_id", "season", "week")
 
+# Columns the rookie cohort path needs from a draft-picks pull.
+REQUIRED_DRAFT_COLUMNS: Final[tuple[str, ...]] = ("player_id", "season", "round", "position")
+
 # nflverse load_player_stats column -> the canonical name the package uses.
 # Only rename when the canonical column is absent, so we never clobber a
 # frame that already speaks the canonical schema (e.g. synthetic test data).
@@ -50,6 +53,7 @@ class IngestResult:
     weekly_path: Path
     rosters_path: Path
     schedules_path: Path
+    draft_picks_path: Path
     rows: dict[str, int]
 
 
@@ -153,6 +157,34 @@ def fetch_schedules(seasons: list[int]) -> pd.DataFrame:
     return _to_pandas(_import_module().load_schedules(_seasons_arg(seasons)))
 
 
+def validate_draft_picks_schema(
+    draft_picks: pd.DataFrame,
+    required: Sequence[str] = REQUIRED_DRAFT_COLUMNS,
+) -> None:
+    """Raise if a draft-picks frame is missing columns the rookie path needs.
+
+    Run after the ``gsis_id`` -> ``player_id`` rename. Same boundary-failure
+    idea as :func:`validate_weekly_schema`: a missing key surfaces here at
+    ingest rather than deep inside cohort building.
+    """
+    missing = [c for c in required if c not in draft_picks.columns]
+    if missing:
+        raise ValueError(f"draft_picks data is missing required columns: {missing}.")
+
+
+def fetch_draft_picks(seasons: list[int]) -> pd.DataFrame:
+    """Draft picks (rounds, slots, ids) -- the cohort prior for rookies.
+
+    ``gsis_id`` is renamed to ``player_id`` so the frame joins to weekly
+    stats on the same key the rest of the package uses, then schema-checked.
+    """
+    raw = _to_pandas(_import_module().load_draft_picks(_seasons_arg(seasons)))
+    if "player_id" not in raw.columns and "gsis_id" in raw.columns:
+        raw = raw.rename(columns={"gsis_id": "player_id"})
+    validate_draft_picks_schema(raw)
+    return raw
+
+
 def ingest_seasons(seasons: list[int], out_dir: Path = DEFAULT_RAW_DIR) -> IngestResult:
     """Pull weekly stats, rosters, and schedules; write one Parquet each."""
     out_dir.mkdir(parents=True, exist_ok=True)
@@ -160,20 +192,29 @@ def ingest_seasons(seasons: list[int], out_dir: Path = DEFAULT_RAW_DIR) -> Inges
     weekly = fetch_weekly(seasons)
     rosters = fetch_rosters(seasons)
     schedules = fetch_schedules(seasons)
+    draft_picks = fetch_draft_picks(seasons)
 
     weekly_path = out_dir / "weekly.parquet"
     rosters_path = out_dir / "rosters.parquet"
     schedules_path = out_dir / "schedules.parquet"
+    draft_picks_path = out_dir / "draft_picks.parquet"
 
     weekly.to_parquet(weekly_path, index=False)
     rosters.to_parquet(rosters_path, index=False)
     schedules.to_parquet(schedules_path, index=False)
+    draft_picks.to_parquet(draft_picks_path, index=False)
 
     return IngestResult(
         weekly_path=weekly_path,
         rosters_path=rosters_path,
         schedules_path=schedules_path,
-        rows={"weekly": len(weekly), "rosters": len(rosters), "schedules": len(schedules)},
+        draft_picks_path=draft_picks_path,
+        rows={
+            "weekly": len(weekly),
+            "rosters": len(rosters),
+            "schedules": len(schedules),
+            "draft_picks": len(draft_picks),
+        },
     )
 
 
@@ -189,7 +230,7 @@ def open_warehouse(
     """
     con = duckdb.connect(str(db_path))
     raw_dir = Path(raw_dir)
-    for name in ("weekly", "rosters", "schedules"):
+    for name in ("weekly", "rosters", "schedules", "draft_picks"):
         path = raw_dir / f"{name}.parquet"
         if path.exists():
             # DuckDB can't bind parameters inside read_parquet(); inline the

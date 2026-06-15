@@ -23,6 +23,8 @@ rebuild is in:
 8. **Walk-forward backtesting** -- project each holdout season from
    strictly-prior data and score accuracy (MAE, rank correlation) and
    calibration (pinball loss, interval coverage) per generator.
+9. **Rookie cohort projections** -- draft-capital block bootstrap so
+   first-year players stop being invisible; opt in with `--include-rookies`.
 
 ## Why this exists
 
@@ -96,6 +98,7 @@ fantasy-sports/
     ranking.py        compute_vor + assign_tiers
     optimize.py       optimize_lineup (PuLP ILP), greedy_lineup
     draft.py          simulate_draft (Monte Carlo snake) + summarize_user_picks
+    rookies.py        Draft-cohort block bootstrap for first-year players
     backtest.py       Walk-forward evaluation: MAE, rank corr, pinball, coverage
     dashboard.py      Streamlit UI (rankings, distributions, optimizer, draft)
     ingest.py         nflreadpy -> normalize + validate -> Parquet; DuckDB views
@@ -331,13 +334,46 @@ Note the learned/quantile generators need `lookback + 2` seasons of
 ingested history before the first holdout season (the pad covers their
 training pairs); the CLI computes and reports the required range.
 
-## What's next, post-phase-8
+## Rookie projections (phase 9)
+
+The veteran generators project a player from their own past, so a
+first-year player with no NFL history is dropped -- the draft tool can't
+see exactly the players a draft turns on. `ffa.rookies` fills that hole
+with the same block bootstrap, sourced from a *draft cohort* instead of
+the player's own history:
+
+1. Bucket the incoming rookie by position and draft round (R1, R2, R3, R4+).
+2. Pool every prior-class rookie-season game row in that cohort.
+3. Bootstrap-sample whole rows and sum -- one simulated season.
+
+Whole-row sampling preserves cross-stat correlation and skew, and the
+spread across a cohort (busts next to breakouts) becomes the rookie's
+floor-to-ceiling range. Output is the same long sample contract every
+generator returns, so rookie samples concatenate onto veteran samples
+and flow through scoring / VOR / tiers / draft-sim unchanged. Add them
+anywhere with `--include-rookies`:
+
+```bash
+ffa rank --season 2025 --league configs/ppr.yaml --include-rookies
+ffa backtest --league configs/ppr.yaml --start 2023 --include-rookies
+```
+
+Draft capital is the only signal -- coarse, but the one that most
+separates rookie outcomes and the only one available before a snap.
+Backtested on 2023 (PPR), turning rookies on cut the unprojected blind
+spot from 131 players to 63 with no loss of aggregate accuracy; the
+high-capital rookies land close (C.J. Stroud projected 239 vs 276
+realized, Bijan Robinson 254 vs 246), while a fifth-round Puka Nacua
+gets a sensible cohort baseline and his historic breakout stays
+(correctly) unforecast. Cohort pools for a target season use only prior
+draft classes, so the backtest stays leakage-free.
+
+## What's next, post-phase-9
 
 - Tune `decay` and `expected_games` against the backtest instead of
   eyeballing them; per-player games-played distributions are the
-  natural fix for the optimism `bias` exposes.
-- Rookie handling: cohort priors from draft position, so first-year
-  players stop being invisible (`n_unprojected`).
+  natural fix for the optimism `bias` exposes (and the low interval
+  coverage it drives) -- the next PR.
 - Per-position joint-distribution learning (deep generator over stat
   vectors so the *copula* stops being purely the player's own).
 - Schedule-aware adjustments: opponent defense rank, bye-week handling,

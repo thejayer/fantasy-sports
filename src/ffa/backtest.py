@@ -44,6 +44,7 @@ from ffa.league import LeagueConfig
 from ffa.learned import simulate_seasons_learned
 from ffa.projection import regular_season_only
 from ffa.quantile import simulate_seasons_quantile_calibrated
+from ffa.rookies import augment_with_rookies
 from ffa.scoring import STAT_COLUMNS, score_player_weeks
 from ffa.simulation import simulate_seasons, summarize_seasons
 
@@ -220,6 +221,8 @@ def run_backtest(
     expected_games: float = 17.0,
     min_realized_games: int = 1,
     positions: Iterable[str] | None = DEFAULT_POSITIONS,
+    include_rookies: bool = False,
+    draft_picks: pd.DataFrame | None = None,
     seed: int | None = 0,
 ) -> BacktestResult:
     """Walk-forward backtest of one generator over holdout ``seasons``.
@@ -241,6 +244,12 @@ def run_backtest(
             Keep at 1 for honest calibration -- injury-shortened seasons
             are real downside outcomes the posterior should cover.
         positions: restrict evaluation to these positions (None = all).
+        include_rookies: augment each season's samples with draft-cohort
+            rookie projections (:func:`ffa.rookies.augment_with_rookies`).
+            Requires ``draft_picks``. Cohort pools use only classes before
+            the holdout season, so this stays leakage-free.
+        draft_picks: draft-pick table (needs ``player_id``/``season``/
+            ``round``/``position``); required when ``include_rookies``.
 
     Returns:
         :class:`BacktestResult` with per-(season, position) metrics and
@@ -249,6 +258,8 @@ def run_backtest(
     """
     if generator not in GENERATORS:
         raise ValueError(f"Unknown generator: {generator!r}. Choose from: {list(GENERATORS)}.")
+    if include_rookies and draft_picks is None:
+        raise ValueError("include_rookies=True requires a draft_picks frame.")
     simulate, _ = GENERATORS[generator]
 
     metrics_frames: list[pd.DataFrame] = []
@@ -264,6 +275,11 @@ def run_backtest(
             expected_games=expected_games,
             seed=seed,
         )
+        if include_rookies:
+            samples = augment_with_rookies(
+                samples, history, draft_picks, target_season=season,
+                n_samples=n_samples, expected_games=expected_games, seed=seed,
+            )
         summary = summarize_seasons(samples, league)
 
         realized = realized_season_totals(weekly, season, league)
