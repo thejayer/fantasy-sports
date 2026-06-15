@@ -19,10 +19,14 @@ from ffa.league import load_league
 from ffa.optimize import optimize_lineup
 from ffa.projection import project_per_game, project_season
 from ffa.ranking import assign_tiers, compute_vor
+from ffa.rookies import augment_with_rookies
 from ffa.scoring import score_player_weeks
 from ffa.simulation import summarize_seasons
 
 app = typer.Typer(add_completion=False, help="Fantasy football analytics pipeline.")
+
+# How many prior draft classes feed the rookie cohort pools.
+_ROOKIE_LOOKBACK_CLASSES = 6
 
 
 @app.command()
@@ -125,6 +129,9 @@ def simulate(
         help="Generator: bootstrap (phase 3), learned (phase 5), or quantile (phase 6).",
     ),
     limit: int = typer.Option(25, "--limit"),
+    include_rookies: bool = typer.Option(
+        False, "--include-rookies", help="Project this season's draft class from cohorts."
+    ),
     out: Path | None = typer.Option(None, "--out", help="Optional Parquet path for the summary."),
     db: Path = typer.Option(Path("data/ffa.duckdb"), "--db"),
     raw_dir: Path = typer.Option(Path("data/raw"), "--raw-dir"),
@@ -132,7 +139,7 @@ def simulate(
     """Distributional projections; print mean / sd / 5-95 quantiles."""
     _, summary = _load_simulation_summary(
         league, season, samples, lookback, decay, expected_games, seed, db, raw_dir,
-        generator=generator,
+        generator=generator, include_rookies=include_rookies,
     )
 
     if out is not None:
@@ -157,12 +164,16 @@ def _load_simulation_summary(
     db: Path,
     raw_dir: Path,
     generator: str = "bootstrap",
+    include_rookies: bool = False,
 ):
     """Shared helper: pull weekly history -> samples -> posterior summary.
 
     ``generator`` chooses the simulator: ``bootstrap`` (phase 3),
     ``learned`` (phase 5), or ``quantile`` (phase 6). All three return
     the same long DataFrame, so downstream code is identical.
+
+    With ``include_rookies``, the target season's draft class is projected
+    from prior-class cohorts and appended (:mod:`ffa.rookies`).
     """
     if generator not in _GENERATORS:
         typer.echo(
@@ -173,7 +184,10 @@ def _load_simulation_summary(
     simulator, history_pad = _GENERATORS[generator]
     cfg = load_league(league)
     con = open_warehouse(db_path=db, raw_dir=raw_dir)
-    seasons = list(range(season - (lookback + history_pad), season))
+    history_span = lookback + history_pad
+    if include_rookies:
+        history_span = max(history_span, _ROOKIE_LOOKBACK_CLASSES)
+    seasons = list(range(season - history_span, season))
     placeholders = ",".join("?" for _ in seasons)
     weekly = con.execute(
         f"SELECT * FROM weekly WHERE season IN ({placeholders})", seasons
@@ -190,7 +204,43 @@ def _load_simulation_summary(
         expected_games=expected_games,
         seed=seed,
     )
+    if include_rookies:
+        samples_df = _augment_rookies(
+            con, samples_df, weekly, season, samples, expected_games, seed
+        )
     return cfg, summarize_seasons(samples_df, cfg)
+
+
+def _augment_rookies(con, samples_df, weekly, season, samples, expected_games, seed):
+    """Load the draft class from the warehouse and append rookie samples.
+
+    Degrades gracefully: if no ``draft_picks`` have been ingested, warn and
+    return the veteran samples unchanged rather than failing the command.
+    """
+    draft_seasons = list(range(season - _ROOKIE_LOOKBACK_CLASSES, season + 1))
+    placeholders = ",".join("?" for _ in draft_seasons)
+    try:
+        draft_picks = con.execute(
+            f"SELECT * FROM draft_picks WHERE season IN ({placeholders})", draft_seasons
+        ).df()
+    except Exception:  # noqa: BLE001 -- missing view / older warehouse
+        draft_picks = None
+    if draft_picks is None or draft_picks.empty:
+        typer.echo(
+            "--include-rookies set but no draft_picks in the warehouse; "
+            "run `ffa ingest` to pull them. Continuing without rookies."
+        )
+        return samples_df
+    return augment_with_rookies(
+        samples_df,
+        weekly,
+        draft_picks,
+        target_season=season,
+        n_samples=samples,
+        expected_games=expected_games,
+        lookback_classes=_ROOKIE_LOOKBACK_CLASSES,
+        seed=seed,
+    )
 
 
 @app.command()
@@ -205,13 +255,16 @@ def rank(
     generator: str = typer.Option("bootstrap", "--generator"),
     n_tiers: int = typer.Option(5, "--tiers"),
     limit: int = typer.Option(40, "--limit"),
+    include_rookies: bool = typer.Option(
+        False, "--include-rookies", help="Project this season's draft class from cohorts."
+    ),
     db: Path = typer.Option(Path("data/ffa.duckdb"), "--db"),
     raw_dir: Path = typer.Option(Path("data/raw"), "--raw-dir"),
 ) -> None:
     """Posterior summary + VOR + tiers."""
     cfg, summary = _load_simulation_summary(
         league, season, samples, lookback, decay, expected_games, seed, db, raw_dir,
-        generator=generator,
+        generator=generator, include_rookies=include_rookies,
     )
     ranked = compute_vor(summary, cfg.roster)
     ranked = assign_tiers(ranked, n_tiers=n_tiers)
@@ -234,6 +287,9 @@ def optimize(
     expected_games: float = typer.Option(17.0, "--expected-games"),
     seed: int = typer.Option(0, "--seed"),
     generator: str = typer.Option("bootstrap", "--generator"),
+    include_rookies: bool = typer.Option(
+        False, "--include-rookies", help="Project this season's draft class from cohorts."
+    ),
     db: Path = typer.Option(Path("data/ffa.duckdb"), "--db"),
     raw_dir: Path = typer.Option(Path("data/raw"), "--raw-dir"),
 ) -> None:
@@ -242,7 +298,7 @@ def optimize(
 
     cfg, summary = _load_simulation_summary(
         league, season, samples, lookback, decay, expected_games, seed, db, raw_dir,
-        generator=generator,
+        generator=generator, include_rookies=include_rookies,
     )
     ranked = compute_vor(summary, cfg.roster)
     if budget is not None:
@@ -272,13 +328,16 @@ def draft_sim(
     seed: int = typer.Option(0, "--seed"),
     generator: str = typer.Option("bootstrap", "--generator"),
     limit: int = typer.Option(25, "--limit"),
+    include_rookies: bool = typer.Option(
+        False, "--include-rookies", help="Project this season's draft class from cohorts."
+    ),
     db: Path = typer.Option(Path("data/ffa.duckdb"), "--db"),
     raw_dir: Path = typer.Option(Path("data/raw"), "--raw-dir"),
 ) -> None:
     """Monte Carlo snake draft from your slot; prints pick-rate table."""
     cfg, summary = _load_simulation_summary(
         league, season, samples, lookback, decay, expected_games, seed, db, raw_dir,
-        generator=generator,
+        generator=generator, include_rookies=include_rookies,
     )
     ranked = compute_vor(summary, cfg.roster)
     result = simulate_draft(
@@ -306,6 +365,9 @@ def backtest(
     expected_games: float = typer.Option(17.0, "--expected-games"),
     min_games: int = typer.Option(1, "--min-games", help="Realized games required to count a player."),
     by_position: bool = typer.Option(False, "--by-position", help="Also print per-position metrics."),
+    include_rookies: bool = typer.Option(
+        False, "--include-rookies", help="Also project + score each season's draft class."
+    ),
     seed: int = typer.Option(0, "--seed"),
     out: Path | None = typer.Option(None, "--out", help="Optional Parquet path for player-level rows."),
     db: Path = typer.Option(Path("data/ffa.duckdb"), "--db"),
@@ -325,9 +387,13 @@ def backtest(
         raise typer.Exit(code=2)
 
     # Pull enough history for the hungriest generator's first holdout season,
-    # plus the holdout seasons themselves for realized totals.
+    # plus the holdout seasons themselves for realized totals. Rookie cohort
+    # pools reach back further, so widen the lower bound when they're on.
     max_pad = max(_GENERATORS[g][1] for g in generator)
-    seasons_needed = list(range(start - (lookback + max_pad), last + 1))
+    history_span = lookback + max_pad
+    if include_rookies:
+        history_span = max(history_span, _ROOKIE_LOOKBACK_CLASSES)
+    seasons_needed = list(range(start - history_span, last + 1))
     con = open_warehouse(db_path=db, raw_dir=raw_dir)
     placeholders = ",".join("?" for _ in seasons_needed)
     weekly = con.execute(
@@ -336,6 +402,18 @@ def backtest(
     if weekly.empty:
         typer.echo(f"No weekly history for seasons {seasons_needed}. Run `ffa ingest` first.")
         raise typer.Exit(code=1)
+
+    draft_picks = None
+    if include_rookies:
+        try:
+            draft_picks = con.execute(
+                f"SELECT * FROM draft_picks WHERE season IN ({placeholders})", seasons_needed
+            ).df()
+        except Exception:  # noqa: BLE001 -- missing view / older warehouse
+            draft_picks = None
+        if draft_picks is None or draft_picks.empty:
+            typer.echo("--include-rookies set but no draft_picks ingested; run `ffa ingest`.")
+            raise typer.Exit(code=1)
 
     holdouts = list(range(start, last + 1))
     metrics_frames = []
@@ -351,6 +429,8 @@ def backtest(
             decay=decay,
             expected_games=expected_games,
             min_realized_games=min_games,
+            include_rookies=include_rookies,
+            draft_picks=draft_picks,
             seed=seed,
         )
         if result.metrics.empty:

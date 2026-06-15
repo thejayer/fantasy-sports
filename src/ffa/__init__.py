@@ -19,6 +19,13 @@ from ffa.projection import (
 )
 from ffa.quantile import QuantileGenerator, simulate_seasons_quantile_calibrated
 from ffa.ranking import assign_tiers, compute_vor
+from ffa.rookies import (
+    augment_with_rookies,
+    build_cohort_pool,
+    draft_class,
+    draft_round_bucket,
+    simulate_rookies,
+)
 from ffa.scoring import score_player_weeks, score_stat_line
 from ffa.simulation import simulate_seasons, summarize_seasons
 
@@ -31,7 +38,11 @@ __all__ = [
     "RosterRules",
     "apply_depth_multiplier",
     "assign_tiers",
+    "augment_with_rookies",
+    "build_cohort_pool",
     "compute_vor",
+    "draft_class",
+    "draft_round_bucket",
     "evaluate_projections",
     "greedy_lineup",
     "latest_depth_chart",
@@ -46,6 +57,7 @@ __all__ = [
     "score_player_weeks",
     "score_stat_line",
     "simulate_draft",
+    "simulate_rookies",
     "simulate_seasons",
     "simulate_seasons_learned",
     "simulate_seasons_quantile_calibrated",

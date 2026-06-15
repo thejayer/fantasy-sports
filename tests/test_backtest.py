@@ -213,3 +213,54 @@ def test_run_backtest_unknown_generator_raises(standard):
     weekly = pd.DataFrame([_wk("A", 2023, 1, receiving_yards=10)])
     with pytest.raises(ValueError, match="Unknown generator"):
         run_backtest(weekly, [2024], standard, generator="nope")
+
+
+def _draft_row(player_id, season, round_, position="WR", pick=10):
+    return {
+        "player_id": player_id,
+        "season": season,
+        "round": round_,
+        "pick": pick,
+        "position": position,
+        "player_display_name": player_id,
+        "recent_team": "TEAM",
+    }
+
+
+def test_run_backtest_include_rookies_reduces_blind_spot(standard):
+    weekly = _multi_season()  # veterans A/B/C, 2021-2024
+    rows = []
+    # Prior-class WR rookies whose rookie-season rows form the cohort pool.
+    for pid, yr in (("p21", 2021), ("p22", 2022), ("p23", 2023)):
+        for w in range(1, 15):
+            rows.append(_wk(pid, yr, w, receiving_yards=55.0))
+    # Incoming rookie: rows only in the holdout season (no prior history).
+    for w in range(1, 15):
+        rows.append(_wk("ROOK", 2024, w, receiving_yards=60.0))
+    weekly = pd.concat([weekly, pd.DataFrame(rows)], ignore_index=True)
+    draft = pd.DataFrame(
+        [_draft_row("p21", 2021, 1), _draft_row("p22", 2022, 1),
+         _draft_row("p23", 2023, 1), _draft_row("ROOK", 2024, 1)]
+    )
+
+    base = run_backtest(weekly, [2024], standard, generator="bootstrap", n_samples=100, seed=0)
+    rk = run_backtest(
+        weekly, [2024], standard, generator="bootstrap", n_samples=100,
+        include_rookies=True, draft_picks=draft, seed=0,
+    )
+
+    # The incoming rookie is a blind spot for the veteran-only run...
+    assert "ROOK" not in set(base.players["player_id"])
+    base_all = base.metrics.loc[base.metrics["position"] == "ALL"].iloc[0]
+    assert base_all["n_unprojected"] >= 1
+    # ...and becomes projected (and scored) once rookies are included.
+    assert "ROOK" in set(rk.players["player_id"])
+    rk_all = rk.metrics.loc[rk.metrics["position"] == "ALL"].iloc[0]
+    assert rk_all["n_unprojected"] < base_all["n_unprojected"]
+    assert rk_all["n_players"] > base_all["n_players"]
+
+
+def test_run_backtest_include_rookies_requires_draft_picks(standard):
+    weekly = _multi_season()
+    with pytest.raises(ValueError, match="requires a draft_picks"):
+        run_backtest(weekly, [2024], standard, include_rookies=True)
