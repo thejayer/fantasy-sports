@@ -7,6 +7,7 @@ from ffa.backtest import (
     summarize_evaluation,
 )
 from ffa.draft import DraftResult, simulate_draft, summarize_user_picks
+from ffa.games import GamesModel, bootstrap_season_totals
 from ffa.learned import LearnedGenerator, simulate_seasons_learned
 from ffa.league import LeagueConfig, RosterRules, load_league
 from ffa.optimize import greedy_lineup, optimize_lineup
@@ -32,6 +33,7 @@ from ffa.simulation import simulate_seasons, summarize_seasons
 __all__ = [
     "BacktestResult",
     "DraftResult",
+    "GamesModel",
     "LeagueConfig",
     "LearnedGenerator",
     "QuantileGenerator",
@@ -39,6 +41,7 @@ __all__ = [
     "apply_depth_multiplier",
     "assign_tiers",
     "augment_with_rookies",
+    "bootstrap_season_totals",
     "build_cohort_pool",
     "compute_vor",
     "draft_class",

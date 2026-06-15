@@ -129,6 +129,9 @@ def simulate(
         help="Generator: bootstrap (phase 3), learned (phase 5), or quantile (phase 6).",
     ),
     limit: int = typer.Option(25, "--limit"),
+    games_model: str = typer.Option(
+        "fixed", "--games-model", help="fixed = full 17 games; empirical = sample games played."
+    ),
     include_rookies: bool = typer.Option(
         False, "--include-rookies", help="Project this season's draft class from cohorts."
     ),
@@ -139,7 +142,7 @@ def simulate(
     """Distributional projections; print mean / sd / 5-95 quantiles."""
     _, summary = _load_simulation_summary(
         league, season, samples, lookback, decay, expected_games, seed, db, raw_dir,
-        generator=generator, include_rookies=include_rookies,
+        generator=generator, games_model=games_model, include_rookies=include_rookies,
     )
 
     if out is not None:
@@ -164,6 +167,7 @@ def _load_simulation_summary(
     db: Path,
     raw_dir: Path,
     generator: str = "bootstrap",
+    games_model: str = "fixed",
     include_rookies: bool = False,
 ):
     """Shared helper: pull weekly history -> samples -> posterior summary.
@@ -202,6 +206,7 @@ def _load_simulation_summary(
         lookback=lookback,
         decay=decay,
         expected_games=expected_games,
+        games_model=games_model,
         seed=seed,
     )
     if include_rookies:
@@ -255,6 +260,9 @@ def rank(
     generator: str = typer.Option("bootstrap", "--generator"),
     n_tiers: int = typer.Option(5, "--tiers"),
     limit: int = typer.Option(40, "--limit"),
+    games_model: str = typer.Option(
+        "fixed", "--games-model", help="fixed = full 17 games; empirical = sample games played."
+    ),
     include_rookies: bool = typer.Option(
         False, "--include-rookies", help="Project this season's draft class from cohorts."
     ),
@@ -264,7 +272,7 @@ def rank(
     """Posterior summary + VOR + tiers."""
     cfg, summary = _load_simulation_summary(
         league, season, samples, lookback, decay, expected_games, seed, db, raw_dir,
-        generator=generator, include_rookies=include_rookies,
+        generator=generator, games_model=games_model, include_rookies=include_rookies,
     )
     ranked = compute_vor(summary, cfg.roster)
     ranked = assign_tiers(ranked, n_tiers=n_tiers)
@@ -287,6 +295,9 @@ def optimize(
     expected_games: float = typer.Option(17.0, "--expected-games"),
     seed: int = typer.Option(0, "--seed"),
     generator: str = typer.Option("bootstrap", "--generator"),
+    games_model: str = typer.Option(
+        "fixed", "--games-model", help="fixed = full 17 games; empirical = sample games played."
+    ),
     include_rookies: bool = typer.Option(
         False, "--include-rookies", help="Project this season's draft class from cohorts."
     ),
@@ -298,7 +309,7 @@ def optimize(
 
     cfg, summary = _load_simulation_summary(
         league, season, samples, lookback, decay, expected_games, seed, db, raw_dir,
-        generator=generator, include_rookies=include_rookies,
+        generator=generator, games_model=games_model, include_rookies=include_rookies,
     )
     ranked = compute_vor(summary, cfg.roster)
     if budget is not None:
@@ -328,6 +339,9 @@ def draft_sim(
     seed: int = typer.Option(0, "--seed"),
     generator: str = typer.Option("bootstrap", "--generator"),
     limit: int = typer.Option(25, "--limit"),
+    games_model: str = typer.Option(
+        "fixed", "--games-model", help="fixed = full 17 games; empirical = sample games played."
+    ),
     include_rookies: bool = typer.Option(
         False, "--include-rookies", help="Project this season's draft class from cohorts."
     ),
@@ -337,7 +351,7 @@ def draft_sim(
     """Monte Carlo snake draft from your slot; prints pick-rate table."""
     cfg, summary = _load_simulation_summary(
         league, season, samples, lookback, decay, expected_games, seed, db, raw_dir,
-        generator=generator, include_rookies=include_rookies,
+        generator=generator, games_model=games_model, include_rookies=include_rookies,
     )
     ranked = compute_vor(summary, cfg.roster)
     result = simulate_draft(
@@ -365,6 +379,9 @@ def backtest(
     expected_games: float = typer.Option(17.0, "--expected-games"),
     min_games: int = typer.Option(1, "--min-games", help="Realized games required to count a player."),
     by_position: bool = typer.Option(False, "--by-position", help="Also print per-position metrics."),
+    games_model: str = typer.Option(
+        "fixed", "--games-model", help="fixed = full 17 games; empirical = sample games played."
+    ),
     include_rookies: bool = typer.Option(
         False, "--include-rookies", help="Also project + score each season's draft class."
     ),
@@ -429,6 +446,7 @@ def backtest(
             decay=decay,
             expected_games=expected_games,
             min_realized_games=min_games,
+            games_model=games_model,
             include_rookies=include_rookies,
             draft_picks=draft_picks,
             seed=seed,
