@@ -1,6 +1,7 @@
 """Pure scoring engine: stats + LeagueConfig -> fantasy points.
 
-The expected stat column names follow ``nfl_data_py.import_weekly_data``:
+The expected stat column names are the canonical nflverse names produced by
+:mod:`ffa.ingest` (which normalizes ``nflreadpy.load_player_stats`` output):
 
     passing_yards, passing_tds, interceptions, passing_2pt_conversions,
     rushing_yards, rushing_tds, rushing_2pt_conversions,

@@ -63,8 +63,8 @@ def simulate_seasons(
     """Bootstrap simulated season totals for every qualified player.
 
     Args:
-        weekly: per-player per-game stats matching ``nfl_data_py`` schema;
-            must contain ``player_id``, ``season``, and ``week``.
+        weekly: per-player per-game stats matching the canonical nflverse
+            schema; must contain ``player_id``, ``season``, and ``week``.
         target_season: season being projected (excluded from history).
         n_samples: number of season simulations per player. 1000 is enough
             for stable 5/95 quantiles; bump to 5000+ for tail quantiles.
