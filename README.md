@@ -31,6 +31,9 @@ rebuild is in:
 11. **Calibration diagnostics** -- per-position, per-quantile coverage
     table (`ffa backtest --calibration`) that pinpoints where the
     posterior is miscalibrated and aims the next modeling step.
+12. **Lower-tail downside** -- a per-season "bust" mixture (`--bust-rate`)
+    that fattens the floor the diagnostic flagged, near-zeroing the
+    optimism bias; tuned against the backtest.
 
 ## Why this exists
 
@@ -106,6 +109,7 @@ fantasy-sports/
     draft.py          simulate_draft (Monte Carlo snake) + summarize_user_picks
     rookies.py        Draft-cohort block bootstrap for first-year players
     games.py          Empirical games-played model + masked season bootstrap
+    downside.py       Per-season bust mixture that fattens the lower tail
     backtest.py       Walk-forward evaluation: MAE, rank corr, pinball, coverage
     calibration.py    Per-position, per-quantile coverage diagnostics
     dashboard.py      Streamlit UI (rankings, distributions, optimizer, draft)
@@ -454,20 +458,63 @@ doesn't contain their bust scenarios (lost job, benching, decline). The
 empirical games model added injury/availability variance but not
 *performance-collapse* variance.
 
-## What's next, post-phase-11
+## Lower-tail downside (phase 12)
 
-- **Inject downside into the lower tail** (the aimed next step): blend a
-  player's own game pool with their position/cohort pool, or add a
-  regression-to-replacement-level component, so bust seasons become
-  samplable. Re-run `--calibration` to confirm `cov q05` falls toward
-  0.05.
+Phase 11 diagnosed the dominant calibration miss: the lower tail is far
+too thin (`cov q05 ≈ 0.30`, projected floors much too high), uniformly
+across positions. The cause is structural -- the bootstrap resamples a
+player's *own* (mostly good) games iid, so a sum of ~16 draws barely
+spreads and a whole bust season (lost role, decline, a nagging injury
+that saps a whole year) is unsamplable.
+
+`ffa.downside` injects it as a *season-level* mixture: with probability
+`--bust-rate`, a simulated season is multiplied by a degradation factor
+drawn from `[0, 0.6]` (a fraction of normal output). Because the bust is
+per-season and multiplicative, the median season and cross-player
+ranking are untouched and only the *left* tail fattens; it is
+league- and position-agnostic, matching the uniform-across-positions
+miss. `--bust-rate 0` (default) is off and RNG-neutral, so prior output
+is reproduced exactly.
+
+```bash
+ffa rank --season 2025 --league configs/ppr.yaml \
+    --games-model empirical --bust-rate 0.10
+```
+
+The rate is *tuned against the backtest*, not assumed. On PPR 2021-2023
+(bootstrap, empirical games), sweeping `--bust-rate`:
+
+| bust | cov q05 | central | bias | Spearman |
+|---|---|---|---|---|
+| 0.00 | 0.30 | 0.55 | +7.2 | 0.707 |
+| **0.10** | **0.16** | **0.69** | **+0.6** | 0.706 |
+| 0.15 | 0.13 | 0.71 | −2.6 | 0.706 |
+| 0.25 | 0.10 | 0.73 | −9.2 | 0.706 |
+
+`0.10` is the recommended setting: it nearly **zeroes the optimism bias**
+(+7.2 → +0.6) while lifting central coverage 0.55 → 0.69 and halving the
+floor miss (`cov q05` 0.30 → 0.16), with Spearman flat -- ranking is
+untouched. Higher rates keep tightening coverage but overcorrect into
+pessimism. The lower-tail story across phases: central q05-q95 coverage
+0.30 (fixed) → 0.55 (empirical games) → 0.69 (+ bust 0.10).
+
+It is opt-in, like the games model; combine the two for the calibrated
+configuration. Honest caveat: `cov q05` is improved, not solved (0.16 vs
+0.05), and the *upper* tail (`cov q95 ≈ 0.82`) is untouched by a
+downside-only mechanism -- the next levers below.
+
+## What's next, post-phase-12
+
 - The phase-6 quantile generator currently raises on real nflverse data
   (`_build_features` emits NaNs that `GradientBoostingRegressor`
   rejects); it works only on the dense synthetic test frames. Worth its
-  own fix -- a calibrated marginal generator is the other route to the
-  lower tail.
+  own fix -- a calibrated marginal generator also addresses the upper
+  tail the bust mixture leaves alone.
+- Extend the bust mixture to rookies (cohort bust rate) and let the
+  degradation depend on age / role signals from the rosters table rather
+  than a flat `[0, 0.6]`.
 - Per-position joint-distribution learning (copula over stat vectors) --
-  deprioritized by the diagnostic above, but still the lever for
+  deprioritized by the phase-11 diagnostic, but still the lever for
   cross-stat realism once the marginals are calibrated.
 - Schedule-aware adjustments and dashboard-output pricing against
   historical mocks, as before.

@@ -32,6 +32,7 @@ import numpy as np
 import pandas as pd
 from sklearn.ensemble import GradientBoostingRegressor
 
+from ffa.downside import apply_downside
 from ffa.games import (
     GAMES_MODELS,
     GamesModel,
@@ -232,6 +233,7 @@ def simulate_seasons_quantile_calibrated(
     stats: Iterable[str] = STAT_COLUMNS,
     quantiles: tuple[float, ...] = (0.1, 0.5, 0.9),
     games_model: str = "fixed",
+    bust_rate: float = 0.0,
     seed: int | None = None,
 ) -> pd.DataFrame:
     """Drop-in replacement for :func:`ffa.simulation.simulate_seasons`.
@@ -308,6 +310,7 @@ def simulate_seasons_quantile_calibrated(
         season_totals = bootstrap_season_totals(
             transformed, n_samples, games_counts, rng, weights=weights
         )
+        season_totals = apply_downside(season_totals, bust_rate, rng)
 
         frame = pd.DataFrame(season_totals, columns=stat_cols)
         frame["player_id"] = player_id
