@@ -28,6 +28,9 @@ rebuild is in:
 10. **Empirical games-played model** -- sample each sim's game count from
     a player's history instead of assuming 17, cutting the optimism bias;
     opt in with `--games-model empirical`.
+11. **Calibration diagnostics** -- per-position, per-quantile coverage
+    table (`ffa backtest --calibration`) that pinpoints where the
+    posterior is miscalibrated and aims the next modeling step.
 
 ## Why this exists
 
@@ -104,6 +107,7 @@ fantasy-sports/
     rookies.py        Draft-cohort block bootstrap for first-year players
     games.py          Empirical games-played model + masked season bootstrap
     backtest.py       Walk-forward evaluation: MAE, rank corr, pinball, coverage
+    calibration.py    Per-position, per-quantile coverage diagnostics
     dashboard.py      Streamlit UI (rankings, distributions, optimizer, draft)
     ingest.py         nflreadpy -> normalize + validate -> Parquet; DuckDB views
     cli.py            `ffa ingest|score|project|simulate|rank|optimize|draft-sim|backtest|dashboard`
@@ -413,20 +417,57 @@ empirical games:
 
 The optimism bias nearly vanishes, MAE drops ~27%, and interval coverage
 almost doubles toward nominal. Coverage still sits below the 90% / 50%
-targets -- the remaining gap is per-game stat variance, which the joint
-generator below is meant to address -- but the season-length fix is the
-large first step.
+targets -- phase 11 diagnoses what's left.
 
-## What's next, post-phase-10
+## Calibration diagnostics (phase 11)
 
-- Per-position joint-distribution learning (deep generator over stat
-  vectors so the *copula* stops being purely the player's own) -- the
-  main lever left on interval coverage.
-- Extend the empirical games model to rookies (cohort games-played) and
-  blend it with snap-share / injury-status signals from the rosters and
-  injuries tables.
-- Schedule-aware adjustments: opponent defense rank, bye-week handling,
-  injury-status updates from the rosters table.
-- Pricing the dashboard's outputs against historical mocks so the
-  optimizer's expected lineup gets calibrated against realized draft
-  results, not just the model's posterior.
+A single "55% coverage vs 90% target" number can't say *why* the
+posterior is miscalibrated, and guessing the fix is how you build the
+wrong generator. `ffa.calibration` breaks coverage down per reported
+quantile and per position: for each `q{τ}` column it reports the
+empirical `mean(realized <= q_τ)`, which a calibrated model lands at τ.
+
+```bash
+ffa backtest --league configs/ppr.yaml --start 2021 --end 2023 \
+    --games-model empirical --calibration
+```
+
+The phase-10 (empirical-games) posterior, scored on 2021-2023 PPR,
+comes back **uniformly under-dispersed across every position** -- and
+the miss is concentrated in the *lower tail*:
+
+| position | cov q05 | cov q50 | cov q95 | central | dispersion |
+|---|---|---|---|---|---|
+| ALL | 0.30 | 0.59 | 0.83 | 0.55 | under-dispersed |
+| RB | 0.32 | 0.62 | 0.82 | 0.52 | under-dispersed |
+| WR | 0.30 | 0.59 | 0.83 | 0.56 | under-dispersed |
+| QB | 0.31 | 0.59 | 0.82 | 0.52 | under-dispersed |
+| TE | 0.25 | 0.56 | 0.83 | 0.60 | under-dispersed |
+
+`cov q05 = 0.30` is the headline: **30% of player-seasons land at or
+below their projected 5th-percentile floor**, when 5% should. Projected
+floors are far too high. This redirects the roadmap. The miss is *not*
+position-specific (every position looks alike), so a per-position copula
+isn't the main lever; the marginal **lower tail** is too thin because a
+player's own recent history -- the only thing the bootstrap resamples --
+doesn't contain their bust scenarios (lost job, benching, decline). The
+empirical games model added injury/availability variance but not
+*performance-collapse* variance.
+
+## What's next, post-phase-11
+
+- **Inject downside into the lower tail** (the aimed next step): blend a
+  player's own game pool with their position/cohort pool, or add a
+  regression-to-replacement-level component, so bust seasons become
+  samplable. Re-run `--calibration` to confirm `cov q05` falls toward
+  0.05.
+- The phase-6 quantile generator currently raises on real nflverse data
+  (`_build_features` emits NaNs that `GradientBoostingRegressor`
+  rejects); it works only on the dense synthetic test frames. Worth its
+  own fix -- a calibrated marginal generator is the other route to the
+  lower tail.
+- Per-position joint-distribution learning (copula over stat vectors) --
+  deprioritized by the diagnostic above, but still the lever for
+  cross-stat realism once the marginals are calibrated.
+- Schedule-aware adjustments and dashboard-output pricing against
+  historical mocks, as before.

@@ -13,6 +13,7 @@ import typer
 
 from ffa.backtest import GENERATORS as _GENERATORS
 from ffa.backtest import run_backtest
+from ffa.calibration import dispersion_direction, quantile_calibration
 from ffa.draft import simulate_draft, summarize_user_picks
 from ffa.games import GAMES_MODELS
 from ffa.ingest import ingest_seasons, open_warehouse
@@ -387,6 +388,9 @@ def backtest(
     expected_games: float = typer.Option(17.0, "--expected-games"),
     min_games: int = typer.Option(1, "--min-games", help="Realized games required to count a player."),
     by_position: bool = typer.Option(False, "--by-position", help="Also print per-position metrics."),
+    calibration: bool = typer.Option(
+        False, "--calibration", help="Print per-position quantile-coverage calibration table."
+    ),
     games_model: str = typer.Option(
         "fixed", "--games-model",
         help="fixed = same expected-games count every sim; empirical = sample games played from history.",
@@ -498,6 +502,29 @@ def backtest(
         out.parent.mkdir(parents=True, exist_ok=True)
         pd.concat(players_frames, ignore_index=True).to_parquet(out, index=False)
         typer.echo(f"\nWrote player-level rows -> {out}")
+
+    if calibration:
+        players = pd.concat(players_frames, ignore_index=True)
+        gens = list(dict.fromkeys(players["generator"])) if "generator" in players.columns else [None]
+        printed = False
+        for gen_name in gens:
+            subset = players if gen_name is None else players[players["generator"] == gen_name]
+            cal = quantile_calibration(subset, by="position")
+            if cal.empty:
+                continue
+            cal = cal.assign(dispersion=cal.apply(dispersion_direction, axis=1))
+            if not printed:
+                typer.echo(
+                    "\nQuantile calibration (empirical coverage; nominal q05/q25/q50/q75/q95 "
+                    "= .05/.25/.50/.75/.95):"
+                )
+                printed = True
+            # Only label per-generator when several were compared in one run.
+            if gen_name is not None and len(gens) > 1:
+                typer.echo(f"\n[{gen_name}]")
+            typer.echo(cal.round(2).to_string(index=False))
+        if not printed:
+            typer.echo("\nNo quantile columns available for calibration.")
 
 
 @app.command()
