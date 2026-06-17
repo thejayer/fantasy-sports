@@ -25,6 +25,9 @@ rebuild is in:
    calibration (pinball loss, interval coverage) per generator.
 9. **Rookie cohort projections** -- draft-capital block bootstrap so
    first-year players stop being invisible; opt in with `--include-rookies`.
+10. **Empirical games-played model** -- sample each sim's game count from
+    a player's history instead of assuming 17, cutting the optimism bias;
+    opt in with `--games-model empirical`.
 
 ## Why this exists
 
@@ -99,6 +102,7 @@ fantasy-sports/
     optimize.py       optimize_lineup (PuLP ILP), greedy_lineup
     draft.py          simulate_draft (Monte Carlo snake) + summarize_user_picks
     rookies.py        Draft-cohort block bootstrap for first-year players
+    games.py          Empirical games-played model + masked season bootstrap
     backtest.py       Walk-forward evaluation: MAE, rank corr, pinball, coverage
     dashboard.py      Streamlit UI (rankings, distributions, optimizer, draft)
     ingest.py         nflreadpy -> normalize + validate -> Parquet; DuckDB views
@@ -368,14 +372,59 @@ gets a sensible cohort baseline and his historic breakout stays
 (correctly) unforecast. Cohort pools for a target season use only prior
 draft classes, so the backtest stays leakage-free.
 
-## What's next, post-phase-9
+## Games-played model (phase 10)
 
-- Tune `decay` and `expected_games` against the backtest instead of
-  eyeballing them; per-player games-played distributions are the
-  natural fix for the optimism `bias` exposes (and the low interval
-  coverage it drives) -- the next PR.
+Every generator builds a season by summing a fixed `expected_games`
+(default 17) bootstrapped game rows -- it projects a full healthy season
+for everyone. That is the single clearest bias the backtest exposes: a
+large positive mean error (real players miss time) and intervals far too
+narrow to cover reality (a season cut short by injury is a downside the
+posterior never samples).
+
+`ffa.games` makes season length stochastic. `GamesModel` learns an
+empirical games-played-per-season distribution and samples it per sim,
+falling back through three tiers: a player's own recent seasons when it
+has enough of them, else their position pool, else the league-wide pool.
+Each simulated season draws its own game count before summing that many
+bootstrapped rows (`bootstrap_season_totals` does the masked sum). Turn
+it on with `--games-model empirical`:
+
+```bash
+ffa rank --season 2025 --league configs/ppr.yaml --games-model empirical
+ffa backtest --league configs/ppr.yaml --start 2021 --end 2023 \
+    --generator bootstrap --games-model empirical
+```
+
+It is orthogonal to the generator choice (bootstrap / learned /
+quantile all take `games_model`) and to rookies. The default stays
+`"fixed"`: with a constant game count the masked sum reduces to the old
+`matrix[idx].sum(axis=1)` bit-for-bit, so prior behavior is reproduced
+exactly when the model is off.
+
+Backtested on 2021-2023 (PPR, bootstrap), switching from fixed to
+empirical games:
+
+| metric | fixed | empirical |
+|---|---|---|
+| MAE | 63.4 | **46.4** |
+| bias | +46.5 | **+7.2** |
+| q05-q95 coverage | 0.30 | **0.55** |
+| q25-q75 coverage | 0.14 | **0.29** |
+
+The optimism bias nearly vanishes, MAE drops ~27%, and interval coverage
+almost doubles toward nominal. Coverage still sits below the 90% / 50%
+targets -- the remaining gap is per-game stat variance, which the joint
+generator below is meant to address -- but the season-length fix is the
+large first step.
+
+## What's next, post-phase-10
+
 - Per-position joint-distribution learning (deep generator over stat
-  vectors so the *copula* stops being purely the player's own).
+  vectors so the *copula* stops being purely the player's own) -- the
+  main lever left on interval coverage.
+- Extend the empirical games model to rookies (cohort games-played) and
+  blend it with snap-share / injury-status signals from the rosters and
+  injuries tables.
 - Schedule-aware adjustments: opponent defense rank, bye-week handling,
   injury-status updates from the rosters table.
 - Pricing the dashboard's outputs against historical mocks so the

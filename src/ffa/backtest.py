@@ -221,6 +221,7 @@ def run_backtest(
     expected_games: float = 17.0,
     min_realized_games: int = 1,
     positions: Iterable[str] | None = DEFAULT_POSITIONS,
+    games_model: str = "fixed",
     include_rookies: bool = False,
     draft_picks: pd.DataFrame | None = None,
     seed: int | None = 0,
@@ -244,6 +245,9 @@ def run_backtest(
             Keep at 1 for honest calibration -- injury-shortened seasons
             are real downside outcomes the posterior should cover.
         positions: restrict evaluation to these positions (None = all).
+        games_model: ``"fixed"`` (sum a constant ``expected_games`` rows) or
+            ``"empirical"`` (sample each sim's game count from the player's
+            own / position's games-played history). Forwarded to the generator.
         include_rookies: augment each season's samples with draft-cohort
             rookie projections (:func:`ffa.rookies.augment_with_rookies`).
             Requires ``draft_picks``. Cohort pools use only classes before
@@ -273,6 +277,7 @@ def run_backtest(
             lookback=lookback,
             decay=decay,
             expected_games=expected_games,
+            games_model=games_model,
             seed=seed,
         )
         if include_rookies:

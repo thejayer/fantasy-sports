@@ -149,6 +149,7 @@ def _simulate(
     lookback: int,
     decay: float,
     expected_games: float,
+    games_model: str,
     seed: int,
 ) -> pd.DataFrame:
     simulator = _GENERATORS[generator]
@@ -159,6 +160,7 @@ def _simulate(
         lookback=lookback,
         decay=decay,
         expected_games=expected_games,
+        games_model=games_model,
         seed=seed,
     )
 
@@ -203,6 +205,12 @@ def main() -> None:
         samples = int(st.slider("Samples per player", 100, 5000, 1000, step=100))
         decay = float(st.slider("Recency decay", 0.0, 2.0, 0.5, step=0.1))
         expected_games = float(st.slider("Expected games", 8.0, 17.0, 17.0, step=0.5))
+        games_model = st.selectbox(
+            "Games played",
+            options=["fixed", "empirical"],
+            help="fixed = every player plays the full season; empirical = sample "
+            "games played from each player's history (widens floor, trims optimism).",
+        )
         seed = int(st.number_input("Seed", value=0, step=1))
 
     # Load the league config up front so a bad path shows a friendly message
@@ -243,7 +251,7 @@ def main() -> None:
         return
 
     samples_df = _simulate(
-        weekly, season, generator, samples, lookback, decay, expected_games, seed
+        weekly, season, generator, samples, lookback, decay, expected_games, games_model, seed
     )
     if samples_df.empty:
         st.error("Simulation produced no samples. Try a different season or generator.")

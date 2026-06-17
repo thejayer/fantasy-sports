@@ -52,6 +52,13 @@ import numpy as np
 import pandas as pd
 from sklearn.ensemble import GradientBoostingRegressor
 
+from ffa.games import (
+    GAMES_MODELS,
+    GamesModel,
+    bootstrap_season_totals,
+    resolve_games_counts,
+    stable_position,
+)
 from ffa.projection import regular_season_only
 from ffa.scoring import STAT_COLUMNS
 
@@ -254,6 +261,7 @@ def simulate_seasons_learned(
     expected_games: float = 17.0,
     min_history_games: int = 4,
     stats: Iterable[str] = STAT_COLUMNS,
+    games_model: str = "fixed",
     seed: int | None = None,
 ) -> pd.DataFrame:
     """Drop-in replacement for :func:`ffa.simulation.simulate_seasons`.
@@ -287,8 +295,11 @@ def simulate_seasons_learned(
 
     predictions = generator.predict_per_game(history, target_season).set_index("player_id")
 
+    if games_model not in GAMES_MODELS:
+        raise ValueError(f"Unknown games_model: {games_model!r}. Choose from: {list(GAMES_MODELS)}.")
     n_games = max(1, int(round(expected_games)))
     rng = np.random.default_rng(seed)
+    gm = GamesModel.from_history(history, max_games=n_games) if games_model == "empirical" else None
 
     meta_cols = [c for c in _META_COLUMNS if c in history.columns]
     if meta_cols:
@@ -318,8 +329,11 @@ def simulate_seasons_learned(
         # Recency-weight sampling probabilities (same as plain bootstrap).
         weights = np.exp(-decay * (target_season - group["season"].to_numpy(dtype=float)))
         weights = weights / weights.sum()
-        idx = rng.choice(len(shifted), size=(n_samples, n_games), replace=True, p=weights)
-        season_totals = shifted[idx].sum(axis=1)
+        position = stable_position(group)
+        games_counts = resolve_games_counts(gm, player_id, position, n_games, n_samples, rng)
+        season_totals = bootstrap_season_totals(
+            shifted, n_samples, games_counts, rng, weights=weights
+        )
 
         frame = pd.DataFrame(season_totals, columns=stat_cols)
         frame["player_id"] = player_id

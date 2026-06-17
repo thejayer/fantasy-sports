@@ -32,6 +32,13 @@ import numpy as np
 import pandas as pd
 from sklearn.ensemble import GradientBoostingRegressor
 
+from ffa.games import (
+    GAMES_MODELS,
+    GamesModel,
+    bootstrap_season_totals,
+    resolve_games_counts,
+    stable_position,
+)
 from ffa.learned import _build_features, _per_player_season_aggregates
 from ffa.projection import regular_season_only
 from ffa.scoring import STAT_COLUMNS
@@ -224,6 +231,7 @@ def simulate_seasons_quantile_calibrated(
     min_history_games: int = 4,
     stats: Iterable[str] = STAT_COLUMNS,
     quantiles: tuple[float, ...] = (0.1, 0.5, 0.9),
+    games_model: str = "fixed",
     seed: int | None = None,
 ) -> pd.DataFrame:
     """Drop-in replacement for :func:`ffa.simulation.simulate_seasons`.
@@ -257,8 +265,11 @@ def simulate_seasons_quantile_calibrated(
         ).fit(training)
 
     quantile_preds = generator.predict_quantiles(history, target_season).set_index("player_id")
+    if games_model not in GAMES_MODELS:
+        raise ValueError(f"Unknown games_model: {games_model!r}. Choose from: {list(GAMES_MODELS)}.")
     n_games = max(1, int(round(expected_games)))
     rng = np.random.default_rng(seed)
+    gm = GamesModel.from_history(history, max_games=n_games) if games_model == "empirical" else None
 
     meta_cols = [c for c in _META_COLUMNS if c in history.columns]
     if meta_cols:
@@ -292,8 +303,11 @@ def simulate_seasons_quantile_calibrated(
 
         weights = np.exp(-decay * (target_season - group["season"].to_numpy(dtype=float)))
         weights = weights / weights.sum()
-        idx = rng.choice(len(transformed), size=(n_samples, n_games), replace=True, p=weights)
-        season_totals = transformed[idx].sum(axis=1)
+        position = stable_position(group)
+        games_counts = resolve_games_counts(gm, player_id, position, n_games, n_samples, rng)
+        season_totals = bootstrap_season_totals(
+            transformed, n_samples, games_counts, rng, weights=weights
+        )
 
         frame = pd.DataFrame(season_totals, columns=stat_cols)
         frame["player_id"] = player_id

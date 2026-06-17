@@ -264,3 +264,17 @@ def test_run_backtest_include_rookies_requires_draft_picks(standard):
     weekly = _multi_season()
     with pytest.raises(ValueError, match="requires a draft_picks"):
         run_backtest(weekly, [2024], standard, include_rookies=True)
+
+
+def test_run_backtest_empirical_games_reduces_optimism_bias(standard):
+    # _multi_season players log 14 games/season at a constant rate. Fixed
+    # projects a full 17-game season (optimistic); empirical samples the
+    # 14-game history and lands on the realized 14-game total.
+    weekly = _multi_season()
+    fixed = run_backtest(weekly, [2024], standard, n_samples=300, seed=0, games_model="fixed")
+    emp = run_backtest(weekly, [2024], standard, n_samples=300, seed=0, games_model="empirical")
+
+    fb = fixed.metrics.loc[fixed.metrics["position"] == "ALL"].iloc[0]
+    eb = emp.metrics.loc[emp.metrics["position"] == "ALL"].iloc[0]
+    assert fb["bias"] > 0
+    assert abs(eb["bias"]) < abs(fb["bias"])

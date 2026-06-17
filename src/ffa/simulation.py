@@ -30,6 +30,13 @@ from typing import Final
 import numpy as np
 import pandas as pd
 
+from ffa.games import (
+    GAMES_MODELS,
+    GamesModel,
+    bootstrap_season_totals,
+    resolve_games_counts,
+    stable_position,
+)
 from ffa.league import LeagueConfig
 from ffa.projection import regular_season_only
 from ffa.scoring import STAT_COLUMNS, score_player_weeks
@@ -58,6 +65,7 @@ def simulate_seasons(
     expected_games: float = 17.0,
     min_history_games: int = 4,
     stats: Iterable[str] = STAT_COLUMNS,
+    games_model: str = "fixed",
     seed: int | None = None,
 ) -> pd.DataFrame:
     """Bootstrap simulated season totals for every qualified player.
@@ -75,6 +83,11 @@ def simulate_seasons(
             rows (recency-weighted history isn't used for filtering here --
             simply requiring N raw games avoids degenerate sampling pools).
         stats: stat columns to bootstrap. Missing columns are skipped.
+        games_model: ``"fixed"`` sums ``round(expected_games)`` rows every
+            sim (full season for everyone); ``"empirical"`` samples each
+            sim's game count from the player's own games-played history
+            (position pool when thin), so injury-shortened seasons appear
+            in the posterior. ``expected_games`` is the cap in both cases.
         seed: pass an int for reproducible samples.
 
     Returns:
@@ -94,8 +107,11 @@ def simulate_seasons(
     if history.empty or not stat_cols:
         return pd.DataFrame(columns=["player_id", "sample_idx", *stat_cols])
 
+    if games_model not in GAMES_MODELS:
+        raise ValueError(f"Unknown games_model: {games_model!r}. Choose from: {list(GAMES_MODELS)}.")
     n_games = max(1, int(round(expected_games)))
     rng = np.random.default_rng(seed)
+    gm = GamesModel.from_history(history, max_games=n_games) if games_model == "empirical" else None
 
     meta_cols = _present(history, _META_COLUMNS)
     if meta_cols:
@@ -115,11 +131,11 @@ def simulate_seasons(
         weights = np.exp(-decay * (target_season - group["season"].to_numpy(dtype=float)))
         weights = weights / weights.sum()
         stat_matrix = group[stat_cols].fillna(0).to_numpy(dtype=float)
-        idx = rng.choice(
-            len(stat_matrix), size=(n_samples, n_games), replace=True, p=weights
+        position = stable_position(group)
+        games_counts = resolve_games_counts(gm, player_id, position, n_games, n_samples, rng)
+        season_totals = bootstrap_season_totals(
+            stat_matrix, n_samples, games_counts, rng, weights=weights
         )
-        # shape (n_samples, n_games, n_stats) -> (n_samples, n_stats)
-        season_totals = stat_matrix[idx].sum(axis=1)
         frame = pd.DataFrame(season_totals, columns=stat_cols)
         frame["player_id"] = player_id
         frame["sample_idx"] = np.arange(n_samples, dtype=np.int32)
