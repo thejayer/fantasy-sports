@@ -505,16 +505,26 @@ def backtest(
 
     if calibration:
         players = pd.concat(players_frames, ignore_index=True)
-        cal = quantile_calibration(players, by="position")
-        if cal.empty:
-            typer.echo("\nNo quantile columns available for calibration.")
-        else:
+        gens = list(dict.fromkeys(players["generator"])) if "generator" in players.columns else [None]
+        printed = False
+        for gen_name in gens:
+            subset = players if gen_name is None else players[players["generator"] == gen_name]
+            cal = quantile_calibration(subset, by="position")
+            if cal.empty:
+                continue
             cal = cal.assign(dispersion=cal.apply(dispersion_direction, axis=1))
-            typer.echo(
-                "\nQuantile calibration (empirical coverage; nominal q05/q25/q50/q75/q95 "
-                "= .05/.25/.50/.75/.95):"
-            )
+            if not printed:
+                typer.echo(
+                    "\nQuantile calibration (empirical coverage; nominal q05/q25/q50/q75/q95 "
+                    "= .05/.25/.50/.75/.95):"
+                )
+                printed = True
+            # Only label per-generator when several were compared in one run.
+            if gen_name is not None and len(gens) > 1:
+                typer.echo(f"\n[{gen_name}]")
             typer.echo(cal.round(2).to_string(index=False))
+        if not printed:
+            typer.echo("\nNo quantile columns available for calibration.")
 
 
 @app.command()
