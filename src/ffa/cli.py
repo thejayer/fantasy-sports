@@ -14,6 +14,7 @@ import typer
 from ffa.backtest import GENERATORS as _GENERATORS
 from ffa.backtest import run_backtest
 from ffa.draft import simulate_draft, summarize_user_picks
+from ffa.games import GAMES_MODELS
 from ffa.ingest import ingest_seasons, open_warehouse
 from ffa.league import load_league
 from ffa.optimize import optimize_lineup
@@ -130,7 +131,8 @@ def simulate(
     ),
     limit: int = typer.Option(25, "--limit"),
     games_model: str = typer.Option(
-        "fixed", "--games-model", help="fixed = full 17 games; empirical = sample games played."
+        "fixed", "--games-model",
+        help="fixed = same expected-games count every sim; empirical = sample games played from history.",
     ),
     include_rookies: bool = typer.Option(
         False, "--include-rookies", help="Project this season's draft class from cohorts."
@@ -183,6 +185,9 @@ def _load_simulation_summary(
         typer.echo(
             f"Unknown generator: {generator!r}. Choose from: {list(_GENERATORS)}."
         )
+        raise typer.Exit(code=2)
+    if games_model not in GAMES_MODELS:
+        typer.echo(f"Unknown games-model: {games_model!r}. Choose from: {list(GAMES_MODELS)}.")
         raise typer.Exit(code=2)
 
     simulator, history_pad = _GENERATORS[generator]
@@ -261,7 +266,8 @@ def rank(
     n_tiers: int = typer.Option(5, "--tiers"),
     limit: int = typer.Option(40, "--limit"),
     games_model: str = typer.Option(
-        "fixed", "--games-model", help="fixed = full 17 games; empirical = sample games played."
+        "fixed", "--games-model",
+        help="fixed = same expected-games count every sim; empirical = sample games played from history.",
     ),
     include_rookies: bool = typer.Option(
         False, "--include-rookies", help="Project this season's draft class from cohorts."
@@ -296,7 +302,8 @@ def optimize(
     seed: int = typer.Option(0, "--seed"),
     generator: str = typer.Option("bootstrap", "--generator"),
     games_model: str = typer.Option(
-        "fixed", "--games-model", help="fixed = full 17 games; empirical = sample games played."
+        "fixed", "--games-model",
+        help="fixed = same expected-games count every sim; empirical = sample games played from history.",
     ),
     include_rookies: bool = typer.Option(
         False, "--include-rookies", help="Project this season's draft class from cohorts."
@@ -340,7 +347,8 @@ def draft_sim(
     generator: str = typer.Option("bootstrap", "--generator"),
     limit: int = typer.Option(25, "--limit"),
     games_model: str = typer.Option(
-        "fixed", "--games-model", help="fixed = full 17 games; empirical = sample games played."
+        "fixed", "--games-model",
+        help="fixed = same expected-games count every sim; empirical = sample games played from history.",
     ),
     include_rookies: bool = typer.Option(
         False, "--include-rookies", help="Project this season's draft class from cohorts."
@@ -380,7 +388,8 @@ def backtest(
     min_games: int = typer.Option(1, "--min-games", help="Realized games required to count a player."),
     by_position: bool = typer.Option(False, "--by-position", help="Also print per-position metrics."),
     games_model: str = typer.Option(
-        "fixed", "--games-model", help="fixed = full 17 games; empirical = sample games played."
+        "fixed", "--games-model",
+        help="fixed = same expected-games count every sim; empirical = sample games played from history.",
     ),
     include_rookies: bool = typer.Option(
         False, "--include-rookies", help="Also project + score each season's draft class."
@@ -401,6 +410,9 @@ def backtest(
     unknown = [g for g in generator if g not in _GENERATORS]
     if unknown:
         typer.echo(f"Unknown generator(s): {unknown}. Choose from: {list(_GENERATORS)}.")
+        raise typer.Exit(code=2)
+    if games_model not in GAMES_MODELS:
+        typer.echo(f"Unknown games-model: {games_model!r}. Choose from: {list(GAMES_MODELS)}.")
         raise typer.Exit(code=2)
 
     # Pull enough history for the hungriest generator's first holdout season,

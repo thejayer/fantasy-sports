@@ -52,7 +52,13 @@ import numpy as np
 import pandas as pd
 from sklearn.ensemble import GradientBoostingRegressor
 
-from ffa.games import GAMES_MODELS, GamesModel, bootstrap_season_totals, resolve_games_counts
+from ffa.games import (
+    GAMES_MODELS,
+    GamesModel,
+    bootstrap_season_totals,
+    resolve_games_counts,
+    stable_position,
+)
 from ffa.projection import regular_season_only
 from ffa.scoring import STAT_COLUMNS
 
@@ -323,7 +329,7 @@ def simulate_seasons_learned(
         # Recency-weight sampling probabilities (same as plain bootstrap).
         weights = np.exp(-decay * (target_season - group["season"].to_numpy(dtype=float)))
         weights = weights / weights.sum()
-        position = group["position"].iloc[0] if "position" in group.columns else None
+        position = stable_position(group)
         games_counts = resolve_games_counts(gm, player_id, position, n_games, n_samples, rng)
         season_totals = bootstrap_season_totals(
             shifted, n_samples, games_counts, rng, weights=weights

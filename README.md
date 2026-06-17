@@ -382,9 +382,10 @@ narrow to cover reality (a season cut short by injury is a downside the
 posterior never samples).
 
 `ffa.games` makes season length stochastic. `GamesModel` learns an
-empirical games-played-per-season distribution -- a player's own recent
-seasons when it has enough of them, else their position pool -- and each
-simulated season draws its own game count before summing that many
+empirical games-played-per-season distribution and samples it per sim,
+falling back through three tiers: a player's own recent seasons when it
+has enough of them, else their position pool, else the league-wide pool.
+Each simulated season draws its own game count before summing that many
 bootstrapped rows (`bootstrap_season_totals` does the masked sum). Turn
 it on with `--games-model empirical`:
 

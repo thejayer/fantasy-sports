@@ -30,7 +30,13 @@ from typing import Final
 import numpy as np
 import pandas as pd
 
-from ffa.games import GAMES_MODELS, GamesModel, bootstrap_season_totals, resolve_games_counts
+from ffa.games import (
+    GAMES_MODELS,
+    GamesModel,
+    bootstrap_season_totals,
+    resolve_games_counts,
+    stable_position,
+)
 from ffa.league import LeagueConfig
 from ffa.projection import regular_season_only
 from ffa.scoring import STAT_COLUMNS, score_player_weeks
@@ -125,7 +131,7 @@ def simulate_seasons(
         weights = np.exp(-decay * (target_season - group["season"].to_numpy(dtype=float)))
         weights = weights / weights.sum()
         stat_matrix = group[stat_cols].fillna(0).to_numpy(dtype=float)
-        position = group["position"].iloc[0] if "position" in group.columns else None
+        position = stable_position(group)
         games_counts = resolve_games_counts(gm, player_id, position, n_games, n_samples, rng)
         season_totals = bootstrap_season_totals(
             stat_matrix, n_samples, games_counts, rng, weights=weights

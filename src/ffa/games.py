@@ -164,3 +164,21 @@ def resolve_games_counts(
         if counts is not None:
             return counts
     return np.full(n_samples, n_games, dtype=int)
+
+
+def stable_position(group: pd.DataFrame, column: str = "position") -> str | None:
+    """Representative position for a player's rows, independent of row order.
+
+    Uses the most common non-null value -- the same key
+    :meth:`GamesModel.from_history` builds its position pools under -- so a
+    stray null or accidental row ordering can't route a thin-history player
+    to the wrong empirical-mode fallback pool. Returns ``None`` when the
+    column is absent or all-null (caller falls back to the league-wide pool).
+    """
+    if column not in group.columns:
+        return None
+    values = group[column].dropna()
+    if values.empty:
+        return None
+    mode = values.mode()
+    return str(mode.iloc[0]) if not mode.empty else str(values.iloc[0])

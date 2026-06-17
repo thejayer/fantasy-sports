@@ -6,6 +6,7 @@ from ffa.games import (
     GamesModel,
     bootstrap_season_totals,
     resolve_games_counts,
+    stable_position,
 )
 from ffa.simulation import simulate_seasons
 
@@ -98,6 +99,18 @@ def test_sample_falls_back_to_position_when_history_thin():
 def test_sample_returns_none_for_empty_model():
     gm = GamesModel({}, {}, np.array([], dtype=int))
     assert gm.sample("X", "WR", n_samples=10, rng=np.random.default_rng(0)) is None
+
+
+# ---------- stable_position ----------
+
+
+def test_stable_position_uses_mode_independent_of_order_and_nulls():
+    g1 = pd.DataFrame({"position": ["WR", "WR", None, "RB"]})
+    g2 = pd.DataFrame({"position": ["RB", None, "WR", "WR"]})  # shuffled order
+    assert stable_position(g1) == "WR"
+    assert stable_position(g2) == "WR"  # same value regardless of row order
+    assert stable_position(pd.DataFrame({"position": [None, None]})) is None
+    assert stable_position(pd.DataFrame({"x": [1]})) is None  # no position column
 
 
 # ---------- resolve_games_counts ----------
