@@ -6,6 +6,7 @@ from ffa.backtest import (
     run_backtest,
     summarize_evaluation,
 )
+from ffa.calibration import dispersion_direction, quantile_calibration
 from ffa.draft import DraftResult, simulate_draft, summarize_user_picks
 from ffa.games import GamesModel, bootstrap_season_totals
 from ffa.learned import LearnedGenerator, simulate_seasons_learned
@@ -44,6 +45,7 @@ __all__ = [
     "bootstrap_season_totals",
     "build_cohort_pool",
     "compute_vor",
+    "dispersion_direction",
     "draft_class",
     "draft_round_bucket",
     "evaluate_projections",
@@ -54,6 +56,7 @@ __all__ = [
     "pinball_loss",
     "project_per_game",
     "project_season",
+    "quantile_calibration",
     "realized_season_totals",
     "regular_season_only",
     "run_backtest",
