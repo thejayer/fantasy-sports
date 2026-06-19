@@ -30,7 +30,6 @@ from typing import Final
 import numpy as np
 import pandas as pd
 
-from ffa.downside import apply_downside
 from ffa.games import (
     GAMES_MODELS,
     GamesModel,
@@ -39,6 +38,7 @@ from ffa.games import (
     stable_position,
 )
 from ffa.league import LeagueConfig
+from ffa.level import apply_level_jitter
 from ffa.projection import regular_season_only
 from ffa.scoring import STAT_COLUMNS, score_player_weeks
 
@@ -67,7 +67,8 @@ def simulate_seasons(
     min_history_games: int = 4,
     stats: Iterable[str] = STAT_COLUMNS,
     games_model: str = "fixed",
-    bust_rate: float = 0.0,
+    level_sd: float = 0.0,
+    level_mean: float = 1.0,
     seed: int | None = None,
 ) -> pd.DataFrame:
     """Bootstrap simulated season totals for every qualified player.
@@ -90,9 +91,13 @@ def simulate_seasons(
             sim's game count from the player's own games-played history
             (position pool when thin), so injury-shortened seasons appear
             in the posterior. ``expected_games`` is the cap in both cases.
-        bust_rate: probability each simulated season is a "bust" -- scaled
-            down to a fraction of normal output (:mod:`ffa.downside`), which
-            fattens the lower tail. ``0.0`` (default) is off and RNG-neutral.
+        level_sd: log-space spread of a per-season level multiplier
+            (:mod:`ffa.level`) that injects level uncertainty -- breakouts
+            and declines -- fattening *both* tails. ``0.0`` (default) is off
+            and RNG-neutral.
+        level_mean: expectation of that multiplier; ``< 1`` also drifts the
+            projection down (regression / attrition). Only used when
+            ``level_sd > 0``.
         seed: pass an int for reproducible samples.
 
     Returns:
@@ -141,7 +146,7 @@ def simulate_seasons(
         season_totals = bootstrap_season_totals(
             stat_matrix, n_samples, games_counts, rng, weights=weights
         )
-        season_totals = apply_downside(season_totals, bust_rate, rng)
+        season_totals = apply_level_jitter(season_totals, level_sd, rng, mean=level_mean)
         frame = pd.DataFrame(season_totals, columns=stat_cols)
         frame["player_id"] = player_id
         frame["sample_idx"] = np.arange(n_samples, dtype=np.int32)

@@ -31,9 +31,9 @@ rebuild is in:
 11. **Calibration diagnostics** -- per-position, per-quantile coverage
     table (`ffa backtest --calibration`) that pinpoints where the
     posterior is miscalibrated and aims the next modeling step.
-12. **Lower-tail downside** -- a per-season "bust" mixture (`--bust-rate`)
-    that fattens the floor the diagnostic flagged, near-zeroing the
-    optimism bias; tuned against the backtest.
+12. **Lower-tail downside** -- a per-season "bust" mixture that fattens
+    the floor the diagnostic flagged, near-zeroing the optimism bias
+    (later generalized into the phase-15 level model).
 13. **Generators on real data** -- fix the NaN crash that broke the
     learned/quantile generators on sparse nflverse data, then backtest
     the quantile generator (it underperforms the bootstrap -- a logged
@@ -41,6 +41,9 @@ rebuild is in:
 14. **Variance decomposition** -- split prediction error into modeled vs
     level-misprediction variance (`dispersion_decomposition`), showing the
     open tails are a two-sided *level* problem, not a per-game-variance one.
+15. **Level uncertainty** -- a log-normal per-season level multiplier
+    (`--level-sd`/`--level-mean`) unifying the bust mixture into a two-sided
+    model that fixes the upper tail and de-biases; tuned on the backtest.
 
 ## Why this exists
 
@@ -116,7 +119,7 @@ fantasy-sports/
     draft.py          simulate_draft (Monte Carlo snake) + summarize_user_picks
     rookies.py        Draft-cohort block bootstrap for first-year players
     games.py          Empirical games-played model + masked season bootstrap
-    downside.py       Per-season bust mixture that fattens the lower tail
+    level.py          Per-season log-normal level multiplier (both tails)
     backtest.py       Walk-forward evaluation: MAE, rank corr, pinball, coverage
     calibration.py    Coverage diagnostics + modeled-vs-level variance split
     dashboard.py      Streamlit UI (rankings, distributions, optimizer, draft)
@@ -474,41 +477,19 @@ player's *own* (mostly good) games iid, so a sum of ~16 draws barely
 spreads and a whole bust season (lost role, decline, a nagging injury
 that saps a whole year) is unsamplable.
 
-`ffa.downside` injects it as a *season-level* mixture: with probability
-`--bust-rate`, a simulated season is multiplied by a degradation factor
-drawn from `[0, 0.6]` (a fraction of normal output). Because the bust is
-per-season and multiplicative, the median season and cross-player
-ranking are untouched and only the *left* tail fattens; it is
-league- and position-agnostic, matching the uniform-across-positions
-miss. `--bust-rate 0` (default) is off and RNG-neutral, so prior output
-is reproduced exactly.
+The original fix injected it as a *season-level* mixture: with some
+probability a simulated season was multiplied by a degradation factor in
+`[0, 0.6]`. Per-season and multiplicative, it left the median and ranking
+untouched and fattened only the *left* tail. Tuned against the backtest,
+a 0.10 bust rate took central q05-q95 coverage 0.55 → 0.69 and the
+optimism bias +7.2 → +0.6.
 
-```bash
-ffa rank --season 2025 --league configs/ppr.yaml \
-    --games-model empirical --bust-rate 0.10
-```
-
-The rate is *tuned against the backtest*, not assumed. On PPR 2021-2023
-(bootstrap, empirical games), sweeping `--bust-rate`:
-
-| bust | cov q05 | central | bias | Spearman |
-|---|---|---|---|---|
-| 0.00 | 0.30 | 0.55 | +7.2 | 0.707 |
-| **0.10** | **0.16** | **0.69** | **+0.6** | 0.706 |
-| 0.15 | 0.13 | 0.71 | −2.6 | 0.706 |
-| 0.25 | 0.10 | 0.73 | −9.2 | 0.706 |
-
-`0.10` is the recommended setting: it nearly **zeroes the optimism bias**
-(+7.2 → +0.6) while lifting central coverage 0.55 → 0.69 and halving the
-floor miss (`cov q05` 0.30 → 0.16), with Spearman flat -- ranking is
-untouched. Higher rates keep tightening coverage but overcorrect into
-pessimism. The lower-tail story across phases: central q05-q95 coverage
-0.30 (fixed) → 0.55 (empirical games) → 0.69 (+ bust 0.10).
-
-It is opt-in, like the games model; combine the two for the calibrated
-configuration. Honest caveat: `cov q05` is improved, not solved (0.16 vs
-0.05), and the *upper* tail (`cov q95 ≈ 0.82`) is untouched by a
-downside-only mechanism -- the next levers below.
+This was the right idea but only half of it: a downside-only mechanism
+can't touch the *upper* tail (`cov q95 ≈ 0.82`). Phase 14 showed the miss
+is two-sided level error, and **phase 15 generalizes the bust mixture
+into a symmetric level-uncertainty model** (`--level-sd`) that subsumes
+and replaces it -- the `ffa.downside` module and `--bust-rate` flag are
+gone, folded into `ffa.level`.
 
 ## Generators on real data + a negative finding (phase 13)
 
@@ -552,10 +533,10 @@ mispredicted (a player's true level shifting beyond what resampling their
 own games can reach)? `ffa.calibration.dispersion_decomposition` answers
 it by splitting the realized prediction-error variance into the part the
 posterior *models* (its `points_sd` -- within-season spread, plus games
-and bust variance) and the unmodeled remainder, surfaced under `ffa
+and level variance) and the unmodeled remainder, surfaced under `ffa
 backtest --calibration`.
 
-On the recommended config (bootstrap + empirical games + bust 0.10, PPR
+On the phase-12 config (bootstrap + empirical games + bust 0.10, PPR
 2021-2023):
 
 | pos | bias | resid_sd | modeled_sd | ratio | frac_modeled | over_q95 | under_q05 |
@@ -580,16 +561,56 @@ variance inflates the 47% that's already modeled, and recalibrating the
 quantile generator (phase 13: worse anyway) reshapes the margins around a
 level it still mispredicts. The miss is **level, and two-sided**.
 
-## What's next, post-phase-14
+## Level uncertainty (phase 15)
 
-- **A symmetric level mechanism** (the aimed next step): the bust mixture
-  is the downside half of level uncertainty; add the upside. Either a
-  *boom* mixture mirroring `--bust-rate`, or -- cleaner -- sample each
-  simulated season's per-game *level* from a distribution around the
-  player's projection (log-normal jitter) so level variance enters both
-  tails at once. Tune against `over_q95` / `under_q05` toward 0.05.
-- Extend whichever level mechanism wins to rookies and condition its
-  spread on age / role signals from the rosters table.
+Phase 14 said the open miss is two-sided level error, so the fix is a
+two-sided *level* mechanism. `ffa.level` unifies the phase-12 bust mixture
+and a symmetric jitter into one: each simulated season's totals are
+multiplied by a log-normal level factor `exp(N(log(mean) − sd²/2, sd))`,
+controlled by `--level-sd` (log-space spread) and `--level-mean` (its
+expectation). Being multiplicative it preserves cross-stat ratios and is
+position-agnostic; being log-normal it is two-sided and bounded below by
+zero. `mean < 1` also drifts the projection down -- the regression /
+attrition correction the bust mixture used to get as a side effect of its
+one-sidedness, now an explicit knob. `--level-sd 0` (default) is off and
+RNG-neutral.
+
+```bash
+ffa rank --season 2025 --league configs/ppr.yaml \
+    --games-model empirical --level-sd 0.45 --level-mean 0.90
+```
+
+Tuned against the backtest (PPR 2021-2023, bootstrap, empirical games):
+
+| config | cov q05 | cov q95 | central | bias | Spearman |
+|---|---|---|---|---|---|
+| bust 0.10 (phase 12) | 0.16 | 0.83 | 0.70 | +1.8 | 0.719 |
+| level sd .45, mean 1.0 | 0.18 | 0.91 | 0.75 | +8.4 | 0.719 |
+| **level sd .45, mean .90** | 0.17 | **0.89** | **0.75** | **−0.9** | 0.719 |
+| level sd .55, mean .88 | 0.15 | 0.91 | 0.78 | −2.8 | 0.719 |
+
+`--level-sd 0.45 --level-mean 0.90` is the recommended setting: it
+**strictly dominates** the phase-12 bust mixture -- better upper tail
+(`cov q95` 0.83 → 0.89), better central coverage (0.70 → 0.75), *smaller*
+bias (+1.8 → −0.9), same lower tail and Spearman. The mean-preserving
+variant (mean 1.0) confirms the decomposition: it fixes the upper tail on
+its own but re-introduces the +8 optimism, which the 0.90 drift removes.
+A heavier `0.55 / 0.88` buys more coverage at a mild pessimistic drift.
+
+Central q05-q95 coverage across the calibration phases: 0.30 (fixed) →
+0.55 (empirical games) → 0.70 (bust) → 0.75 (level). Honest caveat: still
+short of 0.90, and `cov q05`/`cov q95` (≈0.17/0.89) aren't at 0.05/0.95 --
+level uncertainty widens the intervals but can't manufacture the signal a
+real breakout/decline model would; that, and the cross-stat copula, are
+what's left.
+
+## What's next, post-phase-15
+
+- Condition the level spread on signal instead of a flat `--level-sd`:
+  age, role change, and target/snap share (from the rosters table) drive
+  who breaks out or declines -- a learned per-player `level_sd` would
+  tighten coverage past what a single global knob can.
+- Extend the level mechanism to rookies (cohort-level spread).
 - Per-position joint-distribution learning (copula over stat vectors) --
   the lever for cross-stat realism once the marginals are calibrated.
 - Schedule-aware adjustments and dashboard-output pricing against
