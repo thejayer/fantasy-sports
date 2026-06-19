@@ -190,3 +190,59 @@ def dispersion_decomposition(
 
     return pd.DataFrame(rows)
 
+
+def level_error_by_cohort(
+    players: pd.DataFrame,
+    cohort_col: str,
+    mean_col: str = "points_mean",
+    realized_col: str = "points_realized",
+    clip: tuple[float, float] = (0.05, 20.0),
+    min_n: int = 20,
+) -> pd.DataFrame:
+    """Empirical level-error spread and drift per cohort.
+
+    The phase-15 level mechanism injects a single *global* log-normal level
+    multiplier (``--level-sd`` / ``--level-mean``). This estimates, per
+    cohort, the multiplier that cohort would actually want from the realized
+    error: the spread ``level_sd = std(log(realized / projected))`` and the
+    center ``drift = exp(mean(log(realized / projected)))`` (``< 1`` = that
+    cohort's projections run optimistic). If these vary materially across
+    cohorts, conditioning the level knobs on that signal tightens calibration
+    past one global value; if they're flat, the global knob is already right
+    and conditioning is a dead end.
+
+    Args:
+        players: player-level backtest rows; needs ``cohort_col``,
+            ``mean_col``, ``realized_col``.
+        cohort_col: column to group on (e.g. an experience bucket or tier).
+        clip: floor/ceiling on the ``realized/projected`` ratio before the
+            log, so a near-zero bust or a freak outlier can't dominate the SD.
+        min_n: cohorts with fewer rows than this are dropped (noise).
+
+    Returns:
+        One row per cohort (``ALL`` first) with ``n``, ``level_sd``, ``drift``.
+    """
+    need = {cohort_col, mean_col, realized_col}
+    if players.empty or need - set(players.columns):
+        return pd.DataFrame()
+
+    df = players[[cohort_col, mean_col, realized_col]].copy()
+    df = df[(df[mean_col] > 0) & df[cohort_col].notna()]
+    if df.empty:
+        return pd.DataFrame()
+    ratio = (df[realized_col] / df[mean_col]).clip(*clip)
+    df["_logr"] = np.log(ratio)
+
+    def _row(label: str, sub: pd.DataFrame) -> dict:
+        return {
+            cohort_col: label,
+            "n": int(len(sub)),
+            "level_sd": float(sub["_logr"].std()),
+            "drift": float(np.exp(sub["_logr"].mean())),
+        }
+
+    rows = [_row("ALL", df)]
+    for label, sub in df.groupby(cohort_col, sort=True):
+        if len(sub) >= min_n:
+            rows.append(_row(str(label), sub))
+    return pd.DataFrame(rows)

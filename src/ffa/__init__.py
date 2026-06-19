@@ -6,7 +6,12 @@ from ffa.backtest import (
     run_backtest,
     summarize_evaluation,
 )
-from ffa.calibration import dispersion_decomposition, dispersion_direction, quantile_calibration
+from ffa.calibration import (
+    dispersion_decomposition,
+    dispersion_direction,
+    level_error_by_cohort,
+    quantile_calibration,
+)
 from ffa.draft import DraftResult, simulate_draft, summarize_user_picks
 from ffa.games import GamesModel, bootstrap_season_totals
 from ffa.learned import LearnedGenerator, simulate_seasons_learned
@@ -54,6 +59,7 @@ __all__ = [
     "evaluate_projections",
     "greedy_lineup",
     "latest_depth_chart",
+    "level_error_by_cohort",
     "load_league",
     "optimize_lineup",
     "pinball_loss",
