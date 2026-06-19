@@ -38,7 +38,7 @@ from ffa.games import (
     stable_position,
 )
 from ffa.league import LeagueConfig
-from ffa.level import apply_level_jitter
+from ffa.level import apply_level_jitter, resolve_level
 from ffa.projection import regular_season_only
 from ffa.scoring import STAT_COLUMNS, score_player_weeks
 
@@ -69,6 +69,7 @@ def simulate_seasons(
     games_model: str = "fixed",
     level_sd: float = 0.0,
     level_mean: float = 1.0,
+    player_level: dict | None = None,
     seed: int | None = None,
 ) -> pd.DataFrame:
     """Bootstrap simulated season totals for every qualified player.
@@ -98,6 +99,9 @@ def simulate_seasons(
         level_mean: expectation of that multiplier; ``< 1`` also drifts the
             projection down (regression / attrition). Only used when
             ``level_sd > 0``.
+        player_level: optional ``{player_id: (level_sd, level_mean)}`` from a
+            :class:`ffa.level.LevelModel`; overrides the scalars per player
+            (phase 17). Players absent from it use the scalar values.
         seed: pass an int for reproducible samples.
 
     Returns:
@@ -146,7 +150,8 @@ def simulate_seasons(
         season_totals = bootstrap_season_totals(
             stat_matrix, n_samples, games_counts, rng, weights=weights
         )
-        season_totals = apply_level_jitter(season_totals, level_sd, rng, mean=level_mean)
+        sd_p, mean_p = resolve_level(player_id, player_level, level_sd, level_mean)
+        season_totals = apply_level_jitter(season_totals, sd_p, rng, mean=mean_p)
         frame = pd.DataFrame(season_totals, columns=stat_cols)
         frame["player_id"] = player_id
         frame["sample_idx"] = np.arange(n_samples, dtype=np.int32)
