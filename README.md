@@ -34,6 +34,10 @@ rebuild is in:
 12. **Lower-tail downside** -- a per-season "bust" mixture (`--bust-rate`)
     that fattens the floor the diagnostic flagged, near-zeroing the
     optimism bias; tuned against the backtest.
+13. **Generators on real data** -- fix the NaN crash that broke the
+    learned/quantile generators on sparse nflverse data, then backtest
+    the quantile generator (it underperforms the bootstrap -- a logged
+    negative finding, not a default change).
 
 ## Why this exists
 
@@ -503,13 +507,45 @@ configuration. Honest caveat: `cov q05` is improved, not solved (0.16 vs
 0.05), and the *upper* tail (`cov q95 ≈ 0.82`) is untouched by a
 downside-only mechanism -- the next levers below.
 
-## What's next, post-phase-12
+## Generators on real data + a negative finding (phase 13)
 
-- The phase-6 quantile generator currently raises on real nflverse data
-  (`_build_features` emits NaNs that `GradientBoostingRegressor`
-  rejects); it works only on the dense synthetic test frames. Worth its
-  own fix -- a calibrated marginal generator also addresses the upper
-  tail the bust mixture leaves alone.
+The learned (phase 5) and quantile (phase 6) generators had only ever run
+on the dense synthetic test frames. On real, *sparse* nflverse data they
+both crashed: `_build_features` computed `prev_games` as
+`prev.get("games") or 0`, and for a player who missed the season before
+the target that reindexed value is `NaN` -- and `NaN or 0` returns `NaN`
+(NaN is truthy), so the feature matrix carried a NaN that sklearn's
+`GradientBoostingRegressor` rejects. A one-line fix (use the
+already-NaN-filled games array) unblocks both generators; they now fit
+and sample on real 2019-2023 weekly data.
+
+With the quantile generator finally runnable, the hope was that its
+calibrated marginal quantiles would close the *upper* tail the bust
+mixture can't touch. The backtest says otherwise. On PPR 2022-2023
+(empirical games, bust 0.10):
+
+| generator | cov q05 | cov q95 | central | bias | Spearman |
+|---|---|---|---|---|---|
+| bootstrap | 0.16 | 0.83 | **0.70** | **+1.8** | 0.719 |
+| quantile | 0.18 | 0.72 | 0.53 | −13.9 | 0.723 |
+
+The quantile generator is **worse**, not better: a large pessimistic
+bias (−13.9), worse central coverage (0.53 vs 0.70), and a *thinner*
+upper tail (`cov q95` 0.72 vs 0.83). Its quantile-GBM predictions on
+sparse, low-signal features underfit toward low values. So the upper-tail
+miss is *not* closed by the existing quantile generator -- it needs real
+rework (richer features, more data, or post-hoc recalibration) before it
+beats the bootstrap. The recommended configuration remains **bootstrap +
+empirical games + bust 0.10**. Measuring beats assuming: the fix was
+worth doing (a real bug, and the learned generator is now usable too),
+but it did not deliver the lever it was meant to.
+
+## What's next, post-phase-13
+
+- Rework the quantile generator so it earns its place: recalibrate its
+  predicted quantiles (e.g. isotonic / PIT against the backtest), add
+  features with real signal, or fit on more seasons. The upper tail is
+  still open.
 - Extend the bust mixture to rookies (cohort bust rate) and let the
   degradation depend on age / role signals from the rosters table rather
   than a flat `[0, 0.6]`.
