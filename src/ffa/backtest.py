@@ -222,7 +222,8 @@ def run_backtest(
     min_realized_games: int = 1,
     positions: Iterable[str] | None = DEFAULT_POSITIONS,
     games_model: str = "fixed",
-    bust_rate: float = 0.0,
+    level_sd: float = 0.0,
+    level_mean: float = 1.0,
     include_rookies: bool = False,
     draft_picks: pd.DataFrame | None = None,
     seed: int | None = 0,
@@ -249,8 +250,9 @@ def run_backtest(
         games_model: ``"fixed"`` (sum a constant ``expected_games`` rows) or
             ``"empirical"`` (sample each sim's game count from the player's
             own / position's games-played history). Forwarded to the generator.
-        bust_rate: per-season bust probability (:mod:`ffa.downside`) that
-            fattens the lower tail; ``0.0`` is off. Forwarded to the generator.
+        level_sd, level_mean: per-season log-normal level multiplier
+            (:mod:`ffa.level`) injecting level uncertainty into both tails;
+            ``level_sd=0`` is off. Forwarded to the generator.
         include_rookies: augment each season's samples with draft-cohort
             rookie projections (:func:`ffa.rookies.augment_with_rookies`).
             Requires ``draft_picks``. Cohort pools use only classes before
@@ -281,7 +283,8 @@ def run_backtest(
             decay=decay,
             expected_games=expected_games,
             games_model=games_model,
-            bust_rate=bust_rate,
+            level_sd=level_sd,
+            level_mean=level_mean,
             seed=seed,
         )
         if include_rookies:

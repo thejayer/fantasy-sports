@@ -150,7 +150,8 @@ def _simulate(
     decay: float,
     expected_games: float,
     games_model: str,
-    bust_rate: float,
+    level_sd: float,
+    level_mean: float,
     seed: int,
 ) -> pd.DataFrame:
     simulator = _GENERATORS[generator]
@@ -162,7 +163,8 @@ def _simulate(
         decay=decay,
         expected_games=expected_games,
         games_model=games_model,
-        bust_rate=bust_rate,
+        level_sd=level_sd,
+        level_mean=level_mean,
         seed=seed,
     )
 
@@ -213,15 +215,25 @@ def main() -> None:
             help="fixed = every player plays the full season; empirical = sample "
             "games played from each player's history (widens floor, trims optimism).",
         )
-        bust_rate = float(
+        level_sd = float(
             st.slider(
-                "Bust rate",
+                "Level uncertainty (sd)",
                 0.0,
-                0.4,
+                0.8,
                 0.0,
                 step=0.05,
-                help="Probability a simulated season busts (scales down a fraction of "
-                "normal output) -- fattens the floor. 0 = off.",
+                help="Per-season level multiplier spread -- breakouts and declines. "
+                "Fattens both tails. 0 = off; ~0.45 is the calibrated setting.",
+            )
+        )
+        level_mean = float(
+            st.slider(
+                "Level mean",
+                0.7,
+                1.0,
+                1.0,
+                step=0.02,
+                help="Multiplier mean; <1 also de-biases projections down. ~0.90 with sd 0.45.",
             )
         )
         seed = int(st.number_input("Seed", value=0, step=1))
@@ -265,7 +277,7 @@ def main() -> None:
 
     samples_df = _simulate(
         weekly, season, generator, samples, lookback, decay, expected_games,
-        games_model, bust_rate, seed,
+        games_model, level_sd, level_mean, seed,
     )
     if samples_df.empty:
         st.error("Simulation produced no samples. Try a different season or generator.")
