@@ -44,6 +44,9 @@ rebuild is in:
 15. **Level uncertainty** -- a log-normal per-season level multiplier
     (`--level-sd`/`--level-mean`) unifying the bust mixture into a two-sided
     model that fixes the upper tail and de-biases; tuned on the backtest.
+16. **Cohort level-error diagnostic** -- `level_error_by_cohort` shows the
+    spread varies 2× by projected tier and the drift falls monotonically
+    with experience, justifying a signal-conditioned level model.
 
 ## Why this exists
 
@@ -604,13 +607,51 @@ level uncertainty widens the intervals but can't manufacture the signal a
 real breakout/decline model would; that, and the cross-stat copula, are
 what's left.
 
-## What's next, post-phase-15
+## Cohort level-error diagnostic (phase 16)
 
-- Condition the level spread on signal instead of a flat `--level-sd`:
-  age, role change, and target/snap share (from the rosters table) drive
-  who breaks out or declines -- a learned per-player `level_sd` would
-  tighten coverage past what a single global knob can.
-- Extend the level mechanism to rookies (cohort-level spread).
+Phase 15's `level_sd`/`level_mean` are *global* -- the same level
+uncertainty for a stable 30-year-old WR1 and a volatile second-year
+flier. Before building a conditioned model, measure whether the level
+error actually varies by cohort. `ffa.calibration.level_error_by_cohort`
+estimates, per cohort, the multiplier that cohort wants from the realized
+error: `level_sd = std(log(realized/projected))` and `drift =
+exp(mean(log(realized/projected)))`. (These are *relative* signals -- the
+absolute `level_sd ≈ 1.2` here is inflated by within-season noise and the
+bust-clip and isn't the model's 0.45 knob; what matters is how it moves
+across cohorts.)
+
+On PPR 2021-2023 (the level-calibrated config), joining `years_exp` from
+the rosters table:
+
+| cohort | level_sd | drift |  | tier | level_sd | drift |
+|---|---|---|---|---|---|---|
+| rookie/soph | 1.33 | **1.05** |  | low proj | **1.64** | 0.66 |
+| 2-3 yr | 1.27 | 0.69 |  | mid proj | 1.18 | 0.63 |
+| 4-7 prime | 1.20 | 0.66 |  | high proj | **0.79** | 0.77 |
+| 8+ vet | 1.19 | **0.50** |  | | | |
+
+The finding is strongly positive and *separates the two knobs by signal*:
+
+- **Projected tier drives the spread.** `level_sd` runs 0.79 (stars) to
+  1.64 (fringe) -- a 2× swing. A fringe player's season is wildly
+  uncertain (zero or breakout); a star's is predictable. The global knob
+  over-tightens fringe and over-widens stars.
+- **Experience drives the drift.** `drift` falls monotonically 1.05
+  (rookies, ~unbiased) → 0.50 (8+ vets, projections wildly optimistic):
+  veterans decline and the downward correction should scale with age. The
+  global `--level-mean 0.90` over-corrects rookies and under-corrects vets.
+
+So a conditioned model is justified: `level_sd` widening for low
+projections, `level_mean` dropping with experience. The rosters table we
+ingest but barely use carries the experience signal; the tier signal is
+already in the projection.
+
+## What's next, post-phase-16
+
+- Build the conditioned level model the diagnostic justifies:
+  `level_sd = f(projected tier)` and `level_mean = f(years_exp)`, wiring
+  `years_exp` from rosters into the backtest. Re-run `--calibration` and
+  the cohort diagnostic to confirm the per-cohort drift/spread flatten.
 - Per-position joint-distribution learning (copula over stat vectors) --
   the lever for cross-stat realism once the marginals are calibrated.
 - Schedule-aware adjustments and dashboard-output pricing against

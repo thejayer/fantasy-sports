@@ -5,6 +5,7 @@ import pytest
 from ffa.calibration import (
     dispersion_decomposition,
     dispersion_direction,
+    level_error_by_cohort,
     quantile_calibration,
 )
 
@@ -118,3 +119,45 @@ def test_decomposition_well_dispersed_gives_ratio_one():
 
 def test_decomposition_missing_columns_returns_empty():
     assert dispersion_decomposition(pd.DataFrame({"points_mean": [1.0]})).empty
+
+
+# ---------- level_error_by_cohort ----------
+
+
+def _cohort_players(spec):
+    rows = []
+    for cohort, (proj, zs) in spec.items():
+        for z in zs:
+            rows.append(
+                {"cohort": cohort, "points_mean": proj, "points_realized": proj * np.exp(z)}
+            )
+    return pd.DataFrame(rows)
+
+
+def test_level_error_by_cohort_recovers_spread_and_drift():
+    players = _cohort_players(
+        {"stable": (100.0, [0.2, -0.2] * 50), "volatile": (100.0, [0.6, -0.6] * 50)}
+    )
+    out = level_error_by_cohort(players, "cohort").set_index("cohort")
+    assert out.loc["stable", "level_sd"] == pytest.approx(0.2, rel=0.05)
+    assert out.loc["volatile", "level_sd"] == pytest.approx(0.6, rel=0.05)
+    # Balanced +/- z -> geometric-mean drift of 1.
+    assert out.loc["stable", "drift"] == pytest.approx(1.0, abs=0.01)
+    # The whole point of the diagnostic: cohorts differ in spread.
+    assert out.loc["volatile", "level_sd"] > out.loc["stable", "level_sd"]
+
+
+def test_level_error_by_cohort_detects_optimism_drift():
+    players = _cohort_players({"c": (100.0, [np.log(0.9)] * 40)})  # realized = 90 always
+    row = level_error_by_cohort(players, "cohort").set_index("cohort").loc["c"]
+    assert row["drift"] == pytest.approx(0.9, abs=0.01)
+    assert row["level_sd"] == pytest.approx(0.0, abs=1e-9)
+
+
+def test_level_error_by_cohort_drops_thin_and_missing():
+    players = _cohort_players({"big": (100.0, [0.1, -0.1] * 30), "tiny": (100.0, [0.1] * 5)})
+    out = level_error_by_cohort(players, "cohort", min_n=20)
+    assert "tiny" not in set(out["cohort"])  # 5 rows < min_n=20 -> dropped
+    assert {"ALL", "big"} <= set(out["cohort"])  # big has 60 rows
+    assert level_error_by_cohort(pd.DataFrame(), "cohort").empty
+    assert level_error_by_cohort(pd.DataFrame({"points_mean": [1.0]}), "cohort").empty
