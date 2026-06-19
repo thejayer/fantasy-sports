@@ -108,3 +108,17 @@ def test_generator_level_jitter_deterministic():
     a = simulate_seasons(weekly, 2024, n_samples=200, level_sd=0.3, seed=5)
     b = simulate_seasons(weekly, 2024, n_samples=200, level_sd=0.3, seed=5)
     pd.testing.assert_frame_equal(a, b)
+
+
+def test_generator_forwards_level_mean_to_shift_projection_down():
+    # level_mean is threaded through simulate_seasons -> apply_level_jitter;
+    # at the same spread, mean 0.9 must produce a ~10%-lower projection than
+    # the mean-preserving default.
+    weekly = _steady_player()
+    neutral = simulate_seasons(weekly, 2024, n_samples=4000, level_sd=0.3, level_mean=1.0, seed=0)
+    drifted = simulate_seasons(weekly, 2024, n_samples=4000, level_sd=0.3, level_mean=0.9, seed=0)
+
+    m_neutral = neutral["receiving_yards"].mean()
+    m_drifted = drifted["receiving_yards"].mean()
+    assert m_drifted < m_neutral
+    assert m_drifted == pytest.approx(0.9 * m_neutral, rel=0.03)
