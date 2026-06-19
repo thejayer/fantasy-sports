@@ -63,6 +63,12 @@ def test_invalid_severity_raises():
         apply_downside(np.ones((4, 1)), 0.5, np.random.default_rng(0), severity_low=0.5, severity_high=0.2)
 
 
+@pytest.mark.parametrize("bad_rate", [-0.1, 1.5])
+def test_invalid_bust_rate_raises(bad_rate):
+    with pytest.raises(ValueError, match="bust_rate"):
+        apply_downside(np.ones((4, 1)), bad_rate, np.random.default_rng(0))
+
+
 # ---------- through the generator ----------
 
 

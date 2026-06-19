@@ -57,8 +57,9 @@ def apply_downside(
 
     Args:
         season_totals: ``(n_samples, n_stats)`` simulated season totals.
-        bust_rate: probability a given simulated season is a bust. ``<= 0``
-            returns the input unchanged and draws nothing from ``rng``.
+        bust_rate: probability a given simulated season is a bust; must be
+            in ``[0, 1]``. ``0`` returns the input unchanged and draws
+            nothing from ``rng``.
         rng: random generator (advanced in place only when ``bust_rate > 0``).
         severity_low, severity_high: bust seasons are scaled by a factor
             drawn uniformly from this range (a fraction of normal output).
@@ -67,7 +68,9 @@ def apply_downside(
         ``season_totals`` with the bust rows scaled down. Non-bust rows are
         returned untouched, so the median and the upper tail are unchanged.
     """
-    if bust_rate <= 0.0:
+    if not 0.0 <= bust_rate <= 1.0:
+        raise ValueError(f"Require 0 <= bust_rate <= 1; got {bust_rate}.")
+    if bust_rate == 0.0:
         return season_totals
     if not 0.0 <= severity_low <= severity_high <= 1.0:
         raise ValueError(
