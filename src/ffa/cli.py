@@ -535,28 +535,30 @@ def backtest(
         printed = False
         for gen_name in gens:
             subset = players if gen_name is None else players[players["generator"] == gen_name]
+            # The two analyses have independent inputs (coverage needs the
+            # q-columns; the decomposition needs only mean/sd/realized), so
+            # run each whenever its own data is present.
             cal = quantile_calibration(subset, by="position")
-            if cal.empty:
+            decomp = dispersion_decomposition(subset, by="position")
+            if cal.empty and decomp.empty:
                 continue
-            cal = cal.assign(dispersion=cal.apply(dispersion_direction, axis=1))
             if not printed:
                 typer.echo(
-                    "\nQuantile calibration (empirical coverage; nominal q05/q25/q50/q75/q95 "
-                    "= .05/.25/.50/.75/.95):"
+                    "\nCalibration (coverage nominal q05/q25/q50/q75/q95 = .05/.25/.50/.75/.95):"
                 )
                 printed = True
             # Only label per-generator when several were compared in one run.
-            label = f"\n[{gen_name}]" if gen_name is not None and len(gens) > 1 else ""
-            if label:
-                typer.echo(label)
-            typer.echo(cal.round(2).to_string(index=False))
-            decomp = dispersion_decomposition(subset, by="position")
+            if gen_name is not None and len(gens) > 1:
+                typer.echo(f"\n[{gen_name}]")
+            if not cal.empty:
+                cal = cal.assign(dispersion=cal.apply(dispersion_direction, axis=1))
+                typer.echo(cal.round(2).to_string(index=False))
             if not decomp.empty:
                 typer.echo("variance decomposition (ratio = resid_sd / modeled_sd; "
                            "frac_modeled = share the posterior explains):")
                 typer.echo(decomp.round(2).to_string(index=False))
         if not printed:
-            typer.echo("\nNo quantile columns available for calibration.")
+            typer.echo("\nNo calibration data available.")
 
 
 @app.command()
