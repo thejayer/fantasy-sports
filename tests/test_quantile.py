@@ -47,6 +47,25 @@ def multi_season_weekly() -> pd.DataFrame:
     return pd.DataFrame(rows)
 
 
+def test_quantile_generator_fits_on_sparse_history_without_nan_crash():
+    """Regression: sparse histories produced NaN features that crashed the
+    sklearn quantile GBR on real nflverse data."""
+    rng = np.random.default_rng(0)
+    rows = []
+    for pid, pos, skip in (("A", "WR", 2022), ("B", "WR", 2021), ("C", "RB", 2023)):
+        stat = "rushing_yards" if pos == "RB" else "receiving_yards"
+        for season in (2021, 2022, 2023, 2024):
+            if season == skip:
+                continue
+            for week in range(1, 15):
+                rows.append(_wk(pid, season, week, pos, **{stat: float(60 + rng.normal(0, 5))}))
+    weekly = pd.DataFrame(rows)
+
+    samples = simulate_seasons_quantile_calibrated(weekly, target_season=2025, n_samples=30, seed=0)
+    assert not samples.empty
+    assert np.isfinite(samples["rushing_yards"]).all()
+
+
 # ---------- _monotonize ----------
 
 

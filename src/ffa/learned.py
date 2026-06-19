@@ -145,7 +145,9 @@ def _build_features(
             row[f"{s}_career_pg"] = (
                 weighted_stat / weighted_games if weighted_games > 0 else 0.0
             )
-        row["prev_games"] = float(prev.get("games", 0) or 0)
+        # ``games`` is already NaN-filled; ``prev.get("games") or 0`` would
+        # return NaN (NaN is truthy) for a player who missed the prior season.
+        row["prev_games"] = float(games[-1])
         row["career_games"] = float(games.sum())
         if "position" in group.columns:
             row["position"] = group["position"].iloc[-1]

@@ -2,8 +2,13 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from ffa.learned import LearnedGenerator, simulate_seasons_learned
-from ffa.scoring import score_player_weeks
+from ffa.learned import (
+    LearnedGenerator,
+    _build_features,
+    _per_player_season_aggregates,
+    simulate_seasons_learned,
+)
+from ffa.scoring import STAT_COLUMNS, score_player_weeks
 from ffa.simulation import summarize_seasons
 
 
@@ -18,6 +23,40 @@ def _wk(player_id, season, week, position="WR", **stats):
     }
     base.update(stats)
     return base
+
+
+def test_build_features_prev_games_is_zero_not_nan_for_gap_season():
+    """A player who missed the season before target must get prev_games=0.
+
+    Regression: ``prev.get("games") or 0`` returned NaN (NaN is truthy) for a
+    gap, putting NaN into the feature matrix and crashing sklearn's GBR on
+    real (sparse) data.
+    """
+    rows = [_wk("A", 2021, w, "WR", receiving_yards=60) for w in range(1, 15)]
+    # A has no 2022 rows -> gap immediately before target 2023.
+    agg = _per_player_season_aggregates(pd.DataFrame(rows), STAT_COLUMNS)
+    feats = _build_features(agg, 2023, STAT_COLUMNS, lookback=3)
+
+    assert not feats.isna().any().any()  # no NaN anywhere in the feature frame
+    assert feats.set_index("player_id").loc["A", "prev_games"] == 0.0
+
+
+def test_learned_generator_fits_on_sparse_history_without_nan_crash():
+    """Players with gaps (the real-data shape) must not break the fit."""
+    rng = np.random.default_rng(0)
+    rows = []
+    # Each player skips a different season, so reindex produces NaN rows.
+    for pid, skip in (("A", 2022), ("B", 2021), ("C", 2023)):
+        for season in (2021, 2022, 2023, 2024):
+            if season == skip:
+                continue
+            for week in range(1, 15):
+                rows.append(_wk(pid, season, week, "WR", receiving_yards=float(50 + rng.normal(0, 5))))
+    weekly = pd.DataFrame(rows)
+
+    samples = simulate_seasons_learned(weekly, target_season=2025, n_samples=30, seed=0)
+    assert not samples.empty
+    assert np.isfinite(samples["receiving_yards"]).all()
 
 
 @pytest.fixture
