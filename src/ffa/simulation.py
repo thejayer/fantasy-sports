@@ -30,6 +30,7 @@ from typing import Final
 import numpy as np
 import pandas as pd
 
+from ffa.downside import apply_downside
 from ffa.games import (
     GAMES_MODELS,
     GamesModel,
@@ -66,6 +67,7 @@ def simulate_seasons(
     min_history_games: int = 4,
     stats: Iterable[str] = STAT_COLUMNS,
     games_model: str = "fixed",
+    bust_rate: float = 0.0,
     seed: int | None = None,
 ) -> pd.DataFrame:
     """Bootstrap simulated season totals for every qualified player.
@@ -88,6 +90,9 @@ def simulate_seasons(
             sim's game count from the player's own games-played history
             (position pool when thin), so injury-shortened seasons appear
             in the posterior. ``expected_games`` is the cap in both cases.
+        bust_rate: probability each simulated season is a "bust" -- scaled
+            down to a fraction of normal output (:mod:`ffa.downside`), which
+            fattens the lower tail. ``0.0`` (default) is off and RNG-neutral.
         seed: pass an int for reproducible samples.
 
     Returns:
@@ -136,6 +141,7 @@ def simulate_seasons(
         season_totals = bootstrap_season_totals(
             stat_matrix, n_samples, games_counts, rng, weights=weights
         )
+        season_totals = apply_downside(season_totals, bust_rate, rng)
         frame = pd.DataFrame(season_totals, columns=stat_cols)
         frame["player_id"] = player_id
         frame["sample_idx"] = np.arange(n_samples, dtype=np.int32)

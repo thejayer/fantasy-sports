@@ -7,6 +7,7 @@ from ffa.backtest import (
     summarize_evaluation,
 )
 from ffa.calibration import dispersion_direction, quantile_calibration
+from ffa.downside import apply_downside
 from ffa.draft import DraftResult, simulate_draft, summarize_user_picks
 from ffa.games import GamesModel, bootstrap_season_totals
 from ffa.learned import LearnedGenerator, simulate_seasons_learned
@@ -40,6 +41,7 @@ __all__ = [
     "QuantileGenerator",
     "RosterRules",
     "apply_depth_multiplier",
+    "apply_downside",
     "assign_tiers",
     "augment_with_rookies",
     "bootstrap_season_totals",

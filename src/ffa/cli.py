@@ -135,6 +135,9 @@ def simulate(
         "fixed", "--games-model",
         help="fixed = same expected-games count every sim; empirical = sample games played from history.",
     ),
+    bust_rate: float = typer.Option(
+        0.0, "--bust-rate", help="Per-season bust probability; fattens the floor (0 = off)."
+    ),
     include_rookies: bool = typer.Option(
         False, "--include-rookies", help="Project this season's draft class from cohorts."
     ),
@@ -145,7 +148,8 @@ def simulate(
     """Distributional projections; print mean / sd / 5-95 quantiles."""
     _, summary = _load_simulation_summary(
         league, season, samples, lookback, decay, expected_games, seed, db, raw_dir,
-        generator=generator, games_model=games_model, include_rookies=include_rookies,
+        generator=generator, games_model=games_model, bust_rate=bust_rate,
+        include_rookies=include_rookies,
     )
 
     if out is not None:
@@ -171,6 +175,7 @@ def _load_simulation_summary(
     raw_dir: Path,
     generator: str = "bootstrap",
     games_model: str = "fixed",
+    bust_rate: float = 0.0,
     include_rookies: bool = False,
 ):
     """Shared helper: pull weekly history -> samples -> posterior summary.
@@ -213,6 +218,7 @@ def _load_simulation_summary(
         decay=decay,
         expected_games=expected_games,
         games_model=games_model,
+        bust_rate=bust_rate,
         seed=seed,
     )
     if include_rookies:
@@ -270,6 +276,9 @@ def rank(
         "fixed", "--games-model",
         help="fixed = same expected-games count every sim; empirical = sample games played from history.",
     ),
+    bust_rate: float = typer.Option(
+        0.0, "--bust-rate", help="Per-season bust probability; fattens the floor (0 = off)."
+    ),
     include_rookies: bool = typer.Option(
         False, "--include-rookies", help="Project this season's draft class from cohorts."
     ),
@@ -279,7 +288,8 @@ def rank(
     """Posterior summary + VOR + tiers."""
     cfg, summary = _load_simulation_summary(
         league, season, samples, lookback, decay, expected_games, seed, db, raw_dir,
-        generator=generator, games_model=games_model, include_rookies=include_rookies,
+        generator=generator, games_model=games_model, bust_rate=bust_rate,
+        include_rookies=include_rookies,
     )
     ranked = compute_vor(summary, cfg.roster)
     ranked = assign_tiers(ranked, n_tiers=n_tiers)
@@ -306,6 +316,9 @@ def optimize(
         "fixed", "--games-model",
         help="fixed = same expected-games count every sim; empirical = sample games played from history.",
     ),
+    bust_rate: float = typer.Option(
+        0.0, "--bust-rate", help="Per-season bust probability; fattens the floor (0 = off)."
+    ),
     include_rookies: bool = typer.Option(
         False, "--include-rookies", help="Project this season's draft class from cohorts."
     ),
@@ -317,7 +330,8 @@ def optimize(
 
     cfg, summary = _load_simulation_summary(
         league, season, samples, lookback, decay, expected_games, seed, db, raw_dir,
-        generator=generator, games_model=games_model, include_rookies=include_rookies,
+        generator=generator, games_model=games_model, bust_rate=bust_rate,
+        include_rookies=include_rookies,
     )
     ranked = compute_vor(summary, cfg.roster)
     if budget is not None:
@@ -351,6 +365,9 @@ def draft_sim(
         "fixed", "--games-model",
         help="fixed = same expected-games count every sim; empirical = sample games played from history.",
     ),
+    bust_rate: float = typer.Option(
+        0.0, "--bust-rate", help="Per-season bust probability; fattens the floor (0 = off)."
+    ),
     include_rookies: bool = typer.Option(
         False, "--include-rookies", help="Project this season's draft class from cohorts."
     ),
@@ -360,7 +377,8 @@ def draft_sim(
     """Monte Carlo snake draft from your slot; prints pick-rate table."""
     cfg, summary = _load_simulation_summary(
         league, season, samples, lookback, decay, expected_games, seed, db, raw_dir,
-        generator=generator, games_model=games_model, include_rookies=include_rookies,
+        generator=generator, games_model=games_model, bust_rate=bust_rate,
+        include_rookies=include_rookies,
     )
     ranked = compute_vor(summary, cfg.roster)
     result = simulate_draft(
@@ -394,6 +412,9 @@ def backtest(
     games_model: str = typer.Option(
         "fixed", "--games-model",
         help="fixed = same expected-games count every sim; empirical = sample games played from history.",
+    ),
+    bust_rate: float = typer.Option(
+        0.0, "--bust-rate", help="Per-season bust probability; fattens the floor (0 = off)."
     ),
     include_rookies: bool = typer.Option(
         False, "--include-rookies", help="Also project + score each season's draft class."
@@ -463,6 +484,7 @@ def backtest(
             expected_games=expected_games,
             min_realized_games=min_games,
             games_model=games_model,
+            bust_rate=bust_rate,
             include_rookies=include_rookies,
             draft_picks=draft_picks,
             seed=seed,
