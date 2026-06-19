@@ -123,3 +123,70 @@ def dispersion_direction(calibration_row: pd.Series, tol: float = 0.05) -> str:
     if abs(median_cov - 0.5) > 2 * tol:
         return "biased"
     return "calibrated"
+
+
+def dispersion_decomposition(
+    players: pd.DataFrame,
+    by: str = "position",
+    mean_col: str = "points_mean",
+    sd_col: str = "points_sd",
+    realized_col: str = "points_realized",
+) -> pd.DataFrame:
+    """Split realized prediction error into modeled vs unmodeled variance.
+
+    The posterior's ``points_sd`` is the spread the generator actually
+    produces -- the within-season variance from resampling a player's own
+    games (plus games-played and bust variance). The *realized residual*
+    ``realized - mean`` carries the full prediction error, which also
+    includes the player's true level shifting season to season (breakouts,
+    declines) -- something resampling a player's own history cannot express.
+
+    Comparing the two says which lever moves calibration:
+
+    - ``ratio`` = residual SD / modeled SD. ``> 1`` means the posterior is
+      too narrow overall.
+    - ``frac_modeled`` = modeled variance / residual variance. If this is
+      *high* (most of the error is modeled within-season noise), widening
+      or recalibrating the per-game distribution will help. If it is *low*,
+      the error is dominated by level-misprediction, and no amount of
+      per-game variance fixes it -- the lever is an upside/downside *level*
+      mechanism (or a model that predicts the level shift).
+    - ``over_q95`` / ``under_q05`` give the asymmetry: an upper-tail-only
+      miss points at a missing *boom* component specifically.
+
+    Columns also include ``bias`` (mean residual) and the raw SDs. Grouped
+    like :func:`quantile_calibration` (``"ALL"`` plus each position).
+    """
+    need = {mean_col, sd_col, realized_col}
+    if players.empty or need - set(players.columns):
+        return pd.DataFrame()
+
+    group_col = by if (by and by in players.columns) else None
+    groups: list[tuple[str, pd.DataFrame]] = [("ALL", players)]
+    if group_col is not None:
+        groups += [(str(g), grp) for g, grp in players.groupby(group_col, sort=True)]
+    label_col = group_col or "group"
+    has_q = "q05" in players.columns and "q95" in players.columns
+
+    rows: list[dict] = []
+    for label, grp in groups:
+        resid = (grp[realized_col] - grp[mean_col]).to_numpy(dtype=float)
+        modeled_var = float(np.mean(np.square(grp[sd_col].to_numpy(dtype=float))))
+        resid_sd = float(np.std(resid))
+        modeled_sd = float(np.sqrt(modeled_var))
+        rec: dict[str, object] = {
+            label_col: label,
+            "n": int(len(grp)),
+            "bias": float(np.mean(resid)),
+            "resid_sd": resid_sd,
+            "modeled_sd": modeled_sd,
+            "ratio": resid_sd / modeled_sd if modeled_sd > 0 else float("nan"),
+            "frac_modeled": modeled_var / (resid_sd**2) if resid_sd > 0 else float("nan"),
+        }
+        if has_q:
+            rec["over_q95"] = float(np.mean(grp[realized_col].to_numpy() > grp["q95"].to_numpy()))
+            rec["under_q05"] = float(np.mean(grp[realized_col].to_numpy() < grp["q05"].to_numpy()))
+        rows.append(rec)
+
+    return pd.DataFrame(rows)
+

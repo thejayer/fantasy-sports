@@ -1,7 +1,12 @@
+import numpy as np
 import pandas as pd
 import pytest
 
-from ffa.calibration import dispersion_direction, quantile_calibration
+from ffa.calibration import (
+    dispersion_decomposition,
+    dispersion_direction,
+    quantile_calibration,
+)
 
 # 20 realized values placed in known bands relative to the quantile sets below.
 REALIZED = [3, 10, 15, 20, 24, 30, 35, 40, 45, 48, 55, 60, 65, 70, 72, 80, 85, 88, 92, 100]
@@ -72,3 +77,44 @@ def test_empty_or_missing_quantiles_returns_empty():
     assert quantile_calibration(pd.DataFrame()).empty
     # realized present but no q-columns
     assert quantile_calibration(pd.DataFrame({"points_realized": [1, 2]})).empty
+
+
+# ---------- dispersion_decomposition ----------
+
+
+def test_decomposition_splits_modeled_vs_unmodeled_variance():
+    # Posterior SD is a constant 10 (modeled var 100). Construct residuals
+    # with a known std of 20 (residual var 400) -> ratio 2, frac_modeled 0.25.
+    rng = np.random.default_rng(0)
+    resid = rng.normal(0, 20, size=20000)
+    resid = (resid - resid.mean()) / resid.std() * 20.0  # force exact std=20, mean=0
+    players = pd.DataFrame(
+        {
+            "position": "WR",
+            "points_mean": 100.0,
+            "points_sd": 10.0,
+            "points_realized": 100.0 + resid,
+        }
+    )
+    row = dispersion_decomposition(players, by=None).iloc[0]
+    assert row["modeled_sd"] == pytest.approx(10.0)
+    assert row["resid_sd"] == pytest.approx(20.0)
+    assert row["ratio"] == pytest.approx(2.0)
+    assert row["frac_modeled"] == pytest.approx(0.25)
+    assert row["bias"] == pytest.approx(0.0, abs=1e-9)
+
+
+def test_decomposition_well_dispersed_gives_ratio_one():
+    rng = np.random.default_rng(1)
+    resid = rng.normal(0, 15, size=20000)
+    resid = (resid - resid.mean()) / resid.std() * 15.0
+    players = pd.DataFrame(
+        {"position": "RB", "points_mean": 50.0, "points_sd": 15.0, "points_realized": 50.0 + resid}
+    )
+    row = dispersion_decomposition(players, by=None).iloc[0]
+    assert row["ratio"] == pytest.approx(1.0)
+    assert row["frac_modeled"] == pytest.approx(1.0)
+
+
+def test_decomposition_missing_columns_returns_empty():
+    assert dispersion_decomposition(pd.DataFrame({"points_mean": [1.0]})).empty

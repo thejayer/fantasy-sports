@@ -13,7 +13,11 @@ import typer
 
 from ffa.backtest import GENERATORS as _GENERATORS
 from ffa.backtest import run_backtest
-from ffa.calibration import dispersion_direction, quantile_calibration
+from ffa.calibration import (
+    dispersion_decomposition,
+    dispersion_direction,
+    quantile_calibration,
+)
 from ffa.draft import simulate_draft, summarize_user_picks
 from ffa.games import GAMES_MODELS
 from ffa.ingest import ingest_seasons, open_warehouse
@@ -542,9 +546,15 @@ def backtest(
                 )
                 printed = True
             # Only label per-generator when several were compared in one run.
-            if gen_name is not None and len(gens) > 1:
-                typer.echo(f"\n[{gen_name}]")
+            label = f"\n[{gen_name}]" if gen_name is not None and len(gens) > 1 else ""
+            if label:
+                typer.echo(label)
             typer.echo(cal.round(2).to_string(index=False))
+            decomp = dispersion_decomposition(subset, by="position")
+            if not decomp.empty:
+                typer.echo("variance decomposition (ratio = resid_sd / modeled_sd; "
+                           "frac_modeled = share the posterior explains):")
+                typer.echo(decomp.round(2).to_string(index=False))
         if not printed:
             typer.echo("\nNo quantile columns available for calibration.")
 

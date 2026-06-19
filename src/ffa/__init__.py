@@ -6,7 +6,7 @@ from ffa.backtest import (
     run_backtest,
     summarize_evaluation,
 )
-from ffa.calibration import dispersion_direction, quantile_calibration
+from ffa.calibration import dispersion_decomposition, dispersion_direction, quantile_calibration
 from ffa.downside import apply_downside
 from ffa.draft import DraftResult, simulate_draft, summarize_user_picks
 from ffa.games import GamesModel, bootstrap_season_totals
@@ -47,6 +47,7 @@ __all__ = [
     "bootstrap_season_totals",
     "build_cohort_pool",
     "compute_vor",
+    "dispersion_decomposition",
     "dispersion_direction",
     "draft_class",
     "draft_round_bucket",
