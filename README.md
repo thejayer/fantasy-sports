@@ -38,6 +38,9 @@ rebuild is in:
     learned/quantile generators on sparse nflverse data, then backtest
     the quantile generator (it underperforms the bootstrap -- a logged
     negative finding, not a default change).
+14. **Variance decomposition** -- split prediction error into modeled vs
+    level-misprediction variance (`dispersion_decomposition`), showing the
+    open tails are a two-sided *level* problem, not a per-game-variance one.
 
 ## Why this exists
 
@@ -115,7 +118,7 @@ fantasy-sports/
     games.py          Empirical games-played model + masked season bootstrap
     downside.py       Per-season bust mixture that fattens the lower tail
     backtest.py       Walk-forward evaluation: MAE, rank corr, pinball, coverage
-    calibration.py    Per-position, per-quantile coverage diagnostics
+    calibration.py    Coverage diagnostics + modeled-vs-level variance split
     dashboard.py      Streamlit UI (rankings, distributions, optimizer, draft)
     ingest.py         nflreadpy -> normalize + validate -> Parquet; DuckDB views
     cli.py            `ffa ingest|score|project|simulate|rank|optimize|draft-sim|backtest|dashboard`
@@ -540,17 +543,54 @@ empirical games + bust 0.10**. Measuring beats assuming: the fix was
 worth doing (a real bug, and the learned generator is now usable too),
 but it did not deliver the lever it was meant to.
 
-## What's next, post-phase-13
+## Variance decomposition (phase 14)
 
-- Rework the quantile generator so it earns its place: recalibrate its
-  predicted quantiles (e.g. isotonic / PIT against the backtest), add
-  features with real signal, or fit on more seasons. The upper tail is
-  still open.
-- Extend the bust mixture to rookies (cohort bust rate) and let the
-  degradation depend on age / role signals from the rosters table rather
-  than a flat `[0, 0.6]`.
+With the floor fixed and bias near zero, the question for the open tails
+was *which* lever moves them: is the posterior's per-game variance too
+tight (widen / recalibrate the marginals), or is the error level
+mispredicted (a player's true level shifting beyond what resampling their
+own games can reach)? `ffa.calibration.dispersion_decomposition` answers
+it by splitting the realized prediction-error variance into the part the
+posterior *models* (its `points_sd` -- within-season spread, plus games
+and bust variance) and the unmodeled remainder, surfaced under `ffa
+backtest --calibration`.
+
+On the recommended config (bootstrap + empirical games + bust 0.10, PPR
+2021-2023):
+
+| pos | bias | resid_sd | modeled_sd | ratio | frac_modeled | over_q95 | under_q05 |
+|---|---|---|---|---|---|---|---|
+| ALL | −0.6 | 63.1 | 43.3 | 1.46 | **0.47** | 0.18 | 0.14 |
+| QB | −2.5 | 88.8 | 58.9 | 1.51 | 0.44 | 0.18 | 0.13 |
+| RB | −2.0 | 68.2 | 44.8 | 1.52 | 0.43 | 0.17 | 0.15 |
+| WR | −1.0 | 58.6 | 41.8 | 1.40 | 0.51 | 0.18 | 0.14 |
+| TE | +3.1 | 38.6 | 29.8 | 1.30 | 0.59 | 0.17 | 0.11 |
+
+The finding redirects the roadmap. **`frac_modeled ≈ 0.47`**: even with
+the bust mixture already widening it, the posterior's modeled variance
+explains under half the real prediction error -- the other ~53% is
+*level-misprediction* (breakouts and declines), which is structurally
+absent from a player's own resampled games. And the tails are now roughly
+**symmetric** (`over_q95` 0.18, `under_q05` 0.14 vs 0.05 nominal): the
+bust mechanism cut the lower miss from 0.30 to 0.14, but nothing widens
+the upper side.
+
+So neither lever we were weighing is the right one: widening per-game
+variance inflates the 47% that's already modeled, and recalibrating the
+quantile generator (phase 13: worse anyway) reshapes the margins around a
+level it still mispredicts. The miss is **level, and two-sided**.
+
+## What's next, post-phase-14
+
+- **A symmetric level mechanism** (the aimed next step): the bust mixture
+  is the downside half of level uncertainty; add the upside. Either a
+  *boom* mixture mirroring `--bust-rate`, or -- cleaner -- sample each
+  simulated season's per-game *level* from a distribution around the
+  player's projection (log-normal jitter) so level variance enters both
+  tails at once. Tune against `over_q95` / `under_q05` toward 0.05.
+- Extend whichever level mechanism wins to rookies and condition its
+  spread on age / role signals from the rosters table.
 - Per-position joint-distribution learning (copula over stat vectors) --
-  deprioritized by the phase-11 diagnostic, but still the lever for
-  cross-stat realism once the marginals are calibrated.
+  the lever for cross-stat realism once the marginals are calibrated.
 - Schedule-aware adjustments and dashboard-output pricing against
   historical mocks, as before.
