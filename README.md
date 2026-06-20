@@ -47,6 +47,9 @@ rebuild is in:
 16. **Cohort level-error diagnostic** -- `level_error_by_cohort` shows the
     spread varies 2× by projected tier and the drift falls monotonically
     with experience, justifying a signal-conditioned level model.
+17. **Conditioned level model** -- `LevelModel` conditions the level knobs on
+    tier + experience; the backtest shows the gain is marginal and the real
+    gap is structural fringe under-coverage, redirecting to a role mechanism.
 
 ## Why this exists
 
@@ -122,7 +125,7 @@ fantasy-sports/
     draft.py          simulate_draft (Monte Carlo snake) + summarize_user_picks
     rookies.py        Draft-cohort block bootstrap for first-year players
     games.py          Empirical games-played model + masked season bootstrap
-    level.py          Per-season log-normal level multiplier (both tails)
+    level.py          Log-normal level multiplier + LevelModel (tier/exp-conditioned)
     backtest.py       Walk-forward evaluation: MAE, rank corr, pinball, coverage
     calibration.py    Coverage diagnostics + modeled-vs-level variance split
     dashboard.py      Streamlit UI (rankings, distributions, optimizer, draft)
@@ -646,12 +649,50 @@ projections, `level_mean` dropping with experience. The rosters table we
 ingest but barely use carries the experience signal; the tier signal is
 already in the projection.
 
-## What's next, post-phase-16
+## Conditioned level model (phase 17)
 
-- Build the conditioned level model the diagnostic justifies:
-  `level_sd = f(projected tier)` and `level_mean = f(years_exp)`, wiring
-  `years_exp` from rosters into the backtest. Re-run `--calibration` and
-  the cohort diagnostic to confirm the per-cohort drift/spread flatten.
+Phase 16 justified conditioning the level knobs on signal. `ffa.level.LevelModel`
+does it: `level_sd = base_sd * tier_mult[tier]` and `level_mean = base_mean +
+mean_slope * experience_score(years_exp)`, with the diagnostic's *shape* fixed
+and three scalars tuned. `run_backtest(level_model=..., years_exp=...)` joins
+`years_exp` from rosters and tiers each player by baseline projected points, so
+the league-agnostic generator just consumes a per-player `(sd, mean)` table.
+
+The honest result, though, is that conditioning helps only at the margin --
+and re-frames what's actually wrong. Measuring per-*tier* central coverage
+(PPR 2022-2023, the right metric -- the cohort diagnostic measures realized
+error, which the model can't move) under the global level config:
+
+| tier | central coverage |
+|---|---|
+| low (fringe) | **0.65** |
+| mid | 0.72 |
+| high (stars) | 0.85 |
+
+Two things fall out:
+
+- **Stars are already well-covered (0.85).** The diagnostic's "narrow the
+  stars" shape (they have low realized spread) is *backwards for coverage* --
+  narrowing them only drops coverage. The tuned `tier_mult` is gentle
+  (1.25/1.0/0.80) and most of the conditioned model's small overall gain
+  (central 0.74 → 0.76) comes from a higher `base_sd`, not the conditioning.
+- **Fringe players stay stuck at ~0.65 no matter the `level_sd`.** This is
+  the real finding: a fringe player's season is near-binary -- irrelevant
+  (≈0) or a breakout -- not a log-normal spread around a projection, so level
+  uncertainty *structurally cannot* cover them. The experience→drift
+  conditioning does work (it flattens the per-experience drift), but the
+  dominant gap is this fringe under-coverage, and it is not a level problem.
+
+So `LevelModel` ships as working infrastructure with a gently-tuned default,
+the global level stays the recommended config (the conditioned gain doesn't
+justify the rosters join yet), and the roadmap turns toward the fringe gap.
+
+## What's next, post-phase-17
+
+- **A role / zero-inflation mechanism for fringe players** (the redirected
+  next step): model the near-binary "does this player get a role" outcome
+  -- a mixture of a spike near replacement and the normal projection -- which
+  level uncertainty can't express. Tune against low-tier coverage.
 - Per-position joint-distribution learning (copula over stat vectors) --
   the lever for cross-stat realism once the marginals are calibrated.
 - Schedule-aware adjustments and dashboard-output pricing against

@@ -2,7 +2,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from ffa.level import apply_level_jitter
+from ffa.level import LevelModel, apply_level_jitter, projected_tier, resolve_level
 from ffa.simulation import simulate_seasons
 
 
@@ -122,3 +122,51 @@ def test_generator_forwards_level_mean_to_shift_projection_down():
     m_drifted = drifted["receiving_yards"].mean()
     assert m_drifted < m_neutral
     assert m_drifted == pytest.approx(0.9 * m_neutral, rel=0.03)
+
+
+# ---------- LevelModel (phase 17, conditioned) ----------
+
+
+def test_level_model_conditions_spread_on_tier_and_drift_on_experience():
+    m = LevelModel()
+    sd_low, mean_rook = m.level_for("low", 0)     # fringe rookie
+    sd_high, mean_vet = m.level_for("high", 12)   # star veteran
+    assert sd_low > sd_high                        # fringe wider than stars
+    assert mean_rook > mean_vet                    # rookies need less correction
+    assert sd_low == pytest.approx(0.60 * 1.25)
+    assert sd_high == pytest.approx(0.60 * 0.80)
+    assert mean_rook == pytest.approx(0.90 + 0.15)  # experience score +1
+    assert mean_vet == pytest.approx(0.90 - 0.15)   # experience score -1
+
+
+def test_level_model_neutral_on_missing_features():
+    sd, mean = LevelModel().level_for(None, None)
+    assert sd == pytest.approx(0.60)   # unknown tier -> multiplier 1.0
+    assert mean == pytest.approx(0.90)  # unknown experience -> score 0
+
+
+def test_resolve_level_uses_table_then_falls_back():
+    pl = {"A": (0.5, 0.9)}
+    assert resolve_level("A", pl, 0.1, 1.0) == (0.5, 0.9)
+    assert resolve_level("B", pl, 0.1, 1.0) == (0.1, 1.0)   # not in table
+    assert resolve_level("A", None, 0.1, 1.0) == (0.1, 1.0)  # no table
+
+
+def test_projected_tier_assigns_terciles_by_rank():
+    t = projected_tier(pd.Series([1, 2, 3, 4, 5, 6, 7, 8, 9]))
+    assert set(t.unique()) == {"low", "mid", "high"}
+    assert t.iloc[0] == "low" and t.iloc[-1] == "high"
+
+
+def test_generator_player_level_applies_per_player():
+    rows = []
+    for pid in ("A", "B"):
+        for season in (2022, 2023):
+            for week in range(1, 18):
+                rows.append(_wk(pid, season, week, receiving_yards=50))
+    weekly = pd.DataFrame(rows)
+    # A: sd 0 (off) -> constant; B: jitter -> spread.
+    player_level = {"A": (0.0, 1.0), "B": (0.4, 1.0)}
+    s = simulate_seasons(weekly, 2024, n_samples=2000, player_level=player_level, seed=0)
+    assert s[s["player_id"] == "A"]["receiving_yards"].std() == pytest.approx(0.0)
+    assert s[s["player_id"] == "B"]["receiving_yards"].std() > 0.0

@@ -59,7 +59,7 @@ from ffa.games import (
     resolve_games_counts,
     stable_position,
 )
-from ffa.level import apply_level_jitter
+from ffa.level import apply_level_jitter, resolve_level
 from ffa.projection import regular_season_only
 from ffa.scoring import STAT_COLUMNS
 
@@ -267,6 +267,7 @@ def simulate_seasons_learned(
     games_model: str = "fixed",
     level_sd: float = 0.0,
     level_mean: float = 1.0,
+    player_level: dict | None = None,
     seed: int | None = None,
 ) -> pd.DataFrame:
     """Drop-in replacement for :func:`ffa.simulation.simulate_seasons`.
@@ -339,7 +340,8 @@ def simulate_seasons_learned(
         season_totals = bootstrap_season_totals(
             shifted, n_samples, games_counts, rng, weights=weights
         )
-        season_totals = apply_level_jitter(season_totals, level_sd, rng, mean=level_mean)
+        sd_p, mean_p = resolve_level(player_id, player_level, level_sd, level_mean)
+        season_totals = apply_level_jitter(season_totals, sd_p, rng, mean=mean_p)
 
         frame = pd.DataFrame(season_totals, columns=stat_cols)
         frame["player_id"] = player_id

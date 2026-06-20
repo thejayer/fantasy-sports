@@ -1,5 +1,6 @@
 from ffa.backtest import (
     BacktestResult,
+    build_player_level,
     evaluate_projections,
     pinball_loss,
     realized_season_totals,
@@ -16,7 +17,7 @@ from ffa.draft import DraftResult, simulate_draft, summarize_user_picks
 from ffa.games import GamesModel, bootstrap_season_totals
 from ffa.learned import LearnedGenerator, simulate_seasons_learned
 from ffa.league import LeagueConfig, RosterRules, load_league
-from ffa.level import apply_level_jitter
+from ffa.level import LevelModel, apply_level_jitter, projected_tier, resolve_level
 from ffa.optimize import greedy_lineup, optimize_lineup
 from ffa.projection import (
     apply_depth_multiplier,
@@ -43,6 +44,7 @@ __all__ = [
     "GamesModel",
     "LeagueConfig",
     "LearnedGenerator",
+    "LevelModel",
     "QuantileGenerator",
     "RosterRules",
     "apply_depth_multiplier",
@@ -64,10 +66,13 @@ __all__ = [
     "optimize_lineup",
     "pinball_loss",
     "project_per_game",
+    "projected_tier",
     "project_season",
     "quantile_calibration",
     "realized_season_totals",
+    "resolve_level",
     "regular_season_only",
+    "build_player_level",
     "run_backtest",
     "score_player_weeks",
     "score_stat_line",

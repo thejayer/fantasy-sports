@@ -42,11 +42,45 @@ import pandas as pd
 
 from ffa.league import LeagueConfig
 from ffa.learned import simulate_seasons_learned
-from ffa.projection import regular_season_only
+from ffa.level import LevelModel, projected_tier
+from ffa.projection import project_per_game, project_season, regular_season_only
 from ffa.quantile import simulate_seasons_quantile_calibrated
 from ffa.rookies import augment_with_rookies
 from ffa.scoring import STAT_COLUMNS, score_player_weeks
 from ffa.simulation import simulate_seasons, summarize_seasons
+
+
+def build_player_level(
+    history: pd.DataFrame,
+    target_season: int,
+    league: LeagueConfig,
+    level_model: LevelModel,
+    lookback: int = 3,
+    years_exp: pd.DataFrame | None = None,
+) -> dict:
+    """Per-player ``(level_sd, level_mean)`` from a conditioned LevelModel.
+
+    Tiers each player by their *baseline* projected fantasy points (so the
+    league-agnostic generator never has to score), looks up ``years_exp`` for
+    the target season, and asks the model for each player's level knobs.
+    Leakage-free: the projection uses only ``history`` (pre-target seasons).
+    """
+    per_game = project_per_game(history, target_season=target_season, lookback=lookback)
+    if per_game.empty:
+        return {}
+    proj = project_season(per_game).copy()
+    proj["_pts"] = score_player_weeks(proj, league)
+    proj["_tier"] = projected_tier(proj["_pts"]).to_numpy()
+
+    exp_lookup: dict = {}
+    if years_exp is not None and {"player_id", "season", "years_exp"} <= set(years_exp.columns):
+        sub = years_exp[years_exp["season"] == target_season]
+        exp_lookup = dict(zip(sub["player_id"], sub["years_exp"]))
+
+    out: dict = {}
+    for pid, tier in zip(proj["player_id"], proj["_tier"]):
+        out[pid] = level_model.level_for(tier, exp_lookup.get(pid))
+    return out
 
 # Generator name -> (simulator function, extra history seasons for training).
 # The learned/quantile generators need more history than the pure bootstrap
@@ -224,6 +258,8 @@ def run_backtest(
     games_model: str = "fixed",
     level_sd: float = 0.0,
     level_mean: float = 1.0,
+    level_model: "LevelModel | None" = None,
+    years_exp: pd.DataFrame | None = None,
     include_rookies: bool = False,
     draft_picks: pd.DataFrame | None = None,
     seed: int | None = 0,
@@ -275,6 +311,11 @@ def run_backtest(
     player_frames: list[pd.DataFrame] = []
     for season in seasons:
         history = weekly[weekly["season"] < season]
+        player_level = (
+            build_player_level(history, season, league, level_model, lookback, years_exp)
+            if level_model is not None
+            else None
+        )
         samples = simulate(
             history,
             target_season=season,
@@ -285,6 +326,7 @@ def run_backtest(
             games_model=games_model,
             level_sd=level_sd,
             level_mean=level_mean,
+            player_level=player_level,
             seed=seed,
         )
         if include_rookies:
