@@ -140,6 +140,11 @@ def resolve_level(
     if player_level is not None:
         pair = player_level.get(player_id)
         if pair is not None:
+            if len(pair) < 2:
+                raise ValueError(
+                    "player_level entries must be (level_sd, level_mean[, collapse_rate]); "
+                    f"got {pair!r}."
+                )
             coll = float(pair[2]) if len(pair) > 2 else float(collapse_rate)
             return float(pair[0]), float(pair[1]), coll
     return float(level_sd), float(level_mean), float(collapse_rate)

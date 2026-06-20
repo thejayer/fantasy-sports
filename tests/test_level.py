@@ -183,6 +183,11 @@ def test_resolve_level_uses_table_then_falls_back():
     assert resolve_level("A", None, 0.1, 1.0) == (0.1, 1.0, 0.0)        # no table
 
 
+def test_resolve_level_rejects_malformed_entry():
+    with pytest.raises(ValueError, match="player_level entries"):
+        resolve_level("A", {"A": (0.5,)}, 0.1, 1.0)
+
+
 def test_projected_tier_assigns_terciles_by_rank():
     t = projected_tier(pd.Series([1, 2, 3, 4, 5, 6, 7, 8, 9]))
     assert set(t.unique()) == {"low", "mid", "high"}
