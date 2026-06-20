@@ -28,6 +28,7 @@ from pathlib import Path
 from typing import Iterable
 
 import altair as alt
+import numpy as np
 import pandas as pd
 import streamlit as st
 
@@ -131,6 +132,54 @@ def availability_view(availability: pd.DataFrame, ranked: pd.DataFrame, top: int
     return merged[[*display_cols, *round_cols]].reset_index(drop=True)
 
 
+def risk_badge(q05: float, q50: float, q95: float) -> str:
+    """Label a player's outcome spread as safe / solid / volatile.
+
+    Uses the relative interval width ``(q95 - q05) / q50`` -- a wide
+    floor-to-ceiling gap relative to the median is a boom-or-bust profile.
+    Pure helper so it's unit-testable without Streamlit.
+    """
+    if pd.isna(q05) or pd.isna(q95) or pd.isna(q50) or q50 <= 0:
+        return "—"
+    rel = (q95 - q05) / q50
+    if rel < 0.7:
+        return "🟢 Safe"
+    if rel < 1.1:
+        return "🟡 Solid"
+    return "🔴 Volatile"
+
+
+def outcome_sparklines(
+    samples_df: pd.DataFrame,
+    league,
+    player_ids: Iterable[str],
+    bins: int = 16,
+    clip_q: float = 0.99,
+) -> dict:
+    """Per-player coarse histogram of simulated season points for the board.
+
+    Scores every sample once, then bins each player's outcomes over a *shared*
+    range so the sparklines are comparable row to row -- a star's mass sits
+    right, a fringe player's left, and the skew (boom vs bust) is visible
+    inline. Returns ``{player_id: [counts...]}`` for ``BarChartColumn``.
+    """
+    from ffa.scoring import score_player_weeks
+
+    ids = set(player_ids)
+    scored = samples_df[samples_df["player_id"].isin(ids)]
+    if scored.empty:
+        return {}
+    pts = score_player_weeks(scored, league)
+    scored = scored[["player_id"]].assign(_pts=pts.to_numpy())
+    hi = float(scored["_pts"].quantile(clip_q))
+    hi = hi if hi > 0 else 1.0
+    out: dict = {}
+    for pid, grp in scored.groupby("player_id", sort=False):
+        counts, _ = np.histogram(grp["_pts"].to_numpy(), bins=bins, range=(0.0, hi))
+        out[pid] = counts.tolist()
+    return out
+
+
 @st.cache_data(show_spinner="Loading weekly history...")
 def _load_weekly(seasons: tuple[int, ...], db: str, raw_dir: str) -> pd.DataFrame:
     con = open_warehouse(db_path=db, raw_dir=raw_dir)
@@ -195,48 +244,54 @@ def main() -> None:
     st.title("Fantasy Football Analytics")
 
     # ---------------- Sidebar ----------------
+    # Everyday users touch only league + season; the model is pre-set to the
+    # backtest-calibrated config (empirical games + level uncertainty). Power
+    # users can override under "Advanced".
     with st.sidebar:
-        st.header("Inputs")
+        st.header("League")
         league_path = Path(st.text_input("League config (YAML)", value=str(args.league)))
         season = int(st.number_input("Target season", value=args.season, step=1))
-        lookback = int(st.slider("Lookback seasons", 1, 5, 3))
-        generator = st.selectbox(
-            "Generator",
-            options=list(_GENERATORS),
-            help="bootstrap = empirical resample; learned = ML mean; "
-            "quantile = ML with calibrated floor/ceiling.",
-        )
-        samples = int(st.slider("Samples per player", 100, 5000, 1000, step=100))
-        decay = float(st.slider("Recency decay", 0.0, 2.0, 0.5, step=0.1))
-        expected_games = float(st.slider("Expected games", 8.0, 17.0, 17.0, step=0.5))
-        games_model = st.selectbox(
-            "Games played",
-            options=["fixed", "empirical"],
-            help="fixed = every player plays the full season; empirical = sample "
-            "games played from each player's history (widens floor, trims optimism).",
-        )
-        level_sd = float(
-            st.slider(
-                "Level uncertainty (sd)",
-                0.0,
-                0.8,
-                0.0,
-                step=0.05,
-                help="Per-season level multiplier spread -- breakouts and declines. "
-                "Fattens both tails. 0 = off; ~0.45 is the calibrated setting.",
+
+        with st.expander("Advanced (model settings)"):
+            st.caption("Defaults are the calibrated config; change only if you know why.")
+            generator = st.selectbox(
+                "Generator",
+                options=list(_GENERATORS),
+                help="bootstrap = empirical resample; learned = ML mean; "
+                "quantile = ML with calibrated floor/ceiling.",
             )
-        )
-        level_mean = float(
-            st.slider(
-                "Level mean",
-                0.7,
-                1.0,
-                1.0,
-                step=0.02,
-                help="Multiplier mean; <1 also de-biases projections down. ~0.90 with sd 0.45.",
+            games_model = st.selectbox(
+                "Games played",
+                options=["empirical", "fixed"],
+                help="empirical = sample games played from history (calibrated); "
+                "fixed = assume every player plays the full season.",
             )
-        )
-        seed = int(st.number_input("Seed", value=0, step=1))
+            level_sd = float(
+                st.slider(
+                    "Level uncertainty (sd)",
+                    0.0,
+                    0.8,
+                    0.45,
+                    step=0.05,
+                    help="Per-season level spread -- breakouts and declines. "
+                    "0.45 is the calibrated setting; 0 turns it off.",
+                )
+            )
+            level_mean = float(
+                st.slider(
+                    "Level mean",
+                    0.7,
+                    1.0,
+                    0.90,
+                    step=0.02,
+                    help="Multiplier mean; <1 de-biases projections down (0.90 calibrated).",
+                )
+            )
+            samples = int(st.slider("Samples per player", 100, 5000, 1000, step=100))
+            lookback = int(st.slider("Lookback seasons", 1, 5, 3))
+            decay = float(st.slider("Recency decay", 0.0, 2.0, 0.5, step=0.1))
+            expected_games = float(st.slider("Expected games", 8.0, 17.0, 17.0, step=0.5))
+            seed = int(st.number_input("Seed", value=0, step=1))
 
     # Load the league config up front so a bad path shows a friendly message
     # instead of white-screening the whole app.
@@ -257,8 +312,11 @@ def main() -> None:
             "player at the same position. The right way to compare across positions.\n"
             "- **Tier** — players grouped by natural scoring gaps; tier 1 is the top "
             "group at a position. When a tier is about to empty, grab from it.\n"
-            "- **Floor / Median / Ceiling** — 5th / 50th / 95th-percentile outcomes "
-            "across the simulations. A wide floor-to-ceiling gap means boom-or-bust."
+            "- **Floor / Ceiling** — 5th / 95th-percentile outcomes across the "
+            "simulations. A wide gap means boom-or-bust.\n"
+            "- **Risk** — that gap as a quick badge: 🟢 Safe, 🟡 Solid, 🔴 Volatile.\n"
+            "- **Outcomes** — each player's full simulated-points distribution, on a "
+            "shared scale so you can compare shapes (where the mass sits, and the skew)."
         )
 
     db_path = str(args.db)
@@ -296,7 +354,16 @@ def main() -> None:
         positions: Iterable[str] = sorted(ranked["position"].dropna().unique().tolist())
         chosen_positions = st.multiselect("Position filter", positions, default=positions)
         df = ranked[ranked["position"].isin(chosen_positions)] if chosen_positions else ranked
-        df = df.sort_values("vor", ascending=False).head(200)
+        df = df.sort_values("vor", ascending=False).head(200).copy()
+
+        # Risk read + per-player outcome distribution, inline on the board.
+        if {"q05", "q50", "q95"} <= set(df.columns):
+            df["risk"] = [risk_badge(r.q05, r.q50, r.q95) for r in df.itertuples()]
+        else:
+            df["risk"] = "—"
+        sparks = outcome_sparklines(samples_df, league, df["player_id"].tolist())
+        df["outcomes"] = df["player_id"].map(sparks)
+
         show_cols = [
             c
             for c in (
@@ -306,17 +373,28 @@ def main() -> None:
                 "tier",
                 "points_mean",
                 "vor",
+                "risk",
                 "q05",
-                "q50",
                 "q95",
+                "outcomes",
             )
             if c in df.columns
         ]
+        column_config = _ranked_column_config() | {
+            "risk": st.column_config.TextColumn(
+                "Risk", help="Boom-or-bust read from the floor-to-ceiling spread."
+            ),
+            "outcomes": st.column_config.BarChartColumn(
+                "Outcomes",
+                help="Distribution of simulated season points (same scale across rows).",
+                y_min=0,
+            ),
+        }
         st.dataframe(
             df[show_cols],
             use_container_width=True,
             hide_index=True,
-            column_config=_ranked_column_config(),
+            column_config=column_config,
         )
 
     # ----- Player distribution -----
