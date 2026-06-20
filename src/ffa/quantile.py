@@ -235,6 +235,7 @@ def simulate_seasons_quantile_calibrated(
     games_model: str = "fixed",
     level_sd: float = 0.0,
     level_mean: float = 1.0,
+    collapse_rate: float = 0.0,
     player_level: dict | None = None,
     seed: int | None = None,
 ) -> pd.DataFrame:
@@ -312,8 +313,12 @@ def simulate_seasons_quantile_calibrated(
         season_totals = bootstrap_season_totals(
             transformed, n_samples, games_counts, rng, weights=weights
         )
-        sd_p, mean_p = resolve_level(player_id, player_level, level_sd, level_mean)
-        season_totals = apply_level_jitter(season_totals, sd_p, rng, mean=mean_p)
+        sd_p, mean_p, collapse_p = resolve_level(
+            player_id, player_level, level_sd, level_mean, collapse_rate
+        )
+        season_totals = apply_level_jitter(
+            season_totals, sd_p, rng, mean=mean_p, collapse_rate=collapse_p
+        )
 
         frame = pd.DataFrame(season_totals, columns=stat_cols)
         frame["player_id"] = player_id

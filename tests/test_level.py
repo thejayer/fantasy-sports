@@ -44,6 +44,34 @@ def test_mean_below_one_drifts_projection_down():
     assert out.mean() == pytest.approx(90.0, rel=0.01)
 
 
+def test_collapse_rate_creates_near_zero_spike():
+    # ~30% of seasons should crater into (0, collapse_floor) of the total.
+    totals = np.full((20000, 1), 100.0)
+    out = apply_level_jitter(
+        totals, 0.0, np.random.default_rng(0), collapse_rate=0.3, collapse_floor=0.15
+    )
+    crushed = out[:, 0] < 15.0  # below collapse_floor * 100
+    assert crushed.mean() == pytest.approx(0.3, abs=0.03)
+    assert (out[:, 0] >= 0.0).all()
+    # Non-collapsed seasons (level_sd 0) stay at the baseline.
+    assert out[~crushed, 0].max() == pytest.approx(100.0)
+
+
+def test_collapse_rate_zero_and_sd_zero_is_rng_neutral():
+    totals = np.arange(20, dtype=float).reshape(10, 2)
+    rng = np.random.default_rng(0)
+    state = rng.bit_generator.state
+    out = apply_level_jitter(totals, 0.0, rng, collapse_rate=0.0)
+    np.testing.assert_array_equal(out, totals)
+    assert rng.bit_generator.state == state
+
+
+@pytest.mark.parametrize("bad", [-0.1, 1.5])
+def test_collapse_rate_out_of_range_raises(bad):
+    with pytest.raises(ValueError, match="collapse_rate"):
+        apply_level_jitter(np.ones((4, 1)), 0.3, np.random.default_rng(0), collapse_rate=bad)
+
+
 def test_level_jitter_is_two_sided():
     # Unlike the bust mixture (down only), some seasons scale up, some down.
     totals = np.full((5000, 1), 100.0)
@@ -127,29 +155,32 @@ def test_generator_forwards_level_mean_to_shift_projection_down():
 # ---------- LevelModel (phase 17, conditioned) ----------
 
 
-def test_level_model_conditions_spread_on_tier_and_drift_on_experience():
+def test_level_model_conditions_spread_drift_and_collapse():
     m = LevelModel()
-    sd_low, mean_rook = m.level_for("low", 0)     # fringe rookie
-    sd_high, mean_vet = m.level_for("high", 12)   # star veteran
+    sd_low, mean_rook, coll_low = m.level_for("low", 0)     # fringe rookie
+    sd_high, mean_vet, coll_high = m.level_for("high", 12)  # star veteran
     assert sd_low > sd_high                        # fringe wider than stars
     assert mean_rook > mean_vet                    # rookies need less correction
-    assert sd_low == pytest.approx(0.60 * 1.25)
-    assert sd_high == pytest.approx(0.60 * 0.80)
-    assert mean_rook == pytest.approx(0.90 + 0.15)  # experience score +1
-    assert mean_vet == pytest.approx(0.90 - 0.15)   # experience score -1
+    assert coll_low > coll_high                    # fringe collapse far more than stars
+    assert sd_low == pytest.approx(0.55 * 1.25)
+    assert mean_rook == pytest.approx(1.1)          # 1.0 + 0.12, clipped to bound
+    assert mean_vet == pytest.approx(1.0 - 0.12)    # experience score -1
+    assert coll_low == pytest.approx(1.3 * 0.20) and coll_high == pytest.approx(1.3 * 0.04)
 
 
 def test_level_model_neutral_on_missing_features():
-    sd, mean = LevelModel().level_for(None, None)
-    assert sd == pytest.approx(0.60)   # unknown tier -> multiplier 1.0
-    assert mean == pytest.approx(0.90)  # unknown experience -> score 0
+    sd, mean, collapse = LevelModel().level_for(None, None)
+    assert sd == pytest.approx(0.55)        # unknown tier -> multiplier 1.0
+    assert mean == pytest.approx(1.0)        # unknown experience -> score 0
+    assert collapse == pytest.approx(1.3 * 0.12)  # unknown tier -> mid collapse rate
 
 
 def test_resolve_level_uses_table_then_falls_back():
-    pl = {"A": (0.5, 0.9)}
-    assert resolve_level("A", pl, 0.1, 1.0) == (0.5, 0.9)
-    assert resolve_level("B", pl, 0.1, 1.0) == (0.1, 1.0)   # not in table
-    assert resolve_level("A", None, 0.1, 1.0) == (0.1, 1.0)  # no table
+    pl = {"A": (0.5, 0.9, 0.2), "C": (0.3, 0.95)}  # 3-tuple and 2-tuple
+    assert resolve_level("A", pl, 0.1, 1.0, 0.0) == (0.5, 0.9, 0.2)
+    assert resolve_level("C", pl, 0.1, 1.0, 0.05) == (0.3, 0.95, 0.05)  # 2-tuple -> global collapse
+    assert resolve_level("B", pl, 0.1, 1.0, 0.05) == (0.1, 1.0, 0.05)   # not in table
+    assert resolve_level("A", None, 0.1, 1.0) == (0.1, 1.0, 0.0)        # no table
 
 
 def test_projected_tier_assigns_terciles_by_rank():

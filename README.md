@@ -50,6 +50,9 @@ rebuild is in:
 17. **Conditioned level model** -- `LevelModel` conditions the level knobs on
     tier + experience; the backtest shows the gain is marginal and the real
     gap is structural fringe under-coverage, redirecting to a role mechanism.
+18. **Role collapse / zero-inflation** -- a tier-conditioned spike to
+    near-replacement models the near-binary "got a role" outcome, lifting
+    central coverage to 0.80 and the mid tier to 0.80 with bias near zero.
 
 ## Why this exists
 
@@ -687,12 +690,50 @@ So `LevelModel` ships as working infrastructure with a gently-tuned default,
 the global level stays the recommended config (the conditioned gain doesn't
 justify the rosters join yet), and the roadmap turns toward the fringe gap.
 
-## What's next, post-phase-17
+## Role collapse / zero-inflation (phase 18)
 
-- **A role / zero-inflation mechanism for fringe players** (the redirected
-  next step): model the near-binary "does this player get a role" outcome
-  -- a mixture of a spike near replacement and the normal projection -- which
-  level uncertainty can't express. Tune against low-tier coverage.
+Phase 17 showed fringe and mid players resist the log-normal because their
+season is near-binary -- they get a role or they don't. A shape check
+confirmed it: by projected tier, the share of seasons collapsing to under
+15% of projection runs **21% (fringe) / 13% (mid) / 5% (stars)**, and
+fringe players realize a median of just 10 PPR points. That's a spike the
+smooth multiplier can't make.
+
+`apply_level_jitter` gains a zero-inflation component: with probability
+`collapse_rate` a simulated season instead lands in `U(0, collapse_floor)`
+of its projection. `LevelModel` supplies the rate per player from the
+diagnostic's tier shape. A *global* collapse can't work -- forcing 15% of
+*everyone* (stars included) to crater lifts central coverage 0.74 → 0.83
+but tanks bias to **−12** -- so the rate must be conditioned.
+
+Backtested (PPR 2021-2023, bootstrap, empirical games), the conditioned
+model vs the global level config:
+
+| | central | mid | high | bias | Spearman |
+|---|---|---|---|---|---|
+| global level (no collapse) | 0.74 | 0.70 | 0.86 | −2.0 | 0.705 |
+| **conditioned + collapse** | **0.80** | **0.80** | **0.92** | **+1.1** | **0.714** |
+
+Conditioning is what makes it work: central coverage 0.74 → 0.80, the
+decision-relevant **mid tier 0.70 → 0.80**, stars to a near-perfect 0.92,
+**bias stays near zero** (the per-tier rate avoids the global-collapse
+disaster), and ranking even ticks up. Used via
+`run_backtest(level_model=LevelModel(), years_exp=...)`; the global
+`--level-sd`/`--level-mean` remain the CLI default until the conditioned
+model is wired through the draft commands (the rosters join is the only
+missing plumbing).
+
+Central q05-q95 coverage across the full calibration arc: 0.30 (fixed) →
+0.55 (games) → 0.70 (bust) → 0.75 (level) → **0.80 (role)**. Honest
+caveat: still short of 0.90, and **fringe (0.68) stays hardest** -- a deep
+waiver-tier player is close to unpredictable by nature, which is the floor
+on what any marginal model can do.
+
+## What's next, post-phase-18
+
+- Wire the conditioned `LevelModel` (with the `years_exp` rosters join)
+  through the `simulate`/`rank`/`draft-sim` CLI commands so the calibrated
+  config is usable at draft time, not just in the backtest.
 - Per-position joint-distribution learning (copula over stat vectors) --
   the lever for cross-stat realism once the marginals are calibrated.
 - Schedule-aware adjustments and dashboard-output pricing against
