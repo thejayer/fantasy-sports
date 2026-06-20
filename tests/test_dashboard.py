@@ -13,7 +13,46 @@ import pytest
 pytest.importorskip("altair", reason="dashboard extras not installed")
 pytest.importorskip("streamlit", reason="dashboard extras not installed")
 
-from ffa.dashboard import availability_view, distribution_chart  # noqa: E402
+from ffa.dashboard import (  # noqa: E402
+    availability_view,
+    distribution_chart,
+    outcome_sparklines,
+    risk_badge,
+)
+from ffa.league import LeagueConfig  # noqa: E402
+
+
+def test_risk_badge_buckets_by_relative_spread():
+    assert risk_badge(180, 254, 310) == "🟢 Safe"      # rel ~0.51
+    assert risk_badge(60, 100, 160) == "🟡 Solid"       # rel 1.00
+    assert risk_badge(70, 198, 300) == "🔴 Volatile"    # rel ~1.16
+    assert risk_badge(float("nan"), 100, 200) == "—"
+    assert risk_badge(10, 0, 20) == "—"                  # guard q50 <= 0
+
+
+def test_outcome_sparklines_bins_per_player_on_shared_scale():
+    # Two players: one low (~10 pts), one high (~200 pts). Shared range -> the
+    # high player's mass sits in later bins than the low player's.
+    rng = np.random.default_rng(0)
+    rows = []
+    for pid, lvl in (("low", 10.0), ("high", 200.0)):
+        for _ in range(500):
+            rows.append({"player_id": pid, "receiving_yards": max(0.0, lvl + rng.normal(0, 5)) * 10})
+    samples = pd.DataFrame(rows)
+    league = LeagueConfig()  # 1 pt / 10 receiving yards under defaults
+
+    sparks = outcome_sparklines(samples, league, ["low", "high"], bins=8)
+    assert set(sparks) == {"low", "high"}
+    assert len(sparks["low"]) == 8 and sum(sparks["low"]) == 500
+    # Low player's outcomes fall in the first bins; high player's spread later.
+    low_centroid = np.average(range(8), weights=sparks["low"])
+    high_centroid = np.average(range(8), weights=sparks["high"])
+    assert high_centroid > low_centroid
+
+
+def test_outcome_sparklines_empty_for_unknown_players():
+    samples = pd.DataFrame({"player_id": ["A"], "receiving_yards": [50.0]})
+    assert outcome_sparklines(samples, LeagueConfig(), ["Z"]) == {}
 
 
 def test_distribution_chart_produces_valid_altair_spec():
