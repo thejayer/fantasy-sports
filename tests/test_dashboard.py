@@ -17,17 +17,26 @@ from ffa.dashboard import (  # noqa: E402
     availability_view,
     distribution_chart,
     outcome_sparklines,
-    risk_badge,
+    risk_badges,
 )
 from ffa.league import LeagueConfig  # noqa: E402
 
 
-def test_risk_badge_buckets_by_relative_spread():
-    assert risk_badge(180, 254, 310) == "🟢 Safe"      # rel ~0.51
-    assert risk_badge(60, 100, 160) == "🟡 Solid"       # rel 1.00
-    assert risk_badge(70, 198, 300) == "🔴 Volatile"    # rel ~1.16
-    assert risk_badge(float("nan"), 100, 200) == "—"
-    assert risk_badge(10, 0, 20) == "—"                  # guard q50 <= 0
+def test_risk_badges_split_field_into_terciles():
+    # Nine players with increasing relative spread (q95-q05)/q50.
+    rels = [0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0]
+    q50 = [100.0] * 9
+    q05 = [100 - 50 * r for r in rels]
+    q95 = [100 + 50 * r for r in rels]
+    labels = risk_badges(q05, q50, q95)
+    assert labels[0] == "🟢 Safe"        # tightest of the field
+    assert labels[-1] == "🔴 Volatile"   # widest of the field
+    assert labels.count("🟢 Safe") == 3 and labels.count("🔴 Volatile") == 3
+
+
+def test_risk_badges_guards_nan_and_empty():
+    assert risk_badges([10], [0], [20]) == ["—"]   # q50 <= 0
+    assert risk_badges([], [], []) == []
 
 
 def test_outcome_sparklines_bins_per_player_on_shared_scale():

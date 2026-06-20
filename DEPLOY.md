@@ -63,7 +63,42 @@ gcloud artifacts repositories create ffa \
     --description="ffa dashboard images"
 ```
 
-## Deploy (run from the repo root)
+## Deploy via GitHub Actions (recommended)
+
+`.github/workflows/deploy.yml` builds the image, pushes it to Artifact
+Registry, and deploys to Cloud Run for you -- one click from the Actions
+tab, reproducible, no local Docker. Set it up once:
+
+```bash
+# 1. A service account the workflow authenticates as.
+gcloud iam service-accounts create ffa-deployer --project your-project-id
+
+SA="ffa-deployer@your-project-id.iam.gserviceaccount.com"
+for role in run.admin iam.serviceAccountUser artifactregistry.admin \
+            serviceusage.serviceUsageAdmin; do
+  gcloud projects add-iam-policy-binding your-project-id \
+      --member "serviceAccount:$SA" --role "roles/$role"
+done
+
+# 2. A JSON key for it (this file goes into a GitHub secret, then delete it).
+gcloud iam service-accounts keys create key.json --iam-account "$SA"
+```
+
+Add two **repository secrets** (Settings → Secrets and variables → Actions):
+
+| Secret | Value |
+|---|---|
+| `GCP_SA_KEY` | the full contents of `key.json` |
+| `DASHBOARD_PASSWORD` | the shared league password |
+
+Then **Actions → deploy dashboard → Run workflow**, set your `project_id`
+(the defaults bake seasons 2023-2025 and project 2026), and run it. The
+final step prints the live URL -- `https://ffa-dashboard-xxx-uc.a.run.app`
+-- which is what you send your league. Re-running redeploys with fresh data.
+
+## Deploy manually (alternative)
+
+If you'd rather not use Actions, run from the repo root:
 
 ```bash
 # 1. Build the image with Cloud Build and push to Artifact Registry.
@@ -79,7 +114,7 @@ gcloud run deploy ffa-dashboard \
     --cpu 1 \
     --port 8080 \
     --allow-unauthenticated \
-    --set-env-vars="DASHBOARD_PASSWORD=pick-something-random,DASHBOARD_SEASON=2024,DASHBOARD_LEAGUE=ppr"
+    --set-env-vars="DASHBOARD_PASSWORD=pick-something-random,DASHBOARD_SEASON=2026,DASHBOARD_LEAGUE=ppr"
 ```
 
 The last command prints a URL like `https://ffa-dashboard-xxx-uc.a.run.app`.
