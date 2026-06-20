@@ -258,6 +258,7 @@ def run_backtest(
     games_model: str = "fixed",
     level_sd: float = 0.0,
     level_mean: float = 1.0,
+    collapse_rate: float = 0.0,
     level_model: "LevelModel | None" = None,
     years_exp: pd.DataFrame | None = None,
     include_rookies: bool = False,
@@ -326,6 +327,7 @@ def run_backtest(
             games_model=games_model,
             level_sd=level_sd,
             level_mean=level_mean,
+            collapse_rate=collapse_rate,
             player_level=player_level,
             seed=seed,
         )
