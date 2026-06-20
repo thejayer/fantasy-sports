@@ -357,12 +357,10 @@ def main() -> None:
         df = df.sort_values("vor", ascending=False).head(200).copy()
 
         # Risk read + per-player outcome distribution, inline on the board.
-        df["risk"] = [
-            risk_badge(r.q05, r.q50, r.q95)
-            if {"q05", "q50", "q95"} <= set(df.columns)
-            else "—"
-            for r in df.itertuples()
-        ]
+        if {"q05", "q50", "q95"} <= set(df.columns):
+            df["risk"] = [risk_badge(r.q05, r.q50, r.q95) for r in df.itertuples()]
+        else:
+            df["risk"] = "—"
         sparks = outcome_sparklines(samples_df, league, df["player_id"].tolist())
         df["outcomes"] = df["player_id"].map(sparks)
 
