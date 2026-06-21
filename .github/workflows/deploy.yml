@@ -50,8 +50,24 @@ jobs:
       SERVICE: ${{ inputs.service }}
       INGEST_SEASONS: ${{ inputs.ingest_seasons }}
       DASHBOARD_SEASON: ${{ inputs.dashboard_season }}
-      DASHBOARD_PASSWORD: ${{ secrets.DASHBOARD_PASSWORD }}
     steps:
+      - name: Validate inputs
+        run: |
+          # project_id / region / service are interpolated into shell and,
+          # for project_id/region, written to $GITHUB_ENV via IMAGE. Restrict
+          # them to an allowlist so a crafted value can't inject env vars or
+          # shell metacharacters. GCP ids, regions, and Cloud Run service
+          # names all fit [A-Za-z0-9_-].
+          for pair in "project_id=$PROJECT_ID" "region=$REGION" "service=$SERVICE"; do
+            name=${pair%%=*}
+            value=${pair#*=}
+            case "$value" in
+              ""|*[!A-Za-z0-9_-]*)
+                echo "Invalid $name: only letters, digits, '-' and '_' are allowed." >&2
+                exit 1 ;;
+            esac
+          done
+
       - uses: actions/checkout@v4
         with:
           persist-credentials: false
@@ -86,7 +102,21 @@ jobs:
           docker push "$IMAGE"
 
       - name: Deploy to Cloud Run
+        # The password secret is scoped to just this step (least privilege) --
+        # no earlier step needs it.
+        env:
+          DASHBOARD_PASSWORD: ${{ secrets.DASHBOARD_PASSWORD }}
         run: |
+          # The password is the only env value that can hold arbitrary
+          # characters. Reject control chars (a newline would corrupt the
+          # env-var list) and ';' (our delimiter below). Commas are handled
+          # by gcloud's '^;^' alternate delimiter, so a comma in the password
+          # isn't misread as a new VAR=VALUE pair. grep -z is required: without
+          # it grep is line-oriented and an embedded newline slips through.
+          if printf '%s' "$DASHBOARD_PASSWORD" | LC_ALL=C grep -qz '[;[:cntrl:]]'; then
+            echo "DASHBOARD_PASSWORD must not contain ';' or control characters." >&2
+            exit 1
+          fi
           gcloud run deploy "$SERVICE" \
             --project "$PROJECT_ID" \
             --region "$REGION" \
@@ -94,7 +124,7 @@ jobs:
             --platform managed \
             --allow-unauthenticated \
             --memory 1Gi --cpu 1 --port 8080 \
-            --set-env-vars "DASHBOARD_PASSWORD=$DASHBOARD_PASSWORD,DASHBOARD_SEASON=$DASHBOARD_SEASON,DASHBOARD_LEAGUE=ppr"
+            --set-env-vars "^;^DASHBOARD_PASSWORD=$DASHBOARD_PASSWORD;DASHBOARD_SEASON=$DASHBOARD_SEASON;DASHBOARD_LEAGUE=ppr"
 
       - name: Print the live URL
         run: |
