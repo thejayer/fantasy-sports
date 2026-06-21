@@ -1,0 +1,134 @@
+name: deploy dashboard
+
+# Manual deploy of the Streamlit dashboard to Google Cloud Run.
+#
+# One-time setup (see DEPLOY.md):
+#   - a GCP project with billing enabled
+#   - a service account with roles: run.admin, iam.serviceAccountUser,
+#     artifactregistry.admin, serviceusage.serviceUsageAdmin
+#   - repo secrets:  GCP_SA_KEY  (the service-account JSON key)
+#                    DASHBOARD_PASSWORD  (shared league password)
+#
+# Then run this workflow from the Actions tab, filling in the project id.
+
+on:
+  workflow_dispatch:
+    inputs:
+      project_id:
+        description: "GCP project ID"
+        required: true
+        default: "fantasy-sports-analytics"
+      region:
+        description: "Cloud Run region"
+        required: true
+        default: "us-central1"
+      service:
+        description: "Cloud Run service name"
+        required: true
+        default: "ffa-dashboard"
+      ingest_seasons:
+        description: "Seasons to bake into the image (space-separated)"
+        required: true
+        default: "2023 2024 2025"
+      dashboard_season:
+        description: "Season the dashboard projects"
+        required: true
+        default: "2026"
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    # Inputs/secrets go through env vars, not ${{ }} interpolation directly in
+    # shell, so a crafted input can't inject commands into the run blocks.
+    env:
+      PROJECT_ID: ${{ inputs.project_id }}
+      REGION: ${{ inputs.region }}
+      SERVICE: ${{ inputs.service }}
+      INGEST_SEASONS: ${{ inputs.ingest_seasons }}
+      DASHBOARD_SEASON: ${{ inputs.dashboard_season }}
+    steps:
+      - name: Validate inputs
+        run: |
+          # project_id / region / service are interpolated into shell and,
+          # for project_id/region, written to $GITHUB_ENV via IMAGE. Restrict
+          # them to an allowlist so a crafted value can't inject env vars or
+          # shell metacharacters. GCP ids, regions, and Cloud Run service
+          # names all fit [A-Za-z0-9_-].
+          for pair in "project_id=$PROJECT_ID" "region=$REGION" "service=$SERVICE"; do
+            name=${pair%%=*}
+            value=${pair#*=}
+            case "$value" in
+              ""|*[!A-Za-z0-9_-]*)
+                echo "Invalid $name: only letters, digits, '-' and '_' are allowed." >&2
+                exit 1 ;;
+            esac
+          done
+
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - id: auth
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.GCP_SA_KEY }}
+
+      - uses: google-github-actions/setup-gcloud@v2
+
+      - name: Enable required APIs
+        run: |
+          gcloud services enable \
+            run.googleapis.com artifactregistry.googleapis.com \
+            --project "$PROJECT_ID"
+
+      - name: Ensure Artifact Registry repo
+        run: |
+          gcloud artifacts repositories describe ffa \
+            --location "$REGION" --project "$PROJECT_ID" 2>/dev/null \
+          || gcloud artifacts repositories create ffa \
+            --repository-format=docker --location "$REGION" \
+            --project "$PROJECT_ID" --description "ffa dashboard images"
+
+      - name: Build and push image
+        run: |
+          IMAGE="$REGION-docker.pkg.dev/$PROJECT_ID/ffa/dashboard:${{ github.sha }}"
+          echo "IMAGE=$IMAGE" >> "$GITHUB_ENV"
+          gcloud auth configure-docker "$REGION-docker.pkg.dev" --quiet
+          docker build --build-arg INGEST_SEASONS="$INGEST_SEASONS" -t "$IMAGE" .
+          docker push "$IMAGE"
+
+      - name: Deploy to Cloud Run
+        # The password secret is scoped to just this step (least privilege) --
+        # no earlier step needs it.
+        env:
+          DASHBOARD_PASSWORD: ${{ secrets.DASHBOARD_PASSWORD }}
+        run: |
+          # The password is the only env value that can hold arbitrary
+          # characters. Reject control chars (a newline would corrupt the
+          # env-var list) and ';' (our delimiter below). Commas are handled
+          # by gcloud's '^;^' alternate delimiter, so a comma in the password
+          # isn't misread as a new VAR=VALUE pair. grep -z is required: without
+          # it grep is line-oriented and an embedded newline slips through.
+          if printf '%s' "$DASHBOARD_PASSWORD" | LC_ALL=C grep -qz '[;[:cntrl:]]'; then
+            echo "DASHBOARD_PASSWORD must not contain ';' or control characters." >&2
+            exit 1
+          fi
+          gcloud run deploy "$SERVICE" \
+            --project "$PROJECT_ID" \
+            --region "$REGION" \
+            --image "$IMAGE" \
+            --platform managed \
+            --allow-unauthenticated \
+            --memory 1Gi --cpu 1 --port 8080 \
+            --set-env-vars "^;^DASHBOARD_PASSWORD=$DASHBOARD_PASSWORD;DASHBOARD_SEASON=$DASHBOARD_SEASON;DASHBOARD_LEAGUE=ppr"
+
+      - name: Print the live URL
+        run: |
+          echo "Deployed to:"
+          gcloud run services describe "$SERVICE" \
+            --project "$PROJECT_ID" --region "$REGION" \
+            --format 'value(status.url)'

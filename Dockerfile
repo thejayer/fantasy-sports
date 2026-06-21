@@ -21,9 +21,10 @@ COPY configs/ ./configs/
 RUN pip install --no-cache-dir -e ".[dashboard]"
 
 # Bake the warehouse into the image. Cloud Build has internet; nflreadpy
-# fetches Parquet from nflverse on GitHub. Override at build time with
-#   --build-arg INGEST_SEASONS="2021 2022 2023 2024"
-ARG INGEST_SEASONS="2022 2023 2024"
+# fetches Parquet from nflverse on GitHub. These three seasons are the
+# lookback window for a DASHBOARD_SEASON=2026 projection (lookback 3).
+# Override at build time with --build-arg INGEST_SEASONS="2024 2025 2026".
+ARG INGEST_SEASONS="2023 2024 2025"
 RUN args=""; for s in ${INGEST_SEASONS}; do args="$args --season $s"; done && \
     ffa ingest $args
 
@@ -44,6 +45,6 @@ CMD ["sh", "-c", "exec streamlit run src/ffa/dashboard.py \
     --server.address=0.0.0.0 \
     -- \
     --league configs/${DASHBOARD_LEAGUE:-ppr}.yaml \
-    --season ${DASHBOARD_SEASON:-2024} \
+    --season ${DASHBOARD_SEASON:-2026} \
     --db data/ffa.duckdb \
     --raw-dir data/raw"]

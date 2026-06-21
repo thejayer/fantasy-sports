@@ -49,6 +49,9 @@ _GENERATORS = {
     "quantile": simulate_seasons_quantile_calibrated,
 }
 
+# The scoring engine is offensive-skill-only, so the draft board shows these.
+_FANTASY_POSITIONS = ("QB", "RB", "WR", "TE")
+
 # Friendly labels + inline help for the cryptic posterior columns.
 def _ranked_column_config() -> dict:
     return {
@@ -132,21 +135,37 @@ def availability_view(availability: pd.DataFrame, ranked: pd.DataFrame, top: int
     return merged[[*display_cols, *round_cols]].reset_index(drop=True)
 
 
-def risk_badge(q05: float, q50: float, q95: float) -> str:
-    """Label a player's outcome spread as safe / solid / volatile.
+def risk_badges(q05, q50, q95) -> list[str]:
+    """Population-relative boom-or-bust labels for a set of players.
 
-    Uses the relative interval width ``(q95 - q05) / q50`` -- a wide
-    floor-to-ceiling gap relative to the median is a boom-or-bust profile.
-    Pure helper so it's unit-testable without Streamlit.
+    Risk is relative to the field you're choosing between, so this splits the
+    relative interval width ``(q95 - q05) / q50`` into terciles across the
+    given players: 🟢 Safe (tightest third), 🟡 Solid, 🔴 Volatile (widest
+    third). Absolute widths shift with the model config (level uncertainty
+    widens everyone), but the *ordering* -- who's safer than the field -- is
+    what a drafter actually needs, and it survives any config. The exact
+    floor/ceiling numbers sit right next to it for the absolute read.
     """
-    if pd.isna(q05) or pd.isna(q95) or pd.isna(q50) or q50 <= 0:
-        return "—"
-    rel = (q95 - q05) / q50
-    if rel < 0.7:
-        return "🟢 Safe"
-    if rel < 1.1:
-        return "🟡 Solid"
-    return "🔴 Volatile"
+    q05 = pd.Series(q05).to_numpy(dtype=float)
+    q50 = pd.Series(q50).to_numpy(dtype=float)
+    q95 = pd.Series(q95).to_numpy(dtype=float)
+    with np.errstate(divide="ignore", invalid="ignore"):
+        rel = np.where(q50 > 0, (q95 - q05) / q50, np.nan)
+    finite = rel[np.isfinite(rel)]
+    if finite.size == 0:
+        return ["—"] * len(rel)
+    lo, hi = np.nanquantile(finite, [1 / 3, 2 / 3])
+    out: list[str] = []
+    for r in rel:
+        if not np.isfinite(r):
+            out.append("—")
+        elif r <= lo:
+            out.append("🟢 Safe")
+        elif r <= hi:
+            out.append("🟡 Solid")
+        else:
+            out.append("🔴 Volatile")
+    return out
 
 
 def outcome_sparklines(
@@ -314,7 +333,8 @@ def main() -> None:
             "group at a position. When a tier is about to empty, grab from it.\n"
             "- **Floor / Ceiling** — 5th / 95th-percentile outcomes across the "
             "simulations. A wide gap means boom-or-bust.\n"
-            "- **Risk** — that gap as a quick badge: 🟢 Safe, 🟡 Solid, 🔴 Volatile.\n"
+            "- **Risk** — boom-or-bust *relative to the field*: 🟢 Safe (tighter "
+            "than most), 🟡 Solid, 🔴 Volatile (wider than most).\n"
             "- **Outcomes** — each player's full simulated-points distribution, on a "
             "shared scale so you can compare shapes (where the mass sits, and the skew)."
         )
@@ -351,14 +371,18 @@ def main() -> None:
 
     # ----- Ranked board -----
     with tab_board:
-        positions: Iterable[str] = sorted(ranked["position"].dropna().unique().tolist())
+        present = sorted(ranked["position"].dropna().unique().tolist())
+        positions: Iterable[str] = [p for p in present if p in _FANTASY_POSITIONS] or present
         chosen_positions = st.multiselect("Position filter", positions, default=positions)
         df = ranked[ranked["position"].isin(chosen_positions)] if chosen_positions else ranked
+        # Drop anyone projected to score ~nothing (fluke-stat fringe players).
+        if "points_mean" in df.columns:
+            df = df[df["points_mean"] > 1.0]
         df = df.sort_values("vor", ascending=False).head(200).copy()
 
         # Risk read + per-player outcome distribution, inline on the board.
         if {"q05", "q50", "q95"} <= set(df.columns):
-            df["risk"] = [risk_badge(r.q05, r.q50, r.q95) for r in df.itertuples()]
+            df["risk"] = risk_badges(df["q05"], df["q50"], df["q95"])
         else:
             df["risk"] = "—"
         sparks = outcome_sparklines(samples_df, league, df["player_id"].tolist())
