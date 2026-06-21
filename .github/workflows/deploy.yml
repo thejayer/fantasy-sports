@@ -17,6 +17,7 @@ on:
       project_id:
         description: "GCP project ID"
         required: true
+        default: "fantasy-sports-analytics"
       region:
         description: "Cloud Run region"
         required: true
