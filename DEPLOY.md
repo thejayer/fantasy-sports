@@ -125,7 +125,7 @@ That's what you send to your league.
 | Variable | Default | Purpose |
 |---|---|---|
 | `DASHBOARD_PASSWORD` | (empty -> no gate) | Shared password for the sign-in screen. |
-| `DASHBOARD_SEASON` | `2024` | Target season the dashboard projects. |
+| `DASHBOARD_SEASON` | `2026` | Target season the dashboard projects. |
 | `DASHBOARD_LEAGUE` | `ppr` | League config file: `configs/{name}.yaml`. |
 | `PORT` | `8080` | Set by Cloud Run; don't override. |
 

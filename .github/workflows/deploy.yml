@@ -41,8 +41,19 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     timeout-minutes: 30
+    # Inputs/secrets go through env vars, not ${{ }} interpolation directly in
+    # shell, so a crafted input can't inject commands into the run blocks.
+    env:
+      PROJECT_ID: ${{ inputs.project_id }}
+      REGION: ${{ inputs.region }}
+      SERVICE: ${{ inputs.service }}
+      INGEST_SEASONS: ${{ inputs.ingest_seasons }}
+      DASHBOARD_SEASON: ${{ inputs.dashboard_season }}
+      DASHBOARD_PASSWORD: ${{ secrets.DASHBOARD_PASSWORD }}
     steps:
       - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
 
       - id: auth
         uses: google-github-actions/auth@v2
@@ -55,38 +66,38 @@ jobs:
         run: |
           gcloud services enable \
             run.googleapis.com artifactregistry.googleapis.com \
-            --project "${{ inputs.project_id }}"
+            --project "$PROJECT_ID"
 
       - name: Ensure Artifact Registry repo
         run: |
           gcloud artifacts repositories describe ffa \
-            --location "${{ inputs.region }}" --project "${{ inputs.project_id }}" 2>/dev/null \
+            --location "$REGION" --project "$PROJECT_ID" 2>/dev/null \
           || gcloud artifacts repositories create ffa \
-            --repository-format=docker --location "${{ inputs.region }}" \
-            --project "${{ inputs.project_id }}" --description "ffa dashboard images"
+            --repository-format=docker --location "$REGION" \
+            --project "$PROJECT_ID" --description "ffa dashboard images"
 
       - name: Build and push image
         run: |
-          IMAGE="${{ inputs.region }}-docker.pkg.dev/${{ inputs.project_id }}/ffa/dashboard:${{ github.sha }}"
+          IMAGE="$REGION-docker.pkg.dev/$PROJECT_ID/ffa/dashboard:${{ github.sha }}"
           echo "IMAGE=$IMAGE" >> "$GITHUB_ENV"
-          gcloud auth configure-docker "${{ inputs.region }}-docker.pkg.dev" --quiet
-          docker build --build-arg INGEST_SEASONS="${{ inputs.ingest_seasons }}" -t "$IMAGE" .
+          gcloud auth configure-docker "$REGION-docker.pkg.dev" --quiet
+          docker build --build-arg INGEST_SEASONS="$INGEST_SEASONS" -t "$IMAGE" .
           docker push "$IMAGE"
 
       - name: Deploy to Cloud Run
         run: |
-          gcloud run deploy "${{ inputs.service }}" \
-            --project "${{ inputs.project_id }}" \
-            --region "${{ inputs.region }}" \
+          gcloud run deploy "$SERVICE" \
+            --project "$PROJECT_ID" \
+            --region "$REGION" \
             --image "$IMAGE" \
             --platform managed \
             --allow-unauthenticated \
             --memory 1Gi --cpu 1 --port 8080 \
-            --set-env-vars "DASHBOARD_PASSWORD=${{ secrets.DASHBOARD_PASSWORD }},DASHBOARD_SEASON=${{ inputs.dashboard_season }},DASHBOARD_LEAGUE=ppr"
+            --set-env-vars "DASHBOARD_PASSWORD=$DASHBOARD_PASSWORD,DASHBOARD_SEASON=$DASHBOARD_SEASON,DASHBOARD_LEAGUE=ppr"
 
       - name: Print the live URL
         run: |
           echo "Deployed to:"
-          gcloud run services describe "${{ inputs.service }}" \
-            --project "${{ inputs.project_id }}" --region "${{ inputs.region }}" \
+          gcloud run services describe "$SERVICE" \
+            --project "$PROJECT_ID" --region "$REGION" \
             --format 'value(status.url)'
