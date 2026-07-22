@@ -1,0 +1,37 @@
+# Strictly Jayers league registry.
+# ESPN credentials (espn_s2 + SWID) are supplied via env at sync time, not here.
+
+leagues:
+  - id: baseball-dynasty
+    name: Strictly Jayers Baseball
+    short_name: Baseball Dynasty
+    sport: baseball
+    format: dynasty
+    platform: espn
+    espn_league_id: 2499137
+    seasons: [2024, 2025, 2026]
+    current_season: 2026
+    espn_url: https://fantasy.espn.com/baseball/league?leagueId=2499137
+
+  - id: football-main
+    name: Strictly Jayers Football
+    short_name: Football Main
+    sport: football
+    format: redraft
+    platform: espn
+    espn_league_id: 39790
+    # ESPN history available from 2015; site focuses on recent seasons first.
+    seasons: [2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024, 2025, 2026]
+    current_season: 2026
+    espn_url: https://fantasy.espn.com/football/league?leagueId=39790
+
+  - id: football-dynasty
+    name: Strictly Jayers Football Dynasty
+    short_name: Football Dynasty
+    sport: football
+    format: dynasty
+    platform: espn
+    espn_league_id: 94266
+    seasons: [2018, 2019, 2020, 2021, 2022, 2023, 2024, 2025, 2026]
+    current_season: 2026
+    espn_url: https://fantasy.espn.com/football/league?leagueId=94266
