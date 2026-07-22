@@ -37,3 +37,11 @@ Thumbs.db
 
 # Notebooks
 .ipynb_checkpoints/
+
+# Web app secrets
+apps/web/.env.local
+apps/web/.env
+
+# Node
+apps/web/node_modules/
+apps/web/.next/

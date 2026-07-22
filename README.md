@@ -1,3 +1,14 @@
+# Strictly Jayers fantasy sports
+
+This repo hosts the **Strictly Jayers** member hub (ESPN leagues, teams,
+players, standings) and the `ffa` NFL analytics engine.
+
+- **Hub (start here for the site):** see [HUB.md](HUB.md) — `configs/leagues.yaml`,
+  `src/sj` sync CLI, and `apps/web` Next.js app.
+- **Analytics engine:** `ffa` below — projections, ranking, draft tools, Streamlit dashboard.
+
+---
+
 # ffa: fantasy football analytics, rebuilt
 
 A modern replacement for the R scripts in this repo. The whole proposed

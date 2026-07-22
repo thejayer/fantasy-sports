@@ -1,0 +1,82 @@
+{
+  "league_id": "baseball-dynasty",
+  "short_name": "Baseball Dynasty",
+  "espn_league_id": 2499137,
+  "sport": "baseball",
+  "format": "dynasty",
+  "season": 2026,
+  "name": "Strictly Jayers Baseball",
+  "team_count": 3,
+  "current_week": 12,
+  "synced_at": "2026-07-22T00:00:00+00:00",
+  "teams": [
+    {
+      "team_id": 1,
+      "name": "Diamond Collective",
+      "abbrev": "DIA",
+      "owners": ["Morgan"],
+      "wins": 72,
+      "losses": 48,
+      "ties": 0,
+      "points_for": null,
+      "points_against": null,
+      "standing": 1,
+      "division": "",
+      "roster": [
+        {
+          "id": 36969,
+          "name": "Shohei Ohtani",
+          "position": "UTIL",
+          "slot": "UTIL",
+          "pro_team": "LAD",
+          "injury_status": "ACTIVE",
+          "total_points": 412.5,
+          "projected_total_points": 400.0,
+          "avg_points": 5.2
+        }
+      ]
+    },
+    {
+      "team_id": 2,
+      "name": "Stolen Bases FC",
+      "abbrev": "SBF",
+      "owners": ["Taylor"],
+      "wins": 64,
+      "losses": 56,
+      "ties": 0,
+      "points_for": null,
+      "points_against": null,
+      "standing": 2,
+      "division": "",
+      "roster": []
+    },
+    {
+      "team_id": 3,
+      "name": "Bullpen Lab",
+      "abbrev": "BPL",
+      "owners": ["Quinn"],
+      "wins": 55,
+      "losses": 65,
+      "ties": 0,
+      "points_for": null,
+      "points_against": null,
+      "standing": 3,
+      "division": "",
+      "roster": []
+    }
+  ],
+  "players": [
+    {
+      "id": 36969,
+      "name": "Shohei Ohtani",
+      "position": "UTIL",
+      "slot": "UTIL",
+      "pro_team": "LAD",
+      "injury_status": "ACTIVE",
+      "total_points": 412.5,
+      "projected_total_points": 400.0,
+      "avg_points": 5.2,
+      "fantasy_team": "Diamond Collective"
+    }
+  ]
+}

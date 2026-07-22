@@ -5,12 +5,13 @@ build-backend = "hatchling.build"
 [project]
 name = "ffa"
 version = "0.1.0"
-description = "Fantasy football analytics: model-driven projections, scoring, and roster optimization"
+description = "Strictly Jayers fantasy hub + NFL analytics (ffa)"
 readme = "README.md"
 requires-python = ">=3.10"
 license = { text = "GPL-3.0-or-later" }
 dependencies = [
     "duckdb>=1.0",
+    "espn-api>=0.45.0",
     "nflreadpy>=0.1.5",
     "pandas>=2.1",
     "pulp>=2.8,<4",  # 4.0 removes PULP_CBC_CMD, which optimize.py uses
@@ -34,9 +35,10 @@ dashboard = [
 
 [project.scripts]
 ffa = "ffa.cli:app"
+sj = "sj.cli:app"
 
 [tool.hatch.build.targets.wheel]
-packages = ["src/ffa"]
+packages = ["src/ffa", "src/sj"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
