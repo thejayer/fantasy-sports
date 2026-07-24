@@ -13,29 +13,97 @@ data: standings, teams, rosters, and players.
 
 Registry: [`configs/leagues.yaml`](configs/leagues.yaml)
 
+## Secrets (GCP Secret Manager)
+
+Source of truth is Secret Manager in project **`fantasy-sports-analytics`**.
+Do not commit secret values.
+
+| Secret name | Env var | Used by |
+|---|---|---|
+| `sj-auth-secret` | `AUTH_SECRET` | Next.js / Auth.js |
+| `sj-auth-google-id` | `AUTH_GOOGLE_ID` | Next.js / Auth.js |
+| `sj-auth-google-secret` | `AUTH_GOOGLE_SECRET` | Next.js / Auth.js |
+| `sj-allowed-emails` | `ALLOWED_EMAILS` | Next.js allowlist |
+| `sj-espn-s2` | `ESPN_S2` | `sj sync` only |
+| `sj-espn-swid` | `ESPN_SWID` | `sj sync` only |
+
+### 1. Create secret shells (Cloud Shell)
+
+From the repo root in [Cloud Shell](https://shell.cloud.google.com/):
+
+```bash
+git clone https://github.com/thejayer/fantasy-sports.git
+cd fantasy-sports
+git checkout cursor/strictly-jayers-hub-3b10   # until merged
+
+chmod +x scripts/*.sh
+./scripts/create-hub-secrets.sh
+```
+
+This creates the six secrets with a temporary `REPLACE_ME` version.
+
+### 2. Populate values (Cloud Shell)
+
+Interactive (value is hidden as you paste):
+
+```bash
+./scripts/add-hub-secret-version.sh sj-auth-secret
+./scripts/add-hub-secret-version.sh sj-auth-google-id
+./scripts/add-hub-secret-version.sh sj-auth-google-secret
+./scripts/add-hub-secret-version.sh sj-allowed-emails
+./scripts/add-hub-secret-version.sh sj-espn-s2
+./scripts/add-hub-secret-version.sh sj-espn-swid
+```
+
+Or generate `AUTH_SECRET` without pasting:
+
+```bash
+openssl rand -base64 32 | gcloud secrets versions add sj-auth-secret \
+  --project=fantasy-sports-analytics --data-file=-
+```
+
+`ALLOWED_EMAILS` should be a comma-separated list, e.g.
+`you@gmail.com,friend@gmail.com`.
+
+### 3. Pull secrets to your laptop (optional)
+
+```bash
+gcloud auth login
+gcloud config set project fantasy-sports-analytics
+./scripts/pull-hub-secrets.sh
+```
+
+Writes:
+
+- `apps/web/.env.local` — for `npm run dev`
+- `.env.espn` — `source .env.espn` before `sj sync`
+
+Both files are gitignored.
+
+### 4. Cloud Run (when you deploy the hub)
+
+```bash
+./scripts/hub-cloud-run-secrets.sh   # prints the mapping
+```
+
+Mount auth secrets on the web service with `--set-secrets=...`.
+Keep ESPN cookies off the public service; use them only in a sync job.
+
 ## Sync ESPN → local JSON
 
-Private leagues need ESPN cookies from a logged-in browser session:
-
-1. Log into ESPN Fantasy in Chrome.
-2. DevTools → Application → Cookies → `espn.com`
-3. Copy `espn_s2` and `SWID`
+Private leagues need ESPN cookies (`espn_s2` + `SWID`) in Secret Manager
+(see above), or exported in your shell.
 
 ```bash
 python -m venv .venv && source .venv/bin/activate
 pip install -e ".[dev]"
 
-export ESPN_S2='...'
-export ESPN_SWID='{...}'   # SWID also accepted
+source .env.espn   # after pull-hub-secrets.sh
+# or: export ESPN_S2=... ESPN_SWID=...
 
-# Current seasons only (fast)
 sj sync --current-only
-
-# One league / season
 sj sync --league football-main --season 2025
-
-# Everything in the registry (can take a while for long histories)
-sj sync
+sj sync   # full history; skips seasons ESPN doesn't have yet
 ```
 
 Snapshots write to `data/sj/<league-id>/<season>.json`. The web app reads
@@ -45,9 +113,8 @@ Snapshots write to `data/sj/<league-id>/<season>.json`. The web app reads
 
 ```bash
 cd apps/web
-cp .env.example .env.local
-# set AUTH_GOOGLE_ID, AUTH_GOOGLE_SECRET, AUTH_SECRET, ALLOWED_EMAILS
-# keep AUTH_DEV_BYPASS=1 for local browsing without Google
+# Prefer: ../../scripts/pull-hub-secrets.sh
+# Or temporarily: cp .env.example .env.local and edit
 
 npm install
 npm run dev
@@ -55,22 +122,14 @@ npm run dev
 
 Open [http://localhost:3000](http://localhost:3000).
 
-### Google allowlist auth
-
-Production should set:
-
-- `AUTH_SECRET`
-- `AUTH_GOOGLE_ID` / `AUTH_GOOGLE_SECRET` from Google Cloud OAuth
-- `ALLOWED_EMAILS` = comma-separated Strictly Jayers member Gmail addresses
-- `AUTH_DEV_BYPASS` unset or `0`
-
-Only allowlisted Google accounts can sign in.
+Only Google accounts in `ALLOWED_EMAILS` can sign in (`AUTH_DEV_BYPASS=0`).
 
 ## Layout
 
 ```
 configs/leagues.yaml     League registry
 src/sj/                  Sync + store CLI (`sj`)
+scripts/                 Secret Manager helpers
 fixtures/sj/             Sample snapshots for offline UI
 data/sj/                 Live sync output (gitignored)
 apps/web/                Next.js member hub
