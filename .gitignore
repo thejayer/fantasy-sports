@@ -42,6 +42,9 @@ Thumbs.db
 apps/web/.env.local
 apps/web/.env
 
+# Pulled ESPN exports (from scripts/pull-hub-secrets.sh)
+.env.espn
+
 # Node
 apps/web/node_modules/
 apps/web/.next/
