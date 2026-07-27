@@ -117,6 +117,45 @@ def test_index_prefers_v2_when_both_layouts_present(tmp_path: Path):
     assert items[2024]["path"] == "football-main/2024.json"
 
 
+def test_write_upserts_index_without_full_rewrite(tmp_path: Path, monkeypatch):
+    """Roadmap 2.3: once an index exists, later writes must not rescan the store."""
+    store = FileStore(tmp_path)
+    store.write(snapshot(2024))
+
+    def boom() -> None:
+        raise AssertionError("full _rewrite_index should not run when index exists")
+
+    monkeypatch.setattr(store, "_rewrite_index", boom)
+    store.write(snapshot(2025))
+
+    items = store.list()
+    assert {item["season"] for item in items} == {2024, 2025}
+    assert all(item["path"].endswith(f"/{MANIFEST_NAME}") for item in items)
+
+
+def test_upsert_replaces_same_season_entry(tmp_path: Path):
+    store = FileStore(tmp_path)
+    store.write(snapshot(2025))
+    first = store.list()[0]["synced_at"]
+
+    store.write(snapshot(2025))
+    items = store.list()
+    assert len(items) == 1
+    assert items[0]["season"] == 2025
+    assert items[0]["synced_at"] != first
+
+
+def test_missing_index_falls_back_to_full_rebuild(tmp_path: Path):
+    store = FileStore(tmp_path)
+    store.write(snapshot(2024))
+    store.write(snapshot(2025))
+    (tmp_path / "index.json").unlink()
+
+    # Next write rebuilds from manifests on disk, then upserts.
+    store.write(snapshot(2023))
+    assert {item["season"] for item in store.list()} == {2023, 2024, 2025}
+
+
 def test_missing_snapshot_raises(tmp_path: Path):
     with pytest.raises(FileNotFoundError):
         read_snapshot("football-main", 1999, store_dir=tmp_path)
@@ -189,3 +228,23 @@ def test_gcs_store_round_trip(monkeypatch):
     assert store.list()[0]["path"] == f"football-main/2025/{MANIFEST_NAME}"
     # Concern objects landed too.
     assert "snapshots/football-main/2025/standings.json" in bucket.objects
+
+
+def test_gcs_write_upserts_without_listing_bucket(monkeypatch):
+    bucket = FakeBucket()
+    store = GcsStore("sj-data", prefix="snapshots")
+    monkeypatch.setattr(store, "_get_bucket", lambda: bucket)
+    store.write(snapshot(2024))
+
+    def boom() -> None:
+        raise AssertionError("full _rewrite_index should not run when index exists")
+
+    monkeypatch.setattr(store, "_rewrite_index", boom)
+    # list_blobs is only used by the full rebuild — upsert must not need it.
+    monkeypatch.setattr(
+        bucket,
+        "list_blobs",
+        lambda *a, **k: (_ for _ in ()).throw(AssertionError("list_blobs")),
+    )
+    store.write(snapshot(2025))
+    assert {item["season"] for item in store.list()} == {2024, 2025}
