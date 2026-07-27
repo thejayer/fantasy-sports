@@ -209,13 +209,14 @@ Writers still build one in-memory monolith; the store persists it as per-concern
 files under `{league}/{season}/` with a `manifest.json` written last:
 
 ```
-standings.json  rosters.json  matchups.json  draft.json  transactions.json
+standings.json  rosters.json  matchups.json  draft.json  settings.json  transactions.json
 ```
 
 `schema_version: 2` on the manifest. Legacy `{league}/{season}.json` monoliths
 (`schema_version` 1 — committed fixtures) stay readable; writers emit only v2
-and delete a leftover monolith for that season. `transactions.json` is an empty
-stub until 2.4 so the layout does not need a second migration.
+and delete a leftover monolith for that season. `settings.json` / populated
+`transactions.json` arrived in 2.4; assemble treats both as optional so older
+v2 seasons still load.
 
 Python `read_snapshot` reassembles the monolith. The web dual-reads manifest or
 monolith; `getTeam` on v2 loads standings + one roster only (AUDIT #16). Index
@@ -228,13 +229,20 @@ A missing or corrupt index still falls back to a full rebuild from manifests +
 legacy monoliths so recovery stays one command away. Required before weekly
 snapshots multiply the file count.
 
-### 2.4 Extend the sync
-In rough value order, all available through the `espn-api` client already in use:
-transactions and trades, box scores (2019+), playoff brackets, free agents,
-league settings (roster slots, FAAB, keeper counts — which is what would make
-`format: dynasty` mean something), per-week player stats.
-Add retry with backoff and explicit timeouts around the ESPN calls; the
-underlying library has neither, and `--throttle` only spaces out league-seasons.
+### 2.4 Extend the sync — LANDED
+Shipped the high-leverage slice without ballooning snapshot size:
+
+- **Settings** from the already-loaded `league.settings` (`mSettings`) →
+  `settings.json` (roster slots, FAAB, keeper counts, scoring format). No extra
+  ESPN request; this is what makes `format: dynasty` mean something on disk.
+- **Transactions / trades** via paged `recent_activity` (both sports; empty
+  before 2019) → `transactions.json` (fills the 2.2 stub).
+- **Retry / backoff / timeouts** around ESPN HTTP (`SJ_ESPN_TIMEOUT`,
+  `SJ_ESPN_MAX_ATTEMPTS`). espn-api has neither; `--throttle` only spaces
+  league-seasons.
+
+Deferred (size / API gaps): box scores, free agents, per-week player stats,
+playoff brackets — pull those when a phase-3 page needs them.
 
 ### 2.5 Backfill and validate
 Run the full backfill (24 league-seasons; football back to 2015) and validate the
@@ -361,10 +369,10 @@ Fold in continuously rather than saving for the end.
 
 ## Sequencing
 
-**Next up: 1.3 or 2.4.** Continuous deployment + Workload Identity Federation
-(1.3) is the biggest remaining platform win on track A (needs GCP-side WIF
-setup). On the data track, 2.4 (extend sync — transactions, box scores, settings)
-is the next free-ish ESPN win. 1.5 and 2.1–2.3 are in.
+**Next up: 1.3 or 2.5 / 3.1.** Continuous deployment + Workload Identity
+Federation (1.3) is the biggest remaining platform win on track A (needs
+GCP-side WIF setup). On the data track, 2.5 (backfill + validate fixtures) is
+next; product track can start 3.1 (unify league views). 2.1–2.4 are in.
 
 **Branch protection on `main` is done** — required checks are `python`, `web`,
 and `images`. The `python` check is an aggregator over the 3.11 + 3.12 matrix.
@@ -379,7 +387,7 @@ shape. Phase 3.1 (unify views) before any other UI work so nothing ships twice.
 | Track | Contents | Touches |
 |---|---|---|
 | A — Platform | 1.3, ~~1.5~~, ~~1.6~~, 1.7 | workflows, Dockerfiles, scripts |
-| B — Data | ~~1.4~~, ~~2.1~~, ~~2.2~~, ~~2.3~~, 2.4, 2.5 | `src/sj`, `configs` |
+| B — Data | ~~1.4~~, ~~2.1~~, ~~2.2~~, ~~2.3~~, ~~2.4~~, 2.5 | `src/sj`, `configs` |
 | C — Product | 3.1 → 3.6 | `apps/web` |
 | D — Engine | 4.1, 4.3 | `src/ffa` |
 

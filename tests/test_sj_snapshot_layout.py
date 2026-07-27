@@ -21,6 +21,12 @@ def _monolith() -> dict:
         "current_week": 3,
         "period_label": "week",
         "synced_at": "2026-07-27T00:00:00+00:00",
+        "settings": {
+            "scoring_type": "H2H_POINTS",
+            "keeper_count": 0,
+            "faab": True,
+            "acquisition_budget": 100,
+        },
         "draft": [
             {
                 "round": 1,
@@ -31,6 +37,20 @@ def _monolith() -> dict:
                 "bid_amount": 0.0,
                 "keeper": False,
                 "nominating_team_id": None,
+            }
+        ],
+        "transactions": [
+            {
+                "date": "1720000000000",
+                "actions": [
+                    {
+                        "team_id": 1,
+                        "action": "FA ADDED",
+                        "player_id": 10,
+                        "player_name": "Star",
+                        "bid_amount": 5.0,
+                    }
+                ],
             }
         ],
         "teams": [
@@ -111,10 +131,14 @@ def test_split_round_trip_preserves_monolith_fields():
         "rosters.json",
         "matchups.json",
         "draft.json",
+        "settings.json",
         "transactions.json",
     }
     assert parts["manifest.json"]["schema_version"] == SCHEMA_VERSION
-    assert parts["transactions.json"] == {"transactions": []}
+    assert parts["settings.json"]["settings"]["faab"] is True
+    assert parts["transactions.json"]["transactions"][0]["actions"][0]["action"] == (
+        "FA ADDED"
+    )
     assert "roster" not in parts["standings.json"]["teams"][0]
     assert parts["rosters.json"]["teams"]["1"][0]["name"] == "Star"
     assert parts["matchups.json"]["teams"]["1"]["outcomes"] == ["W", "L", "U"]
@@ -134,6 +158,24 @@ def test_assemble_accepts_concern_name_keys():
         "rosters": parts["rosters.json"],
         "matchups": parts["matchups.json"],
         "draft": parts["draft.json"],
+        "settings": parts["settings.json"],
         "transactions": parts["transactions.json"],
     }
     assert assemble_snapshot(by_name)["teams"][0]["roster"][0]["id"] == 10
+
+
+def test_assemble_tolerates_missing_settings_and_transactions():
+    """Seasons written before roadmap 2.4 omit settings.json."""
+    parts = split_snapshot(_monolith())
+    del parts["settings.json"]
+    del parts["transactions.json"]
+    by_name = {
+        "manifest": parts["manifest.json"],
+        "standings": parts["standings.json"],
+        "rosters": parts["rosters.json"],
+        "matchups": parts["matchups.json"],
+        "draft": parts["draft.json"],
+    }
+    snap = assemble_snapshot(by_name)
+    assert snap["settings"] == {}
+    assert snap["transactions"] == []

@@ -18,6 +18,7 @@ On-disk layout (schema_version 2, roadmap 2.2)::
         rosters.json
         matchups.json
         draft.json
+        settings.json
         transactions.json
 
 Legacy schema_version 1 monoliths (``{league_id}/{season}.json``) remain

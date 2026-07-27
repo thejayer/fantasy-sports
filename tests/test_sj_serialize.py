@@ -2,10 +2,13 @@ from types import SimpleNamespace
 
 from sj.serialize import (
     extract_baseball_season_stats,
+    serialize_activity,
     serialize_draft,
     serialize_league,
     serialize_player,
+    serialize_settings,
     serialize_team,
+    serialize_transactions,
 )
 
 
@@ -59,10 +62,25 @@ def test_serialize_team_and_league():
         nominatingTeam=None,
     )
     league = SimpleNamespace(
-        settings=SimpleNamespace(name="ESPN Name", scoring_type="H2H_POINTS"),
+        settings=SimpleNamespace(
+            name="ESPN Name",
+            scoring_type="H2H_POINTS",
+            keeper_count=0,
+            faab=True,
+            acquisition_budget=100,
+            reg_season_count=14,
+            playoff_team_count=4,
+            team_count=10,
+            position_slot_counts={"QB": 1, "RB": 2},
+            scoring_format=[{"id": 3, "abbr": "PTD", "label": "Passing TD", "points": 4}],
+        ),
         teams=[team],
         current_week=4,
         draft=[draft_pick],
+    )
+    activity = SimpleNamespace(
+        date="1720000000000",
+        actions=[(team, "FA ADDED", player, 7.0)],
     )
 
     snapshot = serialize_league(
@@ -72,6 +90,7 @@ def test_serialize_team_and_league():
         format="redraft",
         season=2025,
         espn_league_id=39790,
+        transactions=[activity],
     )
     assert snapshot["team_count"] == 1
     assert snapshot["teams"][0]["owners"] == ["A B"]
@@ -82,6 +101,16 @@ def test_serialize_team_and_league():
     assert snapshot["teams"][0]["schedule"] == [2, 7]
     assert snapshot["teams"][0]["scores"] == [112.4, 0.0]
     assert snapshot["teams"][0]["outcomes"] == ["W", "U"]
+    assert snapshot["settings"]["faab"] is True
+    assert snapshot["settings"]["position_slot_counts"] == {"QB": 1, "RB": 2}
+    assert snapshot["settings"]["scoring_format"][0]["abbr"] == "PTD"
+    assert snapshot["transactions"][0]["actions"][0] == {
+        "team_id": 7,
+        "action": "FA ADDED",
+        "player_id": 1,
+        "player_name": "Test Player",
+        "bid_amount": 7.0,
+    }
     assert snapshot["draft"] == [
         {
             "round": 1,
@@ -94,6 +123,32 @@ def test_serialize_team_and_league():
             "nominating_team_id": None,
         }
     ]
+
+
+def test_serialize_settings_and_activity_shapes():
+    league = SimpleNamespace(
+        settings=SimpleNamespace(
+            scoring_type="H2H_CATEGORY",
+            keeper_count=5,
+            faab=False,
+            acquisition_budget=None,
+            team_count=12,
+        )
+    )
+    settings = serialize_settings(league)
+    assert settings["keeper_count"] == 5
+    assert settings["faab"] is False
+
+    # Baseball activity actions are 3-tuples (no bid).
+    player = SimpleNamespace(playerId=9, name="Slugger")
+    team = SimpleNamespace(team_id=2)
+    baseball = serialize_activity(
+        SimpleNamespace(date="1", actions=[(team, "FA ADDED", player)])
+    )
+    assert baseball["actions"][0]["bid_amount"] == 0.0
+    assert baseball["actions"][0]["player_id"] == 9
+    assert serialize_transactions([]) == []
+    assert serialize_settings(SimpleNamespace()) == {}
 
 
 def test_serialize_draft_handles_missing_and_auction_fields():
