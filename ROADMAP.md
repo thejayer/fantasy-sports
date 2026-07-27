@@ -19,8 +19,9 @@ where the product becomes something worth logging into.
   phase below that touches the UI or the data layer can be developed and tested
   without ESPN credentials.
 - In `apps/web`: `npm run typecheck`, `npm test` (vitest), `npm run build`, and
-  `npm run verify:prerender`. All pass on `main`. None are enforced by CI yet —
-  that is 1.1, and it is the next thing to do.
+  `npm run verify:prerender`. All pass on `main` and all run in CI on every PR
+  (1.1). They report but do not block until branch protection is enabled — see
+  1.1 for that last step.
 
 ---
 
@@ -84,39 +85,46 @@ all three deploy workflows.
 Phase 0 fixes today's bugs; this phase is why tomorrow's don't ship. Do it before
 the UI work in phase 3, because that work is large and will need a safety net.
 
-### 1.1 Web CI — do this first
-Phase 0 made this urgent rather than merely tidy. CI runs `ruff` and `pytest`
-only, so the check that went green on #26 covered essentially none of that PR:
-the TypeScript, the dependency bump, three Dockerfiles, and a workflow. All of
-it was verified by hand.
+### 1.1 Web CI — LANDED
+Shipped in #28. `.github/workflows/tests.yml` now runs three parallel jobs:
 
-The scripts already exist and pass, so this is wiring, not authoring. Add a job
-to `.github/workflows/tests.yml` (or a `web.yml`) that runs on PRs touching
-`apps/web`:
+| Job | Duration | Covers |
+|---|---|---|
+| `python` | ~63s | `ruff`, `pytest` (unchanged) |
+| `web` | ~61s | `npm ci`, typecheck, lint, 26 vitest cases, build, `verify:prerender`, `npm audit` |
+| `images` | ~88s | hub + sync image builds, plus an assertion that neither runs as root |
 
-```
-npm ci
-npm run typecheck          # tsc --noEmit
-npm run lint
-npm test                   # vitest, 26 tests
-npm run build
-npm run verify:prerender   # must run after build
-```
+Total wall clock ~88s, which removed the argument for path filters — always
+running avoids a required check that never reports on an unrelated PR.
 
-Note the ordering constraint: `verify:prerender` reads `.next/prerender-manifest.json`,
-so it has to follow `build`. Worth adding a `docker build` smoke step in the same
-job — Phase 0 found a build-breaking bug (`useradd sync`) that no amount of
-reading would have caught.
+The `images` job is the non-obvious one and it earns its time: Phase 0's
+non-root work was invisible to review, and the `useradd sync` collision with a
+Debian system account failed the build outright. Building is the only check that
+catches that. The ffa dashboard image stays excluded — `ffa ingest` at build
+time needs network access to nflverse for a ~1 GB image, too slow and flaky for
+a PR gate.
+
+`npm audit --audit-level=high` blocks, so the 14 → 0 advisory work from #26
+cannot drift back silently. It can fail on an advisory published against an
+untouched dependency; the escape hatch is 1.5 (Dependabot) plus moving it to a
+scheduled run.
+
+**One step remains, and it is not something a PR can do.** These jobs report but
+do not yet *block*: nothing is configured as a required status check, so a red
+run is still mergeable. The check names are now stable — `tests / python`,
+`tests / web`, `tests / images` — so the remaining work is enabling branch
+protection on `main` in the repo settings. Until that is done, this phase's
+premise ("regressions impossible to merge") is only half true.
 
 ### 1.2 Test harness for the frontend
 *Partly landed:* Vitest is in place with 26 tests covering the Phase 0
 regressions — `callbackUrl` validation, the force-dynamic invariant, and the
-`requireSession` backstop.
+`requireSession` backstop — and 1.1 now runs them on every PR.
 
 Remaining: React Testing Library for component tests once Phase 3 introduces
 client components, and Playwright for a handful of smoke paths (login redirect,
 leagues list, standings, team roster, 404s). Neither is worth adding until there
-is UI worth driving.
+is UI worth driving, so this stays open against Phase 3 rather than blocking it.
 
 ### 1.3 Continuous deployment
 Deploy `sj-hub` on merge to `main` behind the CI gate, keeping
@@ -325,9 +333,17 @@ Fold in continuously rather than saving for the end.
 
 ## Sequencing
 
-**Next up: 1.1.** Phase 0 wrote five new checks and left none of them enforced,
-so the repo is currently one careless merge away from undoing that work. It is
-also the cheapest item left — the scripts exist and pass, so it is wiring.
+**Next up: 1.4 or 1.3.** With CI in place, either can land against a real gate.
+1.4 (`sync.py` failure-path tests) is the better next step: the pipeline feeding
+the whole site is still the least-tested thing in the repo, and it currently
+reports success when seasons were skipped, so 1.6's alerting has nothing
+trustworthy to alert on. 1.3 (continuous deployment) is the bigger win but
+carries the Workload Identity Federation migration, making it the largest item
+in the phase.
+
+**Do first, and it is not a code change:** enable branch protection on `main` so
+`tests / python`, `tests / web`, and `tests / images` are required. Everything in
+1.1 reports today but blocks nothing.
 
 **Strictly ordered:** ~~0~~ → 1 → 2.2 → 3.1 → 3.2/3.3 → 3.4/3.5 → 4.
 Phase 2.2 (schema split) before phase 3 so the UI is built once against the final
@@ -338,8 +354,8 @@ shape. Phase 3.1 (unify views) before any other UI work so nothing ships twice.
 
 | Track | Contents | Touches |
 |---|---|---|
-| A — Platform | 1.1, 1.3, 1.5, 1.6, 1.7 | workflows, Dockerfiles, scripts |
-| B — Data | 2.1, 2.3, 2.4, 2.5, 1.4 | `src/sj`, `configs` |
+| A — Platform | 1.3, 1.5, 1.6, 1.7 | workflows, Dockerfiles, scripts |
+| B — Data | 1.4, 2.1, 2.3, 2.4, 2.5 | `src/sj`, `configs` |
 | C — Product | 3.1 → 3.6 | `apps/web` |
 | D — Engine | 4.1, 4.3 | `src/ffa` |
 
@@ -367,7 +383,8 @@ Concrete targets, baselined against [AUDIT.md](AUDIT.md) and re-measured on
 | Pages serving stale build-time data | 2 | **0** | 0 |
 | Containers running as root | 3 | **0** | 0 |
 | `apps/web` tests | 0 | **26** | plus component + smoke |
-| `apps/web` checks enforced in CI | 0 | 0 | typecheck + lint + build + tests |
+| `apps/web` checks running in CI | 0 | **6** | typecheck + lint + build + tests + prerender + audit |
+| CI checks that block a merge | 0 | 0 | all of them (branch protection) |
 | `src/sj/sync.py` coverage | 0% | 38% | matches `serialize.py` (~94%) |
 | Repo coverage | 67% | 71% | 85%+ |
 | Seasons reachable in the UI | 3 of 24 | 3 of 24 | 24 of 24 |
@@ -375,5 +392,7 @@ Concrete targets, baselined against [AUDIT.md](AUDIT.md) and re-measured on
 | Deploys requiring a human | all | all | rollback only |
 | Hub pages calling `ffa` | 0 | 0 | projections on roster + player + rankings |
 
-The gap that stands out: `apps/web` went from 0 to 26 tests, and CI still
-enforces none of them. That is 1.1.
+The gap that stands out is now the last row: six checks run on every PR and none
+of them can stop a merge, because no branch protection is configured. That is a
+repo setting rather than a code change, and it is the cheapest remaining item in
+the plan.
