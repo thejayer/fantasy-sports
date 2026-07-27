@@ -7,11 +7,10 @@ reading code alone. The plan that follows from it is in [ROADMAP.md](ROADMAP.md)
 
 Audited at commit `fde0613` (merge of #22).
 
-> **Status: findings 1–5 (all P0) are fixed** as of #26 — see the summary table
-> at the end for the current state of each finding. They are kept here in full,
-> with their reproductions, because the evidence is what justifies the roadmap
-> and what a regression would have to contradict. Everything from finding 6 down
-> is still open.
+> **Status: findings 1–5 (all P0) are fixed** as of #26, and finding 11 as of
+> #28 — see the summary table at the end for the current state of each finding.
+> They are kept here in full, with their reproductions, because the evidence is
+> what justifies the roadmap and what a regression would have to contradict.
 
 ---
 
@@ -250,7 +249,7 @@ Open Graph image.
 
 ## P1 — Engineering practice
 
-### 11. The web app has no CI whatsoever
+### 11. The web app has no CI whatsoever — FIXED in #28 (branch protection still off)
 
 `.github/workflows/tests.yml` runs `ruff` and `pytest`. It never enters
 `apps/web`. There is no `tsc --noEmit`, no `eslint`, no `next build`, and no
@@ -261,11 +260,19 @@ automated gate.** `npm run lint` also still uses `next lint`, which prints
 Both checks pass today when run by hand, which is exactly why this is worth
 wiring up now, while it is free.
 
-**Still open, and now worse in one sense.** Phase 0 added `typecheck`, `test`
-(26 cases), and `verify:prerender` scripts, all passing — and CI enforces none of
-them. The green check on #26 covered essentially nothing in that PR, which was
-almost entirely TypeScript, dependencies, Dockerfiles, and a workflow. Roadmap
-1.1, and the next thing to do.
+Phase 0 sharpened this: it added `typecheck`, `test` (26 cases), and
+`verify:prerender`, all passing, and CI ran none of them — so the green check on
+#26 covered essentially nothing in that PR.
+
+Resolved in #28 (roadmap 1.1). `tests.yml` now runs three parallel jobs: the
+existing Python checks, a `web` job (typecheck, lint, 26 tests, build,
+`verify:prerender`, `npm audit`), and an `images` job that builds the hub and
+sync images and asserts neither runs as root. ~88s total.
+
+**One piece is still outstanding and cannot be fixed by a PR:** none of these are
+configured as required status checks, so a red run is still mergeable. Enabling
+branch protection on `main` for `tests / python`, `tests / web`, and
+`tests / images` is a repo setting.
 
 ### 12. The pipeline feeding the entire site is untested
 
@@ -375,7 +382,7 @@ time. `@types/node` is `^20` against a Node 22 runtime. No Dependabot or Renovat
 | 8 | Football and baseball views diverged | P1 | Open — roadmap 3.1 |
 | 9 | No matchups, draft, transactions, or history | P1 | Open — roadmap 2.1, 2.4, 3.4, 3.5 |
 | 10 | No loading/error/empty states | P1 | Open — roadmap 3.6 |
-| 11 | Zero CI for `apps/web` | P1 | Open — roadmap 1.1. 26 tests now exist; CI still runs none of them |
+| 11 | Zero CI for `apps/web` | P1 | Fixed (#28, roadmap 1.1); checks report but do not block until branch protection is on |
 | 12 | `sync.py` at 0% coverage | P1 | Partly — 38% via `sj seed`; ESPN paths untested, roadmap 1.4 |
 | 13 | All deploys manual | P1 | Open — roadmap 1.3 |
 | 14 | No observability or alerting | P1 | Open — roadmap 1.6 |
