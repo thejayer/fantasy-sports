@@ -6,9 +6,11 @@ export default auth((req) => {
   const { pathname, search } = req.nextUrl;
   const isLogin = pathname.startsWith("/login");
   const isAuthApi = pathname.startsWith("/api/auth");
+  // Public probe for uptime / Cloud Monitoring — no session, no league bodies.
+  const isHealth = pathname === "/api/health";
   const bypass = process.env.AUTH_DEV_BYPASS === "1";
 
-  if (bypass || isLogin || isAuthApi) {
+  if (bypass || isLogin || isAuthApi || isHealth) {
     return NextResponse.next();
   }
 
