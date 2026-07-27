@@ -12,7 +12,7 @@ This is a dual-product monorepo. See `README.md` (ffa engine) and `HUB.md` (memb
 - The base image ships Python 3.12 without `ensurepip`; `python3.12-venv` was apt-installed during environment setup (captured in the snapshot). If `python3 -m venv` ever fails with an ensurepip error, reinstall it: `sudo apt-get install -y python3.12-venv`.
 
 ### Lint (ruff version pin — important)
-- `ruff` is intentionally pinned to the `0.5.x` line. The code lints clean under `0.5.x` (matching the repo's `ruff>=0.5` era and the green CI run on this branch), but `ruff` 0.6+/0.16 flags ~77 stylistic issues (B/I/UP/SIM/RUF) that are version drift, not real regressions. Run `ruff check .` (CI parity). Do not "fix" those by editing code; keep the pin.
+- `ruff` is pinned to the `0.5.x` line in `pyproject.toml` (`ruff>=0.5,<0.6`). The code lints clean under `0.5.x`, but `ruff` 0.6+/0.16 expands the default ruleset and flags ~77 stylistic issues (B/I/UP/SIM/RUF) that are version drift, not real regressions (this once broke CI). Run `ruff check .` (CI parity). Do not "fix" those by editing code or by loosening the pin.
 
 ### Tests
 - `pytest` is fully offline (synthetic fixtures) — no `ffa ingest` needed. Run from repo root.
