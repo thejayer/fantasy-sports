@@ -13,18 +13,22 @@ Audited at commit `fde0613` (merge of #22).
 
 The committed fixtures are 1.8–6.4 KB with 3–4 teams and 0–2 players per team,
 which hides every problem that only appears at real scale. To audit honestly, a
-schema-accurate dataset was generated at production shape — 3 leagues × 24
-league-seasons, 12 teams each, full rosters — matching what `src/sj/serialize.py`
-actually emits:
+schema-accurate dataset was generated at production shape. That generator is now
+committed as `sj seed` (see [HUB.md](HUB.md)), so every measurement below is
+reproducible:
 
-| League | Seasons | Per-season snapshot | Players/season |
-|---|---|---|---|
-| `baseball-dynasty` | 2024–2026 | 464 KB | 300 |
-| `football-main` | 2015–2026 | 195 KB | 192 |
-| `football-dynasty` | 2018–2026 | 267 KB | 264 |
+```bash
+sj seed          # 24 league-seasons of synthetic data into data/sj
+```
 
-Total: **6.0 MB across 24 league-seasons.** Storage is a non-issue; everything
-below is about correctness, security, and product surface.
+| League | Seasons | Per-season snapshot | Players/season | Roster |
+|---|---|---|---|---|
+| `baseball-dynasty` | 2024–2026 | 540 KB | 348 | 29 |
+| `football-main` | 2015–2026 | 196 KB | 192 | 16 |
+| `football-dynasty` | 2018–2026 | 268 KB | 264 | 22 |
+
+Total: **6.3 MB across 24 league-seasons**, generated in 0.6 s. Storage is a
+non-issue; everything below is about correctness, security, and product surface.
 
 Baseline health is genuinely good and worth stating up front: `ruff check .`
 passes clean, **197 Python tests pass**, `tsc --noEmit` passes, and
@@ -170,7 +174,7 @@ through the UI.
 ### 7. Player tables have no search, sort, filter, or pagination
 
 Every player in the league renders as one unbroken table: **192 rows** for
-football, **300** for baseball. There is no search box, no sortable column, no
+football, **348** for baseball. There is no search box, no sortable column, no
 position filter, and no pagination. Finding a player means scrolling.
 
 <img src="/opt/cursor/artifacts/audit_players_table_no_search_sort_filter.webp" alt="Players tab rendering 192 rows with no search sort or filter controls" />
@@ -179,11 +183,11 @@ Measured production response sizes:
 
 | Route | HTML |
 |---|---|
-| `/leagues/football-main` (standings) | 15.8 KB |
-| `/leagues/football-main?tab=players` | 86.5 KB |
-| `/leagues/baseball-dynasty?tab=players` | **395.8 KB** |
+| `/leagues/football-main` (standings) | 15.5 KB |
+| `/leagues/football-main?tab=players` | 84.9 KB |
+| `/leagues/baseball-dynasty?tab=players` | **448 KB** |
 
-396 KB of HTML to render one page is the direct cost of having no pagination.
+448 KB of HTML to render one page is the direct cost of having no pagination.
 Note this is a server-rendered table with zero client-side interactivity, so
 the payload buys nothing.
 
@@ -312,7 +316,7 @@ README's own "what's next" names this as the missing plumbing.
 ### 16. Storage layout will not extend to weekly data
 
 One JSON blob per league-season, and `getTeam()` parses the entire league
-snapshot to render one team. At 195–464 KB that is fine. Adding box scores or
+snapshot to render one team. At 196–540 KB that is fine. Adding box scores or
 per-week player stats — the obvious next features — pushes seasons toward tens of
 megabytes and breaks the pattern.
 

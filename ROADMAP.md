@@ -12,6 +12,11 @@ records, rivalry pages, and projections from the 4,712-line engine already sitti
 in this repo unused. Phases 0–2 make the foundation trustworthy; phases 3–5 are
 where the product becomes something worth logging into.
 
+**Tooling already in place:** `sj seed` (see [HUB.md](HUB.md)) fills the local
+store with realistic-scale synthetic snapshots — 24 league-seasons, deterministic,
+schema-guaranteed. Every phase below that touches the UI or the data layer can be
+developed and tested without ESPN credentials.
+
 ---
 
 ## Phase 0 — Stop the bleeding
@@ -142,9 +147,13 @@ underlying library has neither, and `--throttle` only spaces out league-seasons.
 
 ### 2.5 Backfill and validate
 Run the full backfill (24 league-seasons; football back to 2015) and validate the
-output. Add a schema contract test asserting committed fixtures match what
-`serialize_league` emits — the current fixtures have already drifted, omitting
-`scoring_type`, `period_label`, and most extended player fields.
+output.
+
+*Partly landed:* `sj seed` ships with a schema contract test asserting the
+committed fixtures are a subset of what the serializer emits, which pins the
+drift the audit found (fixtures omit `scoring_type`, `period_label`, and most
+extended player fields). What remains is regenerating the fixtures themselves
+from the serializer so they stop drifting.
 
 ---
 
@@ -166,7 +175,7 @@ currently unreachable (finding #6). Highest value-per-line change in the plan.
 
 ### 3.3 A real data table
 One reusable table with search, sortable columns, position/role filters, and
-pagination or virtualization. Fixes both the UX problem and the 396 KB
+pagination or virtualization. Fixes both the UX problem and the 448 KB
 baseball players response. Requires a client component — deliberately kept
 narrow so the rest of the app stays server-rendered.
 
@@ -300,6 +309,6 @@ Concrete targets, all measured against numbers recorded in [AUDIT.md](AUDIT.md):
 | `apps/web` CI checks | 0 | typecheck + lint + build + tests |
 | `src/sj/sync.py` coverage | 0% | matches `serialize.py` (~94%) |
 | Repo coverage | 67% | 85%+ |
-| Largest page payload | 396 KB | < 100 KB |
+| Largest page payload | 448 KB | < 100 KB |
 | Deploys requiring a human | all | rollback only |
 | Hub pages calling `ffa` | 0 | projections on roster + player + rankings |
