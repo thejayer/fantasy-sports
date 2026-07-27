@@ -153,7 +153,7 @@ class QuantileGenerator:
             return pd.DataFrame(), pd.DataFrame()
         return pd.concat(all_features, ignore_index=True), pd.concat(all_targets, ignore_index=True)
 
-    def fit(self, weekly: pd.DataFrame) -> "QuantileGenerator":
+    def fit(self, weekly: pd.DataFrame) -> QuantileGenerator:
         feats, targets = self._training_rows(weekly)
         if feats.empty:
             return self
@@ -216,7 +216,7 @@ class QuantileGenerator:
                     preds[:] = feats[career_col].to_numpy(dtype=float)[:, None]
             preds = _monotonize(preds)
             for j, q in enumerate(self.quantiles):
-                out[f"{stat}_q{int(round(q * 100)):02d}"] = preds[:, j]
+                out[f"{stat}_q{round(q * 100):02d}"] = preds[:, j]
 
         return out
 
@@ -272,7 +272,7 @@ def simulate_seasons_quantile_calibrated(
     quantile_preds = generator.predict_quantiles(history, target_season).set_index("player_id")
     if games_model not in GAMES_MODELS:
         raise ValueError(f"Unknown games_model: {games_model!r}. Choose from: {list(GAMES_MODELS)}.")
-    n_games = max(1, int(round(expected_games)))
+    n_games = max(1, round(expected_games))
     rng = np.random.default_rng(seed)
     gm = GamesModel.from_history(history, max_games=n_games) if games_model == "empirical" else None
 
@@ -297,9 +297,9 @@ def simulate_seasons_quantile_calibrated(
         for j, stat in enumerate(stat_cols):
             hist_vals = group[stat].fillna(0).to_numpy(dtype=float)
             pred_q = {
-                float(q): float(quantile_preds.at[player_id, f"{stat}_q{int(round(q * 100)):02d}"])
+                float(q): float(quantile_preds.at[player_id, f"{stat}_q{round(q * 100):02d}"])
                 for q in generator.quantiles
-                if f"{stat}_q{int(round(q * 100)):02d}" in quantile_preds.columns
+                if f"{stat}_q{round(q * 100):02d}" in quantile_preds.columns
             }
             if not pred_q:
                 transformed[:, j] = hist_vals  # fallback: unchanged

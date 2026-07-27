@@ -90,7 +90,7 @@ class GamesModel:
         positions: Iterable[str] = DEFAULT_POSITIONS,
         min_own_seasons: int = 2,
         max_games: int = DEFAULT_MAX_GAMES,
-    ) -> "GamesModel":
+    ) -> GamesModel:
         """Build from a weekly frame (regular-season rows; one row per game).
 
         ``history`` is expected to already be the lookback window the caller

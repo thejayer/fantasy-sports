@@ -6,8 +6,10 @@
   "format": "dynasty",
   "season": 2026,
   "name": "Strictly Jayers Baseball",
+  "scoring_type": "H2H_CATEGORY",
   "team_count": 3,
   "current_week": 12,
+  "period_label": "period",
   "synced_at": "2026-07-22T00:00:00+00:00",
   "teams": [
     {
@@ -15,10 +17,12 @@
       "name": "Diamond Collective",
       "abbrev": "DIA",
       "owners": ["Morgan"],
+      "logo_url": null,
       "wins": 72,
       "losses": 48,
       "ties": 0,
-      "points_for": null,
+      "win_pct": 0.6,
+      "points_for": 1880.5,
       "points_against": null,
       "standing": 1,
       "division": "",
@@ -30,9 +34,52 @@
           "slot": "UTIL",
           "pro_team": "LAD",
           "injury_status": "ACTIVE",
+          "status": "ACTIVE",
+          "injured": false,
+          "eligible_slots": ["UTIL", "OF", "DH"],
+          "acquisition_type": "DRAFT",
+          "percent_owned": 99.8,
           "total_points": 412.5,
           "projected_total_points": 400.0,
-          "avg_points": 5.2
+          "avg_points": 5.2,
+          "role": "batter",
+          "season_stats": {
+            "AB": 420,
+            "H": 126,
+            "R": 95,
+            "HR": 38,
+            "RBI": 102,
+            "SB": 28,
+            "AVG": 0.3,
+            "OBP": 0.39,
+            "OPS": 1.02
+          }
+        },
+        {
+          "id": 33790,
+          "name": "Paul Skenes",
+          "position": "SP",
+          "slot": "P",
+          "pro_team": "PIT",
+          "injury_status": "ACTIVE",
+          "status": "ACTIVE",
+          "injured": false,
+          "eligible_slots": ["P", "SP"],
+          "acquisition_type": "DRAFT",
+          "percent_owned": 98.1,
+          "total_points": 268.0,
+          "projected_total_points": 250.0,
+          "avg_points": 4.1,
+          "role": "pitcher",
+          "season_stats": {
+            "OUTS": 420,
+            "IP": 140.0,
+            "W": 11,
+            "SV": 0,
+            "K": 178,
+            "ERA": 2.85,
+            "WHIP": 0.98
+          }
         }
       ]
     },
@@ -41,28 +88,88 @@
       "name": "Stolen Bases FC",
       "abbrev": "SBF",
       "owners": ["Taylor"],
+      "logo_url": null,
       "wins": 64,
       "losses": 56,
       "ties": 0,
-      "points_for": null,
+      "win_pct": 0.533,
+      "points_for": 1710.2,
       "points_against": null,
       "standing": 2,
       "division": "",
-      "roster": []
+      "roster": [
+        {
+          "id": 41234,
+          "name": "Elly De La Cruz",
+          "position": "SS",
+          "slot": "SS",
+          "pro_team": "CIN",
+          "injury_status": "DAY_TO_DAY",
+          "status": "DAY_TO_DAY",
+          "injured": false,
+          "eligible_slots": ["SS", "UTIL"],
+          "acquisition_type": "DRAFT",
+          "percent_owned": 97.4,
+          "total_points": 301.2,
+          "projected_total_points": 290.0,
+          "avg_points": 4.4,
+          "role": "batter",
+          "season_stats": {
+            "AB": 390,
+            "H": 105,
+            "R": 88,
+            "HR": 22,
+            "RBI": 70,
+            "SB": 48,
+            "AVG": 0.269,
+            "OBP": 0.341,
+            "OPS": 0.84
+          }
+        }
+      ]
     },
     {
       "team_id": 3,
       "name": "Bullpen Lab",
       "abbrev": "BPL",
       "owners": ["Quinn"],
+      "logo_url": null,
       "wins": 55,
       "losses": 65,
       "ties": 0,
-      "points_for": null,
+      "win_pct": 0.458,
+      "points_for": 1599.0,
       "points_against": null,
       "standing": 3,
       "division": "",
-      "roster": []
+      "roster": [
+        {
+          "id": 32100,
+          "name": "Josh Hader",
+          "position": "RP",
+          "slot": "RP",
+          "pro_team": "HOU",
+          "injury_status": "ACTIVE",
+          "status": "ACTIVE",
+          "injured": false,
+          "eligible_slots": ["RP", "P"],
+          "acquisition_type": "DRAFT",
+          "percent_owned": 92.0,
+          "total_points": 188.5,
+          "projected_total_points": 180.0,
+          "avg_points": 2.9,
+          "role": "pitcher",
+          "season_stats": {
+            "OUTS": 150,
+            "IP": 50.0,
+            "W": 3,
+            "SV": 24,
+            "K": 72,
+            "ERA": 2.4,
+            "WHIP": 0.91
+          }
+        }
+      ]
     }
   ],
   "players": [
@@ -76,7 +183,87 @@
       "total_points": 412.5,
       "projected_total_points": 400.0,
       "avg_points": 5.2,
-      "fantasy_team": "Diamond Collective"
+      "fantasy_team": "Diamond Collective",
+      "role": "batter",
+      "season_stats": {
+        "AB": 420,
+        "H": 126,
+        "R": 95,
+        "HR": 38,
+        "RBI": 102,
+        "SB": 28,
+        "AVG": 0.3,
+        "OBP": 0.39,
+        "OPS": 1.02
+      }
+    },
+    {
+      "id": 41234,
+      "name": "Elly De La Cruz",
+      "position": "SS",
+      "slot": "SS",
+      "pro_team": "CIN",
+      "injury_status": "DAY_TO_DAY",
+      "total_points": 301.2,
+      "projected_total_points": 290.0,
+      "avg_points": 4.4,
+      "fantasy_team": "Stolen Bases FC",
+      "role": "batter",
+      "season_stats": {
+        "AB": 390,
+        "H": 105,
+        "R": 88,
+        "HR": 22,
+        "RBI": 70,
+        "SB": 48,
+        "AVG": 0.269,
+        "OBP": 0.341,
+        "OPS": 0.84
+      }
+    },
+    {
+      "id": 33790,
+      "name": "Paul Skenes",
+      "position": "SP",
+      "slot": "P",
+      "pro_team": "PIT",
+      "injury_status": "ACTIVE",
+      "total_points": 268.0,
+      "projected_total_points": 250.0,
+      "avg_points": 4.1,
+      "fantasy_team": "Diamond Collective",
+      "role": "pitcher",
+      "season_stats": {
+        "OUTS": 420,
+        "IP": 140.0,
+        "W": 11,
+        "SV": 0,
+        "K": 178,
+        "ERA": 2.85,
+        "WHIP": 0.98
+      }
+    },
+    {
+      "id": 32100,
+      "name": "Josh Hader",
+      "position": "RP",
+      "slot": "RP",
+      "pro_team": "HOU",
+      "injury_status": "ACTIVE",
+      "total_points": 188.5,
+      "projected_total_points": 180.0,
+      "avg_points": 2.9,
+      "fantasy_team": "Bullpen Lab",
+      "role": "pitcher",
+      "season_stats": {
+        "OUTS": 150,
+        "IP": 50.0,
+        "W": 3,
+        "SV": 24,
+        "K": 72,
+        "ERA": 2.4,
+        "WHIP": 0.91
+      }
     }
   ]
 }

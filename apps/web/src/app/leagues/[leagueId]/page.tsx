@@ -1,10 +1,11 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { getLeagueSnapshot } from "@/lib/data";
+import { BaseballLeagueView } from "@/components/BaseballLeagueView";
+import { getLeagueSeasons, getLeagueSnapshot } from "@/lib/data";
 
 type Props = {
   params: Promise<{ leagueId: string }>;
-  searchParams: Promise<{ tab?: string }>;
+  searchParams: Promise<{ tab?: string; season?: string; role?: string }>;
 };
 
 function record(team: {
@@ -17,10 +18,26 @@ function record(team: {
 
 export default async function LeagueDetailPage({ params, searchParams }: Props) {
   const { leagueId } = await params;
-  const { tab = "standings" } = await searchParams;
-  const league = await getLeagueSnapshot(leagueId);
+  const { tab = "standings", season: seasonParam, role = "all" } = await searchParams;
+  const seasons = await getLeagueSeasons(leagueId);
+  const season = seasonParam ? Number(seasonParam) : undefined;
+  const league = await getLeagueSnapshot(
+    leagueId,
+    season && !Number.isNaN(season) ? season : undefined,
+  );
   if (!league) {
     notFound();
+  }
+
+  if (league.sport === "baseball") {
+    return (
+      <BaseballLeagueView
+        league={league}
+        seasons={seasons}
+        tab={tab}
+        role={["all", "batter", "pitcher"].includes(role) ? role : "all"}
+      />
+    );
   }
 
   const active = ["standings", "teams", "players"].includes(tab) ? tab : "standings";

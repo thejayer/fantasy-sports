@@ -103,7 +103,7 @@ class LevelModel:
         return max(0.0, sd), float(np.clip(mean, lo, hi)), float(np.clip(collapse, 0.0, 1.0))
 
 
-def projected_tier(points: "np.ndarray | object", n_tiers: int = 3) -> object:
+def projected_tier(points: np.ndarray | object, n_tiers: int = 3) -> object:
     """Tercile labels (``low``/``mid``/``high``) for a projected-points Series.
 
     Lives here so the caller (which has scored projections) computes the tier

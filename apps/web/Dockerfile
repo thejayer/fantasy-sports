@@ -1,0 +1,64 @@
+# Strictly Jayers member hub — Next.js on Cloud Run.
+#
+# Build from the repo root:
+#   docker build -f apps/web/Dockerfile -t sj-hub .
+#
+# Runtime expects AUTH_* (+ optional ESPN_*) from Secret Manager via
+# Cloud Run --set-secrets (see scripts/hub-cloud-run-secrets.sh).
+
+FROM node:22-bookworm-slim AS web-deps
+WORKDIR /app/apps/web
+COPY apps/web/package.json apps/web/package-lock.json ./
+RUN npm ci
+
+FROM web-deps AS web-build
+WORKDIR /app
+COPY apps/web ./apps/web
+COPY fixtures ./fixtures
+WORKDIR /app/apps/web
+ENV NEXT_TELEMETRY_DISABLED=1
+RUN npm run build
+
+FROM python:3.12-slim-bookworm AS runtime
+
+# Node is required to run the Next.js standalone server.
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends ca-certificates curl gnupg \
+    && mkdir -p /etc/apt/keyrings \
+    && curl -fsSL https://deb.nodesource.com/gpgkey/nodesource-repo.gpg.key \
+        | gpg --dearmor -o /etc/apt/keyrings/nodesource.gpg \
+    && echo "deb [signed-by=/etc/apt/keyrings/nodesource.gpg] https://deb.nodesource.com/node_22.x nodistro main" \
+        > /etc/apt/sources.list.d/nodesource.list \
+    && apt-get update \
+    && apt-get install -y --no-install-recommends nodejs \
+    && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /app
+
+COPY pyproject.toml README.md ./
+COPY src ./src
+COPY configs ./configs
+COPY fixtures ./fixtures
+RUN pip install --no-cache-dir -e .
+
+# Next standalone output (built with apps/web as the app root).
+COPY --from=web-build /app/apps/web/.next/standalone ./apps/web/
+COPY --from=web-build /app/apps/web/.next/static ./apps/web/.next/static
+COPY --from=web-build /app/apps/web/public ./apps/web/public
+
+COPY apps/web/docker-entrypoint.sh /app/docker-entrypoint.sh
+RUN chmod +x /app/docker-entrypoint.sh \
+    && mkdir -p /app/data/sj \
+    && cp -a /app/fixtures/sj/. /app/data/sj/
+
+ENV NODE_ENV=production \
+    PORT=8080 \
+    HOSTNAME=0.0.0.0 \
+    SJ_DATA_DIR=/app/data/sj \
+    SJ_SYNC_ON_START=1 \
+    AUTH_TRUST_HOST=true \
+    PYTHONUNBUFFERED=1
+
+EXPOSE 8080
+
+ENTRYPOINT ["/app/docker-entrypoint.sh"]

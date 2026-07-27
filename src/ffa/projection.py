@@ -24,7 +24,6 @@ import pandas as pd
 
 from ffa.scoring import STAT_COLUMNS
 
-
 # Position -> depth slot -> share of starter workload. Coarse, but enough to
 # zero out a deep backup and let the user override per league/situation.
 DEFAULT_DEPTH_MULTIPLIERS: Final[Mapping[str, Mapping[int, float]]] = {

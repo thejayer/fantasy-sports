@@ -42,7 +42,6 @@ from ffa.level import apply_level_jitter, resolve_level
 from ffa.projection import regular_season_only
 from ffa.scoring import STAT_COLUMNS, score_player_weeks
 
-
 _META_COLUMNS: Final[tuple[str, ...]] = (
     "player_name",
     "player_display_name",
@@ -124,7 +123,7 @@ def simulate_seasons(
 
     if games_model not in GAMES_MODELS:
         raise ValueError(f"Unknown games_model: {games_model!r}. Choose from: {list(GAMES_MODELS)}.")
-    n_games = max(1, int(round(expected_games)))
+    n_games = max(1, round(expected_games))
     rng = np.random.default_rng(seed)
     gm = GamesModel.from_history(history, max_games=n_games) if games_model == "empirical" else None
 
@@ -198,7 +197,7 @@ def summarize_seasons(
     grouped = scored.groupby("player_id", sort=False)
     summary = grouped["fantasy_points"].agg(points_mean="mean", points_sd="std")
     for q in quantiles:
-        summary[f"q{int(round(q * 100)):02d}"] = grouped["fantasy_points"].quantile(q)
+        summary[f"q{round(q * 100):02d}"] = grouped["fantasy_points"].quantile(q)
 
     meta_cols = _present(scored, _META_COLUMNS)
     if meta_cols:
