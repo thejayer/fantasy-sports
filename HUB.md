@@ -3,6 +3,9 @@
 Member hub for Strictly Jayers fantasy leagues. V1 focuses on ESPN league
 data: standings, teams, rosters, and players.
 
+For the current state of the site and the plan to build it out, see
+[AUDIT.md](AUDIT.md) and [ROADMAP.md](ROADMAP.md).
+
 ## Leagues (current scope)
 
 | id | Sport | Format | ESPN league id | Seasons |
