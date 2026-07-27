@@ -244,15 +244,16 @@ Shipped the high-leverage slice without ballooning snapshot size:
 Deferred (size / API gaps): box scores, free agents, per-week player stats,
 playoff brackets — pull those when a phase-3 page needs them.
 
-### 2.5 Backfill and validate
-Run the full backfill (24 league-seasons; football back to 2015) and validate the
-output.
+### 2.5 Backfill and validate — LANDED
+Committed `fixtures/sj/` are regenerated from the live serializer via
+`sj regenerate-fixtures` (schema_version 1 monoliths, current season × 3
+leagues, small team counts). `sj validate-fixtures` — and a pytest gate —
+fail the build if they drift. Football fixtures bumped to 2026 to match the
+registry.
 
-*Partly landed:* `sj seed` ships with a schema contract test asserting the
-committed fixtures are a subset of what the serializer emits, which pins the
-drift the audit found (fixtures omit `scoring_type`, `period_label`, and most
-extended player fields). What remains is regenerating the fixtures themselves
-from the serializer so they stop drifting.
+Live ESPN backfill of all 24 league-seasons remains an ops step
+(`sj backfill` / Cloud Run job) when credentials are available; the CLI and
+failure taxonomy for that landed in 1.4.
 
 ---
 
@@ -369,10 +370,10 @@ Fold in continuously rather than saving for the end.
 
 ## Sequencing
 
-**Next up: 1.3 or 2.5 / 3.1.** Continuous deployment + Workload Identity
-Federation (1.3) is the biggest remaining platform win on track A (needs
-GCP-side WIF setup). On the data track, 2.5 (backfill + validate fixtures) is
-next; product track can start 3.1 (unify league views). 2.1–2.4 are in.
+**Next up: 1.3 or 3.1.** Continuous deployment + Workload Identity Federation
+(1.3) is the biggest remaining platform win on track A (needs GCP-side WIF
+setup). Product track can start 3.1 (unify league views). Data track 2.1–2.5
+are in.
 
 **Branch protection on `main` is done** — required checks are `python`, `web`,
 and `images`. The `python` check is an aggregator over the 3.11 + 3.12 matrix.
@@ -387,7 +388,7 @@ shape. Phase 3.1 (unify views) before any other UI work so nothing ships twice.
 | Track | Contents | Touches |
 |---|---|---|
 | A — Platform | 1.3, ~~1.5~~, ~~1.6~~, 1.7 | workflows, Dockerfiles, scripts |
-| B — Data | ~~1.4~~, ~~2.1~~, ~~2.2~~, ~~2.3~~, ~~2.4~~, 2.5 | `src/sj`, `configs` |
+| B — Data | ~~1.4~~, ~~2.1~~, ~~2.2~~, ~~2.3~~, ~~2.4~~, ~~2.5~~ | `src/sj`, `configs` |
 | C — Product | 3.1 → 3.6 | `apps/web` |
 | D — Engine | 4.1, 4.3 | `src/ffa` |
 

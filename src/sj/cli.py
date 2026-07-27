@@ -6,6 +6,7 @@ from pathlib import Path
 
 import typer
 
+from sj.fixtures import regenerate_fixtures, validate_fixtures
 from sj.registry import load_registry
 from sj.sample import DEFAULT_TEAM_COUNT, seed_store
 from sj.store import describe_store, list_snapshots
@@ -211,6 +212,47 @@ def status_cmd(
             f"{item['league_id']:20} {item['season']}  "
             f"{item.get('team_count', '?')} teams  synced={item.get('synced_at', '?')}"
         )
+
+
+@app.command("regenerate-fixtures")
+def regenerate_fixtures_cmd(
+    fixtures_dir: Path | None = typer.Option(
+        None, help="Write here instead of the committed fixtures/sj directory."
+    ),
+    registry: Path | None = typer.Option(None, help="Path to leagues.yaml"),
+) -> None:
+    """Rewrite committed fixtures/sj from the live serializer (roadmap 2.5).
+
+    Keeps schema_version 1 monoliths (so dual-read stays covered) but fills every
+    field ``serialize_league`` emits. Deterministic; safe to re-run after schema
+    changes.
+    """
+    written = regenerate_fixtures(
+        fixtures_dir=fixtures_dir,
+        registry_path=registry,
+        on_event=typer.echo,
+    )
+    typer.echo(f"regenerated {len(written)} fixture league-seasons")
+
+
+@app.command("validate-fixtures")
+def validate_fixtures_cmd(
+    fixtures_dir: Path | None = typer.Option(
+        None, help="Check this directory instead of committed fixtures/sj."
+    ),
+    registry: Path | None = typer.Option(None, help="Path to leagues.yaml"),
+) -> None:
+    """Fail if committed fixtures drift from the serializer (roadmap 2.5)."""
+    errors = validate_fixtures(fixtures_dir=fixtures_dir, registry_path=registry)
+    if errors:
+        for error in errors:
+            typer.echo(f"error: {error}", err=True)
+        typer.echo(
+            "Fixtures out of date. Run `sj regenerate-fixtures` and commit.",
+            err=True,
+        )
+        raise typer.Exit(code=1)
+    typer.echo("fixtures ok")
 
 
 if __name__ == "__main__":

@@ -1,0 +1,3102 @@
+{
+  "current_week": 14,
+  "draft": [
+    {
+      "bid_amount": 0.0,
+      "keeper": false,
+      "nominating_team_id": null,
+      "player_id": 202600001,
+      "player_name": "Gregory Rivera",
+      "round": 1,
+      "round_pick": 1,
+      "team_id": 1
+    },
+    {
+      "bid_amount": 0.0,
+      "keeper": false,
+      "nominating_team_id": null,
+      "player_id": 202600101,
+      "player_name": "Gabriel Thompson",
+      "round": 1,
+      "round_pick": 2,
+      "team_id": 2
+    },
+    {
+      "bid_amount": 0.0,
+      "keeper": false,
+      "nominating_team_id": null,
+      "player_id": 202600201,
+      "player_name": "Lawrence Chavez",
+      "round": 1,
+      "round_pick": 3,
+      "team_id": 3
+    },
+    {
+      "bid_amount": 0.0,
+      "keeper": false,
+      "nominating_team_id": null,
+      "player_id": 202600202,
+      "player_name": "Anthony Miller",
+      "round": 2,
+      "round_pick": 1,
+      "team_id": 3
+    },
+    {
+      "bid_amount": 0.0,
+      "keeper": false,
+      "nominating_team_id": null,
+      "player_id": 202600102,
+      "player_name": "Randy Gonzalez",
+      "round": 2,
+      "round_pick": 2,
+      "team_id": 2
+    },
+    {
+      "bid_amount": 0.0,
+      "keeper": false,
+      "nominating_team_id": null,
+      "player_id": 202600002,
+      "player_name": "Jacob Smith",
+      "round": 2,
+      "round_pick": 3,
+      "team_id": 1
+    },
+    {
+      "bid_amount": 0.0,
+      "keeper": false,
+      "nominating_team_id": null,
+      "player_id": 202600003,
+      "player_name": "Dylan Lewis",
+      "round": 3,
+      "round_pick": 1,
+      "team_id": 1
+    },
+    {
+      "bid_amount": 0.0,
+      "keeper": false,
+      "nominating_team_id": null,
+      "player_id": 202600103,
+      "player_name": "Jordan Sanders",
+      "round": 3,
+      "round_pick": 2,
+      "team_id": 2
+    },
+    {
+      "bid_amount": 0.0,
+      "keeper": false,
+      "nominating_team_id": null,
+      "player_id": 202600203,
+      "player_name": "Scott Perez",
+      "round": 3,
+      "round_pick": 3,
+      "team_id": 3
+    }
+  ],
+  "espn_league_id": 94266,
+  "format": "dynasty",
+  "league_id": "football-dynasty",
+  "name": "Strictly Jayers Football Dynasty",
+  "period_label": "week",
+  "players": [
+    {
+      "acquisition_type": "DRAFT",
+      "avg_points": 21.1,
+      "eligible_slots": [
+        "QB",
+        "BE",
+        "IR"
+      ],
+      "fantasy_team": "Turf Titans",
+      "id": 202600101,
+      "injured": false,
+      "injury_status": null,
+      "name": "Gabriel Thompson",
+      "percent_owned": 65.7,
+      "position": "QB",
+      "pro_team": "MIN",
+      "projected_total_points": 285.4,
+      "slot": "QB",
+      "status": "ACTIVE",
+      "total_points": 358.8
+    },
+    {
+      "acquisition_type": "ADD",
+      "avg_points": 20.4,
+      "eligible_slots": [
+        "QB",
+        "BE",
+        "IR"
+      ],
+      "fantasy_team": "Gridiron Goons",
+      "id": 202600015,
+      "injured": true,
+      "injury_status": null,
+      "name": "Sean Brooks",
+      "percent_owned": 46.3,
+      "position": "QB",
+      "pro_team": "ATL",
+      "projected_total_points": 322.0,
+      "slot": "BE",
+      "status": "ACTIVE",
+      "total_points": 346.6
+    },
+    {
+      "acquisition_type": "DRAFT",
+      "avg_points": 19.7,
+      "eligible_slots": [
+        "QB",
+        "BE",
+        "IR"
+      ],
+      "fantasy_team": "Gridiron Goons",
+      "id": 202600001,
+      "injured": false,
+      "injury_status": null,
+      "name": "Gregory Rivera",
+      "percent_owned": 21.8,
+      "position": "QB",
+      "pro_team": "NE",
+      "projected_total_points": 349.5,
+      "slot": "QB",
+      "status": "ACTIVE",
+      "total_points": 334.4
+    },
+    {
+      "acquisition_type": "DRAFT",
+      "avg_points": 19.0,
+      "eligible_slots": [
+        "QB",
+        "BE",
+        "IR"
+      ],
+      "fantasy_team": "Turf Titans",
+      "id": 202600121,
+      "injured": false,
+      "injury_status": "DOUBTFUL",
+      "name": "Robert Gutierrez",
+      "percent_owned": 25.1,
+      "position": "QB",
+      "pro_team": "WSH",
+      "projected_total_points": 262.5,
+      "slot": "BE",
+      "status": "ACTIVE",
+      "total_points": 323.4
+    },
+    {
+      "acquisition_type": "WAIVER",
+      "avg_points": 18.7,
+      "eligible_slots": [
+        "WR",
+        "BE",
+        "IR"
+      ],
+      "fantasy_team": "Turf Titans",
+      "id": 202600117,
+      "injured": false,
+      "injury_status": "DOUBTFUL",
+      "name": "Tyler White",
+      "percent_owned": 76.6,
+      "position": "WR",
+      "pro_team": "TEN",
+      "projected_total_points": 374.4,
+      "slot": "BE",
+      "status": "ACTIVE",
+      "total_points": 318.1
+    },
+    {
+      "acquisition_type": "DRAFT",
+      "avg_points": 17.9,
+      "eligible_slots": [
+        "QB",
+        "BE",
+        "IR"
+      ],
+      "fantasy_team": "End Zone Enforcers",
+      "id": 202600219,
+      "injured": true,
+      "injury_status": "DOUBTFUL",
+      "name": "Zachary Young",
+      "percent_owned": 77.3,
+      "position": "QB",
+      "pro_team": "PHI",
+      "projected_total_points": 300.7,
+      "slot": "BE",
+      "status": "ACTIVE",
+      "total_points": 304.9
+    },
+    {
+      "acquisition_type": "ADD",
+      "avg_points": 17.4,
+      "eligible_slots": [
+        "RB",
+        "BE",
+        "IR"
+      ],
+      "fantasy_team": "Turf Titans",
+      "id": 202600120,
+      "injured": false,
+      "injury_status": "INJURY_RESERVE",
+      "name": "Terry Garcia",
+      "percent_owned": 6.1,
+      "position": "RB",
+      "pro_team": "MIA",
+      "projected_total_points": 290.9,
+      "slot": "BE",
+      "status": "ACTIVE",
+      "total_points": 296.3
+    },
+    {
+      "acquisition_type": "TRADE",
+      "avg_points": 16.9,
+      "eligible_slots": [
+        "QB",
+        "BE",
+        "IR"
+      ],
+      "fantasy_team": "End Zone Enforcers",
+      "id": 202600201,
+      "injured": false,
+      "injury_status": null,
+      "name": "Lawrence Chavez",
+      "percent_owned": 80.6,
+      "position": "QB",
+      "pro_team": "DAL",
+      "projected_total_points": 243.3,
+      "slot": "QB",
+      "status": "ACTIVE",
+      "total_points": 287.2
+    },
+    {
+      "acquisition_type": "TRADE",
+      "avg_points": 16.8,
+      "eligible_slots": [
+        "QB",
+        "BE",
+        "IR"
+      ],
+      "fantasy_team": "Gridiron Goons",
+      "id": 202600016,
+      "injured": false,
+      "injury_status": "INJURY_RESERVE",
+      "name": "Logan Bailey",
+      "percent_owned": 88.6,
+      "position": "QB",
+      "pro_team": "TEN",
+      "projected_total_points": 319.0,
+      "slot": "BE",
+      "status": "ACTIVE",
+      "total_points": 285.6
+    },
+    {
+      "acquisition_type": "WAIVER",
+      "avg_points": 16.5,
+      "eligible_slots": [
+        "WR",
+        "BE",
+        "IR"
+      ],
+      "fantasy_team": "Turf Titans",
+      "id": 202600104,
+      "injured": false,
+      "injury_status": null,
+      "name": "Bobby Brooks",
+      "percent_owned": 79.5,
+      "position": "WR",
+      "pro_team": "CHI",
+      "projected_total_points": 275.8,
+      "slot": "WR",
+      "status": "ACTIVE",
+      "total_points": 280.9
+    },
+    {
+      "acquisition_type": "TRADE",
+      "avg_points": 15.6,
+      "eligible_slots": [
+        "RB",
+        "BE",
+        "IR"
+      ],
+      "fantasy_team": "End Zone Enforcers",
+      "id": 202600203,
+      "injured": false,
+      "injury_status": null,
+      "name": "Scott Perez",
+      "percent_owned": 90.1,
+      "position": "RB",
+      "pro_team": "PHI",
+      "projected_total_points": 297.1,
+      "slot": "RB",
+      "status": "ACTIVE",
+      "total_points": 265.6
+    },
+    {
+      "acquisition_type": "DRAFT",
+      "avg_points": 15.6,
+      "eligible_slots": [
+        "RB",
+        "BE",
+        "IR"
+      ],
+      "fantasy_team": "End Zone Enforcers",
+      "id": 202600222,
+      "injured": false,
+      "injury_status": null,
+      "name": "Juan Wright",
+      "percent_owned": 89.8,
+      "position": "RB",
+      "pro_team": "ATL",
+      "projected_total_points": 209.0,
+      "slot": "BE",
+      "status": "ACTIVE",
+      "total_points": 265.3
+    },
+    {
+      "acquisition_type": "DRAFT",
+      "avg_points": 15.3,
+      "eligible_slots": [
+        "WR",
+        "BE",
+        "IR"
+      ],
+      "fantasy_team": "End Zone Enforcers",
+      "id": 202600215,
+      "injured": false,
+      "injury_status": null,
+      "name": "Stephen Collins",
+      "percent_owned": 41.2,
+      "position": "WR",
+      "pro_team": "LAC",
+      "projected_total_points": 235.2,
+      "slot": "BE",
+      "status": "ACTIVE",
+      "total_points": 260.3
+    },
+    {
+      "acquisition_type": "WAIVER",
+      "avg_points": 15.2,
+      "eligible_slots": [
+        "WR",
+        "BE",
+        "IR"
+      ],
+      "fantasy_team": "End Zone Enforcers",
+      "id": 202600220,
+      "injured": false,
+      "injury_status": "QUESTIONABLE",
+      "name": "Jacob Foster",
+      "percent_owned": 20.4,
+      "position": "WR",
+      "pro_team": "PIT",
+      "projected_total_points": 207.0,
+      "slot": "BE",
+      "status": "ACTIVE",
+      "total_points": 258.3
+    },
+    {
+      "acquisition_type": "DRAFT",
+      "avg_points": 14.4,
+      "eligible_slots": [
+        "QB",
+        "BE",
+        "IR"
+      ],
+      "fantasy_team": "Turf Titans",
+      "id": 202600114,
+      "injured": false,
+      "injury_status": null,
+      "name": "Joshua Howard",
+      "percent_owned": 10.6,
+      "position": "QB",
+      "pro_team": "DAL",
+      "projected_total_points": 197.2,
+      "slot": "BE",
+      "status": "ACTIVE",
+      "total_points": 245.5
+    },
+    {
+      "acquisition_type": "DRAFT",
+      "avg_points": 14.1,
+      "eligible_slots": [
+        "RB",
+        "BE",
+        "IR"
+      ],
+      "fantasy_team": "Turf Titans",
+      "id": 202600108,
+      "injured": false,
+      "injury_status": null,
+      "name": "Gregory Nelson",
+      "percent_owned": 84.5,
+      "position": "RB",
+      "pro_team": "NYG",
+      "projected_total_points": 183.2,
+      "slot": "FLEX",
+      "status": "ACTIVE",
+      "total_points": 239.9
+    },
+    {
+      "acquisition_type": "DRAFT",
+      "avg_points": 13.1,
+      "eligible_slots": [
+        "WR",
+        "BE",
+        "IR"
+      ],
+      "fantasy_team": "End Zone Enforcers",
+      "id": 202600204,
+      "injured": false,
+      "injury_status": "ACTIVE",
+      "name": "Patrick Moore",
+      "percent_owned": 64.7,
+      "position": "WR",
+      "pro_team": "DET",
+      "projected_total_points": 204.3,
+      "slot": "WR",
+      "status": "ACTIVE",
+      "total_points": 221.9
+    },
+    {
+      "acquisition_type": "TRADE",
+      "avg_points": 12.7,
+      "eligible_slots": [
+        "RB",
+        "BE",
+        "IR"
+      ],
+      "fantasy_team": "End Zone Enforcers",
+      "id": 202600202,
+      "injured": false,
+      "injury_status": null,
+      "name": "Anthony Miller",
+      "percent_owned": 41.2,
+      "position": "RB",
+      "pro_team": "BUF",
+      "projected_total_points": 277.8,
+      "slot": "RB",
+      "status": "ACTIVE",
+      "total_points": 215.9
+    },
+    {
+      "acquisition_type": "DRAFT",
+      "avg_points": 12.0,
+      "eligible_slots": [
+        "QB",
+        "BE",
+        "IR"
+      ],
+      "fantasy_team": "Gridiron Goons",
+      "id": 202600014,
+      "injured": false,
+      "injury_status": null,
+      "name": "Roger Hughes",
+      "percent_owned": 20.4,
+      "position": "QB",
+      "pro_team": "TB",
+      "projected_total_points": 224.0,
+      "slot": "BE",
+      "status": "ACTIVE",
+      "total_points": 204.6
+    },
+    {
+      "acquisition_type": "ADD",
+      "avg_points": 11.7,
+      "eligible_slots": [
+        "D/ST",
+        "BE",
+        "IR"
+      ],
+      "fantasy_team": "Turf Titans",
+      "id": 202600109,
+      "injured": false,
+      "injury_status": "ACTIVE",
+      "name": "ARI D/ST",
+      "percent_owned": 74.3,
+      "position": "D/ST",
+      "pro_team": "BUF",
+      "projected_total_points": 191.1,
+      "slot": "D/ST",
+      "status": "ACTIVE",
+      "total_points": 199.2
+    },
+    {
+      "acquisition_type": "ADD",
+      "avg_points": 11.6,
+      "eligible_slots": [
+        "QB",
+        "BE",
+        "IR"
+      ],
+      "fantasy_team": "Gridiron Goons",
+      "id": 202600021,
+      "injured": false,
+      "injury_status": "OUT",
+      "name": "Tyler White",
+      "percent_owned": 88.8,
+      "position": "QB",
+      "pro_team": "LV",
+      "projected_total_points": 171.7,
+      "slot": "BE",
+      "status": "ACTIVE",
+      "total_points": 197.7
+    },
+    {
+      "acquisition_type": "TRADE",
+      "avg_points": 10.7,
+      "eligible_slots": [
+        "WR",
+        "BE",
+        "IR"
+      ],
+      "fantasy_team": "Turf Titans",
+      "id": 202600105,
+      "injured": false,
+      "injury_status": null,
+      "name": "Eugene Sanders",
+      "percent_owned": 4.1,
+      "position": "WR",
+      "pro_team": "TEN",
+      "projected_total_points": 223.8,
+      "slot": "WR",
+      "status": "ACTIVE",
+      "total_points": 181.6
+    },
+    {
+      "acquisition_type": "DRAFT",
+      "avg_points": 10.5,
+      "eligible_slots": [
+        "WR",
+        "BE",
+        "IR"
+      ],
+      "fantasy_team": "End Zone Enforcers",
+      "id": 202600206,
+      "injured": false,
+      "injury_status": null,
+      "name": "Brian Flores",
+      "percent_owned": 10.0,
+      "position": "WR",
+      "pro_team": "BUF",
+      "projected_total_points": 136.4,
+      "slot": "WR",
+      "status": "ACTIVE",
+      "total_points": 177.7
+    },
+    {
+      "acquisition_type": "TRADE",
+      "avg_points": 10.4,
+      "eligible_slots": [
+        "K",
+        "BE",
+        "IR"
+      ],
+      "fantasy_team": "Turf Titans",
+      "id": 202600110,
+      "injured": false,
+      "injury_status": null,
+      "name": "James Alvarez",
+      "percent_owned": 48.8,
+      "position": "K",
+      "pro_team": "LAR",
+      "projected_total_points": 160.1,
+      "slot": "K",
+      "status": "ACTIVE",
+      "total_points": 177.5
+    },
+    {
+      "acquisition_type": "ADD",
+      "avg_points": 9.8,
+      "eligible_slots": [
+        "RB",
+        "BE",
+        "IR"
+      ],
+      "fantasy_team": "Gridiron Goons",
+      "id": 202600002,
+      "injured": false,
+      "injury_status": null,
+      "name": "Jacob Smith",
+      "percent_owned": 34.8,
+      "position": "RB",
+      "pro_team": "MIN",
+      "projected_total_points": 166.1,
+      "slot": "RB",
+      "status": "ACTIVE",
+      "total_points": 167.4
+    },
+    {
+      "acquisition_type": "DRAFT",
+      "avg_points": 9.8,
+      "eligible_slots": [
+        "RB",
+        "BE",
+        "IR"
+      ],
+      "fantasy_team": "Gridiron Goons",
+      "id": 202600008,
+      "injured": false,
+      "injury_status": "ACTIVE",
+      "name": "Roger Kim",
+      "percent_owned": 70.6,
+      "position": "RB",
+      "pro_team": "CLE",
+      "projected_total_points": 204.4,
+      "slot": "FLEX",
+      "status": "ACTIVE",
+      "total_points": 167.0
+    },
+    {
+      "acquisition_type": "TRADE",
+      "avg_points": 9.5,
+      "eligible_slots": [
+        "TE",
+        "BE",
+        "IR"
+      ],
+      "fantasy_team": "Turf Titans",
+      "id": 202600107,
+      "injured": false,
+      "injury_status": "INJURY_RESERVE",
+      "name": "Jeffrey Parker",
+      "percent_owned": -1.0,
+      "position": "TE",
+      "pro_team": "NYG",
+      "projected_total_points": 195.9,
+      "slot": "TE",
+      "status": "ACTIVE",
+      "total_points": 161.7
+    },
+    {
+      "acquisition_type": "TRADE",
+      "avg_points": 9.4,
+      "eligible_slots": [
+        "WR",
+        "BE",
+        "IR"
+      ],
+      "fantasy_team": "Turf Titans",
+      "id": 202600113,
+      "injured": true,
+      "injury_status": null,
+      "name": "Timothy Brooks",
+      "percent_owned": 89.3,
+      "position": "WR",
+      "pro_team": "DET",
+      "projected_total_points": 121.7,
+      "slot": "BE",
+      "status": "ACTIVE",
+      "total_points": 159.3
+    },
+    {
+      "acquisition_type": "WAIVER",
+      "avg_points": 9.3,
+      "eligible_slots": [
+        "RB",
+        "BE",
+        "IR"
+      ],
+      "fantasy_team": "Turf Titans",
+      "id": 202600103,
+      "injured": false,
+      "injury_status": null,
+      "name": "Jordan Sanders",
+      "percent_owned": 91.3,
+      "position": "RB",
+      "pro_team": "TEN",
+      "projected_total_points": 203.2,
+      "slot": "RB",
+      "status": "ACTIVE",
+      "total_points": 157.4
+    },
+    {
+      "acquisition_type": "TRADE",
+      "avg_points": 9.2,
+      "eligible_slots": [
+        "K",
+        "BE",
+        "IR"
+      ],
+      "fantasy_team": "Gridiron Goons",
+      "id": 202600018,
+      "injured": false,
+      "injury_status": "DOUBTFUL",
+      "name": "Jesse Garcia",
+      "percent_owned": -1.0,
+      "position": "K",
+      "pro_team": "SEA",
+      "projected_total_points": 197.7,
+      "slot": "BE",
+      "status": "ACTIVE",
+      "total_points": 156.7
+    },
+    {
+      "acquisition_type": "TRADE",
+      "avg_points": 8.8,
+      "eligible_slots": [
+        "TE",
+        "BE",
+        "IR"
+      ],
+      "fantasy_team": "End Zone Enforcers",
+      "id": 202600207,
+      "injured": false,
+      "injury_status": null,
+      "name": "Carl Ruiz",
+      "percent_owned": 50.2,
+      "position": "TE",
+      "pro_team": "LV",
+      "projected_total_points": 117.3,
+      "slot": "TE",
+      "status": "ACTIVE",
+      "total_points": 149.5
+    },
+    {
+      "acquisition_type": "WAIVER",
+      "avg_points": 8.7,
+      "eligible_slots": [
+        "TE",
+        "BE",
+        "IR"
+      ],
+      "fantasy_team": "Gridiron Goons",
+      "id": 202600013,
+      "injured": false,
+      "injury_status": null,
+      "name": "Randy Gonzalez",
+      "percent_owned": 20.3,
+      "position": "TE",
+      "pro_team": "NE",
+      "projected_total_points": 146.6,
+      "slot": "BE",
+      "status": "ACTIVE",
+      "total_points": 147.7
+    },
+    {
+      "acquisition_type": "ADD",
+      "avg_points": 8.5,
+      "eligible_slots": [
+        "K",
+        "BE",
+        "IR"
+      ],
+      "fantasy_team": "Turf Titans",
+      "id": 202600122,
+      "injured": false,
+      "injury_status": "OUT",
+      "name": "Arthur Baker",
+      "percent_owned": 7.6,
+      "position": "K",
+      "pro_team": "JAX",
+      "projected_total_points": 110.1,
+      "slot": "BE",
+      "status": "ACTIVE",
+      "total_points": 144.0
+    },
+    {
+      "acquisition_type": "WAIVER",
+      "avg_points": 8.4,
+      "eligible_slots": [
+        "RB",
+        "BE",
+        "IR"
+      ],
+      "fantasy_team": "Turf Titans",
+      "id": 202600111,
+      "injured": false,
+      "injury_status": "INJURY_RESERVE",
+      "name": "Jacob Adams",
+      "percent_owned": -1.0,
+      "position": "RB",
+      "pro_team": "BUF",
+      "projected_total_points": 152.0,
+      "slot": "BE",
+      "status": "ACTIVE",
+      "total_points": 142.5
+    },
+    {
+      "acquisition_type": "DRAFT",
+      "avg_points": 8.3,
+      "eligible_slots": [
+        "K",
+        "BE",
+        "IR"
+      ],
+      "fantasy_team": "Gridiron Goons",
+      "id": 202600022,
+      "injured": false,
+      "injury_status": "ACTIVE",
+      "name": "Eric Castillo",
+      "percent_owned": 9.6,
+      "position": "K",
+      "pro_team": "KC",
+      "projected_total_points": 145.6,
+      "slot": "BE",
+      "status": "ACTIVE",
+      "total_points": 140.5
+    },
+    {
+      "acquisition_type": "ADD",
+      "avg_points": 7.7,
+      "eligible_slots": [
+        "RB",
+        "BE",
+        "IR"
+      ],
+      "fantasy_team": "Turf Titans",
+      "id": 202600112,
+      "injured": false,
+      "injury_status": null,
+      "name": "Jacob Rodriguez",
+      "percent_owned": 45.3,
+      "position": "RB",
+      "pro_team": "LV",
+      "projected_total_points": 101.9,
+      "slot": "BE",
+      "status": "ACTIVE",
+      "total_points": 130.5
+    },
+    {
+      "acquisition_type": "TRADE",
+      "avg_points": 7.7,
+      "eligible_slots": [
+        "TE",
+        "BE",
+        "IR"
+      ],
+      "fantasy_team": "End Zone Enforcers",
+      "id": 202600216,
+      "injured": true,
+      "injury_status": null,
+      "name": "Joseph Cruz",
+      "percent_owned": 96.0,
+      "position": "TE",
+      "pro_team": "CIN",
+      "projected_total_points": 103.9,
+      "slot": "BE",
+      "status": "ACTIVE",
+      "total_points": 130.2
+    },
+    {
+      "acquisition_type": "ADD",
+      "avg_points": 7.6,
+      "eligible_slots": [
+        "RB",
+        "BE",
+        "IR"
+      ],
+      "fantasy_team": "Gridiron Goons",
+      "id": 202600012,
+      "injured": false,
+      "injury_status": "DOUBTFUL",
+      "name": "Gregory Sanders",
+      "percent_owned": 63.4,
+      "position": "RB",
+      "pro_team": "GB",
+      "projected_total_points": 118.5,
+      "slot": "BE",
+      "status": "ACTIVE",
+      "total_points": 129.1
+    },
+    {
+      "acquisition_type": "DRAFT",
+      "avg_points": 7.4,
+      "eligible_slots": [
+        "RB",
+        "BE",
+        "IR"
+      ],
+      "fantasy_team": "End Zone Enforcers",
+      "id": 202600213,
+      "injured": false,
+      "injury_status": "QUESTIONABLE",
+      "name": "Eric Hughes",
+      "percent_owned": 6.8,
+      "position": "RB",
+      "pro_team": "CIN",
+      "projected_total_points": 158.0,
+      "slot": "BE",
+      "status": "ACTIVE",
+      "total_points": 126.2
+    },
+    {
+      "acquisition_type": "WAIVER",
+      "avg_points": 7.4,
+      "eligible_slots": [
+        "WR",
+        "BE",
+        "IR"
+      ],
+      "fantasy_team": "Gridiron Goons",
+      "id": 202600005,
+      "injured": false,
+      "injury_status": null,
+      "name": "Jeffrey Rivera",
+      "percent_owned": -1.0,
+      "position": "WR",
+      "pro_team": "BAL",
+      "projected_total_points": 100.7,
+      "slot": "WR",
+      "status": "ACTIVE",
+      "total_points": 125.0
+    },
+    {
+      "acquisition_type": "DRAFT",
+      "avg_points": 7.2,
+      "eligible_slots": [
+        "K",
+        "BE",
+        "IR"
+      ],
+      "fantasy_team": "Turf Titans",
+      "id": 202600118,
+      "injured": false,
+      "injury_status": null,
+      "name": "Lawrence Lewis",
+      "percent_owned": 52.1,
+      "position": "K",
+      "pro_team": "WSH",
+      "projected_total_points": 121.3,
+      "slot": "BE",
+      "status": "ACTIVE",
+      "total_points": 122.9
+    },
+    {
+      "acquisition_type": "TRADE",
+      "avg_points": 7.1,
+      "eligible_slots": [
+        "WR",
+        "BE",
+        "IR"
+      ],
+      "fantasy_team": "Gridiron Goons",
+      "id": 202600004,
+      "injured": true,
+      "injury_status": "DOUBTFUL",
+      "name": "Terry Parker",
+      "percent_owned": 20.6,
+      "position": "WR",
+      "pro_team": "SF",
+      "projected_total_points": 119.9,
+      "slot": "WR",
+      "status": "ACTIVE",
+      "total_points": 121.5
+    },
+    {
+      "acquisition_type": "ADD",
+      "avg_points": 7.1,
+      "eligible_slots": [
+        "K",
+        "BE",
+        "IR"
+      ],
+      "fantasy_team": "Turf Titans",
+      "id": 202600119,
+      "injured": false,
+      "injury_status": "INJURY_RESERVE",
+      "name": "Noah Mitchell",
+      "percent_owned": 54.7,
+      "position": "K",
+      "pro_team": "NYG",
+      "projected_total_points": 125.4,
+      "slot": "BE",
+      "status": "ACTIVE",
+      "total_points": 120.3
+    },
+    {
+      "acquisition_type": "DRAFT",
+      "avg_points": 7.0,
+      "eligible_slots": [
+        "WR",
+        "BE",
+        "IR"
+      ],
+      "fantasy_team": "Gridiron Goons",
+      "id": 202600017,
+      "injured": false,
+      "injury_status": "OUT",
+      "name": "John Carter",
+      "percent_owned": 52.5,
+      "position": "WR",
+      "pro_team": "ARI",
+      "projected_total_points": 104.6,
+      "slot": "BE",
+      "status": "ACTIVE",
+      "total_points": 119.2
+    },
+    {
+      "acquisition_type": "DRAFT",
+      "avg_points": 6.9,
+      "eligible_slots": [
+        "TE",
+        "BE",
+        "IR"
+      ],
+      "fantasy_team": "Gridiron Goons",
+      "id": 202600019,
+      "injured": false,
+      "injury_status": "OUT",
+      "name": "Jacob Jackson",
+      "percent_owned": 6.0,
+      "position": "TE",
+      "pro_team": "MIA",
+      "projected_total_points": 103.9,
+      "slot": "BE",
+      "status": "ACTIVE",
+      "total_points": 117.7
+    },
+    {
+      "acquisition_type": "WAIVER",
+      "avg_points": 6.9,
+      "eligible_slots": [
+        "RB",
+        "BE",
+        "IR"
+      ],
+      "fantasy_team": "Gridiron Goons",
+      "id": 202600003,
+      "injured": true,
+      "injury_status": null,
+      "name": "Dylan Lewis",
+      "percent_owned": 20.9,
+      "position": "RB",
+      "pro_team": "ATL",
+      "projected_total_points": 108.6,
+      "slot": "RB",
+      "status": "ACTIVE",
+      "total_points": 117.0
+    },
+    {
+      "acquisition_type": "DRAFT",
+      "avg_points": 6.6,
+      "eligible_slots": [
+        "WR",
+        "BE",
+        "IR"
+      ],
+      "fantasy_team": "End Zone Enforcers",
+      "id": 202600217,
+      "injured": false,
+      "injury_status": "QUESTIONABLE",
+      "name": "Anthony Johnson",
+      "percent_owned": 90.7,
+      "position": "WR",
+      "pro_team": "NYG",
+      "projected_total_points": 115.3,
+      "slot": "BE",
+      "status": "ACTIVE",
+      "total_points": 112.1
+    },
+    {
+      "acquisition_type": "ADD",
+      "avg_points": 6.4,
+      "eligible_slots": [
+        "K",
+        "BE",
+        "IR"
+      ],
+      "fantasy_team": "Gridiron Goons",
+      "id": 202600020,
+      "injured": false,
+      "injury_status": null,
+      "name": "Bryan Moore",
+      "percent_owned": 75.6,
+      "position": "K",
+      "pro_team": "IND",
+      "projected_total_points": 112.1,
+      "slot": "BE",
+      "status": "ACTIVE",
+      "total_points": 109.5
+    },
+    {
+      "acquisition_type": "DRAFT",
+      "avg_points": 6.4,
+      "eligible_slots": [
+        "TE",
+        "BE",
+        "IR"
+      ],
+      "fantasy_team": "End Zone Enforcers",
+      "id": 202600214,
+      "injured": false,
+      "injury_status": "ACTIVE",
+      "name": "Jacob Castillo",
+      "percent_owned": 14.6,
+      "position": "TE",
+      "pro_team": "CIN",
+      "projected_total_points": 129.2,
+      "slot": "BE",
+      "status": "ACTIVE",
+      "total_points": 109.2
+    },
+    {
+      "acquisition_type": "DRAFT",
+      "avg_points": 6.1,
+      "eligible_slots": [
+        "RB",
+        "BE",
+        "IR"
+      ],
+      "fantasy_team": "Turf Titans",
+      "id": 202600102,
+      "injured": false,
+      "injury_status": null,
+      "name": "Randy Gonzalez",
+      "percent_owned": 39.6,
+      "position": "RB",
+      "pro_team": "IND",
+      "projected_total_points": 117.5,
+      "slot": "RB",
+      "status": "ACTIVE",
+      "total_points": 103.2
+    },
+    {
+      "acquisition_type": "DRAFT",
+      "avg_points": 6.0,
+      "eligible_slots": [
+        "K",
+        "BE",
+        "IR"
+      ],
+      "fantasy_team": "Turf Titans",
+      "id": 202600116,
+      "injured": false,
+      "injury_status": "ACTIVE",
+      "name": "Justin Sanders",
+      "percent_owned": 49.7,
+      "position": "K",
+      "pro_team": "TB",
+      "projected_total_points": 119.6,
+      "slot": "BE",
+      "status": "ACTIVE",
+      "total_points": 101.5
+    },
+    {
+      "acquisition_type": "ADD",
+      "avg_points": 5.9,
+      "eligible_slots": [
+        "TE",
+        "BE",
+        "IR"
+      ],
+      "fantasy_team": "Turf Titans",
+      "id": 202600115,
+      "injured": false,
+      "injury_status": "QUESTIONABLE",
+      "name": "Tyler Rivera",
+      "percent_owned": 71.1,
+      "position": "TE",
+      "pro_team": "WSH",
+      "projected_total_points": 92.6,
+      "slot": "BE",
+      "status": "ACTIVE",
+      "total_points": 100.5
+    },
+    {
+      "acquisition_type": "TRADE",
+      "avg_points": 5.5,
+      "eligible_slots": [
+        "K",
+        "BE",
+        "IR"
+      ],
+      "fantasy_team": "Gridiron Goons",
+      "id": 202600010,
+      "injured": false,
+      "injury_status": null,
+      "name": "Russell Baker",
+      "percent_owned": -1.0,
+      "position": "K",
+      "pro_team": "ARI",
+      "projected_total_points": 110.3,
+      "slot": "K",
+      "status": "ACTIVE",
+      "total_points": 93.2
+    },
+    {
+      "acquisition_type": "ADD",
+      "avg_points": 5.1,
+      "eligible_slots": [
+        "D/ST",
+        "BE",
+        "IR"
+      ],
+      "fantasy_team": "End Zone Enforcers",
+      "id": 202600209,
+      "injured": false,
+      "injury_status": null,
+      "name": "GB D/ST",
+      "percent_owned": 71.9,
+      "position": "D/ST",
+      "pro_team": "JAX",
+      "projected_total_points": 109.3,
+      "slot": "D/ST",
+      "status": "ACTIVE",
+      "total_points": 86.9
+    },
+    {
+      "acquisition_type": "WAIVER",
+      "avg_points": 5.0,
+      "eligible_slots": [
+        "TE",
+        "BE",
+        "IR"
+      ],
+      "fantasy_team": "Gridiron Goons",
+      "id": 202600007,
+      "injured": false,
+      "injury_status": "DOUBTFUL",
+      "name": "Scott Martin",
+      "percent_owned": 69.0,
+      "position": "TE",
+      "pro_team": "LV",
+      "projected_total_points": 70.2,
+      "slot": "TE",
+      "status": "ACTIVE",
+      "total_points": 84.5
+    },
+    {
+      "acquisition_type": "DRAFT",
+      "avg_points": 4.8,
+      "eligible_slots": [
+        "TE",
+        "BE",
+        "IR"
+      ],
+      "fantasy_team": "End Zone Enforcers",
+      "id": 202600208,
+      "injured": false,
+      "injury_status": null,
+      "name": "Jeremy Wilson",
+      "percent_owned": 90.9,
+      "position": "TE",
+      "pro_team": "CAR",
+      "projected_total_points": 91.3,
+      "slot": "FLEX",
+      "status": "ACTIVE",
+      "total_points": 81.0
+    },
+    {
+      "acquisition_type": "DRAFT",
+      "avg_points": 4.7,
+      "eligible_slots": [
+        "WR",
+        "BE",
+        "IR"
+      ],
+      "fantasy_team": "End Zone Enforcers",
+      "id": 202600205,
+      "injured": false,
+      "injury_status": "ACTIVE",
+      "name": "Eugene Garcia",
+      "percent_owned": 16.0,
+      "position": "WR",
+      "pro_team": "LAR",
+      "projected_total_points": 104.3,
+      "slot": "WR",
+      "status": "ACTIVE",
+      "total_points": 80.4
+    },
+    {
+      "acquisition_type": "DRAFT",
+      "avg_points": 4.7,
+      "eligible_slots": [
+        "WR",
+        "BE",
+        "IR"
+      ],
+      "fantasy_team": "Gridiron Goons",
+      "id": 202600006,
+      "injured": false,
+      "injury_status": "DOUBTFUL",
+      "name": "Dennis Thompson",
+      "percent_owned": 80.2,
+      "position": "WR",
+      "pro_team": "PIT",
+      "projected_total_points": 64.1,
+      "slot": "WR",
+      "status": "ACTIVE",
+      "total_points": 79.2
+    },
+    {
+      "acquisition_type": "ADD",
+      "avg_points": 4.3,
+      "eligible_slots": [
+        "K",
+        "BE",
+        "IR"
+      ],
+      "fantasy_team": "End Zone Enforcers",
+      "id": 202600210,
+      "injured": false,
+      "injury_status": null,
+      "name": "Logan Myers",
+      "percent_owned": 14.9,
+      "position": "K",
+      "pro_team": "LV",
+      "projected_total_points": 67.4,
+      "slot": "K",
+      "status": "ACTIVE",
+      "total_points": 72.3
+    },
+    {
+      "acquisition_type": "TRADE",
+      "avg_points": 4.2,
+      "eligible_slots": [
+        "WR",
+        "BE",
+        "IR"
+      ],
+      "fantasy_team": "Turf Titans",
+      "id": 202600106,
+      "injured": false,
+      "injury_status": null,
+      "name": "Jesse Roberts",
+      "percent_owned": 51.8,
+      "position": "WR",
+      "pro_team": "DEN",
+      "projected_total_points": 80.3,
+      "slot": "WR",
+      "status": "ACTIVE",
+      "total_points": 70.7
+    },
+    {
+      "acquisition_type": "ADD",
+      "avg_points": 4.1,
+      "eligible_slots": [
+        "TE",
+        "BE",
+        "IR"
+      ],
+      "fantasy_team": "End Zone Enforcers",
+      "id": 202600211,
+      "injured": false,
+      "injury_status": null,
+      "name": "Ryan Williams",
+      "percent_owned": 81.3,
+      "position": "TE",
+      "pro_team": "CAR",
+      "projected_total_points": 60.7,
+      "slot": "BE",
+      "status": "ACTIVE",
+      "total_points": 69.5
+    },
+    {
+      "acquisition_type": "WAIVER",
+      "avg_points": 3.7,
+      "eligible_slots": [
+        "D/ST",
+        "BE",
+        "IR"
+      ],
+      "fantasy_team": "Gridiron Goons",
+      "id": 202600009,
+      "injured": false,
+      "injury_status": "QUESTIONABLE",
+      "name": "CAR D/ST",
+      "percent_owned": 98.0,
+      "position": "D/ST",
+      "pro_team": "LAR",
+      "projected_total_points": 50.1,
+      "slot": "D/ST",
+      "status": "ACTIVE",
+      "total_points": 63.6
+    },
+    {
+      "acquisition_type": "DRAFT",
+      "avg_points": 3.7,
+      "eligible_slots": [
+        "WR",
+        "BE",
+        "IR"
+      ],
+      "fantasy_team": "End Zone Enforcers",
+      "id": 202600218,
+      "injured": false,
+      "injury_status": null,
+      "name": "Joshua Campbell",
+      "percent_owned": 57.3,
+      "position": "WR",
+      "pro_team": "LV",
+      "projected_total_points": 56.7,
+      "slot": "BE",
+      "status": "ACTIVE",
+      "total_points": 63.1
+    },
+    {
+      "acquisition_type": "ADD",
+      "avg_points": 3.2,
+      "eligible_slots": [
+        "TE",
+        "BE",
+        "IR"
+      ],
+      "fantasy_team": "Gridiron Goons",
+      "id": 202600011,
+      "injured": false,
+      "injury_status": "ACTIVE",
+      "name": "Bryan Rogers",
+      "percent_owned": 18.7,
+      "position": "TE",
+      "pro_team": "SF",
+      "projected_total_points": 49.9,
+      "slot": "BE",
+      "status": "ACTIVE",
+      "total_points": 54.9
+    },
+    {
+      "acquisition_type": "DRAFT",
+      "avg_points": 0.9,
+      "eligible_slots": [
+        "RB",
+        "BE",
+        "IR"
+      ],
+      "fantasy_team": "End Zone Enforcers",
+      "id": 202600221,
+      "injured": false,
+      "injury_status": null,
+      "name": "Lawrence Baker",
+      "percent_owned": 84.3,
+      "position": "RB",
+      "pro_team": "CHI",
+      "projected_total_points": 17.3,
+      "slot": "BE",
+      "status": "ACTIVE",
+      "total_points": 15.7
+    },
+    {
+      "acquisition_type": "TRADE",
+      "avg_points": 0.0,
+      "eligible_slots": [
+        "QB",
+        "BE",
+        "IR"
+      ],
+      "fantasy_team": "End Zone Enforcers",
+      "id": 202600212,
+      "injured": false,
+      "injury_status": null,
+      "name": "Jeffrey Ramos",
+      "percent_owned": 36.3,
+      "position": "QB",
+      "pro_team": "PIT",
+      "projected_total_points": null,
+      "slot": "BE",
+      "status": "ACTIVE",
+      "total_points": 0.0
+    }
+  ],
+  "scoring_type": "H2H_POINTS",
+  "season": 2026,
+  "settings": {
+    "acquisition_budget": 200,
+    "faab": true,
+    "keeper_count": 5,
+    "median_scoring": false,
+    "playoff_matchup_period_length": 1,
+    "playoff_seed_tie_rule": "TOTAL_POINTS_SCORED",
+    "playoff_team_count": 2,
+    "playoff_tie_rule": "NONE",
+    "position_slot_counts": {
+      "BE": 6,
+      "DST": 1,
+      "FLEX": 1,
+      "K": 1,
+      "QB": 1,
+      "RB": 2,
+      "TE": 1,
+      "WR": 2
+    },
+    "reg_season_count": 14,
+    "scoring_format": [
+      {
+        "abbr": "PTD",
+        "id": 3,
+        "label": "Passing TD",
+        "points": 4.0
+      },
+      {
+        "abbr": "RTD",
+        "id": 24,
+        "label": "Rushing TD",
+        "points": 6.0
+      }
+    ],
+    "scoring_type": "H2H_POINTS",
+    "team_count": 3,
+    "tie_rule": "NONE",
+    "trade_deadline": 12,
+    "veto_votes_required": 4
+  },
+  "short_name": "Football Dynasty",
+  "sport": "football",
+  "synced_at": "2026-07-27T00:00:00+00:00",
+  "team_count": 3,
+  "teams": [
+    {
+      "abbrev": "TT",
+      "division": "West",
+      "logo_url": null,
+      "losses": 1,
+      "name": "Turf Titans",
+      "outcomes": [
+        "U",
+        "W",
+        "U",
+        "L",
+        "U",
+        "W",
+        "U",
+        "W",
+        "U",
+        "L",
+        "U",
+        "W",
+        "U",
+        "L"
+      ],
+      "owners": [
+        "Logan Jones"
+      ],
+      "points_against": 2154.5,
+      "points_for": 1930.9,
+      "roster": [
+        {
+          "acquisition_type": "DRAFT",
+          "avg_points": 21.1,
+          "eligible_slots": [
+            "QB",
+            "BE",
+            "IR"
+          ],
+          "id": 202600101,
+          "injured": false,
+          "injury_status": null,
+          "name": "Gabriel Thompson",
+          "percent_owned": 65.7,
+          "position": "QB",
+          "pro_team": "MIN",
+          "projected_total_points": 285.4,
+          "slot": "QB",
+          "status": "ACTIVE",
+          "total_points": 358.8
+        },
+        {
+          "acquisition_type": "DRAFT",
+          "avg_points": 6.1,
+          "eligible_slots": [
+            "RB",
+            "BE",
+            "IR"
+          ],
+          "id": 202600102,
+          "injured": false,
+          "injury_status": null,
+          "name": "Randy Gonzalez",
+          "percent_owned": 39.6,
+          "position": "RB",
+          "pro_team": "IND",
+          "projected_total_points": 117.5,
+          "slot": "RB",
+          "status": "ACTIVE",
+          "total_points": 103.2
+        },
+        {
+          "acquisition_type": "WAIVER",
+          "avg_points": 9.3,
+          "eligible_slots": [
+            "RB",
+            "BE",
+            "IR"
+          ],
+          "id": 202600103,
+          "injured": false,
+          "injury_status": null,
+          "name": "Jordan Sanders",
+          "percent_owned": 91.3,
+          "position": "RB",
+          "pro_team": "TEN",
+          "projected_total_points": 203.2,
+          "slot": "RB",
+          "status": "ACTIVE",
+          "total_points": 157.4
+        },
+        {
+          "acquisition_type": "WAIVER",
+          "avg_points": 16.5,
+          "eligible_slots": [
+            "WR",
+            "BE",
+            "IR"
+          ],
+          "id": 202600104,
+          "injured": false,
+          "injury_status": null,
+          "name": "Bobby Brooks",
+          "percent_owned": 79.5,
+          "position": "WR",
+          "pro_team": "CHI",
+          "projected_total_points": 275.8,
+          "slot": "WR",
+          "status": "ACTIVE",
+          "total_points": 280.9
+        },
+        {
+          "acquisition_type": "TRADE",
+          "avg_points": 10.7,
+          "eligible_slots": [
+            "WR",
+            "BE",
+            "IR"
+          ],
+          "id": 202600105,
+          "injured": false,
+          "injury_status": null,
+          "name": "Eugene Sanders",
+          "percent_owned": 4.1,
+          "position": "WR",
+          "pro_team": "TEN",
+          "projected_total_points": 223.8,
+          "slot": "WR",
+          "status": "ACTIVE",
+          "total_points": 181.6
+        },
+        {
+          "acquisition_type": "TRADE",
+          "avg_points": 4.2,
+          "eligible_slots": [
+            "WR",
+            "BE",
+            "IR"
+          ],
+          "id": 202600106,
+          "injured": false,
+          "injury_status": null,
+          "name": "Jesse Roberts",
+          "percent_owned": 51.8,
+          "position": "WR",
+          "pro_team": "DEN",
+          "projected_total_points": 80.3,
+          "slot": "WR",
+          "status": "ACTIVE",
+          "total_points": 70.7
+        },
+        {
+          "acquisition_type": "TRADE",
+          "avg_points": 9.5,
+          "eligible_slots": [
+            "TE",
+            "BE",
+            "IR"
+          ],
+          "id": 202600107,
+          "injured": false,
+          "injury_status": "INJURY_RESERVE",
+          "name": "Jeffrey Parker",
+          "percent_owned": -1.0,
+          "position": "TE",
+          "pro_team": "NYG",
+          "projected_total_points": 195.9,
+          "slot": "TE",
+          "status": "ACTIVE",
+          "total_points": 161.7
+        },
+        {
+          "acquisition_type": "DRAFT",
+          "avg_points": 14.1,
+          "eligible_slots": [
+            "RB",
+            "BE",
+            "IR"
+          ],
+          "id": 202600108,
+          "injured": false,
+          "injury_status": null,
+          "name": "Gregory Nelson",
+          "percent_owned": 84.5,
+          "position": "RB",
+          "pro_team": "NYG",
+          "projected_total_points": 183.2,
+          "slot": "FLEX",
+          "status": "ACTIVE",
+          "total_points": 239.9
+        },
+        {
+          "acquisition_type": "ADD",
+          "avg_points": 11.7,
+          "eligible_slots": [
+            "D/ST",
+            "BE",
+            "IR"
+          ],
+          "id": 202600109,
+          "injured": false,
+          "injury_status": "ACTIVE",
+          "name": "ARI D/ST",
+          "percent_owned": 74.3,
+          "position": "D/ST",
+          "pro_team": "BUF",
+          "projected_total_points": 191.1,
+          "slot": "D/ST",
+          "status": "ACTIVE",
+          "total_points": 199.2
+        },
+        {
+          "acquisition_type": "TRADE",
+          "avg_points": 10.4,
+          "eligible_slots": [
+            "K",
+            "BE",
+            "IR"
+          ],
+          "id": 202600110,
+          "injured": false,
+          "injury_status": null,
+          "name": "James Alvarez",
+          "percent_owned": 48.8,
+          "position": "K",
+          "pro_team": "LAR",
+          "projected_total_points": 160.1,
+          "slot": "K",
+          "status": "ACTIVE",
+          "total_points": 177.5
+        },
+        {
+          "acquisition_type": "WAIVER",
+          "avg_points": 8.4,
+          "eligible_slots": [
+            "RB",
+            "BE",
+            "IR"
+          ],
+          "id": 202600111,
+          "injured": false,
+          "injury_status": "INJURY_RESERVE",
+          "name": "Jacob Adams",
+          "percent_owned": -1.0,
+          "position": "RB",
+          "pro_team": "BUF",
+          "projected_total_points": 152.0,
+          "slot": "BE",
+          "status": "ACTIVE",
+          "total_points": 142.5
+        },
+        {
+          "acquisition_type": "ADD",
+          "avg_points": 7.7,
+          "eligible_slots": [
+            "RB",
+            "BE",
+            "IR"
+          ],
+          "id": 202600112,
+          "injured": false,
+          "injury_status": null,
+          "name": "Jacob Rodriguez",
+          "percent_owned": 45.3,
+          "position": "RB",
+          "pro_team": "LV",
+          "projected_total_points": 101.9,
+          "slot": "BE",
+          "status": "ACTIVE",
+          "total_points": 130.5
+        },
+        {
+          "acquisition_type": "TRADE",
+          "avg_points": 9.4,
+          "eligible_slots": [
+            "WR",
+            "BE",
+            "IR"
+          ],
+          "id": 202600113,
+          "injured": true,
+          "injury_status": null,
+          "name": "Timothy Brooks",
+          "percent_owned": 89.3,
+          "position": "WR",
+          "pro_team": "DET",
+          "projected_total_points": 121.7,
+          "slot": "BE",
+          "status": "ACTIVE",
+          "total_points": 159.3
+        },
+        {
+          "acquisition_type": "DRAFT",
+          "avg_points": 14.4,
+          "eligible_slots": [
+            "QB",
+            "BE",
+            "IR"
+          ],
+          "id": 202600114,
+          "injured": false,
+          "injury_status": null,
+          "name": "Joshua Howard",
+          "percent_owned": 10.6,
+          "position": "QB",
+          "pro_team": "DAL",
+          "projected_total_points": 197.2,
+          "slot": "BE",
+          "status": "ACTIVE",
+          "total_points": 245.5
+        },
+        {
+          "acquisition_type": "ADD",
+          "avg_points": 5.9,
+          "eligible_slots": [
+            "TE",
+            "BE",
+            "IR"
+          ],
+          "id": 202600115,
+          "injured": false,
+          "injury_status": "QUESTIONABLE",
+          "name": "Tyler Rivera",
+          "percent_owned": 71.1,
+          "position": "TE",
+          "pro_team": "WSH",
+          "projected_total_points": 92.6,
+          "slot": "BE",
+          "status": "ACTIVE",
+          "total_points": 100.5
+        },
+        {
+          "acquisition_type": "DRAFT",
+          "avg_points": 6.0,
+          "eligible_slots": [
+            "K",
+            "BE",
+            "IR"
+          ],
+          "id": 202600116,
+          "injured": false,
+          "injury_status": "ACTIVE",
+          "name": "Justin Sanders",
+          "percent_owned": 49.7,
+          "position": "K",
+          "pro_team": "TB",
+          "projected_total_points": 119.6,
+          "slot": "BE",
+          "status": "ACTIVE",
+          "total_points": 101.5
+        },
+        {
+          "acquisition_type": "WAIVER",
+          "avg_points": 18.7,
+          "eligible_slots": [
+            "WR",
+            "BE",
+            "IR"
+          ],
+          "id": 202600117,
+          "injured": false,
+          "injury_status": "DOUBTFUL",
+          "name": "Tyler White",
+          "percent_owned": 76.6,
+          "position": "WR",
+          "pro_team": "TEN",
+          "projected_total_points": 374.4,
+          "slot": "BE",
+          "status": "ACTIVE",
+          "total_points": 318.1
+        },
+        {
+          "acquisition_type": "DRAFT",
+          "avg_points": 7.2,
+          "eligible_slots": [
+            "K",
+            "BE",
+            "IR"
+          ],
+          "id": 202600118,
+          "injured": false,
+          "injury_status": null,
+          "name": "Lawrence Lewis",
+          "percent_owned": 52.1,
+          "position": "K",
+          "pro_team": "WSH",
+          "projected_total_points": 121.3,
+          "slot": "BE",
+          "status": "ACTIVE",
+          "total_points": 122.9
+        },
+        {
+          "acquisition_type": "ADD",
+          "avg_points": 7.1,
+          "eligible_slots": [
+            "K",
+            "BE",
+            "IR"
+          ],
+          "id": 202600119,
+          "injured": false,
+          "injury_status": "INJURY_RESERVE",
+          "name": "Noah Mitchell",
+          "percent_owned": 54.7,
+          "position": "K",
+          "pro_team": "NYG",
+          "projected_total_points": 125.4,
+          "slot": "BE",
+          "status": "ACTIVE",
+          "total_points": 120.3
+        },
+        {
+          "acquisition_type": "ADD",
+          "avg_points": 17.4,
+          "eligible_slots": [
+            "RB",
+            "BE",
+            "IR"
+          ],
+          "id": 202600120,
+          "injured": false,
+          "injury_status": "INJURY_RESERVE",
+          "name": "Terry Garcia",
+          "percent_owned": 6.1,
+          "position": "RB",
+          "pro_team": "MIA",
+          "projected_total_points": 290.9,
+          "slot": "BE",
+          "status": "ACTIVE",
+          "total_points": 296.3
+        },
+        {
+          "acquisition_type": "DRAFT",
+          "avg_points": 19.0,
+          "eligible_slots": [
+            "QB",
+            "BE",
+            "IR"
+          ],
+          "id": 202600121,
+          "injured": false,
+          "injury_status": "DOUBTFUL",
+          "name": "Robert Gutierrez",
+          "percent_owned": 25.1,
+          "position": "QB",
+          "pro_team": "WSH",
+          "projected_total_points": 262.5,
+          "slot": "BE",
+          "status": "ACTIVE",
+          "total_points": 323.4
+        },
+        {
+          "acquisition_type": "ADD",
+          "avg_points": 8.5,
+          "eligible_slots": [
+            "K",
+            "BE",
+            "IR"
+          ],
+          "id": 202600122,
+          "injured": false,
+          "injury_status": "OUT",
+          "name": "Arthur Baker",
+          "percent_owned": 7.6,
+          "position": "K",
+          "pro_team": "JAX",
+          "projected_total_points": 110.1,
+          "slot": "BE",
+          "status": "ACTIVE",
+          "total_points": 144.0
+        }
+      ],
+      "schedule": [
+        2,
+        1,
+        2,
+        1,
+        2,
+        1,
+        2,
+        1,
+        2,
+        1,
+        2,
+        1,
+        2,
+        1
+      ],
+      "scores": [
+        0.0,
+        144.3,
+        0.0,
+        77.1,
+        0.0,
+        140.5,
+        0.0,
+        148.4,
+        0.0,
+        103.5,
+        0.0,
+        159.7,
+        0.0,
+        78.6
+      ],
+      "standing": 1,
+      "team_id": 2,
+      "ties": 0,
+      "win_pct": 0.929,
+      "wins": 13
+    },
+    {
+      "abbrev": "EZE",
+      "division": "West",
+      "logo_url": null,
+      "losses": 7,
+      "name": "End Zone Enforcers",
+      "outcomes": [
+        "W",
+        "U",
+        "L",
+        "U",
+        "L",
+        "U",
+        "L",
+        "U",
+        "W",
+        "U",
+        "L",
+        "U",
+        "L",
+        "U"
+      ],
+      "owners": [
+        "Ralph Hughes"
+      ],
+      "points_against": 1771.7,
+      "points_for": 1638.4,
+      "roster": [
+        {
+          "acquisition_type": "TRADE",
+          "avg_points": 16.9,
+          "eligible_slots": [
+            "QB",
+            "BE",
+            "IR"
+          ],
+          "id": 202600201,
+          "injured": false,
+          "injury_status": null,
+          "name": "Lawrence Chavez",
+          "percent_owned": 80.6,
+          "position": "QB",
+          "pro_team": "DAL",
+          "projected_total_points": 243.3,
+          "slot": "QB",
+          "status": "ACTIVE",
+          "total_points": 287.2
+        },
+        {
+          "acquisition_type": "TRADE",
+          "avg_points": 12.7,
+          "eligible_slots": [
+            "RB",
+            "BE",
+            "IR"
+          ],
+          "id": 202600202,
+          "injured": false,
+          "injury_status": null,
+          "name": "Anthony Miller",
+          "percent_owned": 41.2,
+          "position": "RB",
+          "pro_team": "BUF",
+          "projected_total_points": 277.8,
+          "slot": "RB",
+          "status": "ACTIVE",
+          "total_points": 215.9
+        },
+        {
+          "acquisition_type": "TRADE",
+          "avg_points": 15.6,
+          "eligible_slots": [
+            "RB",
+            "BE",
+            "IR"
+          ],
+          "id": 202600203,
+          "injured": false,
+          "injury_status": null,
+          "name": "Scott Perez",
+          "percent_owned": 90.1,
+          "position": "RB",
+          "pro_team": "PHI",
+          "projected_total_points": 297.1,
+          "slot": "RB",
+          "status": "ACTIVE",
+          "total_points": 265.6
+        },
+        {
+          "acquisition_type": "DRAFT",
+          "avg_points": 13.1,
+          "eligible_slots": [
+            "WR",
+            "BE",
+            "IR"
+          ],
+          "id": 202600204,
+          "injured": false,
+          "injury_status": "ACTIVE",
+          "name": "Patrick Moore",
+          "percent_owned": 64.7,
+          "position": "WR",
+          "pro_team": "DET",
+          "projected_total_points": 204.3,
+          "slot": "WR",
+          "status": "ACTIVE",
+          "total_points": 221.9
+        },
+        {
+          "acquisition_type": "DRAFT",
+          "avg_points": 4.7,
+          "eligible_slots": [
+            "WR",
+            "BE",
+            "IR"
+          ],
+          "id": 202600205,
+          "injured": false,
+          "injury_status": "ACTIVE",
+          "name": "Eugene Garcia",
+          "percent_owned": 16.0,
+          "position": "WR",
+          "pro_team": "LAR",
+          "projected_total_points": 104.3,
+          "slot": "WR",
+          "status": "ACTIVE",
+          "total_points": 80.4
+        },
+        {
+          "acquisition_type": "DRAFT",
+          "avg_points": 10.5,
+          "eligible_slots": [
+            "WR",
+            "BE",
+            "IR"
+          ],
+          "id": 202600206,
+          "injured": false,
+          "injury_status": null,
+          "name": "Brian Flores",
+          "percent_owned": 10.0,
+          "position": "WR",
+          "pro_team": "BUF",
+          "projected_total_points": 136.4,
+          "slot": "WR",
+          "status": "ACTIVE",
+          "total_points": 177.7
+        },
+        {
+          "acquisition_type": "TRADE",
+          "avg_points": 8.8,
+          "eligible_slots": [
+            "TE",
+            "BE",
+            "IR"
+          ],
+          "id": 202600207,
+          "injured": false,
+          "injury_status": null,
+          "name": "Carl Ruiz",
+          "percent_owned": 50.2,
+          "position": "TE",
+          "pro_team": "LV",
+          "projected_total_points": 117.3,
+          "slot": "TE",
+          "status": "ACTIVE",
+          "total_points": 149.5
+        },
+        {
+          "acquisition_type": "DRAFT",
+          "avg_points": 4.8,
+          "eligible_slots": [
+            "TE",
+            "BE",
+            "IR"
+          ],
+          "id": 202600208,
+          "injured": false,
+          "injury_status": null,
+          "name": "Jeremy Wilson",
+          "percent_owned": 90.9,
+          "position": "TE",
+          "pro_team": "CAR",
+          "projected_total_points": 91.3,
+          "slot": "FLEX",
+          "status": "ACTIVE",
+          "total_points": 81.0
+        },
+        {
+          "acquisition_type": "ADD",
+          "avg_points": 5.1,
+          "eligible_slots": [
+            "D/ST",
+            "BE",
+            "IR"
+          ],
+          "id": 202600209,
+          "injured": false,
+          "injury_status": null,
+          "name": "GB D/ST",
+          "percent_owned": 71.9,
+          "position": "D/ST",
+          "pro_team": "JAX",
+          "projected_total_points": 109.3,
+          "slot": "D/ST",
+          "status": "ACTIVE",
+          "total_points": 86.9
+        },
+        {
+          "acquisition_type": "ADD",
+          "avg_points": 4.3,
+          "eligible_slots": [
+            "K",
+            "BE",
+            "IR"
+          ],
+          "id": 202600210,
+          "injured": false,
+          "injury_status": null,
+          "name": "Logan Myers",
+          "percent_owned": 14.9,
+          "position": "K",
+          "pro_team": "LV",
+          "projected_total_points": 67.4,
+          "slot": "K",
+          "status": "ACTIVE",
+          "total_points": 72.3
+        },
+        {
+          "acquisition_type": "ADD",
+          "avg_points": 4.1,
+          "eligible_slots": [
+            "TE",
+            "BE",
+            "IR"
+          ],
+          "id": 202600211,
+          "injured": false,
+          "injury_status": null,
+          "name": "Ryan Williams",
+          "percent_owned": 81.3,
+          "position": "TE",
+          "pro_team": "CAR",
+          "projected_total_points": 60.7,
+          "slot": "BE",
+          "status": "ACTIVE",
+          "total_points": 69.5
+        },
+        {
+          "acquisition_type": "TRADE",
+          "avg_points": 0.0,
+          "eligible_slots": [
+            "QB",
+            "BE",
+            "IR"
+          ],
+          "id": 202600212,
+          "injured": false,
+          "injury_status": null,
+          "name": "Jeffrey Ramos",
+          "percent_owned": 36.3,
+          "position": "QB",
+          "pro_team": "PIT",
+          "projected_total_points": null,
+          "slot": "BE",
+          "status": "ACTIVE",
+          "total_points": 0.0
+        },
+        {
+          "acquisition_type": "DRAFT",
+          "avg_points": 7.4,
+          "eligible_slots": [
+            "RB",
+            "BE",
+            "IR"
+          ],
+          "id": 202600213,
+          "injured": false,
+          "injury_status": "QUESTIONABLE",
+          "name": "Eric Hughes",
+          "percent_owned": 6.8,
+          "position": "RB",
+          "pro_team": "CIN",
+          "projected_total_points": 158.0,
+          "slot": "BE",
+          "status": "ACTIVE",
+          "total_points": 126.2
+        },
+        {
+          "acquisition_type": "DRAFT",
+          "avg_points": 6.4,
+          "eligible_slots": [
+            "TE",
+            "BE",
+            "IR"
+          ],
+          "id": 202600214,
+          "injured": false,
+          "injury_status": "ACTIVE",
+          "name": "Jacob Castillo",
+          "percent_owned": 14.6,
+          "position": "TE",
+          "pro_team": "CIN",
+          "projected_total_points": 129.2,
+          "slot": "BE",
+          "status": "ACTIVE",
+          "total_points": 109.2
+        },
+        {
+          "acquisition_type": "DRAFT",
+          "avg_points": 15.3,
+          "eligible_slots": [
+            "WR",
+            "BE",
+            "IR"
+          ],
+          "id": 202600215,
+          "injured": false,
+          "injury_status": null,
+          "name": "Stephen Collins",
+          "percent_owned": 41.2,
+          "position": "WR",
+          "pro_team": "LAC",
+          "projected_total_points": 235.2,
+          "slot": "BE",
+          "status": "ACTIVE",
+          "total_points": 260.3
+        },
+        {
+          "acquisition_type": "TRADE",
+          "avg_points": 7.7,
+          "eligible_slots": [
+            "TE",
+            "BE",
+            "IR"
+          ],
+          "id": 202600216,
+          "injured": true,
+          "injury_status": null,
+          "name": "Joseph Cruz",
+          "percent_owned": 96.0,
+          "position": "TE",
+          "pro_team": "CIN",
+          "projected_total_points": 103.9,
+          "slot": "BE",
+          "status": "ACTIVE",
+          "total_points": 130.2
+        },
+        {
+          "acquisition_type": "DRAFT",
+          "avg_points": 6.6,
+          "eligible_slots": [
+            "WR",
+            "BE",
+            "IR"
+          ],
+          "id": 202600217,
+          "injured": false,
+          "injury_status": "QUESTIONABLE",
+          "name": "Anthony Johnson",
+          "percent_owned": 90.7,
+          "position": "WR",
+          "pro_team": "NYG",
+          "projected_total_points": 115.3,
+          "slot": "BE",
+          "status": "ACTIVE",
+          "total_points": 112.1
+        },
+        {
+          "acquisition_type": "DRAFT",
+          "avg_points": 3.7,
+          "eligible_slots": [
+            "WR",
+            "BE",
+            "IR"
+          ],
+          "id": 202600218,
+          "injured": false,
+          "injury_status": null,
+          "name": "Joshua Campbell",
+          "percent_owned": 57.3,
+          "position": "WR",
+          "pro_team": "LV",
+          "projected_total_points": 56.7,
+          "slot": "BE",
+          "status": "ACTIVE",
+          "total_points": 63.1
+        },
+        {
+          "acquisition_type": "DRAFT",
+          "avg_points": 17.9,
+          "eligible_slots": [
+            "QB",
+            "BE",
+            "IR"
+          ],
+          "id": 202600219,
+          "injured": true,
+          "injury_status": "DOUBTFUL",
+          "name": "Zachary Young",
+          "percent_owned": 77.3,
+          "position": "QB",
+          "pro_team": "PHI",
+          "projected_total_points": 300.7,
+          "slot": "BE",
+          "status": "ACTIVE",
+          "total_points": 304.9
+        },
+        {
+          "acquisition_type": "WAIVER",
+          "avg_points": 15.2,
+          "eligible_slots": [
+            "WR",
+            "BE",
+            "IR"
+          ],
+          "id": 202600220,
+          "injured": false,
+          "injury_status": "QUESTIONABLE",
+          "name": "Jacob Foster",
+          "percent_owned": 20.4,
+          "position": "WR",
+          "pro_team": "PIT",
+          "projected_total_points": 207.0,
+          "slot": "BE",
+          "status": "ACTIVE",
+          "total_points": 258.3
+        },
+        {
+          "acquisition_type": "DRAFT",
+          "avg_points": 0.9,
+          "eligible_slots": [
+            "RB",
+            "BE",
+            "IR"
+          ],
+          "id": 202600221,
+          "injured": false,
+          "injury_status": null,
+          "name": "Lawrence Baker",
+          "percent_owned": 84.3,
+          "position": "RB",
+          "pro_team": "CHI",
+          "projected_total_points": 17.3,
+          "slot": "BE",
+          "status": "ACTIVE",
+          "total_points": 15.7
+        },
+        {
+          "acquisition_type": "DRAFT",
+          "avg_points": 15.6,
+          "eligible_slots": [
+            "RB",
+            "BE",
+            "IR"
+          ],
+          "id": 202600222,
+          "injured": false,
+          "injury_status": null,
+          "name": "Juan Wright",
+          "percent_owned": 89.8,
+          "position": "RB",
+          "pro_team": "ATL",
+          "projected_total_points": 209.0,
+          "slot": "BE",
+          "status": "ACTIVE",
+          "total_points": 265.3
+        }
+      ],
+      "schedule": [
+        1,
+        3,
+        1,
+        3,
+        1,
+        3,
+        1,
+        3,
+        1,
+        3,
+        1,
+        3,
+        1,
+        3
+      ],
+      "scores": [
+        132.7,
+        0.0,
+        91.8,
+        0.0,
+        103.5,
+        0.0,
+        83.6,
+        0.0,
+        115.4,
+        0.0,
+        75.8,
+        0.0,
+        144.5,
+        0.0
+      ],
+      "standing": 2,
+      "team_id": 3,
+      "ties": 0,
+      "win_pct": 0.5,
+      "wins": 7
+    },
+    {
+      "abbrev": "GG",
+      "division": "West",
+      "logo_url": null,
+      "losses": 13,
+      "name": "Gridiron Goons",
+      "outcomes": [
+        "L",
+        "L",
+        "W",
+        "W",
+        "W",
+        "L",
+        "W",
+        "L",
+        "L",
+        "W",
+        "W",
+        "L",
+        "W",
+        "W"
+      ],
+      "owners": [
+        "Brandon Stewart"
+      ],
+      "points_against": 1585.4,
+      "points_for": 1352.8,
+      "roster": [
+        {
+          "acquisition_type": "DRAFT",
+          "avg_points": 19.7,
+          "eligible_slots": [
+            "QB",
+            "BE",
+            "IR"
+          ],
+          "id": 202600001,
+          "injured": false,
+          "injury_status": null,
+          "name": "Gregory Rivera",
+          "percent_owned": 21.8,
+          "position": "QB",
+          "pro_team": "NE",
+          "projected_total_points": 349.5,
+          "slot": "QB",
+          "status": "ACTIVE",
+          "total_points": 334.4
+        },
+        {
+          "acquisition_type": "ADD",
+          "avg_points": 9.8,
+          "eligible_slots": [
+            "RB",
+            "BE",
+            "IR"
+          ],
+          "id": 202600002,
+          "injured": false,
+          "injury_status": null,
+          "name": "Jacob Smith",
+          "percent_owned": 34.8,
+          "position": "RB",
+          "pro_team": "MIN",
+          "projected_total_points": 166.1,
+          "slot": "RB",
+          "status": "ACTIVE",
+          "total_points": 167.4
+        },
+        {
+          "acquisition_type": "WAIVER",
+          "avg_points": 6.9,
+          "eligible_slots": [
+            "RB",
+            "BE",
+            "IR"
+          ],
+          "id": 202600003,
+          "injured": true,
+          "injury_status": null,
+          "name": "Dylan Lewis",
+          "percent_owned": 20.9,
+          "position": "RB",
+          "pro_team": "ATL",
+          "projected_total_points": 108.6,
+          "slot": "RB",
+          "status": "ACTIVE",
+          "total_points": 117.0
+        },
+        {
+          "acquisition_type": "TRADE",
+          "avg_points": 7.1,
+          "eligible_slots": [
+            "WR",
+            "BE",
+            "IR"
+          ],
+          "id": 202600004,
+          "injured": true,
+          "injury_status": "DOUBTFUL",
+          "name": "Terry Parker",
+          "percent_owned": 20.6,
+          "position": "WR",
+          "pro_team": "SF",
+          "projected_total_points": 119.9,
+          "slot": "WR",
+          "status": "ACTIVE",
+          "total_points": 121.5
+        },
+        {
+          "acquisition_type": "WAIVER",
+          "avg_points": 7.4,
+          "eligible_slots": [
+            "WR",
+            "BE",
+            "IR"
+          ],
+          "id": 202600005,
+          "injured": false,
+          "injury_status": null,
+          "name": "Jeffrey Rivera",
+          "percent_owned": -1.0,
+          "position": "WR",
+          "pro_team": "BAL",
+          "projected_total_points": 100.7,
+          "slot": "WR",
+          "status": "ACTIVE",
+          "total_points": 125.0
+        },
+        {
+          "acquisition_type": "DRAFT",
+          "avg_points": 4.7,
+          "eligible_slots": [
+            "WR",
+            "BE",
+            "IR"
+          ],
+          "id": 202600006,
+          "injured": false,
+          "injury_status": "DOUBTFUL",
+          "name": "Dennis Thompson",
+          "percent_owned": 80.2,
+          "position": "WR",
+          "pro_team": "PIT",
+          "projected_total_points": 64.1,
+          "slot": "WR",
+          "status": "ACTIVE",
+          "total_points": 79.2
+        },
+        {
+          "acquisition_type": "WAIVER",
+          "avg_points": 5.0,
+          "eligible_slots": [
+            "TE",
+            "BE",
+            "IR"
+          ],
+          "id": 202600007,
+          "injured": false,
+          "injury_status": "DOUBTFUL",
+          "name": "Scott Martin",
+          "percent_owned": 69.0,
+          "position": "TE",
+          "pro_team": "LV",
+          "projected_total_points": 70.2,
+          "slot": "TE",
+          "status": "ACTIVE",
+          "total_points": 84.5
+        },
+        {
+          "acquisition_type": "DRAFT",
+          "avg_points": 9.8,
+          "eligible_slots": [
+            "RB",
+            "BE",
+            "IR"
+          ],
+          "id": 202600008,
+          "injured": false,
+          "injury_status": "ACTIVE",
+          "name": "Roger Kim",
+          "percent_owned": 70.6,
+          "position": "RB",
+          "pro_team": "CLE",
+          "projected_total_points": 204.4,
+          "slot": "FLEX",
+          "status": "ACTIVE",
+          "total_points": 167.0
+        },
+        {
+          "acquisition_type": "WAIVER",
+          "avg_points": 3.7,
+          "eligible_slots": [
+            "D/ST",
+            "BE",
+            "IR"
+          ],
+          "id": 202600009,
+          "injured": false,
+          "injury_status": "QUESTIONABLE",
+          "name": "CAR D/ST",
+          "percent_owned": 98.0,
+          "position": "D/ST",
+          "pro_team": "LAR",
+          "projected_total_points": 50.1,
+          "slot": "D/ST",
+          "status": "ACTIVE",
+          "total_points": 63.6
+        },
+        {
+          "acquisition_type": "TRADE",
+          "avg_points": 5.5,
+          "eligible_slots": [
+            "K",
+            "BE",
+            "IR"
+          ],
+          "id": 202600010,
+          "injured": false,
+          "injury_status": null,
+          "name": "Russell Baker",
+          "percent_owned": -1.0,
+          "position": "K",
+          "pro_team": "ARI",
+          "projected_total_points": 110.3,
+          "slot": "K",
+          "status": "ACTIVE",
+          "total_points": 93.2
+        },
+        {
+          "acquisition_type": "ADD",
+          "avg_points": 3.2,
+          "eligible_slots": [
+            "TE",
+            "BE",
+            "IR"
+          ],
+          "id": 202600011,
+          "injured": false,
+          "injury_status": "ACTIVE",
+          "name": "Bryan Rogers",
+          "percent_owned": 18.7,
+          "position": "TE",
+          "pro_team": "SF",
+          "projected_total_points": 49.9,
+          "slot": "BE",
+          "status": "ACTIVE",
+          "total_points": 54.9
+        },
+        {
+          "acquisition_type": "ADD",
+          "avg_points": 7.6,
+          "eligible_slots": [
+            "RB",
+            "BE",
+            "IR"
+          ],
+          "id": 202600012,
+          "injured": false,
+          "injury_status": "DOUBTFUL",
+          "name": "Gregory Sanders",
+          "percent_owned": 63.4,
+          "position": "RB",
+          "pro_team": "GB",
+          "projected_total_points": 118.5,
+          "slot": "BE",
+          "status": "ACTIVE",
+          "total_points": 129.1
+        },
+        {
+          "acquisition_type": "WAIVER",
+          "avg_points": 8.7,
+          "eligible_slots": [
+            "TE",
+            "BE",
+            "IR"
+          ],
+          "id": 202600013,
+          "injured": false,
+          "injury_status": null,
+          "name": "Randy Gonzalez",
+          "percent_owned": 20.3,
+          "position": "TE",
+          "pro_team": "NE",
+          "projected_total_points": 146.6,
+          "slot": "BE",
+          "status": "ACTIVE",
+          "total_points": 147.7
+        },
+        {
+          "acquisition_type": "DRAFT",
+          "avg_points": 12.0,
+          "eligible_slots": [
+            "QB",
+            "BE",
+            "IR"
+          ],
+          "id": 202600014,
+          "injured": false,
+          "injury_status": null,
+          "name": "Roger Hughes",
+          "percent_owned": 20.4,
+          "position": "QB",
+          "pro_team": "TB",
+          "projected_total_points": 224.0,
+          "slot": "BE",
+          "status": "ACTIVE",
+          "total_points": 204.6
+        },
+        {
+          "acquisition_type": "ADD",
+          "avg_points": 20.4,
+          "eligible_slots": [
+            "QB",
+            "BE",
+            "IR"
+          ],
+          "id": 202600015,
+          "injured": true,
+          "injury_status": null,
+          "name": "Sean Brooks",
+          "percent_owned": 46.3,
+          "position": "QB",
+          "pro_team": "ATL",
+          "projected_total_points": 322.0,
+          "slot": "BE",
+          "status": "ACTIVE",
+          "total_points": 346.6
+        },
+        {
+          "acquisition_type": "TRADE",
+          "avg_points": 16.8,
+          "eligible_slots": [
+            "QB",
+            "BE",
+            "IR"
+          ],
+          "id": 202600016,
+          "injured": false,
+          "injury_status": "INJURY_RESERVE",
+          "name": "Logan Bailey",
+          "percent_owned": 88.6,
+          "position": "QB",
+          "pro_team": "TEN",
+          "projected_total_points": 319.0,
+          "slot": "BE",
+          "status": "ACTIVE",
+          "total_points": 285.6
+        },
+        {
+          "acquisition_type": "DRAFT",
+          "avg_points": 7.0,
+          "eligible_slots": [
+            "WR",
+            "BE",
+            "IR"
+          ],
+          "id": 202600017,
+          "injured": false,
+          "injury_status": "OUT",
+          "name": "John Carter",
+          "percent_owned": 52.5,
+          "position": "WR",
+          "pro_team": "ARI",
+          "projected_total_points": 104.6,
+          "slot": "BE",
+          "status": "ACTIVE",
+          "total_points": 119.2
+        },
+        {
+          "acquisition_type": "TRADE",
+          "avg_points": 9.2,
+          "eligible_slots": [
+            "K",
+            "BE",
+            "IR"
+          ],
+          "id": 202600018,
+          "injured": false,
+          "injury_status": "DOUBTFUL",
+          "name": "Jesse Garcia",
+          "percent_owned": -1.0,
+          "position": "K",
+          "pro_team": "SEA",
+          "projected_total_points": 197.7,
+          "slot": "BE",
+          "status": "ACTIVE",
+          "total_points": 156.7
+        },
+        {
+          "acquisition_type": "DRAFT",
+          "avg_points": 6.9,
+          "eligible_slots": [
+            "TE",
+            "BE",
+            "IR"
+          ],
+          "id": 202600019,
+          "injured": false,
+          "injury_status": "OUT",
+          "name": "Jacob Jackson",
+          "percent_owned": 6.0,
+          "position": "TE",
+          "pro_team": "MIA",
+          "projected_total_points": 103.9,
+          "slot": "BE",
+          "status": "ACTIVE",
+          "total_points": 117.7
+        },
+        {
+          "acquisition_type": "ADD",
+          "avg_points": 6.4,
+          "eligible_slots": [
+            "K",
+            "BE",
+            "IR"
+          ],
+          "id": 202600020,
+          "injured": false,
+          "injury_status": null,
+          "name": "Bryan Moore",
+          "percent_owned": 75.6,
+          "position": "K",
+          "pro_team": "IND",
+          "projected_total_points": 112.1,
+          "slot": "BE",
+          "status": "ACTIVE",
+          "total_points": 109.5
+        },
+        {
+          "acquisition_type": "ADD",
+          "avg_points": 11.6,
+          "eligible_slots": [
+            "QB",
+            "BE",
+            "IR"
+          ],
+          "id": 202600021,
+          "injured": false,
+          "injury_status": "OUT",
+          "name": "Tyler White",
+          "percent_owned": 88.8,
+          "position": "QB",
+          "pro_team": "LV",
+          "projected_total_points": 171.7,
+          "slot": "BE",
+          "status": "ACTIVE",
+          "total_points": 197.7
+        },
+        {
+          "acquisition_type": "DRAFT",
+          "avg_points": 8.3,
+          "eligible_slots": [
+            "K",
+            "BE",
+            "IR"
+          ],
+          "id": 202600022,
+          "injured": false,
+          "injury_status": "ACTIVE",
+          "name": "Eric Castillo",
+          "percent_owned": 9.6,
+          "position": "K",
+          "pro_team": "KC",
+          "projected_total_points": 145.6,
+          "slot": "BE",
+          "status": "ACTIVE",
+          "total_points": 140.5
+        }
+      ],
+      "schedule": [
+        3,
+        2,
+        3,
+        2,
+        3,
+        2,
+        3,
+        2,
+        3,
+        2,
+        3,
+        2,
+        3,
+        2
+      ],
+      "scores": [
+        128.2,
+        76.8,
+        142.8,
+        140.5,
+        136.1,
+        97.6,
+        127.4,
+        109.0,
+        91.7,
+        109.6,
+        81.2,
+        159.1,
+        159.2,
+        101.3
+      ],
+      "standing": 3,
+      "team_id": 1,
+      "ties": 0,
+      "win_pct": 0.071,
+      "wins": 1
+    }
+  ],
+  "transactions": [
+    {
+      "actions": [
+        {
+          "action": "FA ADDED",
+          "bid_amount": 12.0,
+          "player_id": 202600001,
+          "player_name": "Gregory Rivera",
+          "team_id": 1
+        }
+      ],
+      "date": "20260901000000"
+    },
+    {
+      "actions": [
+        {
+          "action": "DROPPED",
+          "bid_amount": 0.0,
+          "player_id": 202600001,
+          "player_name": "Gregory Rivera",
+          "team_id": 1
+        },
+        {
+          "action": "TRADED",
+          "bid_amount": 0.0,
+          "player_id": 202600101,
+          "player_name": "Gabriel Thompson",
+          "team_id": 2
+        }
+      ],
+      "date": "20260987400000"
+    },
+    {
+      "actions": [
+        {
+          "action": "FA ADDED",
+          "bid_amount": 3.0,
+          "player_id": 202600101,
+          "player_name": "Gabriel Thompson",
+          "team_id": 2
+        }
+      ],
+      "date": "20261073800000"
+    }
+  ]
+}

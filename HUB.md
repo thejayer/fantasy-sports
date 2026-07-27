@@ -206,11 +206,18 @@ npm run dev
 
 ### Local data without ESPN credentials
 
-The app falls back to `fixtures/sj/`, but those samples are deliberately tiny
-(3–4 teams, 0–2 players), so they hide anything that only shows up at real
-scale — table pagination, page weight, wide-table layout, multi-season
-navigation. `sj seed` fills the local store with realistic-scale **synthetic**
-snapshots instead:
+The app falls back to `fixtures/sj/`. Those samples stay small (3–4 teams) and
+on the schema_version 1 monolith layout, but they are regenerated from the live
+serializer so every field a real sync would emit is present:
+
+```bash
+sj regenerate-fixtures   # rewrite fixtures/sj from the serializer
+sj validate-fixtures     # CI/local gate — fails on drift
+```
+
+They still hide anything that only shows up at real scale — table pagination,
+page weight, wide-table layout, multi-season navigation. `sj seed` fills the
+local store with realistic-scale **synthetic** snapshots instead:
 
 ```bash
 sj seed                              # every league and season in the registry
