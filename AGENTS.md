@@ -10,7 +10,7 @@ This is a dual-product monorepo. See `README.md` (ffa engine) and `HUB.md` (memb
 ### Python env (venv)
 - Dependencies install into a virtualenv at `/workspace/.venv`. The update script creates it and installs from `requirements-lock.txt` then `pip install -e . --no-deps` (CI parity). `/workspace/.venv/bin` is prepended to `PATH` via `~/.bashrc`, so `ffa`, `sj`, `pytest`, and `ruff` work directly in a login shell; otherwise call them as `.venv/bin/<cmd>`.
 - The base image ships Python 3.12 without `ensurepip`; `python3.12-venv` was apt-installed during environment setup (captured in the snapshot). If `python3 -m venv` ever fails with an ensurepip error, reinstall it: `sudo apt-get install -y python3.12-venv`.
-- After changing deps in `pyproject.toml`, regenerate the lockfile: `uv pip compile pyproject.toml --extra dev --extra dashboard --extra gcs --python-version 3.12 -o requirements-lock.txt`.
+- After changing deps in `pyproject.toml`, regenerate the lockfile: `uv pip compile pyproject.toml --extra dev --extra dashboard --extra gcs --python-version 3.11 -o requirements-lock.txt` (3.11 floor so the same pins work on CI's 3.11 + 3.12 matrix).
 
 ### Lint (ruff)
 - CI installs `ruff` from `requirements-lock.txt` and runs `ruff check .`; the code is kept clean under current `ruff` (0.16+). The only lint exemption is `[tool.ruff.lint] ignore = ["B008"]` in `pyproject.toml`, for Typer's documented `x: T = typer.Option(...)` default-argument pattern used by the `ffa`/`sj` CLIs — keep it. Run `ruff check .` for CI parity; if a new `ruff` release flags additional rules, fix the code (or add a narrow, justified `ignore`) rather than pinning `ruff` down.

@@ -151,7 +151,8 @@ matches the hub/sync containers; 3.11 keeps the floor.
 
 `requirements-lock.txt` is the shared pin set (compiled from
 `pyproject.toml` with the `dev`, `dashboard`, and `gcs` extras via `uv pip
-compile`). CI installs from it; the three Dockerfiles pass it as
+compile --python-version 3.11` so the same pins install on the 3.11 + 3.12
+matrix). CI installs from it; the three Dockerfiles pass it as
 `--constraint` so production resolves the same transitive versions without
 pulling every optional extra into every image.
 

@@ -17,7 +17,7 @@ updates:
     # After Dependabot bumps a pin in pyproject.toml or requirements-lock.txt,
     # regenerate the lockfile if needed:
     #   uv pip compile pyproject.toml --extra dev --extra dashboard --extra gcs \
-    #     --python-version 3.12 -o requirements-lock.txt
+    #     --python-version 3.11 -o requirements-lock.txt
 
   - package-ecosystem: github-actions
     directory: /
