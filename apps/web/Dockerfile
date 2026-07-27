@@ -35,11 +35,14 @@ RUN apt-get update \
 
 WORKDIR /app
 
-COPY pyproject.toml README.md ./
+COPY pyproject.toml README.md requirements-lock.txt ./
 COPY src ./src
 COPY configs ./configs
 COPY fixtures ./fixtures
-RUN pip install --no-cache-dir -e .
+# --constraint pins transitive versions to the lockfile so CI and this image
+# resolve identically; --no-deps on a second pass is unnecessary because -e .
+# already installs only the declared runtime deps under that constraint.
+RUN pip install --no-cache-dir -e . --constraint requirements-lock.txt
 
 # Next standalone output (built with apps/web as the app root).
 COPY --from=web-build /app/apps/web/.next/standalone ./apps/web/

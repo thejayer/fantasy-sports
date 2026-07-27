@@ -10,12 +10,13 @@ FROM python:3.12-slim-bookworm
 
 WORKDIR /app
 
-COPY pyproject.toml README.md ./
+COPY pyproject.toml README.md requirements-lock.txt ./
 COPY src/sj ./src/sj
 COPY configs ./configs
 
 # The sync job only needs the hub package, not the ffa analytics stack.
-RUN pip install --no-cache-dir \
+# --constraint keeps transitive versions identical to CI / the hub image.
+RUN pip install --no-cache-dir --constraint requirements-lock.txt \
         "espn-api>=0.45.0" \
         "google-cloud-storage>=2.16" \
         "pydantic>=2.6" \
