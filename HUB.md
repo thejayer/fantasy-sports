@@ -145,6 +145,24 @@ Cloud Scheduler ──▶ Cloud Run Job (sj-sync) ──▶ gs://<project>-sj-da
 Creates the bucket, grants IAM, and registers the Cloud Scheduler trigger.
 Override defaults with `SJ_BUCKET`, `SJ_SCHEDULE`, `GCP_REGION`.
 
+### Alerting (Cloud Shell)
+
+After the sync job has been deployed at least once:
+
+```bash
+NOTIFY_EMAIL=you@example.com ./scripts/setup-sync-alerting.sh
+```
+
+Creates (or updates) a Cloud Monitoring alert that emails when the `sj-sync`
+Cloud Run Job finishes non-success — the scheduled `sj sync --current-only`
+path exits 1 on any skipped season. Confirm the notification channel from the
+verification mail Google sends.
+
+Optional: add an HTTPS uptime check on `https://<sj-hub>/api/health` (expects
+HTTP 200). That probe is public, reports per-league `synced_at` age, and returns
+503 when snapshots are missing or older than `SJ_HEALTH_STALE_SECONDS`
+(default 2 hours).
+
 ### Deploy
 
 1. GitHub → **Actions** → **deploy sync job** → Run workflow

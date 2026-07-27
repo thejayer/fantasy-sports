@@ -109,12 +109,8 @@ cannot drift back silently. It can fail on an advisory published against an
 untouched dependency; the escape hatch is 1.5 (Dependabot) plus moving it to a
 scheduled run.
 
-**One step remains, and it is not something a PR can do.** These jobs report but
-do not yet *block*: nothing is configured as a required status check, so a red
-run is still mergeable. The check names are now stable — `tests / python`,
-`tests / web`, `tests / images` — so the remaining work is enabling branch
-protection on `main` in the repo settings. Until that is done, this phase's
-premise ("regressions impossible to merge") is only half true.
+**Branch protection on `main` is enabled.** Required checks: `python`, `web`,
+`images`. A red run can no longer merge — phase 1.1's premise holds.
 
 ### 1.2 Test harness for the frontend
 *Partly landed:* Vitest is in place with 26 tests covering the Phase 0
@@ -154,10 +150,16 @@ want to keep the floor). Add a lockfile so CI and production resolve identically
 Enable Dependabot for npm, pip, and Actions — most of phase 0.3 should never
 have become manual work.
 
-### 1.6 Baseline observability
-A `/api/health` route reporting snapshot freshness (`synced_at` age per league),
-alerting on `sj-sync` job failure, and error tracking wired into the Next.js
-app. This is what tells you the pipeline broke before a member does.
+### 1.6 Baseline observability — LANDED
+Public `GET /api/health` (middleware allowlisted, session-free) reports
+per-league `synced_at` age for the latest season of each league. HTTP 200 when
+fresh, 503 when empty or past `SJ_HEALTH_STALE_SECONDS` (default 2h). Route-level
+`error.tsx` / `not-found.tsx` log to stderr for Cloud Logging / Error Reporting.
+
+`scripts/setup-sync-alerting.sh` creates a Cloud Monitoring email alert on
+`sj-sync` Cloud Run Job non-success — the loud exit from 1.4 is what makes that
+alert trustworthy. Optional uptime check on `/api/health` is documented in
+HUB.md (console click; needs the live hub URL).
 
 ### 1.7 Next.js 16 and the ESLint CLI
 Carried forward from 0.3, which patched within the 15.5.x line and stopped there.
@@ -335,14 +337,13 @@ Fold in continuously rather than saving for the end.
 
 ## Sequencing
 
-**Next up: 1.6 or 1.3.** With sync failures loud and summarized, 1.6
-(observability / health / alert on `sj-sync` job failure) can finally trust the
-exit code. 1.3 (continuous deployment + Workload Identity Federation) remains
-the biggest platform win on track A.
+**Next up: 1.5 or 1.3.** Environments (Python 3.12 in CI, lockfile, Dependabot)
+is the cheapest remaining platform item. 1.3 (continuous deployment + Workload
+Identity Federation) is the biggest win on track A now that health and sync
+alerting exist.
 
-**Do first, and it is not a code change:** enable branch protection on `main` so
-`tests / python`, `tests / web`, and `tests / images` are required. Everything in
-1.1 reports today but blocks nothing.
+**Branch protection on `main` is done** — required checks are `python`, `web`,
+and `images`.
 
 **Strictly ordered:** ~~0~~ → 1 → 2.2 → 3.1 → 3.2/3.3 → 3.4/3.5 → 4.
 Phase 2.2 (schema split) before phase 3 so the UI is built once against the final
@@ -353,7 +354,7 @@ shape. Phase 3.1 (unify views) before any other UI work so nothing ships twice.
 
 | Track | Contents | Touches |
 |---|---|---|
-| A — Platform | 1.3, 1.5, 1.6, 1.7 | workflows, Dockerfiles, scripts |
+| A — Platform | 1.3, 1.5, ~~1.6~~, 1.7 | workflows, Dockerfiles, scripts |
 | B — Data | ~~1.4~~, 2.1, 2.3, 2.4, 2.5 | `src/sj`, `configs` |
 | C — Product | 3.1 → 3.6 | `apps/web` |
 | D — Engine | 4.1, 4.3 | `src/ffa` |
@@ -381,9 +382,9 @@ Concrete targets, baselined against [AUDIT.md](AUDIT.md) and re-measured on
 | Authorization layers | 1 (middleware) | **2** | 2 |
 | Pages serving stale build-time data | 2 | **0** | 0 |
 | Containers running as root | 3 | **0** | 0 |
-| `apps/web` tests | 0 | **26** | plus component + smoke |
+| `apps/web` tests | 0 | **35** | plus component + smoke |
 | `apps/web` checks running in CI | 0 | **6** | typecheck + lint + build + tests + prerender + audit |
-| CI checks that block a merge | 0 | 0 | all of them (branch protection) |
+| CI checks that block a merge | 0 | **3** | all of them (branch protection) |
 | `src/sj/sync.py` coverage | 0% | **100%** | matches `serialize.py` (~94%) |
 | Repo coverage | 67% | **74%** | 85%+ |
 | Seasons reachable in the UI | 3 of 24 | 3 of 24 | 24 of 24 |
@@ -391,7 +392,5 @@ Concrete targets, baselined against [AUDIT.md](AUDIT.md) and re-measured on
 | Deploys requiring a human | all | all | rollback only |
 | Hub pages calling `ffa` | 0 | 0 | projections on roster + player + rankings |
 
-The gap that stands out is now the last row: six checks run on every PR and none
-of them can stop a merge, because no branch protection is configured. That is a
-repo setting rather than a code change, and it is the cheapest remaining item in
-the plan.
+Branch protection is on; the remaining platform gap is continuous deploy (1.3)
+and environment alignment (1.5). Observability baseline is in (1.6).

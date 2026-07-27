@@ -303,13 +303,13 @@ skipped season and emits `SYNC_SUMMARY` JSON; `sj backfill` still tolerates
 deploys twice — once to create the service, then again to set `AUTH_URL` — which
 leaves a window where OAuth can redirect to the container's bind address.
 
-### 14. No observability
+### 14. No observability — baseline landed
 
-No health or readiness endpoint, no error tracking, no structured logging, no
-alerting when the sync job fails, no uptime check, and `min-instances` unset so
-every visit after idle pays a cold start. `refresh.yml` runs on a schedule,
-uploads Parquet artifacts with 14-day retention, and **nothing consumes them.**
-It is also cron'd Tue–Sat year-round for an NFL-season workload.
+Public `/api/health` reports per-league `synced_at` age (HTTP 503 when empty or
+stale). `scripts/setup-sync-alerting.sh` wires a Cloud Monitoring email alert on
+`sj-sync` job failure. Route-level `error.tsx` / `not-found.tsx` log to stderr
+for Cloud Logging. Still open from the original finding: uptime check on the
+live hub URL (console), `min-instances`, and retiring unused `refresh.yml`.
 
 ---
 
@@ -382,11 +382,11 @@ time. `@types/node` is `^20` against a Node 22 runtime. No Dependabot or Renovat
 | 7 | Player tables: no search/sort/filter/pagination | P1 | Open — roadmap 3.3 |
 | 8 | Football and baseball views diverged | P1 | Open — roadmap 3.1 |
 | 9 | No matchups, draft, transactions, or history | P1 | Open — roadmap 2.1, 2.4, 3.4, 3.5 |
-| 10 | No loading/error/empty states | P1 | Open — roadmap 3.6 |
-| 11 | Zero CI for `apps/web` | P1 | Fixed (#28, roadmap 1.1); checks report but do not block until branch protection is on |
+| 10 | No loading/error/empty states | P1 | Partly — `error.tsx` / `not-found.tsx` in 1.6; loading/empty remain roadmap 3.6 |
+| 11 | Zero CI for `apps/web` | P1 | Fixed (#28, roadmap 1.1); branch protection requires `python` / `web` / `images` |
 | 12 | `sync.py` at 0% coverage | P1 | Fixed — 100% + loud exits + `SYNC_SUMMARY` (roadmap 1.4) |
 | 13 | All deploys manual | P1 | Open — roadmap 1.3 |
-| 14 | No observability or alerting | P1 | Open — roadmap 1.6 |
+| 14 | No observability or alerting | P1 | Baseline fixed (roadmap 1.6); uptime check + min-instances still open |
 | 15 | `ffa` engine disconnected from the hub | P2 | Open — roadmap phase 4 |
 | 16 | Storage layout won't extend to weekly data | P2 | Open — roadmap 2.2, 2.3 |
 | 17 | Hub image carries the analytics stack | P2 | Open — roadmap phase 5 |
