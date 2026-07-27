@@ -18,6 +18,8 @@ SECRETS=(
   sj-allowed-emails
   sj-espn-s2
   sj-espn-swid
+  # Read by the ffa dashboard service, which shares the runtime SA by default.
+  ffa-dashboard-password
 )
 
 if [[ -n "${CLOUD_RUN_SA:-}" ]]; then

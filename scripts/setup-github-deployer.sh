@@ -40,12 +40,20 @@ else
 fi
 
 # Roles needed to build/push images and deploy Cloud Run with --set-secrets.
+#
+# Deliberately narrow:
+#   artifactregistry.writer  -- push images; does not need to delete repos or
+#                               edit registry IAM the way admin does.
+#   secretmanager.viewer     -- resolve secret *names* referenced by
+#                               --set-secrets. It cannot read secret values;
+#                               only the Cloud Run runtime SA needs that, which
+#                               grant-hub-secret-access.sh handles.
 for role in \
   run.admin \
   iam.serviceAccountUser \
-  artifactregistry.admin \
+  artifactregistry.writer \
   serviceusage.serviceUsageAdmin \
-  secretmanager.secretAccessor
+  secretmanager.viewer
 do
   gcloud projects add-iam-policy-binding "${PROJECT}" \
     --member="serviceAccount:${SA_EMAIL}" \
@@ -55,11 +63,21 @@ do
   echo "ensured roles/${role}"
 done
 
-# Also allow this SA to bind the hub secrets onto Cloud Run (same accessor).
-ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-if [[ -x "${ROOT}/scripts/grant-hub-secret-access.sh" ]]; then
-  CLOUD_RUN_SA="${SA_EMAIL}" "${ROOT}/scripts/grant-hub-secret-access.sh" || true
-fi
+cat <<'NOTE'
+
+Note: this account is intentionally NOT granted secretAccessor. If you ran an
+earlier version of this script, remove the leftover grants:
+
+  gcloud projects remove-iam-policy-binding PROJECT \
+    --member=serviceAccount:SA_EMAIL --role=roles/secretmanager.secretAccessor
+  gcloud projects remove-iam-policy-binding PROJECT \
+    --member=serviceAccount:SA_EMAIL --role=roles/artifactregistry.admin
+
+and drop the per-secret accessor bindings it added for this SA:
+
+  gcloud secrets remove-iam-policy-binding SECRET_NAME \
+    --member=serviceAccount:SA_EMAIL --role=roles/secretmanager.secretAccessor
+NOTE
 
 echo
 echo "Creating a new JSON key → ${OUT}"

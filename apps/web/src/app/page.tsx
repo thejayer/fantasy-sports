@@ -1,6 +1,14 @@
 import Link from "next/link";
 import { getLatestLeagues } from "@/lib/data";
 
+/**
+ * Snapshots are a Cloud Storage mount that only exists at runtime -- the image
+ * is built with just the fixtures. Prerendering this page would bake those
+ * fixtures in permanently, so every visitor would see sample data no matter
+ * how often sj-sync ran.
+ */
+export const dynamic = "force-dynamic";
+
 export default async function HomePage() {
   const leagues = await getLatestLeagues();
 

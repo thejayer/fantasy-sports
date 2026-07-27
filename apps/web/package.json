@@ -6,21 +6,38 @@
     "dev": "next dev --turbopack",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "verify:prerender": "node scripts/assert-no-stale-prerender.mjs"
   },
   "dependencies": {
-    "next": "^15.5.7",
-    "next-auth": "^5.0.0-beta.25",
+    "next": "^15.5.22",
+    "next-auth": "^5.0.0-beta.32",
     "react": "^19.0.0",
     "react-dom": "^19.0.0"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",
-    "@types/node": "^20",
+    "@types/node": "^22",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "eslint": "^9",
-    "eslint-config-next": "^15.5.7",
-    "typescript": "^5"
+    "eslint-config-next": "^15.5.22",
+    "typescript": "^5",
+    "vitest": "^4.1.10"
+  },
+  "_overrides_note": [
+    "Transitive advisories that npm can only 'fix' by downgrading next to 9.x.",
+    "All three are semver-compatible bumps within the major their parent pins,",
+    "verified against build + lint + typecheck + tests.",
+    "brace-expansion: DoS via unbounded expansion (eslint chain, dev only).",
+    "postcss: next pins 8.4.31; 8.5.x fixes XSS + sourceMappingURL path traversal.",
+    "sharp: next allows ^0.34.3; 0.35.x picks up the patched libvips."
+  ],
+  "overrides": {
+    "brace-expansion": "^5.0.8",
+    "postcss": "^8.5.23",
+    "sharp": "^0.35.3"
   }
 }

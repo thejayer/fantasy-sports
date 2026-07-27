@@ -74,8 +74,8 @@ tab, reproducible, no local Docker. Set it up once:
 gcloud iam service-accounts create ffa-deployer --project your-project-id
 
 SA="ffa-deployer@your-project-id.iam.gserviceaccount.com"
-for role in run.admin iam.serviceAccountUser artifactregistry.admin \
-            serviceusage.serviceUsageAdmin; do
+for role in run.admin iam.serviceAccountUser artifactregistry.writer \
+            serviceusage.serviceUsageAdmin secretmanager.viewer; do
   gcloud projects add-iam-policy-binding your-project-id \
       --member "serviceAccount:$SA" --role "roles/$role"
 done
@@ -84,12 +84,24 @@ done
 gcloud iam service-accounts keys create key.json --iam-account "$SA"
 ```
 
-Add two **repository secrets** (Settings → Secrets and variables → Actions):
+`scripts/setup-github-deployer.sh` does all of the above. The deployer gets
+`secretmanager.viewer` (resolve secret names) but never `secretAccessor` --
+only the Cloud Run runtime SA reads secret values.
+
+Add one **repository secret** (Settings → Secrets and variables → Actions):
 
 | Secret | Value |
 |---|---|
 | `GCP_SA_KEY` | the full contents of `key.json` |
-| `DASHBOARD_PASSWORD` | the shared league password |
+
+The shared league password lives in **Secret Manager**, not a repo secret, so
+it is not readable from the Cloud Run service config:
+
+```bash
+./scripts/create-hub-secrets.sh
+./scripts/add-hub-secret-version.sh ffa-dashboard-password
+./scripts/grant-hub-secret-access.sh
+```
 
 Then **Actions → deploy dashboard → Run workflow**, set your `project_id`
 (the defaults bake seasons 2023-2025 and project 2026), and run it. The
@@ -114,7 +126,8 @@ gcloud run deploy ffa-dashboard \
     --cpu 1 \
     --port 8080 \
     --allow-unauthenticated \
-    --set-env-vars="DASHBOARD_PASSWORD=pick-something-random,DASHBOARD_SEASON=2026,DASHBOARD_LEAGUE=ppr"
+    --set-secrets="DASHBOARD_PASSWORD=ffa-dashboard-password:latest" \
+    --set-env-vars="DASHBOARD_SEASON=2026,DASHBOARD_LEAGUE=ppr"
 ```
 
 The last command prints a URL like `https://ffa-dashboard-xxx-uc.a.run.app`.

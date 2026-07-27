@@ -47,12 +47,32 @@ else
   echo "created gs://${BUCKET}"
 fi
 
-# The sync job writes snapshots; the hub service reads them through a volume mount.
+# The sync job writes snapshots; the hub service only reads them (through a
+# read-only volume mount). Grant each the least role that supports its job.
+#
+# By default both run as the project's compute SA, so it gets the writer role.
+# Set SJ_SYNC_SA / SJ_HUB_SA to dedicated accounts to split them properly, and
+# the hub drops to read-only.
+SYNC_SA="${SJ_SYNC_SA:-${RUNTIME_SA}}"
+HUB_SA="${SJ_HUB_SA:-${RUNTIME_SA}}"
+
+# objectUser = create/delete/get/list/update on objects. Narrower than
+# objectAdmin, which also carries object setIamPolicy.
 gcloud storage buckets add-iam-policy-binding "gs://${BUCKET}" \
-  --member="serviceAccount:${RUNTIME_SA}" \
-  --role="roles/storage.objectAdmin" \
+  --member="serviceAccount:${SYNC_SA}" \
+  --role="roles/storage.objectUser" \
   --quiet >/dev/null
-echo "granted objectAdmin on the bucket to ${RUNTIME_SA}"
+echo "granted objectUser (write) on the bucket to ${SYNC_SA}"
+
+if [[ "${HUB_SA}" != "${SYNC_SA}" ]]; then
+  gcloud storage buckets add-iam-policy-binding "gs://${BUCKET}" \
+    --member="serviceAccount:${HUB_SA}" \
+    --role="roles/storage.objectViewer" \
+    --quiet >/dev/null
+  echo "granted objectViewer (read-only) on the bucket to ${HUB_SA}"
+else
+  echo "hub shares ${SYNC_SA}; set SJ_HUB_SA to give the hub read-only access"
+fi
 
 # --- Scheduler --------------------------------------------------------------
 SCHEDULER_SA="${SCHEDULER_SA:-sj-scheduler@${PROJECT}.iam.gserviceaccount.com}"

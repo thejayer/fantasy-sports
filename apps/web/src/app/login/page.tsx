@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 import { auth, signIn } from "@/auth";
+import { safeCallbackUrl } from "@/lib/safe-redirect";
 
 type Props = {
   searchParams: Promise<{ callbackUrl?: string; error?: string }>;
@@ -7,7 +8,9 @@ type Props = {
 
 export default async function LoginPage({ searchParams }: Props) {
   const session = await auth();
-  const { callbackUrl = "/", error } = await searchParams;
+  const { callbackUrl: requestedCallbackUrl, error } = await searchParams;
+  // Attacker-controlled: never hand this to redirect() or signIn() unlaundered.
+  const callbackUrl = safeCallbackUrl(requestedCallbackUrl);
 
   if (process.env.AUTH_DEV_BYPASS === "1") {
     redirect(callbackUrl);

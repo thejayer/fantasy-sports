@@ -3,6 +3,10 @@ import { notFound } from "next/navigation";
 import { BaseballRosterView } from "@/components/BaseballLeagueView";
 import { getTeam } from "@/lib/data";
 
+// See app/page.tsx. Already dynamic today, but declared so adding
+// generateStaticParams later cannot silently freeze snapshot data.
+export const dynamic = "force-dynamic";
+
 type Props = {
   params: Promise<{ leagueId: string; teamId: string }>;
   searchParams: Promise<{ season?: string }>;

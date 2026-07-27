@@ -1,8 +1,9 @@
 import { NextResponse } from "next/server";
 import { auth } from "./auth";
+import { safeCallbackUrl } from "./lib/safe-redirect";
 
 export default auth((req) => {
-  const { pathname } = req.nextUrl;
+  const { pathname, search } = req.nextUrl;
   const isLogin = pathname.startsWith("/login");
   const isAuthApi = pathname.startsWith("/api/auth");
   const bypass = process.env.AUTH_DEV_BYPASS === "1";
@@ -13,7 +14,9 @@ export default auth((req) => {
 
   if (!req.auth) {
     const url = new URL("/login", req.nextUrl.origin);
-    url.searchParams.set("callbackUrl", pathname);
+    // Keep the query string so signing in returns to the exact view asked for,
+    // and launder it even though it is ours -- it derives from the request.
+    url.searchParams.set("callbackUrl", safeCallbackUrl(`${pathname}${search}`));
     return NextResponse.redirect(url);
   }
 

@@ -21,6 +21,9 @@ SECRETS=(
   sj-allowed-emails
   sj-espn-s2
   sj-espn-swid
+  # Shared password for the ffa Streamlit dashboard (separate Cloud Run
+  # service). Kept here so every deployed secret has one source of truth.
+  ffa-dashboard-password
 )
 
 echo "Project: ${PROJECT}"
@@ -60,6 +63,7 @@ echo "  ./scripts/add-hub-secret-version.sh sj-auth-google-secret"
 echo "  ./scripts/add-hub-secret-version.sh sj-allowed-emails"
 echo "  ./scripts/add-hub-secret-version.sh sj-espn-s2"
 echo "  ./scripts/add-hub-secret-version.sh sj-espn-swid"
+echo "  ./scripts/add-hub-secret-version.sh ffa-dashboard-password"
 echo
 echo "Or generate AUTH_SECRET now:"
 echo "  openssl rand -base64 32 | gcloud secrets versions add sj-auth-secret --project=${PROJECT} --data-file=-"
