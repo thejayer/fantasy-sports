@@ -26,7 +26,7 @@ dependencies = [
 dev = [
     "pytest>=8.0",
     "pytest-cov>=5.0",
-    "ruff>=0.5",
+    "ruff>=0.5,<0.6",  # 0.6+ expands the default lint ruleset; pin to keep CI stable
 ]
 dashboard = [
     "altair>=5.0",
