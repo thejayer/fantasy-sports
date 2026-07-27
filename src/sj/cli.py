@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Optional
 
 import typer
 
@@ -16,7 +15,7 @@ app = typer.Typer(add_completion=False, no_args_is_help=True, help="Strictly Jay
 
 @app.command("leagues")
 def leagues_cmd(
-    registry: Optional[Path] = typer.Option(None, help="Path to leagues.yaml"),
+    registry: Path | None = typer.Option(None, help="Path to leagues.yaml"),
 ) -> None:
     """List leagues in the registry."""
     reg = load_registry(registry)
@@ -29,17 +28,17 @@ def leagues_cmd(
 
 @app.command("sync")
 def sync_cmd(
-    league: Optional[list[str]] = typer.Option(
+    league: list[str] | None = typer.Option(
         None, "--league", "-l", help="League id (repeatable). Default: all."
     ),
-    season: Optional[list[int]] = typer.Option(
+    season: list[int] | None = typer.Option(
         None, "--season", "-s", help="Season year (repeatable). Default: all listed seasons."
     ),
     current_only: bool = typer.Option(
         False, "--current-only", help="Sync only each league's current_season."
     ),
     store_dir: Path = typer.Option(DEFAULT_STORE_DIR, help="Output directory for snapshots."),
-    registry: Optional[Path] = typer.Option(None, help="Path to leagues.yaml"),
+    registry: Path | None = typer.Option(None, help="Path to leagues.yaml"),
 ) -> None:
     """Sync ESPN leagues into the local JSON store.
 
@@ -62,7 +61,7 @@ def sync_cmd(
 
 @app.command("status")
 def status_cmd(
-    store_dir: Optional[Path] = typer.Option(None, help="Snapshot directory"),
+    store_dir: Path | None = typer.Option(None, help="Snapshot directory"),
 ) -> None:
     """Show snapshots available locally (or fixtures)."""
     items = list_snapshots(store_dir)

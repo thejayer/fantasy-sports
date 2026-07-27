@@ -15,7 +15,7 @@ actuals and on projection DataFrames that only carry a subset of stats.
 
 from __future__ import annotations
 
-from typing import Iterable
+from collections.abc import Iterable
 
 import pandas as pd
 

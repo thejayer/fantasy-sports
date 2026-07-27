@@ -24,8 +24,8 @@ from __future__ import annotations
 
 import argparse
 import os
+from collections.abc import Iterable
 from pathlib import Path
-from typing import Iterable
 
 import altair as alt
 import numpy as np
@@ -34,14 +34,13 @@ import streamlit as st
 
 from ffa.draft import simulate_draft, summarize_user_picks
 from ffa.ingest import open_warehouse
-from ffa.learned import simulate_seasons_learned
 from ffa.league import load_league
+from ffa.learned import simulate_seasons_learned
 from ffa.optimize import optimize_lineup
 from ffa.quantile import simulate_seasons_quantile_calibrated
 from ffa.ranking import assign_tiers, compute_vor
 from ffa.scoring import score_player_weeks
 from ffa.simulation import simulate_seasons, summarize_seasons
-
 
 _GENERATORS = {
     "bootstrap": simulate_seasons,

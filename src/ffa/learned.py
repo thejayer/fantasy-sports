@@ -199,7 +199,7 @@ class LearnedGenerator:
             return pd.DataFrame(), pd.DataFrame()
         return pd.concat(all_features, ignore_index=True), pd.concat(all_targets, ignore_index=True)
 
-    def fit(self, weekly: pd.DataFrame) -> "LearnedGenerator":
+    def fit(self, weekly: pd.DataFrame) -> LearnedGenerator:
         """Fit one model per (position, stat). No-op if there's no training data."""
         feats, targets = self._training_rows(weekly)
         if feats.empty:
@@ -304,7 +304,7 @@ def simulate_seasons_learned(
 
     if games_model not in GAMES_MODELS:
         raise ValueError(f"Unknown games_model: {games_model!r}. Choose from: {list(GAMES_MODELS)}.")
-    n_games = max(1, int(round(expected_games)))
+    n_games = max(1, round(expected_games))
     rng = np.random.default_rng(seed)
     gm = GamesModel.from_history(history, max_games=n_games) if games_model == "empirical" else None
 

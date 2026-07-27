@@ -20,7 +20,7 @@ NARROW_Q = {0.05: 20, 0.25: 35, 0.5: 50, 0.75: 65, 0.95: 80}
 def _players(realized, qmap, position="WR"):
     df = pd.DataFrame({"points_realized": list(realized), "position": position})
     for q, v in qmap.items():
-        df[f"q{int(round(q * 100)):02d}"] = v
+        df[f"q{round(q * 100):02d}"] = v
     return df
 
 
@@ -56,7 +56,7 @@ def test_by_position_puts_all_first_then_worst_calibrated():
     bad = _players(REALIZED, NARROW_Q, position="RB")
     cal = quantile_calibration(pd.concat([good, bad], ignore_index=True), by="position")
 
-    assert list(cal["position"])[0] == "ALL"
+    assert next(iter(cal["position"])) == "ALL"
     # RB (cal_mae 0.10) is worse than WR (0.0) -> sorts ahead of WR.
     ranked = list(cal["position"])[1:]
     assert ranked == ["RB", "WR"]
