@@ -8,5 +8,7 @@ data/
 .pytest_cache/
 .ruff_cache/
 .mypy_cache/
+apps/web/node_modules/
+apps/web/.next/
 *.md
 !README.md
