@@ -133,18 +133,20 @@ deploy into one by computing the service URL up front, closing the `AUTH_URL`
 window. Fold in the Workload Identity Federation migration from 0.5 here, since
 it edits the same files.
 
-### 1.4 Close the `sync.py` coverage hole
-`sj seed` moved the needle incidentally — `src/sj/sync.py` 0% → **38%**,
-`src/sj/cli.py` 0% → **68%**, repo total 67% → **71%** — but only by exercising
-`build_snapshot`. The part that actually talks to ESPN is still untested.
+### 1.4 Close the `sync.py` coverage hole — LANDED
+Shipped failure-path tests (no live ESPN calls) covering missing credentials,
+`ESPNAccessDenied` vs `ESPNInvalidLeague` vs network error, partial-season
+failure, throttle, and sport dispatch. Failures are classified into stable
+kinds (`credentials` / `access_denied` / `invalid_league` / `network` /
+`unknown`).
 
-What remains is the failure behaviour: tests against recorded ESPN fixtures (not
-live calls) covering missing credentials, `ESPNAccessDenied` vs
-`ESPNInvalidLeague` vs network error, partial-season failure, and the throttle
-path. Then make failure loud — `sj sync` currently exits `0` even when seasons
-were skipped, so a partial failure looks like success to Cloud Scheduler. It
-should exit non-zero, or at minimum emit a machine-readable summary 1.6 can
-alert on. Target: `sync.py` to match `serialize.py` (~94%), repo total 85%+.
+Loud exits: `sj sync` exits `1` on any skipped season so Cloud Scheduler sees
+the failure; `sj backfill` still tolerates `invalid_league`-only gaps (seasons
+ESPN no longer serves) but fails loud on everything else. Both commands emit a
+`SYNC_SUMMARY {...}` JSON line for 1.6 alerting.
+
+Coverage: `src/sj/sync.py` 38% → **100%**, `src/sj/` package **94%**, full
+`src/` 71% → **74%** (still dragged by untested `ffa.cli` / `ffa.dashboard`).
 
 ### 1.5 Align environments
 Test on Python 3.12 in CI to match the containers (matrix 3.11 + 3.12 if you
@@ -333,13 +335,10 @@ Fold in continuously rather than saving for the end.
 
 ## Sequencing
 
-**Next up: 1.4 or 1.3.** With CI in place, either can land against a real gate.
-1.4 (`sync.py` failure-path tests) is the better next step: the pipeline feeding
-the whole site is still the least-tested thing in the repo, and it currently
-reports success when seasons were skipped, so 1.6's alerting has nothing
-trustworthy to alert on. 1.3 (continuous deployment) is the bigger win but
-carries the Workload Identity Federation migration, making it the largest item
-in the phase.
+**Next up: 1.6 or 1.3.** With sync failures loud and summarized, 1.6
+(observability / health / alert on `sj-sync` job failure) can finally trust the
+exit code. 1.3 (continuous deployment + Workload Identity Federation) remains
+the biggest platform win on track A.
 
 **Do first, and it is not a code change:** enable branch protection on `main` so
 `tests / python`, `tests / web`, and `tests / images` are required. Everything in
@@ -355,7 +354,7 @@ shape. Phase 3.1 (unify views) before any other UI work so nothing ships twice.
 | Track | Contents | Touches |
 |---|---|---|
 | A — Platform | 1.3, 1.5, 1.6, 1.7 | workflows, Dockerfiles, scripts |
-| B — Data | 1.4, 2.1, 2.3, 2.4, 2.5 | `src/sj`, `configs` |
+| B — Data | ~~1.4~~, 2.1, 2.3, 2.4, 2.5 | `src/sj`, `configs` |
 | C — Product | 3.1 → 3.6 | `apps/web` |
 | D — Engine | 4.1, 4.3 | `src/ffa` |
 
@@ -385,8 +384,8 @@ Concrete targets, baselined against [AUDIT.md](AUDIT.md) and re-measured on
 | `apps/web` tests | 0 | **26** | plus component + smoke |
 | `apps/web` checks running in CI | 0 | **6** | typecheck + lint + build + tests + prerender + audit |
 | CI checks that block a merge | 0 | 0 | all of them (branch protection) |
-| `src/sj/sync.py` coverage | 0% | 38% | matches `serialize.py` (~94%) |
-| Repo coverage | 67% | 71% | 85%+ |
+| `src/sj/sync.py` coverage | 0% | **100%** | matches `serialize.py` (~94%) |
+| Repo coverage | 67% | **74%** | 85%+ |
 | Seasons reachable in the UI | 3 of 24 | 3 of 24 | 24 of 24 |
 | Largest page payload | 448 KB | 448 KB | < 100 KB |
 | Deploys requiring a human | all | all | rollback only |

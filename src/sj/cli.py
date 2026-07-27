@@ -9,9 +9,37 @@ import typer
 from sj.registry import load_registry
 from sj.sample import DEFAULT_TEAM_COUNT, seed_store
 from sj.store import describe_store, list_snapshots
-from sj.sync import sync_registry
+from sj.sync import (
+    SyncAllFailed,
+    failures_should_fail_run,
+    sync_registry,
+    sync_summary_line,
+)
 
 app = typer.Typer(add_completion=False, no_args_is_help=True, help="Strictly Jayers hub tools")
+
+
+def _report_sync_outcome(
+    results: list,
+    failures: list,
+    *,
+    label: str,
+    tolerate_invalid_league: bool,
+) -> None:
+    """Print human + machine-readable summaries; exit non-zero when required."""
+    ok = not failures_should_fail_run(
+        failures, tolerate_invalid_league=tolerate_invalid_league
+    )
+    typer.echo(f"{label}: {len(results)} synced, {len(failures)} failed")
+    for failure in failures:
+        typer.echo(
+            f"  failed {failure.league_id} {failure.season} "
+            f"[{failure.kind}]: {failure.error}",
+            err=True,
+        )
+    typer.echo(sync_summary_line(results, failures, ok=ok))
+    if not ok:
+        raise typer.Exit(code=1)
 
 
 @app.command("leagues")
@@ -50,18 +78,32 @@ def sync_cmd(
 
     Requires ESPN_S2 and ESPN_SWID (or SWID). Writes to Cloud Storage when
     SJ_GCS_BUCKET is set, otherwise to the local data directory.
+
+    Any skipped league-season fails the run (exit 1) and prints a
+    ``SYNC_SUMMARY`` line Cloud Scheduler / alerting can key on. Use
+    ``sj backfill`` when historical seasons ESPN refuses should be tolerated.
     """
     typer.echo(f"store: {describe_store(store_dir)}")
-    results, failures = sync_registry(
-        league_ids=league,
-        seasons=season,
-        current_only=current_only,
-        registry_path=registry,
-        store_dir=store_dir,
-        throttle_seconds=throttle,
-        on_event=typer.echo,
+    try:
+        results, failures = sync_registry(
+            league_ids=league,
+            seasons=season,
+            current_only=current_only,
+            registry_path=registry,
+            store_dir=store_dir,
+            throttle_seconds=throttle,
+            on_event=typer.echo,
+        )
+    except SyncAllFailed as exc:
+        typer.echo(f"error: {exc}", err=True)
+        typer.echo(sync_summary_line([], exc.failures, ok=False))
+        raise typer.Exit(code=1) from exc
+    except KeyError as exc:
+        typer.echo(f"error: {exc}", err=True)
+        raise typer.Exit(code=1) from exc
+    _report_sync_outcome(
+        results, failures, label="done", tolerate_invalid_league=False
     )
-    typer.echo(f"done: {len(results)} synced, {len(failures)} skipped")
 
 
 @app.command("backfill")
@@ -77,19 +119,34 @@ def backfill_cmd(
         1.0, "--throttle", help="Seconds to pause between league-seasons."
     ),
 ) -> None:
-    """Sync every season in the registry, pausing between requests."""
+    """Sync every season in the registry, pausing between requests.
+
+    ``invalid_league`` failures (seasons ESPN no longer serves) are reported
+    but do not fail the run. Auth, network, and unknown errors still exit 1.
+    """
     typer.echo(f"store: {describe_store(store_dir)}")
-    results, failures = sync_registry(
-        league_ids=league,
-        current_only=False,
-        registry_path=registry,
-        store_dir=store_dir,
-        throttle_seconds=throttle,
-        on_event=typer.echo,
+    try:
+        results, failures = sync_registry(
+            league_ids=league,
+            current_only=False,
+            registry_path=registry,
+            store_dir=store_dir,
+            throttle_seconds=throttle,
+            on_event=typer.echo,
+        )
+    except SyncAllFailed as exc:
+        typer.echo(f"error: {exc}", err=True)
+        typer.echo(sync_summary_line([], exc.failures, ok=False))
+        raise typer.Exit(code=1) from exc
+    except KeyError as exc:
+        typer.echo(f"error: {exc}", err=True)
+        raise typer.Exit(code=1) from exc
+    _report_sync_outcome(
+        results,
+        failures,
+        label="backfill done",
+        tolerate_invalid_league=True,
     )
-    typer.echo(f"backfill done: {len(results)} synced, {len(failures)} skipped")
-    for failure in failures:
-        typer.echo(f"  skipped {failure.league_id} {failure.season}: {failure.error}")
 
 
 @app.command("seed")
