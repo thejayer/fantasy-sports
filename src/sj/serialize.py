@@ -108,6 +108,29 @@ def serialize_player(player: Any, *, sport: str | None = None) -> dict[str, Any]
     return payload
 
 
+def serialize_draft_pick(pick: Any) -> dict[str, Any]:
+    """Serialize one espn-api ``BasePick`` (or stub) into a JSON-friendly dict."""
+    bid = _num(getattr(pick, "bid_amount", None))
+    return {
+        "round": _int(getattr(pick, "round_num", None)),
+        "round_pick": _int(getattr(pick, "round_pick", None)),
+        "team_id": _team_id(getattr(pick, "team", None)),
+        "player_id": _int(
+            getattr(pick, "playerId", None) or getattr(pick, "player_id", None)
+        ),
+        "player_name": getattr(pick, "playerName", None)
+        or getattr(pick, "player_name", None),
+        "bid_amount": 0.0 if bid is None else bid,
+        "keeper": bool(getattr(pick, "keeper_status", False)),
+        "nominating_team_id": _team_id(getattr(pick, "nominatingTeam", None)),
+    }
+
+
+def serialize_draft(league: Any) -> list[dict[str, Any]]:
+    """Persist ``league.draft`` — already fetched via ``mDraftDetail``, never kept."""
+    return [serialize_draft_pick(pick) for pick in (getattr(league, "draft", None) or [])]
+
+
 def serialize_team(team: Any, *, sport: str | None = None) -> dict[str, Any]:
     roster = [serialize_player(p, sport=sport) for p in (getattr(team, "roster", None) or [])]
     wins = _int(getattr(team, "wins", 0)) or 0
@@ -121,6 +144,7 @@ def serialize_team(team: Any, *, sport: str | None = None) -> dict[str, Any]:
         roster_points = [p.get("total_points") for p in roster if p.get("total_points") is not None]
         if roster_points:
             points_for = round(sum(roster_points), 1)
+    schedule, scores, outcomes = _team_matchup_arrays(team)
     return {
         "team_id": getattr(team, "team_id", None),
         "name": getattr(team, "team_name", None),
@@ -135,6 +159,12 @@ def serialize_team(team: Any, *, sport: str | None = None) -> dict[str, Any]:
         "points_against": _num(getattr(team, "points_against", None)),
         "standing": _int(getattr(team, "standing", None) or getattr(team, "final_standing", None)),
         "division": getattr(team, "division_name", None) or "",
+        # Parallel arrays already populated by espn-api's mMatchup fetch
+        # (football) or normalized from Matchup objects (baseball). Index i is
+        # period i+1. schedule[i] is the opponent team_id (bye → self).
+        "schedule": schedule,
+        "scores": scores,
+        "outcomes": outcomes,
         "roster": roster,
     }
 
@@ -174,9 +204,102 @@ def serialize_league(
         or getattr(league, "scoringPeriodId", None)
         or getattr(league, "current_matchday", None),
         "period_label": "period" if sport == "baseball" else "week",
+        "draft": serialize_draft(league),
         "teams": teams,
         "players": _unique_players(teams),
     }
+
+
+def _team_id(value: Any) -> int | None:
+    """Resolve a team id from an int, Team object, or None."""
+    if value is None:
+        return None
+    if isinstance(value, bool):
+        return None
+    if isinstance(value, int):
+        return value
+    tid = getattr(value, "team_id", None)
+    if tid is not None:
+        return _int(tid)
+    return _int(value)
+
+
+def _team_matchup_arrays(
+    team: Any,
+) -> tuple[list[int | None], list[float | None], list[str]]:
+    """Return (schedule, scores, outcomes) for one team.
+
+    Football teams already carry parallel lists (opponent ids / Team objects,
+    fantasy points, ``W|L|T|U``). Baseball teams carry ``Matchup`` objects;
+    those are normalized into the same parallel shape so the hub can share UI.
+    Seed stubs use the football-shaped lists for both sports.
+    """
+    schedule_raw = list(getattr(team, "schedule", None) or [])
+    if schedule_raw and _looks_like_matchup(schedule_raw[0]):
+        return _matchup_objects_to_arrays(team)
+
+    schedule = [_team_id(item) for item in schedule_raw]
+    scores = [_num(item) for item in (getattr(team, "scores", None) or [])]
+    outcomes = [
+        _normalize_outcome(item) for item in (getattr(team, "outcomes", None) or [])
+    ]
+    return schedule, scores, outcomes
+
+
+def _looks_like_matchup(item: Any) -> bool:
+    return hasattr(item, "home_final_score") or (
+        hasattr(item, "home_team") and hasattr(item, "away_team") and hasattr(item, "winner")
+    )
+
+
+def _matchup_objects_to_arrays(
+    team: Any,
+) -> tuple[list[int | None], list[float | None], list[str]]:
+    self_id = _team_id(getattr(team, "team_id", None))
+    schedule: list[int | None] = []
+    scores: list[float | None] = []
+    outcomes: list[str] = []
+    for match in getattr(team, "schedule", None) or []:
+        home_id = _team_id(getattr(match, "home_team", None))
+        away_id = _team_id(getattr(match, "away_team", None))
+        home_score = _num(getattr(match, "home_final_score", None))
+        away_score = _num(getattr(match, "away_final_score", None))
+        # Category leagues expose category-win totals on the live-score fields.
+        home_live = _num(getattr(match, "home_team_live_score", None))
+        away_live = _num(getattr(match, "away_team_live_score", None))
+        if home_live is not None and away_live is not None:
+            home_score, away_score = home_live, away_live
+        winner = getattr(match, "winner", None)
+
+        if self_id is not None and self_id == home_id:
+            schedule.append(away_id)
+            scores.append(home_score)
+            outcomes.append(_outcome_from_winner(winner, is_home=True))
+        elif self_id is not None and self_id == away_id:
+            schedule.append(home_id)
+            scores.append(away_score)
+            outcomes.append(_outcome_from_winner(winner, is_home=False))
+    return schedule, scores, outcomes
+
+
+def _outcome_from_winner(winner: Any, *, is_home: bool) -> str:
+    label = str(winner or "").upper()
+    if label in {"TIE", "T"}:
+        return "T"
+    if label in {"UNDECIDED", "U", ""}:
+        return "U"
+    if label == "HOME":
+        return "W" if is_home else "L"
+    if label == "AWAY":
+        return "L" if is_home else "W"
+    return _normalize_outcome(label)
+
+
+def _normalize_outcome(value: Any) -> str:
+    label = str(value or "U").upper()
+    if label in {"W", "L", "T", "U"}:
+        return label
+    return "U"
 
 
 def _unique_players(teams: list[dict[str, Any]]) -> list[dict[str, Any]]:

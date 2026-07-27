@@ -367,6 +367,12 @@ def sample_league(
     for place, team in enumerate(ranked, start=1):
         team.standing = place
 
+    # Schedule / scores / outcomes mirror what espn-api already attaches after
+    # the mMatchup fetch. Draft mirrors league.draft from mDraftDetail. Both are
+    # free data the live serializer now persists (roadmap 2.1).
+    _assign_matchups(built, games=games, rng=rng)
+    draft = _build_draft(built, rounds=3)
+
     return _Stub(
         settings=_Stub(
             name=spec.name,
@@ -374,7 +380,81 @@ def sample_league(
         ),
         teams=built,
         current_week=games,
+        draft=draft,
     )
+
+
+def _assign_matchups(teams: list[_Stub], *, games: int, rng: random.Random) -> None:
+    """Fill parallel schedule/scores/outcomes arrays on every team stub."""
+    by_id = {team.team_id: team for team in teams}
+    ids = list(by_id)
+    n = len(ids)
+    for team in teams:
+        team.schedule = []
+        team.scores = []
+        team.outcomes = []
+
+    if n < 2:
+        return
+
+    for week in range(games):
+        # Circle method: fix one team, rotate the rest, pair ends.
+        rotation = week % (n - 1)
+        ordered = ids[0:1] + ids[1:][rotation:] + ids[1:][:rotation]
+        paired: set[int] = set()
+        week_results: dict[int, tuple[int, float, str]] = {}
+        for i in range(n // 2):
+            home_id = ordered[i]
+            away_id = ordered[n - 1 - i]
+            home_score = round(rng.uniform(70.0, 160.0), 1)
+            away_score = round(rng.uniform(70.0, 160.0), 1)
+            if home_score > away_score:
+                home_out, away_out = "W", "L"
+            elif home_score < away_score:
+                home_out, away_out = "L", "W"
+            else:
+                home_out, away_out = "T", "T"
+            week_results[home_id] = (away_id, home_score, home_out)
+            week_results[away_id] = (home_id, away_score, away_out)
+            paired.add(home_id)
+            paired.add(away_id)
+
+        for team_id, team in by_id.items():
+            if team_id in week_results:
+                opponent, score, outcome = week_results[team_id]
+                team.schedule.append(opponent)
+                team.scores.append(score)
+                team.outcomes.append(outcome)
+            else:
+                # Bye week — espn-api sets opponent id to self and outcome U.
+                team.schedule.append(team_id)
+                team.scores.append(0.0)
+                team.outcomes.append("U")
+
+
+def _build_draft(teams: list[_Stub], *, rounds: int = 3) -> list[_Stub]:
+    """Snake-draft the first roster players so seed snapshots carry a draft board."""
+    order = [team.team_id for team in teams]
+    by_id = {team.team_id: team for team in teams}
+    picks: list[_Stub] = []
+    for rnd in range(1, rounds + 1):
+        round_order = order if rnd % 2 == 1 else list(reversed(order))
+        for pick_num, team_id in enumerate(round_order, start=1):
+            team = by_id[team_id]
+            player = team.roster[(rnd - 1) % len(team.roster)]
+            picks.append(
+                _Stub(
+                    team=team,
+                    playerId=player.playerId,
+                    playerName=player.name,
+                    round_num=rnd,
+                    round_pick=pick_num,
+                    bid_amount=0,
+                    keeper_status=False,
+                    nominatingTeam=None,
+                )
+            )
+    return picks
 
 
 def sample_snapshot(

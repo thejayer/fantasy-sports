@@ -131,6 +131,22 @@ def test_football_omits_baseball_only_fields(registry):
     assert snapshot["period_label"] == "week"
 
 
+def test_seeded_snapshots_persist_draft_and_matchups(registry):
+    """Roadmap 2.1: seed must exercise the free draft/matchup fields."""
+    snapshot = sample_snapshot(spec_for(registry, "football-main"), 2024, teams=4)
+    assert len(snapshot["draft"]) == 4 * 3  # 3 snake rounds
+    assert {pick["round"] for pick in snapshot["draft"]} == {1, 2, 3}
+    assert all(pick["team_id"] in {1, 2, 3, 4} for pick in snapshot["draft"])
+    assert all(pick["player_id"] for pick in snapshot["draft"])
+
+    for team in snapshot["teams"]:
+        assert len(team["schedule"]) == snapshot["current_week"]
+        assert len(team["scores"]) == len(team["schedule"])
+        assert len(team["outcomes"]) == len(team["schedule"])
+        assert set(team["outcomes"]) <= {"W", "L", "T", "U"}
+        assert all(isinstance(opp, int) for opp in team["schedule"])
+
+
 def test_baseball_carries_season_stats_and_roles(registry):
     snapshot = sample_snapshot(spec_for(registry, "baseball-dynasty"), 2026, teams=4)
     assert snapshot["period_label"] == "period"
