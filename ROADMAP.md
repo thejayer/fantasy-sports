@@ -221,10 +221,12 @@ Python `read_snapshot` reassembles the monolith. The web dual-reads manifest or
 monolith; `getTeam` on v2 loads standings + one roster only (AUDIT #16). Index
 entries point at the manifest path.
 
-### 2.3 Fix the index rewrite
-`_rewrite_index()` re-reads every snapshot on every write. Make it incremental,
-or write per-league manifests and compose the index from those. Required before
-weekly snapshots multiply the file count.
+### 2.3 Fix the index rewrite — LANDED
+Writes upsert one `(league_id, season)` row into `index.json` from the manifest
+just written — no rescan of the store, no re-download of every season on GCS.
+A missing or corrupt index still falls back to a full rebuild from manifests +
+legacy monoliths so recovery stays one command away. Required before weekly
+snapshots multiply the file count.
 
 ### 2.4 Extend the sync
 In rough value order, all available through the `espn-api` client already in use:
@@ -359,10 +361,10 @@ Fold in continuously rather than saving for the end.
 
 ## Sequencing
 
-**Next up: 1.3 or 2.3.** Continuous deployment + Workload Identity Federation
+**Next up: 1.3 or 2.4.** Continuous deployment + Workload Identity Federation
 (1.3) is the biggest remaining platform win on track A (needs GCP-side WIF
-setup). On the data track, 2.3 (incremental index rewrite) is the natural
-follow-on now that seasons are multi-file. 1.5, 2.1, and 2.2 are in.
+setup). On the data track, 2.4 (extend sync — transactions, box scores, settings)
+is the next free-ish ESPN win. 1.5 and 2.1–2.3 are in.
 
 **Branch protection on `main` is done** — required checks are `python`, `web`,
 and `images`. The `python` check is an aggregator over the 3.11 + 3.12 matrix.
@@ -377,7 +379,7 @@ shape. Phase 3.1 (unify views) before any other UI work so nothing ships twice.
 | Track | Contents | Touches |
 |---|---|---|
 | A — Platform | 1.3, ~~1.5~~, ~~1.6~~, 1.7 | workflows, Dockerfiles, scripts |
-| B — Data | ~~1.4~~, ~~2.1~~, ~~2.2~~, 2.3, 2.4, 2.5 | `src/sj`, `configs` |
+| B — Data | ~~1.4~~, ~~2.1~~, ~~2.2~~, ~~2.3~~, 2.4, 2.5 | `src/sj`, `configs` |
 | C — Product | 3.1 → 3.6 | `apps/web` |
 | D — Engine | 4.1, 4.3 | `src/ffa` |
 
@@ -415,5 +417,6 @@ Concrete targets, baselined against [AUDIT.md](AUDIT.md) and re-measured on
 | Hub pages calling `ffa` | 0 | 0 | projections on roster + player + rankings |
 
 Branch protection is on; environment alignment is in (1.5). Draft/matchup
-persistence is in (2.1); schema split is in (2.2). The remaining platform gap
-is continuous deploy (1.3). Observability baseline is in (1.6).
+persistence is in (2.1); schema split is in (2.2); incremental index upsert is
+in (2.3). The remaining platform gap is continuous deploy (1.3). Observability
+baseline is in (1.6).

@@ -91,6 +91,32 @@ def _is_manifest_rel(rel: str) -> bool:
     return rel.endswith(f"/{MANIFEST_NAME}")
 
 
+def _index_leagues(document: dict[str, Any] | None) -> list[dict[str, Any]]:
+    if not document:
+        return []
+    return list(document.get("leagues") or [])
+
+
+def _upsert_league_entry(
+    leagues: list[dict[str, Any]], entry: dict[str, Any]
+) -> list[dict[str, Any]]:
+    """Replace any existing row for (league_id, season) and keep sort order."""
+    key = (entry.get("league_id"), entry.get("season"))
+    updated = [
+        item for item in leagues if (item.get("league_id"), item.get("season")) != key
+    ]
+    updated.append(entry)
+    updated.sort(key=lambda item: (item["league_id"], -(item["season"] or 0)))
+    return updated
+
+
+def _index_document(leagues: list[dict[str, Any]]) -> dict[str, Any]:
+    return {
+        "generated_at": datetime.now(timezone.utc).isoformat(),
+        "leagues": leagues,
+    }
+
+
 class SnapshotStore(Protocol):
     """Read/write league-season snapshots."""
 
@@ -127,7 +153,9 @@ class FileStore:
         if legacy.exists():
             legacy.unlink()
 
-        self._rewrite_index()
+        # Incremental index update (roadmap 2.3) — do not re-read every season.
+        entry = _index_entry(parts[MANIFEST_NAME], manifest_rel(league_id, season))
+        self._upsert_index(entry)
         return str(manifest_path)
 
     def read(self, league_id: str, season: int) -> dict[str, Any] | None:
@@ -160,7 +188,26 @@ class FileStore:
             parts[concern] = json.loads(path.read_text(encoding="utf-8"))
         return assemble_snapshot(parts)
 
+    def _upsert_index(self, entry: dict[str, Any]) -> None:
+        """Patch ``index.json`` for one league-season.
+
+        Falls back to a full rebuild when the index is missing or unreadable so
+        a wiped index still rediscovers seasons already on disk.
+        """
+        index_path = self.root / INDEX_NAME
+        if not index_path.exists():
+            self._rewrite_index()
+            return
+        try:
+            current = json.loads(index_path.read_text(encoding="utf-8"))
+        except json.JSONDecodeError:
+            self._rewrite_index()
+            return
+        leagues = _upsert_league_entry(_index_leagues(current), entry)
+        index_path.write_text(_dump(_index_document(leagues)), encoding="utf-8")
+
     def _rewrite_index(self) -> None:
+        """Full rebuild from manifests + legacy monoliths (recovery / tests)."""
         leagues: list[dict[str, Any]] = []
         seen: set[tuple[Any, Any]] = set()
 
@@ -180,8 +227,7 @@ class FileStore:
             leagues.append(_index_entry(data, str(path.relative_to(self.root))))
 
         leagues.sort(key=lambda item: (item["league_id"], -(item["season"] or 0)))
-        index = {"generated_at": datetime.now(timezone.utc).isoformat(), "leagues": leagues}
-        (self.root / INDEX_NAME).write_text(_dump(index), encoding="utf-8")
+        (self.root / INDEX_NAME).write_text(_dump(_index_document(leagues)), encoding="utf-8")
 
 
 class GcsStore:
@@ -227,7 +273,8 @@ class GcsStore:
         if legacy.exists():
             legacy.delete()
 
-        self._rewrite_index()
+        entry = _index_entry(parts[MANIFEST_NAME], manifest_rel(league_id, season))
+        self._upsert_index(entry)
         return f"gs://{self.bucket_name}/{manifest_key}"
 
     def read(self, league_id: str, season: int) -> dict[str, Any] | None:
@@ -260,7 +307,25 @@ class GcsStore:
             parts[concern] = json.loads(blob.download_as_text())
         return assemble_snapshot(parts)
 
+    def _upsert_index(self, entry: dict[str, Any]) -> None:
+        """Patch ``index.json`` for one league-season without listing the bucket."""
+        index_blob = self._get_bucket().blob(self._key(INDEX_NAME))
+        if not index_blob.exists():
+            self._rewrite_index()
+            return
+        try:
+            current = json.loads(index_blob.download_as_text())
+        except json.JSONDecodeError:
+            self._rewrite_index()
+            return
+        leagues = _upsert_league_entry(_index_leagues(current), entry)
+        index_blob.cache_control = "no-cache"
+        index_blob.upload_from_string(
+            _dump(_index_document(leagues)), content_type="application/json"
+        )
+
     def _rewrite_index(self) -> None:
+        """Full rebuild from manifests + legacy monoliths (recovery / tests)."""
         bucket = self._get_bucket()
         base = f"{self.prefix}/" if self.prefix else ""
         leagues: list[dict[str, Any]] = []
@@ -285,10 +350,11 @@ class GcsStore:
             leagues.append(_index_entry(data, rel))
 
         leagues.sort(key=lambda item: (item["league_id"], -(item["season"] or 0)))
-        index = {"generated_at": datetime.now(timezone.utc).isoformat(), "leagues": leagues}
         index_blob = bucket.blob(self._key(INDEX_NAME))
         index_blob.cache_control = "no-cache"
-        index_blob.upload_from_string(_dump(index), content_type="application/json")
+        index_blob.upload_from_string(
+            _dump(_index_document(leagues)), content_type="application/json"
+        )
 
 
 def resolve_store(store_dir: Path | str | None = None) -> SnapshotStore:
