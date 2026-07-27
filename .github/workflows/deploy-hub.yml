@@ -5,7 +5,7 @@ name: deploy hub
 # One-time setup (see HUB.md):
 #   - Secret Manager secrets populated (scripts/create-hub-secrets.sh + add versions)
 #   - Runtime SA can read them (scripts/grant-hub-secret-access.sh)
-#   - repo secret: GCP_SA_KEY
+#   - GitHub secret GCP_SA_KEY (scripts/setup-github-deployer.sh)
 #
 # After the first deploy, add the printed URL to the Google OAuth client's
 # authorized origins + redirect URIs (/api/auth/callback/google).
@@ -64,6 +64,19 @@ jobs:
       - uses: actions/checkout@v4
         with:
           persist-credentials: false
+
+      - name: Require GCP_SA_KEY secret
+        env:
+          GCP_SA_KEY: ${{ secrets.GCP_SA_KEY }}
+        run: |
+          if [ -z "$GCP_SA_KEY" ]; then
+            echo "::error::GitHub secret GCP_SA_KEY is missing or empty."
+            echo "Cloud Shell fix:"
+            echo "  ./scripts/setup-github-deployer.sh"
+            echo "Then paste key.json into repo Settings → Secrets → Actions → GCP_SA_KEY"
+            echo "See HUB.md (Production → GitHub Actions deploy key)."
+            exit 1
+          fi
 
       - id: auth
         uses: google-github-actions/auth@v2
