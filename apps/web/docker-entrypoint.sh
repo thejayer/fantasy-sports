@@ -19,8 +19,15 @@ else
 fi
 
 export PORT="${PORT:-8080}"
+# Next.js standalone binds on HOSTNAME. Auth.js must NOT use this as the public
+# site URL — set AUTH_URL to the Cloud Run https URL (see deploy-hub.yml).
 export HOSTNAME="${HOSTNAME:-0.0.0.0}"
 export SJ_DATA_DIR="${SJ_DATA_DIR:-/app/data/sj}"
+export AUTH_TRUST_HOST="${AUTH_TRUST_HOST:-true}"
+
+if [ -z "${AUTH_URL:-}" ]; then
+  echo "warning: AUTH_URL is unset; OAuth may redirect to ${HOSTNAME}:${PORT}" >&2
+fi
 
 cd /app/apps/web
 exec node server.js
