@@ -26,3 +26,4 @@ This is a dual-product monorepo. See `README.md` (ffa engine) and `HUB.md` (memb
 - Run with `npm run dev` (Next.js + Turbopack on `http://localhost:3000`). See `HUB.md` for full setup.
 - For local dev without Google OAuth, create `apps/web/.env.local` with `AUTH_DEV_BYPASS=1` (plus any `AUTH_SECRET`) to skip login entirely. With bypass off, only `ALLOWED_EMAILS` Google accounts can sign in.
 - Data source: the app reads `data/sj/` if present, otherwise falls back to committed `fixtures/sj/` sample snapshots — so the UI works offline with no ESPN sync. Live data requires the `sj sync` CLI with ESPN cookies (`ESPN_S2`/`ESPN_SWID`); not needed for browsing fixtures.
+- Snapshot layout (schema_version 2): writers emit `{league}/{season}/manifest.json` plus per-concern files (`standings`, `rosters`, `matchups`, `draft`, `transactions`). Legacy `{league}/{season}.json` monoliths (fixtures) remain readable. Prefer `sj seed` / `sj sync` over hand-editing JSON.
