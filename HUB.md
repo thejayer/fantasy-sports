@@ -3,6 +3,9 @@
 Member hub for Strictly Jayers fantasy leagues. V1 focuses on ESPN league
 data: standings, teams, rosters, and players.
 
+For the current state of the site and the plan to build it out, see
+[AUDIT.md](AUDIT.md) and [ROADMAP.md](ROADMAP.md).
+
 ## Leagues (current scope)
 
 | id | Sport | Format | ESPN league id | Seasons |
@@ -178,6 +181,32 @@ cd apps/web
 npm install
 npm run dev
 ```
+
+### Local data without ESPN credentials
+
+The app falls back to `fixtures/sj/`, but those samples are deliberately tiny
+(3–4 teams, 0–2 players), so they hide anything that only shows up at real
+scale — table pagination, page weight, wide-table layout, multi-season
+navigation. `sj seed` fills the local store with realistic-scale **synthetic**
+snapshots instead:
+
+```bash
+sj seed                              # every league and season in the registry
+sj seed --current-only               # just the current season of each league
+sj seed --league football-main       # one league
+sj seed --teams 14                   # override team count
+```
+
+The full registry is 24 league-seasons (~6 MB) and takes under a second. Output
+is deterministic per league-season, and it is built by driving the same
+serializer and store as `sj sync`, so seeded data always matches the live
+snapshot schema.
+
+Guardrails: `sj seed` only ever writes to a local directory — `SJ_GCS_BUCKET` is
+ignored, so synthetic data cannot reach the production bucket — it drops a
+`SYNTHETIC.txt` marker in the target directory, and it refuses to overwrite
+snapshots that lack that marker unless you pass `--force`. To go back to real
+data, delete `data/sj/` and run `sj sync`.
 
 ## Layout
 

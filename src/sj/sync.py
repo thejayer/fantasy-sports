@@ -59,12 +59,13 @@ def open_espn_league(spec: LeagueSpec, season: int) -> Any:
     )
 
 
-def sync_league_season(
-    spec: LeagueSpec,
-    season: int,
-    store_dir: Path | str | None = None,
-) -> SyncResult:
-    league = open_espn_league(spec, season)
+def build_snapshot(league: Any, spec: LeagueSpec, season: int) -> dict[str, Any]:
+    """Serialize an espn-api league object into a store-ready snapshot.
+
+    Split out from :func:`sync_league_season` so anything producing a
+    league-shaped object -- the live ESPN client, or ``sj.sample`` -- goes
+    through one definition of the snapshot schema.
+    """
     snapshot = serialize_league(
         league,
         league_id=spec.id,
@@ -76,6 +77,16 @@ def sync_league_season(
     # Prefer the friendly registry name over ESPN's raw settings name.
     snapshot["name"] = spec.name
     snapshot["short_name"] = spec.short_name
+    return snapshot
+
+
+def sync_league_season(
+    spec: LeagueSpec,
+    season: int,
+    store_dir: Path | str | None = None,
+) -> SyncResult:
+    league = open_espn_league(spec, season)
+    snapshot = build_snapshot(league, spec, season)
     location = write_snapshot(snapshot, store_dir=store_dir)
     return SyncResult(
         league_id=spec.id,

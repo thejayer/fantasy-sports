@@ -6,6 +6,8 @@ players, standings) and the `ffa` NFL analytics engine.
 - **Hub (start here for the site):** see [HUB.md](HUB.md) — `configs/leagues.yaml`,
   `src/sj` sync CLI, and `apps/web` Next.js app.
 - **Analytics engine:** `ffa` below — projections, ranking, draft tools, Streamlit dashboard.
+- **Where the site stands and where it's going:** [AUDIT.md](AUDIT.md) (findings,
+  with reproductions) and [ROADMAP.md](ROADMAP.md) (the phased plan).
 
 ---
 

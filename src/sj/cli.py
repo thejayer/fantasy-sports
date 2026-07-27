@@ -7,6 +7,7 @@ from pathlib import Path
 import typer
 
 from sj.registry import load_registry
+from sj.sample import DEFAULT_TEAM_COUNT, seed_store
 from sj.store import describe_store, list_snapshots
 from sj.sync import sync_registry
 
@@ -89,6 +90,53 @@ def backfill_cmd(
     typer.echo(f"backfill done: {len(results)} synced, {len(failures)} skipped")
     for failure in failures:
         typer.echo(f"  skipped {failure.league_id} {failure.season}: {failure.error}")
+
+
+@app.command("seed")
+def seed_cmd(
+    league: list[str] | None = typer.Option(
+        None, "--league", "-l", help="League id (repeatable). Default: all."
+    ),
+    season: list[int] | None = typer.Option(
+        None, "--season", "-s", help="Season year (repeatable). Default: all listed seasons."
+    ),
+    current_only: bool = typer.Option(
+        False, "--current-only", help="Seed only each league's current_season."
+    ),
+    teams: int = typer.Option(DEFAULT_TEAM_COUNT, "--teams", help="Teams per league."),
+    store_dir: Path | None = typer.Option(
+        None, help="Write here instead of the default local data directory."
+    ),
+    registry: Path | None = typer.Option(None, help="Path to leagues.yaml"),
+    force: bool = typer.Option(
+        False, "--force", help="Overwrite a store that may hold real snapshots."
+    ),
+) -> None:
+    """Fill the local store with realistic-scale SYNTHETIC snapshots.
+
+    For local development and UI testing when you have no ESPN credentials, or
+    when the committed fixtures are too small to show real behaviour. Output is
+    deterministic per league-season and uses the same schema as `sj sync`.
+
+    Never writes to Cloud Storage, and refuses to overwrite unmarked snapshots
+    unless --force is passed.
+    """
+    try:
+        written = seed_store(
+            league_ids=league,
+            seasons=season,
+            current_only=current_only,
+            teams=teams,
+            registry_path=registry,
+            store_dir=store_dir,
+            force=force,
+            on_event=typer.echo,
+        )
+    except (RuntimeError, KeyError, ValueError) as exc:
+        # A refused overwrite or a bad league id is user error, not a crash.
+        typer.echo(f"error: {exc}", err=True)
+        raise typer.Exit(code=1) from exc
+    typer.echo(f"seeded {len(written)} league-seasons of synthetic data")
 
 
 @app.command("status")
