@@ -51,3 +51,8 @@ filterwarnings = [
 [tool.ruff]
 line-length = 100
 target-version = "py310"
+
+[tool.ruff.lint]
+# Typer's documented pattern is `x: T = typer.Option(...)`. Ruff 0.16+ flags
+# that as B008; ignoring keeps the existing ffa/sj CLIs idiomatic.
+ignore = ["B008"]

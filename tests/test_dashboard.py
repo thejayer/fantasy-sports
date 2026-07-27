@@ -13,13 +13,13 @@ import pytest
 pytest.importorskip("altair", reason="dashboard extras not installed")
 pytest.importorskip("streamlit", reason="dashboard extras not installed")
 
-from ffa.dashboard import (  # noqa: E402
+from ffa.dashboard import (
     availability_view,
     distribution_chart,
     outcome_sparklines,
     risk_badges,
 )
-from ffa.league import LeagueConfig  # noqa: E402
+from ffa.league import LeagueConfig
 
 
 def test_risk_badges_split_field_into_terciles():

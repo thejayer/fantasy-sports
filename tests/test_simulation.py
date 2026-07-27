@@ -164,7 +164,7 @@ def test_summary_columns_and_quantile_ordering(small_weekly, ppr):
     samples = simulate_seasons(small_weekly, target_season=2025, n_samples=500, seed=0)
     summary = summarize_seasons(samples, ppr)
 
-    expected_qcols = [f"q{int(round(q * 100)):02d}" for q in DEFAULT_QUANTILES]
+    expected_qcols = [f"q{round(q * 100):02d}" for q in DEFAULT_QUANTILES]
     for col in ("points_mean", "points_sd", *expected_qcols):
         assert col in summary.columns
 

@@ -13,66 +13,116 @@ data: standings, teams, rosters, and players.
 
 Registry: [`configs/leagues.yaml`](configs/leagues.yaml)
 
-## Sync ESPN → local JSON
+## Production (Cloud Run) — preferred
 
-Private leagues need ESPN cookies from a logged-in browser session:
+Hosted as Cloud Run service **`sj-hub`** in project **`fantasy-sports-analytics`**.
 
-1. Log into ESPN Fantasy in Chrome.
-2. DevTools → Application → Cookies → `espn.com`
-3. Copy `espn_s2` and `SWID`
+### One-time GCP setup (Cloud Shell)
 
 ```bash
-python -m venv .venv && source .venv/bin/activate
-pip install -e ".[dev]"
+cd fantasy-sports   # repo checkout
+chmod +x scripts/*.sh
 
-export ESPN_S2='...'
-export ESPN_SWID='{...}'   # SWID also accepted
+# If you haven't already:
+./scripts/create-hub-secrets.sh
+./scripts/add-hub-secret-version.sh ...   # populate each secret
 
-# Current seasons only (fast)
-sj sync --current-only
-
-# One league / season
-sj sync --league football-main --season 2025
-
-# Everything in the registry (can take a while for long histories)
-sj sync
+# Allow Cloud Run to read the secrets:
+./scripts/grant-hub-secret-access.sh
 ```
 
-Snapshots write to `data/sj/<league-id>/<season>.json`. The web app reads
-`data/sj` first, then falls back to committed `fixtures/sj` sample data.
+GitHub repo secret **`GCP_SA_KEY`** must already exist (same one used for the
+Streamlit dashboard deploy).
 
-## Web app
+### Deploy
+
+1. GitHub → **Actions** → **deploy hub** → **Run workflow**
+2. Defaults are fine (`fantasy-sports-analytics` / `us-central1` / `sj-hub`)
+3. When it finishes, copy the printed URL
+
+### Google OAuth redirect (required after first deploy)
+
+In GCP → **APIs & Services** → **Credentials** → your OAuth client, add:
+
+- **Authorized JavaScript origin:** `https://sj-hub-….run.app`
+- **Authorized redirect URI:** `https://sj-hub-….run.app/api/auth/callback/google`
+
+(Use the exact URL the workflow prints.)
+
+Then open that URL and sign in with an allowlisted Google account.
+
+The container syncs current ESPN seasons on startup using `sj-espn-s2` /
+`sj-espn-swid`, then serves the Next.js app. Auth secrets come from Secret
+Manager via `--set-secrets` (never baked into the image).
+
+## Secrets (GCP Secret Manager)
+
+Source of truth is Secret Manager in project **`fantasy-sports-analytics`**.
+Do not commit secret values.
+
+| Secret name | Env var | Used by |
+|---|---|---|
+| `sj-auth-secret` | `AUTH_SECRET` | Next.js / Auth.js |
+| `sj-auth-google-id` | `AUTH_GOOGLE_ID` | Next.js / Auth.js |
+| `sj-auth-google-secret` | `AUTH_GOOGLE_SECRET` | Next.js / Auth.js |
+| `sj-allowed-emails` | `ALLOWED_EMAILS` | Next.js allowlist |
+| `sj-espn-s2` | `ESPN_S2` | ESPN sync (container start / CLI) |
+| `sj-espn-swid` | `ESPN_SWID` | ESPN sync (container start / CLI) |
+
+### Create / populate (Cloud Shell)
+
+```bash
+./scripts/create-hub-secrets.sh
+./scripts/add-hub-secret-version.sh sj-auth-secret
+./scripts/add-hub-secret-version.sh sj-auth-google-id
+./scripts/add-hub-secret-version.sh sj-auth-google-secret
+./scripts/add-hub-secret-version.sh sj-allowed-emails
+./scripts/add-hub-secret-version.sh sj-espn-s2
+./scripts/add-hub-secret-version.sh sj-espn-swid
+./scripts/grant-hub-secret-access.sh
+```
+
+Generate `AUTH_SECRET` without pasting:
+
+```bash
+openssl rand -base64 32 | gcloud secrets versions add sj-auth-secret \
+  --project=fantasy-sports-analytics --data-file=-
+```
+
+### Optional: pull to a laptop
+
+```bash
+./scripts/pull-hub-secrets.sh
+# writes apps/web/.env.local and .env.espn
+```
+
+## Sync ESPN from a laptop (optional)
+
+```bash
+source .env.espn
+pip install -e ".[dev]"
+sj sync --current-only
+```
+
+In production, sync runs on Cloud Run container start (`SJ_SYNC_ON_START=1`).
+
+## Local web app (optional)
 
 ```bash
 cd apps/web
-cp .env.example .env.local
-# set AUTH_GOOGLE_ID, AUTH_GOOGLE_SECRET, AUTH_SECRET, ALLOWED_EMAILS
-# keep AUTH_DEV_BYPASS=1 for local browsing without Google
-
+../../scripts/pull-hub-secrets.sh
 npm install
 npm run dev
 ```
-
-Open [http://localhost:3000](http://localhost:3000).
-
-### Google allowlist auth
-
-Production should set:
-
-- `AUTH_SECRET`
-- `AUTH_GOOGLE_ID` / `AUTH_GOOGLE_SECRET` from Google Cloud OAuth
-- `ALLOWED_EMAILS` = comma-separated Strictly Jayers member Gmail addresses
-- `AUTH_DEV_BYPASS` unset or `0`
-
-Only allowlisted Google accounts can sign in.
 
 ## Layout
 
 ```
 configs/leagues.yaml     League registry
 src/sj/                  Sync + store CLI (`sj`)
-fixtures/sj/             Sample snapshots for offline UI
+scripts/                 Secret Manager + IAM helpers
+fixtures/sj/             Sample snapshots (fallback)
 data/sj/                 Live sync output (gitignored)
-apps/web/                Next.js member hub
+apps/web/                Next.js hub (+ Dockerfile for Cloud Run)
 src/ffa/                 Existing NFL analytics engine (later phase)
 ```

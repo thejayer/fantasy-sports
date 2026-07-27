@@ -33,7 +33,7 @@ DEFAULT_QUANTILES: Final[tuple[float, ...]] = (0.05, 0.25, 0.5, 0.75, 0.95)
 
 
 def _qcol(q: float) -> str:
-    return f"q{int(round(q * 100)):02d}"
+    return f"q{round(q * 100):02d}"
 
 
 def quantile_calibration(
@@ -78,7 +78,7 @@ def quantile_calibration(
     rows: list[dict] = []
     for label, grp in groups:
         realized = grp[realized_col].to_numpy(dtype=float)
-        rec: dict[str, object] = {label_col: label, "n": int(len(grp))}
+        rec: dict[str, object] = {label_col: label, "n": len(grp)}
         gaps: list[float] = []
         for q in present:
             cov = float(np.mean(realized <= grp[_qcol(q)].to_numpy(dtype=float)))
@@ -176,7 +176,7 @@ def dispersion_decomposition(
         modeled_sd = float(np.sqrt(modeled_var))
         rec: dict[str, object] = {
             label_col: label,
-            "n": int(len(grp)),
+            "n": len(grp),
             "bias": float(np.mean(resid)),
             "resid_sd": resid_sd,
             "modeled_sd": modeled_sd,
@@ -236,7 +236,7 @@ def level_error_by_cohort(
     def _row(label: str, sub: pd.DataFrame) -> dict:
         return {
             cohort_col: label,
-            "n": int(len(sub)),
+            "n": len(sub),
             "level_sd": float(sub["_logr"].std()),
             "drift": float(np.exp(sub["_logr"].mean())),
         }

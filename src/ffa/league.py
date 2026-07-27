@@ -99,7 +99,7 @@ class RosterRules(BaseModel):
         down -- so the index ``teams * starters_at(pos)`` (0-indexed) is
         what we compare against for VOR.
         """
-        return int(round(self.teams * self.starters_at(position)))
+        return round(self.teams * self.starters_at(position))
 
 
 class LeagueConfig(BaseModel):

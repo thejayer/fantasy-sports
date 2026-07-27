@@ -202,7 +202,7 @@ def simulate_rookies(
     if pool.empty or incoming.empty or not stat_cols:
         return pd.DataFrame(columns=["player_id", "sample_idx", *stat_cols])
 
-    n_games = max(1, int(round(expected_games)))
+    n_games = max(1, round(expected_games))
     rng = np.random.default_rng(seed)
 
     # Pre-split the pool by exact cohort and by position for fallback.

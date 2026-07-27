@@ -20,7 +20,7 @@ once you wire up kicker/defense projections.
 
 from __future__ import annotations
 
-from typing import Iterable
+from collections.abc import Iterable
 
 import pandas as pd
 import pulp

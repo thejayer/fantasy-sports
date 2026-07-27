@@ -4,7 +4,6 @@ import pytest
 from ffa.league import RosterRules
 from ffa.ranking import assign_tiers, compute_vor
 
-
 # ---------- VOR ----------
 
 
