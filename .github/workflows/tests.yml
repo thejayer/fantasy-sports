@@ -8,8 +8,16 @@ on:
 permissions:
   contents: read
 
+# A newer push to the same ref supersedes an in-flight run.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
+  # Job id stays `test` so any branch protection referencing `tests / test`
+  # keeps resolving.
   test:
+    name: python
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
@@ -29,3 +37,83 @@ jobs:
 
       - name: Run pytest
         run: pytest -q
+
+  web:
+    name: web
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: apps/web
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          # Matches the runtime in apps/web/Dockerfile.
+          node-version: "22"
+          cache: "npm"
+          cache-dependency-path: apps/web/package-lock.json
+
+      - name: Install from the lockfile
+        run: npm ci
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Unit tests
+        run: npm test
+
+      - name: Build
+        run: npm run build
+
+      # Reads .next/prerender-manifest.json, so it has to follow the build.
+      # Fails if a page that reads league snapshots got statically prerendered,
+      # which would serve build-time fixture data forever.
+      - name: Assert no content route was prerendered
+        run: npm run verify:prerender
+
+      # The hub went from 14 advisories to 0; without a gate that silently
+      # drifts back. This can fail on an advisory published against an
+      # unchanged dependency, which is the intended tradeoff -- it is worth
+      # knowing promptly. If it turns noisy, the escape hatch is Dependabot
+      # (roadmap 1.5) plus moving this to a scheduled run.
+      - name: Audit dependencies
+        run: npm audit --audit-level=high
+
+  images:
+    name: images
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+
+      # Building is the only way to catch what a Dockerfile change breaks.
+      # Adding non-root users collided with a Debian system account and failed
+      # the build outright -- nothing in review would have surfaced that.
+      #
+      # The ffa dashboard image is deliberately not built here: it runs
+      # `ffa ingest` at build time, which needs network access to nflverse and
+      # produces a ~1 GB image. Too slow and too flaky for a PR gate.
+      - name: Build hub image
+        run: docker build -f apps/web/Dockerfile -t sj-hub:ci .
+
+      - name: Build sync image
+        run: docker build -f Dockerfile.sync -t sj-sync:ci .
+
+      - name: Assert images do not run as root
+        run: |
+          status=0
+          for image in sj-hub:ci sj-sync:ci; do
+            uid="$(docker run --rm --entrypoint id "$image" -u)"
+            if [ "$uid" = "0" ]; then
+              echo "::error::$image runs as root (uid 0)"
+              status=1
+            else
+              echo "$image runs as uid $uid"
+            fi
+          done
+          exit "$status"
