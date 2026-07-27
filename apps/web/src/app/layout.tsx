@@ -40,16 +40,21 @@ export default async function RootLayout({
             <nav className="nav-links">
               <Link href="/leagues">Leagues</Link>
               {session?.user ? (
-                <form
-                  action={async () => {
-                    "use server";
-                    await signOut({ redirectTo: "/login" });
-                  }}
-                >
-                  <button className="button secondary" type="submit">
-                    Sign out
-                  </button>
-                </form>
+                <>
+                  <span className="nav-user" title={session.user.email ?? undefined}>
+                    {session.user.name ?? session.user.email}
+                  </span>
+                  <form
+                    action={async () => {
+                      "use server";
+                      await signOut({ redirectTo: "/login" });
+                    }}
+                  >
+                    <button className="button secondary" type="submit">
+                      Sign out
+                    </button>
+                  </form>
+                </>
               ) : null}
             </nav>
           </header>

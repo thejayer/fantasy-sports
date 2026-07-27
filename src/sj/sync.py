@@ -1,23 +1,31 @@
-"""Pull ESPN fantasy leagues into the local Strictly Jayers store."""
+"""Pull ESPN fantasy leagues into the Strictly Jayers snapshot store."""
 
 from __future__ import annotations
 
 import os
+import time
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
 from sj.registry import LeagueSpec, load_registry
 from sj.serialize import serialize_league
-from sj.store import DEFAULT_STORE_DIR, write_snapshot
+from sj.store import write_snapshot
 
 
 @dataclass
 class SyncResult:
     league_id: str
     season: int
-    path: Path
+    location: str
     team_count: int
+
+
+@dataclass
+class SyncFailure:
+    league_id: str
+    season: int
+    error: str
 
 
 def espn_credentials() -> tuple[str | None, str | None]:
@@ -54,7 +62,7 @@ def open_espn_league(spec: LeagueSpec, season: int) -> Any:
 def sync_league_season(
     spec: LeagueSpec,
     season: int,
-    store_dir: Path | str = DEFAULT_STORE_DIR,
+    store_dir: Path | str | None = None,
 ) -> SyncResult:
     league = open_espn_league(spec, season)
     snapshot = serialize_league(
@@ -68,11 +76,11 @@ def sync_league_season(
     # Prefer the friendly registry name over ESPN's raw settings name.
     snapshot["name"] = spec.name
     snapshot["short_name"] = spec.short_name
-    path = write_snapshot(snapshot, store_dir=store_dir)
+    location = write_snapshot(snapshot, store_dir=store_dir)
     return SyncResult(
         league_id=spec.id,
         season=season,
-        path=path,
+        location=location,
         team_count=snapshot["team_count"],
     )
 
@@ -83,8 +91,15 @@ def sync_registry(
     seasons: list[int] | None = None,
     current_only: bool = False,
     registry_path: Path | str | None = None,
-    store_dir: Path | str = DEFAULT_STORE_DIR,
-) -> list[SyncResult]:
+    store_dir: Path | str | None = None,
+    throttle_seconds: float = 0.0,
+    on_event: Any = None,
+) -> tuple[list[SyncResult], list[SyncFailure]]:
+    """Sync selected leagues/seasons, tolerating per-season gaps.
+
+    Returns successes and failures separately so a backfill can report which
+    league-years ESPN refused without aborting the whole run.
+    """
     registry = load_registry(registry_path)
     selected = registry.leagues
     if league_ids:
@@ -94,21 +109,29 @@ def sync_registry(
         if missing:
             raise KeyError(f"Unknown league id(s): {sorted(missing)}")
 
+    def emit(message: str) -> None:
+        if on_event is not None:
+            on_event(message)
+
     results: list[SyncResult] = []
-    errors: list[str] = []
+    failures: list[SyncFailure] = []
     for spec in selected:
         target_seasons = [spec.current_season] if current_only else list(spec.seasons)
         if seasons is not None:
             target_seasons = [s for s in target_seasons if s in seasons]
         for season in target_seasons:
             try:
-                results.append(sync_league_season(spec, season, store_dir=store_dir))
+                result = sync_league_season(spec, season, store_dir=store_dir)
             except Exception as exc:  # noqa: BLE001 - surface ESPN/season gaps per league-year
-                errors.append(f"{spec.id} {season}: {exc}")
-    if errors and not results:
-        raise RuntimeError("All sync attempts failed:\n" + "\n".join(errors))
-    if errors:
-        # Partial success is useful when the upcoming season isn't on ESPN yet.
-        for message in errors:
-            print(f"warning: skipped {message}", flush=True)
-    return results
+                failures.append(SyncFailure(spec.id, season, str(exc)))
+                emit(f"skipped {spec.id} {season}: {exc}")
+            else:
+                results.append(result)
+                emit(f"synced {spec.id} {season} ({result.team_count} teams)")
+            if throttle_seconds:
+                time.sleep(throttle_seconds)
+
+    if failures and not results:
+        detail = "\n".join(f"{f.league_id} {f.season}: {f.error}" for f in failures)
+        raise RuntimeError("All sync attempts failed:\n" + detail)
+    return results, failures

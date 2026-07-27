@@ -1,0 +1,32 @@
+# Strictly Jayers ESPN sync — runs as a scheduled Cloud Run Job.
+#
+# Build from the repo root:
+#   docker build -f Dockerfile.sync -t sj-sync .
+#
+# Writes snapshots to Cloud Storage (SJ_GCS_BUCKET) so the hub keeps its data
+# across Cloud Run instance recycles.
+
+FROM python:3.12-slim-bookworm
+
+WORKDIR /app
+
+COPY pyproject.toml README.md ./
+COPY src/sj ./src/sj
+COPY configs ./configs
+
+# The sync job only needs the hub package, not the ffa analytics stack.
+RUN pip install --no-cache-dir \
+        "espn-api>=0.45.0" \
+        "google-cloud-storage>=2.16" \
+        "pydantic>=2.6" \
+        "pyyaml>=6.0" \
+        "typer>=0.12"
+
+ENV PYTHONPATH=/app/src \
+    PYTHONUNBUFFERED=1
+
+# Cloud Run Jobs override args per execution, e.g.
+#   --args=sync,--current-only        (scheduled refresh)
+#   --args=backfill                   (one-time history load)
+ENTRYPOINT ["python", "-m", "sj.cli"]
+CMD ["sync", "--current-only"]
