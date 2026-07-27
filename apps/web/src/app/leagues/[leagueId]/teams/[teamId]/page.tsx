@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { BaseballRosterView } from "@/components/BaseballLeagueView";
+import { BaseballRosterView } from "@/components/BaseballRosterView";
 import { getTeam } from "@/lib/data";
 
 // See app/page.tsx. Already dynamic today, but declared so adding

@@ -336,8 +336,8 @@ tr:last-child td {
   }
 }
 
-/* Baseball league views */
-.baseball-league {
+/* Shared league / roster views (roadmap 3.1) */
+.league-view.sport-baseball {
   --clay: #c45c26;
 }
 
@@ -352,6 +352,10 @@ tr:last-child td {
 .sport-pill {
   background: linear-gradient(120deg, #f0d7a8, #e8b86d);
   color: var(--ink);
+}
+
+.league-view.sport-football .sport-pill {
+  background: linear-gradient(120deg, #d9e4f0, #b7c9de);
 }
 
 .season-switch {
@@ -410,7 +414,7 @@ tr:last-child td {
   text-transform: uppercase;
 }
 
-.baseball-league .panel td:nth-child(n + 5),
-.baseball-league .panel th:nth-child(n + 5) {
+.league-view .panel td:nth-child(n + 5),
+.league-view .panel th:nth-child(n + 5) {
   font-variant-numeric: tabular-nums;
 }
