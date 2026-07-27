@@ -58,6 +58,18 @@ In GCP → **APIs & Services** → **Credentials** → your OAuth client, add:
 
 Then open that URL and sign in with an allowlisted Google account.
 
+The deploy workflow sets `AUTH_URL` to the public Cloud Run URL. Without that,
+Auth.js can redirect to `https://0.0.0.0:8080` (the container bind address).
+
+If you need to set it manually:
+
+```bash
+gcloud run services update sj-hub \
+  --project=fantasy-sports-analytics \
+  --region=us-central1 \
+  --update-env-vars="AUTH_URL=https://sj-hub-w6arul2i6a-uc.a.run.app,AUTH_TRUST_HOST=true"
+```
+
 The container syncs current ESPN seasons on startup using `sj-espn-s2` /
 `sj-espn-swid`, then serves the Next.js app. Auth secrets come from Secret
 Manager via `--set-secrets` (never baked into the image).
