@@ -274,25 +274,26 @@ configured as required status checks, so a red run is still mergeable. Enabling
 branch protection on `main` for `tests / python`, `tests / web`, and
 `tests / images` is a repo setting.
 
-### 12. The pipeline feeding the entire site is untested
+### 12. The pipeline feeding the entire site is untested — closed for sync paths
 
-Coverage measured with `pytest --cov`:
+Coverage at audit vs now (`pytest --cov=src`):
 
-| Module | Coverage |
-|---|---|
-| `src/sj/sync.py` | **0%** |
-| `src/sj/cli.py` | **0%** |
-| `src/sj/serialize.py` | 94% |
-| `src/sj/store.py` | 90% |
-| `src/ffa/cli.py` | 0% |
-| `src/ffa/dashboard.py` | 0% |
-| **Total** | **67%** |
+| Module | At audit | Now |
+|---|---|---|
+| `src/sj/sync.py` | **0%** | **100%** |
+| `src/sj/cli.py` | **0%** | **80%** |
+| `src/sj/serialize.py` | 94% | 94% |
+| `src/sj/store.py` | 90% | 90% |
+| `src/ffa/cli.py` | 0% | 0% |
+| `src/ffa/dashboard.py` | 0% | 0% |
+| **Total** | **67%** | **74%** |
 
-`sync.py` — credential handling, ESPN error classification, partial-failure
-behavior, throttling — has no tests at all. Its failure mode is quiet: a bare
-`except Exception` collects per-season errors into strings, and `sj sync` exits
-`0` even when seasons were skipped, so a partial failure looks like a success to
-Cloud Scheduler.
+`sync.py` failure paths are covered with mocked ESPN exceptions (no live
+calls): missing credentials, `ESPNAccessDenied` / `ESPNInvalidLeague` /
+network, partial-season failure, and throttle. `sj sync` exits non-zero on any
+skipped season and emits `SYNC_SUMMARY` JSON; `sj backfill` still tolerates
+`invalid_league`-only gaps. Remaining coverage drag is `ffa.cli` /
+`ffa.dashboard`.
 
 ### 13. Nothing deploys automatically
 
@@ -383,7 +384,7 @@ time. `@types/node` is `^20` against a Node 22 runtime. No Dependabot or Renovat
 | 9 | No matchups, draft, transactions, or history | P1 | Open — roadmap 2.1, 2.4, 3.4, 3.5 |
 | 10 | No loading/error/empty states | P1 | Open — roadmap 3.6 |
 | 11 | Zero CI for `apps/web` | P1 | Fixed (#28, roadmap 1.1); checks report but do not block until branch protection is on |
-| 12 | `sync.py` at 0% coverage | P1 | Partly — 38% via `sj seed`; ESPN paths untested, roadmap 1.4 |
+| 12 | `sync.py` at 0% coverage | P1 | Fixed — 100% + loud exits + `SYNC_SUMMARY` (roadmap 1.4) |
 | 13 | All deploys manual | P1 | Open — roadmap 1.3 |
 | 14 | No observability or alerting | P1 | Open — roadmap 1.6 |
 | 15 | `ffa` engine disconnected from the hub | P2 | Open — roadmap phase 4 |

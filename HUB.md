@@ -160,7 +160,11 @@ gcloud run jobs execute sj-sync --args=backfill \
   --region=us-central1 --project=fantasy-sports-analytics
 ```
 
-Seasons ESPN refuses are skipped and reported rather than failing the run.
+Seasons ESPN refuses (`invalid_league`) are skipped and reported on
+`backfill` without failing the run. Auth, network, and unknown errors still
+fail the job. Scheduled `sj sync --current-only` fails the run on **any**
+skipped season (exit 1) and always prints a machine-readable
+`SYNC_SUMMARY {...}` line for Cloud Logging / alerting.
 
 ### Sync from a laptop (optional)
 

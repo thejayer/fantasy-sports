@@ -2,15 +2,29 @@
 
 from __future__ import annotations
 
+import json
 import os
 import time
-from dataclasses import dataclass
+from dataclasses import asdict, dataclass
 from pathlib import Path
-from typing import Any
+from typing import Any, Literal
 
 from sj.registry import LeagueSpec, load_registry
 from sj.serialize import serialize_league
 from sj.store import write_snapshot
+
+FailureKind = Literal[
+    "credentials",
+    "access_denied",
+    "invalid_league",
+    "network",
+    "unknown",
+]
+
+# Historical backfills often hit seasons ESPN no longer serves. Those alone
+# should not fail a backfill run. Everything else (auth, network, unknown)
+# must — and `sj sync` treats *any* failure as fatal so Cloud Scheduler sees it.
+TOLERATED_BACKFILL_KINDS: frozenset[FailureKind] = frozenset({"invalid_league"})
 
 
 @dataclass
@@ -26,6 +40,48 @@ class SyncFailure:
     league_id: str
     season: int
     error: str
+    kind: FailureKind = "unknown"
+
+
+class SyncAllFailed(RuntimeError):
+    """Raised when every league-season attempt failed."""
+
+    def __init__(self, failures: list[SyncFailure]) -> None:
+        self.failures = failures
+        detail = "\n".join(
+            f"{f.league_id} {f.season} [{f.kind}]: {f.error}" for f in failures
+        )
+        super().__init__("All sync attempts failed:\n" + detail)
+
+
+def classify_sync_error(exc: BaseException) -> FailureKind:
+    """Map an exception from a league-season attempt to a stable failure kind."""
+    # Import inside the function so tests can raise these without importing
+    # espn_api at module import time in every caller.
+    from espn_api.requests.espn_requests import (
+        ESPNAccessDenied,
+        ESPNInvalidLeague,
+        ESPNUnknownError,
+    )
+
+    if isinstance(exc, ESPNAccessDenied):
+        return "access_denied"
+    if isinstance(exc, ESPNInvalidLeague):
+        return "invalid_league"
+    if isinstance(exc, RuntimeError) and "ESPN_S2" in str(exc):
+        return "credentials"
+    if isinstance(exc, (ConnectionError, TimeoutError)):
+        return "network"
+    try:
+        import requests
+
+        if isinstance(exc, requests.exceptions.RequestException):
+            return "network"
+    except ImportError:  # pragma: no cover - requests is an espn-api dependency
+        pass
+    if isinstance(exc, ESPNUnknownError):
+        return "unknown"
+    return "unknown"
 
 
 def espn_credentials() -> tuple[str | None, str | None]:
@@ -106,10 +162,12 @@ def sync_registry(
     throttle_seconds: float = 0.0,
     on_event: Any = None,
 ) -> tuple[list[SyncResult], list[SyncFailure]]:
-    """Sync selected leagues/seasons, tolerating per-season gaps.
+    """Sync selected leagues/seasons, collecting per-season failures.
 
     Returns successes and failures separately so a backfill can report which
-    league-years ESPN refused without aborting the whole run.
+    league-years ESPN refused. Callers decide exit policy via
+    :func:`failures_should_fail_run` — the scheduled ``sj sync`` treats any
+    failure as fatal; ``sj backfill`` tolerates ``invalid_league`` only.
     """
     registry = load_registry(registry_path)
     selected = registry.leagues
@@ -134,8 +192,10 @@ def sync_registry(
             try:
                 result = sync_league_season(spec, season, store_dir=store_dir)
             except Exception as exc:  # noqa: BLE001 - surface ESPN/season gaps per league-year
-                failures.append(SyncFailure(spec.id, season, str(exc)))
-                emit(f"skipped {spec.id} {season}: {exc}")
+                kind = classify_sync_error(exc)
+                failure = SyncFailure(spec.id, season, str(exc), kind=kind)
+                failures.append(failure)
+                emit(f"skipped {spec.id} {season} [{kind}]: {exc}")
             else:
                 results.append(result)
                 emit(f"synced {spec.id} {season} ({result.team_count} teams)")
@@ -143,6 +203,38 @@ def sync_registry(
                 time.sleep(throttle_seconds)
 
     if failures and not results:
-        detail = "\n".join(f"{f.league_id} {f.season}: {f.error}" for f in failures)
-        raise RuntimeError("All sync attempts failed:\n" + detail)
+        raise SyncAllFailed(failures)
     return results, failures
+
+
+def failures_should_fail_run(
+    failures: list[SyncFailure],
+    *,
+    tolerate_invalid_league: bool = False,
+) -> bool:
+    """Return True when the CLI should exit non-zero given these failures."""
+    if not failures:
+        return False
+    if not tolerate_invalid_league:
+        return True
+    return any(f.kind not in TOLERATED_BACKFILL_KINDS for f in failures)
+
+
+def sync_summary_line(
+    results: list[SyncResult],
+    failures: list[SyncFailure],
+    *,
+    ok: bool,
+) -> str:
+    """One machine-readable line for logs / Cloud Logging / future alerting."""
+    kinds: dict[str, int] = {}
+    for failure in failures:
+        kinds[failure.kind] = kinds.get(failure.kind, 0) + 1
+    payload = {
+        "ok": ok,
+        "synced": len(results),
+        "failed": len(failures),
+        "kinds": kinds,
+        "failures": [asdict(f) for f in failures],
+    }
+    return "SYNC_SUMMARY " + json.dumps(payload, sort_keys=True)
