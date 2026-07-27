@@ -1,6 +1,10 @@
 import Link from "next/link";
 import { getLatestLeagues } from "@/lib/data";
 
+// See app/page.tsx: prerendering would freeze this list at the build-time
+// fixtures instead of reflecting the synced snapshots.
+export const dynamic = "force-dynamic";
+
 export default async function LeaguesPage() {
   const leagues = await getLatestLeagues();
 
