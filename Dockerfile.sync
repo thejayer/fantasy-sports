@@ -25,6 +25,12 @@ RUN pip install --no-cache-dir \
 ENV PYTHONPATH=/app/src \
     PYTHONUNBUFFERED=1
 
+# Drop root: the job only reads the repo and writes to Cloud Storage.
+# Name is prefixed because Debian already ships a system user called `sync`.
+RUN groupadd --gid 1001 sjsync \
+    && useradd --uid 1001 --gid sjsync --create-home --shell /usr/sbin/nologin sjsync
+USER sjsync
+
 # Cloud Run Jobs override args per execution, e.g.
 #   --args=sync,--current-only        (scheduled refresh)
 #   --args=backfill                   (one-time history load)

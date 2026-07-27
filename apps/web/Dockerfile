@@ -51,6 +51,13 @@ RUN chmod +x /app/docker-entrypoint.sh \
     && mkdir -p /app/data/sj \
     && cp -a /app/fixtures/sj/. /app/data/sj/
 
+# Drop root. Only the paths the app writes are chowned -- chowning all of /app
+# would duplicate every file into a new layer for no benefit.
+RUN groupadd --gid 1001 sjhub \
+    && useradd --uid 1001 --gid sjhub --create-home --shell /usr/sbin/nologin sjhub \
+    && chown -R sjhub:sjhub /app/data /app/apps/web/.next
+USER sjhub
+
 ENV NODE_ENV=production \
     PORT=8080 \
     HOSTNAME=0.0.0.0 \

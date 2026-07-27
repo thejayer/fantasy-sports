@@ -4,10 +4,13 @@ name: deploy dashboard
 #
 # One-time setup (see DEPLOY.md):
 #   - a GCP project with billing enabled
-#   - a service account with roles: run.admin, iam.serviceAccountUser,
-#     artifactregistry.admin, serviceusage.serviceUsageAdmin
-#   - repo secrets:  GCP_SA_KEY  (the service-account JSON key)
-#                    DASHBOARD_PASSWORD  (shared league password)
+#   - a deployer service account: ./scripts/setup-github-deployer.sh
+#   - repo secret:  GCP_SA_KEY  (the service-account JSON key)
+#   - the shared league password in Secret Manager as `ffa-dashboard-password`
+#     (./scripts/create-hub-secrets.sh, then add-hub-secret-version.sh)
+#
+# The password is bound with --set-secrets rather than --set-env-vars so it is
+# not readable from the Cloud Run service config.
 #
 # Then run this workflow from the Actions tab, filling in the project id.
 
@@ -50,6 +53,7 @@ jobs:
       SERVICE: ${{ inputs.service }}
       INGEST_SEASONS: ${{ inputs.ingest_seasons }}
       DASHBOARD_SEASON: ${{ inputs.dashboard_season }}
+      PASSWORD_SECRET: ffa-dashboard-password
     steps:
       - name: Validate inputs
         run: |
@@ -101,22 +105,22 @@ jobs:
           docker build --build-arg INGEST_SEASONS="$INGEST_SEASONS" -t "$IMAGE" .
           docker push "$IMAGE"
 
-      - name: Deploy to Cloud Run
-        # The password secret is scoped to just this step (least privilege) --
-        # no earlier step needs it.
-        env:
-          DASHBOARD_PASSWORD: ${{ secrets.DASHBOARD_PASSWORD }}
+      - name: Require the dashboard password secret
         run: |
-          # The password is the only env value that can hold arbitrary
-          # characters. Reject control chars (a newline would corrupt the
-          # env-var list) and ';' (our delimiter below). Commas are handled
-          # by gcloud's '^;^' alternate delimiter, so a comma in the password
-          # isn't misread as a new VAR=VALUE pair. grep -z is required: without
-          # it grep is line-oriented and an embedded newline slips through.
-          if printf '%s' "$DASHBOARD_PASSWORD" | LC_ALL=C grep -qz '[;[:cntrl:]]'; then
-            echo "DASHBOARD_PASSWORD must not contain ';' or control characters." >&2
+          # The password comes from Secret Manager, not a workflow env var, so
+          # it is never visible in the Cloud Run service config. Fail early with
+          # a fixable message rather than deploying an unprotected dashboard.
+          if ! gcloud secrets describe "$PASSWORD_SECRET" --project "$PROJECT_ID" >/dev/null 2>&1; then
+            echo "Missing Secret Manager secret '$PASSWORD_SECRET' in $PROJECT_ID." >&2
+            echo "Create and populate it first:" >&2
+            echo "  ./scripts/create-hub-secrets.sh" >&2
+            echo "  ./scripts/add-hub-secret-version.sh $PASSWORD_SECRET" >&2
+            echo "  ./scripts/grant-hub-secret-access.sh" >&2
             exit 1
           fi
+
+      - name: Deploy to Cloud Run
+        run: |
           gcloud run deploy "$SERVICE" \
             --project "$PROJECT_ID" \
             --region "$REGION" \
@@ -124,7 +128,8 @@ jobs:
             --platform managed \
             --allow-unauthenticated \
             --memory 1Gi --cpu 1 --port 8080 \
-            --set-env-vars "^;^DASHBOARD_PASSWORD=$DASHBOARD_PASSWORD;DASHBOARD_SEASON=$DASHBOARD_SEASON;DASHBOARD_LEAGUE=ppr"
+            --set-secrets "DASHBOARD_PASSWORD=$PASSWORD_SECRET:latest" \
+            --set-env-vars "DASHBOARD_SEASON=$DASHBOARD_SEASON,DASHBOARD_LEAGUE=ppr"
 
       - name: Print the live URL
         run: |

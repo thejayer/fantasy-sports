@@ -28,6 +28,13 @@ ARG INGEST_SEASONS="2023 2024 2025"
 RUN args=""; for s in ${INGEST_SEASONS}; do args="$args --season $s"; done && \
     ffa ingest $args
 
+# Drop root once the build steps that need it are done. DuckDB opens the baked
+# warehouse read-write, so the data directory has to be writable by the user.
+RUN groupadd --gid 1001 ffadash \
+    && useradd --uid 1001 --gid ffadash --create-home --shell /usr/sbin/nologin ffadash \
+    && chown -R ffadash:ffadash /app/data
+USER ffadash
+
 # Cloud Run injects $PORT (defaults 8080). Streamlit must bind 0.0.0.0.
 ENV PORT=8080 \
     STREAMLIT_SERVER_HEADLESS=true \
