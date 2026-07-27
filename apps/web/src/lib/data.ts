@@ -2,6 +2,8 @@ import { promises as fs } from "fs";
 import path from "path";
 import { cache } from "react";
 
+import { requireSession } from "@/lib/session";
+
 export type SeasonStats = {
   AB?: number;
   H?: number;
@@ -123,7 +125,13 @@ async function readJson<T>(filePath: string): Promise<T | null> {
   return value;
 }
 
+/**
+ * Snapshot reads are gated here, not only in middleware -- see lib/session.ts.
+ * `getLeagueIndex` and `getLeagueSnapshot` are the only doors to league data,
+ * so guarding both means a new page cannot accidentally expose it.
+ */
 export const getLeagueIndex = cache(async (): Promise<LeagueIndexItem[]> => {
+  await requireSession();
   for (const root of dataRoots()) {
     const index = await readJson<{ leagues: LeagueIndexItem[] }>(path.join(root, "index.json"));
     if (index?.leagues?.length) {
@@ -153,6 +161,7 @@ export async function getLeagueSeasons(leagueId: string): Promise<number[]> {
 
 export const getLeagueSnapshot = cache(
   async (leagueId: string, season?: number): Promise<LeagueSnapshot | null> => {
+    await requireSession();
     const index = await getLeagueIndex();
     const candidates = index
       .filter((item) => item.league_id === leagueId)
