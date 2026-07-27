@@ -144,11 +144,21 @@ ESPN no longer serves) but fails loud on everything else. Both commands emit a
 Coverage: `src/sj/sync.py` 38% → **100%**, `src/sj/` package **94%**, full
 `src/` 71% → **74%** (still dragged by untested `ffa.cli` / `ffa.dashboard`).
 
-### 1.5 Align environments
-Test on Python 3.12 in CI to match the containers (matrix 3.11 + 3.12 if you
-want to keep the floor). Add a lockfile so CI and production resolve identically.
-Enable Dependabot for npm, pip, and Actions — most of phase 0.3 should never
-have become manual work.
+### 1.5 Align environments — LANDED
+CI now runs the Python job on **3.11 and 3.12** (matrix), with an aggregator
+job that keeps the required check name `python` for branch protection. 3.12
+matches the hub/sync containers; 3.11 keeps the floor.
+
+`requirements-lock.txt` is the shared pin set (compiled from
+`pyproject.toml` with the `dev`, `dashboard`, and `gcs` extras via `uv pip
+compile --python-version 3.11` so the same pins install on the 3.11 + 3.12
+matrix). CI installs from it; the three Dockerfiles pass it as
+`--constraint` so production resolves the same transitive versions without
+pulling every optional extra into every image.
+
+`.github/dependabot.yml` watches npm (`apps/web`), pip (repo root), and
+GitHub Actions on a weekly cadence. After a Dependabot bump to
+`pyproject.toml`, regenerate the lockfile with the command in its header.
 
 ### 1.6 Baseline observability — LANDED
 Public `GET /api/health` (middleware allowlisted, session-free) reports
@@ -341,14 +351,13 @@ Fold in continuously rather than saving for the end.
 
 ## Sequencing
 
-**Next up: 1.5 or 1.3** on the platform track; **2.2** on the data track now
-that 2.1 is in. Environments (Python 3.12 in CI, lockfile, Dependabot) is the
-cheapest remaining platform item. 1.3 (continuous deployment + Workload
-Identity Federation) is the biggest win on track A. Schema split (2.2) is the
-hard prerequisite before phase 3 UI work.
+**Next up: 1.3 or 2.2.** Continuous deployment + Workload Identity Federation
+(1.3) is the biggest remaining platform win on track A. On the data track,
+schema split (2.2) is the hard prerequisite before phase 3 UI work — do it
+before weekly data multiplies the blob size. 1.5 and 2.1 are both in.
 
 **Branch protection on `main` is done** — required checks are `python`, `web`,
-and `images`.
+and `images`. The `python` check is an aggregator over the 3.11 + 3.12 matrix.
 
 **Strictly ordered:** ~~0~~ → 1 → 2.2 → 3.1 → 3.2/3.3 → 3.4/3.5 → 4.
 Phase 2.2 (schema split) before phase 3 so the UI is built once against the final
@@ -359,7 +368,7 @@ shape. Phase 3.1 (unify views) before any other UI work so nothing ships twice.
 
 | Track | Contents | Touches |
 |---|---|---|
-| A — Platform | 1.3, 1.5, ~~1.6~~, 1.7 | workflows, Dockerfiles, scripts |
+| A — Platform | 1.3, ~~1.5~~, ~~1.6~~, 1.7 | workflows, Dockerfiles, scripts |
 | B — Data | ~~1.4~~, ~~2.1~~, 2.3, 2.4, 2.5 | `src/sj`, `configs` |
 | C — Product | 3.1 → 3.6 | `apps/web` |
 | D — Engine | 4.1, 4.3 | `src/ffa` |
@@ -397,5 +406,6 @@ Concrete targets, baselined against [AUDIT.md](AUDIT.md) and re-measured on
 | Deploys requiring a human | all | all | rollback only |
 | Hub pages calling `ffa` | 0 | 0 | projections on roster + player + rankings |
 
-Branch protection is on; the remaining platform gap is continuous deploy (1.3)
-and environment alignment (1.5). Observability baseline is in (1.6).
+Branch protection is on; environment alignment is in (1.5). Draft/matchup
+persistence is in (2.1). The remaining platform gap is continuous deploy (1.3).
+Observability baseline is in (1.6).

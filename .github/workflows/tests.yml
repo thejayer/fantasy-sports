@@ -14,29 +14,54 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  # Job id stays `test` so any branch protection referencing `tests / test`
-  # keeps resolving.
-  test:
-    name: python
+  # Matrix over the container Python (3.12) and the floor we still support (3.11).
+  # Branch protection requires the check name `python`, which the aggregator
+  # job below keeps reporting — matrix jobs alone would rename it to
+  # `python (3.11)` / `python (3.12)` and break the required check.
+  python-matrix:
+    name: python (${{ matrix.python-version }})
     runs-on: ubuntu-latest
     timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.11", "3.12"]
     steps:
       - uses: actions/checkout@v4
 
       - uses: actions/setup-python@v5
         with:
-          python-version: "3.11"
+          python-version: ${{ matrix.python-version }}
           cache: "pip"
-          cache-dependency-path: pyproject.toml
+          cache-dependency-path: |
+            pyproject.toml
+            requirements-lock.txt
 
-      - name: Install with dev + dashboard extras
-        run: pip install -e ".[dev,dashboard]"
+      - name: Install from the lockfile
+        run: |
+          pip install -r requirements-lock.txt
+          pip install -e . --no-deps
 
       - name: Lint
         run: ruff check .
 
       - name: Run pytest
         run: pytest -q
+
+  # Aggregator whose check name stays `python` for branch protection.
+  # Job id stays `test` so any older reference to `tests / test` still resolves.
+  test:
+    name: python
+    needs: python-matrix
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Require the matrix to have passed
+        run: |
+          if [ "${{ needs.python-matrix.result }}" != "success" ]; then
+            echo "python-matrix result: ${{ needs.python-matrix.result }}"
+            exit 1
+          fi
 
   web:
     name: web
@@ -77,10 +102,9 @@ jobs:
         run: npm run verify:prerender
 
       # The hub went from 14 advisories to 0; without a gate that silently
-      # drifts back. This can fail on an advisory published against an
-      # unchanged dependency, which is the intended tradeoff -- it is worth
-      # knowing promptly. If it turns noisy, the escape hatch is Dependabot
-      # (roadmap 1.5) plus moving this to a scheduled run.
+      # drifts back. Dependabot (roadmap 1.5) opens PRs when advisories land
+      # against an untouched dependency so this stays actionable rather than
+      # a surprise on an unrelated change.
       - name: Audit dependencies
         run: npm audit --audit-level=high
 
