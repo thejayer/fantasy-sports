@@ -1,9 +1,11 @@
 """Generate realistic-scale synthetic snapshots for local development.
 
-The committed fixtures in ``fixtures/sj/`` are deliberately tiny -- a few teams
-with one or two players each -- which keeps them cheap to review but hides every
-problem that only shows up at real scale: unpaginated tables, wide-table layout
-on mobile, page weight, and multi-season navigation.
+The committed fixtures in ``fixtures/sj/`` stay small (3–4 teams) and on the
+schema_version 1 monolith layout so dual-read stays covered, but they are
+regenerated from this module via ``sj regenerate-fixtures`` (roadmap 2.5) so
+they cannot drift from the live serializer. They still hide problems that only
+show up at real scale — unpaginated tables, wide-table layout on mobile, page
+weight, and multi-season navigation — which is what ``sj seed`` is for.
 
 This module fills that gap. It fabricates espn-api-shaped objects and runs them
 through the *real* serializer (:func:`sj.sync.build_snapshot`) and the *real*

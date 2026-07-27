@@ -58,10 +58,12 @@ def snapshot(season: int = 2025) -> dict:
 
 def test_fixtures_readable_as_v1_monolith():
     """Committed fixtures stay on schema_version 1; dual-read must still load them."""
-    snap = read_snapshot("football-main", 2025, store_dir=ROOT / "fixtures" / "sj")
+    snap = read_snapshot("football-main", 2026, store_dir=ROOT / "fixtures" / "sj")
     assert snap["espn_league_id"] == 39790
+    assert snap["season"] == 2026
     assert len(snap["teams"]) >= 1
-    assert (ROOT / "fixtures" / "sj" / "football-main" / "2025.json").exists()
+    assert "settings" in snap and "draft" in snap
+    assert (ROOT / "fixtures" / "sj" / "football-main" / "2026.json").exists()
 
 
 def test_write_emits_v2_layout_and_lists(tmp_path: Path):

@@ -1,38 +1,38 @@
 {
-  "generated_at": "2026-07-22T00:00:00+00:00",
+  "generated_at": "2026-07-27T00:00:00+00:00",
   "leagues": [
     {
-      "league_id": "baseball-dynasty",
       "espn_league_id": 2499137,
+      "format": "dynasty",
+      "league_id": "baseball-dynasty",
       "name": "Strictly Jayers Baseball",
-      "sport": "baseball",
-      "format": "dynasty",
+      "path": "baseball-dynasty/2026.json",
       "season": 2026,
-      "team_count": 3,
-      "synced_at": "2026-07-22T00:00:00+00:00",
-      "path": "baseball-dynasty/2026.json"
+      "sport": "baseball",
+      "synced_at": "2026-07-27T00:00:00+00:00",
+      "team_count": 3
     },
     {
-      "league_id": "football-main",
-      "espn_league_id": 39790,
-      "name": "Strictly Jayers Football",
-      "sport": "football",
-      "format": "redraft",
-      "season": 2025,
-      "team_count": 4,
-      "synced_at": "2026-07-22T00:00:00+00:00",
-      "path": "football-main/2025.json"
-    },
-    {
-      "league_id": "football-dynasty",
       "espn_league_id": 94266,
-      "name": "Strictly Jayers Football Dynasty",
-      "sport": "football",
       "format": "dynasty",
-      "season": 2025,
-      "team_count": 3,
-      "synced_at": "2026-07-22T00:00:00+00:00",
-      "path": "football-dynasty/2025.json"
+      "league_id": "football-dynasty",
+      "name": "Strictly Jayers Football Dynasty",
+      "path": "football-dynasty/2026.json",
+      "season": 2026,
+      "sport": "football",
+      "synced_at": "2026-07-27T00:00:00+00:00",
+      "team_count": 3
+    },
+    {
+      "espn_league_id": 39790,
+      "format": "redraft",
+      "league_id": "football-main",
+      "name": "Strictly Jayers Football",
+      "path": "football-main/2026.json",
+      "season": 2026,
+      "sport": "football",
+      "synced_at": "2026-07-27T00:00:00+00:00",
+      "team_count": 4
     }
   ]
 }

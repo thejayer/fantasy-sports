@@ -64,13 +64,14 @@ def test_snapshot_matches_serializer_schema(registry):
 
 
 @pytest.mark.parametrize("league_id", ["football-main", "football-dynasty", "baseball-dynasty"])
-def test_seeded_snapshot_covers_committed_fixture_fields(registry, league_id, tmp_path: Path):
-    """Seeded data must be at least as complete as the committed fixtures.
+def test_seeded_snapshot_shares_schema_with_committed_fixtures(
+    registry, league_id, tmp_path: Path
+):
+    """Seed (v2) and committed fixtures (v1) expose the same snapshot keys.
 
-    Compared against a *written* snapshot, because fixtures are post-write
-    artifacts and the store is what stamps ``synced_at``. The fixtures have
-    drifted from the serializer over time; this pins the seeded output as the
-    richer superset the web app can rely on.
+    Fixtures are regenerated from the serializer (roadmap 2.5); this pins that
+    ``sj seed`` cannot ship a narrower schema than the fallback the hub bakes in.
+    Exact fixture equality lives in ``tests/test_sj_fixtures.py``.
     """
     fixture_path = next(iter((FIXTURES / league_id).glob("*.json")), None)
     assert fixture_path is not None, f"no committed fixture for {league_id}"
@@ -82,15 +83,13 @@ def test_seeded_snapshot_covers_committed_fixture_fields(registry, league_id, tm
     )
     written = tmp_path / league_id / str(spec.current_season) / "manifest.json"
     assert written.exists()
-    # Store.read reassembles the monolith; assert via the façade.
     seeded = read_snapshot(league_id, spec.current_season, store_dir=tmp_path)
 
-    assert set(fixture) <= set(seeded)
-    assert set(fixture["teams"][0]) <= set(seeded["teams"][0])
-
-    fixture_player = fixture["teams"][0]["roster"][0]
-    seeded_player = seeded["teams"][0]["roster"][0]
-    assert set(fixture_player) <= set(seeded_player)
+    # synced_at / schema_version differ by writer; everything else must match.
+    ignore = {"synced_at", "schema_version"}
+    assert set(fixture) - ignore == set(seeded) - ignore
+    assert set(fixture["teams"][0]) == set(seeded["teams"][0])
+    assert set(fixture["teams"][0]["roster"][0]) == set(seeded["teams"][0]["roster"][0])
 
 
 def test_team_and_roster_counts(registry):
