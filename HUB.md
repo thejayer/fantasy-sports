@@ -17,28 +17,35 @@ Registry: [`configs/leagues.yaml`](configs/leagues.yaml)
 
 Hosted as Cloud Run service **`sj-hub`** in project **`fantasy-sports-analytics`**.
 
+App secrets (Google OAuth, allowlist, ESPN cookies) live in **GCP Secret Manager**.
+The GitHub Action that deploys also needs a separate credential: repository
+secret **`GCP_SA_KEY`** (a GCP service-account JSON key). That is *not* created
+by `create-hub-secrets.sh`.
+
 ### One-time GCP setup (Cloud Shell)
 
 ```bash
-cd fantasy-sports   # repo checkout
+cd fantasy-sports   # repo checkout on main
+git pull
 chmod +x scripts/*.sh
 
-# If you haven't already:
+# App secrets in Secret Manager (if you haven't already):
 ./scripts/create-hub-secrets.sh
 ./scripts/add-hub-secret-version.sh ...   # populate each secret
+./scripts/grant-hub-secret-access.sh      # Cloud Run runtime can read them
 
-# Allow Cloud Run to read the secrets:
-./scripts/grant-hub-secret-access.sh
+# GitHub Actions deploy key (fixes the auth/credentials_json error):
+./scripts/setup-github-deployer.sh
+# → paste key.json into GitHub → Settings → Secrets → Actions → GCP_SA_KEY
+# → rm key.json
 ```
-
-GitHub repo secret **`GCP_SA_KEY`** must already exist (same one used for the
-Streamlit dashboard deploy).
 
 ### Deploy
 
-1. GitHub → **Actions** → **deploy hub** → **Run workflow**
-2. Defaults are fine (`fantasy-sports-analytics` / `us-central1` / `sj-hub`)
-3. When it finishes, copy the printed URL
+1. Confirm `GCP_SA_KEY` exists under repo **Settings → Secrets and variables → Actions**
+2. GitHub → **Actions** → **deploy hub** → **Run workflow**
+3. Defaults are fine (`fantasy-sports-analytics` / `us-central1` / `sj-hub`)
+4. When it finishes, copy the printed URL
 
 ### Google OAuth redirect (required after first deploy)
 

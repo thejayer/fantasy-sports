@@ -65,6 +65,19 @@ jobs:
         with:
           persist-credentials: false
 
+      - name: Require GCP_SA_KEY secret
+        env:
+          GCP_SA_KEY: ${{ secrets.GCP_SA_KEY }}
+        run: |
+          if [ -z "$GCP_SA_KEY" ]; then
+            echo "::error::GitHub secret GCP_SA_KEY is missing or empty."
+            echo "Cloud Shell fix:"
+            echo "  ./scripts/setup-github-deployer.sh"
+            echo "Then paste key.json into repo Settings → Secrets → Actions → GCP_SA_KEY"
+            echo "See HUB.md (Production → GitHub Actions deploy key)."
+            exit 1
+          fi
+
       - id: auth
         uses: google-github-actions/auth@v2
         with:
