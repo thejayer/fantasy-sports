@@ -21,25 +21,24 @@ RUN npm run build
 
 FROM python:3.12-slim-bookworm AS runtime
 
-# Node is required to run the Next.js standalone server.
+# Node runs the Next.js standalone server. Copy the binary from the node:22
+# build stage instead of apt-installing from NodeSource — that GPG endpoint
+# has 403'd in CI and already broke `images` on main after #31.
+COPY --from=web-deps /usr/local/bin/node /usr/local/bin/node
 RUN apt-get update \
-    && apt-get install -y --no-install-recommends ca-certificates curl gnupg \
-    && mkdir -p /etc/apt/keyrings \
-    && curl -fsSL https://deb.nodesource.com/gpgkey/nodesource-repo.gpg.key \
-        | gpg --dearmor -o /etc/apt/keyrings/nodesource.gpg \
-    && echo "deb [signed-by=/etc/apt/keyrings/nodesource.gpg] https://deb.nodesource.com/node_22.x nodistro main" \
-        > /etc/apt/sources.list.d/nodesource.list \
-    && apt-get update \
-    && apt-get install -y --no-install-recommends nodejs \
+    && apt-get install -y --no-install-recommends ca-certificates \
     && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
 
-COPY pyproject.toml README.md ./
+COPY pyproject.toml README.md requirements-lock.txt ./
 COPY src ./src
 COPY configs ./configs
 COPY fixtures ./fixtures
-RUN pip install --no-cache-dir -e .
+# --constraint pins transitive versions to the lockfile so CI and this image
+# resolve identically; --no-deps on a second pass is unnecessary because -e .
+# already installs only the declared runtime deps under that constraint.
+RUN pip install --no-cache-dir -e . --constraint requirements-lock.txt
 
 # Next standalone output (built with apps/web as the app root).
 COPY --from=web-build /app/apps/web/.next/standalone ./apps/web/

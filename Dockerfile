@@ -15,10 +15,12 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 WORKDIR /app
 
 # Install Python deps in their own layer so config/data edits don't bust the cache.
-COPY pyproject.toml README.md ./
+# --constraint pins transitive versions to the lockfile so CI and this image
+# resolve identically.
+COPY pyproject.toml README.md requirements-lock.txt ./
 COPY src/ ./src/
 COPY configs/ ./configs/
-RUN pip install --no-cache-dir -e ".[dashboard]"
+RUN pip install --no-cache-dir -e ".[dashboard]" --constraint requirements-lock.txt
 
 # Bake the warehouse into the image. Cloud Build has internet; nflreadpy
 # fetches Parquet from nflverse on GitHub. These three seasons are the
