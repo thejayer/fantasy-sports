@@ -1,6 +1,28 @@
 import { promises as fs } from "fs";
 import path from "path";
 
+export type SeasonStats = {
+  AB?: number;
+  H?: number;
+  R?: number;
+  HR?: number;
+  RBI?: number;
+  SB?: number;
+  AVG?: number;
+  OBP?: number;
+  OPS?: number;
+  W?: number;
+  L?: number;
+  SV?: number;
+  HLD?: number;
+  QS?: number;
+  K?: number;
+  ERA?: number;
+  WHIP?: number;
+  OUTS?: number;
+  IP?: number;
+};
+
 export type Player = {
   id: number | string | null;
   name: string | null;
@@ -8,10 +30,17 @@ export type Player = {
   slot: string | null;
   pro_team: string | null;
   injury_status: string | null;
+  status?: string | null;
+  injured?: boolean;
+  eligible_slots?: string[];
+  acquisition_type?: string | null;
+  percent_owned?: number | null;
   total_points: number | null;
   projected_total_points: number | null;
   avg_points: number | null;
   fantasy_team?: string | null;
+  season_stats?: SeasonStats;
+  role?: "batter" | "pitcher" | string;
 };
 
 export type Team = {
@@ -19,9 +48,11 @@ export type Team = {
   name: string;
   abbrev: string | null;
   owners: string[];
+  logo_url?: string | null;
   wins: number;
   losses: number;
   ties: number;
+  win_pct?: number | null;
   points_for: number | null;
   points_against: number | null;
   standing: number | null;
@@ -37,8 +68,10 @@ export type LeagueSnapshot = {
   format: string;
   season: number;
   name: string;
+  scoring_type?: string | null;
   team_count: number;
   current_week: number | null;
+  period_label?: string;
   synced_at?: string;
   teams: Team[];
   players: Player[];
@@ -95,6 +128,12 @@ export async function getLatestLeagues(): Promise<LeagueIndexItem[]> {
     }
   }
   return [...latest.values()].sort((a, b) => a.sport.localeCompare(b.sport) || a.name.localeCompare(b.name));
+}
+
+export async function getLeagueSeasons(leagueId: string): Promise<number[]> {
+  const all = await getLeagueIndex();
+  return [...new Set(all.filter((item) => item.league_id === leagueId).map((item) => item.season))]
+    .sort((a, b) => b - a);
 }
 
 export async function getLeagueSnapshot(

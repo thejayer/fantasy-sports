@@ -1,24 +1,36 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { BaseballRosterView } from "@/components/BaseballLeagueView";
 import { getTeam } from "@/lib/data";
 
 type Props = {
   params: Promise<{ leagueId: string; teamId: string }>;
+  searchParams: Promise<{ season?: string }>;
 };
 
-export default async function TeamPage({ params }: Props) {
+export default async function TeamPage({ params, searchParams }: Props) {
   const { leagueId, teamId } = await params;
+  const { season: seasonParam } = await searchParams;
   const parsedId = Number(teamId);
   if (Number.isNaN(parsedId)) {
     notFound();
   }
+  const season = seasonParam ? Number(seasonParam) : undefined;
 
-  const result = await getTeam(leagueId, parsedId);
+  const result = await getTeam(
+    leagueId,
+    parsedId,
+    season && !Number.isNaN(season) ? season : undefined,
+  );
   if (!result) {
     notFound();
   }
 
   const { league, team } = result;
+
+  if (league.sport === "baseball") {
+    return <BaseballRosterView league={league} team={team} />;
+  }
 
   return (
     <main className="section">
