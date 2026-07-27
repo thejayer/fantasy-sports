@@ -12,57 +12,70 @@ records, rivalry pages, and projections from the 4,712-line engine already sitti
 in this repo unused. Phases 0–2 make the foundation trustworthy; phases 3–5 are
 where the product becomes something worth logging into.
 
-**Tooling already in place:** `sj seed` (see [HUB.md](HUB.md)) fills the local
-store with realistic-scale synthetic snapshots — 24 league-seasons, deterministic,
-schema-guaranteed. Every phase below that touches the UI or the data layer can be
-developed and tested without ESPN credentials.
+**Tooling already in place:**
+
+- `sj seed` (see [HUB.md](HUB.md)) fills the local store with realistic-scale
+  synthetic snapshots — 24 league-seasons, deterministic, schema-guaranteed. Every
+  phase below that touches the UI or the data layer can be developed and tested
+  without ESPN credentials.
+- In `apps/web`: `npm run typecheck`, `npm test` (vitest), `npm run build`, and
+  `npm run verify:prerender`. All pass on `main`. None are enforced by CI yet —
+  that is 1.1, and it is the next thing to do.
 
 ---
 
-## Phase 0 — Stop the bleeding
+## Phase 0 — Stop the bleeding — LANDED
 
-Small, self-contained, mostly one-file changes. Nothing else should ship before
-these, because #2 makes production visibly wrong and #1 is a live vulnerability.
+Shipped in #26. Five commits, one per item.
 
-### 0.1 Fix the open redirect
-`apps/web/src/app/login/page.tsx` — validate `callbackUrl` before redirecting.
-Accept only same-origin relative paths: must start with a single `/`, must not
-start with `//` or `/\`, fall back to `/` otherwise. Apply to both the
-`AUTH_DEV_BYPASS` branch and the `session?.user` branch, and to the `redirectTo`
-passed into `signIn()`.
-*Test:* unit test the validator over the hostile inputs from the audit
-(`https://example.com/`, `//example.com`, `/\evil.com`, `/leagues`).
+| Measure | Before | After |
+|---|---|---|
+| `npm audit` high + critical | 14 | **0** |
+| Confirmed vulnerabilities | 1 (open redirect) | **0** |
+| Authorization layers | 1 (middleware only) | **2** |
+| Pages serving build-time fixtures | 2 | **0** |
+| Containers running as root | 3 | **0** |
+| `apps/web` tests | 0 | **26** |
 
-### 0.2 Make `/` and `/leagues` dynamic
-Add `export const dynamic = "force-dynamic"` (or a short `revalidate`) to
-`apps/web/src/app/page.tsx` and `apps/web/src/app/leagues/page.tsx`.
-*Risk:* this bug is invisible in `next dev`. Guard it with a test that asserts
-`next build` does **not** mark those routes as static — otherwise it silently
-regresses the first time someone adds a page.
+**0.1 Open redirect** — `safeCallbackUrl` (`apps/web/src/lib/safe-redirect.ts`)
+resolves a candidate against a probe origin and compares, rather than
+prefix-matching, so it also rejects `/\host` (the URL parser treats a backslash
+in a special scheme as a separator, making that an authority). Tab/CR/LF are
+stripped *before* validating, since browsers strip them when resolving. Applied
+to both `/login` branches, to `signIn()`, and in middleware. Middleware also now
+preserves the query string in the `callbackUrl` it builds.
 
-### 0.3 Patch the dependency stack
-Two steps, deliberately separated so a regression is attributable:
-1. `next` 15.5.7 → **15.5.22** (same minor, backport line, patch-only) and
-   `next-auth` to the newest 5.x that resolves `@auth/core` above 0.41.2. Re-run
-   `npm audit` and expect the 12 high / 2 critical count to drop.
-2. Then evaluate `next` 16.x on its own branch — `next lint` is already warning it
-   is removed in 16, so that migration is coupled to moving to the ESLint CLI.
+**0.2 Stale prerendering** — `force-dynamic` on all four snapshot-reading pages,
+including the two `[param]` ones so a future `generateStaticParams` cannot
+silently reintroduce it. Guarded twice, because `next dev` shows no symptom:
+a unit test asserting every page importing `@/lib/data` declares it, plus
+`npm run verify:prerender` against the build manifest (confirmed to fail on a
+tampered manifest, so the check has teeth).
 
-### 0.4 Add a second layer of authorization
-Middleware stays, but stops being the only gate. Add a `requireSession()` helper
-that every page and every `src/lib/data.ts` entry point calls, so a middleware
-bypass yields no data. Cheap now, and it neutralizes the entire
-middleware-bypass advisory class going forward.
+**0.3 Dependencies** — `next` 15.5.22, `next-auth` 5.0.0-beta.32,
+`@auth/core` 0.41.3. `postcss`, `sharp`, and `brace-expansion` were transitive
+and npm's only offered fix was downgrading `next` to 9.x, so they are pinned
+forward with `overrides`. Step 2 (evaluating `next` 16.x) did **not** ship —
+carried forward to 1.7.
 
-### 0.5 Harden the containers and credentials
-- `USER node` / non-root user in all three Dockerfiles.
-- Move `DASHBOARD_PASSWORD` out of `--set-env-vars` into Secret Manager.
-- Drop the deployer SA's `secretAccessor` grant (only the runtime SA needs it);
-  narrow `artifactregistry.admin` → `artifactregistry.writer`; narrow the sync
-  bucket grant from `objectAdmin` to `objectViewer` + a scoped writer.
-- Replace `GCP_SA_KEY` with Workload Identity Federation. Larger than the rest
-  of this phase and touches all three deploy workflows — safe to defer to 1.3,
-  but do not defer indefinitely.
+**0.4 Second authorization layer** — `requireSession`
+(`apps/web/src/lib/session.ts`) gates the two cached entry points in
+`lib/data.ts`. Those are the only doors to league data, so a new page cannot
+expose it by forgetting a guard. Verified by deleting `middleware.ts` entirely
+and rebuilding: every route still returned 307 with no data, and with no
+`callbackUrl` — the signature of this guard rather than the middleware that was
+gone.
+
+**0.5 Containers and credentials** — all three images run as uid 1001
+(`sjhub` / `sjsync` / `ffadash`); building them caught that Debian already ships
+a system user named `sync`, which would have failed the build.
+`DASHBOARD_PASSWORD` moved to Secret Manager via `--set-secrets`. Deployer IAM
+narrowed (`artifactregistry.admin` → `writer`, `secretAccessor` → `viewer`, and
+the per-secret accessor grants removed), bucket `objectAdmin` → `objectUser`
+with `SJ_SYNC_SA` / `SJ_HUB_SA` to split the two accounts.
+
+Deferred deliberately: **Workload Identity Federation** → 1.3, since it rewrites
+all three deploy workflows.
 
 ---
 
@@ -71,17 +84,39 @@ middleware-bypass advisory class going forward.
 Phase 0 fixes today's bugs; this phase is why tomorrow's don't ship. Do it before
 the UI work in phase 3, because that work is large and will need a safety net.
 
-### 1.1 Web CI
-Extend `.github/workflows/tests.yml` (or add a `web.yml`) with a job that runs
-`npm ci`, `tsc --noEmit`, ESLint, and `next build` on every PR touching
-`apps/web`. All of these pass today, so this lands green and immediately starts
-earning.
+### 1.1 Web CI — do this first
+Phase 0 made this urgent rather than merely tidy. CI runs `ruff` and `pytest`
+only, so the check that went green on #26 covered essentially none of that PR:
+the TypeScript, the dependency bump, three Dockerfiles, and a workflow. All of
+it was verified by hand.
+
+The scripts already exist and pass, so this is wiring, not authoring. Add a job
+to `.github/workflows/tests.yml` (or a `web.yml`) that runs on PRs touching
+`apps/web`:
+
+```
+npm ci
+npm run typecheck          # tsc --noEmit
+npm run lint
+npm test                   # vitest, 26 tests
+npm run build
+npm run verify:prerender   # must run after build
+```
+
+Note the ordering constraint: `verify:prerender` reads `.next/prerender-manifest.json`,
+so it has to follow `build`. Worth adding a `docker build` smoke step in the same
+job — Phase 0 found a build-breaking bug (`useradd sync`) that no amount of
+reading would have caught.
 
 ### 1.2 Test harness for the frontend
-Vitest plus React Testing Library for units, Playwright for a handful of smoke
-paths (login redirect, leagues list, league standings, team roster, 404s). First
-tests to write are the phase-0 regressions: `callbackUrl` validation, and the
-static/dynamic assertion from 0.2.
+*Partly landed:* Vitest is in place with 26 tests covering the Phase 0
+regressions — `callbackUrl` validation, the force-dynamic invariant, and the
+`requireSession` backstop.
+
+Remaining: React Testing Library for component tests once Phase 3 introduces
+client components, and Playwright for a handful of smoke paths (login redirect,
+leagues list, standings, team roster, 404s). Neither is worth adding until there
+is UI worth driving.
 
 ### 1.3 Continuous deployment
 Deploy `sj-hub` on merge to `main` behind the CI gate, keeping
@@ -91,12 +126,17 @@ window. Fold in the Workload Identity Federation migration from 0.5 here, since
 it edits the same files.
 
 ### 1.4 Close the `sync.py` coverage hole
-Tests against recorded ESPN fixtures (not live calls) covering: missing
-credentials, `ESPNAccessDenied` vs `ESPNInvalidLeague` vs network error,
-partial-season failure, and the throttle path. Then make failure loud — `sj sync`
-should exit non-zero on partial failure, or at minimum emit a machine-readable
-summary the scheduler can alert on. Target: `src/sj/sync.py` and `src/sj/cli.py`
-off 0%; repo total off 67%.
+`sj seed` moved the needle incidentally — `src/sj/sync.py` 0% → **38%**,
+`src/sj/cli.py` 0% → **68%**, repo total 67% → **71%** — but only by exercising
+`build_snapshot`. The part that actually talks to ESPN is still untested.
+
+What remains is the failure behaviour: tests against recorded ESPN fixtures (not
+live calls) covering missing credentials, `ESPNAccessDenied` vs
+`ESPNInvalidLeague` vs network error, partial-season failure, and the throttle
+path. Then make failure loud — `sj sync` currently exits `0` even when seasons
+were skipped, so a partial failure looks like success to Cloud Scheduler. It
+should exit non-zero, or at minimum emit a machine-readable summary 1.6 can
+alert on. Target: `sync.py` to match `serialize.py` (~94%), repo total 85%+.
 
 ### 1.5 Align environments
 Test on Python 3.12 in CI to match the containers (matrix 3.11 + 3.12 if you
@@ -108,6 +148,21 @@ have become manual work.
 A `/api/health` route reporting snapshot freshness (`synced_at` age per league),
 alerting on `sj-sync` job failure, and error tracking wired into the Next.js
 app. This is what tells you the pipeline broke before a member does.
+
+### 1.7 Next.js 16 and the ESLint CLI
+Carried forward from 0.3, which patched within the 15.5.x line and stopped there.
+`next lint` already warns it is removed in 16, so the two moves are one job:
+`npx @next/codemod@canary next-lint-to-eslint-cli .`, then `next` 16.x.
+
+Do it after 1.1, not before. Right now nothing in CI would catch what a major
+bump breaks, and 1.1 is what makes this a green-or-red question instead of a
+manual one. Also worth revisiting the `postcss` / `sharp` overrides from 0.3
+here — a newer `next` may pin patched versions itself and make them unnecessary.
+
+Two things to watch in this app specifically: `next-auth` is still a prerelease
+and its Next 16 support should be confirmed before starting, and the
+`verify:prerender` check reads `.next/prerender-manifest.json`, whose shape is
+not a public contract and may move.
 
 ---
 
@@ -270,15 +325,20 @@ Fold in continuously rather than saving for the end.
 
 ## Sequencing
 
-**Strictly ordered:** 0 → 1 → 2.2 → 3.1 → 3.2/3.3 → 3.4/3.5 → 4.
+**Next up: 1.1.** Phase 0 wrote five new checks and left none of them enforced,
+so the repo is currently one careless merge away from undoing that work. It is
+also the cheapest item left — the scripts exist and pass, so it is wiring.
+
+**Strictly ordered:** ~~0~~ → 1 → 2.2 → 3.1 → 3.2/3.3 → 3.4/3.5 → 4.
 Phase 2.2 (schema split) before phase 3 so the UI is built once against the final
 shape. Phase 3.1 (unify views) before any other UI work so nothing ships twice.
+1.7 (Next 16) after 1.1, so a major bump lands against a real CI gate.
 
-**Runs in parallel** once phase 0 is in:
+**Runs in parallel** now that phase 0 is in:
 
 | Track | Contents | Touches |
 |---|---|---|
-| A — Platform | 1.1, 1.3, 1.5, 1.6, 0.5 | workflows, Dockerfiles, scripts |
+| A — Platform | 1.1, 1.3, 1.5, 1.6, 1.7 | workflows, Dockerfiles, scripts |
 | B — Data | 2.1, 2.3, 2.4, 2.5, 1.4 | `src/sj`, `configs` |
 | C — Product | 3.1 → 3.6 | `apps/web` |
 | D — Engine | 4.1, 4.3 | `src/ffa` |
@@ -288,27 +348,32 @@ A, B, and D barely overlap with C, so platform hardening, sync extension, and th
 (player ID mapping) is the long pole for phase 4 and should start early, because
 it is the item most likely to reveal unpleasant surprises.
 
-**Fastest visible wins,** if you want momentum before the deep work:
-0.2 (stale pages — production is wrong right now), 3.2 (a decade of history
-appears), 2.1 (draft and matchup data for zero extra API calls), 3.3 (tables
-become usable).
+**Fastest visible wins** remaining: 3.2 (a decade of history appears), 2.1
+(draft and matchup data for zero extra API calls), 3.3 (tables become usable).
+0.2 is done — production was wrong and no longer is.
 
 ---
 
 ## What "done" looks like
 
-Concrete targets, all measured against numbers recorded in [AUDIT.md](AUDIT.md):
+Concrete targets, baselined against [AUDIT.md](AUDIT.md) and re-measured on
+`main` after phase 0.
 
-| Metric | Today | Target |
-|---|---|---|
-| `npm audit` high + critical | 14 | 0 |
-| Confirmed vulnerabilities | 1 (open redirect) | 0 |
-| Authorization layers | 1 (middleware) | 2 |
-| Pages serving stale build-time data | 2 | 0 |
-| Seasons reachable in the UI | 3 of 24 | 24 of 24 |
-| `apps/web` CI checks | 0 | typecheck + lint + build + tests |
-| `src/sj/sync.py` coverage | 0% | matches `serialize.py` (~94%) |
-| Repo coverage | 67% | 85%+ |
-| Largest page payload | 448 KB | < 100 KB |
-| Deploys requiring a human | all | rollback only |
-| Hub pages calling `ffa` | 0 | projections on roster + player + rankings |
+| Metric | At audit | Now | Target |
+|---|---|---|---|
+| `npm audit` high + critical | 14 | **0** | 0 |
+| Confirmed vulnerabilities | 1 (open redirect) | **0** | 0 |
+| Authorization layers | 1 (middleware) | **2** | 2 |
+| Pages serving stale build-time data | 2 | **0** | 0 |
+| Containers running as root | 3 | **0** | 0 |
+| `apps/web` tests | 0 | **26** | plus component + smoke |
+| `apps/web` checks enforced in CI | 0 | 0 | typecheck + lint + build + tests |
+| `src/sj/sync.py` coverage | 0% | 38% | matches `serialize.py` (~94%) |
+| Repo coverage | 67% | 71% | 85%+ |
+| Seasons reachable in the UI | 3 of 24 | 3 of 24 | 24 of 24 |
+| Largest page payload | 448 KB | 448 KB | < 100 KB |
+| Deploys requiring a human | all | all | rollback only |
+| Hub pages calling `ffa` | 0 | 0 | projections on roster + player + rankings |
+
+The gap that stands out: `apps/web` went from 0 to 26 tests, and CI still
+enforces none of them. That is 1.1.
