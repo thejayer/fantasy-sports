@@ -57,6 +57,46 @@ export type DraftPick = {
   nominating_team_id: number | null;
 };
 
+export type ScoringFormatRow = {
+  id?: number | string | null;
+  abbr?: string | null;
+  label?: string | null;
+  points?: number | null;
+};
+
+export type LeagueSettings = {
+  scoring_type?: string | null;
+  reg_season_count?: number | null;
+  playoff_team_count?: number | null;
+  playoff_matchup_period_length?: number | null;
+  playoff_seed_tie_rule?: string | null;
+  playoff_tie_rule?: string | null;
+  tie_rule?: string | null;
+  keeper_count?: number;
+  faab?: boolean;
+  acquisition_budget?: number | null;
+  veto_votes_required?: number | null;
+  trade_deadline?: number | null;
+  team_count?: number | null;
+  median_scoring?: boolean;
+  division_map?: Record<string, string>;
+  position_slot_counts?: Record<string, number | null>;
+  scoring_format?: ScoringFormatRow[];
+};
+
+export type TransactionAction = {
+  team_id: number | null;
+  action: string;
+  player_id: number | null;
+  player_name: string | null;
+  bid_amount: number;
+};
+
+export type Transaction = {
+  date: string | number | null;
+  actions: TransactionAction[];
+};
+
 export type Team = {
   team_id: number;
   name: string;
@@ -91,7 +131,9 @@ export type LeagueSnapshot = {
   period_label?: string;
   synced_at?: string;
   schema_version?: number;
+  settings?: LeagueSettings;
   draft?: DraftPick[];
+  transactions?: Transaction[];
   teams: Team[];
   players: Player[];
 };
@@ -151,6 +193,14 @@ type DraftFile = {
   draft: DraftPick[];
 };
 
+type SettingsFile = {
+  settings: LeagueSettings;
+};
+
+type TransactionsFile = {
+  transactions: Transaction[];
+};
+
 function dataRoots(): string[] {
   const roots = [
     process.env.SJ_DATA_DIR,
@@ -194,6 +244,8 @@ function assembleFromParts(
   rosters: RostersFile,
   matchups: MatchupsFile | null,
   draft: DraftFile | null,
+  settings: SettingsFile | null,
+  transactions: TransactionsFile | null,
 ): LeagueSnapshot {
   const matchupById = matchups?.teams ?? {};
   const rosterById = rosters.teams ?? {};
@@ -222,7 +274,9 @@ function assembleFromParts(
     period_label: standings.period_label,
     synced_at: manifest.synced_at,
     schema_version: manifest.schema_version,
+    settings: settings?.settings ?? {},
     draft: draft?.draft ?? [],
+    transactions: transactions?.transactions ?? [],
     teams,
     players: rosters.players ?? [],
   };
@@ -258,7 +312,24 @@ async function loadSnapshotFromRoot(
   const draft = manifest.files.draft
     ? await readJson<DraftFile>(path.join(directory, manifest.files.draft))
     : null;
-  return assembleFromParts(manifest, standings, rosters, matchups, draft);
+  // Optional until seasons are re-synced after roadmap 2.4.
+  const settings = manifest.files.settings
+    ? await readJson<SettingsFile>(path.join(directory, manifest.files.settings))
+    : null;
+  const transactions = manifest.files.transactions
+    ? await readJson<TransactionsFile>(
+        path.join(directory, manifest.files.transactions),
+      )
+    : null;
+  return assembleFromParts(
+    manifest,
+    standings,
+    rosters,
+    matchups,
+    draft,
+    settings,
+    transactions,
+  );
 }
 
 /**

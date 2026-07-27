@@ -36,6 +36,7 @@ CONCERN_FILES = (
     "rosters.json",
     "matchups.json",
     "draft.json",
+    "settings.json",
     "transactions.json",
 )
 
@@ -54,11 +55,7 @@ def monolith_rel(league_id: str, season: int) -> str:
 
 
 def split_snapshot(snapshot: dict[str, Any]) -> dict[str, dict[str, Any]]:
-    """Split a monolith into ``{filename: payload}``, manifest included.
-
-    ``transactions.json`` is an empty stub until roadmap 2.4 fills it — listed
-    in the manifest from day one so the layout does not need a second migration.
-    """
+    """Split a monolith into ``{filename: payload}``, manifest included."""
     teams = snapshot.get("teams") or []
     standings_teams: list[dict[str, Any]] = []
     roster_by_id: dict[str, list[Any]] = {}
@@ -80,6 +77,7 @@ def split_snapshot(snapshot: dict[str, Any]) -> dict[str, dict[str, Any]]:
         "rosters": "rosters.json",
         "matchups": "matchups.json",
         "draft": "draft.json",
+        "settings": "settings.json",
         "transactions": "transactions.json",
     }
     manifest = {
@@ -95,6 +93,9 @@ def split_snapshot(snapshot: dict[str, Any]) -> dict[str, dict[str, Any]]:
         "synced_at": snapshot.get("synced_at"),
         "files": files,
     }
+    settings = snapshot.get("settings")
+    if not isinstance(settings, dict):
+        settings = {}
     return {
         MANIFEST_NAME: manifest,
         "standings.json": {
@@ -114,6 +115,7 @@ def split_snapshot(snapshot: dict[str, Any]) -> dict[str, dict[str, Any]]:
             "teams": matchup_by_id,
         },
         "draft.json": {"draft": list(snapshot.get("draft") or [])},
+        "settings.json": {"settings": settings},
         "transactions.json": {"transactions": list(snapshot.get("transactions") or [])},
     }
 
@@ -122,13 +124,16 @@ def assemble_snapshot(parts: dict[str, dict[str, Any]]) -> dict[str, Any]:
     """Reassemble a monolith from named concern payloads.
 
     ``parts`` keys are concern names (``manifest``, ``standings``, …) or the
-    corresponding filenames; both are accepted.
+    corresponding filenames; both are accepted. ``settings`` / ``transactions``
+    are optional so seasons written before roadmap 2.4 still assemble.
     """
     manifest = _part(parts, "manifest", MANIFEST_NAME)
     standings = _part(parts, "standings", "standings.json")
     rosters = _part(parts, "rosters", "rosters.json")
     matchups = _part(parts, "matchups", "matchups.json")
     draft = _part(parts, "draft", "draft.json") or {}
+    settings_part = _optional_part(parts, "settings", "settings.json") or {}
+    transactions_part = _optional_part(parts, "transactions", "transactions.json") or {}
 
     roster_by_id = rosters.get("teams") or {}
     matchup_by_id = matchups.get("teams") or {}
@@ -146,6 +151,10 @@ def assemble_snapshot(parts: dict[str, dict[str, Any]]) -> dict[str, Any]:
             }
         )
 
+    settings = settings_part.get("settings")
+    if not isinstance(settings, dict):
+        settings = {}
+
     return {
         "league_id": manifest["league_id"],
         "espn_league_id": manifest.get("espn_league_id"),
@@ -160,7 +169,9 @@ def assemble_snapshot(parts: dict[str, dict[str, Any]]) -> dict[str, Any]:
         "period_label": standings.get("period_label"),
         "synced_at": manifest.get("synced_at"),
         "schema_version": manifest.get("schema_version", SCHEMA_VERSION),
+        "settings": settings,
         "draft": list(draft.get("draft") or []),
+        "transactions": list(transactions_part.get("transactions") or []),
         "teams": teams,
         "players": list(rosters.get("players") or []),
     }
@@ -174,3 +185,13 @@ def _part(
     if filename in parts:
         return parts[filename]
     raise KeyError(f"missing snapshot part {name!r} ({filename})")
+
+
+def _optional_part(
+    parts: dict[str, dict[str, Any]], name: str, filename: str
+) -> dict[str, Any] | None:
+    if name in parts:
+        return parts[name]
+    if filename in parts:
+        return parts[filename]
+    return None

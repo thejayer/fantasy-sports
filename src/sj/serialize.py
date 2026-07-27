@@ -169,6 +169,77 @@ def serialize_team(team: Any, *, sport: str | None = None) -> dict[str, Any]:
     }
 
 
+def serialize_settings(league: Any) -> dict[str, Any]:
+    """Persist league settings already loaded via ``mSettings`` (roadmap 2.4).
+
+    No extra ESPN request. Football exposes roster slots / scoring format;
+    baseball ``BaseSettings`` omits those — leave them out rather than inventing.
+    """
+    settings = getattr(league, "settings", None)
+    if settings is None:
+        return {}
+
+    payload: dict[str, Any] = {
+        "scoring_type": getattr(settings, "scoring_type", None),
+        "reg_season_count": _int(getattr(settings, "reg_season_count", None)),
+        "playoff_team_count": _int(getattr(settings, "playoff_team_count", None)),
+        "playoff_matchup_period_length": _int(
+            getattr(settings, "playoff_matchup_period_length", None)
+        ),
+        "playoff_seed_tie_rule": getattr(settings, "playoff_seed_tie_rule", None),
+        "playoff_tie_rule": getattr(settings, "playoff_tie_rule", None),
+        "tie_rule": getattr(settings, "tie_rule", None),
+        "keeper_count": _int(getattr(settings, "keeper_count", None)) or 0,
+        "faab": bool(getattr(settings, "faab", False)),
+        "acquisition_budget": _int(getattr(settings, "acquisition_budget", None)),
+        "veto_votes_required": _int(getattr(settings, "veto_votes_required", None)),
+        "trade_deadline": _int(getattr(settings, "trade_deadline", None)),
+        "team_count": _int(getattr(settings, "team_count", None)),
+        "median_scoring": bool(getattr(settings, "median_scoring", False)),
+    }
+    division_map = getattr(settings, "division_map", None)
+    if isinstance(division_map, dict) and division_map:
+        payload["division_map"] = {str(k): v for k, v in division_map.items()}
+    slot_counts = getattr(settings, "position_slot_counts", None)
+    if isinstance(slot_counts, dict) and slot_counts:
+        payload["position_slot_counts"] = {
+            str(k): _int(v) for k, v in slot_counts.items() if _int(v) is not None
+        }
+    scoring_format = getattr(settings, "scoring_format", None)
+    if scoring_format:
+        payload["scoring_format"] = _serialize_scoring_format(scoring_format)
+    return payload
+
+
+def serialize_activity(activity: Any) -> dict[str, Any]:
+    """Normalize football (4-tuple) and baseball (3-tuple) activity actions."""
+    actions: list[dict[str, Any]] = []
+    for item in getattr(activity, "actions", None) or []:
+        if not isinstance(item, (list, tuple)) or len(item) < 2:
+            continue
+        team = item[0] if len(item) > 0 else None
+        action = item[1] if len(item) > 1 else "UNKNOWN"
+        player = item[2] if len(item) > 2 else None
+        bid = item[3] if len(item) > 3 else 0
+        actions.append(
+            {
+                "team_id": _team_id(team) if team not in ("", None) else None,
+                "action": str(action or "UNKNOWN"),
+                "player_id": _player_id(player),
+                "player_name": _player_name(player),
+                "bid_amount": _num(bid) or 0.0,
+            }
+        )
+    return {
+        "date": getattr(activity, "date", None),
+        "actions": actions,
+    }
+
+
+def serialize_transactions(activities: list[Any] | None) -> list[dict[str, Any]]:
+    return [serialize_activity(activity) for activity in (activities or [])]
+
+
 def serialize_league(
     league: Any,
     *,
@@ -177,6 +248,7 @@ def serialize_league(
     format: str,
     season: int,
     espn_league_id: int,
+    transactions: list[Any] | None = None,
 ) -> dict[str, Any]:
     settings = getattr(league, "settings", None)
     teams = [serialize_team(t, sport=sport) for t in (getattr(league, "teams", None) or [])]
@@ -204,7 +276,9 @@ def serialize_league(
         or getattr(league, "scoringPeriodId", None)
         or getattr(league, "current_matchday", None),
         "period_label": "period" if sport == "baseball" else "week",
+        "settings": serialize_settings(league),
         "draft": serialize_draft(league),
+        "transactions": serialize_transactions(transactions),
         "teams": teams,
         "players": _unique_players(teams),
     }
@@ -330,3 +404,54 @@ def _int(value: Any) -> int | None:
         return int(value)
     except (TypeError, ValueError):
         return None
+
+
+def _player_id(player: Any) -> int | None:
+    if player is None or player == "":
+        return None
+    if isinstance(player, bool):
+        return None
+    if isinstance(player, int):
+        return player
+    pid = getattr(player, "playerId", None) or getattr(player, "player_id", None)
+    if pid is not None:
+        return _int(pid)
+    return _int(player)
+
+
+def _player_name(player: Any) -> str | None:
+    if player is None or player == "":
+        return None
+    name = getattr(player, "name", None)
+    if name:
+        return str(name)
+    if isinstance(player, str) and not player.isdigit():
+        return player
+    # Baseball activity often stores the display name in player_map as a str.
+    if isinstance(player, str):
+        return player
+    return None
+
+
+def _serialize_scoring_format(scoring_format: Any) -> list[dict[str, Any]]:
+    rows: list[dict[str, Any]] = []
+    for item in scoring_format:
+        if isinstance(item, dict):
+            rows.append(
+                {
+                    "id": item.get("id"),
+                    "abbr": item.get("abbr") or item.get("statCode"),
+                    "label": item.get("label") or item.get("statName"),
+                    "points": _num(item.get("points") or item.get("pointsOverride")),
+                }
+            )
+            continue
+        rows.append(
+            {
+                "id": getattr(item, "id", None),
+                "abbr": getattr(item, "abbr", None),
+                "label": getattr(item, "label", None),
+                "points": _num(getattr(item, "points", None)),
+            }
+        )
+    return rows

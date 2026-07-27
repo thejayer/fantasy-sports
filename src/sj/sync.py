@@ -5,9 +5,10 @@ from __future__ import annotations
 import json
 import os
 import time
+from collections.abc import Callable
 from dataclasses import asdict, dataclass
 from pathlib import Path
-from typing import Any, Literal
+from typing import Any, Literal, TypeVar
 
 from sj.registry import LeagueSpec, load_registry
 from sj.serialize import serialize_league
@@ -25,6 +26,15 @@ FailureKind = Literal[
 # should not fail a backfill run. Everything else (auth, network, unknown)
 # must — and `sj sync` treats *any* failure as fatal so Cloud Scheduler sees it.
 TOLERATED_BACKFILL_KINDS: frozenset[FailureKind] = frozenset({"invalid_league"})
+
+# ESPN activity endpoints are unavailable before the 2019 season in espn-api.
+ACTIVITY_MIN_SEASON = 2019
+DEFAULT_ESPN_TIMEOUT_SECONDS = 30.0
+DEFAULT_ESPN_MAX_ATTEMPTS = 4
+DEFAULT_ACTIVITY_PAGE_SIZE = 25
+DEFAULT_ACTIVITY_MAX_PAGES = 40
+
+T = TypeVar("T")
 
 
 @dataclass
@@ -91,12 +101,114 @@ def espn_credentials() -> tuple[str | None, str | None]:
     return espn_s2, swid
 
 
+def espn_timeout_seconds() -> float:
+    raw = os.environ.get("SJ_ESPN_TIMEOUT", str(DEFAULT_ESPN_TIMEOUT_SECONDS))
+    try:
+        return max(1.0, float(raw))
+    except ValueError:
+        return DEFAULT_ESPN_TIMEOUT_SECONDS
+
+
+def espn_max_attempts() -> int:
+    raw = os.environ.get("SJ_ESPN_MAX_ATTEMPTS", str(DEFAULT_ESPN_MAX_ATTEMPTS))
+    try:
+        return max(1, int(raw))
+    except ValueError:
+        return DEFAULT_ESPN_MAX_ATTEMPTS
+
+
+class _TimedRequests:
+    """Proxy that injects a default timeout into espn-api's ``requests.get`` calls.
+
+    espn-api uses the module-level ``requests`` object (not a Session), so we
+    replace ``espn_api.requests.espn_requests.requests`` with this wrapper.
+    """
+
+    _sj_timeout_wrapped = True
+
+    def __init__(self, timeout: float) -> None:
+        import requests as requests_lib
+
+        self._requests = requests_lib
+        self._sj_timeout = timeout
+
+    def get(self, url: str, **kwargs: Any) -> Any:
+        kwargs.setdefault("timeout", self._sj_timeout)
+        return self._requests.get(url, **kwargs)
+
+    def request(self, method: str, url: str, **kwargs: Any) -> Any:
+        kwargs.setdefault("timeout", self._sj_timeout)
+        return self._requests.request(method, url, **kwargs)
+
+    def __getattr__(self, name: str) -> Any:
+        return getattr(self._requests, name)
+
+
+def _install_espn_timeout(timeout: float | None = None) -> None:
+    """Apply a default timeout to espn-api HTTP calls (roadmap 2.4)."""
+    from espn_api.requests import espn_requests
+
+    seconds = espn_timeout_seconds() if timeout is None else timeout
+    current = espn_requests.requests
+    if getattr(current, "_sj_timeout_wrapped", False):
+        current._sj_timeout = seconds
+        return
+    espn_requests.requests = _TimedRequests(seconds)
+
+
+def _is_retryable_espn_error(exc: BaseException) -> bool:
+    if isinstance(exc, (ConnectionError, TimeoutError, OSError)):
+        return True
+    try:
+        import requests
+        from espn_api.requests.espn_requests import ESPNUnknownError
+
+        if isinstance(exc, (requests.exceptions.Timeout, requests.exceptions.ConnectionError)):
+            return True
+        if isinstance(exc, requests.exceptions.HTTPError):
+            status = getattr(getattr(exc, "response", None), "status_code", None)
+            return status in {408, 429, 500, 502, 503, 504}
+        if isinstance(exc, ESPNUnknownError):
+            msg = str(exc)
+            return any(
+                f"HTTP {code}" in msg for code in (408, 429, 500, 502, 503, 504)
+            )
+    except ImportError:  # pragma: no cover
+        pass
+    return False
+
+
+def espn_call(
+    fn: Callable[[], T],
+    *,
+    label: str = "espn",
+    max_attempts: int | None = None,
+    base_delay: float = 0.5,
+) -> T:
+    """Run an ESPN-facing callable with exponential backoff on transient errors."""
+    del label  # reserved for future structured logging
+    attempts = espn_max_attempts() if max_attempts is None else max(1, max_attempts)
+    last_exc: BaseException | None = None
+    for attempt in range(1, attempts + 1):
+        try:
+            return fn()
+        except Exception as exc:
+            last_exc = exc
+            if attempt >= attempts or not _is_retryable_espn_error(exc):
+                raise
+            time.sleep(base_delay * (2 ** (attempt - 1)))
+    assert last_exc is not None  # pragma: no cover
+    raise last_exc
+
+
 def open_espn_league(spec: LeagueSpec, season: int) -> Any:
     espn_s2, swid = espn_credentials()
     if not espn_s2 or not swid:
         raise RuntimeError(
             "ESPN_S2 and ESPN_SWID (or SWID) env vars are required for private leagues"
         )
+
+    _install_espn_timeout()
 
     if spec.sport == "football":
         from espn_api.football import League
@@ -107,12 +219,56 @@ def open_espn_league(spec: LeagueSpec, season: int) -> Any:
     else:  # pragma: no cover - registry validates sport
         raise ValueError(f"Unsupported sport: {spec.sport}")
 
-    return League(
-        league_id=spec.espn_league_id,
-        year=season,
-        espn_s2=espn_s2,
-        swid=swid,
-    )
+    def _construct() -> Any:
+        return League(
+            league_id=spec.espn_league_id,
+            year=season,
+            espn_s2=espn_s2,
+            swid=swid,
+        )
+
+    return espn_call(_construct, label=f"open:{spec.id}:{season}")
+
+
+def _activity_unsupported(exc: BaseException) -> bool:
+    msg = str(exc).lower()
+    return "cant retrieve" in msg or "can't retrieve" in msg or "cant use recent" in msg
+
+
+def fetch_recent_activity(
+    league: Any,
+    *,
+    page_size: int = DEFAULT_ACTIVITY_PAGE_SIZE,
+    max_pages: int = DEFAULT_ACTIVITY_MAX_PAGES,
+) -> list[Any]:
+    """Page through ESPN recent activity for football / baseball / basketball."""
+    season = int(getattr(league, "year", 0) or 0)
+    if season and season < ACTIVITY_MIN_SEASON:
+        return []
+    if not callable(getattr(league, "recent_activity", None)):
+        return []
+
+    items: list[Any] = []
+    offset = 0
+    for _ in range(max_pages):
+        try:
+            page = espn_call(
+                lambda current=offset: league.recent_activity(
+                    size=page_size, offset=current
+                ),
+                label="recent_activity",
+            )
+        except Exception as exc:
+            if offset == 0 and _activity_unsupported(exc):
+                return []
+            raise
+        if not page:
+            break
+        items.extend(page)
+        if len(page) < page_size:
+            break
+        offset += page_size
+    return items
 
 
 def build_snapshot(league: Any, spec: LeagueSpec, season: int) -> dict[str, Any]:
@@ -122,6 +278,9 @@ def build_snapshot(league: Any, spec: LeagueSpec, season: int) -> dict[str, Any]
     league-shaped object -- the live ESPN client, or ``sj.sample`` -- goes
     through one definition of the snapshot schema.
     """
+    # recent_activity is an extra ESPN call (paged); settings come free from
+    # the League constructor's mSettings fetch (roadmap 2.4).
+    activities = fetch_recent_activity(league)
     snapshot = serialize_league(
         league,
         league_id=spec.id,
@@ -129,6 +288,7 @@ def build_snapshot(league: Any, spec: LeagueSpec, season: int) -> dict[str, Any]
         format=spec.format,
         season=season,
         espn_league_id=spec.espn_league_id,
+        transactions=activities,
     )
     # Prefer the friendly registry name over ESPN's raw settings name.
     snapshot["name"] = spec.name

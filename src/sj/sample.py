@@ -372,16 +372,88 @@ def sample_league(
     # free data the live serializer now persists (roadmap 2.1).
     _assign_matchups(built, games=games, rng=rng)
     draft = _build_draft(built, rounds=3)
+    # Settings (from mSettings) + recent_activity pages (roadmap 2.4).
+    settings = _build_settings(spec, teams=teams, games=games)
+    activities = _build_activities(built, season=season, rng=rng)
+
+    def recent_activity(
+        size: int = 25,
+        msg_type: str | None = None,
+        offset: int = 0,
+    ) -> list[_Stub]:
+        del msg_type
+        return activities[offset : offset + size]
 
     return _Stub(
-        settings=_Stub(
-            name=spec.name,
-            scoring_type="H2H_CATEGORY" if spec.sport == "baseball" else "H2H_POINTS",
-        ),
+        settings=settings,
         teams=built,
         current_week=games,
         draft=draft,
+        year=season,
+        recent_activity=recent_activity,
     )
+
+
+def _build_settings(spec: LeagueSpec, *, teams: int, games: int) -> _Stub:
+    dynasty = spec.format == "dynasty"
+    return _Stub(
+        name=spec.name,
+        scoring_type="H2H_CATEGORY" if spec.sport == "baseball" else "H2H_POINTS",
+        reg_season_count=games,
+        playoff_team_count=4 if teams >= 6 else max(2, teams // 2),
+        playoff_matchup_period_length=1,
+        playoff_seed_tie_rule="TOTAL_POINTS_SCORED",
+        playoff_tie_rule="NONE",
+        tie_rule="NONE",
+        keeper_count=5 if dynasty else 0,
+        faab=True,
+        acquisition_budget=200 if dynasty else 100,
+        veto_votes_required=4,
+        trade_deadline=max(1, games - 2),
+        team_count=teams,
+        median_scoring=False,
+        division_map={"0": "East", "1": "West"} if teams >= 8 else {},
+        position_slot_counts=(
+            {"QB": 1, "RB": 2, "WR": 2, "TE": 1, "FLEX": 1, "DST": 1, "K": 1, "BE": 6}
+            if spec.sport == "football"
+            else None
+        ),
+        scoring_format=(
+            [
+                {"id": 3, "abbr": "PTD", "label": "Passing TD", "points": 4.0},
+                {"id": 24, "abbr": "RTD", "label": "Rushing TD", "points": 6.0},
+            ]
+            if spec.sport == "football"
+            else None
+        ),
+    )
+
+
+def _build_activities(
+    teams: list[_Stub], *, season: int, rng: random.Random
+) -> list[_Stub]:
+    """Fabricate a small FA add/drop + trade board for seed snapshots."""
+    if season < 2019 or len(teams) < 2:
+        return []
+    t0, t1 = teams[0], teams[1]
+    p0 = t0.roster[0]
+    p1 = t1.roster[0]
+    # Dates as epoch-ms strings matching espn-api Activity.date.
+    base = int(f"{season}0901000000")
+    return [
+        _Stub(
+            date=str(base),
+            actions=[(t0, "FA ADDED", p0, 12.0)],
+        ),
+        _Stub(
+            date=str(base + 86_400_000),
+            actions=[(t0, "DROPPED", p0, 0), (t1, "TRADED", p1, 0)],
+        ),
+        _Stub(
+            date=str(base + 172_800_000),
+            actions=[(t1, "FA ADDED", p1, 3.0)],
+        ),
+    ]
 
 
 def _assign_matchups(teams: list[_Stub], *, games: int, rng: random.Random) -> None:

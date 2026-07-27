@@ -150,6 +150,22 @@ def test_seeded_snapshots_persist_draft_and_matchups(registry):
         assert all(isinstance(opp, int) for opp in team["schedule"])
 
 
+def test_seeded_snapshots_persist_settings_and_transactions(registry):
+    """Roadmap 2.4: seed must exercise settings + recent_activity fields."""
+    redraft = sample_snapshot(spec_for(registry, "football-main"), 2024, teams=4)
+    dynasty = sample_snapshot(spec_for(registry, "football-dynasty"), 2024, teams=4)
+    assert redraft["settings"]["keeper_count"] == 0
+    assert dynasty["settings"]["keeper_count"] == 5
+    assert redraft["settings"]["faab"] is True
+    assert redraft["settings"]["position_slot_counts"]["QB"] == 1
+    assert len(redraft["transactions"]) >= 1
+    assert redraft["transactions"][0]["actions"][0]["action"]
+    # Activity endpoints do not exist before 2019.
+    ancient = sample_snapshot(spec_for(registry, "football-main"), 2018, teams=4)
+    assert ancient["transactions"] == []
+    assert ancient["settings"]["keeper_count"] == 0
+
+
 def test_baseball_carries_season_stats_and_roles(registry):
     snapshot = sample_snapshot(spec_for(registry, "baseball-dynasty"), 2026, teams=4)
     assert snapshot["period_label"] == "period"

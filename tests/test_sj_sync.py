@@ -19,12 +19,15 @@ from sj.cli import app
 from sj.registry import LeagueSpec, load_registry
 from sj.sample import sample_league
 from sj.sync import (
+    ACTIVITY_MIN_SEASON,
     SyncAllFailed,
     SyncFailure,
     SyncResult,
     classify_sync_error,
+    espn_call,
     espn_credentials,
     failures_should_fail_run,
+    fetch_recent_activity,
     open_espn_league,
     sync_league_season,
     sync_registry,
@@ -314,8 +317,66 @@ def test_sync_league_season_writes_snapshot(
 
     result = sync_league_season(football_spec, 2025, store_dir=tmp_path)
     assert result.team_count == 4
-    assert (tmp_path / "football-main" / "2025" / "manifest.json").exists()
+    season_dir = tmp_path / "football-main" / "2025"
+    assert (season_dir / "manifest.json").exists()
+    assert (season_dir / "settings.json").exists()
+    assert (season_dir / "transactions.json").exists()
     assert not (tmp_path / "football-main" / "2025.json").exists()
+    settings = json.loads((season_dir / "settings.json").read_text(encoding="utf-8"))
+    txns = json.loads((season_dir / "transactions.json").read_text(encoding="utf-8"))
+    assert settings["settings"]["faab"] is True
+    assert len(txns["transactions"]) >= 1
+
+
+def test_espn_call_retries_transient_errors(monkeypatch):
+    sleeps: list[float] = []
+    monkeypatch.setattr("sj.sync.time.sleep", sleeps.append)
+    attempts = {"n": 0}
+
+    def flaky():
+        attempts["n"] += 1
+        if attempts["n"] < 3:
+            raise TimeoutError("slow")
+        return "ok"
+
+    assert espn_call(flaky, max_attempts=4, base_delay=0.1) == "ok"
+    assert attempts["n"] == 3
+    assert sleeps == [0.1, 0.2]
+
+
+def test_espn_call_does_not_retry_access_denied():
+    def boom():
+        raise ESPNAccessDenied("nope")
+
+    with pytest.raises(ESPNAccessDenied):
+        espn_call(boom, max_attempts=4)
+
+
+def test_fetch_recent_activity_empty_before_2019():
+    league = MagicMock()
+    league.year = ACTIVITY_MIN_SEASON - 1
+    assert fetch_recent_activity(league) == []
+    league.recent_activity.assert_not_called()
+
+
+def test_fetch_recent_activity_pages_until_short(monkeypatch):
+    monkeypatch.setattr("sj.sync.time.sleep", lambda *_a, **_k: None)
+    league = MagicMock()
+    league.year = 2025
+    league.recent_activity.side_effect = [
+        [MagicMock(name="a"), MagicMock(name="b")],
+        [MagicMock(name="c")],
+    ]
+    items = fetch_recent_activity(league, page_size=2, max_pages=5)
+    assert len(items) == 3
+    assert league.recent_activity.call_args_list[0].kwargs == {
+        "size": 2,
+        "offset": 0,
+    }
+    assert league.recent_activity.call_args_list[1].kwargs == {
+        "size": 2,
+        "offset": 2,
+    }
 
 
 # ---------------------------------------------------------------------------
