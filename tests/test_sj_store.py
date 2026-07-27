@@ -3,6 +3,7 @@ from pathlib import Path
 
 import pytest
 
+from sj.snapshot_layout import MANIFEST_NAME, SCHEMA_VERSION
 from sj.store import (
     FileStore,
     GcsStore,
@@ -24,25 +25,96 @@ def snapshot(season: int = 2025) -> dict:
         "format": "redraft",
         "season": season,
         "name": "Strictly Jayers Football",
+        "short_name": "Football",
+        "scoring_type": "H2H_POINTS",
         "team_count": 1,
-        "teams": [],
+        "current_week": 1,
+        "period_label": "week",
+        "draft": [],
+        "teams": [
+            {
+                "team_id": 1,
+                "name": "Solo",
+                "abbrev": "SOL",
+                "owners": ["A"],
+                "logo_url": None,
+                "wins": 0,
+                "losses": 0,
+                "ties": 0,
+                "win_pct": None,
+                "points_for": 0.0,
+                "points_against": 0.0,
+                "standing": 1,
+                "division": "",
+                "schedule": [],
+                "scores": [],
+                "outcomes": [],
+                "roster": [],
+            }
+        ],
         "players": [],
     }
 
 
-def test_fixtures_readable():
+def test_fixtures_readable_as_v1_monolith():
+    """Committed fixtures stay on schema_version 1; dual-read must still load them."""
     snap = read_snapshot("football-main", 2025, store_dir=ROOT / "fixtures" / "sj")
     assert snap["espn_league_id"] == 39790
     assert len(snap["teams"]) >= 1
+    assert (ROOT / "fixtures" / "sj" / "football-main" / "2025.json").exists()
 
 
-def test_write_and_list_snapshots(tmp_path: Path):
+def test_write_emits_v2_layout_and_lists(tmp_path: Path):
     location = write_snapshot(snapshot(), store_dir=tmp_path)
-    assert Path(location).exists()
+    manifest = Path(location)
+    assert manifest.name == MANIFEST_NAME
+    assert manifest.exists()
+    season_dir = manifest.parent
+    assert (season_dir / "standings.json").exists()
+    assert (season_dir / "rosters.json").exists()
+    assert (season_dir / "matchups.json").exists()
+    assert (season_dir / "draft.json").exists()
+    assert (season_dir / "transactions.json").exists()
+    # Writers must not leave a v1 monolith behind.
+    assert not (tmp_path / "football-main" / "2025.json").exists()
+
     items = list_snapshots(tmp_path)
     assert len(items) == 1
     assert items[0]["league_id"] == "football-main"
     assert items[0]["synced_at"]
+    assert items[0]["path"] == f"football-main/2025/{MANIFEST_NAME}"
+
+    loaded = read_snapshot("football-main", 2025, store_dir=tmp_path)
+    assert loaded["schema_version"] == SCHEMA_VERSION
+    assert loaded["teams"][0]["name"] == "Solo"
+    assert loaded["draft"] == []
+
+
+def test_write_replaces_legacy_monolith(tmp_path: Path):
+    legacy = tmp_path / "football-main" / "2025.json"
+    legacy.parent.mkdir(parents=True)
+    legacy.write_text(json.dumps(snapshot()), encoding="utf-8")
+
+    write_snapshot(snapshot(), store_dir=tmp_path)
+    assert not legacy.exists()
+    assert (tmp_path / "football-main" / "2025" / MANIFEST_NAME).exists()
+
+
+def test_index_prefers_v2_when_both_layouts_present(tmp_path: Path):
+    """A leftover v1 file for another season still indexes; v2 wins on collision."""
+    store = FileStore(tmp_path)
+    store.write(snapshot(2025))
+
+    # Plant a v1 monolith for 2024 without going through write().
+    v1 = snapshot(2024)
+    v1_path = tmp_path / "football-main" / "2024.json"
+    v1_path.parent.mkdir(parents=True, exist_ok=True)
+    v1_path.write_text(json.dumps(v1), encoding="utf-8")
+    store._rewrite_index()
+
+    items = {item["season"]: item for item in store.list()}
+    assert items[2025]["path"] == f"football-main/2025/{MANIFEST_NAME}"
+    assert items[2024]["path"] == "football-main/2024.json"
 
 
 def test_missing_snapshot_raises(tmp_path: Path):
@@ -81,6 +153,9 @@ class FakeBlob:
     def download_as_text(self) -> str:
         return self.bucket.objects[self.name]
 
+    def delete(self) -> None:
+        self.bucket.objects.pop(self.name, None)
+
 
 class FakeBucket:
     def __init__(self):
@@ -101,13 +176,16 @@ def test_gcs_store_round_trip(monkeypatch):
     monkeypatch.setattr(store, "_get_bucket", lambda: bucket)
 
     location = store.write(snapshot(2025))
-    assert location == "gs://sj-data/snapshots/football-main/2025.json"
+    assert location == f"gs://sj-data/snapshots/football-main/2025/{MANIFEST_NAME}"
     store.write(snapshot(2024))
 
     assert store.read("football-main", 2025)["season"] == 2025
+    assert store.read("football-main", 2025)["schema_version"] == SCHEMA_VERSION
     assert store.read("football-main", 1999) is None
 
     index = json.loads(bucket.objects["snapshots/index.json"])
     seasons = [item["season"] for item in index["leagues"]]
     assert seasons == [2025, 2024]
-    assert store.list()[0]["path"] == "football-main/2025.json"
+    assert store.list()[0]["path"] == f"football-main/2025/{MANIFEST_NAME}"
+    # Concern objects landed too.
+    assert "snapshots/football-main/2025/standings.json" in bucket.objects

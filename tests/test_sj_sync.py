@@ -314,7 +314,8 @@ def test_sync_league_season_writes_snapshot(
 
     result = sync_league_season(football_spec, 2025, store_dir=tmp_path)
     assert result.team_count == 4
-    assert (tmp_path / "football-main" / "2025.json").exists()
+    assert (tmp_path / "football-main" / "2025" / "manifest.json").exists()
+    assert not (tmp_path / "football-main" / "2025.json").exists()
 
 
 # ---------------------------------------------------------------------------

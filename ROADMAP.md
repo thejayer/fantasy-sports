@@ -204,14 +204,22 @@ scores preferred when present). Still **no additional ESPN requests**.
 stay schema-complete. Unlocks draft-results pages, matchup history, and weekly
 scores in phase 3 without waiting on 2.4.
 
-### 2.2 Split the snapshot schema
-One monolithic blob per league-season stops working the moment weekly data lands
-(finding #16), and `getTeam()` already parses a whole league to render one team.
-Move to per-concern files — `standings.json`, `rosters.json`, `matchups.json`,
-`draft.json`, `transactions.json` — with a manifest per league-season. Version the
-schema so the web app can detect and tolerate old snapshots during rollout.
-*Risk:* this is the one breaking change in the plan. Do it before there is more
-data to migrate, not after.
+### 2.2 Split the snapshot schema — LANDED
+Writers still build one in-memory monolith; the store persists it as per-concern
+files under `{league}/{season}/` with a `manifest.json` written last:
+
+```
+standings.json  rosters.json  matchups.json  draft.json  transactions.json
+```
+
+`schema_version: 2` on the manifest. Legacy `{league}/{season}.json` monoliths
+(`schema_version` 1 — committed fixtures) stay readable; writers emit only v2
+and delete a leftover monolith for that season. `transactions.json` is an empty
+stub until 2.4 so the layout does not need a second migration.
+
+Python `read_snapshot` reassembles the monolith. The web dual-reads manifest or
+monolith; `getTeam` on v2 loads standings + one roster only (AUDIT #16). Index
+entries point at the manifest path.
 
 ### 2.3 Fix the index rewrite
 `_rewrite_index()` re-reads every snapshot on every write. Make it incremental,
@@ -351,10 +359,10 @@ Fold in continuously rather than saving for the end.
 
 ## Sequencing
 
-**Next up: 1.3 or 2.2.** Continuous deployment + Workload Identity Federation
-(1.3) is the biggest remaining platform win on track A. On the data track,
-schema split (2.2) is the hard prerequisite before phase 3 UI work — do it
-before weekly data multiplies the blob size. 1.5 and 2.1 are both in.
+**Next up: 1.3 or 2.3.** Continuous deployment + Workload Identity Federation
+(1.3) is the biggest remaining platform win on track A (needs GCP-side WIF
+setup). On the data track, 2.3 (incremental index rewrite) is the natural
+follow-on now that seasons are multi-file. 1.5, 2.1, and 2.2 are in.
 
 **Branch protection on `main` is done** — required checks are `python`, `web`,
 and `images`. The `python` check is an aggregator over the 3.11 + 3.12 matrix.
@@ -369,7 +377,7 @@ shape. Phase 3.1 (unify views) before any other UI work so nothing ships twice.
 | Track | Contents | Touches |
 |---|---|---|
 | A — Platform | 1.3, ~~1.5~~, ~~1.6~~, 1.7 | workflows, Dockerfiles, scripts |
-| B — Data | ~~1.4~~, ~~2.1~~, 2.3, 2.4, 2.5 | `src/sj`, `configs` |
+| B — Data | ~~1.4~~, ~~2.1~~, ~~2.2~~, 2.3, 2.4, 2.5 | `src/sj`, `configs` |
 | C — Product | 3.1 → 3.6 | `apps/web` |
 | D — Engine | 4.1, 4.3 | `src/ffa` |
 
@@ -407,5 +415,5 @@ Concrete targets, baselined against [AUDIT.md](AUDIT.md) and re-measured on
 | Hub pages calling `ffa` | 0 | 0 | projections on roster + player + rankings |
 
 Branch protection is on; environment alignment is in (1.5). Draft/matchup
-persistence is in (2.1). The remaining platform gap is continuous deploy (1.3).
-Observability baseline is in (1.6).
+persistence is in (2.1); schema split is in (2.2). The remaining platform gap
+is continuous deploy (1.3). Observability baseline is in (1.6).

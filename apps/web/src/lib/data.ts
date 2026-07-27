@@ -46,6 +46,17 @@ export type Player = {
   role?: "batter" | "pitcher" | string;
 };
 
+export type DraftPick = {
+  round: number | null;
+  round_pick: number | null;
+  team_id: number | null;
+  player_id: number | null;
+  player_name: string | null;
+  bid_amount: number;
+  keeper: boolean;
+  nominating_team_id: number | null;
+};
+
 export type Team = {
   team_id: number;
   name: string;
@@ -60,6 +71,9 @@ export type Team = {
   points_against: number | null;
   standing: number | null;
   division: string;
+  schedule?: number[];
+  scores?: Array<number | null>;
+  outcomes?: Array<"W" | "L" | "T" | "U" | string>;
   roster: Player[];
 };
 
@@ -76,6 +90,8 @@ export type LeagueSnapshot = {
   current_week: number | null;
   period_label?: string;
   synced_at?: string;
+  schema_version?: number;
+  draft?: DraftPick[];
   teams: Team[];
   players: Player[];
 };
@@ -90,6 +106,49 @@ export type LeagueIndexItem = {
   team_count: number;
   synced_at?: string;
   path: string;
+};
+
+type SeasonManifest = {
+  schema_version: number;
+  league_id: string;
+  espn_league_id: number;
+  sport: string;
+  format: string;
+  season: number;
+  name: string;
+  short_name?: string;
+  team_count: number;
+  synced_at?: string;
+  files: Record<string, string>;
+};
+
+type StandingsFile = {
+  scoring_type?: string | null;
+  current_week: number | null;
+  period_label?: string;
+  teams: Array<Omit<Team, "roster" | "schedule" | "scores" | "outcomes">>;
+};
+
+type RostersFile = {
+  teams: Record<string, Player[]>;
+  players: Player[];
+};
+
+type MatchupsFile = {
+  period_label?: string;
+  current_week?: number | null;
+  teams: Record<
+    string,
+    {
+      schedule?: number[];
+      scores?: Array<number | null>;
+      outcomes?: string[];
+    }
+  >;
+};
+
+type DraftFile = {
+  draft: DraftPick[];
 };
 
 function dataRoots(): string[] {
@@ -123,6 +182,83 @@ async function readJson<T>(filePath: string): Promise<T | null> {
   }
   fileCache.set(filePath, { at: Date.now(), value });
   return value;
+}
+
+function isManifestPath(indexPath: string): boolean {
+  return indexPath.endsWith("/manifest.json") || indexPath.endsWith("manifest.json");
+}
+
+function assembleFromParts(
+  manifest: SeasonManifest,
+  standings: StandingsFile,
+  rosters: RostersFile,
+  matchups: MatchupsFile | null,
+  draft: DraftFile | null,
+): LeagueSnapshot {
+  const matchupById = matchups?.teams ?? {};
+  const rosterById = rosters.teams ?? {};
+  const teams: Team[] = (standings.teams ?? []).map((team) => {
+    const key = String(team.team_id);
+    const m = matchupById[key] ?? {};
+    return {
+      ...team,
+      schedule: m.schedule ?? [],
+      scores: m.scores ?? [],
+      outcomes: m.outcomes ?? [],
+      roster: rosterById[key] ?? [],
+    };
+  });
+  return {
+    league_id: manifest.league_id,
+    short_name: manifest.short_name,
+    espn_league_id: manifest.espn_league_id,
+    sport: manifest.sport,
+    format: manifest.format,
+    season: manifest.season,
+    name: manifest.name,
+    scoring_type: standings.scoring_type,
+    team_count: manifest.team_count,
+    current_week: standings.current_week,
+    period_label: standings.period_label,
+    synced_at: manifest.synced_at,
+    schema_version: manifest.schema_version,
+    draft: draft?.draft ?? [],
+    teams,
+    players: rosters.players ?? [],
+  };
+}
+
+async function loadSnapshotFromRoot(
+  root: string,
+  indexPath: string,
+): Promise<LeagueSnapshot | null> {
+  const absolute = path.join(root, indexPath);
+  if (!isManifestPath(indexPath)) {
+    // schema_version 1 monolith (committed fixtures).
+    return readJson<LeagueSnapshot>(absolute);
+  }
+
+  const directory = path.dirname(absolute);
+  const manifest = await readJson<SeasonManifest>(absolute);
+  if (!manifest?.files) {
+    return null;
+  }
+  const standings = await readJson<StandingsFile>(
+    path.join(directory, manifest.files.standings ?? "standings.json"),
+  );
+  const rosters = await readJson<RostersFile>(
+    path.join(directory, manifest.files.rosters ?? "rosters.json"),
+  );
+  if (!standings || !rosters) {
+    return null;
+  }
+  const matchups = manifest.files.matchups
+    ? await readJson<MatchupsFile>(path.join(directory, manifest.files.matchups))
+    : null;
+  const draft = manifest.files.draft
+    ? await readJson<DraftFile>(path.join(directory, manifest.files.draft))
+    : null;
+  return assembleFromParts(manifest, standings, rosters, matchups, draft);
 }
 
 /**
@@ -174,7 +310,7 @@ export const getLeagueSnapshot = cache(
     }
 
     for (const root of dataRoots()) {
-      const snapshot = await readJson<LeagueSnapshot>(path.join(root, match.path));
+      const snapshot = await loadSnapshotFromRoot(root, match.path);
       if (snapshot) {
         return snapshot;
       }
@@ -183,11 +319,36 @@ export const getLeagueSnapshot = cache(
   },
 );
 
+/**
+ * Load one team without pulling matchups/draft/transactions when the season is
+ * on the v2 layout — the point of the schema split (AUDIT #16).
+ */
 export async function getTeam(
   leagueId: string,
   teamId: number,
   season?: number,
 ): Promise<{ league: LeagueSnapshot; team: Team } | null> {
+  // Auth is enforced by getLeagueIndex / getLeagueSnapshot — the only doors.
+  const index = await getLeagueIndex();
+  const candidates = index
+    .filter((item) => item.league_id === leagueId)
+    .sort((a, b) => b.season - a.season);
+  const match = season
+    ? candidates.find((item) => item.season === season)
+    : candidates[0];
+  if (!match) {
+    return null;
+  }
+
+  if (isManifestPath(match.path)) {
+    for (const root of dataRoots()) {
+      const selective = await loadTeamSelective(root, match.path, teamId);
+      if (selective) {
+        return selective;
+      }
+    }
+  }
+
   const league = await getLeagueSnapshot(leagueId, season);
   if (!league) {
     return null;
@@ -196,5 +357,58 @@ export async function getTeam(
   if (!team) {
     return null;
   }
+  return { league, team };
+}
+
+async function loadTeamSelective(
+  root: string,
+  indexPath: string,
+  teamId: number,
+): Promise<{ league: LeagueSnapshot; team: Team } | null> {
+  const directory = path.join(root, path.dirname(indexPath));
+  const manifest = await readJson<SeasonManifest>(path.join(root, indexPath));
+  if (!manifest?.files) {
+    return null;
+  }
+  const standings = await readJson<StandingsFile>(
+    path.join(directory, manifest.files.standings ?? "standings.json"),
+  );
+  const rosters = await readJson<RostersFile>(
+    path.join(directory, manifest.files.rosters ?? "rosters.json"),
+  );
+  if (!standings || !rosters) {
+    return null;
+  }
+  const key = String(teamId);
+  const standing = (standings.teams ?? []).find((item) => item.team_id === teamId);
+  if (!standing) {
+    return null;
+  }
+  const team: Team = {
+    ...standing,
+    schedule: [],
+    scores: [],
+    outcomes: [],
+    roster: rosters.teams?.[key] ?? [],
+  };
+  // Minimal league façade for the team page header — no matchups/draft loaded.
+  const league: LeagueSnapshot = {
+    league_id: manifest.league_id,
+    short_name: manifest.short_name,
+    espn_league_id: manifest.espn_league_id,
+    sport: manifest.sport,
+    format: manifest.format,
+    season: manifest.season,
+    name: manifest.name,
+    scoring_type: standings.scoring_type,
+    team_count: manifest.team_count,
+    current_week: standings.current_week,
+    period_label: standings.period_label,
+    synced_at: manifest.synced_at,
+    schema_version: manifest.schema_version,
+    draft: [],
+    teams: [team],
+    players: [],
+  };
   return { league, team };
 }

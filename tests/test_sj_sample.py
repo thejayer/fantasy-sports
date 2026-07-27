@@ -13,6 +13,7 @@ from sj.sample import (
     seed_store,
 )
 from sj.serialize import serialize_league
+from sj.store import read_snapshot
 
 ROOT = Path(__file__).resolve().parents[1]
 FIXTURES = ROOT / "fixtures" / "sj"
@@ -79,8 +80,10 @@ def test_seeded_snapshot_covers_committed_fixture_fields(registry, league_id, tm
     seed_store(
         league_ids=[league_id], current_only=True, teams=4, store_dir=tmp_path
     )
-    written = tmp_path / league_id / f"{spec.current_season}.json"
-    seeded = json.loads(written.read_text(encoding="utf-8"))
+    written = tmp_path / league_id / str(spec.current_season) / "manifest.json"
+    assert written.exists()
+    # Store.read reassembles the monolith; assert via the façade.
+    seeded = read_snapshot(league_id, spec.current_season, store_dir=tmp_path)
 
     assert set(fixture) <= set(seeded)
     assert set(fixture["teams"][0]) <= set(seeded["teams"][0])
@@ -231,7 +234,7 @@ def test_seed_store_ignores_gcs_bucket(tmp_path: Path, monkeypatch):
     """Synthetic data must never be able to reach the production bucket."""
     monkeypatch.setenv("SJ_GCS_BUCKET", "should-never-be-written")
     seed_store(league_ids=["football-main"], seasons=[2025], teams=4, store_dir=tmp_path)
-    assert (tmp_path / "football-main" / "2025.json").exists()
+    assert (tmp_path / "football-main" / "2025" / "manifest.json").exists()
 
 
 def test_cli_seed_command(tmp_path: Path):
@@ -248,7 +251,7 @@ def test_cli_seed_command(tmp_path: Path):
     assert result.exit_code == 0, result.output
     assert "seeded football-main 2025" in result.output
     assert "seeded 1 league-seasons" in result.output
-    assert (tmp_path / "football-main" / "2025.json").exists()
+    assert (tmp_path / "football-main" / "2025" / "manifest.json").exists()
 
 
 def test_cli_seed_reports_refused_overwrite_cleanly(tmp_path: Path):
