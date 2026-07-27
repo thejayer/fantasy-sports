@@ -7,6 +7,21 @@ Two backends share one interface:
   survive Cloud Run instance recycles and are shared across instances.
 
 Set ``SJ_GCS_BUCKET`` to select the Cloud Storage backend.
+
+On-disk layout (schema_version 2, roadmap 2.2)::
+
+    {root}/
+      index.json
+      {league_id}/{season}/
+        manifest.json          # written last so readers never see a partial season
+        standings.json
+        rosters.json
+        matchups.json
+        draft.json
+        transactions.json
+
+Legacy schema_version 1 monoliths (``{league_id}/{season}.json``) remain
+readable — committed fixtures still use that shape. Writers only emit v2.
 """
 
 from __future__ import annotations
@@ -17,6 +32,16 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Protocol
 
+from sj.snapshot_layout import (
+    CONCERN_FILES,
+    MANIFEST_NAME,
+    assemble_snapshot,
+    manifest_rel,
+    monolith_rel,
+    season_dir_rel,
+    split_snapshot,
+)
+
 DEFAULT_STORE_DIR = Path(__file__).resolve().parents[2] / "data" / "sj"
 FIXTURES_DIR = Path(__file__).resolve().parents[2] / "fixtures" / "sj"
 
@@ -24,7 +49,12 @@ INDEX_NAME = "index.json"
 
 
 def season_path(store_dir: Path, league_id: str, season: int) -> Path:
-    return store_dir / league_id / f"{season}.json"
+    """Legacy v1 monolith path — kept for callers/tests that still name it."""
+    return store_dir / monolith_rel(league_id, season)
+
+
+def season_manifest_path(store_dir: Path, league_id: str, season: int) -> Path:
+    return store_dir / manifest_rel(league_id, season)
 
 
 def _index_entry(data: dict[str, Any], rel_path: str) -> dict[str, Any]:
@@ -49,6 +79,18 @@ def _dump(payload: dict[str, Any]) -> str:
     return json.dumps(payload, indent=2, sort_keys=True) + "\n"
 
 
+def _is_v1_monolith_rel(rel: str) -> bool:
+    """True for ``league/2025.json`` — not ``league/2025/standings.json``."""
+    if not rel.endswith(".json") or rel == INDEX_NAME or rel.endswith(f"/{MANIFEST_NAME}"):
+        return False
+    parts = rel.split("/")
+    return len(parts) == 2 and parts[1][:-5].isdigit()
+
+
+def _is_manifest_rel(rel: str) -> bool:
+    return rel.endswith(f"/{MANIFEST_NAME}")
+
+
 class SnapshotStore(Protocol):
     """Read/write league-season snapshots."""
 
@@ -67,13 +109,31 @@ class FileStore:
 
     def write(self, snapshot: dict[str, Any]) -> str:
         payload = _stamp(snapshot)
-        path = season_path(self.root, payload["league_id"], payload["season"])
-        path.parent.mkdir(parents=True, exist_ok=True)
-        path.write_text(_dump(payload), encoding="utf-8")
+        league_id = payload["league_id"]
+        season = int(payload["season"])
+        parts = split_snapshot(payload)
+        directory = self.root / season_dir_rel(league_id, season)
+        directory.mkdir(parents=True, exist_ok=True)
+
+        # Concern files first; manifest last so a concurrent reader never sees
+        # a half-written season.
+        for name in CONCERN_FILES:
+            (directory / name).write_text(_dump(parts[name]), encoding="utf-8")
+        manifest_path = directory / MANIFEST_NAME
+        manifest_path.write_text(_dump(parts[MANIFEST_NAME]), encoding="utf-8")
+
+        # Drop a leftover v1 monolith for this season if one exists.
+        legacy = season_path(self.root, league_id, season)
+        if legacy.exists():
+            legacy.unlink()
+
         self._rewrite_index()
-        return str(path)
+        return str(manifest_path)
 
     def read(self, league_id: str, season: int) -> dict[str, Any] | None:
+        assembled = self._read_v2(league_id, season)
+        if assembled is not None:
+            return assembled
         path = season_path(self.root, league_id, season)
         if not path.exists():
             return None
@@ -85,13 +145,41 @@ class FileStore:
             return []
         return json.loads(index_path.read_text(encoding="utf-8")).get("leagues", [])
 
+    def _read_v2(self, league_id: str, season: int) -> dict[str, Any] | None:
+        manifest_path = season_manifest_path(self.root, league_id, season)
+        if not manifest_path.exists():
+            return None
+        directory = manifest_path.parent
+        manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+        files = manifest.get("files") or {}
+        parts: dict[str, dict[str, Any]] = {"manifest": manifest}
+        for concern, filename in files.items():
+            path = directory / filename
+            if not path.exists():
+                return None
+            parts[concern] = json.loads(path.read_text(encoding="utf-8"))
+        return assemble_snapshot(parts)
+
     def _rewrite_index(self) -> None:
         leagues: list[dict[str, Any]] = []
+        seen: set[tuple[Any, Any]] = set()
+
+        for path in sorted(self.root.glob(f"*/*/{MANIFEST_NAME}")):
+            data = json.loads(path.read_text(encoding="utf-8"))
+            key = (data.get("league_id"), data.get("season"))
+            leagues.append(_index_entry(data, str(path.relative_to(self.root))))
+            seen.add(key)
+
         for path in sorted(self.root.glob("*/*.json")):
             if path.name == INDEX_NAME:
                 continue
             data = json.loads(path.read_text(encoding="utf-8"))
+            key = (data.get("league_id"), data.get("season"))
+            if key in seen:
+                continue
             leagues.append(_index_entry(data, str(path.relative_to(self.root))))
+
+        leagues.sort(key=lambda item: (item["league_id"], -(item["season"] or 0)))
         index = {"generated_at": datetime.now(timezone.utc).isoformat(), "leagues": leagues}
         (self.root / INDEX_NAME).write_text(_dump(index), encoding="utf-8")
 
@@ -117,15 +205,36 @@ class GcsStore:
 
     def write(self, snapshot: dict[str, Any]) -> str:
         payload = _stamp(snapshot)
-        rel = f"{payload['league_id']}/{payload['season']}.json"
-        blob = self._get_bucket().blob(self._key(rel))
-        blob.cache_control = "no-cache"
-        blob.upload_from_string(_dump(payload), content_type="application/json")
+        league_id = payload["league_id"]
+        season = int(payload["season"])
+        parts = split_snapshot(payload)
+        bucket = self._get_bucket()
+        directory = season_dir_rel(league_id, season)
+
+        for name in CONCERN_FILES:
+            blob = bucket.blob(self._key(directory, name))
+            blob.cache_control = "no-cache"
+            blob.upload_from_string(_dump(parts[name]), content_type="application/json")
+
+        manifest_key = self._key(directory, MANIFEST_NAME)
+        manifest_blob = bucket.blob(manifest_key)
+        manifest_blob.cache_control = "no-cache"
+        manifest_blob.upload_from_string(
+            _dump(parts[MANIFEST_NAME]), content_type="application/json"
+        )
+
+        legacy = bucket.blob(self._key(monolith_rel(league_id, season)))
+        if legacy.exists():
+            legacy.delete()
+
         self._rewrite_index()
-        return f"gs://{self.bucket_name}/{self._key(rel)}"
+        return f"gs://{self.bucket_name}/{manifest_key}"
 
     def read(self, league_id: str, season: int) -> dict[str, Any] | None:
-        blob = self._get_bucket().blob(self._key(f"{league_id}/{season}.json"))
+        assembled = self._read_v2(league_id, season)
+        if assembled is not None:
+            return assembled
+        blob = self._get_bucket().blob(self._key(monolith_rel(league_id, season)))
         if not blob.exists():
             return None
         return json.loads(blob.download_as_text())
@@ -136,16 +245,45 @@ class GcsStore:
             return []
         return json.loads(blob.download_as_text()).get("leagues", [])
 
+    def _read_v2(self, league_id: str, season: int) -> dict[str, Any] | None:
+        directory = season_dir_rel(league_id, season)
+        manifest_blob = self._get_bucket().blob(self._key(directory, MANIFEST_NAME))
+        if not manifest_blob.exists():
+            return None
+        manifest = json.loads(manifest_blob.download_as_text())
+        files = manifest.get("files") or {}
+        parts: dict[str, dict[str, Any]] = {"manifest": manifest}
+        for concern, filename in files.items():
+            blob = self._get_bucket().blob(self._key(directory, filename))
+            if not blob.exists():
+                return None
+            parts[concern] = json.loads(blob.download_as_text())
+        return assemble_snapshot(parts)
+
     def _rewrite_index(self) -> None:
         bucket = self._get_bucket()
         base = f"{self.prefix}/" if self.prefix else ""
         leagues: list[dict[str, Any]] = []
+        seen: set[tuple[Any, Any]] = set()
+
         for blob in bucket.list_blobs(prefix=base or None):
             rel = blob.name[len(base) :] if base else blob.name
-            if not rel.endswith(".json") or rel == INDEX_NAME or "/" not in rel:
+            if _is_manifest_rel(rel):
+                data = json.loads(blob.download_as_text())
+                key = (data.get("league_id"), data.get("season"))
+                leagues.append(_index_entry(data, rel))
+                seen.add(key)
+
+        for blob in bucket.list_blobs(prefix=base or None):
+            rel = blob.name[len(base) :] if base else blob.name
+            if not _is_v1_monolith_rel(rel):
                 continue
             data = json.loads(blob.download_as_text())
+            key = (data.get("league_id"), data.get("season"))
+            if key in seen:
+                continue
             leagues.append(_index_entry(data, rel))
+
         leagues.sort(key=lambda item: (item["league_id"], -(item["season"] or 0)))
         index = {"generated_at": datetime.now(timezone.utc).isoformat(), "leagues": leagues}
         index_blob = bucket.blob(self._key(INDEX_NAME))

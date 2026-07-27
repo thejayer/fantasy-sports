@@ -528,4 +528,7 @@ def _has_real_snapshots(root: Path) -> bool:
     """True when ``root`` holds snapshots that `sj seed` did not write."""
     if not root.exists() or (root / MARKER_NAME).exists():
         return False
-    return any(path.name != INDEX_NAME for path in root.glob("*/*.json"))
+    # v1 monoliths or v2 manifests both count as existing snapshot data.
+    if any(path.name != INDEX_NAME for path in root.glob("*/*.json")):
+        return True
+    return any(root.glob("*/*/manifest.json"))
