@@ -1,6 +1,12 @@
 from types import SimpleNamespace
 
-from sj.serialize import extract_baseball_season_stats, serialize_league, serialize_player
+from sj.serialize import (
+    extract_baseball_season_stats,
+    serialize_draft,
+    serialize_league,
+    serialize_player,
+    serialize_team,
+)
 
 
 def test_serialize_team_and_league():
@@ -21,6 +27,7 @@ def test_serialize_team_and_league():
         avg_points=10.0,
         stats={},
     )
+    opponent = SimpleNamespace(team_id=2)
     team = SimpleNamespace(
         team_id=7,
         team_name="Unit Testers",
@@ -35,12 +42,27 @@ def test_serialize_team_and_league():
         standing=1,
         final_standing=0,
         division_name="East",
+        # Football espn-api shape: parallel arrays; schedule may hold Team objects.
+        schedule=[opponent, 7],
+        scores=[112.4, 0.0],
+        outcomes=["W", "U"],
         roster=[player],
+    )
+    draft_pick = SimpleNamespace(
+        team=team,
+        playerId=1,
+        playerName="Test Player",
+        round_num=1,
+        round_pick=1,
+        bid_amount=0,
+        keeper_status=False,
+        nominatingTeam=None,
     )
     league = SimpleNamespace(
         settings=SimpleNamespace(name="ESPN Name", scoring_type="H2H_POINTS"),
         teams=[team],
         current_week=4,
+        draft=[draft_pick],
     )
 
     snapshot = serialize_league(
@@ -57,6 +79,96 @@ def test_serialize_team_and_league():
     assert snapshot["teams"][0]["roster"][0]["name"] == "Test Player"
     assert snapshot["players"][0]["fantasy_team"] == "Unit Testers"
     assert snapshot["period_label"] == "week"
+    assert snapshot["teams"][0]["schedule"] == [2, 7]
+    assert snapshot["teams"][0]["scores"] == [112.4, 0.0]
+    assert snapshot["teams"][0]["outcomes"] == ["W", "U"]
+    assert snapshot["draft"] == [
+        {
+            "round": 1,
+            "round_pick": 1,
+            "team_id": 7,
+            "player_id": 1,
+            "player_name": "Test Player",
+            "bid_amount": 0.0,
+            "keeper": False,
+            "nominating_team_id": None,
+        }
+    ]
+
+
+def test_serialize_draft_handles_missing_and_auction_fields():
+    league = SimpleNamespace(
+        draft=[
+            SimpleNamespace(
+                team=3,
+                playerId=99,
+                playerName="Auction Star",
+                round_num=1,
+                round_pick=1,
+                bid_amount=45,
+                keeper_status=True,
+                nominatingTeam=SimpleNamespace(team_id=8),
+            )
+        ]
+    )
+    assert serialize_draft(league) == [
+        {
+            "round": 1,
+            "round_pick": 1,
+            "team_id": 3,
+            "player_id": 99,
+            "player_name": "Auction Star",
+            "bid_amount": 45.0,
+            "keeper": True,
+            "nominating_team_id": 8,
+        }
+    ]
+    assert serialize_draft(SimpleNamespace()) == []
+
+
+def test_baseball_matchups_normalize_to_parallel_arrays():
+    """Baseball espn-api teams carry Matchup objects — normalize to football shape."""
+    team = SimpleNamespace(
+        team_id=1,
+        team_name="Diamond",
+        team_abbrev="DIA",
+        owners=["Morgan"],
+        logo_url="",
+        wins=1,
+        losses=0,
+        ties=0,
+        points_for=None,
+        points_against=None,
+        standing=1,
+        final_standing=0,
+        division_name="",
+        schedule=[
+            SimpleNamespace(
+                home_team=1,
+                away_team=4,
+                home_final_score=5.0,
+                away_final_score=3.0,
+                home_team_live_score=7.5,
+                away_team_live_score=2.5,
+                winner="HOME",
+            ),
+            SimpleNamespace(
+                home_team=2,
+                away_team=1,
+                home_final_score=1.0,
+                away_final_score=4.0,
+                home_team_live_score=None,
+                away_team_live_score=None,
+                winner="AWAY",
+            ),
+        ],
+        roster=[],
+    )
+    payload = serialize_team(team, sport="baseball")
+    # Category live scores preferred when present; otherwise final points.
+    assert payload["schedule"] == [4, 2]
+    assert payload["scores"] == [7.5, 4.0]
+    assert payload["outcomes"] == ["W", "W"]
 
 
 def test_baseball_player_season_stats_and_role():

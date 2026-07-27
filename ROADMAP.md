@@ -183,12 +183,16 @@ not a public contract and may move.
 Everything in phase 3 and 4 is gated on data the sync doesn't currently keep.
 This is the highest-leverage phase in the plan, and it starts with free wins.
 
-### 2.1 Persist what is already being fetched
-`src/sj/sync.py` already makes an HTTP call for `league.draft` and discards the
-result, and `team.schedule` / `team.scores` / `team.outcomes` are already
-populated in memory by the initial `mMatchup` fetch. Serializing them costs **no
-additional ESPN requests**. That single change unlocks draft-results pages,
-matchup history, and weekly scores.
+### 2.1 Persist what is already being fetched — LANDED
+`serialize_league` now writes top-level `draft` (from `league.draft` /
+`mDraftDetail`) and each team carries parallel `schedule` / `scores` /
+`outcomes` arrays. Football exposes those lists directly from espn-api;
+baseball `Matchup` objects are normalized into the same shape (category live
+scores preferred when present). Still **no additional ESPN requests**.
+
+`sj seed` fabricates draft boards and weekly matchup arrays so local snapshots
+stay schema-complete. Unlocks draft-results pages, matchup history, and weekly
+scores in phase 3 without waiting on 2.4.
 
 ### 2.2 Split the snapshot schema
 One monolithic blob per league-season stops working the moment weekly data lands
@@ -337,10 +341,11 @@ Fold in continuously rather than saving for the end.
 
 ## Sequencing
 
-**Next up: 1.5 or 1.3.** Environments (Python 3.12 in CI, lockfile, Dependabot)
-is the cheapest remaining platform item. 1.3 (continuous deployment + Workload
-Identity Federation) is the biggest win on track A now that health and sync
-alerting exist.
+**Next up: 1.5 or 1.3** on the platform track; **2.2** on the data track now
+that 2.1 is in. Environments (Python 3.12 in CI, lockfile, Dependabot) is the
+cheapest remaining platform item. 1.3 (continuous deployment + Workload
+Identity Federation) is the biggest win on track A. Schema split (2.2) is the
+hard prerequisite before phase 3 UI work.
 
 **Branch protection on `main` is done** — required checks are `python`, `web`,
 and `images`.
@@ -355,7 +360,7 @@ shape. Phase 3.1 (unify views) before any other UI work so nothing ships twice.
 | Track | Contents | Touches |
 |---|---|---|
 | A — Platform | 1.3, 1.5, ~~1.6~~, 1.7 | workflows, Dockerfiles, scripts |
-| B — Data | ~~1.4~~, 2.1, 2.3, 2.4, 2.5 | `src/sj`, `configs` |
+| B — Data | ~~1.4~~, ~~2.1~~, 2.3, 2.4, 2.5 | `src/sj`, `configs` |
 | C — Product | 3.1 → 3.6 | `apps/web` |
 | D — Engine | 4.1, 4.3 | `src/ffa` |
 
@@ -364,9 +369,9 @@ A, B, and D barely overlap with C, so platform hardening, sync extension, and th
 (player ID mapping) is the long pole for phase 4 and should start early, because
 it is the item most likely to reveal unpleasant surprises.
 
-**Fastest visible wins** remaining: 3.2 (a decade of history appears), 2.1
-(draft and matchup data for zero extra API calls), 3.3 (tables become usable).
-0.2 is done — production was wrong and no longer is.
+**Fastest visible wins** remaining: 3.2 (a decade of history appears), 3.3
+(tables become usable). 2.1 is done — draft and matchup data persist for zero
+extra API calls. 0.2 is done — production was wrong and no longer is.
 
 ---
 
