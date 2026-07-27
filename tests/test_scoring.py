@@ -3,7 +3,6 @@ import pytest
 
 from ffa.scoring import score_player_weeks, score_stat_line
 
-
 # ---------- QB stat lines ----------
 
 

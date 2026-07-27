@@ -87,10 +87,9 @@ def _user_pick(
     best = -1
     for i in available_idx:
         pos = str(positions[i]).upper()
-        if any(_eligible_for_slot(s, pos) for s in open_slots):
-            if values[i] > best_value:
-                best_value = values[i]
-                best = int(i)
+        if any(_eligible_for_slot(s, pos) for s in open_slots) and values[i] > best_value:
+            best_value = values[i]
+            best = int(i)
     return best
 
 

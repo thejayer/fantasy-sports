@@ -223,7 +223,7 @@ def summarize_evaluation(evald: pd.DataFrame, by_position: bool = True) -> pd.Da
         err = g["points_mean"] - g["points_realized"]
         row: dict[str, float | int | str] = {
             "position": label,
-            "n_players": int(len(g)),
+            "n_players": len(g),
             "mae": float(err.abs().mean()),
             "rmse": float(np.sqrt((err**2).mean())),
             "bias": float(err.mean()),
@@ -259,7 +259,7 @@ def run_backtest(
     level_sd: float = 0.0,
     level_mean: float = 1.0,
     collapse_rate: float = 0.0,
-    level_model: "LevelModel | None" = None,
+    level_model: LevelModel | None = None,
     years_exp: pd.DataFrame | None = None,
     include_rookies: bool = False,
     draft_picks: pd.DataFrame | None = None,

@@ -1,0 +1,153 @@
+name: deploy hub
+
+# Deploy the Strictly Jayers Next.js hub to Cloud Run.
+#
+# One-time setup (see HUB.md):
+#   - Secret Manager secrets populated (scripts/create-hub-secrets.sh + add versions)
+#   - Runtime SA can read them (scripts/grant-hub-secret-access.sh)
+#   - GitHub secret GCP_SA_KEY (scripts/setup-github-deployer.sh)
+#
+# After the first deploy, add the printed URL to the Google OAuth client's
+# authorized origins + redirect URIs (/api/auth/callback/google).
+
+on:
+  workflow_dispatch:
+    inputs:
+      project_id:
+        description: "GCP project ID"
+        required: true
+        default: "fantasy-sports-analytics"
+      region:
+        description: "Cloud Run region"
+        required: true
+        default: "us-central1"
+      service:
+        description: "Cloud Run service name"
+        required: true
+        default: "sj-hub"
+      sync_on_start:
+        description: "Sync ESPN on container start (1/0)"
+        required: true
+        default: "1"
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    env:
+      PROJECT_ID: ${{ inputs.project_id }}
+      REGION: ${{ inputs.region }}
+      SERVICE: ${{ inputs.service }}
+      SJ_SYNC_ON_START: ${{ inputs.sync_on_start }}
+    steps:
+      - name: Validate inputs
+        run: |
+          for pair in "project_id=$PROJECT_ID" "region=$REGION" "service=$SERVICE"; do
+            name=${pair%%=*}
+            value=${pair#*=}
+            case "$value" in
+              ""|*[!A-Za-z0-9_-]*)
+                echo "Invalid $name: only letters, digits, '-' and '_' are allowed." >&2
+                exit 1 ;;
+            esac
+          done
+          case "$SJ_SYNC_ON_START" in
+            0|1) ;;
+            *)
+              echo "sync_on_start must be 0 or 1" >&2
+              exit 1 ;;
+          esac
+
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Require GCP_SA_KEY secret
+        env:
+          GCP_SA_KEY: ${{ secrets.GCP_SA_KEY }}
+        run: |
+          if [ -z "$GCP_SA_KEY" ]; then
+            echo "::error::GitHub secret GCP_SA_KEY is missing or empty."
+            echo "Cloud Shell fix:"
+            echo "  ./scripts/setup-github-deployer.sh"
+            echo "Then paste key.json into repo Settings → Secrets → Actions → GCP_SA_KEY"
+            echo "See HUB.md (Production → GitHub Actions deploy key)."
+            exit 1
+          fi
+
+      - id: auth
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.GCP_SA_KEY }}
+
+      - uses: google-github-actions/setup-gcloud@v2
+
+      - name: Enable required APIs
+        run: |
+          gcloud services enable \
+            run.googleapis.com \
+            artifactregistry.googleapis.com \
+            secretmanager.googleapis.com \
+            --project "$PROJECT_ID"
+
+      - name: Ensure Artifact Registry repo
+        run: |
+          gcloud artifacts repositories describe sj \
+            --location "$REGION" --project "$PROJECT_ID" 2>/dev/null \
+          || gcloud artifacts repositories create sj \
+            --repository-format=docker --location "$REGION" \
+            --project "$PROJECT_ID" --description "Strictly Jayers hub images"
+
+      - name: Build and push image
+        run: |
+          IMAGE="$REGION-docker.pkg.dev/$PROJECT_ID/sj/hub:${{ github.sha }}"
+          echo "IMAGE=$IMAGE" >> "$GITHUB_ENV"
+          gcloud auth configure-docker "$REGION-docker.pkg.dev" --quiet
+          docker build -f apps/web/Dockerfile -t "$IMAGE" .
+          docker push "$IMAGE"
+
+      - name: Deploy to Cloud Run
+        run: |
+          gcloud run deploy "$SERVICE" \
+            --project "$PROJECT_ID" \
+            --region "$REGION" \
+            --image "$IMAGE" \
+            --platform managed \
+            --allow-unauthenticated \
+            --memory 1Gi --cpu 1 --port 8080 \
+            --timeout 300 \
+            --set-env-vars "SJ_SYNC_ON_START=$SJ_SYNC_ON_START,AUTH_TRUST_HOST=true,SJ_DATA_DIR=/app/data/sj" \
+            --set-secrets "AUTH_SECRET=sj-auth-secret:latest,AUTH_GOOGLE_ID=sj-auth-google-id:latest,AUTH_GOOGLE_SECRET=sj-auth-google-secret:latest,ALLOWED_EMAILS=sj-allowed-emails:latest,ESPN_S2=sj-espn-s2:latest,ESPN_SWID=sj-espn-swid:latest"
+
+      - name: Set AUTH_URL to the public service URL
+        run: |
+          # HOSTNAME=0.0.0.0 is required for the Node bind address inside the
+          # container. Without AUTH_URL, Auth.js builds redirects to 0.0.0.0:8080.
+          URL="$(gcloud run services describe "$SERVICE" \
+            --project "$PROJECT_ID" --region "$REGION" \
+            --format 'value(status.url)')"
+          gcloud run services update "$SERVICE" \
+            --project "$PROJECT_ID" \
+            --region "$REGION" \
+            --update-env-vars "AUTH_URL=$URL,AUTH_TRUST_HOST=true"
+          echo "AUTH_URL=$URL" >> "$GITHUB_ENV"
+          echo "SERVICE_URL=$URL" >> "$GITHUB_ENV"
+
+      - name: Print the live URL
+        run: |
+          echo "Deployed to: $SERVICE_URL"
+          echo
+          echo "Add these to the Google OAuth client (APIs & Services → Credentials):"
+          echo "  Authorized JavaScript origin:  $SERVICE_URL"
+          echo "  Authorized redirect URI:       $SERVICE_URL/api/auth/callback/google"
+          # Cloud Run also exposes a *.us-central1.run.app form; add both if Google
+          # shows redirect_uri_mismatch.
+          ALT="$(gcloud run services describe "$SERVICE" \
+            --project "$PROJECT_ID" --region "$REGION" \
+            --format 'value(status.address.url)' 2>/dev/null || true)"
+          if [ -n "$ALT" ] && [ "$ALT" != "$SERVICE_URL" ]; then
+            echo "  Also add origin/redirect for:   $ALT"
+          fi

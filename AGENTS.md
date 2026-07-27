@@ -11,8 +11,8 @@ This is a dual-product monorepo. See `README.md` (ffa engine) and `HUB.md` (memb
 - Dependencies install into a virtualenv at `/workspace/.venv`. The update script creates it and installs `-e ".[dev,dashboard]"`. `/workspace/.venv/bin` is prepended to `PATH` via `~/.bashrc`, so `ffa`, `sj`, `pytest`, and `ruff` work directly in a login shell; otherwise call them as `.venv/bin/<cmd>`.
 - The base image ships Python 3.12 without `ensurepip`; `python3.12-venv` was apt-installed during environment setup (captured in the snapshot). If `python3 -m venv` ever fails with an ensurepip error, reinstall it: `sudo apt-get install -y python3.12-venv`.
 
-### Lint (ruff version pin — important)
-- `ruff` is pinned to the `0.5.x` line in `pyproject.toml` (`ruff>=0.5,<0.6`). The code lints clean under `0.5.x`, but `ruff` 0.6+/0.16 expands the default ruleset and flags ~77 stylistic issues (B/I/UP/SIM/RUF) that are version drift, not real regressions (this once broke CI). Run `ruff check .` (CI parity). Do not "fix" those by editing code or by loosening the pin.
+### Lint (ruff)
+- CI installs the latest `ruff` (`ruff>=0.5`) and runs `ruff check .`; the code is kept clean under current `ruff` (0.16+). The only lint exemption is `[tool.ruff.lint] ignore = ["B008"]` in `pyproject.toml`, for Typer's documented `x: T = typer.Option(...)` default-argument pattern used by the `ffa`/`sj` CLIs — keep it. Run `ruff check .` for CI parity; if a new `ruff` release flags additional rules, fix the code (or add a narrow, justified `ignore`) rather than pinning `ruff` down.
 
 ### Tests
 - `pytest` is fully offline (synthetic fixtures) — no `ffa ingest` needed. Run from repo root.

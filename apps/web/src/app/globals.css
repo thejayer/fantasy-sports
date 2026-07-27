@@ -330,3 +330,82 @@ tr:last-child td {
     flex-direction: column;
   }
 }
+
+/* Baseball league views */
+.baseball-league {
+  --clay: #c45c26;
+}
+
+.league-kicker {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  align-items: center;
+  margin-bottom: 0.55rem;
+}
+
+.sport-pill {
+  background: linear-gradient(120deg, #f0d7a8, #e8b86d);
+  color: var(--ink);
+}
+
+.season-switch {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+  margin: 0 0 1.1rem;
+}
+
+.season-chip {
+  padding: 0.4rem 0.75rem;
+  border-radius: 999px;
+  box-shadow: inset 0 0 0 1px var(--line);
+  font-size: 0.85rem;
+  opacity: 0.75;
+  transition: background 160ms ease, opacity 160ms ease, transform 160ms ease;
+}
+
+.season-chip:hover {
+  opacity: 1;
+  transform: translateY(-1px);
+}
+
+.season-chip.active {
+  background: var(--ink);
+  color: var(--chalk);
+  opacity: 1;
+  box-shadow: none;
+}
+
+.table-scroll {
+  overflow-x: auto;
+}
+
+.status-dot {
+  display: inline-block;
+  width: 0.55rem;
+  height: 0.55rem;
+  border-radius: 50%;
+  background: #3d8f5a;
+}
+
+.status-dot.warn {
+  background: #d4a017;
+}
+
+.status-dot.bad {
+  background: var(--ember);
+}
+
+.roster-group-title {
+  margin: 0 0 0.65rem;
+  font-family: var(--font-display);
+  font-size: 1.15rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.baseball-league .panel td:nth-child(n + 5),
+.baseball-league .panel th:nth-child(n + 5) {
+  font-variant-numeric: tabular-nums;
+}
