@@ -5,7 +5,7 @@ name: deploy hub
 # One-time setup (see HUB.md):
 #   - Secret Manager secrets populated (scripts/create-hub-secrets.sh + add versions)
 #   - Runtime SA can read them (scripts/grant-hub-secret-access.sh)
-#   - repo secret: GCP_SA_KEY
+#   - GitHub secret GCP_SA_KEY (scripts/setup-github-deployer.sh)
 #
 # After the first deploy, add the printed URL to the Google OAuth client's
 # authorized origins + redirect URIs (/api/auth/callback/google).
