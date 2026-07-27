@@ -7,6 +7,12 @@ reading code alone. The plan that follows from it is in [ROADMAP.md](ROADMAP.md)
 
 Audited at commit `fde0613` (merge of #22).
 
+> **Status: findings 1–5 (all P0) are fixed** as of #26 — see the summary table
+> at the end for the current state of each finding. They are kept here in full,
+> with their reproductions, because the evidence is what justifies the roadmap
+> and what a regression would have to contradict. Everything from finding 6 down
+> is still open.
+
 ---
 
 ## How this audit was run
@@ -30,16 +36,19 @@ sj seed          # 24 league-seasons of synthetic data into data/sj
 Total: **6.3 MB across 24 league-seasons**, generated in 0.6 s. Storage is a
 non-issue; everything below is about correctness, security, and product surface.
 
-Baseline health is genuinely good and worth stating up front: `ruff check .`
-passes clean, **197 Python tests pass**, `tsc --noEmit` passes, and
-`next lint` reports zero warnings. Nothing here is a fire caused by sloppiness.
-The problems are gaps in coverage and scope, not rot.
+Baseline health at audit time was genuinely good and worth stating up front:
+`ruff check .` passed clean, **197 Python tests passed**, `tsc --noEmit` passed,
+and `next lint` reported zero warnings. Nothing here is a fire caused by
+sloppiness. The problems are gaps in coverage and scope, not rot.
+
+(On `main` after phase 0 those figures are 221 Python tests and 26 web tests,
+with `npm audit` at 0 vulnerabilities.)
 
 ---
 
 ## P0 — Security
 
-### 1. Open redirect on `/login` (confirmed exploitable)
+### 1. Open redirect on `/login` (confirmed exploitable) — FIXED in #26
 
 `apps/web/src/app/login/page.tsx` takes `callbackUrl` straight from the query
 string and passes it to `redirect()` with no validation that it is a relative
@@ -66,7 +75,7 @@ attacker's site from a domain they trust. That is a credible credential-phishing
 setup, and the fix is a few lines — reject any `callbackUrl` that is not a
 same-origin relative path.
 
-### 2. Auth is enforced in exactly one place
+### 2. Auth is enforced in exactly one place — FIXED in #26
 
 `apps/web/src/middleware.ts` is the only thing standing between an anonymous
 request and league data. No page, layout, or data-layer function re-checks the
@@ -74,7 +83,7 @@ session. Gating itself works — verified anonymous requests return
 `307 -> /login?callbackUrl=…` for both `/leagues` and `/leagues/football-main` —
 but it is a single point of failure, which matters because of the next finding.
 
-### 3. Dependencies are behind on security patches
+### 3. Dependencies are behind on security patches — FIXED in #26 (0 advisories)
 
 `npm audit` over 371 dependencies reports **14 vulnerabilities: 12 high, 2
 critical**, and `npm ci` itself prints a deprecation warning that the pinned
@@ -98,7 +107,7 @@ data**. So this is latent risk from running behind on patches, not a
 demonstrated live hole. It should be treated as urgent anyway, because the
 app has no second layer to fall back on.
 
-### 4. Deployment credentials and container hardening
+### 4. Deployment credentials and container hardening — MOSTLY FIXED in #26
 
 - All three deploy workflows authenticate with a long-lived service-account JSON
   key (`secrets.GCP_SA_KEY`) rather than Workload Identity Federation.
@@ -117,11 +126,16 @@ app has no second layer to fall back on.
 - `deploy.yml` passes `DASHBOARD_PASSWORD` via `--set-env-vars`, so it is
   readable by anyone with `run.services.get`, instead of via Secret Manager.
 
+Resolved in #26 except the first bullet: containers run as uid 1001, the
+deployer and bucket roles are narrowed, and the dashboard password moved to
+Secret Manager. **The long-lived `GCP_SA_KEY` is still in use** — Workload
+Identity Federation rewrites all three deploy workflows, so it is roadmap 1.3.
+
 ---
 
 ## P0 — Correctness
 
-### 5. The home and leagues pages are frozen at build-time data
+### 5. The home and leagues pages are frozen at build-time data — FIXED in #26
 
 `next build` reports `/` and `/leagues` as `○ (Static) prerendered as static
 content`. Both call `getLatestLeagues()`, which reads the filesystem at build
@@ -247,6 +261,12 @@ automated gate.** `npm run lint` also still uses `next lint`, which prints
 Both checks pass today when run by hand, which is exactly why this is worth
 wiring up now, while it is free.
 
+**Still open, and now worse in one sense.** Phase 0 added `typecheck`, `test`
+(26 cases), and `verify:prerender` scripts, all passing — and CI enforces none of
+them. The green check on #26 covered essentially nothing in that PR, which was
+almost entirely TypeScript, dependencies, Dockerfiles, and a workflow. Roadmap
+1.1, and the next thing to do.
+
 ### 12. The pipeline feeding the entire site is untested
 
 Coverage measured with `pytest --cov`:
@@ -343,29 +363,34 @@ time. `@types/node` is `^20` against a Node 22 runtime. No Dependabot or Renovat
 
 ## Summary
 
-| # | Finding | Severity |
-|---|---|---|
-| 1 | Open redirect on `/login` (confirmed) | P0 |
-| 2 | Auth enforced only in middleware | P0 |
-| 3 | 14 dependency advisories; `next-auth` on prerelease | P0 |
-| 4 | Long-lived SA key, over-broad IAM, root containers | P0 |
-| 5 | `/` and `/leagues` frozen at build-time fixtures | P0 |
-| 6 | Football history unreachable (12 seasons, no switcher) | P1 |
-| 7 | Player tables: no search/sort/filter/pagination | P1 |
-| 8 | Football and baseball views diverged | P1 |
-| 9 | No matchups, draft, transactions, or history | P1 |
-| 10 | No loading/error/empty states | P1 |
-| 11 | Zero CI for `apps/web` | P1 |
-| 12 | `sync.py` at 0% coverage | P1 |
-| 13 | All deploys manual | P1 |
-| 14 | No observability or alerting | P1 |
-| 15 | `ffa` engine disconnected from the hub | P2 |
-| 16 | Storage layout won't extend to weekly data | P2 |
-| 17 | Hub image carries the analytics stack | P2 |
-| 18 | CI/production version skew, no lockfile | P2 |
+| # | Finding | Severity | Status |
+|---|---|---|---|
+| 1 | Open redirect on `/login` (confirmed) | P0 | Fixed (#26, roadmap 0.1) |
+| 2 | Auth enforced only in middleware | P0 | Fixed (#26, roadmap 0.4) |
+| 3 | 14 dependency advisories; `next-auth` on prerelease | P0 | Advisories cleared (#26, roadmap 0.3); prerelease remains, roadmap 1.7 |
+| 4 | Long-lived SA key, over-broad IAM, root containers | P0 | Containers + IAM fixed (#26, roadmap 0.5); SA key → WIF, roadmap 1.3 |
+| 5 | `/` and `/leagues` frozen at build-time fixtures | P0 | Fixed (#26, roadmap 0.2) |
+| 6 | Football history unreachable (12 seasons, no switcher) | P1 | Open — roadmap 3.2 |
+| 7 | Player tables: no search/sort/filter/pagination | P1 | Open — roadmap 3.3 |
+| 8 | Football and baseball views diverged | P1 | Open — roadmap 3.1 |
+| 9 | No matchups, draft, transactions, or history | P1 | Open — roadmap 2.1, 2.4, 3.4, 3.5 |
+| 10 | No loading/error/empty states | P1 | Open — roadmap 3.6 |
+| 11 | Zero CI for `apps/web` | P1 | Open — roadmap 1.1. 26 tests now exist; CI still runs none of them |
+| 12 | `sync.py` at 0% coverage | P1 | Partly — 38% via `sj seed`; ESPN paths untested, roadmap 1.4 |
+| 13 | All deploys manual | P1 | Open — roadmap 1.3 |
+| 14 | No observability or alerting | P1 | Open — roadmap 1.6 |
+| 15 | `ffa` engine disconnected from the hub | P2 | Open — roadmap phase 4 |
+| 16 | Storage layout won't extend to weekly data | P2 | Open — roadmap 2.2, 2.3 |
+| 17 | Hub image carries the analytics stack | P2 | Open — roadmap phase 5 |
+| 18 | CI/production version skew, no lockfile | P2 | Open — roadmap 1.5 |
 
-The through-line: the engineering that exists is careful and well-tested, but it
-is pointed at the wrong surface. The hub is a thin shell over one ESPN endpoint,
-guarded by a single middleware check, with a decade of league history sitting on
-disk that no link reaches and a sophisticated projection engine that no page
-calls. Sequencing for fixing that is in [ROADMAP.md](ROADMAP.md).
+The through-line at audit time: the engineering that exists is careful and
+well-tested, but it is pointed at the wrong surface. The hub is a thin shell over
+one ESPN endpoint, guarded by a single middleware check, with a decade of league
+history sitting on disk that no link reaches and a sophisticated projection
+engine that no page calls.
+
+Phase 0 fixed the parts that were actively wrong or unsafe. It did not change
+that through-line — the hub is still a read-only ESPN mirror, and findings 6–18
+are what stand between it and a product. Sequencing is in
+[ROADMAP.md](ROADMAP.md).
