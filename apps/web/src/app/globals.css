@@ -80,6 +80,11 @@ button,
   opacity: 1;
 }
 
+.nav-user {
+  opacity: 0.72;
+  font-size: 0.9rem;
+}
+
 .hero {
   min-height: calc(100vh - 5rem);
   display: grid;

@@ -32,6 +32,9 @@ dashboard = [
     "altair>=5.0",
     "streamlit>=1.30",
 ]
+gcs = [
+    "google-cloud-storage>=2.16",
+]
 
 [project.scripts]
 ffa = "ffa.cli:app"

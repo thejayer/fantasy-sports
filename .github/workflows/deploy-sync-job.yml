@@ -1,0 +1,139 @@
+name: deploy sync job
+
+# Build and deploy the Strictly Jayers ESPN sync as a Cloud Run Job.
+#
+# One-time setup (see HUB.md):
+#   - scripts/setup-sync-infra.sh   (bucket, IAM, Cloud Scheduler)
+#   - GitHub secret GCP_SA_KEY      (scripts/setup-github-deployer.sh)
+#
+# Cloud Scheduler triggers this job on a cadence; run a backfill manually with
+#   gcloud run jobs execute sj-sync --args=backfill --region=us-central1
+
+on:
+  workflow_dispatch:
+    inputs:
+      project_id:
+        description: "GCP project ID"
+        required: true
+        default: "fantasy-sports-analytics"
+      region:
+        description: "Cloud Run region"
+        required: true
+        default: "us-central1"
+      job:
+        description: "Cloud Run Job name"
+        required: true
+        default: "sj-sync"
+      bucket:
+        description: "Cloud Storage bucket for snapshots"
+        required: true
+        default: "fantasy-sports-analytics-sj-data"
+      run_after_deploy:
+        description: "Execute the job once after deploying (true/false)"
+        required: true
+        default: "true"
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    env:
+      PROJECT_ID: ${{ inputs.project_id }}
+      REGION: ${{ inputs.region }}
+      JOB: ${{ inputs.job }}
+      BUCKET: ${{ inputs.bucket }}
+      RUN_AFTER: ${{ inputs.run_after_deploy }}
+    steps:
+      - name: Validate inputs
+        run: |
+          for pair in "project_id=$PROJECT_ID" "region=$REGION" "job=$JOB" "bucket=$BUCKET"; do
+            name=${pair%%=*}
+            value=${pair#*=}
+            case "$value" in
+              ""|*[!A-Za-z0-9_.-]*)
+                echo "Invalid $name: only letters, digits, '.', '-' and '_' are allowed." >&2
+                exit 1 ;;
+            esac
+          done
+
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Require GCP_SA_KEY secret
+        env:
+          GCP_SA_KEY: ${{ secrets.GCP_SA_KEY }}
+        run: |
+          if [ -z "$GCP_SA_KEY" ]; then
+            echo "::error::GitHub secret GCP_SA_KEY is missing or empty."
+            echo "Cloud Shell fix: ./scripts/setup-github-deployer.sh"
+            exit 1
+          fi
+
+      - id: auth
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.GCP_SA_KEY }}
+
+      - uses: google-github-actions/setup-gcloud@v2
+
+      - name: Enable required APIs
+        run: |
+          gcloud services enable \
+            run.googleapis.com \
+            artifactregistry.googleapis.com \
+            secretmanager.googleapis.com \
+            cloudscheduler.googleapis.com \
+            storage.googleapis.com \
+            --project "$PROJECT_ID"
+
+      - name: Ensure Artifact Registry repo
+        run: |
+          gcloud artifacts repositories describe sj \
+            --location "$REGION" --project "$PROJECT_ID" 2>/dev/null \
+          || gcloud artifacts repositories create sj \
+            --repository-format=docker --location "$REGION" \
+            --project "$PROJECT_ID" --description "Strictly Jayers images"
+
+      - name: Build and push sync image
+        run: |
+          IMAGE="$REGION-docker.pkg.dev/$PROJECT_ID/sj/sync:${{ github.sha }}"
+          echo "IMAGE=$IMAGE" >> "$GITHUB_ENV"
+          gcloud auth configure-docker "$REGION-docker.pkg.dev" --quiet
+          docker build -f Dockerfile.sync -t "$IMAGE" .
+          docker push "$IMAGE"
+
+      - name: Deploy Cloud Run Job
+        run: |
+          COMMON=(
+            --project "$PROJECT_ID"
+            --region "$REGION"
+            --image "$IMAGE"
+            --max-retries 2
+            --task-timeout 30m
+            --memory 1Gi --cpu 1
+            --set-env-vars "SJ_GCS_BUCKET=$BUCKET"
+            --set-secrets "ESPN_S2=sj-espn-s2:latest,ESPN_SWID=sj-espn-swid:latest"
+          )
+          if gcloud run jobs describe "$JOB" --project "$PROJECT_ID" --region "$REGION" >/dev/null 2>&1; then
+            gcloud run jobs update "$JOB" "${COMMON[@]}"
+          else
+            gcloud run jobs create "$JOB" "${COMMON[@]}"
+          fi
+
+      - name: Run once after deploy
+        if: ${{ inputs.run_after_deploy == 'true' }}
+        run: |
+          gcloud run jobs execute "$JOB" \
+            --project "$PROJECT_ID" --region "$REGION" --wait
+
+      - name: Summary
+        run: |
+          echo "Job:    $JOB"
+          echo "Bucket: gs://$BUCKET"
+          echo
+          echo "Backfill every season (one-time, slower):"
+          echo "  gcloud run jobs execute $JOB --args=backfill --region=$REGION --project=$PROJECT_ID"

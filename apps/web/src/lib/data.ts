@@ -1,5 +1,6 @@
 import { promises as fs } from "fs";
 import path from "path";
+import { cache } from "react";
 
 export type SeasonStats = {
   AB?: number;
@@ -99,16 +100,30 @@ function dataRoots(): string[] {
   return [...new Set(roots)];
 }
 
+/**
+ * Snapshots live on a read-only Cloud Storage mount refreshed by the sj-sync
+ * job, so reads are cached briefly instead of hitting the mount per request.
+ */
+const CACHE_TTL_MS = Number(process.env.SJ_CACHE_TTL_MS ?? 60_000);
+const fileCache = new Map<string, { at: number; value: unknown }>();
+
 async function readJson<T>(filePath: string): Promise<T | null> {
+  const hit = fileCache.get(filePath);
+  if (hit && Date.now() - hit.at < CACHE_TTL_MS) {
+    return hit.value as T | null;
+  }
+  let value: T | null = null;
   try {
     const raw = await fs.readFile(filePath, "utf8");
-    return JSON.parse(raw) as T;
+    value = JSON.parse(raw) as T;
   } catch {
-    return null;
+    value = null;
   }
+  fileCache.set(filePath, { at: Date.now(), value });
+  return value;
 }
 
-export async function getLeagueIndex(): Promise<LeagueIndexItem[]> {
+export const getLeagueIndex = cache(async (): Promise<LeagueIndexItem[]> => {
   for (const root of dataRoots()) {
     const index = await readJson<{ leagues: LeagueIndexItem[] }>(path.join(root, "index.json"));
     if (index?.leagues?.length) {
@@ -116,7 +131,7 @@ export async function getLeagueIndex(): Promise<LeagueIndexItem[]> {
     }
   }
   return [];
-}
+});
 
 export async function getLatestLeagues(): Promise<LeagueIndexItem[]> {
   const all = await getLeagueIndex();
@@ -136,29 +151,28 @@ export async function getLeagueSeasons(leagueId: string): Promise<number[]> {
     .sort((a, b) => b - a);
 }
 
-export async function getLeagueSnapshot(
-  leagueId: string,
-  season?: number,
-): Promise<LeagueSnapshot | null> {
-  const index = await getLeagueIndex();
-  const candidates = index
-    .filter((item) => item.league_id === leagueId)
-    .sort((a, b) => b.season - a.season);
-  const match = season
-    ? candidates.find((item) => item.season === season)
-    : candidates[0];
-  if (!match) {
-    return null;
-  }
-
-  for (const root of dataRoots()) {
-    const snapshot = await readJson<LeagueSnapshot>(path.join(root, match.path));
-    if (snapshot) {
-      return snapshot;
+export const getLeagueSnapshot = cache(
+  async (leagueId: string, season?: number): Promise<LeagueSnapshot | null> => {
+    const index = await getLeagueIndex();
+    const candidates = index
+      .filter((item) => item.league_id === leagueId)
+      .sort((a, b) => b.season - a.season);
+    const match = season
+      ? candidates.find((item) => item.season === season)
+      : candidates[0];
+    if (!match) {
+      return null;
     }
-  }
-  return null;
-}
+
+    for (const root of dataRoots()) {
+      const snapshot = await readJson<LeagueSnapshot>(path.join(root, match.path));
+      if (snapshot) {
+        return snapshot;
+      }
+    }
+    return null;
+  },
+);
 
 export async function getTeam(
   leagueId: string,

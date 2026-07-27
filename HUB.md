@@ -115,15 +115,60 @@ openssl rand -base64 32 | gcloud secrets versions add sj-auth-secret \
 # writes apps/web/.env.local and .env.espn
 ```
 
-## Sync ESPN from a laptop (optional)
+## Data pipeline
+
+Snapshots live in a Cloud Storage bucket, not on the web container's disk, so
+they survive Cloud Run restarts and stay identical across instances.
+
+```
+Cloud Scheduler ──▶ Cloud Run Job (sj-sync) ──▶ gs://<project>-sj-data
+                                                        │ (read-only mount)
+                                                        ▼
+                                              Cloud Run service (sj-hub)
+```
+
+- **Writes:** the `sj-sync` job runs `sj sync --current-only` on a schedule
+  (default every 30 minutes) with ESPN cookies from Secret Manager.
+- **Reads:** the hub mounts the bucket read-only at `/app/data/sj` and caches
+  reads for `SJ_CACHE_TTL_MS` (default 60s). If the bucket is empty it falls
+  back to the fixtures baked into the image.
+
+### One-time setup (Cloud Shell)
+
+```bash
+./scripts/setup-sync-infra.sh
+```
+
+Creates the bucket, grants IAM, and registers the Cloud Scheduler trigger.
+Override defaults with `SJ_BUCKET`, `SJ_SCHEDULE`, `GCP_REGION`.
+
+### Deploy
+
+1. GitHub → **Actions** → **deploy sync job** → Run workflow
+2. GitHub → **Actions** → **deploy hub** → Run workflow
+
+### Backfill history
+
+The registry declares every season (football back to 2015, dynasty to 2018).
+Scheduled runs only refresh the current season; load history once with:
+
+```bash
+gcloud run jobs execute sj-sync --args=backfill \
+  --region=us-central1 --project=fantasy-sports-analytics
+```
+
+Seasons ESPN refuses are skipped and reported rather than failing the run.
+
+### Sync from a laptop (optional)
 
 ```bash
 source .env.espn
-pip install -e ".[dev]"
-sj sync --current-only
-```
+pip install -e ".[dev,gcs]"
 
-In production, sync runs on Cloud Run container start (`SJ_SYNC_ON_START=1`).
+sj sync --current-only                 # writes to ./data/sj
+SJ_GCS_BUCKET=... sj sync              # writes to Cloud Storage
+sj status                              # what's in the store
+```
 
 ## Local web app (optional)
 
@@ -139,9 +184,10 @@ npm run dev
 ```
 configs/leagues.yaml     League registry
 src/sj/                  Sync + store CLI (`sj`)
-scripts/                 Secret Manager + IAM helpers
+scripts/                 Secret Manager, IAM, and infra helpers
 fixtures/sj/             Sample snapshots (fallback)
-data/sj/                 Live sync output (gitignored)
+data/sj/                 Local sync output (gitignored)
 apps/web/                Next.js hub (+ Dockerfile for Cloud Run)
-src/ffa/                 Existing NFL analytics engine (later phase)
+Dockerfile.sync          Sync job image (Cloud Run Job)
+src/ffa/                 NFL analytics engine (later phase)
 ```
