@@ -52,6 +52,9 @@ env:
   # WIF — pool `github`, provider `github`, SA `ffa-deployer`.
   GCP_WORKLOAD_IDENTITY_PROVIDER: projects/1047753647109/locations/global/workloadIdentityPools/github/providers/github
   GCP_SERVICE_ACCOUNT: ffa-deployer@fantasy-sports-analytics.iam.gserviceaccount.com
+  # Used only for first-create AUTH_URL fallback (avoids gcloud projects.describe /
+  # Cloud Resource Manager API on the deployer SA).
+  GCP_PROJECT_NUMBER: "1047753647109"
 
 jobs:
   deploy:
@@ -122,16 +125,16 @@ jobs:
       - name: Resolve AUTH_URL and deploy
         run: |
           # Prefer the existing public URL so redeploys are one gcloud call.
-          # First-time create: regional run.app form (project number), then
-          # reconcile if Cloud Run returns a different status.url.
-          PROJECT_NUMBER="$(gcloud projects describe "$PROJECT_ID" \
-            --format='value(projectNumber)')"
+          # First-time create: regional run.app form from GCP_PROJECT_NUMBER
+          # (do not call gcloud projects.describe — needs Resource Manager API).
+          # Reconcile if Cloud Run returns a different status.url.
           AUTH_URL="$(gcloud run services describe "$SERVICE" \
             --project "$PROJECT_ID" --region "$REGION" \
             --format='value(status.url)' 2>/dev/null || true)"
           if [ -z "$AUTH_URL" ]; then
-            AUTH_URL="https://${SERVICE}-${PROJECT_NUMBER}.${REGION}.run.app"
+            AUTH_URL="https://${SERVICE}-${GCP_PROJECT_NUMBER}.${REGION}.run.app"
           fi
+          echo "Using AUTH_URL=$AUTH_URL"
 
           ARGS=(
             --project "$PROJECT_ID"
