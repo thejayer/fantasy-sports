@@ -8,9 +8,11 @@ export default auth((req) => {
   const isAuthApi = pathname.startsWith("/api/auth");
   // Public probe for uptime / Cloud Monitoring — no session, no league bodies.
   const isHealth = pathname === "/api/health";
+  // Sync webhook — Bearer SJ_REVALIDATE_SECRET checked in the route handler.
+  const isRevalidate = pathname === "/api/revalidate";
   const bypass = process.env.AUTH_DEV_BYPASS === "1";
 
-  if (bypass || isLogin || isAuthApi || isHealth) {
+  if (bypass || isLogin || isAuthApi || isHealth || isRevalidate) {
     return NextResponse.next();
   }
 

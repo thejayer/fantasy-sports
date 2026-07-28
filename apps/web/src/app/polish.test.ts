@@ -39,4 +39,12 @@ describe("roadmap 3.6 polish surface", () => {
     expect(data).toMatch(/parseSnapshotJson/);
     expect(data).toMatch(/isNotFoundFsError/);
   });
+
+  it("uses Next Data Cache tags instead of a process-local Map", () => {
+    const data = readFileSync(path.join(APP_DIR, "../lib/data.ts"), "utf8");
+    expect(data).toMatch(/unstable_cache/);
+    expect(data).toMatch(/SJ_SNAPSHOTS_CACHE_TAG/);
+    expect(data).not.toMatch(/\bfileCache\b/);
+    expect(existsSync(path.join(APP_DIR, "api/revalidate/route.ts"))).toBe(true);
+  });
 });

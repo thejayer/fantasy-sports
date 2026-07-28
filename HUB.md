@@ -148,7 +148,10 @@ Cloud Scheduler ──▶ Cloud Run Job (sj-sync) ──▶ gs://<project>-sj-da
 - **Writes:** the `sj-sync` job runs `sj sync --current-only` on a schedule
   (default every 30 minutes) with ESPN cookies from Secret Manager.
 - **Reads:** the hub mounts the bucket read-only at `/app/data/sj` and caches
-  reads for `SJ_CACHE_TTL_MS` (default 60s). If the bucket is empty it falls
+  snapshot JSON via Next.js Data Cache (`unstable_cache`, tag `sj-snapshots`)
+  for `SJ_CACHE_TTL_MS` (default 60s). After sync, POST
+  `https://<hub>/api/revalidate` with `Authorization: Bearer $SJ_REVALIDATE_SECRET`
+  (optional `SJ_REVALIDATE_URL` + secret on the sync job). If the bucket is empty it falls
   back to the fixtures baked into the image.
 
 ### One-time setup (Cloud Shell)
