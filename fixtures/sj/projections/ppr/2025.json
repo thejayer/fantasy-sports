@@ -1,0 +1,55 @@
+{
+  "schema_version": 1,
+  "generated_at": "2025-09-01T12:00:00Z",
+  "scoring": "ppr",
+  "season": 2025,
+  "n_sims": 100,
+  "source": {
+    "engine": "ffa",
+    "league": "configs/ppr.yaml",
+    "generator": "bootstrap",
+    "conditioned_level": true,
+    "seed": 0
+  },
+  "players": [
+    {
+      "player_id": "00-0033873",
+      "player_name": "Patrick Mahomes",
+      "position": "QB",
+      "team": "KC",
+      "points_mean": 312.4,
+      "points_sd": 42.1,
+      "floor": 245.0,
+      "median": 310.2,
+      "ceiling": 385.5,
+      "vor": 48.2,
+      "tier": 1
+    },
+    {
+      "player_id": "00-0035685",
+      "player_name": "Christian McCaffrey",
+      "position": "RB",
+      "team": "SF",
+      "points_mean": 285.1,
+      "points_sd": 55.0,
+      "floor": 180.0,
+      "median": 288.0,
+      "ceiling": 360.0,
+      "vor": 95.3,
+      "tier": 1
+    },
+    {
+      "player_id": "00-0036322",
+      "player_name": "Justin Jefferson",
+      "position": "WR",
+      "team": "MIN",
+      "points_mean": 240.0,
+      "points_sd": 38.0,
+      "floor": 170.0,
+      "median": 238.0,
+      "ceiling": 310.0,
+      "vor": 62.0,
+      "tier": 1
+    }
+  ]
+}

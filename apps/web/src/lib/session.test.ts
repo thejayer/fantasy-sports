@@ -86,11 +86,14 @@ describe("data layer gating", () => {
     );
 
     const guarded = source.match(/await requireSession\(\)/g) ?? [];
-    expect(guarded.length).toBe(3);
+    expect(guarded.length).toBe(4);
     expect(source).toMatch(/getLeagueIndex = cache\(async \(\)[^{]*\{\s*await requireSession\(\)/);
     expect(source).toMatch(/await requireSession\(\);\s*const index = await getLeagueIndex\(\)/);
     expect(source).toMatch(
       /getLeagueHistoryArchive = cache\(\s*async \(leagueId: string\)[^{]*\{\s*await requireSession\(\)/,
+    );
+    expect(source).toMatch(
+      /getProjectionSnapshot = cache\(\s*async \(scoring: string, season: number\)[^{]*\{\s*await requireSession\(\)/,
     );
   });
 });
