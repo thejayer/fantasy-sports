@@ -76,16 +76,19 @@ def test_build_player_level_includes_collapse_and_experience():
 
 
 def test_simulate_cli_exposes_conditioned_level_flag():
-    result = CliRunner().invoke(app, ["simulate", "--help"])
+    # Wide COLUMNS so Rich/Typer doesn't wrap the flag name across lines in CI.
+    result = CliRunner().invoke(app, ["simulate", "--help"], env={"COLUMNS": "200"})
     assert result.exit_code == 0
-    assert "--conditioned-level" in result.stdout
+    assert "conditioned-level" in result.stdout
 
 
 def test_rank_draft_backtest_expose_conditioned_level_flag():
     for command in ("rank", "draft-sim", "optimize", "backtest"):
-        result = CliRunner().invoke(app, [command, "--help"])
+        result = CliRunner().invoke(
+            app, [command, "--help"], env={"COLUMNS": "200"}
+        )
         assert result.exit_code == 0, command
-        assert "--conditioned-level" in result.stdout, command
+        assert "conditioned-level" in result.stdout, command
 
 
 def test_load_simulation_summary_conditioned_builds_player_level(tmp_path, monkeypatch):
