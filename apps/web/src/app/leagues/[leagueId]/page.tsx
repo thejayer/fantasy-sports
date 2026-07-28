@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import type { HistoryView } from "@/components/HistoryPanel";
 import { LeagueView } from "@/components/LeagueView";
 import type { MatchupsView } from "@/components/MatchupsPanel";
+import type { ToolsView } from "@/components/ToolsPanel";
 import {
   getLeagueHistoryArchive,
   getLeagueSeasons,
@@ -82,6 +83,11 @@ export default async function LeagueDetailPage({ params, searchParams }: Props) 
       ? viewParam
       : "standings"
   ) as HistoryView;
+  const toolsView = (
+    ["trade", "waivers", "strength", "deferred"].includes(viewParam ?? "")
+      ? viewParam
+      : "trade"
+  ) as ToolsView;
 
   const league = await getLeagueSnapshot(
     leagueId,
@@ -96,7 +102,7 @@ export default async function LeagueDetailPage({ params, searchParams }: Props) 
 
   const wantsProjections =
     league.sport === "football" &&
-    (tab === "projections" || tab === "players");
+    (tab === "projections" || tab === "players" || tab === "tools");
   const scoringOverride =
     scoringParam === "standard" || scoringParam === "ppr"
       ? scoringParam
@@ -123,6 +129,7 @@ export default async function LeagueDetailPage({ params, searchParams }: Props) 
       projectionSnapshot={projectionBundle.snapshot}
       playerMap={projectionBundle.playerMap}
       projectionScoring={projectionBundle.scoring}
+      toolsView={toolsView}
     />
   );
 }

@@ -5,6 +5,7 @@ import { MatchupsPanel, type MatchupsView } from "@/components/MatchupsPanel";
 import { PlayersDataTable } from "@/components/PlayersDataTable";
 import { ProjectionsBoard } from "@/components/ProjectionsBoard";
 import { SeasonSwitcher } from "@/components/SeasonSwitcher";
+import { ToolsPanel, type ToolsView } from "@/components/ToolsPanel";
 import type {
   LeagueHistoryArchive,
   LeagueSnapshot,
@@ -163,6 +164,7 @@ const FOOTBALL_TABS = [
   "matchups",
   "history",
   "projections",
+  "tools",
 ] as const;
 
 const BASEBALL_TABS = [
@@ -187,6 +189,7 @@ export function LeagueView({
   projectionSnapshot = null,
   playerMap = null,
   projectionScoring = null,
+  toolsView = "trade",
 }: {
   league: LeagueSnapshot;
   seasons: number[];
@@ -201,6 +204,7 @@ export function LeagueView({
   projectionSnapshot?: ProjectionSnapshot | null;
   playerMap?: PlayerMapSnapshot | null;
   projectionScoring?: string | null;
+  toolsView?: ToolsView;
 }) {
   const leagueId = league.league_id;
   const isBaseball = league.sport === "baseball";
@@ -210,6 +214,8 @@ export function LeagueView({
   const activeRole = isBaseball ? role : undefined;
 
   const historyPair =
+    h2hA != null && h2hB != null ? `&a=${h2hA}&b=${h2hB}` : "";
+  const toolsPair =
     h2hA != null && h2hB != null ? `&a=${h2hA}&b=${h2hB}` : "";
 
   const scoringQuery =
@@ -226,7 +232,9 @@ export function LeagueView({
           ? `&view=${historyView}${historyPair}`
           : active === "projections"
             ? scoringQuery
-            : "";
+            : active === "tools"
+              ? `&view=${toolsView}${toolsPair}`
+              : "";
 
   const players = isBaseball
     ? league.players.filter((player) => {
@@ -261,8 +269,7 @@ export function LeagueView({
         {league.synced_at
           ? ` · synced ${new Date(league.synced_at).toLocaleString()}`
           : ""}
-        . Standings, matchups, history, rosters, and season projections from the
-        engine.
+        . Standings, matchups, history, rosters, projections, and decision tools.
       </p>
 
       <SeasonSwitcher
@@ -286,7 +293,8 @@ export function LeagueView({
               (name === "history" ? `&view=${historyView}${historyPair}` : "") +
               (name === "projections" && projectionScoring
                 ? `&scoring=${projectionScoring}`
-                : "")
+                : "") +
+              (name === "tools" ? `&view=${toolsView}${toolsPair}` : "")
             }
             className={`tab${active === name ? " active" : ""}`}
           >
@@ -356,6 +364,23 @@ export function LeagueView({
             </div>
             <ProjectionsBoard snapshot={projectionSnapshot} />
           </>
+        )
+      ) : null}
+
+      {active === "tools" ? (
+        isBaseball ? (
+          <EmptyState title="Decision tools are NFL-only today">
+            Trade and waiver boards use football projection snapshots.
+          </EmptyState>
+        ) : (
+          <ToolsPanel
+            league={league}
+            view={toolsView}
+            a={h2hA}
+            b={h2hB}
+            projectionSnapshot={projectionSnapshot}
+            playerMap={playerMap}
+          />
         )
       ) : null}
     </main>

@@ -1,0 +1,220 @@
+import Link from "next/link";
+import { EmptyState } from "@/components/EmptyState";
+import { TradeAnalyzer } from "@/components/TradeAnalyzer";
+import { WaiverBoard } from "@/components/WaiverBoard";
+import type {
+  LeagueSnapshot,
+  PlayerMapSnapshot,
+  ProjectionSnapshot,
+} from "@/lib/data";
+import {
+  defaultToolsPair,
+  projectionIndexes,
+  teamStrengthRows,
+  unrosteredProjectionRows,
+} from "@/lib/decision-tools";
+import { formatProjectionPoints } from "@/lib/projection-join";
+
+export type ToolsView = "trade" | "waivers" | "strength" | "deferred";
+
+function ViewSwitcher({
+  leagueId,
+  season,
+  view,
+  a,
+  b,
+}: {
+  leagueId: string;
+  season: number;
+  view: ToolsView;
+  a?: number;
+  b?: number;
+}) {
+  const views: Array<{ id: ToolsView; label: string }> = [
+    { id: "trade", label: "Trade" },
+    { id: "waivers", label: "Waivers" },
+    { id: "strength", label: "Strength" },
+    { id: "deferred", label: "More" },
+  ];
+  const pair = a != null && b != null ? `&a=${a}&b=${b}` : "";
+  return (
+    <div className="tabs" style={{ marginTop: "0.5rem" }}>
+      {views.map((item) => (
+        <Link
+          key={item.id}
+          href={`/leagues/${leagueId}?season=${season}&tab=tools&view=${item.id}${pair}`}
+          className={`tab${view === item.id ? " active" : ""}`}
+        >
+          {item.label}
+        </Link>
+      ))}
+    </div>
+  );
+}
+
+function StrengthTable({
+  league,
+  playerMap,
+  snapshot,
+}: {
+  league: LeagueSnapshot;
+  playerMap: PlayerMapSnapshot | null;
+  snapshot: ProjectionSnapshot | null;
+}) {
+  const { espnToGsis, byGsis } = projectionIndexes(playerMap, snapshot);
+  const rows = teamStrengthRows(league, espnToGsis, byGsis);
+  if (!snapshot?.players?.length) {
+    return (
+      <EmptyState title="No projection snapshot">
+        Roster strength needs <code>ffa export-projections</code> in the store.
+      </EmptyState>
+    );
+  }
+  return (
+    <div className="panel table-scroll" style={{ marginTop: "0.75rem" }}>
+      <p className="lede">
+        Season projection totals by roster (independent quantile sums). Mapped
+        count is how many ESPN roster slots resolved through the player map.
+      </p>
+      <table className="table-cards">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Team</th>
+            <th>Mapped</th>
+            <th>Floor</th>
+            <th>Median</th>
+            <th>Ceiling</th>
+            <th>VOR</th>
+          </tr>
+        </thead>
+        <tbody>
+          {rows.map((row, index) => (
+            <tr key={row.teamId}>
+              <td data-label="#">{index + 1}</td>
+              <td data-label="Team">
+                <Link
+                  href={`/leagues/${league.league_id}/teams/${row.teamId}?season=${league.season}`}
+                >
+                  {row.name}
+                </Link>
+                {row.owners.length ? (
+                  <div className="league-meta">{row.owners.join(", ")}</div>
+                ) : null}
+              </td>
+              <td data-label="Mapped">
+                {row.totals.mapped}/{row.totals.rostered}
+              </td>
+              <td data-label="Floor">
+                {formatProjectionPoints(row.totals.floor)}
+              </td>
+              <td data-label="Median">
+                {formatProjectionPoints(row.totals.median)}
+              </td>
+              <td data-label="Ceiling">
+                {formatProjectionPoints(row.totals.ceiling)}
+              </td>
+              <td data-label="VOR">
+                {formatProjectionPoints(row.totals.vor)}
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
+export function ToolsPanel({
+  league,
+  view,
+  a,
+  b,
+  projectionSnapshot,
+  playerMap,
+}: {
+  league: LeagueSnapshot;
+  view: ToolsView;
+  a?: number;
+  b?: number;
+  projectionSnapshot: ProjectionSnapshot | null;
+  playerMap: PlayerMapSnapshot | null;
+}) {
+  const pair = defaultToolsPair(league);
+  const teamA = a ?? pair?.a;
+  const teamB = b ?? pair?.b;
+  const { espnToGsis, byGsis } = projectionIndexes(playerMap, projectionSnapshot);
+
+  return (
+    <div className="tools-panel">
+      <ViewSwitcher
+        leagueId={league.league_id}
+        season={league.season}
+        view={view}
+        a={teamA}
+        b={teamB}
+      />
+
+      {view === "trade" ? (
+        !projectionSnapshot?.players?.length ? (
+          <EmptyState title="No projection snapshot for trades">
+            Run <code>ffa export-projections</code> and{" "}
+            <code>ffa export-player-map</code> into the hub store first.
+          </EmptyState>
+        ) : teamA == null || teamB == null ? (
+          <EmptyState title="Need two teams">
+            This league snapshot does not have enough teams to compare.
+          </EmptyState>
+        ) : (
+          <TradeAnalyzer
+            teams={league.teams}
+            espnToGsisEntries={[...espnToGsis.entries()]}
+            projectionEntries={[...byGsis.entries()]}
+            initialA={teamA}
+            initialB={teamB}
+          />
+        )
+      ) : null}
+
+      {view === "waivers" ? (
+        <WaiverBoard
+          players={unrosteredProjectionRows(
+            league,
+            playerMap,
+            projectionSnapshot,
+          )}
+        />
+      ) : null}
+
+      {view === "strength" ? (
+        <StrengthTable
+          league={league}
+          playerMap={playerMap}
+          snapshot={projectionSnapshot}
+        />
+      ) : null}
+
+      {view === "deferred" ? (
+        <EmptyState title="Draft assistant & playoff odds need more data">
+          <ul style={{ margin: "0.5rem 0 0", paddingLeft: "1.25rem" }}>
+            <li>
+              <strong>Draft assistant</strong> — use{" "}
+              <code>ffa draft-sim</code> today; hub needs an offline{" "}
+              <code>export-draft-sim</code> snapshot (slot × sims) before it can
+              render without calling Python at request time.
+            </li>
+            <li>
+              <strong>Playoff odds</strong> — season projection totals are not
+              weekly team scores. True Monte Carlo odds need weekly posteriors
+              (same blocker as start/sit).
+            </li>
+            <li>
+              <strong>ESPN free agents</strong> — not in the sync schema yet
+              (roadmap 2.4); the Waivers view is an unrostered-projection proxy.
+            </li>
+          </ul>
+        </EmptyState>
+      ) : null}
+    </div>
+  );
+}

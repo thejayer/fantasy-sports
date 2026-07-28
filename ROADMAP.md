@@ -369,11 +369,20 @@ when the hub calendar leads the NFL year. **Weekly start/sit is deferred** —
 store snapshots are season-level totals, not weekly posteriors; UI copy says so
 explicitly. Baseball stays projection-free (4.6).
 
-### 4.5 Decision tools
-Trade analyzer comparing posterior distributions across two rosters, a draft
-assistant using the existing Monte Carlo draft sim seeded with the actual league
-settings, playoff-odds simulation from current standings plus remaining schedule,
-and waiver-wire recommendations against `free_agents`.
+### 4.5 Decision tools — LANDED (partial)
+Football `tools` tab ships snapshot-backed decision surfaces without calling
+`ffa` at request time:
+
+- **Trade** — pick two rosters, check players to offer, see before/after Σ
+  floor / median / ceiling / VOR (independent quantile sums; no joint samples
+  in store).
+- **Waivers** — unrostered projection rows by VOR (proxy until ESPN
+  `free_agents` sync exists — roadmap 2.4).
+- **Strength** — per-team season projection totals via the player map.
+
+**Deferred in-tab (“More”):** Monte Carlo draft assistant (needs
+`export-draft-sim` artifacts), playoff-odds MC (needs weekly team posteriors),
+true ESPN FA wire. Use `ffa draft-sim` from the CLI until those exporters land.
 
 ### 4.6 Baseball
 The engine is NFL-only, while `baseball-dynasty` has the best UI in the app. Decide
@@ -407,11 +416,11 @@ Fold in continuously rather than saving for the end.
 
 ## Sequencing
 
-**Next up: 1.3, 4.5, or 4.6.** Continuous deployment + Workload Identity Federation
+**Next up: 1.3 or 4.6.** Continuous deployment + Workload Identity Federation
 (1.3) is the biggest remaining platform win on track A (needs GCP-side WIF
-setup). Engine track 4.1–4.4 is in (CLI → snapshots → ID map → hub UI). Decision
-tools (4.5) and baseball scoping (4.6) remain. Product 3.1–3.6 and data 2.1–2.5
-are in.
+setup). Engine track through 4.5 trade/waiver/strength is in; baseball scoping
+(4.6) and fuller draft/playoff exporters remain. Product 3.1–3.6 and data
+2.1–2.5 are in.
 
 **Branch protection on `main` is done** — required checks are `python`, `web`,
 and `images`. The `python` check is an aggregator over the 3.11 + 3.12 matrix.
@@ -428,11 +437,11 @@ shape. Phase 3.1 (unify views) before any other UI work so nothing ships twice.
 | A — Platform | 1.3, ~~1.5~~, ~~1.6~~, 1.7 | workflows, Dockerfiles, scripts |
 | B — Data | ~~1.4~~, ~~2.1~~, ~~2.2~~, ~~2.3~~, ~~2.4~~, ~~2.5~~ | `src/sj`, `configs` |
 | C — Product | ~~3.1~~ → ~~3.2~~ → ~~3.3~~ → ~~3.4~~ → ~~3.5~~ → ~~3.6~~ | `apps/web` |
-| D — Engine | ~~4.1~~, ~~4.2~~, ~~4.3~~, ~~4.4~~, 4.5, 4.6 | `src/ffa` + `apps/web` projections UI |
+| D — Engine | ~~4.1~~ … ~~4.5~~, 4.6 | `src/ffa` + `apps/web` projections / tools |
 
 A, B, and D barely overlap with remaining C polish, so platform hardening and
-decision-tool work can proceed in parallel. Phase 4's ID-map risk (4.3) is
-landed; weekly start/sit needs new weekly projection exports before it can ship.
+baseball scoping can proceed in parallel. Draft-sim / playoff-odds exporters are
+the remaining heavy engine follow-ups under 4.5's deferred list.
 
 **Fastest visible wins** remaining: 3.2 (a decade of history appears), 3.3
 (tables become usable). 2.1 is done — draft and matchup data persist for zero
