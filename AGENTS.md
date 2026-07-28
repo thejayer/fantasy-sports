@@ -26,7 +26,7 @@ This is a dual-product monorepo. See `README.md` (ffa engine) and `HUB.md` (memb
 - `ffa dashboard` launches Streamlit (the `[dashboard]` extra is installed) and needs ingested data.
 
 ### Hub web app (`apps/web`)
-- Run with `npm run dev` (Next.js + Turbopack on `http://localhost:3000`). See `HUB.md` for full setup.
+- Run with `npm run dev` (Next.js 16 + Turbopack on `http://localhost:3000`). See `HUB.md` for full setup. Lint is `npm run lint` → `eslint .` (not `next lint`). Keep `src/middleware.ts` for Auth.js Edge — do not rename to `proxy.ts` (Node-only). Snapshot purge uses `revalidateTag(tag, "max")`.
 - For local dev without Google OAuth, create `apps/web/.env.local` with `AUTH_DEV_BYPASS=1` (plus any `AUTH_SECRET`) to skip login entirely. With bypass off, only `ALLOWED_EMAILS` Google accounts can sign in.
 - League pages render one sport-aware `LeagueView` (`apps/web/src/components/LeagueView.tsx`). Do not reintroduce a football-only branch on `leagues/[leagueId]/page.tsx`. Baseball roster team pages still use `BaseballRosterView`.
 - Season chips are the shared `SeasonSwitcher` (`apps/web/src/components/SeasonSwitcher.tsx`) on league and team pages. Pass `hrefFor` so team URLs stay under `/leagues/{id}/teams/{teamId}?season=`.
