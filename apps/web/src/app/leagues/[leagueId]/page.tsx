@@ -1,7 +1,12 @@
 import { notFound } from "next/navigation";
+import type { HistoryView } from "@/components/HistoryPanel";
 import { LeagueView } from "@/components/LeagueView";
 import type { MatchupsView } from "@/components/MatchupsPanel";
-import { getLeagueSeasons, getLeagueSnapshot } from "@/lib/data";
+import {
+  getLeagueHistoryArchive,
+  getLeagueSeasons,
+  getLeagueSnapshot,
+} from "@/lib/data";
 
 // See app/page.tsx. Already dynamic today, but declared so adding
 // generateStaticParams later cannot silently freeze snapshot data.
@@ -15,6 +20,8 @@ type Props = {
     role?: string;
     week?: string;
     view?: string;
+    a?: string;
+    b?: string;
   }>;
 };
 
@@ -26,15 +33,26 @@ export default async function LeagueDetailPage({ params, searchParams }: Props) 
     role = "all",
     week: weekParam,
     view: viewParam,
+    a: aParam,
+    b: bParam,
   } = await searchParams;
   const seasons = await getLeagueSeasons(leagueId);
   const season = seasonParam ? Number(seasonParam) : undefined;
   const week = weekParam ? Number(weekParam) : undefined;
+  const a = aParam ? Number(aParam) : undefined;
+  const b = bParam ? Number(bParam) : undefined;
+
   const matchupsView = (
     ["week", "schedule", "playoffs"].includes(viewParam ?? "")
       ? viewParam
       : "week"
   ) as MatchupsView;
+  const historyView = (
+    ["standings", "champions", "records", "h2h"].includes(viewParam ?? "")
+      ? viewParam
+      : "standings"
+  ) as HistoryView;
+
   const league = await getLeagueSnapshot(
     leagueId,
     season && !Number.isNaN(season) ? season : undefined,
@@ -42,6 +60,9 @@ export default async function LeagueDetailPage({ params, searchParams }: Props) 
   if (!league) {
     notFound();
   }
+
+  const historyArchive =
+    tab === "history" ? await getLeagueHistoryArchive(leagueId) : null;
 
   return (
     <LeagueView
@@ -51,6 +72,10 @@ export default async function LeagueDetailPage({ params, searchParams }: Props) 
       role={["all", "batter", "pitcher"].includes(role) ? role : "all"}
       week={week != null && !Number.isNaN(week) ? week : undefined}
       matchupsView={matchupsView}
+      historyArchive={historyArchive}
+      historyView={historyView}
+      h2hA={a != null && !Number.isNaN(a) ? a : undefined}
+      h2hB={b != null && !Number.isNaN(b) ? b : undefined}
     />
   );
 }

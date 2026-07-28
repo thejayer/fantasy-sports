@@ -37,5 +37,8 @@ describe("LeagueView unification", () => {
     // Roadmap 3.4: matchups tab on the unified view.
     expect(viewSource).toMatch(/MatchupsPanel/);
     expect(viewSource).toMatch(/"matchups"/);
+    // Roadmap 3.5: history tab aggregates multi-season archives.
+    expect(viewSource).toMatch(/HistoryPanel/);
+    expect(viewSource).toMatch(/"history"/);
   });
 });

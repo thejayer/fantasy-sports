@@ -1,8 +1,8 @@
 # Strictly Jayers hub
 
 Member hub for Strictly Jayers fantasy leagues. V1 focuses on ESPN league
-data: standings, teams, rosters, players, and matchups (weekly scores /
-schedule / playoff seeds).
+data: standings, teams, rosters, players, matchups (weekly scores / schedule /
+playoff seeds), and multi-season history (all-time, champions, records, H2H).
 
 For the current state of the site and the plan to build it out, see
 [AUDIT.md](AUDIT.md) and [ROADMAP.md](ROADMAP.md).

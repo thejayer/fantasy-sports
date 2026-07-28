@@ -1,8 +1,9 @@
 import Link from "next/link";
+import { HistoryPanel, type HistoryView } from "@/components/HistoryPanel";
 import { MatchupsPanel, type MatchupsView } from "@/components/MatchupsPanel";
 import { PlayersDataTable } from "@/components/PlayersDataTable";
 import { SeasonSwitcher } from "@/components/SeasonSwitcher";
-import type { LeagueSnapshot, Team } from "@/lib/data";
+import type { LeagueHistoryArchive, LeagueSnapshot, Team } from "@/lib/data";
 import { isPitcher } from "@/lib/baseball";
 import {
   recordLabel,
@@ -130,6 +131,10 @@ export function LeagueView({
   role = "all",
   week,
   matchupsView = "week",
+  historyArchive = null,
+  historyView = "standings",
+  h2hA,
+  h2hB,
 }: {
   league: LeagueSnapshot;
   seasons: number[];
@@ -137,21 +142,32 @@ export function LeagueView({
   role?: string;
   week?: number;
   matchupsView?: MatchupsView;
+  historyArchive?: LeagueHistoryArchive | null;
+  historyView?: HistoryView;
+  h2hA?: number;
+  h2hB?: number;
 }) {
   const leagueId = league.league_id;
   const isBaseball = league.sport === "baseball";
   const period = league.period_label || (isBaseball ? "period" : "week");
-  const active = ["standings", "teams", "players", "matchups"].includes(tab)
+  const active = ["standings", "teams", "players", "matchups", "history"].includes(
+    tab,
+  )
     ? tab
     : "standings";
   const activeRole = isBaseball ? role : undefined;
+
+  const historyPair =
+    h2hA != null && h2hB != null ? `&a=${h2hA}&b=${h2hB}` : "";
 
   const seasonHrefExtra =
     active === "players" && activeRole
       ? `&role=${activeRole}`
       : active === "matchups"
         ? `&view=${matchupsView}${week != null ? `&week=${week}` : ""}`
-        : "";
+        : active === "history"
+          ? `&view=${historyView}${historyPair}`
+          : "";
 
   const players = isBaseball
     ? league.players.filter((player) => {
@@ -179,7 +195,7 @@ export function LeagueView({
         {league.synced_at
           ? ` · synced ${new Date(league.synced_at).toLocaleString()}`
           : ""}
-        . Standings, matchups, rosters, and season stats from ESPN.
+        . Standings, matchups, history, rosters, and season stats from ESPN.
       </p>
 
       <SeasonSwitcher
@@ -191,7 +207,9 @@ export function LeagueView({
       />
 
       <div className="tabs">
-        {(["standings", "teams", "players", "matchups"] as const).map((name) => (
+        {(
+          ["standings", "teams", "players", "matchups", "history"] as const
+        ).map((name) => (
           <Link
             key={name}
             href={
@@ -199,7 +217,8 @@ export function LeagueView({
               (name === "players" && activeRole ? `&role=${activeRole}` : "") +
               (name === "matchups"
                 ? `&view=${matchupsView}${week != null ? `&week=${week}` : ""}`
-                : "")
+                : "") +
+              (name === "history" ? `&view=${historyView}${historyPair}` : "")
             }
             className={`tab${active === name ? " active" : ""}`}
           >
@@ -234,6 +253,17 @@ export function LeagueView({
 
       {active === "matchups" ? (
         <MatchupsPanel league={league} week={week} view={matchupsView} />
+      ) : null}
+
+      {active === "history" ? (
+        <HistoryPanel
+          archive={historyArchive}
+          leagueId={leagueId}
+          season={league.season}
+          view={historyView}
+          a={h2hA}
+          b={h2hB}
+        />
       ) : null}
     </main>
   );

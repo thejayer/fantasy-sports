@@ -212,10 +212,10 @@ diverges further.
 ### 9. The hub is missing almost everything a league hub is for
 
 **Partly fixed.** Snapshots now persist draft, matchups, settings, and
-transactions (roadmap 2.1 / 2.4); the hub Matchups tab covers weekly scores,
-season schedule, and a seed/projected playoff view (3.4). Still absent from the
-product: **box scores, draft-results pages, transaction/waiver UI, free agents,
-head-to-head history, records and all-time leaderboards, per-week player stats.**
+transactions (roadmap 2.1 / 2.4); Matchups tab (3.4) and History tab (3.5 —
+all-time standings, champions, record book, H2H) are in the hub. Still absent
+from the product: **box scores, draft-results pages, transaction/waiver UI,
+free agents, franchise/manager career pages, per-week player stats.**
 
 Also missing: `format: dynasty` is a declaration in `configs/leagues.yaml`, not
 something derived from ESPN keeper settings, so nothing in the product actually
@@ -372,7 +372,7 @@ time. `@types/node` is `^20` against a Node 22 runtime. No Dependabot or Renovat
 | 6 | Football history unreachable (12 seasons, no switcher) | P1 | Fixed — roadmap 3.1 (league) + 3.2 (team pages) |
 | 7 | Player tables: no search/sort/filter/pagination | P1 | Fixed — roadmap 3.3 (`DataTable`) |
 | 8 | Football and baseball views diverged | P1 | Fixed — roadmap 3.1 (`LeagueView`) |
-| 9 | No matchups, draft, transactions, or history | P1 | Partly — matchups UI in (3.4); draft/tx data on disk (2.1/2.4); history still 3.5; box scores deferred |
+| 9 | No matchups, draft, transactions, or history | P1 | Partly — matchups (3.4) + history/records/H2H (3.5) in; draft/tx pages and box scores still open |
 | 10 | No loading/error/empty states | P1 | Partly — `error.tsx` / `not-found.tsx` in 1.6; loading/empty remain roadmap 3.6 |
 | 11 | Zero CI for `apps/web` | P1 | Fixed (#28, roadmap 1.1); branch protection requires `python` / `web` / `images` |
 | 12 | `sync.py` at 0% coverage | P1 | Fixed — 100% + loud exits + `SYNC_SUMMARY` (roadmap 1.4) |

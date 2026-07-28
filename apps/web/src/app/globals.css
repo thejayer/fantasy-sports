@@ -721,3 +721,65 @@ tr:last-child td {
     display: none;
   }
 }
+
+/* History / records (roadmap 3.5) */
+.history-panel {
+  display: grid;
+  gap: 1rem;
+}
+
+.history-section {
+  display: grid;
+  gap: 0.85rem;
+}
+
+.record-grid {
+  display: grid;
+  gap: 0.75rem;
+  grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr));
+}
+
+.record-card {
+  padding: 0.95rem 1rem;
+  border-radius: var(--radius);
+  background: rgba(255, 255, 255, 0.62);
+  box-shadow: inset 0 0 0 1px var(--line);
+}
+
+.record-label {
+  font-size: 0.75rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  opacity: 0.65;
+  margin-bottom: 0.35rem;
+}
+
+.record-value {
+  font-family: var(--font-display);
+  font-size: 1.6rem;
+  letter-spacing: 0.02em;
+  font-variant-numeric: tabular-nums;
+}
+
+.h2h-pickers {
+  display: grid;
+  gap: 1rem;
+}
+
+.h2h-summary {
+  padding: 0.85rem 1rem;
+}
+
+.h2h-summary-inner {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem 1rem;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.h2h-record {
+  font-family: var(--font-display);
+  font-size: 1.4rem;
+  letter-spacing: 0.04em;
+}

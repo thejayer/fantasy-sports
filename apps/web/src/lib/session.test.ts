@@ -74,7 +74,7 @@ describe("requireSession", () => {
 });
 
 describe("data layer gating", () => {
-  it("guards both snapshot entry points", async () => {
+  it("guards snapshot and history entry points", async () => {
     // Reading the source is the reliable assertion here: importing data.ts
     // pulls in the fs-backed module, and what matters is that neither door to
     // league data can be opened without the check.
@@ -86,8 +86,11 @@ describe("data layer gating", () => {
     );
 
     const guarded = source.match(/await requireSession\(\)/g) ?? [];
-    expect(guarded.length).toBe(2);
+    expect(guarded.length).toBe(3);
     expect(source).toMatch(/getLeagueIndex = cache\(async \(\)[^{]*\{\s*await requireSession\(\)/);
     expect(source).toMatch(/await requireSession\(\);\s*const index = await getLeagueIndex\(\)/);
+    expect(source).toMatch(
+      /getLeagueHistoryArchive = cache\(\s*async \(leagueId: string\)[^{]*\{\s*await requireSession\(\)/,
+    );
   });
 });

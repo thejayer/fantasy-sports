@@ -150,6 +150,38 @@ export type LeagueIndexItem = {
   path: string;
 };
 
+/** One franchise row for history aggregation (no roster payload). */
+export type HistoryTeam = {
+  team_id: number;
+  name: string;
+  abbrev: string | null;
+  owners: string[];
+  wins: number;
+  losses: number;
+  ties: number;
+  points_for: number | null;
+  points_against: number | null;
+  standing: number | null;
+  schedule: number[];
+  scores: Array<number | null>;
+  outcomes: string[];
+};
+
+export type SeasonHistorySlice = {
+  season: number;
+  period_label?: string;
+  teams: HistoryTeam[];
+};
+
+/** Multi-season standings + matchups for roadmap 3.5 (skips rosters). */
+export type LeagueHistoryArchive = {
+  league_id: string;
+  name: string;
+  sport: string;
+  format: string;
+  seasons: SeasonHistorySlice[];
+};
+
 type SeasonManifest = {
   schema_version: number;
   league_id: string;
@@ -365,6 +397,106 @@ export async function getLeagueSeasons(leagueId: string): Promise<number[]> {
   return [...new Set(all.filter((item) => item.league_id === leagueId).map((item) => item.season))]
     .sort((a, b) => b - a);
 }
+
+async function loadHistorySliceFromRoot(
+  root: string,
+  indexPath: string,
+  season: number,
+): Promise<SeasonHistorySlice | null> {
+  const absolute = path.join(root, indexPath);
+  if (!isManifestPath(indexPath)) {
+    const monolith = await readJson<LeagueSnapshot>(absolute);
+    if (!monolith?.teams?.length) return null;
+    return {
+      season: monolith.season ?? season,
+      period_label: monolith.period_label,
+      teams: monolith.teams.map((team) => ({
+        team_id: team.team_id,
+        name: team.name,
+        abbrev: team.abbrev,
+        owners: team.owners ?? [],
+        wins: team.wins,
+        losses: team.losses,
+        ties: team.ties,
+        points_for: team.points_for,
+        points_against: team.points_against,
+        standing: team.standing,
+        schedule: team.schedule ?? [],
+        scores: team.scores ?? [],
+        outcomes: (team.outcomes ?? []).map(String),
+      })),
+    };
+  }
+
+  const directory = path.dirname(absolute);
+  const manifest = await readJson<SeasonManifest>(absolute);
+  if (!manifest?.files) return null;
+  const standings = await readJson<StandingsFile>(
+    path.join(directory, manifest.files.standings ?? "standings.json"),
+  );
+  if (!standings?.teams?.length) return null;
+  const matchups = manifest.files.matchups
+    ? await readJson<MatchupsFile>(path.join(directory, manifest.files.matchups))
+    : null;
+  const matchupById = matchups?.teams ?? {};
+  return {
+    season: manifest.season ?? season,
+    period_label: standings.period_label ?? matchups?.period_label,
+    teams: standings.teams.map((team) => {
+      const m = matchupById[String(team.team_id)] ?? {};
+      return {
+        team_id: team.team_id,
+        name: team.name,
+        abbrev: team.abbrev,
+        owners: team.owners ?? [],
+        wins: team.wins,
+        losses: team.losses,
+        ties: team.ties,
+        points_for: team.points_for,
+        points_against: team.points_against,
+        standing: team.standing,
+        schedule: m.schedule ?? [],
+        scores: m.scores ?? [],
+        outcomes: (m.outcomes ?? []).map(String),
+      };
+    }),
+  };
+}
+
+/**
+ * Load every season's standings + matchup arrays for a league (roadmap 3.5).
+ * Skips rosters/draft/transactions so decade views stay cheap.
+ */
+export const getLeagueHistoryArchive = cache(
+  async (leagueId: string): Promise<LeagueHistoryArchive | null> => {
+    await requireSession();
+    const index = await getLeagueIndex();
+    const items = index
+      .filter((item) => item.league_id === leagueId)
+      .sort((a, b) => a.season - b.season);
+    if (!items.length) return null;
+
+    const seasons: SeasonHistorySlice[] = [];
+    for (const item of items) {
+      let slice: SeasonHistorySlice | null = null;
+      for (const root of dataRoots()) {
+        slice = await loadHistorySliceFromRoot(root, item.path, item.season);
+        if (slice) break;
+      }
+      if (slice) seasons.push(slice);
+    }
+    if (!seasons.length) return null;
+
+    const latest = items[items.length - 1];
+    return {
+      league_id: leagueId,
+      name: latest.name,
+      sport: latest.sport,
+      format: latest.format,
+      seasons,
+    };
+  },
+);
 
 export const getLeagueSnapshot = cache(
   async (leagueId: string, season?: number): Promise<LeagueSnapshot | null> => {
