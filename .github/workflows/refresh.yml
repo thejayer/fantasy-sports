@@ -1,13 +1,12 @@
 name: nightly refresh
 
 # Pull weekly stats from nflverse, export hub-consumable projection snapshots
-# (roadmap 4.2) and ESPN↔nflverse player maps (roadmap 4.3) under store/, and
-# upload them as build artifacts. Runs every weekday during NFL season
-# (Sept-Jan). Can also be triggered manually from the Actions tab.
+# (roadmap 4.2) and ESPN↔nflverse player maps (roadmap 4.3) under store/, upload
+# artifacts, and promote JSON into the live GCS hub store (Phase 5).
 #
-# Artifacts are not auto-committed into data/sj — promote into the hub store
-# (or GCS mount) as part of deploy/sync (Phase 5 follow-up). The hub reads the
-# same path layout via getProjectionSnapshot / getPlayerMap.
+# Promote requires ffa-deployer objectUser on gs://fantasy-sports-analytics-sj-data
+# (see scripts/setup-github-deployer.sh). Hub consumes the mount only when
+# deploy-hub is run with bucket set.
 
 on:
   schedule:
@@ -29,14 +28,30 @@ on:
         description: "Monte Carlo samples per export"
         required: true
         default: "1000"
+      promote:
+        description: "Promote JSON to GCS hub store (true/false)"
+        required: true
+        default: "true"
+      bucket:
+        description: "GCS hub store bucket"
+        required: true
+        default: "fantasy-sports-analytics-sj-data"
 
 permissions:
   contents: read
+  id-token: write
+
+env:
+  GCP_WORKLOAD_IDENTITY_PROVIDER: projects/1047753647109/locations/global/workloadIdentityPools/github/providers/github
+  GCP_SERVICE_ACCOUNT: ffa-deployer@fantasy-sports-analytics.iam.gserviceaccount.com
 
 jobs:
   refresh:
     runs-on: ubuntu-latest
     timeout-minutes: 45
+    outputs:
+      season: ${{ steps.cfg.outputs.season }}
+      artifact: ffa-store-${{ steps.cfg.outputs.season }}-${{ github.run_id }}
     steps:
       - uses: actions/checkout@v4
 
@@ -135,3 +150,61 @@ jobs:
             store/projections/
             store/player_map/
           retention-days: 14
+
+  promote:
+    name: promote to GCS
+    needs: refresh
+    if: ${{ github.event_name == 'schedule' || github.event.inputs.promote == 'true' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      BUCKET: ${{ github.event.inputs.bucket || 'fantasy-sports-analytics-sj-data' }}
+    steps:
+      - name: Download artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: ${{ needs.refresh.outputs.artifact }}
+          path: artifact
+
+      - id: auth
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ env.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ env.GCP_SERVICE_ACCOUNT }}
+
+      - uses: google-github-actions/setup-gcloud@v2
+
+      - name: Promote JSON into hub store
+        run: |
+          set -euo pipefail
+          case "$BUCKET" in
+            ""|*[!A-Za-z0-9_.-]*)
+              echo "Invalid bucket: $BUCKET" >&2
+              exit 1 ;;
+          esac
+          echo "Promoting season artifacts → gs://${BUCKET}/ (JSON only)"
+          find artifact -type f | sort
+          # upload-artifact preserves workspace-relative paths (store/…).
+          ROOT=artifact/store
+          if [ ! -d "$ROOT/projections" ] && [ -d artifact/projections ]; then
+            ROOT=artifact
+          fi
+          shopt -s nullglob
+          PPR=( "$ROOT"/projections/ppr/*.json )
+          STD=( "$ROOT"/projections/standard/*.json )
+          MAP=( "$ROOT"/player_map/*.json )
+          if [ "${#PPR[@]}" -eq 0 ] && [ "${#STD[@]}" -eq 0 ] && [ "${#MAP[@]}" -eq 0 ]; then
+            echo "::error::No JSON files found under $ROOT to promote"
+            find artifact -type f | sort
+            exit 1
+          fi
+          if [ "${#PPR[@]}" -gt 0 ]; then
+            gcloud storage cp "${PPR[@]}" "gs://${BUCKET}/projections/ppr/"
+          fi
+          if [ "${#STD[@]}" -gt 0 ]; then
+            gcloud storage cp "${STD[@]}" "gs://${BUCKET}/projections/standard/"
+          fi
+          if [ "${#MAP[@]}" -gt 0 ]; then
+            gcloud storage cp "${MAP[@]}" "gs://${BUCKET}/player_map/"
+          fi
+          echo "Promoted OK"

@@ -47,4 +47,14 @@ describe("roadmap 3.6 polish surface", () => {
     expect(data).not.toMatch(/\bfileCache\b/);
     expect(existsSync(path.join(APP_DIR, "api/revalidate/route.ts"))).toBe(true);
   });
+
+  it("ships a post-build client bundle budget check", () => {
+    const pkg = JSON.parse(
+      readFileSync(path.join(WEB_ROOT, "package.json"), "utf8"),
+    );
+    expect(pkg.scripts["verify:bundle-budget"]).toMatch(/check-bundle-budget/);
+    expect(
+      existsSync(path.join(WEB_ROOT, "scripts/check-bundle-budget.mjs")),
+    ).toBe(true);
+  });
 });

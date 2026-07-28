@@ -284,10 +284,10 @@ leaves a window where OAuth can redirect to the container's bind address.
 
 Public `/api/health` reports per-league `synced_at` age (HTTP 503 when empty or
 stale). `scripts/setup-sync-alerting.sh` wires a Cloud Monitoring email alert on
-`sj-sync` job failure. Route-level `error.tsx` / `not-found.tsx` log to stderr
-for Cloud Logging. Still open from the original finding: uptime check on the
-live hub URL (console) and `min-instances`. (`refresh.yml` is the active
-projection producer — do not retire it.)
+`sj-sync` job failure and creates an HTTPS uptime check on `/api/health`.
+Route-level `error.tsx` / `not-found.tsx` log to stderr for Cloud Logging.
+`deploy-hub` exposes `--min-instances` (default 0) + `--cpu-boost`.
+(`refresh.yml` is the active projection producer — do not retire it.)
 
 ---
 
@@ -364,7 +364,7 @@ time. `@types/node` is `^20` against a Node 22 runtime. No Dependabot or Renovat
 | 11 | Zero CI for `apps/web` | P1 | Fixed (#28, roadmap 1.1); branch protection requires `python` / `web` / `images` |
 | 12 | `sync.py` at 0% coverage | P1 | Fixed — 100% + loud exits + `SYNC_SUMMARY` (roadmap 1.4) |
 | 13 | All deploys manual | P1 | Open — roadmap 1.3 |
-| 14 | No observability or alerting | P1 | Baseline fixed (roadmap 1.6); uptime check + min-instances still open |
+| 14 | No observability or alerting | P1 | Fixed (1.6 health/alerts; Phase 5 uptime check + min-instances/cpu-boost) |
 | 15 | `ffa` engine disconnected from the hub | P2 | Closed for football season surfaces (4.1–4.5); baseball deliberately out of engine scope (4.6) |
 | 16 | Storage layout won't extend to weekly data | P2 | Open — roadmap 2.2, 2.3 |
 | 17 | Hub image carries the analytics stack | P2 | Fixed — Phase 5 hub slim (sj-only runtime) |

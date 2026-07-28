@@ -9,7 +9,8 @@
     "lint": "next lint",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
-    "verify:prerender": "node scripts/assert-no-stale-prerender.mjs"
+    "verify:prerender": "node scripts/assert-no-stale-prerender.mjs",
+    "verify:bundle-budget": "node scripts/check-bundle-budget.mjs"
   },
   "dependencies": {
     "next": "^15.5.22",
