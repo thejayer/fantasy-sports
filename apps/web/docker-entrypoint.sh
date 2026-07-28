@@ -9,31 +9,41 @@ set -eu
 
 DATA_DIR="${SJ_DATA_DIR:-/app/data/sj}"
 
-mkdir -p "$DATA_DIR" 2>/dev/null || true
-
-writable=0
-if [ -w "$DATA_DIR" ]; then
-  writable=1
-fi
-
-if [ "$writable" = "1" ] && [ ! -f "$DATA_DIR/index.json" ] && [ -d /app/fixtures/sj ]; then
-  # Seed sample data so the UI renders before the first successful sync.
-  cp -a /app/fixtures/sj/. "$DATA_DIR/" 2>/dev/null || true
-fi
-
-if [ -f "$DATA_DIR/index.json" ]; then
-  echo "Snapshots available at $DATA_DIR"
+# Production (SJ_SYNC_ON_START=0): do not probe SJ_DATA_DIR before listen.
+# A slow/broken GCS FUSE mount can hang `test -f` / `test -w` and Cloud Run
+# kills the revision for never binding PORT. Next reads the store on request.
+if [ "${SJ_SYNC_ON_START:-0}" != "1" ]; then
+  echo "Starting hub (SJ_SYNC_ON_START=0); store at $DATA_DIR"
 else
-  echo "No snapshots at $DATA_DIR; falling back to bundled fixtures" >&2
-fi
+  mkdir -p "$DATA_DIR" 2>/dev/null || true
 
-if [ "${SJ_SYNC_ON_START:-0}" = "1" ] && [ -n "${ESPN_S2:-}" ] && [ -n "${ESPN_SWID:-}" ]; then
-  if [ "$writable" = "1" ]; then
-    echo "Syncing ESPN leagues (current seasons)..."
-    python -m sj.cli sync --current-only --store-dir "$DATA_DIR" \
-      || echo "warning: ESPN sync failed; serving existing snapshots" >&2
+  writable=0
+  # Cap FUSE/stat waits so a bad mount cannot block Node forever.
+  if timeout 3 sh -c "test -w \"$DATA_DIR\"" 2>/dev/null; then
+    writable=1
+  fi
+
+  if [ "$writable" = "1" ] && ! timeout 3 sh -c "test -f \"$DATA_DIR/index.json\"" 2>/dev/null \
+      && [ -d /app/fixtures/sj ]; then
+    cp -a /app/fixtures/sj/. "$DATA_DIR/" 2>/dev/null || true
+  fi
+
+  if timeout 3 sh -c "test -f \"$DATA_DIR/index.json\"" 2>/dev/null; then
+    echo "Snapshots available at $DATA_DIR"
   else
-    echo "Skipping startup sync: $DATA_DIR is read-only (sj-sync job owns writes)"
+    echo "No snapshots at $DATA_DIR; falling back to bundled fixtures" >&2
+  fi
+
+  if [ -n "${ESPN_S2:-}" ] && [ -n "${ESPN_SWID:-}" ]; then
+    if [ "$writable" = "1" ]; then
+      echo "Syncing ESPN leagues (current seasons)..."
+      python -m sj.cli sync --current-only --store-dir "$DATA_DIR" \
+        || echo "warning: ESPN sync failed; serving existing snapshots" >&2
+    else
+      echo "Skipping startup sync: $DATA_DIR is not writable (sj-sync job owns writes)"
+    fi
+  else
+    echo "Skipping ESPN sync (cookies unset)"
   fi
 fi
 

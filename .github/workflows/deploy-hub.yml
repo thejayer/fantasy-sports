@@ -148,9 +148,10 @@ jobs:
             --set-secrets "AUTH_SECRET=sj-auth-secret:latest,AUTH_GOOGLE_ID=sj-auth-google-id:latest,AUTH_GOOGLE_SECRET=sj-auth-google-secret:latest,ALLOWED_EMAILS=sj-allowed-emails:latest"
           )
           if [ -n "$BUCKET" ]; then
-            # The scheduled sync job owns writes; the hub only reads snapshots.
+            # Sync job owns writes; hub mounts read-only. uid/gid must match the
+            # non-root sjhub user (1001) or FUSE perms can block store reads.
             ARGS+=(
-              --add-volume "name=sjdata,type=cloud-storage,bucket=$BUCKET,readonly=true"
+              --add-volume "name=sjdata,type=cloud-storage,bucket=$BUCKET,readonly=true,mount-options=uid=1001,gid=1001"
               --add-volume-mount "volume=sjdata,mount-path=/app/data/sj"
             )
           else
