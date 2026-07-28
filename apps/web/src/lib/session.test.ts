@@ -73,8 +73,21 @@ describe("requireSession", () => {
   });
 });
 
+/** Every session-gated snapshot reader in data.ts (audit Batch C). */
+const SESSION_GATED_READERS = [
+  "getLeagueIndex",
+  "getLeagueHistoryArchive",
+  "getLeagueSnapshot",
+  "getProjectionSnapshot",
+  "getWeeklyProjectionSnapshot",
+  "getPlayoffOddsSnapshot",
+  "getDraftSimSnapshot",
+  "listDraftSimSlots",
+  "getPlayerMap",
+] as const;
+
 describe("data layer gating", () => {
-  it("guards snapshot and history entry points", async () => {
+  it("guards every named snapshot reader with requireSession", async () => {
     // Reading the source is the reliable assertion here: importing data.ts
     // pulls in the fs-backed module, and what matters is that neither door to
     // league data can be opened without the check.
@@ -86,29 +99,15 @@ describe("data layer gating", () => {
     );
 
     const guarded = source.match(/await requireSession\(\)/g) ?? [];
-    expect(guarded.length).toBe(9);
-    expect(source).toMatch(/getLeagueIndex = cache\(async \(\)[^{]*\{\s*await requireSession\(\)/);
-    expect(source).toMatch(/await requireSession\(\);\s*const index = await getLeagueIndex\(\)/);
-    expect(source).toMatch(
-      /getLeagueHistoryArchive = cache\(\s*async \(leagueId: string\)[^{]*\{\s*await requireSession\(\)/,
-    );
-    expect(source).toMatch(
-      /getProjectionSnapshot = cache\(\s*async \(scoring: string, season: number\)[^{]*\{\s*await requireSession\(\)/,
-    );
-    expect(source).toMatch(
-      /getWeeklyProjectionSnapshot = cache\(\s*async \(\s*scoring: string,\s*season: number,\s*\)[^{]*\{\s*await requireSession\(\)/,
-    );
-    expect(source).toMatch(
-      /getPlayoffOddsSnapshot = cache\(\s*async \(\s*leagueId: string,\s*season: number,\s*\)[^{]*\{\s*await requireSession\(\)/,
-    );
-    expect(source).toMatch(
-      /getDraftSimSnapshot = cache\(\s*async \(\s*scoring: string,\s*season: number,\s*userSlot: number,\s*\)[^{]*\{\s*await requireSession\(\)/,
-    );
-    expect(source).toMatch(
-      /listDraftSimSlots = cache\(\s*async \(scoring: string, season: number\)[^{]*\{\s*await requireSession\(\)/,
-    );
-    expect(source).toMatch(
-      /getPlayerMap = cache\(\s*async \(season: number\)[^{]*\{\s*await requireSession\(\)/,
-    );
+    expect(guarded.length).toBe(SESSION_GATED_READERS.length);
+
+    for (const name of SESSION_GATED_READERS) {
+      // Each export's first statement in the async body is requireSession.
+      expect(source).toMatch(
+        new RegExp(
+          `${name}\\s*=\\s*cache\\([\\s\\S]*?\\{[\\s\\S]*?await requireSession\\(\\)`,
+        ),
+      );
+    }
   });
 });

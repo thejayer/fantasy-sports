@@ -49,4 +49,47 @@ test.describe("hub smoke", () => {
     await page.goto("/login");
     await expect(page).toHaveURL(/\/($|\?)/);
   });
+
+  test("projections tab shows season VOR board", async ({ page }) => {
+    await page.goto("/leagues/football-main?tab=projections");
+    await expect(page.getByText(/Season projections/i)).toBeVisible();
+    await expect(page.getByText("Patrick Mahomes")).toBeVisible();
+  });
+
+  test("tools playoff-odds board renders fixture make probs", async ({
+    page,
+  }) => {
+    await page.goto("/leagues/football-main?tab=tools&view=playoff-odds");
+    await expect(page.getByText(/Make-playoffs Monte Carlo/i)).toBeVisible();
+    await expect(page.getByText("Hail Mary Heroes")).toBeVisible();
+  });
+
+  test("tools draft slot 1 shows exported snapshot chips only", async ({
+    page,
+  }) => {
+    await page.goto("/leagues/football-main?tab=tools&view=draft&slot=1");
+    await expect(page.getByRole("heading", { name: "Who you land" })).toBeVisible();
+    await expect(
+      page.getByRole("link", { name: "Slot 1", exact: true }),
+    ).toBeVisible();
+    await expect(page.getByRole("link", { name: "Slot 2", exact: true })).toHaveCount(
+      0,
+    );
+    await expect(
+      page.getByRole("cell", { name: "QB Fixture 1", exact: true }).first(),
+    ).toBeVisible();
+  });
+
+  test("tools waivers board lists ESPN free agents", async ({ page }) => {
+    await page.goto("/leagues/football-main?tab=tools&view=waivers");
+    await expect(page.getByText(/ESPN free agents/i)).toBeVisible();
+    await expect(page.getByText("Alexander White")).toBeVisible();
+  });
+
+  test("tools start/sit uses typical-week posteriors", async ({ page }) => {
+    await page.goto("/leagues/football-main?tab=tools&view=start-sit");
+    await expect(page.getByText(/Typical-week posteriors/i)).toBeVisible();
+    // Fixture overlay maps roster ESPN id → weekly Mahomes GSIS; UI keeps roster name.
+    await expect(page.getByText("Roy Thompson")).toBeVisible();
+  });
 });
