@@ -112,6 +112,60 @@ jobs:
       - name: Audit dependencies
         run: npm audit --audit-level=high
 
+  # Roadmap 1.2 — Playwright smoke against next start + fixtures.
+  # Separate from `web` so Chromium install does not inflate the unit/build job.
+  # Not required by branch protection yet; enable once stable on main.
+  web-e2e:
+    name: web-e2e
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    defaults:
+      run:
+        working-directory: apps/web
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: "npm"
+          cache-dependency-path: apps/web/package-lock.json
+
+      - name: Install from the lockfile
+        run: npm ci
+
+      - name: Cache Playwright browsers
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ hashFiles('apps/web/package-lock.json') }}
+
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: Build hub
+        run: npm run build
+        env:
+          AUTH_DEV_BYPASS: "1"
+          AUTH_SECRET: ci-smoke-secret
+          AUTH_URL: http://127.0.0.1:3000
+
+      - name: Smoke (AUTH_DEV_BYPASS)
+        run: npm run test:e2e
+        env:
+          AUTH_DEV_BYPASS: "1"
+          AUTH_SECRET: ci-smoke-secret
+          AUTH_URL: http://127.0.0.1:3000
+          CI: "true"
+
+      - name: Auth redirect (no bypass)
+        run: npm run test:e2e:auth
+        env:
+          AUTH_DEV_BYPASS: "0"
+          AUTH_SECRET: ci-smoke-secret
+          AUTH_URL: http://127.0.0.1:3001
+          CI: "true"
+
   images:
     name: images
     runs-on: ubuntu-latest
