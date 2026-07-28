@@ -24,17 +24,15 @@ describe("LeagueView unification", () => {
     expect(pageSource).not.toMatch(/function record\(/);
   });
 
-  it("shared view includes season chips, win%, injury dots, and sport-gated columns", () => {
+  it("shared view includes season chips, win%, and sport-gated standings", () => {
     expect(viewSource).toMatch(/SeasonSwitcher/);
     expect(viewSource).toMatch(/Win%/);
-    expect(viewSource).toMatch(/status-dot/);
     expect(viewSource).toMatch(/table-scroll/);
     expect(viewSource).toMatch(/sportFormatLabel/);
-    // Football keeps PF/PA; baseball keeps role switcher + counting stats.
+    // Football keeps PF/PA; baseball keeps role switcher; players use DataTable.
     expect(viewSource).toMatch(/"PF"/);
     expect(viewSource).toMatch(/<th>PA<\/th>/);
     expect(viewSource).toMatch(/RoleSwitcher/);
-    expect(viewSource).toMatch(/FootballPlayersTable/);
-    expect(viewSource).toMatch(/BaseballPlayersTable/);
+    expect(viewSource).toMatch(/PlayersDataTable/);
   });
 });
