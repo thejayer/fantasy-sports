@@ -3,8 +3,21 @@ import { notFound } from "next/navigation";
 import { BaseballRosterView } from "@/components/BaseballRosterView";
 import { EmptyState } from "@/components/EmptyState";
 import { SeasonSwitcher } from "@/components/SeasonSwitcher";
-import { getLeagueSeasons, getTeam } from "@/lib/data";
+import {
+  getLeagueSeasons,
+  getPlayerMap,
+  getProjectionSnapshot,
+  getTeam,
+} from "@/lib/data";
 import { injuryTone, recordLabel, winPctLabel } from "@/lib/league";
+import {
+  attachPlayerProjections,
+  formatProjectionPoints,
+  indexPlayerMap,
+  indexProjections,
+  projectionSeasonCandidates,
+  scoringSlugFromLeague,
+} from "@/lib/projection-join";
 
 // See app/page.tsx. Already dynamic today, but declared so adding
 // generateStaticParams later cannot silently freeze snapshot data.
@@ -48,6 +61,26 @@ export default async function TeamPage({ params, searchParams }: Props) {
     );
   }
 
+  let projectionSnapshot = null;
+  let playerMap = null;
+  const scoring = scoringSlugFromLeague(league);
+  for (const year of projectionSeasonCandidates(league.season)) {
+    const snap = await getProjectionSnapshot(scoring, year);
+    const map = await getPlayerMap(year);
+    if (map && !playerMap) playerMap = map;
+    if (snap) {
+      projectionSnapshot = snap;
+      if (map) playerMap = map;
+      break;
+    }
+  }
+  const roster = attachPlayerProjections(
+    team.roster,
+    indexPlayerMap(playerMap),
+    indexProjections(projectionSnapshot),
+  );
+  const mapped = roster.filter((p) => p.projection).length;
+
   return (
     <main className="section league-view sport-football">
       <div className="league-kicker">
@@ -63,6 +96,9 @@ export default async function TeamPage({ params, searchParams }: Props) {
       <p className="lede">
         {team.owners.join(", ") || "Owner TBD"} · {recordLabel(team)} (
         {winPctLabel(team)}) · {team.roster.length} rostered
+        {projectionSnapshot
+          ? ` · ${mapped}/${team.roster.length} with season projections (${scoring.toUpperCase()})`
+          : ""}
       </p>
 
       <SeasonSwitcher
@@ -88,11 +124,16 @@ export default async function TeamPage({ params, searchParams }: Props) {
                 <th>Pro</th>
                 <th>Status</th>
                 <th>Points</th>
+                <th>Floor</th>
+                <th>Med</th>
+                <th>Ceil</th>
+                <th>Tier</th>
               </tr>
             </thead>
             <tbody>
-              {team.roster.map((player) => {
+              {roster.map((player) => {
                 const label = player.injury_status || player.status || "OK";
+                const proj = player.projection;
                 return (
                   <tr key={`${player.id}-${player.name}`}>
                     <td data-label="Status">
@@ -108,6 +149,18 @@ export default async function TeamPage({ params, searchParams }: Props) {
                     <td data-label="Injury">{player.injury_status ?? "—"}</td>
                     <td data-label="Points">
                       {player.total_points?.toFixed?.(1) ?? "—"}
+                    </td>
+                    <td data-label="Floor">
+                      {formatProjectionPoints(proj?.floor)}
+                    </td>
+                    <td data-label="Med">
+                      {formatProjectionPoints(proj?.median)}
+                    </td>
+                    <td data-label="Ceil">
+                      {formatProjectionPoints(proj?.ceiling)}
+                    </td>
+                    <td data-label="Tier">
+                      {proj?.tier != null ? String(proj.tier) : "—"}
                     </td>
                   </tr>
                 );

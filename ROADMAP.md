@@ -359,10 +359,15 @@ and engine-side `skill_*` stats. Hub reader: `getPlayerMap(season)` under
 `store/player_map/` alongside projections. No silent name matching — misses are
 explicit. Projection UI join is 4.4.
 
-### 4.4 Projections in the hub
-Per-player floor/median/ceiling on roster and player pages, VOR and tiers on a
-ranked board, and weekly start/sit guidance for real rosters. Now the hub tells
-a member something ESPN doesn't.
+### 4.4 Projections in the hub — LANDED
+Football `projections` tab ranks engine season posteriors (floor / median /
+ceiling / VOR / tier) via `ProjectionsBoard`. Roster and players tables join
+ESPN `Player.id` → GSIS through `getPlayerMap` + `lib/projection-join.ts`, then
+show Floor / Med / Ceil (and VOR on the players board). Scoring slug from league
+reception points (`ppr` / `standard`); season file falls back to `league.season - 1`
+when the hub calendar leads the NFL year. **Weekly start/sit is deferred** —
+store snapshots are season-level totals, not weekly posteriors; UI copy says so
+explicitly. Baseball stays projection-free (4.6).
 
 ### 4.5 Decision tools
 Trade analyzer comparing posterior distributions across two rosters, a draft
@@ -402,10 +407,11 @@ Fold in continuously rather than saving for the end.
 
 ## Sequencing
 
-**Next up: 1.3 or 4.4.** Continuous deployment + Workload Identity Federation
+**Next up: 1.3, 4.5, or 4.6.** Continuous deployment + Workload Identity Federation
 (1.3) is the biggest remaining platform win on track A (needs GCP-side WIF
-setup). Engine 4.1–4.3 are in; projection UI (4.4) can join roster ESPN ids
-through `getPlayerMap`. Product 3.1–3.6 and data 2.1–2.5 are in.
+setup). Engine track 4.1–4.4 is in (CLI → snapshots → ID map → hub UI). Decision
+tools (4.5) and baseball scoping (4.6) remain. Product 3.1–3.6 and data 2.1–2.5
+are in.
 
 **Branch protection on `main` is done** — required checks are `python`, `web`,
 and `images`. The `python` check is an aggregator over the 3.11 + 3.12 matrix.
@@ -422,12 +428,11 @@ shape. Phase 3.1 (unify views) before any other UI work so nothing ships twice.
 | A — Platform | 1.3, ~~1.5~~, ~~1.6~~, 1.7 | workflows, Dockerfiles, scripts |
 | B — Data | ~~1.4~~, ~~2.1~~, ~~2.2~~, ~~2.3~~, ~~2.4~~, ~~2.5~~ | `src/sj`, `configs` |
 | C — Product | ~~3.1~~ → ~~3.2~~ → ~~3.3~~ → ~~3.4~~ → ~~3.5~~ → ~~3.6~~ | `apps/web` |
-| D — Engine | ~~4.1~~, ~~4.2~~, ~~4.3~~, 4.4 | `src/ffa` (+ hub store / projections / player_map) |
+| D — Engine | ~~4.1~~, ~~4.2~~, ~~4.3~~, ~~4.4~~, 4.5, 4.6 | `src/ffa` + `apps/web` projections UI |
 
-A, B, and D barely overlap with C, so platform hardening, sync extension, and the
-`LevelModel` plumbing can all proceed while the UI is rebuilt. Track D's 4.3
-(player ID mapping) is the long pole for phase 4 and should start early, because
-it is the item most likely to reveal unpleasant surprises.
+A, B, and D barely overlap with remaining C polish, so platform hardening and
+decision-tool work can proceed in parallel. Phase 4's ID-map risk (4.3) is
+landed; weekly start/sit needs new weekly projection exports before it can ship.
 
 **Fastest visible wins** remaining: 3.2 (a decade of history appears), 3.3
 (tables become usable). 2.1 is done — draft and matchup data persist for zero

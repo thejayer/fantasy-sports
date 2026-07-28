@@ -758,8 +758,9 @@ on what any marginal model can do.
 - ~~Projection snapshots the hub can read~~ — done (`ffa export-projections` +
   `getProjectionSnapshot`; roadmap 4.2).
 - ~~ESPN↔nflverse player ID mapping with a coverage metric~~ — done
-  (`ffa export-player-map` + `getPlayerMap`; roadmap 4.3). Hub projection UI
-  (roadmap 4.4) remains.
+  (`ffa export-player-map` + `getPlayerMap`; roadmap 4.3).
+- ~~Hub projection UI~~ — done (football `projections` tab + roster/players
+  Floor/Med/Ceil; roadmap 4.4). Weekly start/sit needs weekly exports (4.5).
 - Per-position joint-distribution learning (copula over stat vectors) --
   the lever for cross-stat realism once the marginals are calibrated.
 - Schedule-aware adjustments and dashboard-output pricing against

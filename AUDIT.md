@@ -322,9 +322,9 @@ tells them nothing ESPN's own site doesn't.
 
 The engine is also NFL-only, while `baseball-dynasty` is the league with the
 richest UI. `LevelModel` is reachable from the CLI via `--conditioned-level`
-(roadmap 4.1). Projection snapshots land via `ffa export-projections` +
-`getProjectionSnapshot` (4.2). ESPN↔nflverse join lands via
-`ffa export-player-map` + `getPlayerMap` (4.3); hub projection UI is 4.4.
+(roadmap 4.1). Projection snapshots (4.2), ESPN↔nflverse map (4.3), and hub
+projection UI (4.4 — season floor/median/ceiling + VOR board) are in. Weekly
+start/sit and decision tools remain 4.5+.
 
 ### 16. Storage layout will not extend to weekly data
 
@@ -372,7 +372,7 @@ time. `@types/node` is `^20` against a Node 22 runtime. No Dependabot or Renovat
 | 12 | `sync.py` at 0% coverage | P1 | Fixed — 100% + loud exits + `SYNC_SUMMARY` (roadmap 1.4) |
 | 13 | All deploys manual | P1 | Open — roadmap 1.3 |
 | 14 | No observability or alerting | P1 | Baseline fixed (roadmap 1.6); uptime check + min-instances still open |
-| 15 | `ffa` engine disconnected from the hub | P2 | Partly — 4.1–4.3 landed (CLI + projection + ID map); UI still 4.4 |
+| 15 | `ffa` engine disconnected from the hub | P2 | Mostly closed for season projections (4.1–4.4); weekly tools still 4.5 |
 | 16 | Storage layout won't extend to weekly data | P2 | Open — roadmap 2.2, 2.3 |
 | 17 | Hub image carries the analytics stack | P2 | Open — roadmap phase 5 |
 | 18 | CI/production version skew, no lockfile | P2 | Open — roadmap 1.5 |

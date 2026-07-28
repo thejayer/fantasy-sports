@@ -40,5 +40,16 @@ describe("LeagueView unification", () => {
     // Roadmap 3.5: history tab aggregates multi-season archives.
     expect(viewSource).toMatch(/HistoryPanel/);
     expect(viewSource).toMatch(/"history"/);
+    // Roadmap 4.4: football projections tab (VOR / floor / median / ceiling).
+    expect(viewSource).toMatch(/ProjectionsBoard/);
+    expect(viewSource).toMatch(/"projections"/);
+    expect(viewSource).toMatch(/showProjections/);
+    expect(viewSource).not.toMatch(/^["']use client["']/m);
+  });
+
+  it("league page loads projection snapshots for football tabs", () => {
+    expect(pageSource).toMatch(/getProjectionSnapshot/);
+    expect(pageSource).toMatch(/getPlayerMap/);
+    expect(pageSource).toMatch(/scoringSlugFromLeague/);
   });
 });

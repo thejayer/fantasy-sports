@@ -6,7 +6,15 @@ import {
   getLeagueHistoryArchive,
   getLeagueSeasons,
   getLeagueSnapshot,
+  getPlayerMap,
+  getProjectionSnapshot,
+  type PlayerMapSnapshot,
+  type ProjectionSnapshot,
 } from "@/lib/data";
+import {
+  projectionSeasonCandidates,
+  scoringSlugFromLeague,
+} from "@/lib/projection-join";
 
 // See app/page.tsx. Already dynamic today, but declared so adding
 // generateStaticParams later cannot silently freeze snapshot data.
@@ -22,8 +30,29 @@ type Props = {
     view?: string;
     a?: string;
     b?: string;
+    scoring?: string;
   }>;
 };
+
+async function loadProjectionBundle(
+  leagueSeason: number,
+  scoring: string,
+): Promise<{
+  snapshot: ProjectionSnapshot | null;
+  playerMap: PlayerMapSnapshot | null;
+  scoring: string;
+}> {
+  let playerMap: PlayerMapSnapshot | null = null;
+  for (const year of projectionSeasonCandidates(leagueSeason)) {
+    const snapshot = await getProjectionSnapshot(scoring, year);
+    const map = await getPlayerMap(year);
+    if (map && !playerMap) playerMap = map;
+    if (snapshot) {
+      return { snapshot, playerMap: map ?? playerMap, scoring };
+    }
+  }
+  return { snapshot: null, playerMap, scoring };
+}
 
 export default async function LeagueDetailPage({ params, searchParams }: Props) {
   const { leagueId } = await params;
@@ -35,6 +64,7 @@ export default async function LeagueDetailPage({ params, searchParams }: Props) 
     view: viewParam,
     a: aParam,
     b: bParam,
+    scoring: scoringParam,
   } = await searchParams;
   const seasons = await getLeagueSeasons(leagueId);
   const season = seasonParam ? Number(seasonParam) : undefined;
@@ -64,6 +94,20 @@ export default async function LeagueDetailPage({ params, searchParams }: Props) 
   const historyArchive =
     tab === "history" ? await getLeagueHistoryArchive(leagueId) : null;
 
+  const wantsProjections =
+    league.sport === "football" &&
+    (tab === "projections" || tab === "players");
+  const scoringOverride =
+    scoringParam === "standard" || scoringParam === "ppr"
+      ? scoringParam
+      : null;
+  const projectionBundle = wantsProjections
+    ? await loadProjectionBundle(
+        league.season,
+        scoringOverride ?? scoringSlugFromLeague(league),
+      )
+    : { snapshot: null, playerMap: null, scoring: scoringOverride };
+
   return (
     <LeagueView
       league={league}
@@ -76,6 +120,9 @@ export default async function LeagueDetailPage({ params, searchParams }: Props) 
       historyView={historyView}
       h2hA={a != null && !Number.isNaN(a) ? a : undefined}
       h2hB={b != null && !Number.isNaN(b) ? b : undefined}
+      projectionSnapshot={projectionBundle.snapshot}
+      playerMap={projectionBundle.playerMap}
+      projectionScoring={projectionBundle.scoring}
     />
   );
 }

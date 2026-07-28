@@ -3,14 +3,26 @@ import { EmptyState } from "@/components/EmptyState";
 import { HistoryPanel, type HistoryView } from "@/components/HistoryPanel";
 import { MatchupsPanel, type MatchupsView } from "@/components/MatchupsPanel";
 import { PlayersDataTable } from "@/components/PlayersDataTable";
+import { ProjectionsBoard } from "@/components/ProjectionsBoard";
 import { SeasonSwitcher } from "@/components/SeasonSwitcher";
-import type { LeagueHistoryArchive, LeagueSnapshot, Team } from "@/lib/data";
+import type {
+  LeagueHistoryArchive,
+  LeagueSnapshot,
+  PlayerMapSnapshot,
+  ProjectionSnapshot,
+  Team,
+} from "@/lib/data";
 import { isPitcher } from "@/lib/baseball";
 import {
   recordLabel,
   sportFormatLabel,
   winPctLabel,
 } from "@/lib/league";
+import {
+  attachPlayerProjections,
+  indexPlayerMap,
+  indexProjections,
+} from "@/lib/projection-join";
 
 function RoleSwitcher({
   leagueId,
@@ -144,6 +156,23 @@ function TeamsList({
   );
 }
 
+const FOOTBALL_TABS = [
+  "standings",
+  "teams",
+  "players",
+  "matchups",
+  "history",
+  "projections",
+] as const;
+
+const BASEBALL_TABS = [
+  "standings",
+  "teams",
+  "players",
+  "matchups",
+  "history",
+] as const;
+
 export function LeagueView({
   league,
   seasons,
@@ -155,6 +184,9 @@ export function LeagueView({
   historyView = "standings",
   h2hA,
   h2hB,
+  projectionSnapshot = null,
+  playerMap = null,
+  projectionScoring = null,
 }: {
   league: LeagueSnapshot;
   seasons: number[];
@@ -166,19 +198,24 @@ export function LeagueView({
   historyView?: HistoryView;
   h2hA?: number;
   h2hB?: number;
+  projectionSnapshot?: ProjectionSnapshot | null;
+  playerMap?: PlayerMapSnapshot | null;
+  projectionScoring?: string | null;
 }) {
   const leagueId = league.league_id;
   const isBaseball = league.sport === "baseball";
   const period = league.period_label || (isBaseball ? "period" : "week");
-  const active = ["standings", "teams", "players", "matchups", "history"].includes(
-    tab,
-  )
-    ? tab
-    : "standings";
+  const tabs = isBaseball ? BASEBALL_TABS : FOOTBALL_TABS;
+  const active = (tabs as readonly string[]).includes(tab) ? tab : "standings";
   const activeRole = isBaseball ? role : undefined;
 
   const historyPair =
     h2hA != null && h2hB != null ? `&a=${h2hA}&b=${h2hB}` : "";
+
+  const scoringQuery =
+    active === "projections" && projectionScoring
+      ? `&scoring=${projectionScoring}`
+      : "";
 
   const seasonHrefExtra =
     active === "players" && activeRole
@@ -187,7 +224,9 @@ export function LeagueView({
         ? `&view=${matchupsView}${week != null ? `&week=${week}` : ""}`
         : active === "history"
           ? `&view=${historyView}${historyPair}`
-          : "";
+          : active === "projections"
+            ? scoringQuery
+            : "";
 
   const players = isBaseball
     ? league.players.filter((player) => {
@@ -196,6 +235,13 @@ export function LeagueView({
         return true;
       })
     : league.players;
+
+  const espnToGsis = indexPlayerMap(playerMap);
+  const byGsis = indexProjections(projectionSnapshot);
+  const playersWithProjections =
+    !isBaseball && projectionSnapshot
+      ? attachPlayerProjections(players, espnToGsis, byGsis)
+      : players;
 
   return (
     <main className={`section league-view sport-${league.sport}`}>
@@ -215,7 +261,8 @@ export function LeagueView({
         {league.synced_at
           ? ` · synced ${new Date(league.synced_at).toLocaleString()}`
           : ""}
-        . Standings, matchups, history, rosters, and season stats from ESPN.
+        . Standings, matchups, history, rosters, and season projections from the
+        engine.
       </p>
 
       <SeasonSwitcher
@@ -227,9 +274,7 @@ export function LeagueView({
       />
 
       <div className="tabs">
-        {(
-          ["standings", "teams", "players", "matchups", "history"] as const
-        ).map((name) => (
+        {tabs.map((name) => (
           <Link
             key={name}
             href={
@@ -238,7 +283,10 @@ export function LeagueView({
               (name === "matchups"
                 ? `&view=${matchupsView}${week != null ? `&week=${week}` : ""}`
                 : "") +
-              (name === "history" ? `&view=${historyView}${historyPair}` : "")
+              (name === "history" ? `&view=${historyView}${historyPair}` : "") +
+              (name === "projections" && projectionScoring
+                ? `&scoring=${projectionScoring}`
+                : "")
             }
             className={`tab${active === name ? " active" : ""}`}
           >
@@ -264,9 +312,10 @@ export function LeagueView({
             />
           ) : null}
           <PlayersDataTable
-            players={players}
+            players={playersWithProjections}
             sport={league.sport}
             role={role}
+            showProjections={!isBaseball && Boolean(projectionSnapshot)}
           />
         </>
       ) : null}
@@ -284,6 +333,30 @@ export function LeagueView({
           a={h2hA}
           b={h2hB}
         />
+      ) : null}
+
+      {active === "projections" ? (
+        isBaseball ? (
+          <EmptyState title="Projections are NFL-only today">
+            The analytics engine models football. Baseball stays data-rich but
+            projection-free until roadmap 4.6.
+          </EmptyState>
+        ) : (
+          <>
+            <div className="tabs" style={{ marginTop: "0.5rem" }}>
+              {(["ppr", "standard"] as const).map((slug) => (
+                <Link
+                  key={slug}
+                  href={`/leagues/${leagueId}?season=${league.season}&tab=projections&scoring=${slug}`}
+                  className={`tab${(projectionScoring ?? "ppr") === slug ? " active" : ""}`}
+                >
+                  {slug}
+                </Link>
+              ))}
+            </div>
+            <ProjectionsBoard snapshot={projectionSnapshot} />
+          </>
+        )
       ) : null}
     </main>
   );
