@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { SeasonSwitcher } from "@/components/SeasonSwitcher";
 import type { LeagueSnapshot, Player, Team } from "@/lib/data";
 import { formatStat, isPitcher, stat } from "@/lib/baseball";
 import {
@@ -7,40 +8,6 @@ import {
   sportFormatLabel,
   winPctLabel,
 } from "@/lib/league";
-
-function SeasonSwitcher({
-  leagueId,
-  seasons,
-  current,
-  tab,
-  role,
-}: {
-  leagueId: string;
-  seasons: number[];
-  current: number;
-  tab: string;
-  role?: string;
-}) {
-  if (seasons.length <= 1) return null;
-  return (
-    <div className="season-switch" aria-label="Season">
-      {seasons.map((season) => {
-        const href =
-          `/leagues/${leagueId}?season=${season}&tab=${tab}` +
-          (role ? `&role=${role}` : "");
-        return (
-          <Link
-            key={season}
-            href={href}
-            className={`season-chip${season === current ? " active" : ""}`}
-          >
-            {season}
-          </Link>
-        );
-      })}
-    </div>
-  );
-}
 
 function RoleSwitcher({
   leagueId,
@@ -347,11 +314,12 @@ export function LeagueView({
       </p>
 
       <SeasonSwitcher
-        leagueId={leagueId}
         seasons={seasons}
         current={league.season}
-        tab={active}
-        role={active === "players" ? activeRole : undefined}
+        hrefFor={(season) =>
+          `/leagues/${leagueId}?season=${season}&tab=${active}` +
+          (active === "players" && activeRole ? `&role=${activeRole}` : "")
+        }
       />
 
       <div className="tabs">

@@ -25,7 +25,7 @@ describe("LeagueView unification", () => {
   });
 
   it("shared view includes season chips, win%, injury dots, and sport-gated columns", () => {
-    expect(viewSource).toMatch(/season-chip/);
+    expect(viewSource).toMatch(/SeasonSwitcher/);
     expect(viewSource).toMatch(/Win%/);
     expect(viewSource).toMatch(/status-dot/);
     expect(viewSource).toMatch(/table-scroll/);

@@ -271,10 +271,12 @@ Win%, injury dots, and `.table-scroll`. Standings keep sport-specific columns
 role switcher and counting-stat columns. Shared helpers live in `lib/league.ts`;
 `BaseballRosterView` stays on the team page until a later roster unify.
 
-### 3.2 Season navigation everywhere
-Season switcher on every league and team page. This alone surfaces 12 seasons of
-`football-main` and 9 of `football-dynasty` that are already on disk and
-currently unreachable (finding #6). Highest value-per-line change in the plan.
+### 3.2 Season navigation everywhere — LANDED
+Shared `SeasonSwitcher` on league pages (via `LeagueView`) and both team-page
+branches. Team pages load `getLeagueSeasons` and keep `?season=` on chips and
+the back-link to the league. This surfaces the full history already on disk
+(12 seasons of `football-main`, 9 of `football-dynasty`) that AUDIT #6 found
+unreachable from the UI.
 
 ### 3.3 A real data table
 One reusable table with search, sortable columns, position/role filters, and
@@ -373,15 +375,15 @@ Fold in continuously rather than saving for the end.
 
 ## Sequencing
 
-**Next up: 1.3 or 3.2.** Continuous deployment + Workload Identity Federation
+**Next up: 1.3 or 3.3.** Continuous deployment + Workload Identity Federation
 (1.3) is the biggest remaining platform win on track A (needs GCP-side WIF
-setup). Product track continues with 3.2 (season navigation everywhere).
-Data track 2.1–2.5 and product 3.1 are in.
+setup). Product track continues with 3.3 (reusable data table). Data track
+2.1–2.5 and product 3.1–3.2 are in.
 
 **Branch protection on `main` is done** — required checks are `python`, `web`,
 and `images`. The `python` check is an aggregator over the 3.11 + 3.12 matrix.
 
-**Strictly ordered:** ~~0~~ → 1 → 2.2 → ~~3.1~~ → 3.2/3.3 → 3.4/3.5 → 4.
+**Strictly ordered:** ~~0~~ → 1 → 2.2 → ~~3.1~~ → ~~3.2~~ → 3.3 → 3.4/3.5 → 4.
 Phase 2.2 (schema split) before phase 3 so the UI is built once against the final
 shape. Phase 3.1 (unify views) before any other UI work so nothing ships twice.
 1.7 (Next 16) after 1.1, so a major bump lands against a real CI gate.
@@ -392,7 +394,7 @@ shape. Phase 3.1 (unify views) before any other UI work so nothing ships twice.
 |---|---|---|
 | A — Platform | 1.3, ~~1.5~~, ~~1.6~~, 1.7 | workflows, Dockerfiles, scripts |
 | B — Data | ~~1.4~~, ~~2.1~~, ~~2.2~~, ~~2.3~~, ~~2.4~~, ~~2.5~~ | `src/sj`, `configs` |
-| C — Product | ~~3.1~~ → 3.2 → 3.6 | `apps/web` |
+| C — Product | ~~3.1~~ → ~~3.2~~ → 3.3 → 3.6 | `apps/web` |
 | D — Engine | 4.1, 4.3 | `src/ffa` |
 
 A, B, and D barely overlap with C, so platform hardening, sync extension, and the

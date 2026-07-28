@@ -168,18 +168,12 @@ so this bug is invisible until production.
 
 ## P1 — Product and UX
 
-### 6. Football leagues have no way to reach their own history
+### 6. Football leagues have no way to reach their own history — FIXED
 
-`SeasonSwitcher` exists only inside `apps/web/src/components/BaseballLeagueView.tsx`.
-The football branch of `apps/web/src/app/leagues/[leagueId]/page.tsx` renders no
-season control at all. Confirmed by counting `season-chip` elements in the
-served HTML: **0 on `/leagues/football-main`**, 3 on `/leagues/baseball-dynasty`.
-
-`configs/leagues.yaml` declares **12 seasons for `football-main` (2015–2026)** and
-9 for `football-dynasty`. `?season=2015` renders correctly when typed by hand, so
-the data and the routing both work — there is simply no link to it. The single
-most valuable asset the group has, a decade of league history, is unreachable
-through the UI.
+Was: season chips lived only on the baseball league view; football history
+(12 seasons of `football-main`, 9 of `football-dynasty`) was reachable only by
+hand-typing `?season=`. Fixed in roadmap 3.1 (shared `LeagueView` chips) and
+3.2 (shared `SeasonSwitcher` on team pages too).
 
 <img src="/opt/cursor/artifacts/audit_football_no_season_switcher.webp" alt="Football league page with no season selector" />
 <img src="/opt/cursor/artifacts/audit_baseball_has_season_switcher.webp" alt="Baseball league page showing 2026 2025 2024 season chips" />
@@ -378,9 +372,9 @@ time. `@types/node` is `^20` against a Node 22 runtime. No Dependabot or Renovat
 | 3 | 14 dependency advisories; `next-auth` on prerelease | P0 | Advisories cleared (#26, roadmap 0.3); prerelease remains, roadmap 1.7 |
 | 4 | Long-lived SA key, over-broad IAM, root containers | P0 | Containers + IAM fixed (#26, roadmap 0.5); SA key → WIF, roadmap 1.3 |
 | 5 | `/` and `/leagues` frozen at build-time fixtures | P0 | Fixed (#26, roadmap 0.2) |
-| 6 | Football history unreachable (12 seasons, no switcher) | P1 | Open — roadmap 3.2 |
+| 6 | Football history unreachable (12 seasons, no switcher) | P1 | Fixed — roadmap 3.1 (league) + 3.2 (team pages) |
 | 7 | Player tables: no search/sort/filter/pagination | P1 | Open — roadmap 3.3 |
-| 8 | Football and baseball views diverged | P1 | Open — roadmap 3.1 |
+| 8 | Football and baseball views diverged | P1 | Fixed — roadmap 3.1 (`LeagueView`) |
 | 9 | No matchups, draft, transactions, or history | P1 | Open — roadmap 2.1, 2.4, 3.4, 3.5 |
 | 10 | No loading/error/empty states | P1 | Partly — `error.tsx` / `not-found.tsx` in 1.6; loading/empty remain roadmap 3.6 |
 | 11 | Zero CI for `apps/web` | P1 | Fixed (#28, roadmap 1.1); branch protection requires `python` / `web` / `images` |
