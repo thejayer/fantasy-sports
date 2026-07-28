@@ -760,7 +760,10 @@ on what any marginal model can do.
 - ~~ESPN↔nflverse player ID mapping with a coverage metric~~ — done
   (`ffa export-player-map` + `getPlayerMap`; roadmap 4.3).
 - ~~Hub projection UI~~ — done (football `projections` tab + roster/players
-  Floor/Med/Ceil; roadmap 4.4). Weekly start/sit needs weekly exports (4.5).
+  Floor/Med/Ceil; roadmap 4.4).
+- ~~Decision tools (trade / waiver proxy / strength)~~ — done (`?tab=tools`;
+  roadmap 4.5). Draft assistant + playoff odds still need offline exporters;
+  weekly start/sit still needs weekly exports.
 - Per-position joint-distribution learning (copula over stat vectors) --
   the lever for cross-stat realism once the marginals are calibrated.
 - Schedule-aware adjustments and dashboard-output pricing against

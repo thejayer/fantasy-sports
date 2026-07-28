@@ -44,6 +44,9 @@ describe("LeagueView unification", () => {
     expect(viewSource).toMatch(/ProjectionsBoard/);
     expect(viewSource).toMatch(/"projections"/);
     expect(viewSource).toMatch(/showProjections/);
+    // Roadmap 4.5: decision tools tab (trade / waivers / strength).
+    expect(viewSource).toMatch(/ToolsPanel/);
+    expect(viewSource).toMatch(/"tools"/);
     expect(viewSource).not.toMatch(/^["']use client["']/m);
   });
 
@@ -51,5 +54,6 @@ describe("LeagueView unification", () => {
     expect(pageSource).toMatch(/getProjectionSnapshot/);
     expect(pageSource).toMatch(/getPlayerMap/);
     expect(pageSource).toMatch(/scoringSlugFromLeague/);
+    expect(pageSource).toMatch(/tab === "tools"/);
   });
 });
