@@ -32,9 +32,8 @@ MLB modeling plan.
 Hosted as Cloud Run service **`sj-hub`** in project **`fantasy-sports-analytics`**.
 
 App secrets (Google OAuth, allowlist, ESPN cookies) live in **GCP Secret Manager**.
-The GitHub Action that deploys also needs a separate credential: repository
-secret **`GCP_SA_KEY`** (a GCP service-account JSON key). That is *not* created
-by `create-hub-secrets.sh`.
+Deploy workflows authenticate with **Workload Identity Federation** (no JSON key):
+pool/provider `github`, SA `ffa-deployer@fantasy-sports-analytics.iam.gserviceaccount.com`.
 
 ### One-time GCP setup (Cloud Shell)
 
@@ -48,18 +47,20 @@ chmod +x scripts/*.sh
 ./scripts/add-hub-secret-version.sh ...   # populate each secret
 ./scripts/grant-hub-secret-access.sh      # Cloud Run runtime can read them
 
-# GitHub Actions deploy key (fixes the auth/credentials_json error):
+# Deployer SA roles + printed WIF commands (pool/provider/SA binding):
 ./scripts/setup-github-deployer.sh
-# → paste key.json into GitHub → Settings → Secrets → Actions → GCP_SA_KEY
-# → rm key.json
+# Run the WIF commands it prints if the pool does not exist yet.
+# Do NOT create GCP_SA_KEY — delete it if an old key secret remains.
 ```
 
 ### Deploy
 
-1. Confirm `GCP_SA_KEY` exists under repo **Settings → Secrets and variables → Actions**
-2. GitHub → **Actions** → **deploy hub** → **Run workflow**
-3. Defaults are fine (`fantasy-sports-analytics` / `us-central1` / `sj-hub`)
-4. When it finishes, copy the printed URL
+Hub deploys automatically on merge to `main` when hub paths change (branch
+protection is the CI gate). Manual rollback / first-time:
+
+1. GitHub → **Actions** → **deploy hub** → **Run workflow**
+2. Defaults are fine (`fantasy-sports-analytics` / `us-central1` / `sj-hub`)
+3. When it finishes, copy the printed URL
 
 ### Google OAuth redirect (required after first deploy)
 

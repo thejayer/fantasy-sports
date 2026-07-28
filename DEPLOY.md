@@ -70,29 +70,17 @@ Registry, and deploys to Cloud Run for you -- one click from the Actions
 tab, reproducible, no local Docker. Set it up once:
 
 ```bash
-# 1. A service account the workflow authenticates as.
-gcloud iam service-accounts create ffa-deployer --project your-project-id
-
-SA="ffa-deployer@your-project-id.iam.gserviceaccount.com"
-for role in run.admin iam.serviceAccountUser artifactregistry.writer \
-            serviceusage.serviceUsageAdmin secretmanager.viewer; do
-  gcloud projects add-iam-policy-binding your-project-id \
-      --member "serviceAccount:$SA" --role "roles/$role"
-done
-
-# 2. A JSON key for it (this file goes into a GitHub secret, then delete it).
-gcloud iam service-accounts keys create key.json --iam-account "$SA"
+# Deployer SA + project roles + printed WIF setup (no JSON key):
+./scripts/setup-github-deployer.sh
 ```
 
-`scripts/setup-github-deployer.sh` does all of the above. The deployer gets
-`secretmanager.viewer` (resolve secret names) but never `secretAccessor` --
-only the Cloud Run runtime SA reads secret values.
-
-Add one **repository secret** (Settings → Secrets and variables → Actions):
-
-| Secret | Value |
-|---|---|
-| `GCP_SA_KEY` | the full contents of `key.json` |
+`scripts/setup-github-deployer.sh` ensures `ffa-deployer` has `run.admin`,
+`iam.serviceAccountUser`, `artifactregistry.writer`,
+`serviceusage.serviceUsageAdmin`, and `secretmanager.viewer` (resolve secret
+names — never `secretAccessor`; only the Cloud Run runtime SA reads values).
+It also prints the Workload Identity Federation commands (pool, GitHub OIDC
+provider, `workloadIdentityUser` on the SA). Deploy workflows use that OIDC
+path; do **not** add a `GCP_SA_KEY` repository secret.
 
 The shared league password lives in **Secret Manager**, not a repo secret, so
 it is not readable from the Cloud Run service config:
