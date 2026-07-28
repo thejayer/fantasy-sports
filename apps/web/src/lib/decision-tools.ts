@@ -181,9 +181,20 @@ export function evaluateTrade(
   };
 }
 
+export type WaiverRow = ProjectionPlayer & {
+  espn_id?: string | null;
+  percent_owned?: number | null;
+  source: "espn" | "proxy";
+};
+
+export type WaiverBoardData = {
+  rows: WaiverRow[];
+  source: "espn" | "proxy";
+};
+
 /**
  * Engine projection rows not on any football roster in the snapshot.
- * Proxy for waiver wire — not ESPN free agents (those are not synced yet).
+ * Fallback when the season has no synced ESPN free_agents list.
  */
 export function unrosteredProjectionRows(
   league: LeagueSnapshot,
@@ -213,6 +224,64 @@ export function unrosteredProjectionRows(
     .filter((row) => row.player_id && !rosteredGsis.has(row.player_id))
     .slice()
     .sort((a, b) => (b.vor ?? 0) - (a.vor ?? 0));
+}
+
+/**
+ * Prefer ESPN free_agents (joined to projections when the map hits); else the
+ * unrostered-projection proxy.
+ */
+export function waiverBoardRows(
+  league: LeagueSnapshot,
+  playerMap: PlayerMapSnapshot | null | undefined,
+  snapshot: ProjectionSnapshot | null | undefined,
+): WaiverBoardData {
+  const agents = league.free_agents ?? [];
+  if (agents.length > 0) {
+    const espnToGsis = indexPlayerMap(playerMap);
+    const byGsis = indexProjections(snapshot);
+    const rows: WaiverRow[] = agents.map((agent) => {
+      const espn = normalizeEspnId(agent.id);
+      const proj = projectionForEspnId(agent.id, espnToGsis, byGsis);
+      if (proj) {
+        return {
+          ...proj,
+          espn_id: espn,
+          percent_owned: agent.percent_owned ?? null,
+          source: "espn",
+        };
+      }
+      return {
+        player_id: espn ?? String(agent.id ?? "unknown"),
+        player_name: agent.name,
+        position: agent.position,
+        team: agent.pro_team,
+        points_mean: null,
+        points_sd: null,
+        floor: null,
+        median: null,
+        ceiling: null,
+        vor: null,
+        tier: null,
+        espn_id: espn,
+        percent_owned: agent.percent_owned ?? null,
+        source: "espn",
+      };
+    });
+    rows.sort((a, b) => {
+      const vorA = a.vor;
+      const vorB = b.vor;
+      if (vorA != null && vorB != null && vorA !== vorB) return vorB - vorA;
+      if (vorA != null && vorB == null) return -1;
+      if (vorA == null && vorB != null) return 1;
+      return (b.percent_owned ?? 0) - (a.percent_owned ?? 0);
+    });
+    return { rows, source: "espn" };
+  }
+
+  const proxy = unrosteredProjectionRows(league, playerMap, snapshot).map(
+    (row) => ({ ...row, source: "proxy" as const }),
+  );
+  return { rows: proxy, source: "proxy" };
 }
 
 export function defaultToolsPair(league: LeagueSnapshot): {

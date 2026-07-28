@@ -11,7 +11,7 @@ import {
   defaultToolsPair,
   projectionIndexes,
   teamStrengthRows,
-  unrosteredProjectionRows,
+  waiverBoardRows,
 } from "@/lib/decision-tools";
 import { formatProjectionPoints } from "@/lib/projection-join";
 
@@ -178,11 +178,7 @@ export function ToolsPanel({
 
       {view === "waivers" ? (
         <WaiverBoard
-          players={unrosteredProjectionRows(
-            league,
-            playerMap,
-            projectionSnapshot,
-          )}
+          board={waiverBoardRows(league, playerMap, projectionSnapshot)}
         />
       ) : null}
 
@@ -209,8 +205,10 @@ export function ToolsPanel({
               (same blocker as start/sit).
             </li>
             <li>
-              <strong>ESPN free agents</strong> — not in the sync schema yet
-              (roadmap 2.4); the Waivers view is an unrostered-projection proxy.
+              <strong>ESPN free agents</strong> — synced into{" "}
+              <code>free_agents.json</code> (size-capped). The Waivers view uses
+              that list when present; otherwise it falls back to unrostered
+              projections.
             </li>
           </ul>
         </EmptyState>

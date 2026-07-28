@@ -53,6 +53,21 @@ def _monolith() -> dict:
                 ],
             }
         ],
+        "free_agents": [
+            {
+                "id": 99,
+                "name": "Wire Guy",
+                "position": "WR",
+                "slot": "FA",
+                "pro_team": "DAL",
+                "injury_status": "ACTIVE",
+                "status": "FREEAGENT",
+                "percent_owned": 12.5,
+                "total_points": 20.0,
+                "projected_total_points": 30.0,
+                "avg_points": 2.0,
+            }
+        ],
         "teams": [
             {
                 "team_id": 1,
@@ -133,12 +148,14 @@ def test_split_round_trip_preserves_monolith_fields():
         "draft.json",
         "settings.json",
         "transactions.json",
+        "free_agents.json",
     }
     assert parts["manifest.json"]["schema_version"] == SCHEMA_VERSION
     assert parts["settings.json"]["settings"]["faab"] is True
     assert parts["transactions.json"]["transactions"][0]["actions"][0]["action"] == (
         "FA ADDED"
     )
+    assert parts["free_agents.json"]["free_agents"][0]["name"] == "Wire Guy"
     assert "roster" not in parts["standings.json"]["teams"][0]
     assert parts["rosters.json"]["teams"]["1"][0]["name"] == "Star"
     assert parts["matchups.json"]["teams"]["1"]["outcomes"] == ["W", "L", "U"]
@@ -169,6 +186,7 @@ def test_assemble_tolerates_missing_settings_and_transactions():
     parts = split_snapshot(_monolith())
     del parts["settings.json"]
     del parts["transactions.json"]
+    del parts["free_agents.json"]
     by_name = {
         "manifest": parts["manifest.json"],
         "standings": parts["standings.json"],
@@ -179,3 +197,4 @@ def test_assemble_tolerates_missing_settings_and_transactions():
     snap = assemble_snapshot(by_name)
     assert snap["settings"] == {}
     assert snap["transactions"] == []
+    assert snap["free_agents"] == []

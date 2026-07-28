@@ -38,6 +38,7 @@ CONCERN_FILES = (
     "draft.json",
     "settings.json",
     "transactions.json",
+    "free_agents.json",
 )
 
 
@@ -79,6 +80,7 @@ def split_snapshot(snapshot: dict[str, Any]) -> dict[str, dict[str, Any]]:
         "draft": "draft.json",
         "settings": "settings.json",
         "transactions": "transactions.json",
+        "free_agents": "free_agents.json",
     }
     manifest = {
         "schema_version": SCHEMA_VERSION,
@@ -117,6 +119,9 @@ def split_snapshot(snapshot: dict[str, Any]) -> dict[str, dict[str, Any]]:
         "draft.json": {"draft": list(snapshot.get("draft") or [])},
         "settings.json": {"settings": settings},
         "transactions.json": {"transactions": list(snapshot.get("transactions") or [])},
+        "free_agents.json": {
+            "free_agents": list(snapshot.get("free_agents") or [])
+        },
     }
 
 
@@ -125,7 +130,8 @@ def assemble_snapshot(parts: dict[str, dict[str, Any]]) -> dict[str, Any]:
 
     ``parts`` keys are concern names (``manifest``, ``standings``, …) or the
     corresponding filenames; both are accepted. ``settings`` / ``transactions``
-    are optional so seasons written before roadmap 2.4 still assemble.
+    / ``free_agents`` are optional so seasons written before those sync slices
+    still assemble.
     """
     manifest = _part(parts, "manifest", MANIFEST_NAME)
     standings = _part(parts, "standings", "standings.json")
@@ -134,6 +140,7 @@ def assemble_snapshot(parts: dict[str, dict[str, Any]]) -> dict[str, Any]:
     draft = _part(parts, "draft", "draft.json") or {}
     settings_part = _optional_part(parts, "settings", "settings.json") or {}
     transactions_part = _optional_part(parts, "transactions", "transactions.json") or {}
+    free_agents_part = _optional_part(parts, "free_agents", "free_agents.json") or {}
 
     roster_by_id = rosters.get("teams") or {}
     matchup_by_id = matchups.get("teams") or {}
@@ -172,6 +179,7 @@ def assemble_snapshot(parts: dict[str, dict[str, Any]]) -> dict[str, Any]:
         "settings": settings,
         "draft": list(draft.get("draft") or []),
         "transactions": list(transactions_part.get("transactions") or []),
+        "free_agents": list(free_agents_part.get("free_agents") or []),
         "teams": teams,
         "players": list(rosters.get("players") or []),
     }

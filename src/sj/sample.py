@@ -374,9 +374,10 @@ def sample_league(
     # free data the live serializer now persists (roadmap 2.1).
     _assign_matchups(built, games=games, rng=rng)
     draft = _build_draft(built, rounds=3)
-    # Settings (from mSettings) + recent_activity pages (roadmap 2.4).
+    # Settings (from mSettings) + recent_activity + free_agents (roadmap 2.4).
     settings = _build_settings(spec, teams=teams, games=games)
     activities = _build_activities(built, season=season, rng=rng)
+    agents = _build_free_agents(spec, season=season, rng=rng)
 
     def recent_activity(
         size: int = 25,
@@ -386,6 +387,15 @@ def sample_league(
         del msg_type
         return activities[offset : offset + size]
 
+    def free_agents(
+        week: int | None = None,
+        size: int = 50,
+        position: str | None = None,
+        position_id: int | None = None,
+    ) -> list[_Stub]:
+        del week, position, position_id
+        return agents[:size]
+
     return _Stub(
         settings=settings,
         teams=built,
@@ -393,6 +403,7 @@ def sample_league(
         draft=draft,
         year=season,
         recent_activity=recent_activity,
+        free_agents=free_agents,
     )
 
 
@@ -456,6 +467,29 @@ def _build_activities(
             actions=[(t1, "FA ADDED", p1, 3.0)],
         ),
     ]
+
+
+def _build_free_agents(
+    spec: LeagueSpec, *, season: int, rng: random.Random, count: int = 20
+) -> list[_Stub]:
+    """Fabricate a size-capped FREEAGENT/WAIVERS pool (ids outside roster space)."""
+    if season < 2019:
+        return []
+    agents: list[_Stub] = []
+    for index in range(count):
+        # Keep ids far from roster ids (season * 1000 + …) used by sample_league.
+        player_id = season * 100_000 + 50_000 + index
+        if spec.sport == "baseball":
+            slot = rng.choice(("OF", "1B", "SP", "RP", "UTIL"))
+            player = _baseball_player(rng, player_id, slot)
+        else:
+            slot = rng.choice(("QB", "RB", "WR", "TE", "D/ST", "K"))
+            player = _football_player(rng, player_id, slot)
+        player.lineupSlot = "FA"
+        player.slot_position = "FA"
+        player.status = "FREEAGENT" if index % 3 else "WAIVERS"
+        agents.append(player)
+    return agents
 
 
 def _assign_matchups(teams: list[_Stub], *, games: int, rng: random.Random) -> None:

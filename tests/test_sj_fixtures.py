@@ -70,6 +70,7 @@ def test_expected_fixture_snapshot_is_schema_complete():
         assert snap["team_count"] == fixture_team_count(spec)
         assert snap["synced_at"] == FIXED_TIMESTAMP
         assert "settings" in snap and "transactions" in snap and "draft" in snap
+        assert "free_agents" in snap
         assert "scoring_type" in snap and "period_label" in snap
         team = snap["teams"][0]
         assert {"schedule", "scores", "outcomes", "win_pct", "logo_url"} <= set(team)

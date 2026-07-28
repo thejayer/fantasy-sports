@@ -4,6 +4,7 @@ from sj.serialize import (
     extract_baseball_season_stats,
     serialize_activity,
     serialize_draft,
+    serialize_free_agents,
     serialize_league,
     serialize_player,
     serialize_settings,
@@ -149,6 +150,45 @@ def test_serialize_settings_and_activity_shapes():
     assert baseball["actions"][0]["player_id"] == 9
     assert serialize_transactions([]) == []
     assert serialize_settings(SimpleNamespace()) == {}
+
+
+def test_serialize_free_agents_sorts_by_percent_owned():
+    low = SimpleNamespace(
+        playerId=1,
+        name="Low",
+        position="WR",
+        lineupSlot="FA",
+        proTeam="DAL",
+        injuryStatus="ACTIVE",
+        status="FREEAGENT",
+        injured=False,
+        eligibleSlots=["WR"],
+        acquisitionType=None,
+        percent_owned=5.0,
+        total_points=10.0,
+        projected_total_points=12.0,
+        avg_points=1.0,
+    )
+    high = SimpleNamespace(
+        playerId=2,
+        name="High",
+        position="RB",
+        slot_position="FA",
+        proTeam="KC",
+        injuryStatus="ACTIVE",
+        status="WAIVERS",
+        injured=False,
+        eligibleSlots=["RB"],
+        acquisitionType=None,
+        percent_owned=40.0,
+        total_points=50.0,
+        projected_total_points=55.0,
+        avg_points=5.0,
+    )
+    rows = serialize_free_agents([low, high])
+    assert [r["name"] for r in rows] == ["High", "Low"]
+    assert rows[0]["slot"] == "FA"
+    assert "season_stats" not in rows[0]
 
 
 def test_serialize_draft_handles_missing_and_auction_fields():

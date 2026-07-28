@@ -124,6 +124,408 @@
   ],
   "espn_league_id": 39790,
   "format": "redraft",
+  "free_agents": [
+    {
+      "acquisition_type": "WAIVER",
+      "avg_points": 8.7,
+      "eligible_slots": [
+        "K",
+        "BE",
+        "IR"
+      ],
+      "id": 202650015,
+      "injured": false,
+      "injury_status": null,
+      "name": "Alexander White",
+      "percent_owned": 98.8,
+      "position": "K",
+      "pro_team": "BUF",
+      "projected_total_points": 145.7,
+      "slot": "FA",
+      "status": "WAIVERS",
+      "total_points": 148.0
+    },
+    {
+      "acquisition_type": "DRAFT",
+      "avg_points": 11.0,
+      "eligible_slots": [
+        "RB",
+        "BE",
+        "IR"
+      ],
+      "id": 202650004,
+      "injured": true,
+      "injury_status": null,
+      "name": "Adam Jimenez",
+      "percent_owned": 98.6,
+      "position": "RB",
+      "pro_team": "PIT",
+      "projected_total_points": 199.3,
+      "slot": "FA",
+      "status": "FREEAGENT",
+      "total_points": 187.4
+    },
+    {
+      "acquisition_type": "ADD",
+      "avg_points": 4.4,
+      "eligible_slots": [
+        "TE",
+        "BE",
+        "IR"
+      ],
+      "id": 202650001,
+      "injured": false,
+      "injury_status": null,
+      "name": "Zachary Garcia",
+      "percent_owned": 94.9,
+      "position": "TE",
+      "pro_team": "ATL",
+      "projected_total_points": 87.8,
+      "slot": "FA",
+      "status": "FREEAGENT",
+      "total_points": 75.2
+    },
+    {
+      "acquisition_type": "ADD",
+      "avg_points": 0.1,
+      "eligible_slots": [
+        "RB",
+        "BE",
+        "IR"
+      ],
+      "id": 202650014,
+      "injured": false,
+      "injury_status": null,
+      "name": "James Johnson",
+      "percent_owned": 94.8,
+      "position": "RB",
+      "pro_team": "IND",
+      "projected_total_points": 1.9,
+      "slot": "FA",
+      "status": "FREEAGENT",
+      "total_points": 2.2
+    },
+    {
+      "acquisition_type": "TRADE",
+      "avg_points": 7.9,
+      "eligible_slots": [
+        "TE",
+        "BE",
+        "IR"
+      ],
+      "id": 202650007,
+      "injured": false,
+      "injury_status": null,
+      "name": "Jeffrey Davis",
+      "percent_owned": 90.8,
+      "position": "TE",
+      "pro_team": "NO",
+      "projected_total_points": 148.7,
+      "slot": "FA",
+      "status": "FREEAGENT",
+      "total_points": 134.3
+    },
+    {
+      "acquisition_type": "ADD",
+      "avg_points": 8.5,
+      "eligible_slots": [
+        "K",
+        "BE",
+        "IR"
+      ],
+      "id": 202650018,
+      "injured": false,
+      "injury_status": null,
+      "name": "Terry Young",
+      "percent_owned": 82.3,
+      "position": "K",
+      "pro_team": "WSH",
+      "projected_total_points": 123.5,
+      "slot": "FA",
+      "status": "WAIVERS",
+      "total_points": 144.1
+    },
+    {
+      "acquisition_type": "ADD",
+      "avg_points": 10.1,
+      "eligible_slots": [
+        "WR",
+        "BE",
+        "IR"
+      ],
+      "id": 202650017,
+      "injured": false,
+      "injury_status": null,
+      "name": "Dennis Williams",
+      "percent_owned": 71.0,
+      "position": "WR",
+      "pro_team": "PHI",
+      "projected_total_points": 194.1,
+      "slot": "FA",
+      "status": "FREEAGENT",
+      "total_points": 171.4
+    },
+    {
+      "acquisition_type": "ADD",
+      "avg_points": 10.8,
+      "eligible_slots": [
+        "K",
+        "BE",
+        "IR"
+      ],
+      "id": 202650010,
+      "injured": false,
+      "injury_status": null,
+      "name": "John Cruz",
+      "percent_owned": 65.0,
+      "position": "K",
+      "pro_team": "PIT",
+      "projected_total_points": 183.5,
+      "slot": "FA",
+      "status": "FREEAGENT",
+      "total_points": 182.9
+    },
+    {
+      "acquisition_type": "TRADE",
+      "avg_points": 6.8,
+      "eligible_slots": [
+        "TE",
+        "BE",
+        "IR"
+      ],
+      "id": 202650006,
+      "injured": true,
+      "injury_status": null,
+      "name": "Wayne Ramirez",
+      "percent_owned": 44.6,
+      "position": "TE",
+      "pro_team": "CLE",
+      "projected_total_points": 111.6,
+      "slot": "FA",
+      "status": "WAIVERS",
+      "total_points": 116.0
+    },
+    {
+      "acquisition_type": "WAIVER",
+      "avg_points": 15.8,
+      "eligible_slots": [
+        "QB",
+        "BE",
+        "IR"
+      ],
+      "id": 202650012,
+      "injured": false,
+      "injury_status": "ACTIVE",
+      "name": "Bradley Garcia",
+      "percent_owned": 37.3,
+      "position": "QB",
+      "pro_team": "MIN",
+      "projected_total_points": 278.5,
+      "slot": "FA",
+      "status": "WAIVERS",
+      "total_points": 268.6
+    },
+    {
+      "acquisition_type": "TRADE",
+      "avg_points": 11.5,
+      "eligible_slots": [
+        "K",
+        "BE",
+        "IR"
+      ],
+      "id": 202650013,
+      "injured": false,
+      "injury_status": "OUT",
+      "name": "Lawrence Ramirez",
+      "percent_owned": 37.2,
+      "position": "K",
+      "pro_team": "HOU",
+      "projected_total_points": 155.3,
+      "slot": "FA",
+      "status": "FREEAGENT",
+      "total_points": 195.0
+    },
+    {
+      "acquisition_type": "DRAFT",
+      "avg_points": 6.3,
+      "eligible_slots": [
+        "K",
+        "BE",
+        "IR"
+      ],
+      "id": 202650003,
+      "injured": false,
+      "injury_status": null,
+      "name": "Jordan Ross",
+      "percent_owned": 26.9,
+      "position": "K",
+      "pro_team": "GB",
+      "projected_total_points": 109.9,
+      "slot": "FA",
+      "status": "WAIVERS",
+      "total_points": 107.2
+    },
+    {
+      "acquisition_type": "ADD",
+      "avg_points": 12.2,
+      "eligible_slots": [
+        "RB",
+        "BE",
+        "IR"
+      ],
+      "id": 202650016,
+      "injured": false,
+      "injury_status": "OUT",
+      "name": "Mason Hernandez",
+      "percent_owned": 26.1,
+      "position": "RB",
+      "pro_team": "LAC",
+      "projected_total_points": 188.6,
+      "slot": "FA",
+      "status": "FREEAGENT",
+      "total_points": 207.3
+    },
+    {
+      "acquisition_type": "DRAFT",
+      "avg_points": 2.8,
+      "eligible_slots": [
+        "D/ST",
+        "BE",
+        "IR"
+      ],
+      "id": 202650002,
+      "injured": true,
+      "injury_status": null,
+      "name": "PIT D/ST",
+      "percent_owned": 22.3,
+      "position": "D/ST",
+      "pro_team": "LAR",
+      "projected_total_points": 40.7,
+      "slot": "FA",
+      "status": "FREEAGENT",
+      "total_points": 47.5
+    },
+    {
+      "acquisition_type": "DRAFT",
+      "avg_points": 7.2,
+      "eligible_slots": [
+        "TE",
+        "BE",
+        "IR"
+      ],
+      "id": 202650019,
+      "injured": true,
+      "injury_status": "ACTIVE",
+      "name": "Austin Peterson",
+      "percent_owned": 21.3,
+      "position": "TE",
+      "pro_team": "DAL",
+      "projected_total_points": 125.5,
+      "slot": "FA",
+      "status": "FREEAGENT",
+      "total_points": 122.0
+    },
+    {
+      "acquisition_type": "ADD",
+      "avg_points": 9.9,
+      "eligible_slots": [
+        "WR",
+        "BE",
+        "IR"
+      ],
+      "id": 202650008,
+      "injured": false,
+      "injury_status": "ACTIVE",
+      "name": "David Thomas",
+      "percent_owned": 18.8,
+      "position": "WR",
+      "pro_team": "CIN",
+      "projected_total_points": 149.9,
+      "slot": "FA",
+      "status": "FREEAGENT",
+      "total_points": 167.9
+    },
+    {
+      "acquisition_type": "DRAFT",
+      "avg_points": 6.3,
+      "eligible_slots": [
+        "TE",
+        "BE",
+        "IR"
+      ],
+      "id": 202650000,
+      "injured": false,
+      "injury_status": null,
+      "name": "Samuel Gutierrez",
+      "percent_owned": 15.7,
+      "position": "TE",
+      "pro_team": "CHI",
+      "projected_total_points": 106.0,
+      "slot": "FA",
+      "status": "WAIVERS",
+      "total_points": 107.1
+    },
+    {
+      "acquisition_type": "ADD",
+      "avg_points": 12.9,
+      "eligible_slots": [
+        "QB",
+        "BE",
+        "IR"
+      ],
+      "id": 202650005,
+      "injured": false,
+      "injury_status": "DOUBTFUL",
+      "name": "Bruce Rivera",
+      "percent_owned": 15.2,
+      "position": "QB",
+      "pro_team": "MIN",
+      "projected_total_points": 220.5,
+      "slot": "FA",
+      "status": "FREEAGENT",
+      "total_points": 219.5
+    },
+    {
+      "acquisition_type": "WAIVER",
+      "avg_points": 11.9,
+      "eligible_slots": [
+        "QB",
+        "BE",
+        "IR"
+      ],
+      "id": 202650009,
+      "injured": false,
+      "injury_status": null,
+      "name": "Brandon Carter",
+      "percent_owned": 12.0,
+      "position": "QB",
+      "pro_team": "SEA",
+      "projected_total_points": 238.5,
+      "slot": "FA",
+      "status": "WAIVERS",
+      "total_points": 202.4
+    },
+    {
+      "acquisition_type": "TRADE",
+      "avg_points": 9.6,
+      "eligible_slots": [
+        "RB",
+        "BE",
+        "IR"
+      ],
+      "id": 202650011,
+      "injured": false,
+      "injury_status": "QUESTIONABLE",
+      "name": "Lawrence Reed",
+      "percent_owned": 4.6,
+      "position": "RB",
+      "pro_team": "NYG",
+      "projected_total_points": 140.1,
+      "slot": "FA",
+      "status": "FREEAGENT",
+      "total_points": 163.1
+    }
+  ],
   "league_id": "football-main",
   "name": "Strictly Jayers Football",
   "period_label": "week",

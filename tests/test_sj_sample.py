@@ -150,7 +150,7 @@ def test_seeded_snapshots_persist_draft_and_matchups(registry):
 
 
 def test_seeded_snapshots_persist_settings_and_transactions(registry):
-    """Roadmap 2.4: seed must exercise settings + recent_activity fields."""
+    """Roadmap 2.4: seed must exercise settings + recent_activity + free_agents."""
     redraft = sample_snapshot(spec_for(registry, "football-main"), 2024, teams=4)
     dynasty = sample_snapshot(spec_for(registry, "football-dynasty"), 2024, teams=4)
     assert redraft["settings"]["keeper_count"] == 0
@@ -159,9 +159,14 @@ def test_seeded_snapshots_persist_settings_and_transactions(registry):
     assert redraft["settings"]["position_slot_counts"]["QB"] == 1
     assert len(redraft["transactions"]) >= 1
     assert redraft["transactions"][0]["actions"][0]["action"]
-    # Activity endpoints do not exist before 2019.
+    assert len(redraft["free_agents"]) >= 1
+    assert redraft["free_agents"][0]["slot"] == "FA"
+    roster_ids = {p["id"] for t in redraft["teams"] for p in t["roster"]}
+    assert redraft["free_agents"][0]["id"] not in roster_ids
+    # Activity / FA endpoints do not exist before 2019.
     ancient = sample_snapshot(spec_for(registry, "football-main"), 2018, teams=4)
     assert ancient["transactions"] == []
+    assert ancient["free_agents"] == []
     assert ancient["settings"]["keeper_count"] == 0
 
 
