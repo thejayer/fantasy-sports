@@ -9,6 +9,8 @@
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
+    "test:e2e": "playwright test e2e/smoke.spec.ts",
+    "test:e2e:auth": "AUTH_DEV_BYPASS=0 PORT=3001 PLAYWRIGHT_BASE_URL=http://127.0.0.1:3001 playwright test e2e/auth-redirect.spec.ts",
     "verify:prerender": "node scripts/assert-no-stale-prerender.mjs",
     "verify:bundle-budget": "node scripts/check-bundle-budget.mjs"
   },
@@ -19,11 +21,16 @@
     "react-dom": "^19.0.0"
   },
   "devDependencies": {
+    "@playwright/test": "^1.62.0",
+    "@testing-library/jest-dom": "^7.0.0",
+    "@testing-library/react": "^16.3.2",
+    "@testing-library/user-event": "^14.6.1",
     "@types/node": "^22",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "eslint": "^9",
     "eslint-config-next": "^16.2.12",
+    "jsdom": "^29.1.1",
     "typescript": "^5",
     "vitest": "^4.1.10"
   },

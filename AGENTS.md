@@ -27,6 +27,7 @@ This is a dual-product monorepo. See `README.md` (ffa engine) and `HUB.md` (memb
 
 ### Hub web app (`apps/web`)
 - Run with `npm run dev` (Next.js 16 + Turbopack on `http://localhost:3000`). See `HUB.md` for full setup. Lint is `npm run lint` → `eslint .` (not `next lint`). Keep `src/middleware.ts` for Auth.js Edge — do not rename to `proxy.ts` (Node-only). Snapshot purge uses `revalidateTag(tag, "max")`.
+- Frontend tests (roadmap 1.2): `npm test` is Vitest (node for `*.test.ts`, jsdom via pragma for `*.test.tsx` RTL). Playwright: `npm run build` then `npm run test:e2e` (fixture smoke with `AUTH_DEV_BYPASS=1`) and `npm run test:e2e:auth` (login redirect, bypass off, port 3001). E2E forces `SJ_DATA_DIR` to `fixtures/sj` so a local `data/sj` seed cannot flake assertions. CI job is `web-e2e`.
 - For local dev without Google OAuth, create `apps/web/.env.local` with `AUTH_DEV_BYPASS=1` (plus any `AUTH_SECRET`) to skip login entirely. With bypass off, only `ALLOWED_EMAILS` Google accounts can sign in.
 - League pages render one sport-aware `LeagueView` (`apps/web/src/components/LeagueView.tsx`). Do not reintroduce a football-only branch on `leagues/[leagueId]/page.tsx`. Baseball roster team pages still use `BaseballRosterView`.
 - Season chips are the shared `SeasonSwitcher` (`apps/web/src/components/SeasonSwitcher.tsx`) on league and team pages. Pass `hrefFor` so team URLs stay under `/leagues/{id}/teams/{teamId}?season=`.

@@ -111,15 +111,22 @@ scheduled run.
 **Branch protection on `main` is enabled.** Required checks: `python`, `web`,
 `images`. A red run can no longer merge — phase 1.1's premise holds.
 
-### 1.2 Test harness for the frontend
-*Partly landed:* Vitest is in place with 26 tests covering the Phase 0
-regressions — `callbackUrl` validation, the force-dynamic invariant, and the
-`requireSession` backstop — and 1.1 now runs them on every PR.
+### 1.2 Test harness for the frontend — LANDED
+Vitest remains the unit gate (`npm test`): lib logic + source-shape invariants,
+plus React Testing Library coverage for the interactive `DataTable` client
+component (`DataTable.test.tsx`, jsdom).
 
-Remaining: React Testing Library for component tests once Phase 3 introduces
-client components, and Playwright for a handful of smoke paths (login redirect,
-leagues list, standings, team roster, 404s). Neither is worth adding until there
-is UI worth driving, so this stays open against Phase 3 rather than blocking it.
+Playwright smoke lives in `apps/web/e2e/` and runs against the standalone
+server + committed `fixtures/sj` (`SJ_DATA_DIR` forced in
+`playwright.config.ts`):
+
+- `npm run test:e2e` — leagues list, standings, team roster, 404s, login bypass
+  redirect (`AUTH_DEV_BYPASS=1`)
+- `npm run test:e2e:auth` — unauthenticated `/leagues` → `/login?callbackUrl=…`
+
+CI job `web-e2e` (Chromium only) runs both after `npm run build`. Not a
+required branch-protection check yet — enable once it has stayed green on
+`main`.
 
 ### 1.3 Continuous deployment — LANDED
 `deploy-hub.yml` runs on push to `main` (path-filtered; branch protection is the
