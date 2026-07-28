@@ -16,9 +16,30 @@ const body = Source_Sans_3({
   weight: ["400", "600", "700"],
 });
 
+const siteDescription = "Fantasy leagues and member hub for Strictly Jayers.";
+
 export const metadata: Metadata = {
-  title: "Strictly Jayers",
-  description: "Fantasy leagues and member hub for Strictly Jayers.",
+  metadataBase: new URL(
+    process.env.AUTH_URL?.replace(/\/$/, "") || "http://localhost:3000",
+  ),
+  title: {
+    default: "Strictly Jayers",
+    template: "%s · Strictly Jayers",
+  },
+  description: siteDescription,
+  applicationName: "Strictly Jayers",
+  openGraph: {
+    title: "Strictly Jayers",
+    description: siteDescription,
+    siteName: "Strictly Jayers",
+    type: "website",
+    locale: "en_US",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Strictly Jayers",
+    description: siteDescription,
+  },
 };
 
 export default async function RootLayout({

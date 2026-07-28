@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { EmptyState } from "@/components/EmptyState";
 import { HistoryPanel, type HistoryView } from "@/components/HistoryPanel";
 import { MatchupsPanel, type MatchupsView } from "@/components/MatchupsPanel";
 import { PlayersDataTable } from "@/components/PlayersDataTable";
@@ -52,10 +53,19 @@ function StandingsTable({
   const isFootball = league.sport === "football";
   const showPoints = league.teams.some((team) => team.points_for != null);
   const showAgainst = isFootball;
+  const pointsLabel = isFootball ? "PF" : "Points";
+
+  if (!league.teams.length) {
+    return (
+      <EmptyState title="No teams in this snapshot">
+        Standings will appear after the next sync or seed for this season.
+      </EmptyState>
+    );
+  }
 
   return (
     <div className="panel table-scroll">
-      <table>
+      <table className="table-cards">
         <thead>
           <tr>
             <th>#</th>
@@ -63,29 +73,31 @@ function StandingsTable({
             <th>Owner</th>
             <th>Record</th>
             <th>Win%</th>
-            {isFootball || showPoints ? <th>{isFootball ? "PF" : "Points"}</th> : null}
+            {isFootball || showPoints ? <th>{pointsLabel}</th> : null}
             {showAgainst ? <th>PA</th> : null}
           </tr>
         </thead>
         <tbody>
           {league.teams.map((team) => (
             <tr key={team.team_id}>
-              <td>{team.standing ?? "—"}</td>
-              <td>
+              <td data-label="#">{team.standing ?? "—"}</td>
+              <td data-label="Team">
                 <Link
                   href={`/leagues/${leagueId}/teams/${team.team_id}?season=${league.season}`}
                 >
                   {team.name}
                 </Link>
               </td>
-              <td>{team.owners.join(", ") || "—"}</td>
-              <td>{recordLabel(team)}</td>
-              <td>{winPctLabel(team)}</td>
+              <td data-label="Owner">{team.owners.join(", ") || "—"}</td>
+              <td data-label="Record">{recordLabel(team)}</td>
+              <td data-label="Win%">{winPctLabel(team)}</td>
               {isFootball || showPoints ? (
-                <td>{team.points_for?.toFixed?.(1) ?? "—"}</td>
+                <td data-label={pointsLabel}>
+                  {team.points_for?.toFixed?.(1) ?? "—"}
+                </td>
               ) : null}
               {showAgainst ? (
-                <td>{team.points_against?.toFixed?.(1) ?? "—"}</td>
+                <td data-label="PA">{team.points_against?.toFixed?.(1) ?? "—"}</td>
               ) : null}
             </tr>
           ))}
@@ -102,6 +114,14 @@ function TeamsList({
   league: LeagueSnapshot;
   leagueId: string;
 }) {
+  if (!league.teams.length) {
+    return (
+      <EmptyState title="No teams yet">
+        This season snapshot has no team list to browse.
+      </EmptyState>
+    );
+  }
+
   return (
     <div className="league-list">
       {league.teams.map((team: Team) => (

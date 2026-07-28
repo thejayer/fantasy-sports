@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { EmptyState } from "@/components/EmptyState";
 import { SeasonSwitcher } from "@/components/SeasonSwitcher";
 import type { LeagueSnapshot, Player } from "@/lib/data";
 import {
@@ -52,8 +53,17 @@ export function BaseballRosterView({
         }
       />
 
-      <RosterGroup title="Batters" players={batters} kind="batter" />
-      <RosterGroup title="Pitchers" players={pitchers} kind="pitcher" />
+      {!team.roster.length ? (
+        <EmptyState title="No roster players in this snapshot">
+          Rosters appear after sync when ESPN returns lineup data for this
+          season.
+        </EmptyState>
+      ) : (
+        <>
+          <RosterGroup title="Batters" players={batters} kind="batter" />
+          <RosterGroup title="Pitchers" players={pitchers} kind="pitcher" />
+        </>
+      )}
     </main>
   );
 }
@@ -67,12 +77,21 @@ function RosterGroup({
   players: Player[];
   kind: "batter" | "pitcher";
 }) {
-  if (!players.length) return null;
+  if (!players.length) {
+    return (
+      <div style={{ marginTop: "1.5rem" }}>
+        <h3 className="roster-group-title">{title}</h3>
+        <EmptyState title={`No ${title.toLowerCase()} on this roster`} />
+      </div>
+    );
+  }
+  const batterStats = ["R", "HR", "RBI", "SB", "AVG", "OPS"] as const;
+  const pitcherStats = ["IP", "W", "SV", "K", "ERA", "WHIP"] as const;
   return (
     <div style={{ marginTop: "1.5rem" }}>
       <h3 className="roster-group-title">{title}</h3>
       <div className="panel table-scroll">
-        <table>
+        <table className="table-cards">
           <thead>
             <tr>
               <th></th>
@@ -80,58 +99,42 @@ function RosterGroup({
               <th>Player</th>
               <th>Pos</th>
               <th>Pro</th>
-              {kind === "batter" ? (
-                <>
-                  <th>R</th>
-                  <th>HR</th>
-                  <th>RBI</th>
-                  <th>SB</th>
-                  <th>AVG</th>
-                  <th>OPS</th>
-                </>
-              ) : (
-                <>
-                  <th>IP</th>
-                  <th>W</th>
-                  <th>SV</th>
-                  <th>K</th>
-                  <th>ERA</th>
-                  <th>WHIP</th>
-                </>
-              )}
+              {kind === "batter"
+                ? batterStats.map((label) => <th key={label}>{label}</th>)
+                : pitcherStats.map((label) => <th key={label}>{label}</th>)}
               <th>FPts</th>
             </tr>
           </thead>
           <tbody>
             {players.map((player) => (
               <tr key={`${player.id}-${player.name}`}>
-                <td>
+                <td data-label="Status">
                   <StatusDot player={player} />
                 </td>
-                <td>{player.slot ?? "—"}</td>
-                <td>{player.name}</td>
-                <td>{player.position ?? "—"}</td>
-                <td>{player.pro_team ?? "—"}</td>
+                <td data-label="Slot">{player.slot ?? "—"}</td>
+                <td data-label="Player">{player.name}</td>
+                <td data-label="Pos">{player.position ?? "—"}</td>
+                <td data-label="Pro">{player.pro_team ?? "—"}</td>
                 {kind === "batter" ? (
                   <>
-                    <td>{formatStat(stat(player, "R"))}</td>
-                    <td>{formatStat(stat(player, "HR"))}</td>
-                    <td>{formatStat(stat(player, "RBI"))}</td>
-                    <td>{formatStat(stat(player, "SB"))}</td>
-                    <td>{formatStat(stat(player, "AVG"), 3)}</td>
-                    <td>{formatStat(stat(player, "OPS"), 3)}</td>
+                    <td data-label="R">{formatStat(stat(player, "R"))}</td>
+                    <td data-label="HR">{formatStat(stat(player, "HR"))}</td>
+                    <td data-label="RBI">{formatStat(stat(player, "RBI"))}</td>
+                    <td data-label="SB">{formatStat(stat(player, "SB"))}</td>
+                    <td data-label="AVG">{formatStat(stat(player, "AVG"), 3)}</td>
+                    <td data-label="OPS">{formatStat(stat(player, "OPS"), 3)}</td>
                   </>
                 ) : (
                   <>
-                    <td>{formatStat(stat(player, "IP"), 1)}</td>
-                    <td>{formatStat(stat(player, "W"))}</td>
-                    <td>{formatStat(stat(player, "SV"))}</td>
-                    <td>{formatStat(stat(player, "K"))}</td>
-                    <td>{formatStat(stat(player, "ERA"), 2)}</td>
-                    <td>{formatStat(stat(player, "WHIP"), 2)}</td>
+                    <td data-label="IP">{formatStat(stat(player, "IP"), 1)}</td>
+                    <td data-label="W">{formatStat(stat(player, "W"))}</td>
+                    <td data-label="SV">{formatStat(stat(player, "SV"))}</td>
+                    <td data-label="K">{formatStat(stat(player, "K"))}</td>
+                    <td data-label="ERA">{formatStat(stat(player, "ERA"), 2)}</td>
+                    <td data-label="WHIP">{formatStat(stat(player, "WHIP"), 2)}</td>
                   </>
                 )}
-                <td>{player.total_points?.toFixed?.(1) ?? "—"}</td>
+                <td data-label="FPts">{player.total_points?.toFixed?.(1) ?? "—"}</td>
               </tr>
             ))}
           </tbody>

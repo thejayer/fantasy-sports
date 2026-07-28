@@ -142,7 +142,7 @@ export function DataTable<T>({
       </div>
 
       <div className="panel table-scroll">
-        <table>
+        <table className="table-cards">
           <thead>
             <tr>
               {columns.map((column) => {
@@ -199,6 +199,7 @@ export function DataTable<T>({
                 {columns.map((column) => (
                   <td
                     key={column.id}
+                    data-label={column.header}
                     className={[
                       column.numeric ? "numeric" : "",
                       column.narrow ? "narrow" : "",
@@ -212,8 +213,10 @@ export function DataTable<T>({
               </tr>
             ))}
             {!pageRows.length ? (
-              <tr>
-                <td colSpan={columns.length}>{emptyMessage}</td>
+              <tr className="table-empty-row">
+                <td colSpan={columns.length} data-label="">
+                  {emptyMessage}
+                </td>
               </tr>
             ) : null}
           </tbody>

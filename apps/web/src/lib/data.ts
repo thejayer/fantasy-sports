@@ -3,6 +3,13 @@ import path from "path";
 import { cache } from "react";
 
 import { requireSession } from "@/lib/session";
+import {
+  CorruptSnapshotError,
+  isNotFoundFsError,
+  parseSnapshotJson,
+} from "@/lib/snapshot-json";
+
+export { CorruptSnapshotError } from "@/lib/snapshot-json";
 
 export type SeasonStats = {
   AB?: number;
@@ -250,20 +257,34 @@ function dataRoots(): string[] {
 const CACHE_TTL_MS = Number(process.env.SJ_CACHE_TTL_MS ?? 60_000);
 const fileCache = new Map<string, { at: number; value: unknown }>();
 
+/**
+ * Read JSON from disk with a short TTL cache.
+ * - Missing file (ENOENT) → `null`, cached for TTL
+ * - Corrupt JSON → throws CorruptSnapshotError, **not** cached as null
+ * - Other FS errors → rethrown, not cached
+ */
 async function readJson<T>(filePath: string): Promise<T | null> {
   const hit = fileCache.get(filePath);
   if (hit && Date.now() - hit.at < CACHE_TTL_MS) {
     return hit.value as T | null;
   }
-  let value: T | null = null;
   try {
     const raw = await fs.readFile(filePath, "utf8");
-    value = JSON.parse(raw) as T;
-  } catch {
-    value = null;
+    const value = parseSnapshotJson<T>(raw, filePath);
+    fileCache.set(filePath, { at: Date.now(), value });
+    return value;
+  } catch (err) {
+    if (err instanceof CorruptSnapshotError) {
+      console.error("[sj-hub] corrupt snapshot", filePath, err.cause ?? err);
+      throw err;
+    }
+    if (isNotFoundFsError(err)) {
+      fileCache.set(filePath, { at: Date.now(), value: null });
+      return null;
+    }
+    console.error("[sj-hub] snapshot read failed", filePath, err);
+    throw err;
   }
-  fileCache.set(filePath, { at: Date.now(), value });
-  return value;
 }
 
 function isManifestPath(indexPath: string): boolean {

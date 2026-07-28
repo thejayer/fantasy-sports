@@ -221,20 +221,13 @@ Also missing: `format: dynasty` is a declaration in `configs/leagues.yaml`, not
 something derived from ESPN keeper settings, so nothing in the product actually
 behaves differently for a dynasty league.
 
-### 10. No loading, error, or empty states
+### 10. No loading, error, or empty states — FIXED (roadmap 3.6)
 
-No `loading.tsx`, `error.tsx`, or custom `not-found.tsx` anywhere in
-`apps/web/src/app`. A slow or failed Cloud Storage read surfaces as a blank
-page or the framework's default error screen. `readJson()` in
-`apps/web/src/lib/data.ts` swallows every exception into `null`, so a corrupt
-snapshot is indistinguishable from a missing one — and a corrupt snapshot gets
-cached as `null` for the full TTL. There is one empty state in the whole app,
-on the leagues list.
-
-Also cosmetic but worth clearing out: `apps/web/public/` still ships the
-`create-next-app` boilerplate (`next.svg`, `vercel.svg`, `file.svg`,
-`globe.svg`, `window.svg`), and there is no `robots.txt`, `manifest.json`, or
-Open Graph image.
+Root `error.tsx` / `not-found.tsx` landed in 1.6; 3.6 adds `loading.tsx`
+skeletons, shared `EmptyState`, branded state panels, mobile `.table-cards`,
+and `readJson` that throws `CorruptSnapshotError` for bad JSON instead of
+caching it as missing. create-next-app SVGs removed; `robots.ts`,
+`manifest.ts`, and `opengraph-image.tsx` ship with Open Graph metadata.
 
 ---
 
@@ -373,7 +366,7 @@ time. `@types/node` is `^20` against a Node 22 runtime. No Dependabot or Renovat
 | 7 | Player tables: no search/sort/filter/pagination | P1 | Fixed — roadmap 3.3 (`DataTable`) |
 | 8 | Football and baseball views diverged | P1 | Fixed — roadmap 3.1 (`LeagueView`) |
 | 9 | No matchups, draft, transactions, or history | P1 | Partly — matchups (3.4) + history/records/H2H (3.5) in; draft/tx pages and box scores still open |
-| 10 | No loading/error/empty states | P1 | Partly — `error.tsx` / `not-found.tsx` in 1.6; loading/empty remain roadmap 3.6 |
+| 10 | No loading/error/empty states | P1 | Fixed — roadmap 3.6 (loading/empty/corrupt reads/robots/manifest/OG) |
 | 11 | Zero CI for `apps/web` | P1 | Fixed (#28, roadmap 1.1); branch protection requires `python` / `web` / `images` |
 | 12 | `sync.py` at 0% coverage | P1 | Fixed — 100% + loud exits + `SYNC_SUMMARY` (roadmap 1.4) |
 | 13 | All deploys manual | P1 | Open — roadmap 1.3 |

@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { BaseballRosterView } from "@/components/BaseballRosterView";
+import { EmptyState } from "@/components/EmptyState";
 import { SeasonSwitcher } from "@/components/SeasonSwitcher";
 import { getLeagueSeasons, getTeam } from "@/lib/data";
 import { injuryTone, recordLabel, winPctLabel } from "@/lib/league";
@@ -70,47 +71,51 @@ export default async function TeamPage({ params, searchParams }: Props) {
         hrefFor={seasonHref}
       />
 
-      <div className="panel table-scroll">
-        <table>
-          <thead>
-            <tr>
-              <th></th>
-              <th>Player</th>
-              <th>Pos</th>
-              <th>Slot</th>
-              <th>Pro</th>
-              <th>Status</th>
-              <th>Points</th>
-            </tr>
-          </thead>
-          <tbody>
-            {team.roster.map((player) => {
-              const label = player.injury_status || player.status || "OK";
-              return (
-                <tr key={`${player.id}-${player.name}`}>
-                  <td>
-                    <span
-                      className={`status-dot ${injuryTone(player)}`}
-                      title={label}
-                    />
-                  </td>
-                  <td>{player.name}</td>
-                  <td>{player.position ?? "—"}</td>
-                  <td>{player.slot ?? "—"}</td>
-                  <td>{player.pro_team ?? "—"}</td>
-                  <td>{player.injury_status ?? "—"}</td>
-                  <td>{player.total_points?.toFixed?.(1) ?? "—"}</td>
-                </tr>
-              );
-            })}
-            {!team.roster.length ? (
+      {!team.roster.length ? (
+        <EmptyState title="No roster players in this snapshot">
+          Rosters appear after sync when ESPN returns lineup data for this
+          season.
+        </EmptyState>
+      ) : (
+        <div className="panel table-scroll">
+          <table className="table-cards">
+            <thead>
               <tr>
-                <td colSpan={7}>No roster players in this snapshot.</td>
+                <th></th>
+                <th>Player</th>
+                <th>Pos</th>
+                <th>Slot</th>
+                <th>Pro</th>
+                <th>Status</th>
+                <th>Points</th>
               </tr>
-            ) : null}
-          </tbody>
-        </table>
-      </div>
+            </thead>
+            <tbody>
+              {team.roster.map((player) => {
+                const label = player.injury_status || player.status || "OK";
+                return (
+                  <tr key={`${player.id}-${player.name}`}>
+                    <td data-label="Status">
+                      <span
+                        className={`status-dot ${injuryTone(player)}`}
+                        title={label}
+                      />
+                    </td>
+                    <td data-label="Player">{player.name}</td>
+                    <td data-label="Pos">{player.position ?? "—"}</td>
+                    <td data-label="Slot">{player.slot ?? "—"}</td>
+                    <td data-label="Pro">{player.pro_team ?? "—"}</td>
+                    <td data-label="Injury">{player.injury_status ?? "—"}</td>
+                    <td data-label="Points">
+                      {player.total_points?.toFixed?.(1) ?? "—"}
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+      )}
     </main>
   );
 }
