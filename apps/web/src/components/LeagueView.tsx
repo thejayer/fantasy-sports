@@ -7,6 +7,7 @@ import { ProjectionsBoard } from "@/components/ProjectionsBoard";
 import { SeasonSwitcher } from "@/components/SeasonSwitcher";
 import { ToolsPanel, type ToolsView } from "@/components/ToolsPanel";
 import type {
+  DraftSimSnapshot,
   LeagueHistoryArchive,
   LeagueSnapshot,
   PlayerMapSnapshot,
@@ -192,6 +193,8 @@ export function LeagueView({
   playerMap = null,
   projectionScoring = null,
   toolsView = "trade",
+  draftSlot = 1,
+  draftSimSnapshot = null,
 }: {
   league: LeagueSnapshot;
   seasons: number[];
@@ -207,6 +210,8 @@ export function LeagueView({
   playerMap?: PlayerMapSnapshot | null;
   projectionScoring?: string | null;
   toolsView?: ToolsView;
+  draftSlot?: number;
+  draftSimSnapshot?: DraftSimSnapshot | null;
 }) {
   const leagueId = league.league_id;
   const isBaseball = league.sport === "baseball";
@@ -218,7 +223,8 @@ export function LeagueView({
   const historyPair =
     h2hA != null && h2hB != null ? `&a=${h2hA}&b=${h2hB}` : "";
   const toolsPair =
-    h2hA != null && h2hB != null ? `&a=${h2hA}&b=${h2hB}` : "";
+    (h2hA != null && h2hB != null ? `&a=${h2hA}&b=${h2hB}` : "") +
+    (toolsView === "draft" ? `&slot=${draftSlot}` : "");
 
   const scoringQuery =
     active === "projections" && projectionScoring
@@ -388,8 +394,10 @@ export function LeagueView({
             view={toolsView}
             a={h2hA}
             b={h2hB}
+            slot={draftSlot}
             projectionSnapshot={projectionSnapshot}
             playerMap={playerMap}
+            draftSimSnapshot={draftSimSnapshot}
           />
         )
       ) : null}

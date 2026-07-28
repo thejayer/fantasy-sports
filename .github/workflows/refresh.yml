@@ -110,6 +110,23 @@ jobs:
           done
           find store/projections -type f | sort
 
+      - name: Export draft-sim snapshots
+        run: |
+          mkdir -p store/draft_sim
+          # All slots × modest sims — hub Draft tab switches slot offline.
+          for LEAGUE in configs/ppr.yaml configs/standard.yaml; do
+            ffa export-draft-sim \
+              --league "$LEAGUE" \
+              --season ${{ steps.cfg.outputs.season }} \
+              --lookback ${{ steps.cfg.outputs.lookback }} \
+              --samples ${{ steps.cfg.outputs.samples }} \
+              --sims 300 \
+              --slots all \
+              --out-dir store/draft_sim \
+              --conditioned-level
+          done
+          find store/draft_sim -type f | sort
+
       - name: Export ESPN↔nflverse player map
         run: |
           mkdir -p store/player_map
@@ -148,6 +165,7 @@ jobs:
           name: ffa-store-${{ steps.cfg.outputs.season }}-${{ github.run_id }}
           path: |
             store/projections/
+            store/draft_sim/
             store/player_map/
           retention-days: 14
 
@@ -193,7 +211,9 @@ jobs:
           PPR=( "$ROOT"/projections/ppr/*.json )
           STD=( "$ROOT"/projections/standard/*.json )
           MAP=( "$ROOT"/player_map/*.json )
-          if [ "${#PPR[@]}" -eq 0 ] && [ "${#STD[@]}" -eq 0 ] && [ "${#MAP[@]}" -eq 0 ]; then
+          DRAFT_PPR=( "$ROOT"/draft_sim/ppr/*/*.json )
+          DRAFT_STD=( "$ROOT"/draft_sim/standard/*/*.json )
+          if [ "${#PPR[@]}" -eq 0 ] && [ "${#STD[@]}" -eq 0 ] && [ "${#MAP[@]}" -eq 0 ] && [ "${#DRAFT_PPR[@]}" -eq 0 ] && [ "${#DRAFT_STD[@]}" -eq 0 ]; then
             echo "::error::No JSON files found under $ROOT to promote"
             find artifact -type f | sort
             exit 1
@@ -206,5 +226,17 @@ jobs:
           fi
           if [ "${#MAP[@]}" -gt 0 ]; then
             gcloud storage cp "${MAP[@]}" "gs://${BUCKET}/player_map/"
+          fi
+          if [ "${#DRAFT_PPR[@]}" -gt 0 ]; then
+            for f in "${DRAFT_PPR[@]}"; do
+              season="$(basename "$(dirname "$f")")"
+              gcloud storage cp "$f" "gs://${BUCKET}/draft_sim/ppr/${season}/"
+            done
+          fi
+          if [ "${#DRAFT_STD[@]}" -gt 0 ]; then
+            for f in "${DRAFT_STD[@]}"; do
+              season="$(basename "$(dirname "$f")")"
+              gcloud storage cp "$f" "gs://${BUCKET}/draft_sim/standard/${season}/"
+            done
           fi
           echo "Promoted OK"

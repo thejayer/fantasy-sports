@@ -127,6 +127,40 @@ export type ProjectionSnapshot = {
   players: ProjectionPlayer[];
 };
 
+/** One row from `ffa export-draft-sim` pick_rates (roadmap 4.5). */
+export type DraftSimPickRate = {
+  player_id: string;
+  player_name: string | null;
+  position: string | null;
+  pick_rate: number | null;
+  avg_round: number | null;
+  avg_value: number | null;
+  vor: number | null;
+};
+
+/** Availability row: round_N = P(still on board at user's Nth pick). */
+export type DraftSimAvailability = {
+  player_id: string;
+  player_name: string | null;
+  position: string | null;
+  vor: number | null;
+  [roundKey: string]: string | number | null | undefined;
+};
+
+export type DraftSimSnapshot = {
+  schema_version: number;
+  generated_at: string;
+  scoring: string;
+  season: number;
+  user_slot: number;
+  n_sims: number;
+  teams: number;
+  rounds: number;
+  source?: Record<string, unknown>;
+  pick_rates: DraftSimPickRate[];
+  availability: DraftSimAvailability[];
+};
+
 export type Transaction = {
   date: string | number | null;
   actions: TransactionAction[];
@@ -608,6 +642,39 @@ export const getProjectionSnapshot = cache(
     for (const root of dataRoots()) {
       const doc = await readJson<ProjectionSnapshot>(path.join(root, relative));
       if (doc?.players?.length && doc.season === season) {
+        return doc;
+      }
+    }
+    return null;
+  },
+);
+
+/**
+ * Read an ffa draft-sim snapshot under
+ * ``draft_sim/{scoring}/{season}/slot_{N}.json`` (roadmap 4.5).
+ */
+export const getDraftSimSnapshot = cache(
+  async (
+    scoring: string,
+    season: number,
+    userSlot: number,
+  ): Promise<DraftSimSnapshot | null> => {
+    await requireSession();
+    if (!Number.isFinite(userSlot) || userSlot < 1) return null;
+    const slug = scoring.trim().toLowerCase();
+    const relative = path.join(
+      "draft_sim",
+      slug,
+      String(season),
+      `slot_${Math.trunc(userSlot)}.json`,
+    );
+    for (const root of dataRoots()) {
+      const doc = await readJson<DraftSimSnapshot>(path.join(root, relative));
+      if (
+        doc?.pick_rates &&
+        doc.season === season &&
+        doc.user_slot === Math.trunc(userSlot)
+      ) {
         return doc;
       }
     }

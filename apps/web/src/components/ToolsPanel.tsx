@@ -1,8 +1,10 @@
 import Link from "next/link";
+import { DraftBoard } from "@/components/DraftBoard";
 import { EmptyState } from "@/components/EmptyState";
 import { TradeAnalyzer } from "@/components/TradeAnalyzer";
 import { WaiverBoard } from "@/components/WaiverBoard";
 import type {
+  DraftSimSnapshot,
   LeagueSnapshot,
   PlayerMapSnapshot,
   ProjectionSnapshot,
@@ -15,7 +17,12 @@ import {
 } from "@/lib/decision-tools";
 import { formatProjectionPoints } from "@/lib/projection-join";
 
-export type ToolsView = "trade" | "waivers" | "strength" | "deferred";
+export type ToolsView =
+  | "trade"
+  | "waivers"
+  | "strength"
+  | "draft"
+  | "deferred";
 
 function ViewSwitcher({
   leagueId,
@@ -23,17 +30,20 @@ function ViewSwitcher({
   view,
   a,
   b,
+  slot,
 }: {
   leagueId: string;
   season: number;
   view: ToolsView;
   a?: number;
   b?: number;
+  slot?: number;
 }) {
   const views: Array<{ id: ToolsView; label: string }> = [
     { id: "trade", label: "Trade" },
     { id: "waivers", label: "Waivers" },
     { id: "strength", label: "Strength" },
+    { id: "draft", label: "Draft" },
     { id: "deferred", label: "More" },
   ];
   const pair = a != null && b != null ? `&a=${a}&b=${b}` : "";
@@ -42,7 +52,9 @@ function ViewSwitcher({
       {views.map((item) => (
         <Link
           key={item.id}
-          href={`/leagues/${leagueId}?season=${season}&tab=tools&view=${item.id}${pair}`}
+          href={`/leagues/${leagueId}?season=${season}&tab=tools&view=${item.id}${
+            item.id === "draft" && slot != null ? `&slot=${slot}` : pair
+          }`}
           className={`tab${view === item.id ? " active" : ""}`}
         >
           {item.label}
@@ -130,20 +142,25 @@ export function ToolsPanel({
   view,
   a,
   b,
+  slot = 1,
   projectionSnapshot,
   playerMap,
+  draftSimSnapshot,
 }: {
   league: LeagueSnapshot;
   view: ToolsView;
   a?: number;
   b?: number;
+  slot?: number;
   projectionSnapshot: ProjectionSnapshot | null;
   playerMap: PlayerMapSnapshot | null;
+  draftSimSnapshot?: DraftSimSnapshot | null;
 }) {
   const pair = defaultToolsPair(league);
   const teamA = a ?? pair?.a;
   const teamB = b ?? pair?.b;
   const { espnToGsis, byGsis } = projectionIndexes(playerMap, projectionSnapshot);
+  const maxSlot = draftSimSnapshot?.teams ?? 12;
 
   return (
     <div className="tools-panel">
@@ -153,6 +170,7 @@ export function ToolsPanel({
         view={view}
         a={teamA}
         b={teamB}
+        slot={slot}
       />
 
       {view === "trade" ? (
@@ -190,14 +208,22 @@ export function ToolsPanel({
         />
       ) : null}
 
+      {view === "draft" ? (
+        <DraftBoard
+          snapshot={draftSimSnapshot ?? null}
+          leagueId={league.league_id}
+          season={league.season}
+          slot={slot}
+          maxSlot={maxSlot}
+        />
+      ) : null}
+
       {view === "deferred" ? (
-        <EmptyState title="Draft assistant & playoff odds need more data">
+        <EmptyState title="Playoff odds need weekly posteriors">
           <ul style={{ margin: "0.5rem 0 0", paddingLeft: "1.25rem" }}>
             <li>
-              <strong>Draft assistant</strong> — use{" "}
-              <code>ffa draft-sim</code> today; hub needs an offline{" "}
-              <code>export-draft-sim</code> snapshot (slot × sims) before it can
-              render without calling Python at request time.
+              <strong>Draft assistant</strong> — use the Draft tools view (
+              offline <code>ffa export-draft-sim</code> snapshots).
             </li>
             <li>
               <strong>Playoff odds</strong> — season projection totals are not
