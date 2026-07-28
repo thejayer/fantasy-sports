@@ -31,7 +31,8 @@ export async function POST(request: Request) {
     return NextResponse.json({ ok: false, error: "unauthorized" }, { status: 401 });
   }
 
-  revalidateTag(SJ_SNAPSHOTS_CACHE_TAG);
+  // Next.js 16+: second arg is cacheLife profile ("max" = stale-while-revalidate).
+  revalidateTag(SJ_SNAPSHOTS_CACHE_TAG, "max");
   return NextResponse.json({
     ok: true,
     revalidated: true,

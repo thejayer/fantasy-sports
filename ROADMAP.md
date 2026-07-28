@@ -173,20 +173,20 @@ fresh, 503 when empty or past `SJ_HEALTH_STALE_SECONDS` (default 2h). Route-leve
 alert trustworthy. Optional uptime check on `/api/health` is documented in
 HUB.md (console click; needs the live hub URL).
 
-### 1.7 Next.js 16 and the ESLint CLI
-Carried forward from 0.3, which patched within the 15.5.x line and stopped there.
-`next lint` already warns it is removed in 16, so the two moves are one job:
-`npx @next/codemod@canary next-lint-to-eslint-cli .`, then `next` 16.x.
+### 1.7 Next.js 16 and the ESLint CLI — LANDED
+`apps/web` is on `next` / `eslint-config-next` 16.2.x. Lint is the ESLint CLI
+(`eslint .`) via the codemod flat config (`eslint-config-next/core-web-vitals` +
+`typescript`). `next-auth@5.0.0-beta.32` already peers `^16`.
 
-Do it after 1.1, not before. Right now nothing in CI would catch what a major
-bump breaks, and 1.1 is what makes this a green-or-red question instead of a
-manual one. Also worth revisiting the `postcss` / `sharp` overrides from 0.3
-here — a newer `next` may pin patched versions itself and make them unnecessary.
-
-Two things to watch in this app specifically: `next-auth` is still a prerelease
-and its Next 16 support should be confirmed before starting, and the
-`verify:prerender` check reads `.next/prerender-manifest.json`, whose shape is
-not a public contract and may move.
+Compatibility notes kept in-tree:
+- `revalidateTag(tag, "max")` on `/api/revalidate` (Next 16 cacheLife profile).
+- Keep `src/middleware.ts` (Auth.js Edge). Do **not** rename to `proxy.ts` —
+  proxy is Node-only; Next prints a deprecation warning until Auth.js moves.
+- `verify:prerender` allowlists `/_global-error` (new Next 16 shell).
+- `verify:bundle-budget` reads Turbopack per-route manifests when
+  `app-build-manifest.json` is absent (Turbopack is the default `next build`).
+- Overrides revisited: `next` still pins `postcss` 8.4.31 / `sharp` ^0.34.5;
+  advisory-clean `brace-expansion@5` needs `minimatch@^10` alongside it.
 
 ---
 
@@ -437,8 +437,8 @@ Fold in continuously rather than saving for the end.
 ## Sequencing
 
 **Phase 5 ops closeout is in** (cache, promote, cold-start knobs, a11y/perf
-budgets, hub slim, season cron) along with **1.3 WIF / CD**. Engine track D
-through 4.6 is closed. Remaining platform polish: **1.7** (Next 16 / eslint-cli).
+budgets, hub slim, season cron) along with **1.3 WIF / CD** and **1.7**
+(Next 16 / eslint-cli). Engine track D through 4.6 is closed.
 
 **Branch protection on `main` is done** — required checks are `python`, `web`,
 and `images`. The `python` check is an aggregator over the 3.11 + 3.12 matrix.
@@ -452,7 +452,7 @@ shape. Phase 3.1 (unify views) before any other UI work so nothing ships twice.
 
 | Track | Contents | Touches |
 |---|---|---|
-| A — Platform | ~~1.3~~, ~~1.5~~, ~~1.6~~, 1.7 | workflows, Dockerfiles, scripts |
+| A — Platform | ~~1.3~~, ~~1.5~~, ~~1.6~~, ~~1.7~~ | workflows, Dockerfiles, scripts |
 | B — Data | ~~1.4~~, ~~2.1~~, ~~2.2~~, ~~2.3~~, ~~2.4~~, ~~2.5~~ | `src/sj`, `configs` |
 | C — Product | ~~3.1~~ → ~~3.2~~ → ~~3.3~~ → ~~3.4~~ → ~~3.5~~ → ~~3.6~~ | `apps/web` |
 | D — Engine | ~~4.1~~ … ~~4.6~~ | `src/ffa` + football hub surfaces; baseball ESPN-only |

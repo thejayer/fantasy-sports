@@ -231,8 +231,8 @@ caching it as missing. create-next-app SVGs removed; `robots.ts`,
 `.github/workflows/tests.yml` runs `ruff` and `pytest`. It never enters
 `apps/web`. There is no `tsc --noEmit`, no `eslint`, no `next build`, and no
 frontend test of any kind in CI — **1,609 lines of TypeScript with zero
-automated gate.** `npm run lint` also still uses `next lint`, which prints
-`deprecated and will be removed in Next.js 16`.
+automated gate.** (`npm run lint` later moved off `next lint` onto the ESLint
+CLI in roadmap 1.7.)
 
 Both checks pass today when run by hand, which is exactly why this is worth
 wiring up now, while it is free.
@@ -353,7 +353,7 @@ time. `@types/node` is `^20` against a Node 22 runtime. No Dependabot or Renovat
 |---|---|---|---|
 | 1 | Open redirect on `/login` (confirmed) | P0 | Fixed (#26, roadmap 0.1) |
 | 2 | Auth enforced only in middleware | P0 | Fixed (#26, roadmap 0.4) |
-| 3 | 14 dependency advisories; `next-auth` on prerelease | P0 | Advisories cleared (#26, roadmap 0.3); prerelease remains, roadmap 1.7 |
+| 3 | 14 dependency advisories; `next-auth` on prerelease | P0 | Advisories cleared (#26, roadmap 0.3); Next 16 / eslint-cli landed (1.7); `next-auth` still beta |
 | 4 | Long-lived SA key, over-broad IAM, root containers | P0 | Fixed (#26 IAM/containers; 1.3 WIF, no `GCP_SA_KEY`) |
 | 5 | `/` and `/leagues` frozen at build-time fixtures | P0 | Fixed (#26, roadmap 0.2) |
 | 6 | Football history unreachable (12 seasons, no switcher) | P1 | Fixed — roadmap 3.1 (league) + 3.2 (team pages) |

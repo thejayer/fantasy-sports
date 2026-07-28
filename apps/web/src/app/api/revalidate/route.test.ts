@@ -48,7 +48,7 @@ describe("POST /api/revalidate", () => {
     expect(res.status).toBe(200);
     const body = await res.json();
     expect(body).toMatchObject({ ok: true, revalidated: true, tag: "sj-snapshots" });
-    expect(revalidateTag).toHaveBeenCalledWith("sj-snapshots");
+    expect(revalidateTag).toHaveBeenCalledWith("sj-snapshots", "max");
   });
 });
 

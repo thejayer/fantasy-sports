@@ -20,6 +20,8 @@ const MANIFEST = path.resolve(process.cwd(), ".next/prerender-manifest.json");
 // Routes that render no snapshot data and are safe to prerender.
 const ALLOWED_PRERENDERED = new Set([
   "/_not-found",
+  // Next.js 16 emits a default global-error shell; no snapshot reads.
+  "/_global-error",
   "/favicon.ico",
   // Metadata routes (roadmap 3.6) — static by design, no snapshot reads.
   "/robots.txt",

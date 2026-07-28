@@ -6,38 +6,37 @@
     "dev": "next dev --turbopack",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint",
+    "lint": "eslint .",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "verify:prerender": "node scripts/assert-no-stale-prerender.mjs",
     "verify:bundle-budget": "node scripts/check-bundle-budget.mjs"
   },
   "dependencies": {
-    "next": "^15.5.22",
+    "next": "^16.2.12",
     "next-auth": "^5.0.0-beta.32",
     "react": "^19.0.0",
     "react-dom": "^19.0.0"
   },
   "devDependencies": {
-    "@eslint/eslintrc": "^3",
     "@types/node": "^22",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "eslint": "^9",
-    "eslint-config-next": "^15.5.22",
+    "eslint-config-next": "^16.2.12",
     "typescript": "^5",
     "vitest": "^4.1.10"
   },
   "_overrides_note": [
-    "Transitive advisories that npm can only 'fix' by downgrading next to 9.x.",
-    "All three are semver-compatible bumps within the major their parent pins,",
-    "verified against build + lint + typecheck + tests.",
-    "brace-expansion: DoS via unbounded expansion (eslint chain, dev only).",
+    "Revisited under Next 16.2 (roadmap 1.7): next still pins postcss 8.4.31",
+    "and sharp ^0.34.5; npm advisory for brace-expansion only clears at 5.0.8,",
+    "which breaks minimatch@3 — so minimatch is overridden to ^10.2.6 as well.",
     "postcss: next pins 8.4.31; 8.5.x fixes XSS + sourceMappingURL path traversal.",
-    "sharp: next allows ^0.34.3; 0.35.x picks up the patched libvips."
+    "sharp: next allows ^0.34.5; 0.35.x picks up the patched libvips."
   ],
   "overrides": {
     "brace-expansion": "^5.0.8",
+    "minimatch": "^10.2.6",
     "postcss": "^8.5.23",
     "sharp": "^0.35.3"
   }
