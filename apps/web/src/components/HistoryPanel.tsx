@@ -67,7 +67,7 @@ function AllTimeTable({
   const showPoints = rows.some((row) => row.pointsFor > 0);
   return (
     <div className="panel table-scroll">
-      <table>
+      <table className="table-cards">
         <thead>
           <tr>
             <th>#</th>
@@ -83,8 +83,8 @@ function AllTimeTable({
         <tbody>
           {rows.map((row, index) => (
             <tr key={row.teamId}>
-              <td>{index + 1}</td>
-              <td>
+              <td data-label="#">{index + 1}</td>
+              <td data-label="Franchise">
                 <Link
                   href={`/leagues/${leagueId}/teams/${row.teamId}?season=${season}`}
                 >
@@ -94,12 +94,18 @@ function AllTimeTable({
                   <div className="league-meta">{row.owners.join(", ")}</div>
                 ) : null}
               </td>
-              <td>{row.seasons}</td>
-              <td>{recordLabelFromCounts(row.wins, row.losses, row.ties)}</td>
-              <td>{formatWinPct(row.winPct)}</td>
-              <td>{row.championships}</td>
-              {showPoints ? <td>{formatPoints(row.pointsFor)}</td> : null}
-              {showPoints ? <td>{formatPoints(row.pointsAgainst)}</td> : null}
+              <td data-label="Seasons">{row.seasons}</td>
+              <td data-label="Record">
+                {recordLabelFromCounts(row.wins, row.losses, row.ties)}
+              </td>
+              <td data-label="Win%">{formatWinPct(row.winPct)}</td>
+              <td data-label="#1s">{row.championships}</td>
+              {showPoints ? (
+                <td data-label="PF">{formatPoints(row.pointsFor)}</td>
+              ) : null}
+              {showPoints ? (
+                <td data-label="PA">{formatPoints(row.pointsAgainst)}</td>
+              ) : null}
             </tr>
           ))}
         </tbody>
@@ -130,7 +136,7 @@ function ChampionsTable({
         snapshot yet).
       </p>
       <div className="panel table-scroll">
-        <table>
+        <table className="table-cards">
           <thead>
             <tr>
               <th>Season</th>
@@ -143,25 +149,25 @@ function ChampionsTable({
           <tbody>
             {rows.map((row) => (
               <tr key={row.season}>
-                <td>
+                <td data-label="Season">
                   <Link
                     href={`/leagues/${leagueId}?season=${row.season}&tab=standings`}
                   >
                     {row.season}
                   </Link>
                 </td>
-                <td>
+                <td data-label="Champion">
                   <Link
                     href={`/leagues/${leagueId}/teams/${row.teamId}?season=${row.season}`}
                   >
                     {row.name}
                   </Link>
                 </td>
-                <td>{row.owners.join(", ") || "—"}</td>
-                <td>
+                <td data-label="Owner">{row.owners.join(", ") || "—"}</td>
+                <td data-label="Record">
                   {recordLabelFromCounts(row.wins, row.losses, row.ties)}
                 </td>
-                <td>{formatPoints(row.pointsFor)}</td>
+                <td data-label="PF">{formatPoints(row.pointsFor)}</td>
               </tr>
             ))}
           </tbody>
@@ -265,7 +271,7 @@ function H2HView({
         <p className="league-meta">These franchises have no decided H2H games on disk.</p>
       ) : (
         <div className="panel table-scroll">
-          <table>
+          <table className="table-cards">
             <thead>
               <tr>
                 <th>Season</th>
@@ -278,11 +284,11 @@ function H2HView({
             <tbody>
               {summary.games.map((game) => (
                 <tr key={`${game.season}-${game.period}`}>
-                  <td>{game.season}</td>
-                  <td>{game.period}</td>
-                  <td>{formatPoints(game.teamScore)}</td>
-                  <td>{formatPoints(game.oppScore)}</td>
-                  <td>
+                  <td data-label="Season">{game.season}</td>
+                  <td data-label="Period">{game.period}</td>
+                  <td data-label={nameA}>{formatPoints(game.teamScore)}</td>
+                  <td data-label={nameB}>{formatPoints(game.oppScore)}</td>
+                  <td data-label="Result">
                     <span
                       className={`outcome-pill outcome-${
                         game.outcome === "W"

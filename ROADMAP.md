@@ -313,12 +313,14 @@ Helpers in `lib/history.ts`; `HistoryPanel` stays a server component. Deferred:
 dedicated franchise/manager pages, draft hit/bust retrospectives (need career
 outcomes beyond draft picks), playoff-champion labeling (not in snapshot).
 
-### 3.6 States and polish
-`loading.tsx` skeletons, `error.tsx` boundaries, a branded `not-found.tsx`, real
-empty states. Distinguish "missing snapshot" from "corrupt snapshot" in
-`readJson()` instead of caching both as `null`. Delete the `create-next-app`
-SVGs; add `robots.txt`, a manifest, and an Open Graph image. Card layouts for
-wide tables on mobile.
+### 3.6 States and polish — LANDED
+Route `loading.tsx` skeletons (root + leagues + league detail), branded
+`error.tsx` / `not-found.tsx` (`state-panel` + brand mark), and shared
+`EmptyState` on leagues / standings / teams / rosters. `readJson` caches ENOENT
+as `null` but **throws** `CorruptSnapshotError` on bad JSON (not cached as
+missing). create-next-app SVGs removed; `robots.ts`, `manifest.ts`, and
+`opengraph-image.tsx` added with layout Open Graph metadata. Wide tables use
+`.table-cards` + `data-label` for mobile stacked cards.
 
 ---
 
@@ -392,15 +394,15 @@ Fold in continuously rather than saving for the end.
 
 ## Sequencing
 
-**Next up: 1.3 or 3.6.** Continuous deployment + Workload Identity Federation
+**Next up: 1.3 or phase 4.** Continuous deployment + Workload Identity Federation
 (1.3) is the biggest remaining platform win on track A (needs GCP-side WIF
-setup). Product track continues with 3.6 (states / polish).
-Data track 2.1–2.5 and product 3.1–3.5 are in.
+setup). Product track 3.1–3.6 is in; engine connection is phase 4.
+Data track 2.1–2.5 is in.
 
 **Branch protection on `main` is done** — required checks are `python`, `web`,
 and `images`. The `python` check is an aggregator over the 3.11 + 3.12 matrix.
 
-**Strictly ordered:** ~~0~~ → 1 → 2.2 → ~~3.1~~ → ~~3.2~~ → ~~3.3~~ → ~~3.4~~ → ~~3.5~~ → 3.6 → 4.
+**Strictly ordered:** ~~0~~ → 1 → 2.2 → ~~3.1~~ → ~~3.2~~ → ~~3.3~~ → ~~3.4~~ → ~~3.5~~ → ~~3.6~~ → 4.
 Phase 2.2 (schema split) before phase 3 so the UI is built once against the final
 shape. Phase 3.1 (unify views) before any other UI work so nothing ships twice.
 1.7 (Next 16) after 1.1, so a major bump lands against a real CI gate.
@@ -411,7 +413,7 @@ shape. Phase 3.1 (unify views) before any other UI work so nothing ships twice.
 |---|---|---|
 | A — Platform | 1.3, ~~1.5~~, ~~1.6~~, 1.7 | workflows, Dockerfiles, scripts |
 | B — Data | ~~1.4~~, ~~2.1~~, ~~2.2~~, ~~2.3~~, ~~2.4~~, ~~2.5~~ | `src/sj`, `configs` |
-| C — Product | ~~3.1~~ → ~~3.2~~ → ~~3.3~~ → ~~3.4~~ → ~~3.5~~ → 3.6 | `apps/web` |
+| C — Product | ~~3.1~~ → ~~3.2~~ → ~~3.3~~ → ~~3.4~~ → ~~3.5~~ → ~~3.6~~ | `apps/web` |
 | D — Engine | 4.1, 4.3 | `src/ffa` |
 
 A, B, and D barely overlap with C, so platform hardening, sync extension, and the
