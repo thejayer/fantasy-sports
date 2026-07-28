@@ -69,9 +69,15 @@ test.describe("hub smoke", () => {
   }) => {
     await page.goto("/leagues/football-main?tab=tools&view=draft&slot=1");
     await expect(page.getByRole("heading", { name: "Who you land" })).toBeVisible();
-    await expect(page.getByRole("link", { name: "Slot 1" })).toBeVisible();
-    await expect(page.getByRole("link", { name: "Slot 2" })).toHaveCount(0);
-    await expect(page.getByText("QB Fixture 1")).toBeVisible();
+    await expect(
+      page.getByRole("link", { name: "Slot 1", exact: true }),
+    ).toBeVisible();
+    await expect(page.getByRole("link", { name: "Slot 2", exact: true })).toHaveCount(
+      0,
+    );
+    await expect(
+      page.getByRole("cell", { name: "QB Fixture 1", exact: true }).first(),
+    ).toBeVisible();
   });
 
   test("tools waivers board lists ESPN free agents", async ({ page }) => {
