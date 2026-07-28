@@ -28,6 +28,7 @@ from sj.sync import (
     espn_credentials,
     failures_should_fail_run,
     fetch_recent_activity,
+    notify_hub_revalidate,
     open_espn_league,
     sync_league_season,
     sync_registry,
@@ -546,3 +547,54 @@ def test_cli_sync_unknown_league_exits_cleanly(registry_path, tmp_path):
     assert result.exit_code == 1
     assert "nope" in result.output
     assert "Traceback" not in result.output
+
+
+def test_notify_hub_revalidate_skips_without_env(monkeypatch):
+    monkeypatch.delenv("SJ_REVALIDATE_URL", raising=False)
+    monkeypatch.delenv("SJ_REVALIDATE_SECRET", raising=False)
+    assert "skipped" in notify_hub_revalidate()
+
+
+def test_notify_hub_revalidate_posts_bearer(monkeypatch):
+    calls: list[object] = []
+
+    class _Resp:
+        def __enter__(self):
+            return self
+
+        def __exit__(self, *args):
+            return False
+
+        def getcode(self):
+            return 200
+
+        status = 200
+
+    def fake_urlopen(request, timeout=0):
+        calls.append(request)
+        return _Resp()
+
+    monkeypatch.setattr("urllib.request.urlopen", fake_urlopen)
+    status = notify_hub_revalidate(
+        url="https://hub.example/api/revalidate",
+        secret="s3cret",
+    )
+    assert status == "ok HTTP 200"
+    assert len(calls) == 1
+    req = calls[0]
+    assert req.full_url == "https://hub.example/api/revalidate"
+    assert req.get_header("Authorization") == "Bearer s3cret"
+    assert req.get_method() == "POST"
+
+
+def test_notify_hub_revalidate_swallows_errors(monkeypatch):
+    def boom(*_args, **_kwargs):
+        raise TimeoutError("nope")
+
+    monkeypatch.setattr("urllib.request.urlopen", boom)
+    status = notify_hub_revalidate(
+        url="https://hub.example/api/revalidate",
+        secret="s3cret",
+    )
+    assert status.startswith("failed")
+    assert "TimeoutError" in status

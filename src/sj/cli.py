@@ -13,6 +13,7 @@ from sj.store import describe_store, list_snapshots
 from sj.sync import (
     SyncAllFailed,
     failures_should_fail_run,
+    notify_hub_revalidate,
     sync_registry,
     sync_summary_line,
 )
@@ -39,6 +40,9 @@ def _report_sync_outcome(
             err=True,
         )
     typer.echo(sync_summary_line(results, failures, ok=ok))
+    # Drop hub Data Cache entries when we wrote anything — best-effort.
+    if results:
+        typer.echo(f"hub revalidate: {notify_hub_revalidate()}")
     if not ok:
         raise typer.Exit(code=1)
 

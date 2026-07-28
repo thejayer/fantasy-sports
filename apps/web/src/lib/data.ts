@@ -1,7 +1,9 @@
 import { promises as fs } from "fs";
 import path from "path";
+import { unstable_cache } from "next/cache";
 import { cache } from "react";
 
+import { SJ_SNAPSHOTS_CACHE_TAG } from "@/lib/cache-tags";
 import { requireSession } from "@/lib/session";
 import {
   CorruptSnapshotError,
@@ -10,6 +12,7 @@ import {
 } from "@/lib/snapshot-json";
 
 export { CorruptSnapshotError } from "@/lib/snapshot-json";
+export { SJ_SNAPSHOTS_CACHE_TAG } from "@/lib/cache-tags";
 
 export type SeasonStats = {
   AB?: number;
@@ -277,39 +280,49 @@ function dataRoots(): string[] {
 
 /**
  * Snapshots live on a read-only Cloud Storage mount refreshed by the sj-sync
- * job, so reads are cached briefly instead of hitting the mount per request.
+ * job. Reads go through Next's Data Cache (`unstable_cache`) with TTL from
+ * `SJ_CACHE_TTL_MS` (default 60s) and tag `sj-snapshots` for explicit
+ * revalidation via `POST /api/revalidate` after sync.
  */
 const CACHE_TTL_MS = Number(process.env.SJ_CACHE_TTL_MS ?? 60_000);
-const fileCache = new Map<string, { at: number; value: unknown }>();
+const CACHE_REVALIDATE_SECONDS = Math.max(1, Math.ceil(CACHE_TTL_MS / 1000));
 
 /**
- * Read JSON from disk with a short TTL cache.
- * - Missing file (ENOENT) → `null`, cached for TTL
- * - Corrupt JSON → throws CorruptSnapshotError, **not** cached as null
- * - Other FS errors → rethrown, not cached
+ * Uncached disk read. Corrupt JSON throws (must not be stored as null).
+ * Missing file → null.
  */
-async function readJson<T>(filePath: string): Promise<T | null> {
-  const hit = fileCache.get(filePath);
-  if (hit && Date.now() - hit.at < CACHE_TTL_MS) {
-    return hit.value as T | null;
-  }
+async function readJsonFromDisk<T>(filePath: string): Promise<T | null> {
   try {
     const raw = await fs.readFile(filePath, "utf8");
-    const value = parseSnapshotJson<T>(raw, filePath);
-    fileCache.set(filePath, { at: Date.now(), value });
-    return value;
+    return parseSnapshotJson<T>(raw, filePath);
   } catch (err) {
     if (err instanceof CorruptSnapshotError) {
       console.error("[sj-hub] corrupt snapshot", filePath, err.cause ?? err);
       throw err;
     }
     if (isNotFoundFsError(err)) {
-      fileCache.set(filePath, { at: Date.now(), value: null });
       return null;
     }
     console.error("[sj-hub] snapshot read failed", filePath, err);
     throw err;
   }
+}
+
+/**
+ * Read JSON with the Next.js Data Cache.
+ * - Missing file (ENOENT) → `null`, cached until revalidate/TTL
+ * - Corrupt JSON → throws CorruptSnapshotError (not cached as null)
+ * - Other FS errors → rethrown, not cached
+ */
+async function readJson<T>(filePath: string): Promise<T | null> {
+  return unstable_cache(
+    async () => readJsonFromDisk<T>(filePath),
+    ["sj-readJson", filePath],
+    {
+      revalidate: CACHE_REVALIDATE_SECONDS,
+      tags: [SJ_SNAPSHOTS_CACHE_TAG],
+    },
+  )();
 }
 
 function isManifestPath(indexPath: string): boolean {

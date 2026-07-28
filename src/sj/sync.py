@@ -398,3 +398,45 @@ def sync_summary_line(
         "failures": [asdict(f) for f in failures],
     }
     return "SYNC_SUMMARY " + json.dumps(payload, sort_keys=True)
+
+
+def notify_hub_revalidate(
+    *,
+    url: str | None = None,
+    secret: str | None = None,
+    timeout_seconds: float = 5.0,
+) -> str:
+    """Best-effort POST to the hub's ``/api/revalidate`` after store writes.
+
+    No-op when ``SJ_REVALIDATE_URL`` or ``SJ_REVALIDATE_SECRET`` is unset.
+    Never raises — sync/backfill must not fail because the hub was unreachable.
+    Returns a short status string for logs.
+    """
+    import urllib.error
+    import urllib.request
+
+    target = (url if url is not None else os.environ.get("SJ_REVALIDATE_URL", "")).strip()
+    token = (
+        secret if secret is not None else os.environ.get("SJ_REVALIDATE_SECRET", "")
+    ).strip()
+    if not target or not token:
+        return "skipped (SJ_REVALIDATE_URL / SJ_REVALIDATE_SECRET unset)"
+
+    request = urllib.request.Request(
+        target,
+        data=b"{}",
+        method="POST",
+        headers={
+            "Authorization": f"Bearer {token}",
+            "Content-Type": "application/json",
+            "User-Agent": "sj-sync-revalidate/1",
+        },
+    )
+    try:
+        with urllib.request.urlopen(request, timeout=timeout_seconds) as response:
+            code = getattr(response, "status", None) or response.getcode()
+            return f"ok HTTP {code}"
+    except urllib.error.HTTPError as exc:
+        return f"failed HTTP {exc.code}"
+    except Exception as exc:  # noqa: BLE001 - best-effort webhook
+        return f"failed {type(exc).__name__}: {exc}"

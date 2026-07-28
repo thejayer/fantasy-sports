@@ -409,9 +409,12 @@ Fold in continuously rather than saving for the end.
   **LANDED (hub):** runtime installs sj-only deps (no duckdb/sklearn/nflreadpy);
   fixtures copied once; non-root + multi-stage were already in. Sync image was
   already slim.
-- **Caching.** The 60 s in-process cache is per-instance. As traffic and
-  projection payloads grow, move to a shared cache or Next.js data cache with
-  explicit revalidation on sync.
+- **Caching.** ~~The 60 s in-process Map~~ → **LANDED:** Next.js Data Cache
+  (`unstable_cache` on snapshot `readJson`, tag `sj-snapshots`, TTL still from
+  `SJ_CACHE_TTL_MS`). Explicit purge via `POST /api/revalidate` (Bearer
+  `SJ_REVALIDATE_SECRET`); `sj sync` / `backfill` best-effort POST when
+  `SJ_REVALIDATE_URL` + secret are set. Still per Cloud Run instance (no Redis)
+  — TTL remains the multi-instance bound.
 - **Cold starts.** Set `min-instances` if members complain about first load.
 - **Storage.** If weekly and projection data outgrow JSON-on-GCS, the pattern is
   already established elsewhere in the repo: Parquet plus DuckDB, as `src/ffa`
@@ -426,9 +429,10 @@ Fold in continuously rather than saving for the end.
 
 ## Sequencing
 
-**Next up: remaining Phase 5 ops** (shared cache, min-instances, artifact
-promote, a11y budgets). **1.3 WIF / CD** and hub image slim + season-bound
-refresh cron are in. Engine track D through 4.6 is closed.
+**Next up: remaining Phase 5 ops** (min-instances, artifact promote, a11y
+budgets). Shared/Next data cache + sync revalidate, **1.3 WIF / CD**, and hub
+image slim + season-bound refresh cron are in. Engine track D through 4.6 is
+closed.
 
 **Branch protection on `main` is done** — required checks are `python`, `web`,
 and `images`. The `python` check is an aggregator over the 3.11 + 3.12 matrix.
