@@ -1,11 +1,17 @@
 /** @vitest-environment jsdom */
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 
 import type { ProjectionPlayer, Team } from "@/lib/data";
 
 import { StartSitBoard } from "./StartSitBoard";
+
+vi.mock("next/navigation", () => ({
+  useRouter: () => ({ replace: vi.fn() }),
+  usePathname: () => "/leagues/test",
+  useSearchParams: () => new URLSearchParams("tab=tools&view=start-sit"),
+}));
 
 const weekly: ProjectionPlayer = {
   player_id: "00-0033873",
@@ -70,6 +76,8 @@ describe("StartSitBoard", () => {
         espnToGsisEntries={[["101", "00-0033873"]]}
         weeklyEntries={[["00-0033873", weekly]]}
         initialTeamId={1}
+        leagueId="test"
+        season={2025}
       />,
     );
     expect(screen.getByText("Typical-week posteriors", { exact: false })).toBeTruthy();

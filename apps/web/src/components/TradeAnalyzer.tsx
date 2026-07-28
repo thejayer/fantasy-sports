@@ -1,6 +1,7 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { useEffect, useMemo, useState } from "react";
 import type { Team } from "@/lib/data";
 import {
   evaluateTrade,
@@ -148,6 +149,8 @@ export function TradeAnalyzer({
   projectionEntries,
   initialA,
   initialB,
+  leagueId,
+  season,
 }: {
   teams: Team[];
   /** Serializable Map entries from the server. */
@@ -155,7 +158,12 @@ export function TradeAnalyzer({
   projectionEntries: Array<[string, ProjectionPlayer]>;
   initialA: number;
   initialB: number;
+  leagueId: string;
+  season: number;
 }) {
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
   const espnToGsis = useMemo(
     () => new Map(espnToGsisEntries),
     [espnToGsisEntries],
@@ -169,6 +177,22 @@ export function TradeAnalyzer({
   const [teamBId, setTeamBId] = useState(initialB);
   const [give, setGive] = useState<Set<string>>(new Set());
   const [get, setGet] = useState<Set<string>>(new Set());
+
+  useEffect(() => {
+    const params = new URLSearchParams(searchParams.toString());
+    params.set("season", String(season));
+    params.set("tab", "tools");
+    params.set("view", "trade");
+    params.set("a", String(teamAId));
+    params.set("b", String(teamBId));
+    params.delete("team");
+    params.delete("slot");
+    const next = `${pathname}?${params.toString()}`;
+    const current = `${pathname}?${searchParams.toString()}`;
+    if (next !== current) {
+      router.replace(next, { scroll: false });
+    }
+  }, [teamAId, teamBId, leagueId, season, pathname, router, searchParams]);
 
   const teamA = teams.find((t) => t.team_id === teamAId) ?? teams[0];
   const teamB = teams.find((t) => t.team_id === teamBId) ?? teams[1] ?? teams[0];

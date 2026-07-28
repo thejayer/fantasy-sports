@@ -12,6 +12,7 @@ import {
   getPlayoffOddsSnapshot,
   getProjectionSnapshot,
   getWeeklyProjectionSnapshot,
+  listDraftSimSlots,
   type DraftSimSnapshot,
   type PlayerMapSnapshot,
   type PlayoffOddsSnapshot,
@@ -37,6 +38,7 @@ type Props = {
     view?: string;
     a?: string;
     b?: string;
+    team?: string;
     scoring?: string;
     slot?: string;
   }>;
@@ -72,6 +74,7 @@ export default async function LeagueDetailPage({ params, searchParams }: Props) 
     view: viewParam,
     a: aParam,
     b: bParam,
+    team: teamParam,
     scoring: scoringParam,
     slot: slotParam,
   } = await searchParams;
@@ -80,7 +83,8 @@ export default async function LeagueDetailPage({ params, searchParams }: Props) 
   const week = weekParam ? Number(weekParam) : undefined;
   const a = aParam ? Number(aParam) : undefined;
   const b = bParam ? Number(bParam) : undefined;
-  const slot = slotParam ? Number(slotParam) : 1;
+  const team = teamParam ? Number(teamParam) : undefined;
+  const requestedSlot = slotParam ? Number(slotParam) : undefined;
 
   const matchupsView = (
     ["week", "schedule", "playoffs"].includes(viewParam ?? "")
@@ -100,7 +104,6 @@ export default async function LeagueDetailPage({ params, searchParams }: Props) 
       "draft",
       "start-sit",
       "playoff-odds",
-      "deferred",
     ].includes(viewParam ?? "")
       ? viewParam
       : "trade"
@@ -132,14 +135,30 @@ export default async function LeagueDetailPage({ params, searchParams }: Props) 
     : { snapshot: null, playerMap: null, scoring: scoringOverride };
 
   let draftSimSnapshot: DraftSimSnapshot | null = null;
+  let availableDraftSlots: number[] = [];
+  let draftSlot = 1;
   if (
     league.sport === "football" &&
     tab === "tools" &&
     toolsView === "draft"
   ) {
     const scoring = projectionBundle.scoring ?? scoringSlugFromLeague(league);
-    const draftSlot =
-      slot != null && !Number.isNaN(slot) && slot >= 1 ? Math.trunc(slot) : 1;
+    for (const year of projectionSeasonCandidates(league.season)) {
+      const slots = await listDraftSimSlots(scoring, year);
+      if (slots.length) {
+        availableDraftSlots = slots;
+        break;
+      }
+    }
+    const preferred =
+      requestedSlot != null &&
+      !Number.isNaN(requestedSlot) &&
+      requestedSlot >= 1
+        ? Math.trunc(requestedSlot)
+        : availableDraftSlots[0] ?? 1;
+    draftSlot = availableDraftSlots.includes(preferred)
+      ? preferred
+      : (availableDraftSlots[0] ?? preferred);
     for (const year of projectionSeasonCandidates(league.season)) {
       const snap = await getDraftSimSnapshot(scoring, year, draftSlot);
       if (snap) {
@@ -203,7 +222,11 @@ export default async function LeagueDetailPage({ params, searchParams }: Props) 
       playerMap={projectionBundle.playerMap}
       projectionScoring={projectionBundle.scoring}
       toolsView={toolsView}
-      draftSlot={slot != null && !Number.isNaN(slot) && slot >= 1 ? Math.trunc(slot) : 1}
+      toolsTeamA={a != null && !Number.isNaN(a) ? a : undefined}
+      toolsTeamB={b != null && !Number.isNaN(b) ? b : undefined}
+      toolsTeamId={team != null && !Number.isNaN(team) ? team : undefined}
+      draftSlot={draftSlot}
+      availableDraftSlots={availableDraftSlots}
       draftSimSnapshot={draftSimSnapshot}
       weeklyProjectionSnapshot={weeklyProjectionSnapshot}
       playoffOddsSnapshot={playoffOddsSnapshot}

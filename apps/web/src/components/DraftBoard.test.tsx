@@ -46,7 +46,7 @@ describe("DraftBoard", () => {
         leagueId="test"
         season={2025}
         slot={6}
-        maxSlot={12}
+        availableSlots={[1, 6, 7, 12]}
       />,
     );
     expect(screen.getByRole("heading", { name: "Who you land" })).toBeTruthy();
@@ -55,6 +55,7 @@ describe("DraftBoard", () => {
       screen.getByRole("heading", { name: "Availability at your picks" }),
     ).toBeTruthy();
     expect(screen.getByRole("link", { name: "Slot 6" })).toBeTruthy();
+    expect(screen.queryByRole("link", { name: "Slot 2" })).toBeNull();
   });
 
   it("shows an empty state when the snapshot is missing", () => {
@@ -64,11 +65,12 @@ describe("DraftBoard", () => {
         leagueId="test"
         season={2025}
         slot={3}
-        maxSlot={12}
+        availableSlots={[1, 6]}
       />,
     );
     expect(
       screen.getByText("No draft-sim snapshot for this slot"),
     ).toBeTruthy();
+    expect(screen.getByRole("link", { name: "Slot 1" })).toBeTruthy();
   });
 });

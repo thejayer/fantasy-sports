@@ -71,6 +71,18 @@ export function scoringSlugFromLeague(
   return "ppr";
 }
 
+/**
+ * True when the league scores fractional receptions (typically 0.5) but the store
+ * only has full-PPR / standard exports — UI should disclose the PPR fallback.
+ */
+export function usesHalfPprScoringFallback(
+  league: Pick<LeagueSnapshot, "sport" | "settings" | "scoring_type">,
+): boolean {
+  if (league.sport !== "football") return false;
+  const rec = receptionPoints(league.settings);
+  return rec != null && rec > 0 && rec < 1;
+}
+
 /** Hub fantasy seasons can lead the NFL calendar; try current then prior. */
 export function projectionSeasonCandidates(leagueSeason: number): number[] {
   if (!Number.isFinite(leagueSeason)) return [];
