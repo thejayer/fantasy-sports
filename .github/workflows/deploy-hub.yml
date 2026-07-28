@@ -160,8 +160,10 @@ jobs:
               --add-volume-mount "volume=sjdata,mount-path=/app/data/sj"
             )
           else
-            echo "No bucket set — clearing volumes; hub serves baked fixtures"
-            ARGS+=(--clear-volumes)
+            # clear-volumes alone leaves dangling volume_mounts on the service
+            # template (error: mounts reference volumes named [sjdata]…).
+            echo "No bucket set — clearing volumes + mounts; hub serves baked fixtures"
+            ARGS+=(--clear-volumes --clear-volume-mounts)
           fi
           gcloud run deploy "$SERVICE" "${ARGS[@]}"
 
