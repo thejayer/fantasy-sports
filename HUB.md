@@ -18,6 +18,15 @@ For the current state of the site and the plan to build it out, see
 
 Registry: [`configs/leagues.yaml`](configs/leagues.yaml)
 
+### Baseball scope (roadmap 4.6)
+
+**Projection-free by design.** `sj` syncs ESPN baseball snapshots (standings,
+rosters with batter/pitcher boards, matchups, history). The `ffa` analytics
+engine is NFL-only — no MLB ingest, no baseball projection snapshots, no trade
+tools on category leagues. Baseball `projections` / `tools` tabs in the hub
+explain that boundary; do not stub a half engine. Revisit only with a dedicated
+MLB modeling plan.
+
 ## Production (Cloud Run) — preferred
 
 Hosted as Cloud Run service **`sj-hub`** in project **`fantasy-sports-analytics`**.

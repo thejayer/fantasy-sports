@@ -367,7 +367,7 @@ show Floor / Med / Ceil (and VOR on the players board). Scoring slug from league
 reception points (`ppr` / `standard`); season file falls back to `league.season - 1`
 when the hub calendar leads the NFL year. **Weekly start/sit is deferred** —
 store snapshots are season-level totals, not weekly posteriors; UI copy says so
-explicitly. Baseball stays projection-free (4.6).
+explicitly. Baseball stays projection-free by design (roadmap 4.6 — landed).
 
 ### 4.5 Decision tools — LANDED (partial)
 Football `tools` tab ships snapshot-backed decision surfaces without calling
@@ -384,12 +384,17 @@ Football `tools` tab ships snapshot-backed decision surfaces without calling
 `export-draft-sim` artifacts), playoff-odds MC (needs weekly team posteriors),
 true ESPN FA wire. Use `ffa draft-sim` from the CLI until those exporters land.
 
-### 4.6 Baseball
-The engine is NFL-only, while `baseball-dynasty` has the best UI in the app. Decide
-deliberately: either extend the modeling to baseball, or keep the hub's baseball
-experience data-rich but projection-free. Scoping this honestly is the
-deliverable — the ingest layer, projection features, and calibration work are all
-NFL-shaped today.
+### 4.6 Baseball — LANDED
+**Decision: keep baseball data-rich but projection-free.** The `ffa` engine
+(ingest, scoring, simulation, projection export, ESPN↔GSIS map) is NFL-shaped;
+there is no MLB path in `src/ffa`. `baseball-dynasty` already has the strongest
+ESPN hub UI (batter/pitcher boards, role switcher, matchups, history). Closing
+4.6 as a deliberate product boundary — not a missing feature stub.
+
+Hub UX: baseball exposes `projections` and `tools` tabs that explain the scope
+(EmptyStates), and the league lede says “projection-free by design.” Football
+keeps the engine surfaces from 4.1–4.5. Revisit only with a real MLB ingest +
+calibration plan — do not half-port football projections onto category leagues.
 
 ---
 
@@ -416,11 +421,10 @@ Fold in continuously rather than saving for the end.
 
 ## Sequencing
 
-**Next up: 1.3 or 4.6.** Continuous deployment + Workload Identity Federation
-(1.3) is the biggest remaining platform win on track A (needs GCP-side WIF
-setup). Engine track through 4.5 trade/waiver/strength is in; baseball scoping
-(4.6) and fuller draft/playoff exporters remain. Product 3.1–3.6 and data
-2.1–2.5 are in.
+**Next up: 1.3 (and Phase 5 ops).** Continuous deployment + Workload Identity
+Federation is the biggest remaining platform win on track A (needs GCP-side WIF
+setup). Engine track D through 4.6 is closed: football projections/tools are in;
+baseball stays ESPN-only by design. Product 3.x and data 2.x are in.
 
 **Branch protection on `main` is done** — required checks are `python`, `web`,
 and `images`. The `python` check is an aggregator over the 3.11 + 3.12 matrix.
@@ -437,11 +441,11 @@ shape. Phase 3.1 (unify views) before any other UI work so nothing ships twice.
 | A — Platform | 1.3, ~~1.5~~, ~~1.6~~, 1.7 | workflows, Dockerfiles, scripts |
 | B — Data | ~~1.4~~, ~~2.1~~, ~~2.2~~, ~~2.3~~, ~~2.4~~, ~~2.5~~ | `src/sj`, `configs` |
 | C — Product | ~~3.1~~ → ~~3.2~~ → ~~3.3~~ → ~~3.4~~ → ~~3.5~~ → ~~3.6~~ | `apps/web` |
-| D — Engine | ~~4.1~~ … ~~4.5~~, 4.6 | `src/ffa` + `apps/web` projections / tools |
+| D — Engine | ~~4.1~~ … ~~4.6~~ | `src/ffa` + football hub surfaces; baseball ESPN-only |
 
-A, B, and D barely overlap with remaining C polish, so platform hardening and
-baseball scoping can proceed in parallel. Draft-sim / playoff-odds exporters are
-the remaining heavy engine follow-ups under 4.5's deferred list.
+A, B, and D barely overlap with remaining C polish. Draft-sim / playoff-odds
+exporters remain optional football follow-ups under 4.5's deferred list — not
+blockers for closing phase 4. Baseball modeling is explicitly out of scope.
 
 **Fastest visible wins** remaining: 3.2 (a decade of history appears), 3.3
 (tables become usable). 2.1 is done — draft and matchup data persist for zero
