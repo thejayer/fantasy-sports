@@ -106,29 +106,22 @@ data**. So this is latent risk from running behind on patches, not a
 demonstrated live hole. It should be treated as urgent anyway, because the
 app has no second layer to fall back on.
 
-### 4. Deployment credentials and container hardening — MOSTLY FIXED in #26
+### 4. Deployment credentials and container hardening — FIXED (WIF in 1.3)
 
-- All three deploy workflows authenticate with a long-lived service-account JSON
-  key (`secrets.GCP_SA_KEY`) rather than Workload Identity Federation.
-  `scripts/setup-github-deployer.sh` generates and prints a downloadable
-  `key.json`.
-- That deployer SA is granted project-level `run.admin`,
+- ~~All three deploy workflows authenticate with a long-lived service-account JSON
+  key (`secrets.GCP_SA_KEY`) rather than Workload Identity Federation.~~
+  Deploy workflows use WIF (`github` pool/provider → `ffa-deployer`);
+  `setup-github-deployer.sh` prints WIF commands and does not mint keys.
+- ~~That deployer SA is granted project-level `run.admin`,
   `artifactregistry.admin`, `serviceusage.serviceUsageAdmin`, and
-  `secretmanager.secretAccessor`. The script also grants the **deployer** read
-  access to all six hub secrets, which deployment does not need — only the
-  runtime SA does.
-- `scripts/setup-sync-infra.sh` grants the default Compute Engine SA
-  `roles/storage.objectAdmin` on the snapshot bucket (read/write/delete) where
-  `objectViewer` plus a narrow writer for the sync job would do.
-- No `USER` directive in `Dockerfile`, `Dockerfile.sync`, or
-  `apps/web/Dockerfile` — **all three containers run as root**.
-- `deploy.yml` passes `DASHBOARD_PASSWORD` via `--set-env-vars`, so it is
-  readable by anyone with `run.services.get`, instead of via Secret Manager.
+  `secretmanager.secretAccessor`.~~ Narrowed to `artifactregistry.writer` +
+  `secretmanager.viewer` (no secretAccessor on the deployer).
+- ~~`scripts/setup-sync-infra.sh` grants the default Compute Engine SA
+  `roles/storage.objectAdmin`~~ → `objectUser` / `objectViewer` split.
+- ~~No `USER` directive~~ — containers run as uid 1001.
+- ~~`deploy.yml` passes `DASHBOARD_PASSWORD` via `--set-env-vars`~~ → Secret Manager.
 
-Resolved in #26 except the first bullet: containers run as uid 1001, the
-deployer and bucket roles are narrowed, and the dashboard password moved to
-Secret Manager. **The long-lived `GCP_SA_KEY` is still in use** — Workload
-Identity Federation rewrites all three deploy workflows, so it is roadmap 1.3.
+Fully resolved: containers + IAM in #26; JSON key replaced by WIF in roadmap 1.3.
 
 ---
 
@@ -361,7 +354,7 @@ time. `@types/node` is `^20` against a Node 22 runtime. No Dependabot or Renovat
 | 1 | Open redirect on `/login` (confirmed) | P0 | Fixed (#26, roadmap 0.1) |
 | 2 | Auth enforced only in middleware | P0 | Fixed (#26, roadmap 0.4) |
 | 3 | 14 dependency advisories; `next-auth` on prerelease | P0 | Advisories cleared (#26, roadmap 0.3); prerelease remains, roadmap 1.7 |
-| 4 | Long-lived SA key, over-broad IAM, root containers | P0 | Containers + IAM fixed (#26, roadmap 0.5); SA key → WIF, roadmap 1.3 |
+| 4 | Long-lived SA key, over-broad IAM, root containers | P0 | Fixed (#26 IAM/containers; 1.3 WIF, no `GCP_SA_KEY`) |
 | 5 | `/` and `/leagues` frozen at build-time fixtures | P0 | Fixed (#26, roadmap 0.2) |
 | 6 | Football history unreachable (12 seasons, no switcher) | P1 | Fixed — roadmap 3.1 (league) + 3.2 (team pages) |
 | 7 | Player tables: no search/sort/filter/pagination | P1 | Fixed — roadmap 3.3 (`DataTable`) |

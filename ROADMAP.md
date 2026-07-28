@@ -75,8 +75,7 @@ narrowed (`artifactregistry.admin` → `writer`, `secretAccessor` → `viewer`, 
 the per-secret accessor grants removed), bucket `objectAdmin` → `objectUser`
 with `SJ_SYNC_SA` / `SJ_HUB_SA` to split the two accounts.
 
-Deferred deliberately: **Workload Identity Federation** → 1.3, since it rewrites
-all three deploy workflows.
+~~Deferred deliberately: **Workload Identity Federation** → 1.3~~ — landed in 1.3.
 
 ---
 
@@ -122,12 +121,15 @@ client components, and Playwright for a handful of smoke paths (login redirect,
 leagues list, standings, team roster, 404s). Neither is worth adding until there
 is UI worth driving, so this stays open against Phase 3 rather than blocking it.
 
-### 1.3 Continuous deployment
-Deploy `sj-hub` on merge to `main` behind the CI gate, keeping
-`workflow_dispatch` for manual rollback. Collapse `deploy-hub.yml`'s two-step
-deploy into one by computing the service URL up front, closing the `AUTH_URL`
-window. Fold in the Workload Identity Federation migration from 0.5 here, since
-it edits the same files.
+### 1.3 Continuous deployment — LANDED
+`deploy-hub.yml` runs on push to `main` (path-filtered; branch protection is the
+CI gate) and keeps `workflow_dispatch` for rollback. `AUTH_URL` is resolved up
+front (existing service URL, else regional `run.app` form) so deploy is one
+`gcloud run deploy`, with a reconcile update only if Cloud Run returns a
+different `status.url`. All three deploy workflows
+(`deploy-hub` / `deploy-sync-job` / `deploy`) authenticate via Workload Identity
+Federation (`github` pool/provider → `ffa-deployer`); JSON key `GCP_SA_KEY` is
+retired.
 
 ### 1.4 Close the `sync.py` coverage hole — LANDED
 Shipped failure-path tests (no live ESPN calls) covering missing credentials,
@@ -424,9 +426,9 @@ Fold in continuously rather than saving for the end.
 
 ## Sequencing
 
-**Next up: 1.3 WIF / CD, then remaining Phase 5 ops** (shared cache, min-instances,
-artifact promote, a11y budgets). Hub image slim + season-bound refresh cron are
-in. Engine track D through 4.6 is closed.
+**Next up: remaining Phase 5 ops** (shared cache, min-instances, artifact
+promote, a11y budgets). **1.3 WIF / CD** and hub image slim + season-bound
+refresh cron are in. Engine track D through 4.6 is closed.
 
 **Branch protection on `main` is done** — required checks are `python`, `web`,
 and `images`. The `python` check is an aggregator over the 3.11 + 3.12 matrix.
@@ -440,7 +442,7 @@ shape. Phase 3.1 (unify views) before any other UI work so nothing ships twice.
 
 | Track | Contents | Touches |
 |---|---|---|
-| A — Platform | 1.3, ~~1.5~~, ~~1.6~~, 1.7 | workflows, Dockerfiles, scripts |
+| A — Platform | ~~1.3~~, ~~1.5~~, ~~1.6~~, 1.7 | workflows, Dockerfiles, scripts |
 | B — Data | ~~1.4~~, ~~2.1~~, ~~2.2~~, ~~2.3~~, ~~2.4~~, ~~2.5~~ | `src/sj`, `configs` |
 | C — Product | ~~3.1~~ → ~~3.2~~ → ~~3.3~~ → ~~3.4~~ → ~~3.5~~ → ~~3.6~~ | `apps/web` |
 | D — Engine | ~~4.1~~ … ~~4.6~~ | `src/ffa` + football hub surfaces; baseball ESPN-only |

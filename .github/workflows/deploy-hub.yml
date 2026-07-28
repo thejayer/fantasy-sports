@@ -2,17 +2,29 @@ name: deploy hub
 
 # Deploy the Strictly Jayers Next.js hub to Cloud Run.
 #
-# One-time setup (see HUB.md):
+# Auth: Workload Identity Federation (no JSON key). Pool/provider + SA binding
+# are one-time GCP setup — see scripts/setup-github-deployer.sh and HUB.md.
+#
+# Also needed:
 #   - Secret Manager secrets populated (scripts/create-hub-secrets.sh + add versions)
 #   - Runtime SA can read them (scripts/grant-hub-secret-access.sh)
 #   - Snapshot bucket + scheduled sync job (scripts/setup-sync-infra.sh)
-#   - GitHub secret GCP_SA_KEY (scripts/setup-github-deployer.sh)
 #
-# The hub mounts the snapshot bucket read-only; the "deploy sync job" workflow
-# owns writing to it. After the first deploy, add the printed URL to the Google
-# OAuth client's authorized origins + redirect URIs (/api/auth/callback/google).
+# Deploys on merge to main (branch protection is the CI gate) and on manual
+# workflow_dispatch (rollback / first-time). After the first deploy, add the
+# printed URL to the Google OAuth client's authorized origins + redirect URIs.
 
 on:
+  push:
+    branches: [main]
+    paths:
+      - "apps/web/**"
+      - "src/sj/**"
+      - "fixtures/sj/**"
+      - "configs/**"
+      - "requirements-lock.txt"
+      - "apps/web/Dockerfile"
+      - ".github/workflows/deploy-hub.yml"
   workflow_dispatch:
     inputs:
       project_id:
@@ -34,16 +46,22 @@ on:
 
 permissions:
   contents: read
+  id-token: write
+
+env:
+  # WIF — pool `github`, provider `github`, SA `ffa-deployer`.
+  GCP_WORKLOAD_IDENTITY_PROVIDER: projects/1047753647109/locations/global/workloadIdentityPools/github/providers/github
+  GCP_SERVICE_ACCOUNT: ffa-deployer@fantasy-sports-analytics.iam.gserviceaccount.com
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
     timeout-minutes: 40
     env:
-      PROJECT_ID: ${{ inputs.project_id }}
-      REGION: ${{ inputs.region }}
-      SERVICE: ${{ inputs.service }}
-      BUCKET: ${{ inputs.bucket }}
+      PROJECT_ID: ${{ github.event.inputs.project_id || 'fantasy-sports-analytics' }}
+      REGION: ${{ github.event.inputs.region || 'us-central1' }}
+      SERVICE: ${{ github.event.inputs.service || 'sj-hub' }}
+      BUCKET: ${{ github.event.inputs.bucket || 'fantasy-sports-analytics-sj-data' }}
     steps:
       - name: Validate inputs
         run: |
@@ -68,23 +86,11 @@ jobs:
         with:
           persist-credentials: false
 
-      - name: Require GCP_SA_KEY secret
-        env:
-          GCP_SA_KEY: ${{ secrets.GCP_SA_KEY }}
-        run: |
-          if [ -z "$GCP_SA_KEY" ]; then
-            echo "::error::GitHub secret GCP_SA_KEY is missing or empty."
-            echo "Cloud Shell fix:"
-            echo "  ./scripts/setup-github-deployer.sh"
-            echo "Then paste key.json into repo Settings → Secrets → Actions → GCP_SA_KEY"
-            echo "See HUB.md (Production → GitHub Actions deploy key)."
-            exit 1
-          fi
-
       - id: auth
         uses: google-github-actions/auth@v2
         with:
-          credentials_json: ${{ secrets.GCP_SA_KEY }}
+          workload_identity_provider: ${{ env.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ env.GCP_SERVICE_ACCOUNT }}
 
       - uses: google-github-actions/setup-gcloud@v2
 
@@ -94,6 +100,7 @@ jobs:
             run.googleapis.com \
             artifactregistry.googleapis.com \
             secretmanager.googleapis.com \
+            iamcredentials.googleapis.com \
             --project "$PROJECT_ID"
 
       - name: Ensure Artifact Registry repo
@@ -112,8 +119,20 @@ jobs:
           docker build -f apps/web/Dockerfile -t "$IMAGE" .
           docker push "$IMAGE"
 
-      - name: Deploy to Cloud Run
+      - name: Resolve AUTH_URL and deploy
         run: |
+          # Prefer the existing public URL so redeploys are one gcloud call.
+          # First-time create: regional run.app form (project number), then
+          # reconcile if Cloud Run returns a different status.url.
+          PROJECT_NUMBER="$(gcloud projects describe "$PROJECT_ID" \
+            --format='value(projectNumber)')"
+          AUTH_URL="$(gcloud run services describe "$SERVICE" \
+            --project "$PROJECT_ID" --region "$REGION" \
+            --format='value(status.url)' 2>/dev/null || true)"
+          if [ -z "$AUTH_URL" ]; then
+            AUTH_URL="https://${SERVICE}-${PROJECT_NUMBER}.${REGION}.run.app"
+          fi
+
           ARGS=(
             --project "$PROJECT_ID"
             --region "$REGION"
@@ -122,7 +141,7 @@ jobs:
             --allow-unauthenticated
             --memory 1Gi --cpu 1 --port 8080
             --timeout 300
-            --set-env-vars "SJ_SYNC_ON_START=0,AUTH_TRUST_HOST=true,SJ_DATA_DIR=/app/data/sj"
+            --set-env-vars "SJ_SYNC_ON_START=0,AUTH_TRUST_HOST=true,SJ_DATA_DIR=/app/data/sj,AUTH_URL=$AUTH_URL"
             --set-secrets "AUTH_SECRET=sj-auth-secret:latest,AUTH_GOOGLE_ID=sj-auth-google-id:latest,AUTH_GOOGLE_SECRET=sj-auth-google-secret:latest,ALLOWED_EMAILS=sj-allowed-emails:latest"
           )
           if [ -n "$BUCKET" ]; then
@@ -136,19 +155,19 @@ jobs:
           fi
           gcloud run deploy "$SERVICE" "${ARGS[@]}"
 
-      - name: Set AUTH_URL to the public service URL
-        run: |
-          # HOSTNAME=0.0.0.0 is required for the Node bind address inside the
-          # container. Without AUTH_URL, Auth.js builds redirects to 0.0.0.0:8080.
-          URL="$(gcloud run services describe "$SERVICE" \
+          LIVE_URL="$(gcloud run services describe "$SERVICE" \
             --project "$PROJECT_ID" --region "$REGION" \
-            --format 'value(status.url)')"
-          gcloud run services update "$SERVICE" \
-            --project "$PROJECT_ID" \
-            --region "$REGION" \
-            --update-env-vars "AUTH_URL=$URL,AUTH_TRUST_HOST=true"
-          echo "AUTH_URL=$URL" >> "$GITHUB_ENV"
-          echo "SERVICE_URL=$URL" >> "$GITHUB_ENV"
+            --format='value(status.url)')"
+          if [ "$LIVE_URL" != "$AUTH_URL" ]; then
+            echo "Reconciling AUTH_URL: $AUTH_URL → $LIVE_URL"
+            gcloud run services update "$SERVICE" \
+              --project "$PROJECT_ID" \
+              --region "$REGION" \
+              --update-env-vars "AUTH_URL=$LIVE_URL,AUTH_TRUST_HOST=true"
+            AUTH_URL="$LIVE_URL"
+          fi
+          echo "AUTH_URL=$AUTH_URL" >> "$GITHUB_ENV"
+          echo "SERVICE_URL=$AUTH_URL" >> "$GITHUB_ENV"
 
       - name: Print the live URL
         run: |

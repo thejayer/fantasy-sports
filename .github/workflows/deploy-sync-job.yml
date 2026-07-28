@@ -2,9 +2,8 @@ name: deploy sync job
 
 # Build and deploy the Strictly Jayers ESPN sync as a Cloud Run Job.
 #
-# One-time setup (see HUB.md):
-#   - scripts/setup-sync-infra.sh   (bucket, IAM, Cloud Scheduler)
-#   - GitHub secret GCP_SA_KEY      (scripts/setup-github-deployer.sh)
+# Auth: Workload Identity Federation (see scripts/setup-github-deployer.sh).
+# One-time infra: scripts/setup-sync-infra.sh (bucket, IAM, Cloud Scheduler).
 #
 # Cloud Scheduler triggers this job on a cadence; run a backfill manually with
 #   gcloud run jobs execute sj-sync --args=backfill --region=us-central1
@@ -35,6 +34,11 @@ on:
 
 permissions:
   contents: read
+  id-token: write
+
+env:
+  GCP_WORKLOAD_IDENTITY_PROVIDER: projects/1047753647109/locations/global/workloadIdentityPools/github/providers/github
+  GCP_SERVICE_ACCOUNT: ffa-deployer@fantasy-sports-analytics.iam.gserviceaccount.com
 
 jobs:
   deploy:
@@ -63,20 +67,11 @@ jobs:
         with:
           persist-credentials: false
 
-      - name: Require GCP_SA_KEY secret
-        env:
-          GCP_SA_KEY: ${{ secrets.GCP_SA_KEY }}
-        run: |
-          if [ -z "$GCP_SA_KEY" ]; then
-            echo "::error::GitHub secret GCP_SA_KEY is missing or empty."
-            echo "Cloud Shell fix: ./scripts/setup-github-deployer.sh"
-            exit 1
-          fi
-
       - id: auth
         uses: google-github-actions/auth@v2
         with:
-          credentials_json: ${{ secrets.GCP_SA_KEY }}
+          workload_identity_provider: ${{ env.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ env.GCP_SERVICE_ACCOUNT }}
 
       - uses: google-github-actions/setup-gcloud@v2
 
@@ -88,6 +83,7 @@ jobs:
             secretmanager.googleapis.com \
             cloudscheduler.googleapis.com \
             storage.googleapis.com \
+            iamcredentials.googleapis.com \
             --project "$PROJECT_ID"
 
       - name: Ensure Artifact Registry repo

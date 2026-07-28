@@ -1,22 +1,22 @@
 #!/usr/bin/env bash
-# Create (or reuse) the GitHub Actions deployer service account and print a
-# JSON key to paste into the GitHub secret GCP_SA_KEY.
+# Ensure the GitHub Actions deployer service account + project roles, and print
+# the Workload Identity Federation binding commands (no JSON key).
 #
 # Run in Cloud Shell:
 #   ./scripts/setup-github-deployer.sh
 #
-# Then:
-#   GitHub → repo Settings → Secrets and variables → Actions
-#   → New repository secret
-#   Name:  GCP_SA_KEY
-#   Value: full contents of the printed / downloaded key.json
+# One-time WIF (pool + provider + SA binding) is documented below. Deploy
+# workflows authenticate via OIDC — do NOT create or store GCP_SA_KEY.
 
 set -euo pipefail
 
 PROJECT="${GCP_PROJECT:-fantasy-sports-analytics}"
 SA_NAME="${DEPLOYER_SA_NAME:-ffa-deployer}"
 SA_EMAIL="${SA_NAME}@${PROJECT}.iam.gserviceaccount.com"
-OUT="${1:-key.json}"
+POOL="${WIF_POOL:-github}"
+PROVIDER="${WIF_PROVIDER:-github}"
+REPO="${GITHUB_REPO:-thejayer/fantasy-sports}"
+REPO_OWNER="${REPO%%/*}"
 
 echo "Project: ${PROJECT}"
 echo "Service account: ${SA_EMAIL}"
@@ -25,10 +25,13 @@ gcloud config set project "${PROJECT}" >/dev/null
 
 gcloud services enable \
   iam.googleapis.com \
+  iamcredentials.googleapis.com \
   run.googleapis.com \
   artifactregistry.googleapis.com \
   secretmanager.googleapis.com \
   --project="${PROJECT}"
+
+PROJECT_NUMBER="$(gcloud projects describe "${PROJECT}" --format='value(projectNumber)')"
 
 if ! gcloud iam service-accounts describe "${SA_EMAIL}" --project="${PROJECT}" >/dev/null 2>&1; then
   gcloud iam service-accounts create "${SA_NAME}" \
@@ -63,41 +66,49 @@ do
   echo "ensured roles/${role}"
 done
 
-cat <<'NOTE'
+cat <<NOTE
 
 Note: this account is intentionally NOT granted secretAccessor. If you ran an
 earlier version of this script, remove the leftover grants:
 
-  gcloud projects remove-iam-policy-binding PROJECT \
-    --member=serviceAccount:SA_EMAIL --role=roles/secretmanager.secretAccessor
-  gcloud projects remove-iam-policy-binding PROJECT \
-    --member=serviceAccount:SA_EMAIL --role=roles/artifactregistry.admin
+  gcloud projects remove-iam-policy-binding ${PROJECT} \\
+    --member=serviceAccount:${SA_EMAIL} --role=roles/secretmanager.secretAccessor
+  gcloud projects remove-iam-policy-binding ${PROJECT} \\
+    --member=serviceAccount:${SA_EMAIL} --role=roles/artifactregistry.admin
 
 and drop the per-secret accessor bindings it added for this SA:
 
-  gcloud secrets remove-iam-policy-binding SECRET_NAME \
-    --member=serviceAccount:SA_EMAIL --role=roles/secretmanager.secretAccessor
+  gcloud secrets remove-iam-policy-binding SECRET_NAME \\
+    --member=serviceAccount:${SA_EMAIL} --role=roles/secretmanager.secretAccessor
+
+================================================================
+Workload Identity Federation (preferred — no JSON key)
+
+# 1. Pool
+gcloud iam workload-identity-pools create ${POOL} \\
+  --project=${PROJECT} --location=global --display-name="GitHub Actions"
+
+# 2. GitHub OIDC provider
+gcloud iam workload-identity-pools providers create-oidc ${PROVIDER} \\
+  --project=${PROJECT} --location=global --workload-identity-pool=${POOL} \\
+  --display-name="GitHub" \\
+  --issuer-uri="https://token.actions.githubusercontent.com" \\
+  --attribute-mapping="google.subject=assertion.sub,attribute.actor=assertion.actor,attribute.repository=assertion.repository,attribute.repository_owner=assertion.repository_owner" \\
+  --attribute-condition="assertion.repository_owner == '${REPO_OWNER}'"
+
+# 3. Let this repo impersonate the deployer SA
+gcloud iam service-accounts add-iam-policy-binding ${SA_EMAIL} \\
+  --project=${PROJECT} \\
+  --role="roles/iam.workloadIdentityUser" \\
+  --member="principalSet://iam.googleapis.com/projects/${PROJECT_NUMBER}/locations/global/workloadIdentityPools/${POOL}/attribute.repository/${REPO}"
+
+Provider resource name (already hardcoded in deploy workflows):
+  projects/${PROJECT_NUMBER}/locations/global/workloadIdentityPools/${POOL}/providers/${PROVIDER}
+
+After WIF works, delete any old JSON keys and the GitHub secret GCP_SA_KEY:
+
+  gcloud iam service-accounts keys list --iam-account=${SA_EMAIL} --project=${PROJECT}
+  gcloud iam service-accounts keys delete KEY_ID --iam-account=${SA_EMAIL} --project=${PROJECT}
+  # GitHub → Settings → Secrets → Actions → delete GCP_SA_KEY
+================================================================
 NOTE
-
-echo
-echo "Creating a new JSON key → ${OUT}"
-gcloud iam service-accounts keys create "${OUT}" \
-  --iam-account="${SA_EMAIL}" \
-  --project="${PROJECT}"
-
-echo
-echo "================================================================"
-echo "Add this as a GitHub Actions repository secret:"
-echo
-echo "  1. Open https://github.com/thejayer/fantasy-sports/settings/secrets/actions"
-echo "  2. New repository secret"
-echo "  3. Name:  GCP_SA_KEY"
-echo "  4. Value: paste the ENTIRE contents of ${OUT}"
-echo "  5. Delete ${OUT} from Cloud Shell afterward (rm ${OUT})"
-echo
-echo "Then re-run: Actions → deploy hub → Run workflow"
-echo "================================================================"
-echo
-echo "Key file preview (first line only):"
-head -n 1 "${OUT}"
-echo "..."
