@@ -1,9 +1,9 @@
 import Link from "next/link";
+import { PlayersDataTable } from "@/components/PlayersDataTable";
 import { SeasonSwitcher } from "@/components/SeasonSwitcher";
-import type { LeagueSnapshot, Player, Team } from "@/lib/data";
-import { formatStat, isPitcher, stat } from "@/lib/baseball";
+import type { LeagueSnapshot, Team } from "@/lib/data";
+import { isPitcher } from "@/lib/baseball";
 import {
-  injuryTone,
   recordLabel,
   sportFormatLabel,
   winPctLabel,
@@ -38,12 +38,6 @@ function RoleSwitcher({
       ))}
     </div>
   );
-}
-
-function StatusDot({ player }: { player: Player }) {
-  const tone = injuryTone(player);
-  const label = player.injury_status || player.status || "OK";
-  return <span className={`status-dot ${tone}`} title={label} />;
 }
 
 function StandingsTable({
@@ -124,145 +118,6 @@ function TeamsList({
           <span className="pill">{team.roster.length} on roster</span>
         </Link>
       ))}
-    </div>
-  );
-}
-
-function FootballPlayersTable({ players }: { players: Player[] }) {
-  return (
-    <div className="panel table-scroll">
-      <table>
-        <thead>
-          <tr>
-            <th></th>
-            <th>Player</th>
-            <th>Pos</th>
-            <th>Pro</th>
-            <th>Fantasy</th>
-            <th>FPts</th>
-          </tr>
-        </thead>
-        <tbody>
-          {players.map((player) => (
-            <tr key={`${player.id}-${player.name}`}>
-              <td>
-                <StatusDot player={player} />
-              </td>
-              <td>{player.name}</td>
-              <td>{player.position ?? "—"}</td>
-              <td>{player.pro_team ?? "—"}</td>
-              <td>{player.fantasy_team ?? "—"}</td>
-              <td>{player.total_points?.toFixed?.(1) ?? "—"}</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
-  );
-}
-
-function BaseballPlayersTable({
-  players,
-  role,
-}: {
-  players: Player[];
-  role: string;
-}) {
-  return (
-    <div className="panel table-scroll">
-      <table>
-        <thead>
-          <tr>
-            <th></th>
-            <th>Player</th>
-            <th>Pos</th>
-            <th>Team</th>
-            <th>Fantasy</th>
-            {role !== "pitcher" ? (
-              <>
-                <th>R</th>
-                <th>HR</th>
-                <th>RBI</th>
-                <th>SB</th>
-                <th>AVG</th>
-                <th>OPS</th>
-              </>
-            ) : null}
-            {role !== "batter" ? (
-              <>
-                <th>IP</th>
-                <th>W</th>
-                <th>SV</th>
-                <th>K</th>
-                <th>ERA</th>
-                <th>WHIP</th>
-              </>
-            ) : null}
-            <th>FPts</th>
-          </tr>
-        </thead>
-        <tbody>
-          {players.map((player) => {
-            const pitcher = isPitcher(player);
-            return (
-              <tr key={`${player.id}-${player.name}`}>
-                <td>
-                  <StatusDot player={player} />
-                </td>
-                <td>{player.name}</td>
-                <td>{player.position ?? "—"}</td>
-                <td>{player.pro_team ?? "—"}</td>
-                <td>{player.fantasy_team ?? "—"}</td>
-                {role !== "pitcher" ? (
-                  <>
-                    <td>{pitcher && role === "all" ? "—" : formatStat(stat(player, "R"))}</td>
-                    <td>{pitcher && role === "all" ? "—" : formatStat(stat(player, "HR"))}</td>
-                    <td>{pitcher && role === "all" ? "—" : formatStat(stat(player, "RBI"))}</td>
-                    <td>{pitcher && role === "all" ? "—" : formatStat(stat(player, "SB"))}</td>
-                    <td>
-                      {pitcher && role === "all"
-                        ? "—"
-                        : formatStat(stat(player, "AVG"), 3)}
-                    </td>
-                    <td>
-                      {pitcher && role === "all"
-                        ? "—"
-                        : formatStat(stat(player, "OPS"), 3)}
-                    </td>
-                  </>
-                ) : null}
-                {role !== "batter" ? (
-                  <>
-                    <td>
-                      {!pitcher && role === "all" ? "—" : formatStat(stat(player, "IP"), 1)}
-                    </td>
-                    <td>
-                      {!pitcher && role === "all" ? "—" : formatStat(stat(player, "W"))}
-                    </td>
-                    <td>
-                      {!pitcher && role === "all" ? "—" : formatStat(stat(player, "SV"))}
-                    </td>
-                    <td>
-                      {!pitcher && role === "all" ? "—" : formatStat(stat(player, "K"))}
-                    </td>
-                    <td>
-                      {!pitcher && role === "all"
-                        ? "—"
-                        : formatStat(stat(player, "ERA"), 2)}
-                    </td>
-                    <td>
-                      {!pitcher && role === "all"
-                        ? "—"
-                        : formatStat(stat(player, "WHIP"), 2)}
-                    </td>
-                  </>
-                ) : null}
-                <td>{player.total_points?.toFixed?.(1) ?? "—"}</td>
-              </tr>
-            );
-          })}
-        </tbody>
-      </table>
     </div>
   );
 }
@@ -353,11 +208,11 @@ export function LeagueView({
               role={role}
             />
           ) : null}
-          {isBaseball ? (
-            <BaseballPlayersTable players={players} role={role} />
-          ) : (
-            <FootballPlayersTable players={players} />
-          )}
+          <PlayersDataTable
+            players={players}
+            sport={league.sport}
+            role={role}
+          />
         </>
       ) : null}
     </main>
