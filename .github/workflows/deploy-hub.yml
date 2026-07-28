@@ -40,9 +40,9 @@ on:
         required: true
         default: "sj-hub"
       bucket:
-        description: "Snapshot bucket to mount (blank to serve baked fixtures)"
+        description: "GCS snapshot bucket to mount (blank = baked fixtures; recommended until runtime SA has objectViewer)"
         required: false
-        default: "fantasy-sports-analytics-sj-data"
+        default: ""
 
 permissions:
   contents: read
@@ -64,7 +64,10 @@ jobs:
       PROJECT_ID: ${{ github.event.inputs.project_id || 'fantasy-sports-analytics' }}
       REGION: ${{ github.event.inputs.region || 'us-central1' }}
       SERVICE: ${{ github.event.inputs.service || 'sj-hub' }}
-      BUCKET: ${{ github.event.inputs.bucket || 'fantasy-sports-analytics-sj-data' }}
+      # Opt-in GCS mount. Auto-mounting the bucket broke CD (port probe) while
+      # image-only deploys matched the last healthy revision. Pass bucket via
+      # workflow_dispatch after ./scripts/setup-sync-infra.sh.
+      BUCKET: ${{ github.event.inputs.bucket || '' }}
     steps:
       - name: Validate inputs
         run: |
@@ -148,6 +151,7 @@ jobs:
             --set-secrets "AUTH_SECRET=sj-auth-secret:latest,AUTH_GOOGLE_ID=sj-auth-google-id:latest,AUTH_GOOGLE_SECRET=sj-auth-google-secret:latest,ALLOWED_EMAILS=sj-allowed-emails:latest"
           )
           if [ -n "$BUCKET" ]; then
+            echo "Mounting gs://$BUCKET at /app/data/sj (uid/gid 1001)"
             # Sync job owns writes; hub mounts read-only. uid/gid must match the
             # non-root sjhub user (1001). gcloud mount-options use semicolons
             # (commas would be parsed as separate volume keys → "unexpected gid").
@@ -156,6 +160,7 @@ jobs:
               --add-volume-mount "volume=sjdata,mount-path=/app/data/sj"
             )
           else
+            echo "No bucket set — clearing volumes; hub serves baked fixtures"
             ARGS+=(--clear-volumes)
           fi
           gcloud run deploy "$SERVICE" "${ARGS[@]}"
