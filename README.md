@@ -110,6 +110,10 @@ ffa rank --season 2025 --league configs/ppr.yaml --samples 1000 --tiers 5
 ffa export-projections --season 2025 --league configs/ppr.yaml \
     --out-dir data/sj/projections --format both
 
+# ESPN ↔ nflverse player map + hub coverage report
+ffa export-player-map --season 2025 --out-dir data/sj/player_map \
+    --sj-root data/sj
+
 # Walk-forward backtest: how good are the projections, really?
 ffa backtest --league configs/ppr.yaml --start 2023 --end 2024 \
     --generator bootstrap --generator learned
@@ -344,8 +348,8 @@ Two GitHub Actions workflows ship in `.github/workflows/`:
 - `refresh.yml`: scheduled (weekday mornings during NFL season) and
   manual; ingests the current season + lookback from nflverse, runs
   `ffa export-projections` for PPR and Standard (conditioned LevelModel),
-  and uploads `store/projections/{scoring}/{season}.{json,parquet}` as
-  build artifacts for the hub store.
+  `ffa export-player-map` for the ESPN↔GSIS crosswalk + coverage, and uploads
+  `store/projections/` + `store/player_map/` as build artifacts for the hub store.
 
 ## Backtesting (phase 8)
 
@@ -752,8 +756,10 @@ on what any marginal model can do.
 - ~~Wire the conditioned `LevelModel` through `simulate`/`rank`/`draft-sim`~~ —
   done (`--conditioned-level`; roadmap 4.1).
 - ~~Projection snapshots the hub can read~~ — done (`ffa export-projections` +
-  `getProjectionSnapshot`; roadmap 4.2). ESPN↔nflverse player ID mapping with a
-  coverage metric (roadmap 4.3) and hub UI (4.4) remain.
+  `getProjectionSnapshot`; roadmap 4.2).
+- ~~ESPN↔nflverse player ID mapping with a coverage metric~~ — done
+  (`ffa export-player-map` + `getPlayerMap`; roadmap 4.3). Hub projection UI
+  (roadmap 4.4) remains.
 - Per-position joint-distribution learning (copula over stat vectors) --
   the lever for cross-stat realism once the marginals are calibrated.
 - Schedule-aware adjustments and dashboard-output pricing against

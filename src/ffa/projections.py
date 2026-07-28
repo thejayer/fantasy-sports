@@ -6,7 +6,8 @@ already reads::
 
     {store}/projections/{scoring}/{season}.json
 
-Rows keep nflverse ``player_id`` values; ESPN ID join is roadmap 4.3.
+Rows keep nflverse ``player_id`` values; join ESPN roster ids via
+:mod:`ffa.player_map` / hub ``getPlayerMap`` (roadmap 4.3).
 """
 
 from __future__ import annotations

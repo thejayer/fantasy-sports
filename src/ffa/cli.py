@@ -24,6 +24,17 @@ from ffa.ingest import ingest_seasons, open_warehouse
 from ffa.league import load_league
 from ffa.level import LevelModel
 from ffa.optimize import optimize_lineup
+from ffa.player_map import (
+    build_player_map_document,
+    collect_hub_espn_players,
+    compute_hub_coverage,
+    crosswalk_from_ff_playerids,
+    crosswalk_from_rosters,
+    fetch_ff_playerids,
+    merge_crosswalks,
+    skill_roster_stats,
+    write_player_map,
+)
 from ffa.projection import project_per_game, project_season
 from ffa.projections import (
     build_projection_table,
@@ -760,6 +771,113 @@ def export_projections(
     written = write_projection_snapshot(document, table, out_dir, fmt=fmt)  # type: ignore[arg-type]
     for path in written:
         typer.echo(f"Wrote {len(table):,} players -> {path}")
+
+
+@app.command("export-player-map")
+def export_player_map(
+    season: int = typer.Option(..., "--season", help="NFL season for the map file."),
+    out_dir: Path = typer.Option(
+        Path("data/sj/player_map"),
+        "--out-dir",
+        help="Directory for {season}.json",
+    ),
+    raw_dir: Path = typer.Option(Path("data/raw"), "--raw-dir"),
+    sj_root: Path | None = typer.Option(
+        Path("data/sj"),
+        "--sj-root",
+        help="Hub store root for coverage denominator (football roster ESPN ids).",
+    ),
+    use_ff_playerids: bool = typer.Option(
+        True,
+        "--ff-playerids/--no-ff-playerids",
+        help="Fill gaps from DynastyProcess load_ff_playerids().",
+    ),
+    fail_below: float | None = typer.Option(
+        None,
+        "--fail-below",
+        help="Exit 1 if hub coverage rate is below this threshold (0-1).",
+    ),
+) -> None:
+    """Write ESPN↔nflverse player map + coverage report (roadmap 4.3).
+
+    Reads ``rosters.parquet`` (and optionally ff_playerids), writes
+    ``{out_dir}/{season}.json``. Hub coverage uses unique ESPN ids on football
+    league rosters under ``--sj-root``. The hub reads this file via
+    ``getPlayerMap`` — it never invokes this CLI at request time.
+    """
+    import pandas as pd
+
+    rosters_path = raw_dir / "rosters.parquet"
+    if not rosters_path.exists():
+        typer.echo(f"Missing {rosters_path}. Run `ffa ingest` first.")
+        raise typer.Exit(code=1)
+
+    rosters = pd.read_parquet(rosters_path)
+    has_season = "season" in rosters.columns and (rosters["season"] == season).any()
+    if not has_season:
+        typer.echo(
+            f"No roster rows for season {season}; preferring latest rows across "
+            f"all seasons in {rosters_path}."
+        )
+
+    # Target season first (when present), then all seasons, then ff_playerids.
+    primary = (
+        crosswalk_from_rosters(rosters, season=season)
+        if has_season
+        else crosswalk_from_rosters(rosters, season=None)
+    )
+    all_seasons = crosswalk_from_rosters(rosters, season=None)
+    fill = None
+    if use_ff_playerids:
+        try:
+            fill = crosswalk_from_ff_playerids(fetch_ff_playerids())
+            typer.echo(f"ff_playerids: {len(fill):,} espn↔gsis rows.")
+        except Exception as exc:  # noqa: BLE001 -- network / schema soft-fail
+            typer.echo(f"ff_playerids unavailable ({exc}); continuing with rosters only.")
+
+    crosswalk = merge_crosswalks(primary, all_seasons, fill)
+
+    hub_players: list = []
+    if sj_root is not None and Path(sj_root).exists():
+        hub_players = collect_hub_espn_players(Path(sj_root))
+        typer.echo(f"Hub football ESPN ids: {len(hub_players):,} under {sj_root}")
+    else:
+        typer.echo("No --sj-root (or missing); hub coverage will be empty.")
+
+    coverage = compute_hub_coverage(hub_players, crosswalk)
+    stats = skill_roster_stats(
+        rosters,
+        season=season if has_season else None,
+    )
+    document = build_player_map_document(
+        crosswalk,
+        season=season,
+        coverage=coverage,
+        stats=stats,
+        source={
+            "engine": "ffa",
+            "raw_dir": str(raw_dir),
+            "sj_root": str(sj_root) if sj_root else None,
+            "ff_playerids": bool(use_ff_playerids and fill is not None),
+            "roster_rows": len(rosters),
+        },
+    )
+    path = write_player_map(document, out_dir)
+    rate = coverage.get("rate")
+    rate_s = f"{rate:.1%}" if isinstance(rate, float) else "n/a"
+    typer.echo(
+        f"Wrote {document['stats']['mappings']:,} mappings -> {path} "
+        f"(hub coverage {coverage['resolved']}/{coverage['rostered']} = {rate_s})"
+    )
+    if fail_below is not None:
+        if rate is None:
+            typer.echo("--fail-below set but hub coverage rate is null (no rostered ids).")
+            raise typer.Exit(code=1)
+        if rate < fail_below:
+            typer.echo(
+                f"Hub coverage {rate:.1%} below --fail-below {fail_below:.1%}."
+            )
+            raise typer.Exit(code=1)
 
 
 @app.command()
