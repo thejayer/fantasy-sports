@@ -331,12 +331,13 @@ currently reach members through a separate password-gated Streamlit app; the hub
 never calls it. Sequenced after phase 2 because it needs the richer data, and
 after phase 3 because it needs somewhere to render.
 
-### 4.1 Finish the engine's own open item
-Wire the conditioned `LevelModel` (with the `years_exp` rosters join) through the
-`simulate` / `rank` / `draft-sim` commands. `README.md` names this as the missing
-plumbing, and it is the best-calibrated configuration the backtest found
-(central coverage 0.80 vs 0.75). Everything below consumes its output, so it
-should be the recommended path first.
+### 4.1 Finish the engine's own open item — LANDED
+`--conditioned-level` on `simulate` / `rank` / `optimize` / `draft-sim` /
+`backtest` builds a per-player `LevelModel` table (tier + rosters `years_exp` +
+collapse) via `build_player_level` / `years_exp_from_rosters` and passes it as
+`player_level`. Global `--level-sd` / `--level-mean` remain the fallback for
+players missing from that table. This is the calibrated phase-18 path
+(central coverage 0.80) usable at draft time, not just in the Python API.
 
 ### 4.2 Give the engine a consumable interface
 Today `ffa` is a CLI plus a Streamlit app. The hub needs projections as data:
@@ -394,10 +395,10 @@ Fold in continuously rather than saving for the end.
 
 ## Sequencing
 
-**Next up: 1.3 or phase 4.** Continuous deployment + Workload Identity Federation
+**Next up: 1.3, 4.2, or 4.3.** Continuous deployment + Workload Identity Federation
 (1.3) is the biggest remaining platform win on track A (needs GCP-side WIF
-setup). Product track 3.1–3.6 is in; engine connection is phase 4.
-Data track 2.1–2.5 is in.
+setup). Engine 4.1 is in; continue with projection snapshots (4.2) and/or ESPN↔nflverse
+ID mapping (4.3 — long pole for hub surfaces). Product 3.1–3.6 and data 2.1–2.5 are in.
 
 **Branch protection on `main` is done** — required checks are `python`, `web`,
 and `images`. The `python` check is an aggregator over the 3.11 + 3.12 matrix.
@@ -414,7 +415,7 @@ shape. Phase 3.1 (unify views) before any other UI work so nothing ships twice.
 | A — Platform | 1.3, ~~1.5~~, ~~1.6~~, 1.7 | workflows, Dockerfiles, scripts |
 | B — Data | ~~1.4~~, ~~2.1~~, ~~2.2~~, ~~2.3~~, ~~2.4~~, ~~2.5~~ | `src/sj`, `configs` |
 | C — Product | ~~3.1~~ → ~~3.2~~ → ~~3.3~~ → ~~3.4~~ → ~~3.5~~ → ~~3.6~~ | `apps/web` |
-| D — Engine | 4.1, 4.3 | `src/ffa` |
+| D — Engine | ~~4.1~~, 4.2, 4.3 | `src/ffa` (+ hub store for 4.2) |
 
 A, B, and D barely overlap with C, so platform hardening, sync extension, and the
 `LevelModel` plumbing can all proceed while the UI is rebuilt. Track D's 4.3

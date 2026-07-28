@@ -321,9 +321,8 @@ hub, which is the thing members actually visit, is a read-only ESPN mirror that
 tells them nothing ESPN's own site doesn't.
 
 The engine is also NFL-only, while `baseball-dynasty` is the league with the
-richest UI. And `LevelModel`, the best-calibrated configuration in the engine, is
-still not wired through the `simulate`/`rank`/`draft-sim` CLI commands — the
-README's own "what's next" names this as the missing plumbing.
+richest UI. `LevelModel` is now reachable from the CLI via `--conditioned-level`
+(roadmap 4.1); the hub still does not consume projections (4.2–4.4).
 
 ### 16. Storage layout will not extend to weekly data
 
@@ -371,7 +370,7 @@ time. `@types/node` is `^20` against a Node 22 runtime. No Dependabot or Renovat
 | 12 | `sync.py` at 0% coverage | P1 | Fixed — 100% + loud exits + `SYNC_SUMMARY` (roadmap 1.4) |
 | 13 | All deploys manual | P1 | Open — roadmap 1.3 |
 | 14 | No observability or alerting | P1 | Baseline fixed (roadmap 1.6); uptime check + min-instances still open |
-| 15 | `ffa` engine disconnected from the hub | P2 | Open — roadmap phase 4 |
+| 15 | `ffa` engine disconnected from the hub | P2 | Partly — LevelModel on CLI (4.1); hub still doesn't consume ffa (4.2–4.4) |
 | 16 | Storage layout won't extend to weekly data | P2 | Open — roadmap 2.2, 2.3 |
 | 17 | Hub image carries the analytics stack | P2 | Open — roadmap phase 5 |
 | 18 | CI/production version skew, no lockfile | P2 | Open — roadmap 1.5 |

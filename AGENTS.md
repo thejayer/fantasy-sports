@@ -20,6 +20,7 @@ This is a dual-product monorepo. See `README.md` (ffa engine) and `HUB.md` (memb
 
 ### ffa CLI / dashboard
 - Most `ffa` commands (`score`, `project`, `simulate`, `rank`, `optimize`, `draft-sim`, `backtest`, `dashboard`) need ingested data first: `ffa ingest --season 2023 --season 2024` writes Parquet to `data/raw/` (requires network to nflverse via `nflreadpy`). `data/` is gitignored, so re-ingest after a fresh VM. Configs live in `configs/*.yaml`.
+- Calibrated level path (roadmap 4.1): pass `--conditioned-level` on `simulate` / `rank` / `optimize` / `draft-sim` / `backtest` to use `LevelModel` with rosters `years_exp` (and per-tier collapse). Global `--level-sd` / `--level-mean` remain the scalar fallback.
 - `ffa dashboard` launches Streamlit (the `[dashboard]` extra is installed) and needs ingested data.
 
 ### Hub web app (`apps/web`)

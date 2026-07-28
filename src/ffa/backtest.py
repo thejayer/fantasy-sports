@@ -50,6 +50,31 @@ from ffa.scoring import STAT_COLUMNS, score_player_weeks
 from ffa.simulation import simulate_seasons, summarize_seasons
 
 
+def years_exp_from_rosters(rosters: pd.DataFrame) -> pd.DataFrame:
+    """Normalize a rosters frame to ``player_id`` / ``season`` / ``years_exp``.
+
+    nflverse rosters use ``gsis_id``; the rest of the package joins on
+    ``player_id``. Rosters are often weekly — keep the last ``years_exp`` per
+    player-season so :func:`build_player_level` gets one row each.
+    """
+    if rosters is None or rosters.empty:
+        return pd.DataFrame(columns=["player_id", "season", "years_exp"])
+    df = rosters.copy()
+    if "player_id" not in df.columns and "gsis_id" in df.columns:
+        df = df.rename(columns={"gsis_id": "player_id"})
+    needed = {"player_id", "season", "years_exp"}
+    missing = needed - set(df.columns)
+    if missing:
+        raise ValueError(
+            f"rosters is missing columns required for years_exp join: {sorted(missing)}"
+        )
+    return (
+        df.sort_values(["player_id", "season"])
+        .groupby(["player_id", "season"], as_index=False)["years_exp"]
+        .last()
+    )
+
+
 def build_player_level(
     history: pd.DataFrame,
     target_season: int,
@@ -58,7 +83,7 @@ def build_player_level(
     lookback: int = 3,
     years_exp: pd.DataFrame | None = None,
 ) -> dict:
-    """Per-player ``(level_sd, level_mean)`` from a conditioned LevelModel.
+    """Per-player ``(level_sd, level_mean[, collapse_rate])`` from a LevelModel.
 
     Tiers each player by their *baseline* projected fantasy points (so the
     league-agnostic generator never has to score), looks up ``years_exp`` for
