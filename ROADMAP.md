@@ -339,12 +339,15 @@ collapse) via `build_player_level` / `years_exp_from_rosters` and passes it as
 players missing from that table. This is the calibrated phase-18 path
 (central coverage 0.80) usable at draft time, not just in the Python API.
 
-### 4.2 Give the engine a consumable interface
-Today `ffa` is a CLI plus a Streamlit app. The hub needs projections as data:
-either a scheduled job that writes projection snapshots into the same store the
-hub already reads — which fits the existing architecture and keeps the web
-container free of the Python analytics stack (finding #17) — or a small service
-the hub queries. The snapshot approach is strongly preferred.
+### 4.2 Give the engine a consumable interface — LANDED
+`ffa export-projections` runs the same simulation summary as `rank`, attaches
+VOR + tiers, and writes hub-consumable snapshots to
+`{out_dir}/{scoring}/{season}.json` (optional Parquet sibling). Defaults to
+`--conditioned-level` (calibrated path). Schema aliases `floor`/`median`/
+`ceiling` ← `q05`/`q50`/`q95`. Hub reader: `getProjectionSnapshot(scoring,
+season)` under `data/sj/projections/` (fixtures committed for offline). Nightly
+`.github/workflows/refresh.yml` exports PPR + standard into `store/projections/`
+artifacts. UI surfaces deferred to 4.4; ESPN ID join is 4.3.
 
 ### 4.3 Map ESPN players to engine players
 The unglamorous prerequisite and the main technical risk in this phase. ESPN
@@ -386,19 +389,20 @@ Fold in continuously rather than saving for the end.
 - **Storage.** If weekly and projection data outgrow JSON-on-GCS, the pattern is
   already established elsewhere in the repo: Parquet plus DuckDB, as `src/ffa`
   does.
-- **`refresh.yml`.** It currently produces artifacts nothing consumes, on a
-  year-round cron for a seasonal workload. Either wire it into 4.2 as the
-  projection producer or retire it.
+- **`refresh.yml`.** Wired as the 4.2 projection producer (`ffa
+  export-projections` → `store/projections/` artifacts). Still needs a promote
+  step into the live hub store/GCS mount (deploy/sync), and the year-round cron
+  should tighten to NFL-season months when ops allow.
 - **Accessibility and performance budgets** in CI once phase 3 lands.
 
 ---
 
 ## Sequencing
 
-**Next up: 1.3, 4.2, or 4.3.** Continuous deployment + Workload Identity Federation
+**Next up: 1.3, 4.3, or 4.4.** Continuous deployment + Workload Identity Federation
 (1.3) is the biggest remaining platform win on track A (needs GCP-side WIF
-setup). Engine 4.1 is in; continue with projection snapshots (4.2) and/or ESPN↔nflverse
-ID mapping (4.3 — long pole for hub surfaces). Product 3.1–3.6 and data 2.1–2.5 are in.
+setup). Engine 4.1–4.2 are in; ESPN↔nflverse ID mapping (4.3) is the long pole
+before projection UI (4.4). Product 3.1–3.6 and data 2.1–2.5 are in.
 
 **Branch protection on `main` is done** — required checks are `python`, `web`,
 and `images`. The `python` check is an aggregator over the 3.11 + 3.12 matrix.
@@ -415,7 +419,7 @@ shape. Phase 3.1 (unify views) before any other UI work so nothing ships twice.
 | A — Platform | 1.3, ~~1.5~~, ~~1.6~~, 1.7 | workflows, Dockerfiles, scripts |
 | B — Data | ~~1.4~~, ~~2.1~~, ~~2.2~~, ~~2.3~~, ~~2.4~~, ~~2.5~~ | `src/sj`, `configs` |
 | C — Product | ~~3.1~~ → ~~3.2~~ → ~~3.3~~ → ~~3.4~~ → ~~3.5~~ → ~~3.6~~ | `apps/web` |
-| D — Engine | ~~4.1~~, 4.2, 4.3 | `src/ffa` (+ hub store for 4.2) |
+| D — Engine | ~~4.1~~, ~~4.2~~, 4.3, 4.4 | `src/ffa` (+ hub store / projections) |
 
 A, B, and D barely overlap with C, so platform hardening, sync extension, and the
 `LevelModel` plumbing can all proceed while the UI is rebuilt. Track D's 4.3

@@ -1,9 +1,13 @@
 name: nightly refresh
 
-# Pull weekly stats from nflverse, compute the posterior summary under
-# the default PPR league, and upload the resulting Parquet files as
-# build artifacts. Runs every weekday during NFL season (Sept-Jan).
+# Pull weekly stats from nflverse, export hub-consumable projection snapshots
+# (roadmap 4.2) under store/projections/{scoring}/{season}.json, and upload
+# them as build artifacts. Runs every weekday during NFL season (Sept-Jan).
 # Can also be triggered manually from the Actions tab.
+#
+# Artifacts are not auto-committed into data/sj — promote into the hub store
+# (or GCS mount) as part of deploy/sync. The hub reads the same path layout
+# via getProjectionSnapshot.
 
 on:
   schedule:
@@ -19,6 +23,10 @@ on:
         description: "Lookback seasons"
         required: true
         default: "3"
+      samples:
+        description: "Monte Carlo samples per export"
+        required: true
+        default: "1000"
 
 permissions:
   contents: read
@@ -26,7 +34,7 @@ permissions:
 jobs:
   refresh:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 45
     steps:
       - uses: actions/checkout@v4
 
@@ -44,14 +52,19 @@ jobs:
         run: |
           SEASON="${{ github.event.inputs.season }}"
           LOOKBACK="${{ github.event.inputs.lookback }}"
+          SAMPLES="${{ github.event.inputs.samples }}"
           if [ -z "$SEASON" ]; then
             SEASON="$(date -u +%Y)"
           fi
           if [ -z "$LOOKBACK" ]; then
             LOOKBACK="3"
           fi
+          if [ -z "$SAMPLES" ]; then
+            SAMPLES="1000"
+          fi
           echo "season=$SEASON" >> "$GITHUB_OUTPUT"
           echo "lookback=$LOOKBACK" >> "$GITHUB_OUTPUT"
+          echo "samples=$SAMPLES" >> "$GITHUB_OUTPUT"
 
       - name: Ingest weekly stats
         run: |
@@ -65,27 +78,24 @@ jobs:
           echo "Ingesting seasons: $ARGS"
           ffa ingest $ARGS
 
-      - name: Simulate + write Parquet artifacts
+      - name: Export projection snapshots
         run: |
-          mkdir -p artifacts
-          ffa simulate \
-            --league configs/ppr.yaml \
-            --season ${{ steps.cfg.outputs.season }} \
-            --lookback ${{ steps.cfg.outputs.lookback }} \
-            --samples 1000 \
-            --out artifacts/posterior_ppr.parquet \
-            --limit 5
-          ffa simulate \
-            --league configs/standard.yaml \
-            --season ${{ steps.cfg.outputs.season }} \
-            --lookback ${{ steps.cfg.outputs.lookback }} \
-            --samples 1000 \
-            --out artifacts/posterior_standard.parquet \
-            --limit 5
+          mkdir -p store/projections
+          for LEAGUE in configs/ppr.yaml configs/standard.yaml; do
+            ffa export-projections \
+              --league "$LEAGUE" \
+              --season ${{ steps.cfg.outputs.season }} \
+              --lookback ${{ steps.cfg.outputs.lookback }} \
+              --samples ${{ steps.cfg.outputs.samples }} \
+              --out-dir store/projections \
+              --format both \
+              --conditioned-level
+          done
+          find store/projections -type f | sort
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: posterior-${{ steps.cfg.outputs.season }}-${{ github.run_id }}
-          path: artifacts/*.parquet
+          name: projections-${{ steps.cfg.outputs.season }}-${{ github.run_id }}
+          path: store/projections/
           retention-days: 14

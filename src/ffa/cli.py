@@ -25,6 +25,12 @@ from ffa.league import load_league
 from ffa.level import LevelModel
 from ffa.optimize import optimize_lineup
 from ffa.projection import project_per_game, project_season
+from ffa.projections import (
+    build_projection_table,
+    build_snapshot_document,
+    scoring_slug,
+    write_projection_snapshot,
+)
 from ffa.ranking import assign_tiers, compute_vor
 from ffa.rookies import augment_with_rookies
 from ffa.scoring import score_player_weeks
@@ -665,6 +671,95 @@ def backtest(
                 typer.echo(decomp.round(2).to_string(index=False))
         if not printed:
             typer.echo("\nNo calibration data available.")
+
+
+@app.command("export-projections")
+def export_projections(
+    league: Path = typer.Option(Path("configs/ppr.yaml"), "--league"),
+    season: int = typer.Option(..., "--season"),
+    out_dir: Path = typer.Option(
+        Path("data/sj/projections"),
+        "--out-dir",
+        help="Store root for projections/{scoring}/{season}.json",
+    ),
+    samples: int = typer.Option(2000, "--samples"),
+    lookback: int = typer.Option(3, "--lookback"),
+    decay: float = typer.Option(0.5, "--decay"),
+    expected_games: float = typer.Option(17.0, "--expected-games"),
+    seed: int = typer.Option(0, "--seed"),
+    generator: str = typer.Option("bootstrap", "--generator"),
+    games_model: str = typer.Option("fixed", "--games-model"),
+    level_sd: float = typer.Option(0.0, "--level-sd"),
+    level_mean: float = typer.Option(1.0, "--level-mean"),
+    conditioned_level: bool = typer.Option(
+        True,
+        "--conditioned-level/--no-conditioned-level",
+        help="Default on: calibrated LevelModel path (roadmap 4.1).",
+    ),
+    include_rookies: bool = typer.Option(False, "--include-rookies"),
+    n_tiers: int = typer.Option(5, "--tiers"),
+    fmt: str = typer.Option(
+        "json",
+        "--format",
+        help="json | parquet | both",
+    ),
+    db: Path = typer.Option(Path("data/ffa.duckdb"), "--db"),
+    raw_dir: Path = typer.Option(Path("data/raw"), "--raw-dir"),
+) -> None:
+    """Write hub-consumable projection snapshots (roadmap 4.2).
+
+    Runs the same simulation summary as ``rank``, attaches VOR + tiers, and
+    writes ``{out_dir}/{scoring}/{season}.json`` (optional Parquet sibling).
+    Defaults to ``--conditioned-level`` so nightly exports use the calibrated
+    path. The hub reads these files; it never invokes this CLI at request time.
+    """
+    if fmt not in ("json", "parquet", "both"):
+        typer.echo(f"Unknown --format {fmt!r}; choose json, parquet, or both.")
+        raise typer.Exit(code=2)
+
+    cfg, summary = _load_simulation_summary(
+        league,
+        season,
+        samples,
+        lookback,
+        decay,
+        expected_games,
+        seed,
+        db,
+        raw_dir,
+        generator=generator,
+        games_model=games_model,
+        level_sd=level_sd,
+        level_mean=level_mean,
+        conditioned_level=conditioned_level,
+        include_rookies=include_rookies,
+    )
+    table = build_projection_table(summary, cfg, n_tiers=n_tiers)
+    slug = scoring_slug(cfg)
+    document = build_snapshot_document(
+        table,
+        scoring=slug,
+        season=season,
+        n_sims=samples,
+        source={
+            "engine": "ffa",
+            "league": str(league),
+            "generator": generator,
+            "games_model": games_model,
+            "lookback": lookback,
+            "decay": decay,
+            "expected_games": expected_games,
+            "conditioned_level": conditioned_level,
+            "level_sd": level_sd,
+            "level_mean": level_mean,
+            "include_rookies": include_rookies,
+            "seed": seed,
+            "tiers": n_tiers,
+        },
+    )
+    written = write_projection_snapshot(document, table, out_dir, fmt=fmt)  # type: ignore[arg-type]
+    for path in written:
+        typer.echo(f"Wrote {len(table):,} players -> {path}")
 
 
 @app.command()

@@ -99,6 +99,31 @@ export type TransactionAction = {
   bid_amount: number;
 };
 
+/** Posterior row from `ffa export-projections` (nflverse player_id; roadmap 4.2). */
+export type ProjectionPlayer = {
+  player_id: string;
+  player_name: string | null;
+  position: string | null;
+  team: string | null;
+  points_mean: number | null;
+  points_sd: number | null;
+  floor: number | null;
+  median: number | null;
+  ceiling: number | null;
+  vor: number | null;
+  tier: number | null;
+};
+
+export type ProjectionSnapshot = {
+  schema_version: number;
+  generated_at: string;
+  scoring: string;
+  season: number;
+  n_sims: number;
+  source?: Record<string, unknown>;
+  players: ProjectionPlayer[];
+};
+
 export type Transaction = {
   date: string | number | null;
   actions: TransactionAction[];
@@ -537,6 +562,26 @@ export const getLeagueSnapshot = cache(
       const snapshot = await loadSnapshotFromRoot(root, match.path);
       if (snapshot) {
         return snapshot;
+      }
+    }
+    return null;
+  },
+);
+
+/**
+ * Read an ffa projection snapshot written under ``projections/{scoring}/{season}.json``.
+ * Session-gated like league data. UI surfaces land in roadmap 4.4; IDs are nflverse
+ * until 4.3 maps ESPN players.
+ */
+export const getProjectionSnapshot = cache(
+  async (scoring: string, season: number): Promise<ProjectionSnapshot | null> => {
+    await requireSession();
+    const slug = scoring.trim().toLowerCase();
+    const relative = path.join("projections", slug, `${season}.json`);
+    for (const root of dataRoots()) {
+      const doc = await readJson<ProjectionSnapshot>(path.join(root, relative));
+      if (doc?.players?.length && doc.season === season) {
+        return doc;
       }
     }
     return null;
