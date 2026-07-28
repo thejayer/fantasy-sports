@@ -286,10 +286,19 @@ the current page of rows renders in HTML. Baseball URL `RoleSwitcher` still
 owns batter/pitcher role; the table adds search/position/sort/page on top.
 Standings/teams/roster tables left alone for later reuse.
 
-### 3.4 Matchups, scores, and playoffs
-Consuming 2.1 and 2.4: a weekly matchup view, a season schedule with results, a
-playoff bracket, and box scores per matchup. This is the core weekly loop the hub
-currently has none of.
+### 3.4 Matchups, scores, and playoffs — LANDED
+`LeagueView` gains a **matchups** tab with three sub-views on existing
+`schedule` / `scores` / `outcomes` arrays (no new ESPN pulls):
+
+- **This week** — period chips (`?week=`) defaulting to `current_week`, paired
+  matchup cards with scores and W/L/T pills, bye callouts
+- **Schedule** — every period in the snapshot
+- **Playoffs** — seed table from `playoff_team_count` + standings; real post-
+  `reg_season_count` periods when present; otherwise a projected 1-vs-N first
+  round (no scores)
+
+Box scores remain deferred (not in the snapshot — see 2.4). Helpers live in
+`lib/matchups.ts`; `MatchupsPanel` keeps `LeagueView` a server component.
 
 ### 3.5 History and records
 The differentiator, and the thing ESPN genuinely cannot show them: all-time
@@ -377,15 +386,15 @@ Fold in continuously rather than saving for the end.
 
 ## Sequencing
 
-**Next up: 1.3 or 3.4.** Continuous deployment + Workload Identity Federation
+**Next up: 1.3 or 3.5.** Continuous deployment + Workload Identity Federation
 (1.3) is the biggest remaining platform win on track A (needs GCP-side WIF
-setup). Product track continues with 3.4 (matchups / scores / playoffs).
-Data track 2.1–2.5 and product 3.1–3.3 are in.
+setup). Product track continues with 3.5 (history / records) or 3.6 (polish).
+Data track 2.1–2.5 and product 3.1–3.4 are in.
 
 **Branch protection on `main` is done** — required checks are `python`, `web`,
 and `images`. The `python` check is an aggregator over the 3.11 + 3.12 matrix.
 
-**Strictly ordered:** ~~0~~ → 1 → 2.2 → ~~3.1~~ → ~~3.2~~ → ~~3.3~~ → 3.4/3.5 → 4.
+**Strictly ordered:** ~~0~~ → 1 → 2.2 → ~~3.1~~ → ~~3.2~~ → ~~3.3~~ → ~~3.4~~ → 3.5 → 4.
 Phase 2.2 (schema split) before phase 3 so the UI is built once against the final
 shape. Phase 3.1 (unify views) before any other UI work so nothing ships twice.
 1.7 (Next 16) after 1.1, so a major bump lands against a real CI gate.
@@ -396,7 +405,7 @@ shape. Phase 3.1 (unify views) before any other UI work so nothing ships twice.
 |---|---|---|
 | A — Platform | 1.3, ~~1.5~~, ~~1.6~~, 1.7 | workflows, Dockerfiles, scripts |
 | B — Data | ~~1.4~~, ~~2.1~~, ~~2.2~~, ~~2.3~~, ~~2.4~~, ~~2.5~~ | `src/sj`, `configs` |
-| C — Product | ~~3.1~~ → ~~3.2~~ → ~~3.3~~ → 3.4 → 3.6 | `apps/web` |
+| C — Product | ~~3.1~~ → ~~3.2~~ → ~~3.3~~ → ~~3.4~~ → 3.5 → 3.6 | `apps/web` |
 | D — Engine | 4.1, 4.3 | `src/ffa` |
 
 A, B, and D barely overlap with C, so platform hardening, sync extension, and the
