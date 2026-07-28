@@ -60,7 +60,10 @@ protection is the CI gate). Manual rollback / first-time:
 
 1. GitHub → **Actions** → **deploy hub** → **Run workflow**
 2. Defaults are fine (`fantasy-sports-analytics` / `us-central1` / `sj-hub`)
-3. When it finishes, copy the printed URL
+3. Leave **bucket** blank to serve baked fixtures (default for CD). Set it to
+   `fantasy-sports-analytics-sj-data` only after `./scripts/setup-sync-infra.sh`
+   has granted the hub runtime SA read access on that bucket.
+4. When it finishes, copy the printed URL
 
 ### Google OAuth redirect (required after first deploy)
 
