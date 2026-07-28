@@ -4,11 +4,13 @@ import { LeagueView } from "@/components/LeagueView";
 import type { MatchupsView } from "@/components/MatchupsPanel";
 import type { ToolsView } from "@/components/ToolsPanel";
 import {
+  getDraftSimSnapshot,
   getLeagueHistoryArchive,
   getLeagueSeasons,
   getLeagueSnapshot,
   getPlayerMap,
   getProjectionSnapshot,
+  type DraftSimSnapshot,
   type PlayerMapSnapshot,
   type ProjectionSnapshot,
 } from "@/lib/data";
@@ -32,6 +34,7 @@ type Props = {
     a?: string;
     b?: string;
     scoring?: string;
+    slot?: string;
   }>;
 };
 
@@ -66,12 +69,14 @@ export default async function LeagueDetailPage({ params, searchParams }: Props) 
     a: aParam,
     b: bParam,
     scoring: scoringParam,
+    slot: slotParam,
   } = await searchParams;
   const seasons = await getLeagueSeasons(leagueId);
   const season = seasonParam ? Number(seasonParam) : undefined;
   const week = weekParam ? Number(weekParam) : undefined;
   const a = aParam ? Number(aParam) : undefined;
   const b = bParam ? Number(bParam) : undefined;
+  const slot = slotParam ? Number(slotParam) : 1;
 
   const matchupsView = (
     ["week", "schedule", "playoffs"].includes(viewParam ?? "")
@@ -84,7 +89,7 @@ export default async function LeagueDetailPage({ params, searchParams }: Props) 
       : "standings"
   ) as HistoryView;
   const toolsView = (
-    ["trade", "waivers", "strength", "deferred"].includes(viewParam ?? "")
+    ["trade", "waivers", "strength", "draft", "deferred"].includes(viewParam ?? "")
       ? viewParam
       : "trade"
   ) as ToolsView;
@@ -114,6 +119,24 @@ export default async function LeagueDetailPage({ params, searchParams }: Props) 
       )
     : { snapshot: null, playerMap: null, scoring: scoringOverride };
 
+  let draftSimSnapshot: DraftSimSnapshot | null = null;
+  if (
+    league.sport === "football" &&
+    tab === "tools" &&
+    toolsView === "draft"
+  ) {
+    const scoring = projectionBundle.scoring ?? scoringSlugFromLeague(league);
+    const draftSlot =
+      slot != null && !Number.isNaN(slot) && slot >= 1 ? Math.trunc(slot) : 1;
+    for (const year of projectionSeasonCandidates(league.season)) {
+      const snap = await getDraftSimSnapshot(scoring, year, draftSlot);
+      if (snap) {
+        draftSimSnapshot = snap;
+        break;
+      }
+    }
+  }
+
   return (
     <LeagueView
       league={league}
@@ -130,6 +153,8 @@ export default async function LeagueDetailPage({ params, searchParams }: Props) 
       playerMap={projectionBundle.playerMap}
       projectionScoring={projectionBundle.scoring}
       toolsView={toolsView}
+      draftSlot={slot != null && !Number.isNaN(slot) && slot >= 1 ? Math.trunc(slot) : 1}
+      draftSimSnapshot={draftSimSnapshot}
     />
   );
 }

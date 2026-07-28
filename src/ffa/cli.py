@@ -773,6 +773,139 @@ def export_projections(
         typer.echo(f"Wrote {len(table):,} players -> {path}")
 
 
+@app.command("export-draft-sim")
+def export_draft_sim(
+    league: Path = typer.Option(Path("configs/ppr.yaml"), "--league"),
+    season: int = typer.Option(..., "--season"),
+    out_dir: Path = typer.Option(
+        Path("data/sj/draft_sim"),
+        "--out-dir",
+        help="Store root for draft_sim/{scoring}/{season}/slot_{N}.json",
+    ),
+    slots: str = typer.Option(
+        "all",
+        "--slots",
+        help="Comma-separated 1-indexed slots, or 'all' for every roster slot.",
+    ),
+    n_sims: int = typer.Option(500, "--sims"),
+    opponent_noise: float = typer.Option(0.25, "--opponent-noise"),
+    samples: int = typer.Option(2000, "--samples"),
+    lookback: int = typer.Option(3, "--lookback"),
+    decay: float = typer.Option(0.5, "--decay"),
+    expected_games: float = typer.Option(17.0, "--expected-games"),
+    seed: int = typer.Option(0, "--seed"),
+    generator: str = typer.Option("bootstrap", "--generator"),
+    games_model: str = typer.Option("fixed", "--games-model"),
+    level_sd: float = typer.Option(0.0, "--level-sd"),
+    level_mean: float = typer.Option(1.0, "--level-mean"),
+    conditioned_level: bool = typer.Option(
+        True,
+        "--conditioned-level/--no-conditioned-level",
+        help="Default on: calibrated LevelModel path (roadmap 4.1).",
+    ),
+    include_rookies: bool = typer.Option(False, "--include-rookies"),
+    pick_rate_top: int = typer.Option(40, "--pick-rate-top"),
+    availability_top: int = typer.Option(80, "--availability-top"),
+    db: Path = typer.Option(Path("data/ffa.duckdb"), "--db"),
+    raw_dir: Path = typer.Option(Path("data/raw"), "--raw-dir"),
+) -> None:
+    """Write hub-consumable draft-sim snapshots (roadmap 4.5).
+
+    Runs the same Monte Carlo snake draft as ``draft-sim`` for one or more
+    slots and writes ``{out_dir}/{scoring}/{season}/slot_{N}.json``. Defaults
+    to ``--conditioned-level``. The hub reads these files; it never invokes
+    this CLI at request time.
+    """
+    from ffa.draft_export import build_draft_sim_document, write_draft_sim_snapshot
+    from ffa.projections import scoring_slug
+
+    cfg, summary = _load_simulation_summary(
+        league,
+        season,
+        samples,
+        lookback,
+        decay,
+        expected_games,
+        seed,
+        db,
+        raw_dir,
+        generator=generator,
+        games_model=games_model,
+        level_sd=level_sd,
+        level_mean=level_mean,
+        conditioned_level=conditioned_level,
+        include_rookies=include_rookies,
+    )
+    ranked = compute_vor(summary, cfg.roster)
+    slug = scoring_slug(cfg)
+    teams = int(cfg.roster.teams)
+    from ffa.draft import _slot_needs
+
+    rounds = int(sum(_slot_needs(cfg.roster).values()))
+
+    if slots.strip().lower() == "all":
+        slot_list = list(range(1, teams + 1))
+    else:
+        try:
+            slot_list = [int(part.strip()) for part in slots.split(",") if part.strip()]
+        except ValueError:
+            typer.echo(f"Invalid --slots {slots!r}; use 'all' or comma-separated ints.")
+            raise typer.Exit(code=2)
+    if not slot_list:
+        typer.echo("--slots produced an empty list.")
+        raise typer.Exit(code=2)
+    for slot in slot_list:
+        if slot < 1 or slot > teams:
+            typer.echo(f"Slot {slot} out of range for {teams}-team league.")
+            raise typer.Exit(code=2)
+
+    source = {
+        "engine": "ffa",
+        "league": str(league),
+        "generator": generator,
+        "games_model": games_model,
+        "lookback": lookback,
+        "decay": decay,
+        "expected_games": expected_games,
+        "conditioned_level": conditioned_level,
+        "level_sd": level_sd,
+        "level_mean": level_mean,
+        "include_rookies": include_rookies,
+        "seed": seed,
+        "sims": n_sims,
+        "opponent_noise": opponent_noise,
+        "samples": samples,
+    }
+
+    for slot in slot_list:
+        result = simulate_draft(
+            ranked,
+            cfg.roster,
+            user_slot=slot,
+            n_sims=n_sims,
+            opponent_noise=opponent_noise,
+            seed=seed + slot,
+        )
+        document = build_draft_sim_document(
+            result,
+            ranked,
+            scoring=slug,
+            season=season,
+            user_slot=slot,
+            n_sims=n_sims,
+            teams=teams,
+            rounds=rounds,
+            source=source,
+            pick_rate_top=pick_rate_top,
+            availability_top=availability_top,
+        )
+        path = write_draft_sim_snapshot(document, out_dir)
+        typer.echo(
+            f"Wrote slot {slot}: {len(document['pick_rates'])} pick-rates, "
+            f"{len(document['availability'])} availability rows -> {path}"
+        )
+
+
 @app.command("export-player-map")
 def export_player_map(
     season: int = typer.Option(..., "--season", help="NFL season for the map file."),

@@ -153,11 +153,12 @@ Cloud Scheduler ──▶ Cloud Run Job (sj-sync) ──▶ gs://<project>-sj-da
   `https://<hub>/api/revalidate` with `Authorization: Bearer $SJ_REVALIDATE_SECRET`
   (optional `SJ_REVALIDATE_URL` + secret on the sync job). If the bucket is empty it falls
   back to the fixtures baked into the image.
-- **Projections / player map:** `nightly refresh` exports under `store/` and
-  promotes JSON to `gs://…-sj-data/projections/` + `player_map/` (WIF as
-  `ffa-deployer`). Re-run `./scripts/setup-github-deployer.sh` so the deployer
-  has `objectUser` on the bucket. Mount the bucket on the hub (deploy-hub
-  **bucket** input) to serve them.
+- **Projections / player map / draft sim:** `nightly refresh` exports under
+  `store/` and promotes JSON to `gs://…-sj-data/projections/`, `player_map/`,
+  and `draft_sim/` (WIF as `ffa-deployer`). Re-run
+  `./scripts/setup-github-deployer.sh` so the deployer has `objectUser` on the
+  bucket. Mount the bucket on the hub (deploy-hub **bucket** input) to serve
+  them.
 - **Cold starts:** deploy uses `--cpu-boost` and `--min-instances=0` by default.
   Set **min_instances=1** on a manual deploy if first-load latency bothers members.
 

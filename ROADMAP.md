@@ -383,7 +383,7 @@ when the hub calendar leads the NFL year. **Weekly start/sit is deferred** —
 store snapshots are season-level totals, not weekly posteriors; UI copy says so
 explicitly. Baseball stays projection-free by design (roadmap 4.6 — landed).
 
-### 4.5 Decision tools — LANDED (partial)
+### 4.5 Decision tools — LANDED
 Football `tools` tab ships snapshot-backed decision surfaces without calling
 `ffa` at request time:
 
@@ -393,10 +393,13 @@ Football `tools` tab ships snapshot-backed decision surfaces without calling
 - **Waivers** — ESPN `free_agents` when synced (2.4 leftover); else unrostered
   projection rows by VOR as fallback.
 - **Strength** — per-team season projection totals via the player map.
+- **Draft** — offline Monte Carlo snake-draft assistant from
+  `ffa export-draft-sim` → `draft_sim/{scoring}/{season}/slot_{N}.json`
+  (pick rates + availability). Hub switches slot via `?view=draft&slot=N`.
+  Nightly refresh exports all slots for PPR + standard.
 
-**Deferred in-tab (“More”):** Monte Carlo draft assistant (needs
-`export-draft-sim` artifacts), playoff-odds MC (needs weekly team posteriors).
-Use `ffa draft-sim` from the CLI until those exporters land.
+**Still deferred (needs weekly posteriors — same gap as start/sit):** playoff
+odds MC. Season totals must not be dressed up as playoff probabilities.
 
 ### 4.6 Baseball — LANDED
 **Decision: keep baseball data-rich but projection-free.** The `ffa` engine
@@ -469,9 +472,9 @@ shape. Phase 3.1 (unify views) before any other UI work so nothing ships twice.
 | C — Product | ~~3.1~~ → ~~3.2~~ → ~~3.3~~ → ~~3.4~~ → ~~3.5~~ → ~~3.6~~ | `apps/web` |
 | D — Engine | ~~4.1~~ … ~~4.6~~ | `src/ffa` + football hub surfaces; baseball ESPN-only |
 
-A, B, and D barely overlap with remaining C polish. Draft-sim / playoff-odds
-exporters remain optional football follow-ups under 4.5's deferred list — not
-blockers for closing phase 4. Baseball modeling is explicitly out of scope.
+A, B, and D barely overlap with remaining C polish. Playoff-odds / weekly
+posterior exporters remain optional football follow-ups (shared with start/sit)
+— not blockers for closing phase 4. Baseball modeling is explicitly out of scope.
 
 **Fastest visible wins** remaining: 3.2 (a decade of history appears), 3.3
 (tables become usable). 2.1 is done — draft and matchup data persist for zero
