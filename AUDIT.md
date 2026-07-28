@@ -378,9 +378,9 @@ time. `@types/node` is `^20` against a Node 22 runtime. No Dependabot or Renovat
 | 3 | 14 dependency advisories; `next-auth` on prerelease | P0 | Advisories cleared (#26, roadmap 0.3); prerelease remains, roadmap 1.7 |
 | 4 | Long-lived SA key, over-broad IAM, root containers | P0 | Containers + IAM fixed (#26, roadmap 0.5); SA key → WIF, roadmap 1.3 |
 | 5 | `/` and `/leagues` frozen at build-time fixtures | P0 | Fixed (#26, roadmap 0.2) |
-| 6 | Football history unreachable (12 seasons, no switcher) | P1 | Open — roadmap 3.2 |
+| 6 | Football history unreachable (12 seasons, no switcher) | P1 | Fixed — roadmap 3.1 (league) + 3.2 (team pages) |
 | 7 | Player tables: no search/sort/filter/pagination | P1 | Open — roadmap 3.3 |
-| 8 | Football and baseball views diverged | P1 | Open — roadmap 3.1 |
+| 8 | Football and baseball views diverged | P1 | Fixed — roadmap 3.1 (`LeagueView`) |
 | 9 | No matchups, draft, transactions, or history | P1 | Open — roadmap 2.1, 2.4, 3.4, 3.5 |
 | 10 | No loading/error/empty states | P1 | Partly — `error.tsx` / `not-found.tsx` in 1.6; loading/empty remain roadmap 3.6 |
 | 11 | Zero CI for `apps/web` | P1 | Fixed (#28, roadmap 1.1); branch protection requires `python` / `web` / `images` |

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { SeasonSwitcher } from "@/components/SeasonSwitcher";
 import type { LeagueSnapshot, Player } from "@/lib/data";
 import {
   formatStat,
@@ -19,9 +20,11 @@ function StatusDot({ player }: { player: Player }) {
 export function BaseballRosterView({
   league,
   team,
+  seasons,
 }: {
   league: LeagueSnapshot;
   team: LeagueSnapshot["teams"][number];
+  seasons: number[];
 }) {
   const roster = sortRoster(team.roster);
   const batters = roster.filter((player) => !isPitcher(player));
@@ -40,6 +43,14 @@ export function BaseballRosterView({
         {team.owners.join(", ") || "Owner TBD"} · {recordLabel(team)} (
         {winPctLabel(team)}) · {team.roster.length} rostered
       </p>
+
+      <SeasonSwitcher
+        seasons={seasons}
+        current={league.season}
+        hrefFor={(year) =>
+          `/leagues/${league.league_id}/teams/${team.team_id}?season=${year}`
+        }
+      />
 
       <RosterGroup title="Batters" players={batters} kind="batter" />
       <RosterGroup title="Pitchers" players={pitchers} kind="pitcher" />
