@@ -127,6 +127,11 @@ export type ProjectionSnapshot = {
   players: ProjectionPlayer[];
 };
 
+/** Typical-week posterior from `ffa export-weekly-projections` (grain=typical_week). */
+export type WeeklyProjectionSnapshot = ProjectionSnapshot & {
+  grain: "typical_week" | string;
+};
+
 /** One row from `ffa export-draft-sim` pick_rates (roadmap 4.5). */
 export type DraftSimPickRate = {
   player_id: string;
@@ -641,6 +646,31 @@ export const getProjectionSnapshot = cache(
     const relative = path.join("projections", slug, `${season}.json`);
     for (const root of dataRoots()) {
       const doc = await readJson<ProjectionSnapshot>(path.join(root, relative));
+      if (doc?.players?.length && doc.season === season) {
+        return doc;
+      }
+    }
+    return null;
+  },
+);
+
+/**
+ * Read a typical-week posterior under
+ * ``weekly_projections/{scoring}/{season}.json``. Session-gated; hub never
+ * invokes ``ffa``. Not schedule-adjusted — use for start/sit, not playoff odds.
+ */
+export const getWeeklyProjectionSnapshot = cache(
+  async (
+    scoring: string,
+    season: number,
+  ): Promise<WeeklyProjectionSnapshot | null> => {
+    await requireSession();
+    const slug = scoring.trim().toLowerCase();
+    const relative = path.join("weekly_projections", slug, `${season}.json`);
+    for (const root of dataRoots()) {
+      const doc = await readJson<WeeklyProjectionSnapshot>(
+        path.join(root, relative),
+      );
       if (doc?.players?.length && doc.season === season) {
         return doc;
       }

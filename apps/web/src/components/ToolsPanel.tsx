@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { DraftBoard } from "@/components/DraftBoard";
 import { EmptyState } from "@/components/EmptyState";
+import { StartSitBoard } from "@/components/StartSitBoard";
 import { TradeAnalyzer } from "@/components/TradeAnalyzer";
 import { WaiverBoard } from "@/components/WaiverBoard";
 import type {
@@ -8,6 +9,7 @@ import type {
   LeagueSnapshot,
   PlayerMapSnapshot,
   ProjectionSnapshot,
+  WeeklyProjectionSnapshot,
 } from "@/lib/data";
 import {
   defaultToolsPair,
@@ -15,13 +17,18 @@ import {
   teamStrengthRows,
   waiverBoardRows,
 } from "@/lib/decision-tools";
-import { formatProjectionPoints } from "@/lib/projection-join";
+import {
+  formatProjectionPoints,
+  indexPlayerMap,
+  indexProjections,
+} from "@/lib/projection-join";
 
 export type ToolsView =
   | "trade"
   | "waivers"
   | "strength"
   | "draft"
+  | "start-sit"
   | "deferred";
 
 function ViewSwitcher({
@@ -44,6 +51,7 @@ function ViewSwitcher({
     { id: "waivers", label: "Waivers" },
     { id: "strength", label: "Strength" },
     { id: "draft", label: "Draft" },
+    { id: "start-sit", label: "Start/Sit" },
     { id: "deferred", label: "More" },
   ];
   const pair = a != null && b != null ? `&a=${a}&b=${b}` : "";
@@ -146,6 +154,7 @@ export function ToolsPanel({
   projectionSnapshot,
   playerMap,
   draftSimSnapshot,
+  weeklyProjectionSnapshot,
 }: {
   league: LeagueSnapshot;
   view: ToolsView;
@@ -155,12 +164,16 @@ export function ToolsPanel({
   projectionSnapshot: ProjectionSnapshot | null;
   playerMap: PlayerMapSnapshot | null;
   draftSimSnapshot?: DraftSimSnapshot | null;
+  weeklyProjectionSnapshot?: WeeklyProjectionSnapshot | null;
 }) {
   const pair = defaultToolsPair(league);
   const teamA = a ?? pair?.a;
   const teamB = b ?? pair?.b;
   const { espnToGsis, byGsis } = projectionIndexes(playerMap, projectionSnapshot);
+  const weeklyByGsis = indexProjections(weeklyProjectionSnapshot ?? null);
+  const espnMap = indexPlayerMap(playerMap);
   const maxSlot = draftSimSnapshot?.teams ?? 12;
+  const startSitTeamId = teamA ?? league.teams[0]?.team_id ?? 1;
 
   return (
     <div className="tools-panel">
@@ -218,17 +231,36 @@ export function ToolsPanel({
         />
       ) : null}
 
+      {view === "start-sit" ? (
+        !weeklyProjectionSnapshot?.players?.length ? (
+          <EmptyState title="No weekly projection snapshot">
+            Run <code>ffa export-weekly-projections</code> into the hub store
+            (typical-week grain). Season totals under{" "}
+            <code>export-projections</code> are not used for start/sit.
+          </EmptyState>
+        ) : (
+          <StartSitBoard
+            teams={league.teams}
+            espnToGsisEntries={[...espnMap.entries()]}
+            weeklyEntries={[...weeklyByGsis.entries()]}
+            initialTeamId={startSitTeamId}
+          />
+        )
+      ) : null}
+
       {view === "deferred" ? (
-        <EmptyState title="Playoff odds need weekly posteriors">
+        <EmptyState title="Playoff odds still need schedule MC">
           <ul style={{ margin: "0.5rem 0 0", paddingLeft: "1.25rem" }}>
             <li>
-              <strong>Draft assistant</strong> — use the Draft tools view (
-              offline <code>ffa export-draft-sim</code> snapshots).
+              <strong>Start/Sit</strong> — use the Start/Sit tools view (
+              offline <code>ffa export-weekly-projections</code> typical-week
+              posteriors).
             </li>
             <li>
-              <strong>Playoff odds</strong> — season projection totals are not
-              weekly team scores. True Monte Carlo odds need weekly posteriors
-              (same blocker as start/sit).
+              <strong>Playoff odds</strong> — typical-week player posteriors are
+              not joint week×team scores through the ESPN schedule. True Monte
+              Carlo odds stay deferred until that exporter exists — do not dress
+              season or weekly player quantiles as playoff probabilities.
             </li>
             <li>
               <strong>ESPN free agents</strong> — synced into{" "}

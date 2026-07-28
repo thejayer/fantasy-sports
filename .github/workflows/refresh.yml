@@ -127,6 +127,20 @@ jobs:
           done
           find store/draft_sim -type f | sort
 
+      - name: Export weekly projection snapshots
+        run: |
+          mkdir -p store/weekly_projections
+          for LEAGUE in configs/ppr.yaml configs/standard.yaml; do
+            ffa export-weekly-projections \
+              --league "$LEAGUE" \
+              --season ${{ steps.cfg.outputs.season }} \
+              --lookback ${{ steps.cfg.outputs.lookback }} \
+              --samples ${{ steps.cfg.outputs.samples }} \
+              --out-dir store/weekly_projections \
+              --conditioned-level
+          done
+          find store/weekly_projections -type f | sort
+
       - name: Export ESPN↔nflverse player map
         run: |
           mkdir -p store/player_map
@@ -166,6 +180,7 @@ jobs:
           path: |
             store/projections/
             store/draft_sim/
+            store/weekly_projections/
             store/player_map/
           retention-days: 14
 
@@ -213,7 +228,9 @@ jobs:
           MAP=( "$ROOT"/player_map/*.json )
           DRAFT_PPR=( "$ROOT"/draft_sim/ppr/*/*.json )
           DRAFT_STD=( "$ROOT"/draft_sim/standard/*/*.json )
-          if [ "${#PPR[@]}" -eq 0 ] && [ "${#STD[@]}" -eq 0 ] && [ "${#MAP[@]}" -eq 0 ] && [ "${#DRAFT_PPR[@]}" -eq 0 ] && [ "${#DRAFT_STD[@]}" -eq 0 ]; then
+          WEEKLY_PPR=( "$ROOT"/weekly_projections/ppr/*.json )
+          WEEKLY_STD=( "$ROOT"/weekly_projections/standard/*.json )
+          if [ "${#PPR[@]}" -eq 0 ] && [ "${#STD[@]}" -eq 0 ] && [ "${#MAP[@]}" -eq 0 ] && [ "${#DRAFT_PPR[@]}" -eq 0 ] && [ "${#DRAFT_STD[@]}" -eq 0 ] && [ "${#WEEKLY_PPR[@]}" -eq 0 ] && [ "${#WEEKLY_STD[@]}" -eq 0 ]; then
             echo "::error::No JSON files found under $ROOT to promote"
             find artifact -type f | sort
             exit 1
@@ -238,5 +255,11 @@ jobs:
               season="$(basename "$(dirname "$f")")"
               gcloud storage cp "$f" "gs://${BUCKET}/draft_sim/standard/${season}/"
             done
+          fi
+          if [ "${#WEEKLY_PPR[@]}" -gt 0 ]; then
+            gcloud storage cp "${WEEKLY_PPR[@]}" "gs://${BUCKET}/weekly_projections/ppr/"
+          fi
+          if [ "${#WEEKLY_STD[@]}" -gt 0 ]; then
+            gcloud storage cp "${WEEKLY_STD[@]}" "gs://${BUCKET}/weekly_projections/standard/"
           fi
           echo "Promoted OK"

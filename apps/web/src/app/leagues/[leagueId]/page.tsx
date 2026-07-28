@@ -10,9 +10,11 @@ import {
   getLeagueSnapshot,
   getPlayerMap,
   getProjectionSnapshot,
+  getWeeklyProjectionSnapshot,
   type DraftSimSnapshot,
   type PlayerMapSnapshot,
   type ProjectionSnapshot,
+  type WeeklyProjectionSnapshot,
 } from "@/lib/data";
 import {
   projectionSeasonCandidates,
@@ -89,7 +91,9 @@ export default async function LeagueDetailPage({ params, searchParams }: Props) 
       : "standings"
   ) as HistoryView;
   const toolsView = (
-    ["trade", "waivers", "strength", "draft", "deferred"].includes(viewParam ?? "")
+    ["trade", "waivers", "strength", "draft", "start-sit", "deferred"].includes(
+      viewParam ?? "",
+    )
       ? viewParam
       : "trade"
   ) as ToolsView;
@@ -137,6 +141,22 @@ export default async function LeagueDetailPage({ params, searchParams }: Props) 
     }
   }
 
+  let weeklyProjectionSnapshot: WeeklyProjectionSnapshot | null = null;
+  if (
+    league.sport === "football" &&
+    tab === "tools" &&
+    toolsView === "start-sit"
+  ) {
+    const scoring = projectionBundle.scoring ?? scoringSlugFromLeague(league);
+    for (const year of projectionSeasonCandidates(league.season)) {
+      const snap = await getWeeklyProjectionSnapshot(scoring, year);
+      if (snap) {
+        weeklyProjectionSnapshot = snap;
+        break;
+      }
+    }
+  }
+
   return (
     <LeagueView
       league={league}
@@ -155,6 +175,7 @@ export default async function LeagueDetailPage({ params, searchParams }: Props) 
       toolsView={toolsView}
       draftSlot={slot != null && !Number.isNaN(slot) && slot >= 1 ? Math.trunc(slot) : 1}
       draftSimSnapshot={draftSimSnapshot}
+      weeklyProjectionSnapshot={weeklyProjectionSnapshot}
     />
   );
 }

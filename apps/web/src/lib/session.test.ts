@@ -86,7 +86,7 @@ describe("data layer gating", () => {
     );
 
     const guarded = source.match(/await requireSession\(\)/g) ?? [];
-    expect(guarded.length).toBe(6);
+    expect(guarded.length).toBe(7);
     expect(source).toMatch(/getLeagueIndex = cache\(async \(\)[^{]*\{\s*await requireSession\(\)/);
     expect(source).toMatch(/await requireSession\(\);\s*const index = await getLeagueIndex\(\)/);
     expect(source).toMatch(
@@ -94,6 +94,9 @@ describe("data layer gating", () => {
     );
     expect(source).toMatch(
       /getProjectionSnapshot = cache\(\s*async \(scoring: string, season: number\)[^{]*\{\s*await requireSession\(\)/,
+    );
+    expect(source).toMatch(
+      /getWeeklyProjectionSnapshot = cache\(\s*async \(\s*scoring: string,\s*season: number,\s*\)[^{]*\{\s*await requireSession\(\)/,
     );
     expect(source).toMatch(
       /getPlayerMap = cache\(\s*async \(season: number\)[^{]*\{\s*await requireSession\(\)/,

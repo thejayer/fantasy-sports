@@ -45,7 +45,7 @@ from ffa.projections import (
 from ffa.ranking import assign_tiers, compute_vor
 from ffa.rookies import augment_with_rookies
 from ffa.scoring import score_player_weeks
-from ffa.simulation import summarize_seasons
+from ffa.simulation import simulate_typical_weeks, summarize_seasons
 
 app = typer.Typer(add_completion=False, help="Fantasy football analytics pipeline.")
 
@@ -771,6 +771,112 @@ def export_projections(
     written = write_projection_snapshot(document, table, out_dir, fmt=fmt)  # type: ignore[arg-type]
     for path in written:
         typer.echo(f"Wrote {len(table):,} players -> {path}")
+
+
+@app.command("export-weekly-projections")
+def export_weekly_projections(
+    league: Path = typer.Option(Path("configs/ppr.yaml"), "--league"),
+    season: int = typer.Option(..., "--season"),
+    out_dir: Path = typer.Option(
+        Path("data/sj/weekly_projections"),
+        "--out-dir",
+        help="Store root for weekly_projections/{scoring}/{season}.json",
+    ),
+    samples: int = typer.Option(2000, "--samples"),
+    lookback: int = typer.Option(3, "--lookback"),
+    decay: float = typer.Option(0.5, "--decay"),
+    seed: int = typer.Option(0, "--seed"),
+    level_sd: float = typer.Option(0.0, "--level-sd"),
+    level_mean: float = typer.Option(1.0, "--level-mean"),
+    conditioned_level: bool = typer.Option(
+        True,
+        "--conditioned-level/--no-conditioned-level",
+        help="Default on: calibrated LevelModel path (roadmap 4.1).",
+    ),
+    n_tiers: int = typer.Option(5, "--tiers"),
+    db: Path = typer.Option(Path("data/ffa.duckdb"), "--db"),
+    raw_dir: Path = typer.Option(Path("data/raw"), "--raw-dir"),
+) -> None:
+    """Write hub-consumable typical-week posterior snapshots.
+
+    Bootstraps single historical game rows (not season totals) so the hub can
+    power start/sit without calling ``ffa`` at request time. Not schedule- or
+    opponent-adjusted — ``grain`` is ``typical_week``. Learned/quantile
+    season generators are intentionally out of scope here.
+    """
+    from ffa.weekly_export import (
+        GRAIN_TYPICAL_WEEK,
+        build_weekly_projection_table,
+        build_weekly_snapshot_document,
+        write_weekly_projection_snapshot,
+    )
+
+    cfg = load_league(league)
+    con = open_warehouse(db_path=db, raw_dir=raw_dir)
+    seasons = list(range(season - lookback, season))
+    placeholders = ",".join("?" for _ in seasons)
+    weekly = con.execute(
+        f"SELECT * FROM weekly WHERE season IN ({placeholders})", seasons
+    ).df()
+    if weekly.empty:
+        typer.echo(f"No weekly history for seasons {seasons}. Run `ffa ingest` first.")
+        raise typer.Exit(code=1)
+
+    player_level = None
+    if conditioned_level:
+        years_exp = _load_years_exp(con, [season])
+        if years_exp is None or years_exp.empty:
+            typer.echo(
+                "--conditioned-level: no rosters years_exp for season "
+                f"{season}; using tier-only LevelModel (experience = unknown)."
+            )
+        player_level = build_player_level(
+            weekly,
+            season,
+            cfg,
+            LevelModel(),
+            lookback=lookback,
+            years_exp=years_exp,
+        )
+        typer.echo(
+            f"--conditioned-level: LevelModel table for {len(player_level):,} players."
+        )
+
+    samples_df = simulate_typical_weeks(
+        weekly,
+        target_season=season,
+        n_samples=samples,
+        lookback=lookback,
+        decay=decay,
+        level_sd=level_sd,
+        level_mean=level_mean,
+        player_level=player_level,
+        seed=seed,
+    )
+    summary = summarize_seasons(samples_df, cfg)
+    table = build_weekly_projection_table(summary, cfg, n_tiers=n_tiers)
+    slug = scoring_slug(cfg)
+    document = build_weekly_snapshot_document(
+        table,
+        scoring=slug,
+        season=season,
+        n_sims=samples,
+        grain=GRAIN_TYPICAL_WEEK,
+        source={
+            "engine": "ffa",
+            "league": str(league),
+            "generator": "bootstrap_typical_week",
+            "lookback": lookback,
+            "decay": decay,
+            "conditioned_level": conditioned_level,
+            "level_sd": level_sd,
+            "level_mean": level_mean,
+            "seed": seed,
+            "tiers": n_tiers,
+        },
+    )
+    path = write_weekly_projection_snapshot(document, out_dir)
+    typer.echo(f"Wrote {len(table):,} players ({GRAIN_TYPICAL_WEEK}) -> {path}")
 
 
 @app.command("export-draft-sim")
