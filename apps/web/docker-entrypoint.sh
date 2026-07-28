@@ -38,14 +38,15 @@ if [ "${SJ_SYNC_ON_START:-0}" = "1" ] && [ -n "${ESPN_S2:-}" ] && [ -n "${ESPN_S
 fi
 
 export PORT="${PORT:-8080}"
-# Next.js standalone binds on HOSTNAME. Auth.js must NOT use this as the public
-# site URL — set AUTH_URL to the Cloud Run https URL (see deploy-hub.yml).
-export HOSTNAME="${HOSTNAME:-0.0.0.0}"
+# Next.js standalone listens on process.env.HOSTNAME. Cloud Run sets HOSTNAME
+# to the instance id (unresolvable → getaddrinfo EAI_AGAIN / port probe fail).
+# Always bind all interfaces; public URL is AUTH_URL (see deploy-hub.yml).
+export HOSTNAME=0.0.0.0
 export SJ_DATA_DIR="$DATA_DIR"
 export AUTH_TRUST_HOST="${AUTH_TRUST_HOST:-true}"
 
 if [ -z "${AUTH_URL:-}" ]; then
-  echo "warning: AUTH_URL is unset; OAuth may redirect to ${HOSTNAME}:${PORT}" >&2
+  echo "warning: AUTH_URL is unset; OAuth may redirect incorrectly" >&2
 fi
 
 cd /app/apps/web

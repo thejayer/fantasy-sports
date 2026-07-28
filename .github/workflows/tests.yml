@@ -160,3 +160,28 @@ jobs:
             status=1
           fi
           exit "$status"
+
+      # Cloud Run injects HOSTNAME=<instance id>. Entrypoint must force
+      # HOSTNAME=0.0.0.0 or Next.js fails getaddrinfo and never listens on 8080.
+      - name: Smoke hub listens with Cloud Run-like HOSTNAME
+        run: |
+          cid="$(docker run -d \
+            -e PORT=8080 \
+            -e HOSTNAME=sj-hub-ci-fake-instance \
+            -e SJ_SYNC_ON_START=0 \
+            -e AUTH_URL=https://example.com \
+            -p 18080:8080 \
+            sj-hub:ci)"
+          cleanup() { docker rm -f "$cid" >/dev/null 2>&1 || true; }
+          trap cleanup EXIT
+          for i in $(seq 1 30); do
+            code="$(curl -sS -o /dev/null -w '%{http_code}' http://127.0.0.1:18080/login || true)"
+            if [ "$code" = "200" ] || [ "$code" = "307" ] || [ "$code" = "302" ]; then
+              echo "hub responded HTTP $code"
+              exit 0
+            fi
+            sleep 1
+          done
+          echo "::error::hub did not respond on :8080 with Cloud Run-like HOSTNAME"
+          docker logs "$cid" || true
+          exit 1
