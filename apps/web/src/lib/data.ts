@@ -703,7 +703,11 @@ export const getWeeklyProjectionSnapshot = cache(
       const doc = await readJson<WeeklyProjectionSnapshot>(
         path.join(root, relative),
       );
-      if (doc?.players?.length && doc.season === season) {
+      if (
+        doc?.players?.length &&
+        doc.season === season &&
+        doc.grain === "typical_week"
+      ) {
         return doc;
       }
     }

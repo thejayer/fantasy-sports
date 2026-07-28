@@ -121,7 +121,8 @@ server + committed `fixtures/sj` (`SJ_DATA_DIR` forced in
 `playwright.config.ts`):
 
 - `npm run test:e2e` — leagues list, standings, team roster, 404s, login bypass
-  redirect (`AUTH_DEV_BYPASS=1`)
+  redirect (`AUTH_DEV_BYPASS=1`), plus projections + tools smoke (playoff-odds,
+  draft slot, waivers, start-sit)
 - `npm run test:e2e:auth` — unauthenticated `/leagues` → `/login?callbackUrl=…`
 
 CI job `web-e2e` (Chromium only) runs both after `npm run build`. Not a
