@@ -18,7 +18,14 @@ import process from "node:process";
 const MANIFEST = path.resolve(process.cwd(), ".next/prerender-manifest.json");
 
 // Routes that render no snapshot data and are safe to prerender.
-const ALLOWED_PRERENDERED = new Set(["/_not-found", "/favicon.ico"]);
+const ALLOWED_PRERENDERED = new Set([
+  "/_not-found",
+  "/favicon.ico",
+  // Metadata routes (roadmap 3.6) — static by design, no snapshot reads.
+  "/robots.txt",
+  "/manifest.webmanifest",
+  "/opengraph-image",
+]);
 
 let manifest;
 try {

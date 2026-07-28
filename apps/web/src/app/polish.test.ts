@@ -27,14 +27,10 @@ describe("roadmap 3.6 polish surface", () => {
   });
 
   it("removes create-next-app boilerplate SVGs", () => {
-    const leftovers = existsSync(PUBLIC_DIR)
-      ? readdirSync(PUBLIC_DIR).filter((name) =>
-          ["next.svg", "vercel.svg", "file.svg", "globe.svg", "window.svg"].includes(
-            name,
-          ),
-        )
-      : [];
-    expect(leftovers).toEqual([]);
+    // Keep public/ present (Docker COPY needs the directory) via .gitkeep only.
+    const names = existsSync(PUBLIC_DIR) ? readdirSync(PUBLIC_DIR) : [];
+    expect(names.filter((name) => name.endsWith(".svg"))).toEqual([]);
+    expect(names).toContain(".gitkeep");
   });
 
   it("distinguishes corrupt snapshots in readJson wiring", () => {
