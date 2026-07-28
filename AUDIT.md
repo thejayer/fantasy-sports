@@ -168,18 +168,12 @@ so this bug is invisible until production.
 
 ## P1 — Product and UX
 
-### 6. Football leagues have no way to reach their own history
+### 6. Football leagues have no way to reach their own history — FIXED
 
-`SeasonSwitcher` exists only inside `apps/web/src/components/BaseballLeagueView.tsx`.
-The football branch of `apps/web/src/app/leagues/[leagueId]/page.tsx` renders no
-season control at all. Confirmed by counting `season-chip` elements in the
-served HTML: **0 on `/leagues/football-main`**, 3 on `/leagues/baseball-dynasty`.
-
-`configs/leagues.yaml` declares **12 seasons for `football-main` (2015–2026)** and
-9 for `football-dynasty`. `?season=2015` renders correctly when typed by hand, so
-the data and the routing both work — there is simply no link to it. The single
-most valuable asset the group has, a decade of league history, is unreachable
-through the UI.
+Was: season chips lived only on the baseball league view; football history
+(12 seasons of `football-main`, 9 of `football-dynasty`) was reachable only by
+hand-typing `?season=`. Fixed in roadmap 3.1 (shared `LeagueView` chips) and
+3.2 (shared `SeasonSwitcher` on team pages too).
 
 <img src="/opt/cursor/artifacts/audit_football_no_season_switcher.webp" alt="Football league page with no season selector" />
 <img src="/opt/cursor/artifacts/audit_baseball_has_season_switcher.webp" alt="Baseball league page showing 2026 2025 2024 season chips" />
