@@ -764,6 +764,8 @@ on what any marginal model can do.
 - ~~Decision tools (trade / waiver proxy / strength)~~ — done (`?tab=tools`;
   roadmap 4.5). Draft assistant + playoff odds still need offline exporters;
   weekly start/sit still needs weekly exports.
+- ~~Baseball scope~~ — done: keep ESPN-rich / projection-free (roadmap 4.6).
+  No MLB path in `ffa` without a dedicated modeling plan.
 - Per-position joint-distribution learning (copula over stat vectors) --
   the lever for cross-stat realism once the marginals are calibrated.
 - Schedule-aware adjustments and dashboard-output pricing against

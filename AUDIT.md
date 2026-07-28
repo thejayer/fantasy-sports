@@ -321,9 +321,9 @@ hub, which is the thing members actually visit, is a read-only ESPN mirror that
 tells them nothing ESPN's own site doesn't.
 
 The engine is also NFL-only, while `baseball-dynasty` is the league with the
-richest UI. Season projections + decision tools (trade / waiver proxy / roster
-strength) are in the hub (4.1–4.5). Draft-sim and playoff-odds exporters, plus
-baseball scoping (4.6), remain.
+richest UI. Season projections + decision tools are in for football (4.1–4.5).
+Baseball stays ESPN data-rich but projection-free by design (4.6). Optional
+football follow-ups: draft-sim / playoff-odds exporters.
 
 ### 16. Storage layout will not extend to weekly data
 
@@ -371,7 +371,7 @@ time. `@types/node` is `^20` against a Node 22 runtime. No Dependabot or Renovat
 | 12 | `sync.py` at 0% coverage | P1 | Fixed — 100% + loud exits + `SYNC_SUMMARY` (roadmap 1.4) |
 | 13 | All deploys manual | P1 | Open — roadmap 1.3 |
 | 14 | No observability or alerting | P1 | Baseline fixed (roadmap 1.6); uptime check + min-instances still open |
-| 15 | `ffa` engine disconnected from the hub | P2 | Season projections + trade/waiver tools in hub (4.1–4.5); draft/playoff exporters still open |
+| 15 | `ffa` engine disconnected from the hub | P2 | Closed for football season surfaces (4.1–4.5); baseball deliberately out of engine scope (4.6) |
 | 16 | Storage layout won't extend to weekly data | P2 | Open — roadmap 2.2, 2.3 |
 | 17 | Hub image carries the analytics stack | P2 | Open — roadmap phase 5 |
 | 18 | CI/production version skew, no lockfile | P2 | Open — roadmap 1.5 |

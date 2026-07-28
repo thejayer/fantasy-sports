@@ -47,6 +47,12 @@ describe("LeagueView unification", () => {
     // Roadmap 4.5: decision tools tab (trade / waivers / strength).
     expect(viewSource).toMatch(/ToolsPanel/);
     expect(viewSource).toMatch(/"tools"/);
+    // Roadmap 4.6: baseball exposes projections/tools tabs with by-design EmptyStates.
+    expect(viewSource).toMatch(/BASEBALL_TABS/);
+    expect(viewSource).toMatch(/projection-free by design/);
+    expect(viewSource).toMatch(/Baseball stays projection-free by design/);
+    expect(viewSource).toMatch(/Decision tools are football-only by design/);
+    expect(viewSource).not.toMatch(/until roadmap 4\.6/);
     expect(viewSource).not.toMatch(/^["']use client["']/m);
   });
 
@@ -55,5 +61,6 @@ describe("LeagueView unification", () => {
     expect(pageSource).toMatch(/getPlayerMap/);
     expect(pageSource).toMatch(/scoringSlugFromLeague/);
     expect(pageSource).toMatch(/tab === "tools"/);
+    expect(pageSource).toMatch(/league\.sport === "football"/);
   });
 });

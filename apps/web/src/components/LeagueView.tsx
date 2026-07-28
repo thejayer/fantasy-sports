@@ -173,6 +173,8 @@ const BASEBALL_TABS = [
   "players",
   "matchups",
   "history",
+  "projections",
+  "tools",
 ] as const;
 
 export function LeagueView({
@@ -261,6 +263,7 @@ export function LeagueView({
           season {league.season}
           {league.current_week ? ` · ${period} ${league.current_week}` : ""}
           {league.scoring_type ? ` · ${league.scoring_type}` : ""}
+          {isBaseball ? " · ESPN data · no engine projections" : ""}
         </span>
       </div>
       <h2>{league.name}</h2>
@@ -269,7 +272,9 @@ export function LeagueView({
         {league.synced_at
           ? ` · synced ${new Date(league.synced_at).toLocaleString()}`
           : ""}
-        . Standings, matchups, history, rosters, projections, and decision tools.
+        {isBaseball
+          ? ". Standings, matchups, history, and batter/pitcher boards from ESPN — projection-free by design (roadmap 4.6)."
+          : ". Standings, matchups, history, rosters, projections, and decision tools."}
       </p>
 
       <SeasonSwitcher
@@ -345,9 +350,12 @@ export function LeagueView({
 
       {active === "projections" ? (
         isBaseball ? (
-          <EmptyState title="Projections are NFL-only today">
-            The analytics engine models football. Baseball stays data-rich but
-            projection-free until roadmap 4.6.
+          <EmptyState title="Baseball stays projection-free by design">
+            The <code>ffa</code> engine is NFL-only (nflverse weekly stats, GSIS
+            ids, football scoring). Baseball-dynasty keeps the richest ESPN hub
+            UI — standings, matchups, history, batter/pitcher boards — without a
+            half-built MLB model. Extending projections to baseball is a future
+            product decision, not a missing tab.
           </EmptyState>
         ) : (
           <>
@@ -369,8 +377,10 @@ export function LeagueView({
 
       {active === "tools" ? (
         isBaseball ? (
-          <EmptyState title="Decision tools are NFL-only today">
-            Trade and waiver boards use football projection snapshots.
+          <EmptyState title="Decision tools are football-only by design">
+            Trade, waiver, and strength boards join NFL projection snapshots.
+            Baseball members use ESPN standings, matchups, and roster boards
+            instead — same deliberate scope as the projections tab (roadmap 4.6).
           </EmptyState>
         ) : (
           <ToolsPanel
