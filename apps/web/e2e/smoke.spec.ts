@@ -102,7 +102,7 @@ test.describe("hub smoke", () => {
   test("activity tab lists transactions", async ({ page }) => {
     await page.goto("/leagues/football-main?tab=activity");
     await expect(page.getByText(/League activity from ESPN/i)).toBeVisible();
-    await expect(page.getByText("FA ADDED")).toBeVisible();
+    await expect(page.getByRole("cell", { name: "FA ADDED" }).first()).toBeVisible();
   });
 
   test("baseball waivers tab lists free agents", async ({ page }) => {
