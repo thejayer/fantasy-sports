@@ -402,8 +402,11 @@ calibration plan — do not half-port football projections onto category leagues
 
 Fold in continuously rather than saving for the end.
 
-- **Container slimming.** Drop the Python analytics stack from the hub image
-  (finding #17); non-root, multi-stage, stop copying fixtures twice.
+- **Container slimming.** ~~Drop the Python analytics stack from the hub image
+  (finding #17); non-root, multi-stage, stop copying fixtures twice.~~ —
+  **LANDED (hub):** runtime installs sj-only deps (no duckdb/sklearn/nflreadpy);
+  fixtures copied once; non-root + multi-stage were already in. Sync image was
+  already slim.
 - **Caching.** The 60 s in-process cache is per-instance. As traffic and
   projection payloads grow, move to a shared cache or Next.js data cache with
   explicit revalidation on sync.
@@ -411,20 +414,19 @@ Fold in continuously rather than saving for the end.
 - **Storage.** If weekly and projection data outgrow JSON-on-GCS, the pattern is
   already established elsewhere in the repo: Parquet plus DuckDB, as `src/ffa`
   does.
-- **`refresh.yml`.** Wired as the 4.2 projection producer (`ffa
-  export-projections` → `store/projections/` artifacts). Still needs a promote
-  step into the live hub store/GCS mount (deploy/sync), and the year-round cron
-  should tighten to NFL-season months when ops allow.
+- **`refresh.yml`.** Wired as the 4.2/4.3 projection + player-map producer.
+  ~~Year-round cron~~ → **NFL-season cron (Sept–Jan, Tue–Sat)**. Still needs a
+  promote step into the live hub store/GCS mount (deploy/sync) — needs GCP
+  credentials (pairs with 1.3 WIF).
 - **Accessibility and performance budgets** in CI once phase 3 lands.
 
 ---
 
 ## Sequencing
 
-**Next up: 1.3 (and Phase 5 ops).** Continuous deployment + Workload Identity
-Federation is the biggest remaining platform win on track A (needs GCP-side WIF
-setup). Engine track D through 4.6 is closed: football projections/tools are in;
-baseball stays ESPN-only by design. Product 3.x and data 2.x are in.
+**Next up: 1.3 WIF / CD, then remaining Phase 5 ops** (shared cache, min-instances,
+artifact promote, a11y budgets). Hub image slim + season-bound refresh cron are
+in. Engine track D through 4.6 is closed.
 
 **Branch protection on `main` is done** — required checks are `python`, `web`,
 and `images`. The `python` check is an aggregator over the 3.11 + 3.12 matrix.

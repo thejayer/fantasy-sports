@@ -141,3 +141,22 @@ jobs:
             fi
           done
           exit "$status"
+
+      # Phase 5 / AUDIT #17: hub must not ship the ffa analytics stack.
+      - name: Assert hub image excludes ffa analytics imports
+        run: |
+          status=0
+          for mod in duckdb sklearn nflreadpy pulp; do
+            if docker run --rm --entrypoint python sj-hub:ci -c "import $mod" 2>/dev/null; then
+              echo "::error::sj-hub image unexpectedly imports $mod"
+              status=1
+            else
+              echo "sj-hub correctly missing $mod"
+            fi
+          done
+          # sj CLI module must still be importable for optional startup sync.
+          if ! docker run --rm --entrypoint python sj-hub:ci -c "import sj.cli"; then
+            echo "::error::sj-hub cannot import sj.cli"
+            status=1
+          fi
+          exit "$status"

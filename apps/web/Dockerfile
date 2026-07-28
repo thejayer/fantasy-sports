@@ -5,6 +5,9 @@
 #
 # Runtime expects AUTH_* (+ optional ESPN_*) from Secret Manager via
 # Cloud Run --set-secrets (see scripts/hub-cloud-run-secrets.sh).
+#
+# Phase 5 / AUDIT #17: runtime Python is sj-only (no ffa analytics stack).
+# Production sets SJ_SYNC_ON_START=0; startup sync remains for local runs.
 
 FROM node:22-bookworm-slim AS web-deps
 WORKDIR /app/apps/web
@@ -13,8 +16,9 @@ RUN npm ci
 
 FROM web-deps AS web-build
 WORKDIR /app
+# Fixtures are runtime-only (seed / fallback) — do not bake a second copy into
+# the Node build stage (Phase 5: stop copying fixtures twice).
 COPY apps/web ./apps/web
-COPY fixtures ./fixtures
 WORKDIR /app/apps/web
 ENV NEXT_TELEMETRY_DISABLED=1
 RUN npm run build
@@ -31,14 +35,22 @@ RUN apt-get update \
 
 WORKDIR /app
 
-COPY pyproject.toml README.md requirements-lock.txt ./
-COPY src ./src
+# sj-only install — mirror Dockerfile.sync. Do NOT `pip install -e .` (that
+# pulls duckdb / pandas / sklearn / nflreadpy / pulp into the hub image).
+COPY requirements-lock.txt ./
+COPY src/sj ./src/sj
 COPY configs ./configs
-COPY fixtures ./fixtures
-# --constraint pins transitive versions to the lockfile so CI and this image
-# resolve identically; --no-deps on a second pass is unnecessary because -e .
-# already installs only the declared runtime deps under that constraint.
-RUN pip install --no-cache-dir -e . --constraint requirements-lock.txt
+RUN pip install --no-cache-dir --constraint requirements-lock.txt \
+        "espn-api>=0.45.0" \
+        "google-cloud-storage>=2.16" \
+        "pydantic>=2.6" \
+        "pyyaml>=6.0" \
+        "typer>=0.12"
+
+# One fixtures copy for entrypoint seed + offline fallback.
+COPY fixtures/sj ./fixtures/sj
+RUN mkdir -p /app/data/sj \
+    && cp -a /app/fixtures/sj/. /app/data/sj/
 
 # Next standalone output (built with apps/web as the app root).
 COPY --from=web-build /app/apps/web/.next/standalone ./apps/web/
@@ -46,9 +58,7 @@ COPY --from=web-build /app/apps/web/.next/static ./apps/web/.next/static
 COPY --from=web-build /app/apps/web/public ./apps/web/public
 
 COPY apps/web/docker-entrypoint.sh /app/docker-entrypoint.sh
-RUN chmod +x /app/docker-entrypoint.sh \
-    && mkdir -p /app/data/sj \
-    && cp -a /app/fixtures/sj/. /app/data/sj/
+RUN chmod +x /app/docker-entrypoint.sh
 
 # Drop root. Only the paths the app writes are chowned -- chowning all of /app
 # would duplicate every file into a new layer for no benefit.
@@ -63,7 +73,8 @@ ENV NODE_ENV=production \
     SJ_DATA_DIR=/app/data/sj \
     SJ_SYNC_ON_START=1 \
     AUTH_TRUST_HOST=true \
-    PYTHONUNBUFFERED=1
+    PYTHONUNBUFFERED=1 \
+    PYTHONPATH=/app/src
 
 EXPOSE 8080
 
