@@ -1,0 +1,95 @@
+{
+  "schema_version": 1,
+  "generated_at": "2026-07-28T00:00:00Z",
+  "league_id": "football-main",
+  "espn_league_id": 39790,
+  "season": 2026,
+  "scoring": "ppr",
+  "n_sims": 500,
+  "as_of_week": 14,
+  "reg_season_count": 14,
+  "playoff_team_count": 2,
+  "periods_simulated": [],
+  "assumptions": {
+    "player_draws": "independent_bootstrap_typical_week",
+    "lineup": "greedy_skill_positions",
+    "k_dst": "omitted",
+    "rosters": "fixed_at_export",
+    "schedule_adjusted": false,
+    "median_scoring": false,
+    "metric": "make_playoffs_regular_season_only",
+    "fixture": true
+  },
+  "source": {
+    "engine": "ffa",
+    "generator": "playoff_mc_v1",
+    "fixture": true,
+    "seed": 0
+  },
+  "teams": [
+    {
+      "team_id": 3,
+      "name": "End Zone Enforcers",
+      "standing_now": 1,
+      "wins_now": 14,
+      "losses_now": 0,
+      "ties_now": 0,
+      "make_playoffs": 1.0,
+      "seed_probs": {
+        "1": 1.0,
+        "2": 0.0
+      },
+      "avg_wins": 14.0,
+      "mapped_roster": 0,
+      "rostered": 16
+    },
+    {
+      "team_id": 4,
+      "name": "Hail Mary Heroes",
+      "standing_now": 2,
+      "wins_now": 12,
+      "losses_now": 2,
+      "ties_now": 0,
+      "make_playoffs": 1.0,
+      "seed_probs": {
+        "1": 0.0,
+        "2": 1.0
+      },
+      "avg_wins": 12.0,
+      "mapped_roster": 0,
+      "rostered": 16
+    },
+    {
+      "team_id": 2,
+      "name": "Turf Titans",
+      "standing_now": 3,
+      "wins_now": 1,
+      "losses_now": 13,
+      "ties_now": 0,
+      "make_playoffs": 0.0,
+      "seed_probs": {
+        "1": 0.0,
+        "2": 0.0
+      },
+      "avg_wins": 1.0,
+      "mapped_roster": 0,
+      "rostered": 16
+    },
+    {
+      "team_id": 1,
+      "name": "Gridiron Goons",
+      "standing_now": 4,
+      "wins_now": 0,
+      "losses_now": 14,
+      "ties_now": 0,
+      "make_playoffs": 0.0,
+      "seed_probs": {
+        "1": 0.0,
+        "2": 0.0
+      },
+      "avg_wins": 0.0,
+      "mapped_roster": 0,
+      "rostered": 16
+    }
+  ]
+}

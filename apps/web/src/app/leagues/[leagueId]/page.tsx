@@ -9,10 +9,12 @@ import {
   getLeagueSeasons,
   getLeagueSnapshot,
   getPlayerMap,
+  getPlayoffOddsSnapshot,
   getProjectionSnapshot,
   getWeeklyProjectionSnapshot,
   type DraftSimSnapshot,
   type PlayerMapSnapshot,
+  type PlayoffOddsSnapshot,
   type ProjectionSnapshot,
   type WeeklyProjectionSnapshot,
 } from "@/lib/data";
@@ -91,9 +93,15 @@ export default async function LeagueDetailPage({ params, searchParams }: Props) 
       : "standings"
   ) as HistoryView;
   const toolsView = (
-    ["trade", "waivers", "strength", "draft", "start-sit", "deferred"].includes(
-      viewParam ?? "",
-    )
+    [
+      "trade",
+      "waivers",
+      "strength",
+      "draft",
+      "start-sit",
+      "playoff-odds",
+      "deferred",
+    ].includes(viewParam ?? "")
       ? viewParam
       : "trade"
   ) as ToolsView;
@@ -157,6 +165,28 @@ export default async function LeagueDetailPage({ params, searchParams }: Props) 
     }
   }
 
+  let playoffOddsSnapshot: PlayoffOddsSnapshot | null = null;
+  if (
+    league.sport === "football" &&
+    tab === "tools" &&
+    toolsView === "playoff-odds"
+  ) {
+    for (const year of projectionSeasonCandidates(league.season)) {
+      const snap = await getPlayoffOddsSnapshot(league.league_id, year);
+      if (snap) {
+        playoffOddsSnapshot = snap;
+        break;
+      }
+    }
+    // League season file is keyed by hub season; also try exact league.season.
+    if (!playoffOddsSnapshot) {
+      playoffOddsSnapshot = await getPlayoffOddsSnapshot(
+        league.league_id,
+        league.season,
+      );
+    }
+  }
+
   return (
     <LeagueView
       league={league}
@@ -176,6 +206,7 @@ export default async function LeagueDetailPage({ params, searchParams }: Props) 
       draftSlot={slot != null && !Number.isNaN(slot) && slot >= 1 ? Math.trunc(slot) : 1}
       draftSimSnapshot={draftSimSnapshot}
       weeklyProjectionSnapshot={weeklyProjectionSnapshot}
+      playoffOddsSnapshot={playoffOddsSnapshot}
     />
   );
 }

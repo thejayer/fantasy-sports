@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { DraftBoard } from "@/components/DraftBoard";
 import { EmptyState } from "@/components/EmptyState";
+import { PlayoffOddsBoard } from "@/components/PlayoffOddsBoard";
 import { StartSitBoard } from "@/components/StartSitBoard";
 import { TradeAnalyzer } from "@/components/TradeAnalyzer";
 import { WaiverBoard } from "@/components/WaiverBoard";
@@ -8,6 +9,7 @@ import type {
   DraftSimSnapshot,
   LeagueSnapshot,
   PlayerMapSnapshot,
+  PlayoffOddsSnapshot,
   ProjectionSnapshot,
   WeeklyProjectionSnapshot,
 } from "@/lib/data";
@@ -29,6 +31,7 @@ export type ToolsView =
   | "strength"
   | "draft"
   | "start-sit"
+  | "playoff-odds"
   | "deferred";
 
 function ViewSwitcher({
@@ -52,6 +55,7 @@ function ViewSwitcher({
     { id: "strength", label: "Strength" },
     { id: "draft", label: "Draft" },
     { id: "start-sit", label: "Start/Sit" },
+    { id: "playoff-odds", label: "Playoffs" },
     { id: "deferred", label: "More" },
   ];
   const pair = a != null && b != null ? `&a=${a}&b=${b}` : "";
@@ -155,6 +159,7 @@ export function ToolsPanel({
   playerMap,
   draftSimSnapshot,
   weeklyProjectionSnapshot,
+  playoffOddsSnapshot,
 }: {
   league: LeagueSnapshot;
   view: ToolsView;
@@ -165,6 +170,7 @@ export function ToolsPanel({
   playerMap: PlayerMapSnapshot | null;
   draftSimSnapshot?: DraftSimSnapshot | null;
   weeklyProjectionSnapshot?: WeeklyProjectionSnapshot | null;
+  playoffOddsSnapshot?: PlayoffOddsSnapshot | null;
 }) {
   const pair = defaultToolsPair(league);
   const teamA = a ?? pair?.a;
@@ -248,19 +254,21 @@ export function ToolsPanel({
         )
       ) : null}
 
+      {view === "playoff-odds" ? (
+        <PlayoffOddsBoard snapshot={playoffOddsSnapshot ?? null} />
+      ) : null}
+
       {view === "deferred" ? (
-        <EmptyState title="Playoff odds still need schedule MC">
+        <EmptyState title="More tools notes">
           <ul style={{ margin: "0.5rem 0 0", paddingLeft: "1.25rem" }}>
             <li>
-              <strong>Start/Sit</strong> — use the Start/Sit tools view (
-              offline <code>ffa export-weekly-projections</code> typical-week
-              posteriors).
+              <strong>Playoff odds</strong> — use the Playoffs tools view (
+              offline <code>ffa export-playoff-odds</code>). Make-playoffs only;
+              not bracket champion odds.
             </li>
             <li>
-              <strong>Playoff odds</strong> — typical-week player posteriors are
-              not joint week×team scores through the ESPN schedule. True Monte
-              Carlo odds stay deferred until that exporter exists — do not dress
-              season or weekly player quantiles as playoff probabilities.
+              <strong>Start/Sit</strong> — typical-week posteriors via Start/Sit (
+              not season quantile boards).
             </li>
             <li>
               <strong>ESPN free agents</strong> — synced into{" "}

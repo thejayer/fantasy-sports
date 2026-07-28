@@ -11,6 +11,7 @@ import type {
   LeagueHistoryArchive,
   LeagueSnapshot,
   PlayerMapSnapshot,
+  PlayoffOddsSnapshot,
   ProjectionSnapshot,
   Team,
   WeeklyProjectionSnapshot,
@@ -197,6 +198,7 @@ export function LeagueView({
   draftSlot = 1,
   draftSimSnapshot = null,
   weeklyProjectionSnapshot = null,
+  playoffOddsSnapshot = null,
 }: {
   league: LeagueSnapshot;
   seasons: number[];
@@ -215,6 +217,7 @@ export function LeagueView({
   draftSlot?: number;
   draftSimSnapshot?: DraftSimSnapshot | null;
   weeklyProjectionSnapshot?: WeeklyProjectionSnapshot | null;
+  playoffOddsSnapshot?: PlayoffOddsSnapshot | null;
 }) {
   const leagueId = league.league_id;
   const isBaseball = league.sport === "baseball";
@@ -402,6 +405,7 @@ export function LeagueView({
             playerMap={playerMap}
             draftSimSnapshot={draftSimSnapshot}
             weeklyProjectionSnapshot={weeklyProjectionSnapshot}
+            playoffOddsSnapshot={playoffOddsSnapshot}
           />
         )
       ) : null}
