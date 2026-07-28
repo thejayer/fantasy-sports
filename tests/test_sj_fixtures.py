@@ -62,6 +62,24 @@ def test_regenerate_removes_stale_seasons(tmp_path: Path):
     assert (tmp_path / "football-main" / "2026.json").exists()
 
 
+def test_playoff_odds_fixtures_match_engine():
+    """Committed playoff_odds fixtures must equal simulate_playoff_odds output."""
+    from ffa.playoff_export import load_playoff_odds_snapshot, simulate_playoff_odds
+
+    for lid in ("football-main", "football-dynasty"):
+        league = json.loads((FIXTURES_DIR / lid / "2026.json").read_text(encoding="utf-8"))
+        fixture = load_playoff_odds_snapshot(
+            FIXTURES_DIR / "playoff_odds" / lid / "2026.json"
+        )
+        sim = simulate_playoff_odds(league, {}, {}, n_sims=int(fixture["n_sims"]), seed=0)
+        by_fix = {t["team_id"]: t for t in fixture["teams"]}
+        for row in sim["teams"]:
+            got = by_fix[row["team_id"]]
+            assert got["make_playoffs"] == pytest.approx(row["make_playoffs"])
+            assert got["seed_probs"] == row["seed_probs"]
+        assert fixture["periods_simulated"] == sim["periods_simulated"]
+
+
 def test_expected_fixture_snapshot_is_schema_complete():
     registry = load_registry()
     for spec in registry.leagues:

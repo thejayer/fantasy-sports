@@ -5,7 +5,7 @@
   "espn_league_id": 39790,
   "season": 2026,
   "scoring": "ppr",
-  "n_sims": 500,
+  "n_sims": 200,
   "as_of_week": 14,
   "reg_season_count": 14,
   "playoff_team_count": 2,
@@ -18,7 +18,8 @@
     "schedule_adjusted": false,
     "median_scoring": false,
     "metric": "make_playoffs_regular_season_only",
-    "fixture": true
+    "fixture": true,
+    "note": "Regenerated from simulate_playoff_odds; undecided H2H empty \u21d2 standings-locked probs"
   },
   "source": {
     "engine": "ffa",
@@ -28,34 +29,34 @@
   },
   "teams": [
     {
-      "team_id": 3,
-      "name": "End Zone Enforcers",
+      "team_id": 4,
+      "name": "Hail Mary Heroes",
       "standing_now": 1,
-      "wins_now": 14,
-      "losses_now": 0,
+      "wins_now": 8,
+      "losses_now": 6,
       "ties_now": 0,
       "make_playoffs": 1.0,
       "seed_probs": {
         "1": 1.0,
         "2": 0.0
       },
-      "avg_wins": 14.0,
+      "avg_wins": 8.0,
       "mapped_roster": 0,
       "rostered": 16
     },
     {
-      "team_id": 4,
-      "name": "Hail Mary Heroes",
+      "team_id": 3,
+      "name": "End Zone Enforcers",
       "standing_now": 2,
-      "wins_now": 12,
-      "losses_now": 2,
+      "wins_now": 8,
+      "losses_now": 6,
       "ties_now": 0,
       "make_playoffs": 1.0,
       "seed_probs": {
         "1": 0.0,
         "2": 1.0
       },
-      "avg_wins": 12.0,
+      "avg_wins": 8.0,
       "mapped_roster": 0,
       "rostered": 16
     },
@@ -63,15 +64,15 @@
       "team_id": 2,
       "name": "Turf Titans",
       "standing_now": 3,
-      "wins_now": 1,
-      "losses_now": 13,
+      "wins_now": 7,
+      "losses_now": 7,
       "ties_now": 0,
       "make_playoffs": 0.0,
       "seed_probs": {
         "1": 0.0,
         "2": 0.0
       },
-      "avg_wins": 1.0,
+      "avg_wins": 7.0,
       "mapped_roster": 0,
       "rostered": 16
     },
@@ -79,15 +80,15 @@
       "team_id": 1,
       "name": "Gridiron Goons",
       "standing_now": 4,
-      "wins_now": 0,
-      "losses_now": 14,
+      "wins_now": 5,
+      "losses_now": 9,
       "ties_now": 0,
       "make_playoffs": 0.0,
       "seed_probs": {
         "1": 0.0,
         "2": 0.0
       },
-      "avg_wins": 0.0,
+      "avg_wins": 5.0,
       "mapped_roster": 0,
       "rostered": 16
     }

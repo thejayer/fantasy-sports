@@ -4473,7 +4473,7 @@
       "abbrev": "BFB",
       "division": "West",
       "logo_url": null,
-      "losses": 19,
+      "losses": 5,
       "name": "Bat Flip Bandits",
       "outcomes": [
         "U",
@@ -5503,14 +5503,14 @@
       "standing": 2,
       "team_id": 2,
       "ties": 0,
-      "win_pct": 0.208,
-      "wins": 5
+      "win_pct": 0.583,
+      "wins": 7
     },
     {
       "abbrev": "CC",
       "division": "East",
       "logo_url": null,
-      "losses": 20,
+      "losses": 10,
       "name": "Curveball Crew",
       "outcomes": [
         "L",
@@ -6542,7 +6542,7 @@
       "team_id": 3,
       "ties": 0,
       "win_pct": 0.167,
-      "wins": 4
+      "wins": 2
     }
   ],
   "transactions": [

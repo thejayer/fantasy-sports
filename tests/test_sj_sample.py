@@ -149,6 +149,30 @@ def test_seeded_snapshots_persist_draft_and_matchups(registry):
         assert all(isinstance(opp, int) for opp in team["schedule"])
 
 
+def test_football_record_matches_schedule_outcomes(registry):
+    """Wins/losses/PF must follow the matchup tape, not the pre-matchup RNG."""
+    snapshot = sample_snapshot(spec_for(registry, "football-main"), 2024, teams=4)
+    for team in snapshot["teams"]:
+        wins = losses = ties = 0
+        points = 0.0
+        for i, outcome in enumerate(team["outcomes"]):
+            opp = team["schedule"][i]
+            if opp == team["team_id"]:
+                continue
+            if outcome == "W":
+                wins += 1
+            elif outcome == "L":
+                losses += 1
+            elif outcome == "T":
+                ties += 1
+            if team["scores"][i] is not None:
+                points += float(team["scores"][i])
+        assert team["wins"] == wins
+        assert team["losses"] == losses
+        assert team["ties"] == ties
+        assert team["points_for"] == pytest.approx(round(points, 1))
+
+
 def test_seeded_snapshots_persist_settings_and_transactions(registry):
     """Roadmap 2.4: seed must exercise settings + recent_activity + free_agents."""
     redraft = sample_snapshot(spec_for(registry, "football-main"), 2024, teams=4)
