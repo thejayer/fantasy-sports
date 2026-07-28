@@ -879,6 +879,218 @@ def export_weekly_projections(
     typer.echo(f"Wrote {len(table):,} players ({GRAIN_TYPICAL_WEEK}) -> {path}")
 
 
+@app.command("export-playoff-odds")
+def export_playoff_odds(
+    sj_root: Path = typer.Option(
+        Path("data/sj"),
+        "--sj-root",
+        help="Hub store root with league snapshots (falls back to fixtures via sj.store).",
+    ),
+    season: int = typer.Option(..., "--season"),
+    league_id: str | None = typer.Option(
+        None,
+        "--league-id",
+        help="One football league_id. Default: every football league for --season.",
+    ),
+    out_dir: Path = typer.Option(
+        Path("data/sj/playoff_odds"),
+        "--out-dir",
+        help="Store root for playoff_odds/{league_id}/{season}.json",
+    ),
+    league: Path = typer.Option(
+        Path("configs/ppr.yaml"),
+        "--league",
+        help="ffa scoring config used for weekly FP draws (ppr/standard).",
+    ),
+    n_sims: int = typer.Option(500, "--sims"),
+    samples: int = typer.Option(2000, "--samples"),
+    lookback: int = typer.Option(3, "--lookback"),
+    decay: float = typer.Option(0.5, "--decay"),
+    seed: int = typer.Option(0, "--seed"),
+    as_of_week: int | None = typer.Option(
+        None,
+        "--as-of-week",
+        help="Treat periods >= this week as undecided (midseason what-if).",
+    ),
+    level_sd: float = typer.Option(0.0, "--level-sd"),
+    level_mean: float = typer.Option(1.0, "--level-mean"),
+    conditioned_level: bool = typer.Option(
+        True,
+        "--conditioned-level/--no-conditioned-level",
+        help="Default on: calibrated LevelModel path.",
+    ),
+    player_map: Path | None = typer.Option(
+        None,
+        "--player-map",
+        help="Optional player_map JSON (default: {sj-root}/player_map/{season}.json).",
+    ),
+    db: Path = typer.Option(Path("data/ffa.duckdb"), "--db"),
+    raw_dir: Path = typer.Option(Path("data/raw"), "--raw-dir"),
+) -> None:
+    """Write hub-consumable playoff-odds snapshots (football).
+
+    Offline Monte Carlo over remaining regular-season H2H games using
+    independent typical-week bootstrap draws + greedy skill lineups. Does not
+    invent odds from season/weekly quantile boards. Hub reads the JSON only.
+    """
+    import numpy as np
+
+    from ffa.player_map import load_player_map
+    from ffa.playoff_export import (
+        build_playoff_odds_document,
+        simulate_playoff_odds,
+        write_playoff_odds_snapshot,
+    )
+    from ffa.projections import scoring_slug
+    from ffa.scoring import score_player_weeks
+    from sj.store import list_snapshots, read_snapshot
+
+    cfg = load_league(league)
+    slug = scoring_slug(cfg)
+
+    map_path = player_map
+    if map_path is None:
+        for year in (season, season - 1):
+            candidate = sj_root / "player_map" / f"{year}.json"
+            if candidate.is_file():
+                map_path = candidate
+                break
+    espn_to_gsis: dict[str, str] = {}
+    if map_path and map_path.is_file():
+        doc = load_player_map(map_path)
+        for row in doc.get("mappings") or []:
+            espn = str(row.get("espn_id") or "").strip()
+            gsis = str(row.get("player_id") or "").strip()
+            if espn and gsis:
+                espn_to_gsis[espn] = gsis
+        typer.echo(f"Player map: {len(espn_to_gsis):,} ESPN→GSIS from {map_path}")
+    else:
+        typer.echo("No player map found; mapped roster counts will be 0.")
+
+    # Typical-week joint samples (ephemeral — not written to the hub store).
+    con = open_warehouse(db_path=db, raw_dir=raw_dir)
+    seasons = list(range(season - lookback, season))
+    placeholders = ",".join("?" for _ in seasons)
+    weekly = con.execute(
+        f"SELECT * FROM weekly WHERE season IN ({placeholders})", seasons
+    ).df()
+    if weekly.empty:
+        typer.echo(f"No weekly history for seasons {seasons}. Run `ffa ingest` first.")
+        raise typer.Exit(code=1)
+
+    player_level = None
+    if conditioned_level:
+        years_exp = _load_years_exp(con, [season])
+        player_level = build_player_level(
+            weekly,
+            season,
+            cfg,
+            LevelModel(),
+            lookback=lookback,
+            years_exp=years_exp,
+        )
+
+    samples_df = simulate_typical_weeks(
+        weekly,
+        target_season=season,
+        n_samples=samples,
+        lookback=lookback,
+        decay=decay,
+        level_sd=level_sd,
+        level_mean=level_mean,
+        player_level=player_level,
+        seed=seed,
+    )
+    if samples_df.empty:
+        typer.echo("No typical-week samples produced.")
+        raise typer.Exit(code=1)
+
+    scored = samples_df.copy()
+    scored["fantasy_points"] = score_player_weeks(scored, cfg)
+    points_by_key: dict[str, np.ndarray] = {}
+    for pid, grp in scored.groupby("player_id", sort=False):
+        points_by_key[str(pid)] = grp.sort_values("sample_idx")["fantasy_points"].to_numpy(
+            dtype=float
+        )
+    typer.echo(f"Weekly FP matrix: {len(points_by_key):,} players × {samples} samples")
+
+    store_arg = sj_root if sj_root.is_dir() else None
+    try:
+        available = list_snapshots(store_arg)
+    except Exception:  # noqa: BLE001
+        available = []
+    targets = [
+        item
+        for item in available
+        if item.get("sport") == "football" and int(item.get("season") or 0) == season
+    ]
+    if league_id:
+        targets = [t for t in targets if t.get("league_id") == league_id]
+        if not targets:
+            # Still try a direct read (fixtures / partial index).
+            targets = [{"league_id": league_id, "season": season, "sport": "football"}]
+
+    if not targets:
+        typer.echo(f"No football leagues for season {season} under {sj_root}.")
+        raise typer.Exit(code=1)
+
+    written = 0
+    for item in targets:
+        lid = str(item["league_id"])
+        try:
+            snap = read_snapshot(lid, season, store_arg)
+        except FileNotFoundError:
+            typer.echo(f"Skip {lid}: snapshot not found")
+            continue
+        if snap.get("sport") and snap.get("sport") != "football":
+            continue
+        sim = simulate_playoff_odds(
+            snap,
+            points_by_key,
+            espn_to_gsis,
+            n_sims=n_sims,
+            seed=seed,
+            as_of_week=as_of_week,
+        )
+        document = build_playoff_odds_document(
+            snap,
+            sim,
+            scoring=slug,
+            n_sims=n_sims,
+            assumptions={
+                "player_draws": "independent_bootstrap_typical_week",
+                "lineup": "greedy_skill_positions",
+                "k_dst": "omitted",
+                "rosters": "fixed_at_export",
+                "schedule_adjusted": False,
+                "median_scoring": False,
+                "metric": "make_playoffs_regular_season_only",
+            },
+            source={
+                "engine": "ffa",
+                "sj_root": str(sj_root),
+                "generator": "playoff_mc_v1",
+                "league_config": str(league),
+                "conditioned_level": conditioned_level,
+                "lookback": lookback,
+                "decay": decay,
+                "samples": samples,
+                "seed": seed,
+                "as_of_week": as_of_week,
+            },
+        )
+        path = write_playoff_odds_snapshot(document, out_dir)
+        written += 1
+        typer.echo(
+            f"Wrote {lid} ({sim['n_matchups']} matchups, "
+            f"{len(sim['periods_simulated'])} periods) -> {path}"
+        )
+
+    if written == 0:
+        typer.echo("No playoff-odds files written.")
+        raise typer.Exit(code=1)
+
+
 @app.command("export-draft-sim")
 def export_draft_sim(
     league: Path = typer.Option(Path("configs/ppr.yaml"), "--league"),

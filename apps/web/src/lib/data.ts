@@ -132,6 +132,38 @@ export type WeeklyProjectionSnapshot = ProjectionSnapshot & {
   grain: "typical_week" | string;
 };
 
+/** Offline playoff-odds MC from `ffa export-playoff-odds`. */
+export type PlayoffOddsTeam = {
+  team_id: number;
+  name: string | null;
+  standing_now: number | null;
+  wins_now: number | null;
+  losses_now: number | null;
+  ties_now?: number | null;
+  make_playoffs: number | null;
+  seed_probs: Record<string, number | null>;
+  avg_wins: number | null;
+  mapped_roster: number | null;
+  rostered: number | null;
+};
+
+export type PlayoffOddsSnapshot = {
+  schema_version: number;
+  generated_at: string;
+  league_id: string;
+  espn_league_id?: number | null;
+  season: number;
+  scoring: string;
+  n_sims: number;
+  as_of_week?: number | null;
+  reg_season_count?: number | null;
+  playoff_team_count?: number | null;
+  periods_simulated?: number[];
+  assumptions?: Record<string, unknown>;
+  source?: Record<string, unknown>;
+  teams: PlayoffOddsTeam[];
+};
+
 /** One row from `ffa export-draft-sim` pick_rates (roadmap 4.5). */
 export type DraftSimPickRate = {
   player_id: string;
@@ -672,6 +704,27 @@ export const getWeeklyProjectionSnapshot = cache(
         path.join(root, relative),
       );
       if (doc?.players?.length && doc.season === season) {
+        return doc;
+      }
+    }
+    return null;
+  },
+);
+
+/**
+ * Read playoff-odds MC under ``playoff_odds/{league_id}/{season}.json``.
+ * Session-gated; produced offline by ``ffa export-playoff-odds``.
+ */
+export const getPlayoffOddsSnapshot = cache(
+  async (
+    leagueId: string,
+    season: number,
+  ): Promise<PlayoffOddsSnapshot | null> => {
+    await requireSession();
+    const relative = path.join("playoff_odds", leagueId, `${season}.json`);
+    for (const root of dataRoots()) {
+      const doc = await readJson<PlayoffOddsSnapshot>(path.join(root, relative));
+      if (doc?.teams?.length && doc.season === season) {
         return doc;
       }
     }

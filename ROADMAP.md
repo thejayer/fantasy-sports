@@ -403,10 +403,16 @@ Football `tools` tab ships snapshot-backed decision surfaces without calling
   Hub: `getWeeklyProjectionSnapshot` + `StartSitBoard`
   (`?view=start-sit`). Same bootstrap atom as season sims, but one game per
   sample — **not** schedule-/opponent-adjusted.
+- **Playoff odds** — offline make-playoffs MC from
+  `ffa export-playoff-odds` → `playoff_odds/{league_id}/{season}.json`.
+  Walks remaining regular-season H2H games with independent typical-week
+  draws + greedy skill lineups (K/DST omitted, fixed rosters). Hub:
+  `getPlayoffOddsSnapshot` + `PlayoffOddsBoard` (`?view=playoff-odds`).
+  Bracket-champion odds stay out of scope unless playoff periods exist in
+  the snapshot.
 
-**Still deferred:** playoff-odds MC. Typical-week player quantiles are not
-joint week×team scores through the ESPN schedule — do not dress them (or
-season totals) as playoff probabilities.
+Season / weekly **quantile** boards must not be dressed as playoff
+probabilities — only the playoff-odds artifact.
 
 ### 4.6 Baseball — LANDED
 **Decision: keep baseball data-rich but projection-free.** The `ffa` engine
@@ -447,8 +453,8 @@ Fold in continuously rather than saving for the end.
 - **`refresh.yml`.** Wired as the 4.2/4.3 projection + player-map producer.
   ~~Year-round cron~~ → **NFL-season cron (Sept–Jan, Tue–Sat)**. ~~Still needs a
   promote step~~ → **LANDED:** `promote` job (WIF) copies JSON into
-  `gs://…-sj-data/projections|player_map|draft_sim|weekly_projections/`. Requires
-  `ffa-deployer`
+  `gs://…-sj-data/projections|player_map|draft_sim|weekly_projections|playoff_odds/`.
+  Requires `ffa-deployer`
   `objectUser` on the bucket (`setup-github-deployer.sh`). Hub must mount the
   bucket (deploy-hub `bucket` input) to serve promoted files.
 - **Accessibility and performance budgets.** ~~once phase 3 lands~~ → **LANDED:**
@@ -480,10 +486,9 @@ shape. Phase 3.1 (unify views) before any other UI work so nothing ships twice.
 | C — Product | ~~3.1~~ → ~~3.2~~ → ~~3.3~~ → ~~3.4~~ → ~~3.5~~ → ~~3.6~~ | `apps/web` |
 | D — Engine | ~~4.1~~ … ~~4.6~~ | `src/ffa` + football hub surfaces; baseball ESPN-only |
 
-A, B, and D barely overlap with remaining C polish. Playoff-odds MC (schedule ×
-joint week×team scores) remains an optional football follow-up — typical-week
-player posteriors + start/sit shipped with 4.5. Baseball modeling is explicitly
-out of scope.
+A, B, and D barely overlap with remaining C polish. Playoff make-odds MC
+(schedule × typical-week draws × greedy lineups) shipped with 4.5; bracket
+champion odds remain optional. Baseball modeling is explicitly out of scope.
 
 **Fastest visible wins** remaining: 3.2 (a decade of history appears), 3.3
 (tables become usable). 2.1 is done — draft and matchup data persist for zero

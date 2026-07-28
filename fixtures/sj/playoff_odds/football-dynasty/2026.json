@@ -1,0 +1,79 @@
+{
+  "schema_version": 1,
+  "generated_at": "2026-07-28T00:00:00Z",
+  "league_id": "football-dynasty",
+  "espn_league_id": 94266,
+  "season": 2026,
+  "scoring": "ppr",
+  "n_sims": 500,
+  "as_of_week": 14,
+  "reg_season_count": 14,
+  "playoff_team_count": 2,
+  "periods_simulated": [],
+  "assumptions": {
+    "player_draws": "independent_bootstrap_typical_week",
+    "lineup": "greedy_skill_positions",
+    "k_dst": "omitted",
+    "rosters": "fixed_at_export",
+    "schedule_adjusted": false,
+    "median_scoring": false,
+    "metric": "make_playoffs_regular_season_only",
+    "fixture": true
+  },
+  "source": {
+    "engine": "ffa",
+    "generator": "playoff_mc_v1",
+    "fixture": true,
+    "seed": 0
+  },
+  "teams": [
+    {
+      "team_id": 2,
+      "name": "Turf Titans",
+      "standing_now": 1,
+      "wins_now": 13,
+      "losses_now": 1,
+      "ties_now": 0,
+      "make_playoffs": 0.92,
+      "seed_probs": {
+        "1": 0.7,
+        "2": 0.22
+      },
+      "avg_wins": 13.0,
+      "mapped_roster": 0,
+      "rostered": 22
+    },
+    {
+      "team_id": 3,
+      "name": "End Zone Enforcers",
+      "standing_now": 2,
+      "wins_now": 7,
+      "losses_now": 7,
+      "ties_now": 0,
+      "make_playoffs": 0.78,
+      "seed_probs": {
+        "1": 0.25,
+        "2": 0.53
+      },
+      "avg_wins": 7.0,
+      "mapped_roster": 0,
+      "rostered": 22
+    },
+    {
+      "team_id": 1,
+      "name": "Gridiron Goons",
+      "standing_now": 3,
+      "wins_now": 1,
+      "losses_now": 13,
+      "ties_now": 0,
+      "make_playoffs": 0.3,
+      "seed_probs": {
+        "1": 0.05,
+        "2": 0.25
+      },
+      "avg_wins": 1.0,
+      "mapped_roster": 0,
+      "rostered": 22
+    }
+  ]
+}

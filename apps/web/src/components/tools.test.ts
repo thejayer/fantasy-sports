@@ -3,7 +3,7 @@ import path from "node:path";
 import { describe, expect, it } from "vitest";
 
 describe("decision tools UI (roadmap 4.5)", () => {
-  it("ToolsPanel ships trade, waivers, strength, draft, start/sit, and honest deferrals", () => {
+  it("ToolsPanel ships trade, waivers, strength, draft, start/sit, playoff odds, and notes", () => {
     const source = readFileSync(
       path.resolve(__dirname, "ToolsPanel.tsx"),
       "utf8",
@@ -12,13 +12,14 @@ describe("decision tools UI (roadmap 4.5)", () => {
     expect(source).toMatch(/WaiverBoard/);
     expect(source).toMatch(/DraftBoard/);
     expect(source).toMatch(/StartSitBoard/);
+    expect(source).toMatch(/PlayoffOddsBoard/);
     expect(source).toMatch(/id: "trade"/);
     expect(source).toMatch(/id: "waivers"/);
     expect(source).toMatch(/id: "strength"/);
     expect(source).toMatch(/id: "draft"/);
     expect(source).toMatch(/id: "start-sit"/);
-    expect(source).toMatch(/Playoff odds/);
-    expect(source).toMatch(/export-weekly-projections/);
+    expect(source).toMatch(/id: "playoff-odds"/);
+    expect(source).toMatch(/export-playoff-odds/);
     expect(source).toMatch(/free agents/);
     expect(source).not.toMatch(/child_process|spawn\(/);
   });

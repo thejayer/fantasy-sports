@@ -141,6 +141,30 @@ jobs:
           done
           find store/weekly_projections -type f | sort
 
+      - name: Export playoff-odds snapshots
+        run: |
+          mkdir -p store/playoff_odds
+          SJ_ROOT=fixtures/sj
+          if [ -d data/sj ] && [ -f data/sj/index.json ]; then
+            SJ_ROOT=data/sj
+          fi
+          # Hub football seasons may lead the NFL ingest year by one.
+          SEASON=${{ steps.cfg.outputs.season }}
+          for HUB_SEASON in "$SEASON" "$((SEASON + 1))"; do
+            echo "Playoff odds for hub season $HUB_SEASON (sj-root=$SJ_ROOT)"
+            ffa export-playoff-odds \
+              --sj-root "$SJ_ROOT" \
+              --season "$HUB_SEASON" \
+              --league configs/ppr.yaml \
+              --lookback ${{ steps.cfg.outputs.lookback }} \
+              --samples ${{ steps.cfg.outputs.samples }} \
+              --sims 300 \
+              --out-dir store/playoff_odds \
+              --conditioned-level \
+              || echo "No football leagues (or samples) for $HUB_SEASON — skipping"
+          done
+          find store/playoff_odds -type f | sort
+
       - name: Export ESPN↔nflverse player map
         run: |
           mkdir -p store/player_map
@@ -181,6 +205,7 @@ jobs:
             store/projections/
             store/draft_sim/
             store/weekly_projections/
+            store/playoff_odds/
             store/player_map/
           retention-days: 14
 
@@ -230,7 +255,8 @@ jobs:
           DRAFT_STD=( "$ROOT"/draft_sim/standard/*/*.json )
           WEEKLY_PPR=( "$ROOT"/weekly_projections/ppr/*.json )
           WEEKLY_STD=( "$ROOT"/weekly_projections/standard/*.json )
-          if [ "${#PPR[@]}" -eq 0 ] && [ "${#STD[@]}" -eq 0 ] && [ "${#MAP[@]}" -eq 0 ] && [ "${#DRAFT_PPR[@]}" -eq 0 ] && [ "${#DRAFT_STD[@]}" -eq 0 ] && [ "${#WEEKLY_PPR[@]}" -eq 0 ] && [ "${#WEEKLY_STD[@]}" -eq 0 ]; then
+          PLAYOFF=( "$ROOT"/playoff_odds/*/*.json )
+          if [ "${#PPR[@]}" -eq 0 ] && [ "${#STD[@]}" -eq 0 ] && [ "${#MAP[@]}" -eq 0 ] && [ "${#DRAFT_PPR[@]}" -eq 0 ] && [ "${#DRAFT_STD[@]}" -eq 0 ] && [ "${#WEEKLY_PPR[@]}" -eq 0 ] && [ "${#WEEKLY_STD[@]}" -eq 0 ] && [ "${#PLAYOFF[@]}" -eq 0 ]; then
             echo "::error::No JSON files found under $ROOT to promote"
             find artifact -type f | sort
             exit 1
@@ -261,5 +287,11 @@ jobs:
           fi
           if [ "${#WEEKLY_STD[@]}" -gt 0 ]; then
             gcloud storage cp "${WEEKLY_STD[@]}" "gs://${BUCKET}/weekly_projections/standard/"
+          fi
+          if [ "${#PLAYOFF[@]}" -gt 0 ]; then
+            for f in "${PLAYOFF[@]}"; do
+              lid="$(basename "$(dirname "$f")")"
+              gcloud storage cp "$f" "gs://${BUCKET}/playoff_odds/${lid}/"
+            done
           fi
           echo "Promoted OK"
