@@ -1,0 +1,157 @@
+name: backfill sync
+
+# One-click ESPN history load into gs://…-sj-data via the existing Cloud Run Job.
+# Does not rebuild/redeploy the job — deploy sync job first if sj-sync is missing.
+#
+# Auth: Workload Identity Federation (same pool/provider as deploy-sync-job).
+# Hub only sees the result when deployed with the GCS bucket mounted.
+
+on:
+  workflow_dispatch:
+    inputs:
+      project_id:
+        description: "GCP project ID"
+        required: true
+        default: "fantasy-sports-analytics"
+      region:
+        description: "Cloud Run region"
+        required: true
+        default: "us-central1"
+      job:
+        description: "Cloud Run Job name"
+        required: true
+        default: "sj-sync"
+      mode:
+        description: "Command to run on the job"
+        required: true
+        type: choice
+        default: backfill
+        options:
+          - backfill
+          - sync
+      wait:
+        description: "Wait for the job execution to finish (true/false)"
+        required: true
+        default: "true"
+
+permissions:
+  contents: read
+  id-token: write
+
+env:
+  GCP_WORKLOAD_IDENTITY_PROVIDER: projects/1047753647109/locations/global/workloadIdentityPools/github/providers/github
+  GCP_SERVICE_ACCOUNT: ffa-deployer@fantasy-sports-analytics.iam.gserviceaccount.com
+
+jobs:
+  execute:
+    runs-on: ubuntu-latest
+    # Full registry backfill can take a while (many league-seasons + ESPN).
+    timeout-minutes: 90
+    env:
+      PROJECT_ID: ${{ inputs.project_id }}
+      REGION: ${{ inputs.region }}
+      JOB: ${{ inputs.job }}
+      MODE: ${{ inputs.mode }}
+      WAIT: ${{ inputs.wait }}
+    steps:
+      - name: Validate inputs
+        run: |
+          for pair in "project_id=$PROJECT_ID" "region=$REGION" "job=$JOB"; do
+            name=${pair%%=*}
+            value=${pair#*=}
+            case "$value" in
+              ""|*[!A-Za-z0-9_.-]*)
+                echo "Invalid $name: only letters, digits, '.', '-' and '_' are allowed." >&2
+                exit 1 ;;
+            esac
+          done
+          case "$MODE" in
+            backfill|sync) ;;
+            *)
+              echo "Invalid mode: $MODE (expected backfill or sync)" >&2
+              exit 1 ;;
+          esac
+
+      - id: auth
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ env.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ env.GCP_SERVICE_ACCOUNT }}
+
+      - uses: google-github-actions/setup-gcloud@v2
+
+      - name: Ensure Cloud Run Job exists
+        run: |
+          if ! gcloud run jobs describe "$JOB" \
+            --project "$PROJECT_ID" --region "$REGION" >/dev/null 2>&1; then
+            echo "::error::Cloud Run Job '$JOB' not found in $PROJECT_ID/$REGION."
+            echo "Deploy it first: Actions → deploy sync job → Run workflow"
+            exit 1
+          fi
+
+      - name: Execute job
+        id: exec
+        run: |
+          set -euo pipefail
+          if [ "$MODE" = "backfill" ]; then
+            ARGS=(--args=backfill)
+          else
+            # Match Dockerfile.sync scheduled default.
+            ARGS=(--args=sync,--current-only)
+          fi
+          echo "Starting $MODE on job $JOB …"
+          EXEC=$(gcloud run jobs execute "$JOB" \
+            --project "$PROJECT_ID" \
+            --region "$REGION" \
+            "${ARGS[@]}" \
+            --format='value(metadata.name)')
+          echo "execution=$EXEC" >> "$GITHUB_OUTPUT"
+          echo "Started execution: $EXEC"
+          if [ "$WAIT" = "true" ]; then
+            echo "Waiting for $EXEC to finish…"
+            gcloud run jobs executions wait "$EXEC" \
+              --project "$PROJECT_ID" \
+              --region "$REGION"
+            STATUS=$(gcloud run jobs executions describe "$EXEC" \
+              --project "$PROJECT_ID" \
+              --region "$REGION" \
+              --format='value(status.conditions[0].status)')
+            echo "Wait finished; top condition status=$STATUS"
+            # Fail the workflow if the execution did not succeed.
+            SUCCEEDED=$(gcloud run jobs executions describe "$EXEC" \
+              --project "$PROJECT_ID" \
+              --region "$REGION" \
+              --format='value(status.succeededCount)')
+            if [ "${SUCCEEDED:-0}" != "1" ]; then
+              echo "::error::Job execution $EXEC did not succeed (succeededCount=$SUCCEEDED)"
+              gcloud run jobs executions describe "$EXEC" \
+                --project "$PROJECT_ID" --region "$REGION"
+              exit 1
+            fi
+          fi
+
+      - name: Summary
+        if: always()
+        run: |
+          {
+            echo "## Sync job execution"
+            echo
+            echo "| | |"
+            echo "|---|---|"
+            echo "| Job | \`$JOB\` |"
+            echo "| Mode | \`$MODE\` |"
+            echo "| Region | \`$REGION\` |"
+            echo "| Project | \`$PROJECT_ID\` |"
+            echo "| Waited | \`$WAIT\` |"
+            echo "| Execution | \`${{ steps.exec.outputs.execution }}\` |"
+            echo
+            echo "Snapshots land in \`gs://fantasy-sports-analytics-sj-data\`."
+            echo "Hub only sees them when deployed with that bucket mounted"
+            echo "(Actions → **deploy hub** → set **bucket**)."
+            echo
+            echo "Logs:"
+            echo "\`\`\`"
+            echo "gcloud run jobs executions describe ${{ steps.exec.outputs.execution }} \\"
+            echo "  --project $PROJECT_ID --region $REGION"
+            echo "\`\`\`"
+          } >> "$GITHUB_STEP_SUMMARY"

@@ -205,10 +205,20 @@ returns 503 when snapshots are missing or older than `SJ_HEALTH_STALE_SECONDS`
 The registry declares every season (football back to 2015, dynasty to 2018).
 Scheduled runs only refresh the current season; load history once with:
 
+1. GitHub → **Actions** → **backfill sync** → **Run workflow**
+2. Leave defaults (`backfill`, wait=`true`)
+3. Confirm the job finishes green; invalid ESPN seasons are skipped on backfill
+
+Equivalent CLI:
+
 ```bash
 gcloud run jobs execute sj-sync --args=backfill \
   --region=us-central1 --project=fantasy-sports-analytics
 ```
+
+Deploy the sync job first if `sj-sync` does not exist yet (**deploy sync job**).
+Hub only sees backfilled seasons when deployed with the GCS bucket mounted
+(**deploy hub** → set **bucket** to `fantasy-sports-analytics-sj-data`).
 
 Seasons ESPN refuses (`invalid_league`) are skipped and reported on
 `backfill` without failing the run. Auth, network, and unknown errors still
