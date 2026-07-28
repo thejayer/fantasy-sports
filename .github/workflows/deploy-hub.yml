@@ -149,9 +149,10 @@ jobs:
           )
           if [ -n "$BUCKET" ]; then
             # Sync job owns writes; hub mounts read-only. uid/gid must match the
-            # non-root sjhub user (1001) or FUSE perms can block store reads.
+            # non-root sjhub user (1001). gcloud mount-options use semicolons
+            # (commas would be parsed as separate volume keys → "unexpected gid").
             ARGS+=(
-              --add-volume "name=sjdata,type=cloud-storage,bucket=$BUCKET,readonly=true,mount-options=uid=1001,gid=1001"
+              --add-volume "name=sjdata,type=cloud-storage,bucket=$BUCKET,readonly=true,mount-options=uid=1001;gid=1001"
               --add-volume-mount "volume=sjdata,mount-path=/app/data/sj"
             )
           else
