@@ -6,13 +6,15 @@ name: nightly refresh
 # (Sept-Jan). Can also be triggered manually from the Actions tab.
 #
 # Artifacts are not auto-committed into data/sj — promote into the hub store
-# (or GCS mount) as part of deploy/sync. The hub reads the same path layout
-# via getProjectionSnapshot / getPlayerMap.
+# (or GCS mount) as part of deploy/sync (Phase 5 follow-up). The hub reads the
+# same path layout via getProjectionSnapshot / getPlayerMap.
 
 on:
   schedule:
-    # 11:00 UTC = ~07:00 ET, after the previous day's stats land.
-    - cron: "0 11 * * 2-6"
+    # 11:00 UTC ≈ 07:00 ET, Tue–Sat during NFL season only (Sept–Jan).
+    # Manual workflow_dispatch still works year-round for backfills.
+    - cron: "0 11 * 9-12 2-6"
+    - cron: "0 11 * 1 2-6"
   workflow_dispatch:
     inputs:
       season:

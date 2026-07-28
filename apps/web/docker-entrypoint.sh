@@ -30,7 +30,7 @@ fi
 if [ "${SJ_SYNC_ON_START:-0}" = "1" ] && [ -n "${ESPN_S2:-}" ] && [ -n "${ESPN_SWID:-}" ]; then
   if [ "$writable" = "1" ]; then
     echo "Syncing ESPN leagues (current seasons)..."
-    sj sync --current-only --store-dir "$DATA_DIR" \
+    python -m sj.cli sync --current-only --store-dir "$DATA_DIR" \
       || echo "warning: ESPN sync failed; serving existing snapshots" >&2
   else
     echo "Skipping startup sync: $DATA_DIR is read-only (sj-sync job owns writes)"

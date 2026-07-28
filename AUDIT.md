@@ -293,7 +293,8 @@ Public `/api/health` reports per-league `synced_at` age (HTTP 503 when empty or
 stale). `scripts/setup-sync-alerting.sh` wires a Cloud Monitoring email alert on
 `sj-sync` job failure. Route-level `error.tsx` / `not-found.tsx` log to stderr
 for Cloud Logging. Still open from the original finding: uptime check on the
-live hub URL (console), `min-instances`, and retiring unused `refresh.yml`.
+live hub URL (console) and `min-instances`. (`refresh.yml` is the active
+projection producer — do not retire it.)
 
 ---
 
@@ -336,13 +337,13 @@ Separately, `FileStore._rewrite_index()` / `GcsStore._rewrite_index()` rebuild
 the index by re-reading **every** snapshot on **every** write, so a backfill is
 quadratic in snapshot count. Fine at 24; not fine once weekly snapshots exist.
 
-### 17. The hub container installs the entire analytics stack
+### 17. The hub container installs the entire analytics stack — fixed (Phase 5)
 
-`apps/web/Dockerfile` runs `pip install -e .` in the runtime stage, pulling
-duckdb, scikit-learn, and pandas into an image whose job is to serve Next.js.
-`deploy-hub.yml` sets `SJ_SYNC_ON_START=0`, so the `sj` CLI it is installing for
-is never invoked in production. Fixtures are copied twice, and there is no
-non-root final stage.
+Runtime installs **sj-only** deps (espn-api / pydantic / pyyaml / typer / gcs),
+not `pip install -e .`. `images` CI asserts duckdb / sklearn / nflreadpy / pulp
+are absent and `sj.cli` still imports. Fixtures are copied once; non-root
+(`USER sjhub`) and multi-stage Node build were already in. Optional startup
+sync uses `python -m sj.cli` via `PYTHONPATH`.
 
 ### 18. Version skew between CI and production
 
@@ -373,7 +374,7 @@ time. `@types/node` is `^20` against a Node 22 runtime. No Dependabot or Renovat
 | 14 | No observability or alerting | P1 | Baseline fixed (roadmap 1.6); uptime check + min-instances still open |
 | 15 | `ffa` engine disconnected from the hub | P2 | Closed for football season surfaces (4.1–4.5); baseball deliberately out of engine scope (4.6) |
 | 16 | Storage layout won't extend to weekly data | P2 | Open — roadmap 2.2, 2.3 |
-| 17 | Hub image carries the analytics stack | P2 | Open — roadmap phase 5 |
+| 17 | Hub image carries the analytics stack | P2 | Fixed — Phase 5 hub slim (sj-only runtime) |
 | 18 | CI/production version skew, no lockfile | P2 | Open — roadmap 1.5 |
 
 The through-line at audit time: the engineering that exists is careful and
