@@ -43,6 +43,10 @@ on:
         description: "GCS snapshot bucket to mount (blank = baked fixtures; recommended until runtime SA has objectViewer)"
         required: false
         default: ""
+      min_instances:
+        description: "Cloud Run min instances (0=scale-to-zero; 1=always warm)"
+        required: true
+        default: "0"
 
 permissions:
   contents: read
@@ -68,6 +72,7 @@ jobs:
       # image-only deploys matched the last healthy revision. Pass bucket via
       # workflow_dispatch after ./scripts/setup-sync-infra.sh.
       BUCKET: ${{ github.event.inputs.bucket || '' }}
+      MIN_INSTANCES: ${{ github.event.inputs.min_instances || '0' }}
     steps:
       - name: Validate inputs
         run: |
@@ -86,6 +91,11 @@ jobs:
                 echo "Invalid bucket name: $BUCKET" >&2
                 exit 1
               fi ;;
+          esac
+          case "$MIN_INSTANCES" in
+            ""|*[!0-9]*)
+              echo "Invalid min_instances: must be a non-negative integer." >&2
+              exit 1 ;;
           esac
 
       - uses: actions/checkout@v4
@@ -147,6 +157,9 @@ jobs:
             --allow-unauthenticated
             --memory 1Gi --cpu 1 --port 8080
             --timeout 300
+            --min-instances "$MIN_INSTANCES"
+            --max-instances 5
+            --cpu-boost
             --set-env-vars "SJ_SYNC_ON_START=0,AUTH_TRUST_HOST=true,SJ_DATA_DIR=/app/data/sj,AUTH_URL=$AUTH_URL"
             --set-secrets "AUTH_SECRET=sj-auth-secret:latest,AUTH_GOOGLE_ID=sj-auth-google-id:latest,AUTH_GOOGLE_SECRET=sj-auth-google-secret:latest,ALLOWED_EMAILS=sj-allowed-emails:latest"
           )

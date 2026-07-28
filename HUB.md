@@ -153,11 +153,19 @@ Cloud Scheduler ──▶ Cloud Run Job (sj-sync) ──▶ gs://<project>-sj-da
   `https://<hub>/api/revalidate` with `Authorization: Bearer $SJ_REVALIDATE_SECRET`
   (optional `SJ_REVALIDATE_URL` + secret on the sync job). If the bucket is empty it falls
   back to the fixtures baked into the image.
+- **Projections / player map:** `nightly refresh` exports under `store/` and
+  promotes JSON to `gs://…-sj-data/projections/` + `player_map/` (WIF as
+  `ffa-deployer`). Re-run `./scripts/setup-github-deployer.sh` so the deployer
+  has `objectUser` on the bucket. Mount the bucket on the hub (deploy-hub
+  **bucket** input) to serve them.
+- **Cold starts:** deploy uses `--cpu-boost` and `--min-instances=0` by default.
+  Set **min_instances=1** on a manual deploy if first-load latency bothers members.
 
 ### One-time setup (Cloud Shell)
 
 ```bash
 ./scripts/setup-sync-infra.sh
+./scripts/setup-github-deployer.sh   # also grants refresh promote objectUser
 ```
 
 Creates the bucket, grants IAM, and registers the Cloud Scheduler trigger.
@@ -173,13 +181,11 @@ NOTIFY_EMAIL=you@example.com ./scripts/setup-sync-alerting.sh
 
 Creates (or updates) a Cloud Monitoring alert that emails when the `sj-sync`
 Cloud Run Job finishes non-success — the scheduled `sj sync --current-only`
-path exits 1 on any skipped season. Confirm the notification channel from the
-verification mail Google sends.
-
-Optional: add an HTTPS uptime check on `https://<sj-hub>/api/health` (expects
-HTTP 200). That probe is public, reports per-league `synced_at` age, and returns
-503 when snapshots are missing or older than `SJ_HEALTH_STALE_SECONDS`
-(default 2 hours).
+path exits 1 on any skipped season. Also creates an HTTPS uptime check on
+`/api/health` (expects HTTP 200) when the hub URL is resolvable. Confirm the
+notification channel from the verification mail Google sends. The health probe
+returns 503 when snapshots are missing or older than `SJ_HEALTH_STALE_SECONDS`
+(default 2 hours) — prefer a GCS-mounted hub so sync keeps timestamps fresh.
 
 ### Deploy
 

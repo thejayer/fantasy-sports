@@ -101,6 +101,10 @@ jobs:
       - name: Assert no content route was prerendered
         run: npm run verify:prerender
 
+      # Phase 5 — catch accidental client-bundle bloat (jsx-a11y already via lint).
+      - name: Assert client bundle budgets
+        run: npm run verify:bundle-budget
+
       # The hub went from 14 advisories to 0; without a gate that silently
       # drifts back. Dependabot (roadmap 1.5) opens PRs when advisories land
       # against an untouched dependency so this stays actionable rather than

@@ -415,24 +415,30 @@ Fold in continuously rather than saving for the end.
   `SJ_REVALIDATE_SECRET`); `sj sync` / `backfill` best-effort POST when
   `SJ_REVALIDATE_URL` + secret are set. Still per Cloud Run instance (no Redis)
   — TTL remains the multi-instance bound.
-- **Cold starts.** Set `min-instances` if members complain about first load.
+- **Cold starts.** ~~Set `min-instances` if members complain~~ → **LANDED:**
+  deploy-hub sets `--cpu-boost`, `--max-instances=5`, and `--min-instances`
+  (default `0`; workflow_dispatch override to `1` when members want always-warm).
+  `setup-sync-alerting.sh` creates an HTTPS uptime check on `/api/health`.
 - **Storage.** If weekly and projection data outgrow JSON-on-GCS, the pattern is
   already established elsewhere in the repo: Parquet plus DuckDB, as `src/ffa`
   does.
 - **`refresh.yml`.** Wired as the 4.2/4.3 projection + player-map producer.
-  ~~Year-round cron~~ → **NFL-season cron (Sept–Jan, Tue–Sat)**. Still needs a
-  promote step into the live hub store/GCS mount (deploy/sync) — needs GCP
-  credentials (pairs with 1.3 WIF).
-- **Accessibility and performance budgets** in CI once phase 3 lands.
+  ~~Year-round cron~~ → **NFL-season cron (Sept–Jan, Tue–Sat)**. ~~Still needs a
+  promote step~~ → **LANDED:** `promote` job (WIF) copies JSON into
+  `gs://…-sj-data/projections|player_map/`. Requires `ffa-deployer`
+  `objectUser` on the bucket (`setup-github-deployer.sh`). Hub must mount the
+  bucket (deploy-hub `bucket` input) to serve promoted files.
+- **Accessibility and performance budgets.** ~~once phase 3 lands~~ → **LANDED:**
+  jsx-a11y via `next/core-web-vitals` lint (existing) + post-build
+  `npm run verify:bundle-budget` in the `web` CI job.
 
 ---
 
 ## Sequencing
 
-**Next up: remaining Phase 5 ops** (min-instances, artifact promote, a11y
-budgets). Shared/Next data cache + sync revalidate, **1.3 WIF / CD**, and hub
-image slim + season-bound refresh cron are in. Engine track D through 4.6 is
-closed.
+**Phase 5 ops closeout is in** (cache, promote, cold-start knobs, a11y/perf
+budgets, hub slim, season cron) along with **1.3 WIF / CD**. Engine track D
+through 4.6 is closed. Remaining platform polish: **1.7** (Next 16 / eslint-cli).
 
 **Branch protection on `main` is done** — required checks are `python`, `web`,
 and `images`. The `python` check is an aggregator over the 3.11 + 3.12 matrix.

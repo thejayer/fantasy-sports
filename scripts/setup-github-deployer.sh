@@ -66,6 +66,19 @@ do
   echo "ensured roles/${role}"
 done
 
+# Phase 5 — refresh.yml promotes projection/player_map JSON into the hub store.
+BUCKET="${SJ_BUCKET:-${PROJECT}-sj-data}"
+if gcloud storage buckets describe "gs://${BUCKET}" --project="${PROJECT}" >/dev/null 2>&1; then
+  gcloud storage buckets add-iam-policy-binding "gs://${BUCKET}" \
+    --member="serviceAccount:${SA_EMAIL}" \
+    --role="roles/storage.objectUser" \
+    --project="${PROJECT}" \
+    --quiet >/dev/null
+  echo "ensured objectUser on gs://${BUCKET} for refresh promote"
+else
+  echo "note: gs://${BUCKET} missing — run setup-sync-infra.sh, then re-run this script for promote IAM"
+fi
+
 cat <<NOTE
 
 Note: this account is intentionally NOT granted secretAccessor. If you ran an
