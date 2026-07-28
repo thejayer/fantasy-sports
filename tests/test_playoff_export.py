@@ -176,7 +176,7 @@ def test_write_load_roundtrip(tmp_path):
     assert len(loaded["teams"]) == 3
 
 
-def test_export_playoff_odds_cli(tmp_path, monkeypatch):
+def test_export_playoff_odds_cli(tmp_path):
     from unittest.mock import patch
 
     import pandas as pd
