@@ -144,26 +144,30 @@ jobs:
       - name: Export playoff-odds snapshots
         run: |
           mkdir -p store/playoff_odds
-          SJ_ROOT=fixtures/sj
-          if [ -d data/sj ] && [ -f data/sj/index.json ]; then
-            SJ_ROOT=data/sj
+          # Live sj snapshots only — never export/promote odds from committed
+          # fixtures (audit Batch A). Hub offline still reads fixtures/sj/playoff_odds/.
+          if [ ! -d data/sj ] || [ ! -f data/sj/index.json ]; then
+            echo "No live data/sj — skipping playoff-odds export (fixture fallback is hub-only)."
+            exit 0
           fi
-          # Hub football seasons may lead the NFL ingest year by one.
           SEASON=${{ steps.cfg.outputs.season }}
           for HUB_SEASON in "$SEASON" "$((SEASON + 1))"; do
-            echo "Playoff odds for hub season $HUB_SEASON (sj-root=$SJ_ROOT)"
+            echo "Playoff odds for hub season $HUB_SEASON (sj-root=data/sj)"
             ffa export-playoff-odds \
-              --sj-root "$SJ_ROOT" \
+              --sj-root data/sj \
               --season "$HUB_SEASON" \
               --league configs/ppr.yaml \
               --lookback ${{ steps.cfg.outputs.lookback }} \
               --samples ${{ steps.cfg.outputs.samples }} \
               --sims 300 \
               --out-dir store/playoff_odds \
-              --conditioned-level \
-              || echo "No football leagues (or samples) for $HUB_SEASON — skipping"
+              --conditioned-level
           done
           find store/playoff_odds -type f | sort
+          # Marker so promote can refuse fixture-shaped empties if needed.
+          if compgen -G "store/playoff_odds/*/*.json" > /dev/null; then
+            echo "live" > store/playoff_odds/.from_live_sj
+          fi
 
       - name: Export ESPN↔nflverse player map
         run: |
@@ -288,10 +292,13 @@ jobs:
           if [ "${#WEEKLY_STD[@]}" -gt 0 ]; then
             gcloud storage cp "${WEEKLY_STD[@]}" "gs://${BUCKET}/weekly_projections/standard/"
           fi
-          if [ "${#PLAYOFF[@]}" -gt 0 ]; then
+          # Only promote playoff odds produced from live data/sj (Batch A).
+          if [ -f "$ROOT/playoff_odds/.from_live_sj" ] && [ "${#PLAYOFF[@]}" -gt 0 ]; then
             for f in "${PLAYOFF[@]}"; do
               lid="$(basename "$(dirname "$f")")"
               gcloud storage cp "$f" "gs://${BUCKET}/playoff_odds/${lid}/"
             done
+          elif [ "${#PLAYOFF[@]}" -gt 0 ]; then
+            echo "Skipping playoff_odds promote — missing .from_live_sj marker"
           fi
           echo "Promoted OK"

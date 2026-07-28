@@ -2,24 +2,20 @@
   "schema_version": 1,
   "generated_at": "2025-09-01T12:00:00Z",
   "season": 2025,
-  "stats": {
-    "mappings": 6,
-    "methods": {
-      "roster": 6
-    },
-    "skill_players": 6,
-    "with_espn_id": 6,
-    "missing_espn_id": 0
-  },
-  "coverage": {
-    "rostered": 0,
-    "resolved": 0,
-    "rate": null,
-    "misses": []
-  },
   "source": {
     "engine": "ffa",
-    "fixture": true
+    "fixture": true,
+    "note": "Real ESPN\u2194GSIS rows plus fixture_overlay for synthetic hub roster ids"
+  },
+  "stats": {
+    "mappings": 14
+  },
+  "coverage": {
+    "rostered": 82,
+    "resolved": 8,
+    "rate": 0.0976,
+    "misses": [],
+    "note": "fixture_overlay maps a few synthetic ESPN ids to GSIS so offline hub joins are non-empty"
   },
   "mappings": [
     {
@@ -63,6 +59,62 @@
       "name": "CeeDee Lamb",
       "position": "WR",
       "method": "roster"
+    },
+    {
+      "espn_id": "202600301",
+      "player_id": "00-0033873",
+      "name": "Roy Thompson",
+      "position": "QB",
+      "method": "fixture_overlay"
+    },
+    {
+      "espn_id": "202600302",
+      "player_id": "00-0033280",
+      "name": "Scott Sanders",
+      "position": "RB",
+      "method": "fixture_overlay"
+    },
+    {
+      "espn_id": "202600304",
+      "player_id": "00-0036322",
+      "name": "Sean Ross",
+      "position": "WR",
+      "method": "fixture_overlay"
+    },
+    {
+      "espn_id": "202600307",
+      "player_id": "00-0030506",
+      "name": "Sean Gutierrez",
+      "position": "TE",
+      "method": "fixture_overlay"
+    },
+    {
+      "espn_id": "202600001",
+      "player_id": "00-0033873",
+      "name": "Gregory Rivera",
+      "position": "QB",
+      "method": "fixture_overlay"
+    },
+    {
+      "espn_id": "202600002",
+      "player_id": "00-0033280",
+      "name": "Jacob Smith",
+      "position": "RB",
+      "method": "fixture_overlay"
+    },
+    {
+      "espn_id": "202600004",
+      "player_id": "00-0036322",
+      "name": "Terry Parker",
+      "position": "WR",
+      "method": "fixture_overlay"
+    },
+    {
+      "espn_id": "202600007",
+      "player_id": "00-0030506",
+      "name": "Scott Martin",
+      "position": "TE",
+      "method": "fixture_overlay"
     }
   ]
 }

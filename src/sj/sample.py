@@ -361,18 +361,24 @@ def sample_league(
         for index in range(teams)
     ]
 
-    # Standings by win pct then points, matching how ESPN orders a league.
-    ranked = sorted(
-        built,
-        key=lambda team: (-(team.wins), -(team.points_for or 0.0)),
-    )
-    for place, team in enumerate(ranked, start=1):
-        team.standing = place
-
     # Schedule / scores / outcomes mirror what espn-api already attaches after
     # the mMatchup fetch. Draft mirrors league.draft from mDraftDetail. Both are
     # free data the live serializer now persists (roadmap 2.1).
     _assign_matchups(built, games=games, rng=rng)
+    # Random pre-matchup W/L must not disagree with the schedule tape.
+    _reconcile_records_from_matchups(built)
+
+    # Standings by win pct then points, matching how ESPN orders a league.
+    ranked = sorted(
+        built,
+        key=lambda team: (
+            -(team.wins + 0.5 * getattr(team, "ties", 0)),
+            -(team.points_for or 0.0),
+        ),
+    )
+    for place, team in enumerate(ranked, start=1):
+        team.standing = place
+
     draft = _build_draft(built, rounds=3)
     # Settings (from mSettings) + recent_activity + free_agents (roadmap 2.4).
     settings = _build_settings(spec, teams=teams, games=games)
@@ -538,6 +544,41 @@ def _assign_matchups(teams: list[_Stub], *, games: int, rng: random.Random) -> N
                 team.schedule.append(team_id)
                 team.scores.append(0.0)
                 team.outcomes.append("U")
+
+
+def _reconcile_records_from_matchups(teams: list[_Stub]) -> None:
+    """Set wins / losses / ties / points_for from schedule outcomes.
+
+    ``_build_team`` picks a random record before matchups exist; after
+    ``_assign_matchups`` the tape is authoritative. Bye weeks (outcome ``U``,
+    opponent == self) do not count in the record. Football ``points_for`` is
+    the sum of non-bye scores so it matches the schedule board.
+    """
+    for team in teams:
+        wins = losses = ties = 0
+        points = 0.0
+        schedule = getattr(team, "schedule", None) or []
+        scores = getattr(team, "scores", None) or []
+        outcomes = getattr(team, "outcomes", None) or []
+        for i, outcome in enumerate(outcomes):
+            opp = schedule[i] if i < len(schedule) else team.team_id
+            if opp == team.team_id:
+                continue
+            if outcome == "W":
+                wins += 1
+            elif outcome == "L":
+                losses += 1
+            elif outcome == "T":
+                ties += 1
+            if i < len(scores) and scores[i] is not None:
+                points += float(scores[i])
+        team.wins = wins
+        team.losses = losses
+        team.ties = ties
+        if hasattr(team, "points_for") and team.points_for is not None:
+            # Football stubs set points_for; baseball leaves it None for the
+            # serializer's roster-sum fallback — preserve that.
+            team.points_for = round(points, 1)
 
 
 def _build_draft(teams: list[_Stub], *, rounds: int = 3) -> list[_Stub]:

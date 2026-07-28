@@ -159,8 +159,9 @@ Cloud Scheduler ──▶ Cloud Run Job (sj-sync) ──▶ gs://<project>-sj-da
   `weekly_projections/`, and `playoff_odds/` (WIF as `ffa-deployer`). Re-run
   `./scripts/setup-github-deployer.sh` so the deployer has `objectUser` on the
   bucket. Mount the bucket on the hub (deploy-hub **bucket** input) to serve
-  them. Playoff odds also need sj league snapshots under the refresh job’s
-  `--sj-root` (live `data/sj` or committed `fixtures/sj`).
+  them. Playoff odds promote only when refresh wrote them from live `data/sj`
+  (marker `.from_live_sj`); committed `fixtures/sj/playoff_odds/` remain the
+  offline hub fallback and are never promoted from a fixtures-only run.
 - **Cold starts:** deploy uses `--cpu-boost` and `--min-instances=0` by default.
   Set **min_instances=1** on a manual deploy if first-load latency bothers members.
 

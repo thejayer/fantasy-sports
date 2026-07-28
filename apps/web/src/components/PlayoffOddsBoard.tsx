@@ -29,6 +29,10 @@ export function PlayoffOddsBoard({
     ? snapshot.periods_simulated.join(", ")
     : "none (standings locked)";
 
+  const allUnmapped =
+    snapshot.teams.length > 0 &&
+    snapshot.teams.every((row) => (row.mapped_roster ?? 0) === 0);
+
   return (
     <div className="playoff-odds-board" style={{ marginTop: "0.75rem" }}>
       <p className="lede">
@@ -37,6 +41,12 @@ export function PlayoffOddsBoard({
         · periods simulated: {periods}. Independent typical-week player draws,
         greedy skill lineups (K/DST omitted), fixed rosters — not
         schedule-/waiver-adjusted.
+        {!snapshot.periods_simulated?.length
+          ? " Remaining H2H schedule is empty, so probabilities are locked to current standings."
+          : ""}
+        {allUnmapped
+          ? " No roster players mapped through the player map — undecided weeks (if any) score as 0–0 ties."
+          : ""}
       </p>
 
       <div className="panel table-scroll">
