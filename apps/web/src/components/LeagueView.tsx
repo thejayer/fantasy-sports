@@ -1,5 +1,8 @@
 import Link from "next/link";
+import { ActivityPanel } from "@/components/ActivityPanel";
+import { DraftResultsPanel } from "@/components/DraftResultsPanel";
 import { EmptyState } from "@/components/EmptyState";
+import { FreeAgentsBoard } from "@/components/FreeAgentsBoard";
 import { HistoryPanel, type HistoryView } from "@/components/HistoryPanel";
 import { MatchupsPanel, type MatchupsView } from "@/components/MatchupsPanel";
 import { PlayersDataTable } from "@/components/PlayersDataTable";
@@ -16,6 +19,7 @@ import type {
   Team,
   WeeklyProjectionSnapshot,
 } from "@/lib/data";
+import type { ActivityView } from "@/lib/activity";
 import { isPitcher } from "@/lib/baseball";
 import {
   recordLabel,
@@ -166,6 +170,8 @@ const FOOTBALL_TABS = [
   "teams",
   "players",
   "matchups",
+  "draft",
+  "activity",
   "history",
   "projections",
   "tools",
@@ -176,6 +182,9 @@ const BASEBALL_TABS = [
   "teams",
   "players",
   "matchups",
+  "draft",
+  "activity",
+  "waivers",
   "history",
   "projections",
   "tools",
@@ -192,6 +201,8 @@ export function LeagueView({
   historyView = "standings",
   h2hA,
   h2hB,
+  activityView = "all",
+  draftTeamId,
   projectionSnapshot = null,
   playerMap = null,
   projectionScoring = null,
@@ -215,6 +226,9 @@ export function LeagueView({
   historyView?: HistoryView;
   h2hA?: number;
   h2hB?: number;
+  activityView?: ActivityView;
+  /** ESPN draft-results team filter (`?tab=draft&team=`). */
+  draftTeamId?: number;
   projectionSnapshot?: ProjectionSnapshot | null;
   playerMap?: PlayerMapSnapshot | null;
   projectionScoring?: string | null;
@@ -277,13 +291,19 @@ export function LeagueView({
       ? `&role=${activeRole}`
       : active === "matchups"
         ? `&view=${matchupsView}${week != null ? `&week=${week}` : ""}`
-        : active === "history"
-          ? `&view=${historyView}${historyPair}`
-          : active === "projections"
-            ? scoringQuery
-            : active === "tools"
-              ? toolsPair
-              : "";
+        : active === "draft"
+          ? draftTeamId != null
+            ? `&team=${draftTeamId}`
+            : ""
+          : active === "activity"
+            ? `&view=${activityView}`
+            : active === "history"
+              ? `&view=${historyView}${historyPair}`
+              : active === "projections"
+                ? scoringQuery
+                : active === "tools"
+                  ? toolsPair
+                  : "";
 
   const players = isBaseball
     ? league.players.filter((player) => {
@@ -320,8 +340,8 @@ export function LeagueView({
           ? ` · synced ${new Date(league.synced_at).toLocaleString()}`
           : ""}
         {isBaseball
-          ? ". Standings, matchups, history, and batter/pitcher boards from ESPN — projection-free by design (roadmap 4.6)."
-          : ". Standings, matchups, history, rosters, projections, and decision tools."}
+          ? ". Standings, matchups, draft, activity, waivers, history, and batter/pitcher boards from ESPN — projection-free by design (roadmap 4.6)."
+          : ". Standings, matchups, draft, activity, history, rosters, projections, and decision tools."}
       </p>
 
       <SeasonSwitcher
@@ -342,6 +362,10 @@ export function LeagueView({
               (name === "matchups"
                 ? `&view=${matchupsView}${week != null ? `&week=${week}` : ""}`
                 : "") +
+              (name === "draft" && draftTeamId != null
+                ? `&team=${draftTeamId}`
+                : "") +
+              (name === "activity" ? `&view=${activityView}` : "") +
               (name === "history" ? `&view=${historyView}${historyPair}` : "") +
               (name === "projections" && projectionScoring
                 ? `&scoring=${projectionScoring}`
@@ -382,6 +406,21 @@ export function LeagueView({
 
       {active === "matchups" ? (
         <MatchupsPanel league={league} week={week} view={matchupsView} />
+      ) : null}
+
+      {active === "draft" ? (
+        <DraftResultsPanel league={league} teamId={draftTeamId} />
+      ) : null}
+
+      {active === "activity" ? (
+        <ActivityPanel league={league} view={activityView} />
+      ) : null}
+
+      {active === "waivers" ? (
+        <FreeAgentsBoard
+          agents={league.free_agents ?? []}
+          sport={league.sport}
+        />
       ) : null}
 
       {active === "history" ? (
@@ -429,10 +468,10 @@ export function LeagueView({
       {active === "tools" ? (
         isBaseball ? (
           <EmptyState title="Decision tools are football-only by design">
-            Trade, waiver, strength, draft, start/sit, and playoff boards join
-            NFL projection snapshots. Baseball members use ESPN standings,
-            matchups, and roster boards instead — same deliberate scope as the
-            projections tab (roadmap 4.6).
+            Trade, strength, draft-sim, start/sit, and playoff boards join NFL
+            projection snapshots. Baseball free agents live under the Waivers
+            tab; draft results and activity are shared ESPN tabs — same
+            deliberate scope as the projections tab (roadmap 4.6).
           </EmptyState>
         ) : (
           <ToolsPanel

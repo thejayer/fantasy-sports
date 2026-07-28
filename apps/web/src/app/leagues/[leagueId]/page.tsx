@@ -3,6 +3,7 @@ import type { HistoryView } from "@/components/HistoryPanel";
 import { LeagueView } from "@/components/LeagueView";
 import type { MatchupsView } from "@/components/MatchupsPanel";
 import type { ToolsView } from "@/components/ToolsPanel";
+import type { ActivityView } from "@/lib/activity";
 import {
   getDraftSimSnapshot,
   getLeagueHistoryArchive,
@@ -96,6 +97,11 @@ export default async function LeagueDetailPage({ params, searchParams }: Props) 
       ? viewParam
       : "standings"
   ) as HistoryView;
+  const activityView = (
+    ["all", "trades", "waivers"].includes(viewParam ?? "")
+      ? viewParam
+      : "all"
+  ) as ActivityView;
   const toolsView = (
     [
       "trade",
@@ -218,13 +224,23 @@ export default async function LeagueDetailPage({ params, searchParams }: Props) 
       historyView={historyView}
       h2hA={a != null && !Number.isNaN(a) ? a : undefined}
       h2hB={b != null && !Number.isNaN(b) ? b : undefined}
+      activityView={activityView}
+      draftTeamId={
+        tab === "draft" && team != null && !Number.isNaN(team)
+          ? team
+          : undefined
+      }
       projectionSnapshot={projectionBundle.snapshot}
       playerMap={projectionBundle.playerMap}
       projectionScoring={projectionBundle.scoring}
       toolsView={toolsView}
       toolsTeamA={a != null && !Number.isNaN(a) ? a : undefined}
       toolsTeamB={b != null && !Number.isNaN(b) ? b : undefined}
-      toolsTeamId={team != null && !Number.isNaN(team) ? team : undefined}
+      toolsTeamId={
+        tab === "tools" && team != null && !Number.isNaN(team)
+          ? team
+          : undefined
+      }
       draftSlot={draftSlot}
       availableDraftSlots={availableDraftSlots}
       draftSimSnapshot={draftSimSnapshot}

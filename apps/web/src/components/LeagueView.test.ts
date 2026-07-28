@@ -47,6 +47,13 @@ describe("LeagueView unification", () => {
     // Roadmap 4.5: decision tools tab (trade / waivers / strength).
     expect(viewSource).toMatch(/ToolsPanel/);
     expect(viewSource).toMatch(/"tools"/);
+    // ESPN draft results + activity ledger (both sports); baseball FA board.
+    expect(viewSource).toMatch(/DraftResultsPanel/);
+    expect(viewSource).toMatch(/ActivityPanel/);
+    expect(viewSource).toMatch(/"draft"/);
+    expect(viewSource).toMatch(/"activity"/);
+    expect(viewSource).toMatch(/FreeAgentsBoard/);
+    expect(viewSource).toMatch(/"waivers"/);
     // Roadmap 4.6: baseball exposes projections/tools tabs with by-design EmptyStates.
     expect(viewSource).toMatch(/BASEBALL_TABS/);
     expect(viewSource).toMatch(/projection-free by design/);
