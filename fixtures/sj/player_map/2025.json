@@ -1,0 +1,68 @@
+{
+  "schema_version": 1,
+  "generated_at": "2025-09-01T12:00:00Z",
+  "season": 2025,
+  "stats": {
+    "mappings": 6,
+    "methods": {
+      "roster": 6
+    },
+    "skill_players": 6,
+    "with_espn_id": 6,
+    "missing_espn_id": 0
+  },
+  "coverage": {
+    "rostered": 0,
+    "resolved": 0,
+    "rate": null,
+    "misses": []
+  },
+  "source": {
+    "engine": "ffa",
+    "fixture": true
+  },
+  "mappings": [
+    {
+      "espn_id": "3139477",
+      "player_id": "00-0033873",
+      "name": "Patrick Mahomes",
+      "position": "QB",
+      "method": "roster"
+    },
+    {
+      "espn_id": "3117251",
+      "player_id": "00-0033280",
+      "name": "Christian McCaffrey",
+      "position": "RB",
+      "method": "roster"
+    },
+    {
+      "espn_id": "4262921",
+      "player_id": "00-0036322",
+      "name": "Justin Jefferson",
+      "position": "WR",
+      "method": "roster"
+    },
+    {
+      "espn_id": "15847",
+      "player_id": "00-0030506",
+      "name": "Travis Kelce",
+      "position": "TE",
+      "method": "roster"
+    },
+    {
+      "espn_id": "4362628",
+      "player_id": "00-0036900",
+      "name": "Ja'Marr Chase",
+      "position": "WR",
+      "method": "roster"
+    },
+    {
+      "espn_id": "4241389",
+      "player_id": "00-0036358",
+      "name": "CeeDee Lamb",
+      "position": "WR",
+      "method": "roster"
+    }
+  ]
+}

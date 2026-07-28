@@ -349,12 +349,15 @@ season)` under `data/sj/projections/` (fixtures committed for offline). Nightly
 `.github/workflows/refresh.yml` exports PPR + standard into `store/projections/`
 artifacts. UI surfaces deferred to 4.4; ESPN ID join is 4.3.
 
-### 4.3 Map ESPN players to engine players
-The unglamorous prerequisite and the main technical risk in this phase. ESPN
-player IDs and nflverse IDs need a reliable join, with explicit handling for
-misses. Get this wrong and every projection surface inherits the error. Build it
-with a coverage report — what fraction of rostered players resolved — and treat
-that number as a monitored metric.
+### 4.3 Map ESPN players to engine players — LANDED
+`ffa export-player-map` builds an ESPN↔nflverse (GSIS) crosswalk from ingested
+`rosters.parquet` (`espn_id`↔`gsis_id`), optionally filling gaps via DynastyProcess
+`load_ff_playerids()`. Writes `{out_dir}/{season}.json` with embeddings for
+`coverage` (unique football hub roster ESPN ids resolved / rostered + miss list)
+and engine-side `skill_*` stats. Hub reader: `getPlayerMap(season)` under
+`data/sj/player_map/` (fixtures committed). Nightly `refresh.yml` uploads
+`store/player_map/` alongside projections. No silent name matching — misses are
+explicit. Projection UI join is 4.4.
 
 ### 4.4 Projections in the hub
 Per-player floor/median/ceiling on roster and player pages, VOR and tiers on a
@@ -399,10 +402,10 @@ Fold in continuously rather than saving for the end.
 
 ## Sequencing
 
-**Next up: 1.3, 4.3, or 4.4.** Continuous deployment + Workload Identity Federation
+**Next up: 1.3 or 4.4.** Continuous deployment + Workload Identity Federation
 (1.3) is the biggest remaining platform win on track A (needs GCP-side WIF
-setup). Engine 4.1–4.2 are in; ESPN↔nflverse ID mapping (4.3) is the long pole
-before projection UI (4.4). Product 3.1–3.6 and data 2.1–2.5 are in.
+setup). Engine 4.1–4.3 are in; projection UI (4.4) can join roster ESPN ids
+through `getPlayerMap`. Product 3.1–3.6 and data 2.1–2.5 are in.
 
 **Branch protection on `main` is done** — required checks are `python`, `web`,
 and `images`. The `python` check is an aggregator over the 3.11 + 3.12 matrix.
@@ -419,7 +422,7 @@ shape. Phase 3.1 (unify views) before any other UI work so nothing ships twice.
 | A — Platform | 1.3, ~~1.5~~, ~~1.6~~, 1.7 | workflows, Dockerfiles, scripts |
 | B — Data | ~~1.4~~, ~~2.1~~, ~~2.2~~, ~~2.3~~, ~~2.4~~, ~~2.5~~ | `src/sj`, `configs` |
 | C — Product | ~~3.1~~ → ~~3.2~~ → ~~3.3~~ → ~~3.4~~ → ~~3.5~~ → ~~3.6~~ | `apps/web` |
-| D — Engine | ~~4.1~~, ~~4.2~~, 4.3, 4.4 | `src/ffa` (+ hub store / projections) |
+| D — Engine | ~~4.1~~, ~~4.2~~, ~~4.3~~, 4.4 | `src/ffa` (+ hub store / projections / player_map) |
 
 A, B, and D barely overlap with C, so platform hardening, sync extension, and the
 `LevelModel` plumbing can all proceed while the UI is rebuilt. Track D's 4.3

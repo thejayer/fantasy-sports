@@ -1,13 +1,13 @@
 name: nightly refresh
 
 # Pull weekly stats from nflverse, export hub-consumable projection snapshots
-# (roadmap 4.2) under store/projections/{scoring}/{season}.json, and upload
-# them as build artifacts. Runs every weekday during NFL season (Sept-Jan).
-# Can also be triggered manually from the Actions tab.
+# (roadmap 4.2) and ESPN↔nflverse player maps (roadmap 4.3) under store/, and
+# upload them as build artifacts. Runs every weekday during NFL season
+# (Sept-Jan). Can also be triggered manually from the Actions tab.
 #
 # Artifacts are not auto-committed into data/sj — promote into the hub store
 # (or GCS mount) as part of deploy/sync. The hub reads the same path layout
-# via getProjectionSnapshot.
+# via getProjectionSnapshot / getPlayerMap.
 
 on:
   schedule:
@@ -93,9 +93,43 @@ jobs:
           done
           find store/projections -type f | sort
 
+      - name: Export ESPN↔nflverse player map
+        run: |
+          mkdir -p store/player_map
+          # Coverage uses football rosters under data/sj when present; nightly
+          # ingest alone still writes the full crosswalk for hub promote.
+          SJ_ROOT=""
+          if [ -d data/sj ] && [ -f data/sj/index.json ]; then
+            SJ_ROOT="--sj-root data/sj"
+          else
+            SJ_ROOT="--sj-root fixtures/sj"
+          fi
+          ffa export-player-map \
+            --season ${{ steps.cfg.outputs.season }} \
+            --out-dir store/player_map \
+            --raw-dir data/raw \
+            $SJ_ROOT \
+            --ff-playerids
+          find store/player_map -type f | sort
+          python - <<'PY'
+          import json, pathlib
+          paths = sorted(pathlib.Path("store/player_map").glob("*.json"))
+          for path in paths:
+              doc = json.loads(path.read_text())
+              cov = doc.get("coverage") or {}
+              rate = cov.get("rate")
+              rate_s = f"{rate:.1%}" if isinstance(rate, float) else "n/a"
+              print(
+                  f"{path}: mappings={doc['stats']['mappings']} "
+                  f"hub={cov.get('resolved')}/{cov.get('rostered')} ({rate_s})"
+              )
+          PY
+
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: projections-${{ steps.cfg.outputs.season }}-${{ github.run_id }}
-          path: store/projections/
+          name: ffa-store-${{ steps.cfg.outputs.season }}-${{ github.run_id }}
+          path: |
+            store/projections/
+            store/player_map/
           retention-days: 14

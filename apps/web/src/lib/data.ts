@@ -570,8 +570,8 @@ export const getLeagueSnapshot = cache(
 
 /**
  * Read an ffa projection snapshot written under ``projections/{scoring}/{season}.json``.
- * Session-gated like league data. UI surfaces land in roadmap 4.4; IDs are nflverse
- * until 4.3 maps ESPN players.
+ * Session-gated like league data. UI surfaces land in roadmap 4.4; join ESPN roster
+ * ids via {@link getPlayerMap} (roadmap 4.3).
  */
 export const getProjectionSnapshot = cache(
   async (scoring: string, season: number): Promise<ProjectionSnapshot | null> => {
@@ -581,6 +581,55 @@ export const getProjectionSnapshot = cache(
     for (const root of dataRoots()) {
       const doc = await readJson<ProjectionSnapshot>(path.join(root, relative));
       if (doc?.players?.length && doc.season === season) {
+        return doc;
+      }
+    }
+    return null;
+  },
+);
+
+/** One ESPN ↔ nflverse row from `ffa export-player-map` (roadmap 4.3). */
+export type PlayerMapEntry = {
+  espn_id: string;
+  player_id: string;
+  name?: string | null;
+  position?: string | null;
+  method?: string | null;
+};
+
+export type PlayerMapCoverage = {
+  rostered: number;
+  resolved: number;
+  rate: number | null;
+  misses?: Array<{
+    espn_id: string;
+    name?: string | null;
+    position?: string | null;
+    reason?: string | null;
+  }>;
+};
+
+export type PlayerMapSnapshot = {
+  schema_version: number;
+  generated_at: string;
+  season: number;
+  stats?: Record<string, unknown>;
+  coverage: PlayerMapCoverage;
+  source?: Record<string, unknown>;
+  mappings: PlayerMapEntry[];
+};
+
+/**
+ * ESPN → nflverse (GSIS) crosswalk under ``player_map/{season}.json``.
+ * Session-gated. Projection UI (4.4) joins roster ``Player.id`` through this map.
+ */
+export const getPlayerMap = cache(
+  async (season: number): Promise<PlayerMapSnapshot | null> => {
+    await requireSession();
+    const relative = path.join("player_map", `${season}.json`);
+    for (const root of dataRoots()) {
+      const doc = await readJson<PlayerMapSnapshot>(path.join(root, relative));
+      if (doc?.mappings && doc.season === season) {
         return doc;
       }
     }
