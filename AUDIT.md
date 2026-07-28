@@ -211,15 +211,11 @@ diverges further.
 
 ### 9. The hub is missing almost everything a league hub is for
 
-Today's snapshot is standings plus current rosters. Absent: **matchups and
-schedule, weekly scores, box scores, playoff brackets, draft results,
-transactions and trades, waiver activity, free agents, head-to-head history,
-records and all-time leaderboards, per-week player stats.**
-
-Some of this is nearly free. `src/sj/sync.py` already builds `league.draft` via a
-dedicated HTTP call and then discards it, and `team.schedule` / `team.scores` /
-`team.outcomes` are already populated in memory by the initial `mMatchup` fetch.
-The data is fetched and thrown away before `serialize_league` runs.
+**Partly fixed.** Snapshots now persist draft, matchups, settings, and
+transactions (roadmap 2.1 / 2.4); the hub Matchups tab covers weekly scores,
+season schedule, and a seed/projected playoff view (3.4). Still absent from the
+product: **box scores, draft-results pages, transaction/waiver UI, free agents,
+head-to-head history, records and all-time leaderboards, per-week player stats.**
 
 Also missing: `format: dynasty` is a declaration in `configs/leagues.yaml`, not
 something derived from ESPN keeper settings, so nothing in the product actually
@@ -376,7 +372,7 @@ time. `@types/node` is `^20` against a Node 22 runtime. No Dependabot or Renovat
 | 6 | Football history unreachable (12 seasons, no switcher) | P1 | Fixed — roadmap 3.1 (league) + 3.2 (team pages) |
 | 7 | Player tables: no search/sort/filter/pagination | P1 | Fixed — roadmap 3.3 (`DataTable`) |
 | 8 | Football and baseball views diverged | P1 | Fixed — roadmap 3.1 (`LeagueView`) |
-| 9 | No matchups, draft, transactions, or history | P1 | Open — roadmap 2.1, 2.4, 3.4, 3.5 |
+| 9 | No matchups, draft, transactions, or history | P1 | Partly — matchups UI in (3.4); draft/tx data on disk (2.1/2.4); history still 3.5; box scores deferred |
 | 10 | No loading/error/empty states | P1 | Partly — `error.tsx` / `not-found.tsx` in 1.6; loading/empty remain roadmap 3.6 |
 | 11 | Zero CI for `apps/web` | P1 | Fixed (#28, roadmap 1.1); branch protection requires `python` / `web` / `images` |
 | 12 | `sync.py` at 0% coverage | P1 | Fixed — 100% + loud exits + `SYNC_SUMMARY` (roadmap 1.4) |

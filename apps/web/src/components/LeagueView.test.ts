@@ -34,5 +34,8 @@ describe("LeagueView unification", () => {
     expect(viewSource).toMatch(/<th>PA<\/th>/);
     expect(viewSource).toMatch(/RoleSwitcher/);
     expect(viewSource).toMatch(/PlayersDataTable/);
+    // Roadmap 3.4: matchups tab on the unified view.
+    expect(viewSource).toMatch(/MatchupsPanel/);
+    expect(viewSource).toMatch(/"matchups"/);
   });
 });

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { MatchupsPanel, type MatchupsView } from "@/components/MatchupsPanel";
 import { PlayersDataTable } from "@/components/PlayersDataTable";
 import { SeasonSwitcher } from "@/components/SeasonSwitcher";
 import type { LeagueSnapshot, Team } from "@/lib/data";
@@ -127,17 +128,30 @@ export function LeagueView({
   seasons,
   tab,
   role = "all",
+  week,
+  matchupsView = "week",
 }: {
   league: LeagueSnapshot;
   seasons: number[];
   tab: string;
   role?: string;
+  week?: number;
+  matchupsView?: MatchupsView;
 }) {
   const leagueId = league.league_id;
   const isBaseball = league.sport === "baseball";
   const period = league.period_label || (isBaseball ? "period" : "week");
-  const active = ["standings", "teams", "players"].includes(tab) ? tab : "standings";
+  const active = ["standings", "teams", "players", "matchups"].includes(tab)
+    ? tab
+    : "standings";
   const activeRole = isBaseball ? role : undefined;
+
+  const seasonHrefExtra =
+    active === "players" && activeRole
+      ? `&role=${activeRole}`
+      : active === "matchups"
+        ? `&view=${matchupsView}${week != null ? `&week=${week}` : ""}`
+        : "";
 
   const players = isBaseball
     ? league.players.filter((player) => {
@@ -165,25 +179,27 @@ export function LeagueView({
         {league.synced_at
           ? ` · synced ${new Date(league.synced_at).toLocaleString()}`
           : ""}
-        . Standings, rosters, and season stats from ESPN.
+        . Standings, matchups, rosters, and season stats from ESPN.
       </p>
 
       <SeasonSwitcher
         seasons={seasons}
         current={league.season}
         hrefFor={(season) =>
-          `/leagues/${leagueId}?season=${season}&tab=${active}` +
-          (active === "players" && activeRole ? `&role=${activeRole}` : "")
+          `/leagues/${leagueId}?season=${season}&tab=${active}${seasonHrefExtra}`
         }
       />
 
       <div className="tabs">
-        {(["standings", "teams", "players"] as const).map((name) => (
+        {(["standings", "teams", "players", "matchups"] as const).map((name) => (
           <Link
             key={name}
             href={
               `/leagues/${leagueId}?season=${league.season}&tab=${name}` +
-              (name === "players" && activeRole ? `&role=${activeRole}` : "")
+              (name === "players" && activeRole ? `&role=${activeRole}` : "") +
+              (name === "matchups"
+                ? `&view=${matchupsView}${week != null ? `&week=${week}` : ""}`
+                : "")
             }
             className={`tab${active === name ? " active" : ""}`}
           >
@@ -214,6 +230,10 @@ export function LeagueView({
             role={role}
           />
         </>
+      ) : null}
+
+      {active === "matchups" ? (
+        <MatchupsPanel league={league} week={week} view={matchupsView} />
       ) : null}
     </main>
   );
