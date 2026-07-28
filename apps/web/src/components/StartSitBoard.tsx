@@ -1,6 +1,7 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { useEffect, useMemo, useState } from "react";
 import type { ProjectionPlayer, Team } from "@/lib/data";
 import {
   rosterWithProjections,
@@ -74,12 +75,19 @@ export function StartSitBoard({
   espnToGsisEntries,
   weeklyEntries,
   initialTeamId,
+  leagueId,
+  season,
 }: {
   teams: Team[];
   espnToGsisEntries: Array<[string, string]>;
   weeklyEntries: Array<[string, ProjectionPlayer]>;
   initialTeamId: number;
+  leagueId: string;
+  season: number;
 }) {
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
   const espnToGsis = useMemo(
     () => new Map(espnToGsisEntries),
     [espnToGsisEntries],
@@ -87,6 +95,22 @@ export function StartSitBoard({
   const byGsis = useMemo(() => new Map(weeklyEntries), [weeklyEntries]);
   const [teamId, setTeamId] = useState(initialTeamId);
   const [selected, setSelected] = useState<string[]>([]);
+
+  useEffect(() => {
+    const params = new URLSearchParams(searchParams.toString());
+    params.set("season", String(season));
+    params.set("tab", "tools");
+    params.set("view", "start-sit");
+    params.set("team", String(teamId));
+    params.delete("a");
+    params.delete("b");
+    params.delete("slot");
+    const next = `${pathname}?${params.toString()}`;
+    const current = `${pathname}?${searchParams.toString()}`;
+    if (next !== current) {
+      router.replace(next, { scroll: false });
+    }
+  }, [teamId, leagueId, season, pathname, router, searchParams]);
 
   const team = teams.find((t) => t.team_id === teamId) ?? teams[0];
   const roster = useMemo(

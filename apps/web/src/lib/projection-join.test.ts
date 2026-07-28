@@ -12,6 +12,7 @@ import {
   projectionSeasonCandidates,
   receptionPoints,
   scoringSlugFromLeague,
+  usesHalfPprScoringFallback,
 } from "@/lib/projection-join";
 
 function loadJson<T>(relative: string): T {
@@ -72,6 +73,24 @@ describe("projection-join (roadmap 4.4)", () => {
     expect(
       scoringSlugFromLeague({ sport: "football", settings: {} }),
     ).toBe("ppr");
+    expect(
+      scoringSlugFromLeague({
+        sport: "football",
+        settings: { scoring_format: [{ abbr: "REC", points: 0.5 }] },
+      }),
+    ).toBe("ppr");
+    expect(
+      usesHalfPprScoringFallback({
+        sport: "football",
+        settings: { scoring_format: [{ abbr: "REC", points: 0.5 }] },
+      }),
+    ).toBe(true);
+    expect(
+      usesHalfPprScoringFallback({
+        sport: "football",
+        settings: { scoring_format: [{ abbr: "REC", points: 1 }] },
+      }),
+    ).toBe(false);
     expect(receptionPoints({ scoring_format: [{ label: "Each Reception", points: 0.5 }] })).toBe(0.5);
   });
 

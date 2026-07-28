@@ -765,6 +765,35 @@ export const getDraftSimSnapshot = cache(
   },
 );
 
+/**
+ * List draft-sim slots that exist on disk for ``draft_sim/{scoring}/{season}/``.
+ * Hub UI should only offer these — fixtures often ship a subset (e.g. 1,6,7,12).
+ */
+export const listDraftSimSlots = cache(
+  async (scoring: string, season: number): Promise<number[]> => {
+    await requireSession();
+    const slug = scoring.trim().toLowerCase();
+    const found = new Set<number>();
+    for (const root of dataRoots()) {
+      const dir = path.join(root, "draft_sim", slug, String(season));
+      let entries: string[];
+      try {
+        entries = await fs.readdir(dir);
+      } catch (err) {
+        if (isNotFoundFsError(err)) continue;
+        throw err;
+      }
+      for (const name of entries) {
+        const match = /^slot_(\d+)\.json$/.exec(name);
+        if (!match) continue;
+        const slot = Number(match[1]);
+        if (Number.isFinite(slot) && slot >= 1) found.add(Math.trunc(slot));
+      }
+    }
+    return [...found].sort((a, b) => a - b);
+  },
+);
+
 /** One ESPN ↔ nflverse row from `ffa export-player-map` (roadmap 4.3). */
 export type PlayerMapEntry = {
   espn_id: string;

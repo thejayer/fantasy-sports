@@ -84,8 +84,14 @@ function columns(): DataTableColumn<ProjectionPlayer>[] {
 
 export function ProjectionsBoard({
   snapshot,
+  leagueSeason,
+  halfPprFallback = false,
 }: {
   snapshot: ProjectionSnapshot | null;
+  /** Hub fantasy season — may lead NFL calendar / export year. */
+  leagueSeason?: number;
+  /** League is half-PPR but store only exports full PPR. */
+  halfPprFallback?: boolean;
 }) {
   if (!snapshot?.players?.length) {
     return (
@@ -101,6 +107,8 @@ export function ProjectionsBoard({
   const generated = snapshot.generated_at
     ? new Date(snapshot.generated_at).toLocaleString()
     : null;
+  const seasonFallback =
+    leagueSeason != null && snapshot.season !== leagueSeason;
 
   return (
     <div className="projections-board">
@@ -111,6 +119,16 @@ export function ProjectionsBoard({
         are season posterior quantiles — not week-to-week start/sit (use Tools →
         Start/Sit for typical-week posteriors).
       </p>
+      {halfPprFallback || seasonFallback ? (
+        <p className="muted">
+          {halfPprFallback
+            ? "This league scores half-PPR; the board shows the PPR export until a dedicated half-PPR snapshot exists. "
+            : null}
+          {seasonFallback
+            ? `Hub season ${leagueSeason}; showing NFL ${snapshot.season} projections (nearest available export).`
+            : null}
+        </p>
+      ) : null}
       <DataTable
         rows={snapshot.players}
         columns={columns()}

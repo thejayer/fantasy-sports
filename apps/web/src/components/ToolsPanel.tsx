@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { Suspense } from "react";
 import { DraftBoard } from "@/components/DraftBoard";
 import { EmptyState } from "@/components/EmptyState";
 import { PlayoffOddsBoard } from "@/components/PlayoffOddsBoard";
@@ -31,8 +32,29 @@ export type ToolsView =
   | "strength"
   | "draft"
   | "start-sit"
-  | "playoff-odds"
-  | "deferred";
+  | "playoff-odds";
+
+function toolsHref(
+  leagueId: string,
+  season: number,
+  view: ToolsView,
+  opts: { a?: number; b?: number; team?: number; slot?: number },
+): string {
+  const query = new URLSearchParams({
+    season: String(season),
+    tab: "tools",
+    view,
+  });
+  if (view === "trade") {
+    if (opts.a != null) query.set("a", String(opts.a));
+    if (opts.b != null) query.set("b", String(opts.b));
+  } else if (view === "start-sit") {
+    if (opts.team != null) query.set("team", String(opts.team));
+  } else if (view === "draft" && opts.slot != null) {
+    query.set("slot", String(opts.slot));
+  }
+  return `/leagues/${leagueId}?${query.toString()}`;
+}
 
 function ViewSwitcher({
   leagueId,
@@ -40,6 +62,7 @@ function ViewSwitcher({
   view,
   a,
   b,
+  team,
   slot,
 }: {
   leagueId: string;
@@ -47,6 +70,7 @@ function ViewSwitcher({
   view: ToolsView;
   a?: number;
   b?: number;
+  team?: number;
   slot?: number;
 }) {
   const views: Array<{ id: ToolsView; label: string }> = [
@@ -56,17 +80,13 @@ function ViewSwitcher({
     { id: "draft", label: "Draft" },
     { id: "start-sit", label: "Start/Sit" },
     { id: "playoff-odds", label: "Playoffs" },
-    { id: "deferred", label: "More" },
   ];
-  const pair = a != null && b != null ? `&a=${a}&b=${b}` : "";
   return (
     <div className="tabs" style={{ marginTop: "0.5rem" }}>
       {views.map((item) => (
         <Link
           key={item.id}
-          href={`/leagues/${leagueId}?season=${season}&tab=tools&view=${item.id}${
-            item.id === "draft" && slot != null ? `&slot=${slot}` : pair
-          }`}
+          href={toolsHref(leagueId, season, item.id, { a, b, team, slot })}
           className={`tab${view === item.id ? " active" : ""}`}
         >
           {item.label}
@@ -154,23 +174,29 @@ export function ToolsPanel({
   view,
   a,
   b,
+  team,
   slot = 1,
+  availableDraftSlots = [],
   projectionSnapshot,
   playerMap,
   draftSimSnapshot,
   weeklyProjectionSnapshot,
   playoffOddsSnapshot,
+  halfPprFallback = false,
 }: {
   league: LeagueSnapshot;
   view: ToolsView;
   a?: number;
   b?: number;
+  team?: number;
   slot?: number;
+  availableDraftSlots?: number[];
   projectionSnapshot: ProjectionSnapshot | null;
   playerMap: PlayerMapSnapshot | null;
   draftSimSnapshot?: DraftSimSnapshot | null;
   weeklyProjectionSnapshot?: WeeklyProjectionSnapshot | null;
   playoffOddsSnapshot?: PlayoffOddsSnapshot | null;
+  halfPprFallback?: boolean;
 }) {
   const pair = defaultToolsPair(league);
   const teamA = a ?? pair?.a;
@@ -178,8 +204,14 @@ export function ToolsPanel({
   const { espnToGsis, byGsis } = projectionIndexes(playerMap, projectionSnapshot);
   const weeklyByGsis = indexProjections(weeklyProjectionSnapshot ?? null);
   const espnMap = indexPlayerMap(playerMap);
-  const maxSlot = draftSimSnapshot?.teams ?? 12;
-  const startSitTeamId = teamA ?? league.teams[0]?.team_id ?? 1;
+  const startSitTeamId =
+    team ?? league.teams[0]?.team_id ?? 1;
+  const seasonFallback =
+    projectionSnapshot != null &&
+    projectionSnapshot.season !== league.season;
+  const weeklySeasonFallback =
+    weeklyProjectionSnapshot != null &&
+    weeklyProjectionSnapshot.season !== league.season;
 
   return (
     <div className="tools-panel">
@@ -189,8 +221,23 @@ export function ToolsPanel({
         view={view}
         a={teamA}
         b={teamB}
+        team={startSitTeamId}
         slot={slot}
       />
+
+      {halfPprFallback || seasonFallback || weeklySeasonFallback ? (
+        <p className="muted" style={{ marginTop: "0.75rem" }}>
+          {halfPprFallback
+            ? "This league scores half-PPR; tools use the PPR export until a dedicated half-PPR snapshot exists. "
+            : null}
+          {seasonFallback
+            ? `Hub season ${league.season}; season boards use NFL ${projectionSnapshot!.season} (nearest available export). `
+            : null}
+          {weeklySeasonFallback && !seasonFallback
+            ? `Hub season ${league.season}; weekly boards use NFL ${weeklyProjectionSnapshot!.season} (nearest available export). `
+            : null}
+        </p>
+      ) : null}
 
       {view === "trade" ? (
         !projectionSnapshot?.players?.length ? (
@@ -203,13 +250,17 @@ export function ToolsPanel({
             This league snapshot does not have enough teams to compare.
           </EmptyState>
         ) : (
-          <TradeAnalyzer
-            teams={league.teams}
-            espnToGsisEntries={[...espnToGsis.entries()]}
-            projectionEntries={[...byGsis.entries()]}
-            initialA={teamA}
-            initialB={teamB}
-          />
+          <Suspense fallback={<p className="muted">Loading trade tool…</p>}>
+            <TradeAnalyzer
+              teams={league.teams}
+              espnToGsisEntries={[...espnToGsis.entries()]}
+              projectionEntries={[...byGsis.entries()]}
+              initialA={teamA}
+              initialB={teamB}
+              leagueId={league.league_id}
+              season={league.season}
+            />
+          </Suspense>
         )
       ) : null}
 
@@ -233,7 +284,7 @@ export function ToolsPanel({
           leagueId={league.league_id}
           season={league.season}
           slot={slot}
-          maxSlot={maxSlot}
+          availableSlots={availableDraftSlots}
         />
       ) : null}
 
@@ -245,39 +296,21 @@ export function ToolsPanel({
             <code>export-projections</code> are not used for start/sit.
           </EmptyState>
         ) : (
-          <StartSitBoard
-            teams={league.teams}
-            espnToGsisEntries={[...espnMap.entries()]}
-            weeklyEntries={[...weeklyByGsis.entries()]}
-            initialTeamId={startSitTeamId}
-          />
+          <Suspense fallback={<p className="muted">Loading start/sit…</p>}>
+            <StartSitBoard
+              teams={league.teams}
+              espnToGsisEntries={[...espnMap.entries()]}
+              weeklyEntries={[...weeklyByGsis.entries()]}
+              initialTeamId={startSitTeamId}
+              leagueId={league.league_id}
+              season={league.season}
+            />
+          </Suspense>
         )
       ) : null}
 
       {view === "playoff-odds" ? (
         <PlayoffOddsBoard snapshot={playoffOddsSnapshot ?? null} />
-      ) : null}
-
-      {view === "deferred" ? (
-        <EmptyState title="More tools notes">
-          <ul style={{ margin: "0.5rem 0 0", paddingLeft: "1.25rem" }}>
-            <li>
-              <strong>Playoff odds</strong> — use the Playoffs tools view (
-              offline <code>ffa export-playoff-odds</code>). Make-playoffs only;
-              not bracket champion odds.
-            </li>
-            <li>
-              <strong>Start/Sit</strong> — typical-week posteriors via Start/Sit (
-              not season quantile boards).
-            </li>
-            <li>
-              <strong>ESPN free agents</strong> — synced into{" "}
-              <code>free_agents.json</code> (size-capped). The Waivers view uses
-              that list when present; otherwise it falls back to unrostered
-              projections.
-            </li>
-          </ul>
-        </EmptyState>
       ) : null}
     </div>
   );

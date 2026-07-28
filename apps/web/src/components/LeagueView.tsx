@@ -26,6 +26,7 @@ import {
   attachPlayerProjections,
   indexPlayerMap,
   indexProjections,
+  usesHalfPprScoringFallback,
 } from "@/lib/projection-join";
 
 function RoleSwitcher({
@@ -195,7 +196,11 @@ export function LeagueView({
   playerMap = null,
   projectionScoring = null,
   toolsView = "trade",
+  toolsTeamA,
+  toolsTeamB,
+  toolsTeamId,
   draftSlot = 1,
+  availableDraftSlots = [],
   draftSimSnapshot = null,
   weeklyProjectionSnapshot = null,
   playoffOddsSnapshot = null,
@@ -214,7 +219,14 @@ export function LeagueView({
   playerMap?: PlayerMapSnapshot | null;
   projectionScoring?: string | null;
   toolsView?: ToolsView;
+  /** Trade side A (`?a=`). */
+  toolsTeamA?: number;
+  /** Trade side B (`?b=`). */
+  toolsTeamB?: number;
+  /** Start/Sit team (`?team=`). */
+  toolsTeamId?: number;
   draftSlot?: number;
+  availableDraftSlots?: number[];
   draftSimSnapshot?: DraftSimSnapshot | null;
   weeklyProjectionSnapshot?: WeeklyProjectionSnapshot | null;
   playoffOddsSnapshot?: PlayoffOddsSnapshot | null;
@@ -225,12 +237,35 @@ export function LeagueView({
   const tabs = isBaseball ? BASEBALL_TABS : FOOTBALL_TABS;
   const active = (tabs as readonly string[]).includes(tab) ? tab : "standings";
   const activeRole = isBaseball ? role : undefined;
+  const halfPprFallback = usesHalfPprScoringFallback(league);
 
   const historyPair =
     h2hA != null && h2hB != null ? `&a=${h2hA}&b=${h2hB}` : "";
-  const toolsPair =
-    (h2hA != null && h2hB != null ? `&a=${h2hA}&b=${h2hB}` : "") +
-    (toolsView === "draft" ? `&slot=${draftSlot}` : "");
+  const toolsPair = (() => {
+    if (toolsView === "draft") return `&view=draft&slot=${draftSlot}`;
+    if (toolsView === "start-sit") {
+      return (
+        `&view=start-sit` +
+        (toolsTeamId != null ? `&team=${toolsTeamId}` : "")
+      );
+    }
+    if (toolsView === "trade") {
+      const a =
+        toolsTeamA != null
+          ? `&a=${toolsTeamA}`
+          : h2hA != null
+            ? `&a=${h2hA}`
+            : "";
+      const b =
+        toolsTeamB != null
+          ? `&b=${toolsTeamB}`
+          : h2hB != null
+            ? `&b=${h2hB}`
+            : "";
+      return `&view=trade${a}${b}`;
+    }
+    return `&view=${toolsView}`;
+  })();
 
   const scoringQuery =
     active === "projections" && projectionScoring
@@ -247,7 +282,7 @@ export function LeagueView({
           : active === "projections"
             ? scoringQuery
             : active === "tools"
-              ? `&view=${toolsView}${toolsPair}`
+              ? toolsPair
               : "";
 
   const players = isBaseball
@@ -311,7 +346,7 @@ export function LeagueView({
               (name === "projections" && projectionScoring
                 ? `&scoring=${projectionScoring}`
                 : "") +
-              (name === "tools" ? `&view=${toolsView}${toolsPair}` : "")
+              (name === "tools" ? toolsPair : "")
             }
             className={`tab${active === name ? " active" : ""}`}
           >
@@ -382,7 +417,11 @@ export function LeagueView({
                 </Link>
               ))}
             </div>
-            <ProjectionsBoard snapshot={projectionSnapshot} />
+            <ProjectionsBoard
+              snapshot={projectionSnapshot}
+              leagueSeason={league.season}
+              halfPprFallback={halfPprFallback}
+            />
           </>
         )
       ) : null}
@@ -390,22 +429,26 @@ export function LeagueView({
       {active === "tools" ? (
         isBaseball ? (
           <EmptyState title="Decision tools are football-only by design">
-            Trade, waiver, and strength boards join NFL projection snapshots.
-            Baseball members use ESPN standings, matchups, and roster boards
-            instead — same deliberate scope as the projections tab (roadmap 4.6).
+            Trade, waiver, strength, draft, start/sit, and playoff boards join
+            NFL projection snapshots. Baseball members use ESPN standings,
+            matchups, and roster boards instead — same deliberate scope as the
+            projections tab (roadmap 4.6).
           </EmptyState>
         ) : (
           <ToolsPanel
             league={league}
             view={toolsView}
-            a={h2hA}
-            b={h2hB}
+            a={toolsTeamA ?? h2hA}
+            b={toolsTeamB ?? h2hB}
+            team={toolsTeamId}
             slot={draftSlot}
+            availableDraftSlots={availableDraftSlots}
             projectionSnapshot={projectionSnapshot}
             playerMap={playerMap}
             draftSimSnapshot={draftSimSnapshot}
             weeklyProjectionSnapshot={weeklyProjectionSnapshot}
             playoffOddsSnapshot={playoffOddsSnapshot}
+            halfPprFallback={halfPprFallback}
           />
         )
       ) : null}

@@ -21,38 +21,49 @@ export function DraftBoard({
   leagueId,
   season,
   slot,
-  maxSlot,
+  availableSlots,
 }: {
   snapshot: DraftSimSnapshot | null;
   leagueId: string;
   season: number;
   slot: number;
-  maxSlot: number;
+  /** Only slots that exist on disk (store or fixtures). */
+  availableSlots: number[];
 }) {
-  const slots = Array.from({ length: Math.max(1, maxSlot) }, (_, i) => i + 1);
-  const slotSwitcher = (
-    <div className="tabs" style={{ marginTop: "0.5rem" }}>
-      {slots.map((value) => (
-        <Link
-          key={value}
-          href={`/leagues/${leagueId}?season=${season}&tab=tools&view=draft&slot=${value}`}
-          className={`tab${value === slot ? " active" : ""}`}
-        >
-          Slot {value}
-        </Link>
-      ))}
-    </div>
-  );
+  const slots =
+    availableSlots.length > 0
+      ? availableSlots
+      : snapshot
+        ? [snapshot.user_slot]
+        : [];
+  const slotSwitcher =
+    slots.length > 0 ? (
+      <div className="tabs" style={{ marginTop: "0.5rem" }}>
+        {slots.map((value) => (
+          <Link
+            key={value}
+            href={`/leagues/${leagueId}?season=${season}&tab=tools&view=draft&slot=${value}`}
+            className={`tab${value === slot ? " active" : ""}`}
+          >
+            Slot {value}
+          </Link>
+        ))}
+      </div>
+    ) : null;
 
   if (!snapshot?.pick_rates?.length) {
     return (
       <div className="draft-board">
         {slotSwitcher}
         <EmptyState title="No draft-sim snapshot for this slot">
-          Run <code>ffa export-draft-sim --season {season} --slots {slot}</code>{" "}
+          Run{" "}
+          <code>
+            ffa export-draft-sim --season {season}
+            {slots.length ? ` --slots ${slots.join(",")}` : ""}
+          </code>{" "}
           into the hub store (or use committed fixtures under{" "}
           <code>draft_sim/</code>). The hub never calls <code>ffa</code> at
-          request time.
+          request time. Only slots with an on-disk snapshot are offered above.
         </EmptyState>
       </div>
     );
@@ -67,7 +78,7 @@ export function DraftBoard({
         {snapshot.n_sims} sims, {snapshot.teams} teams,{" "}
         {snapshot.scoring.toUpperCase()} {snapshot.season}). Pick rates are how
         often the engine lands that player; availability is P(still on the
-        board) at each of your picks.
+        board) at each of your picks. Slot chips only list exported snapshots.
       </p>
 
       {slotSwitcher}
