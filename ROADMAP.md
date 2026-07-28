@@ -379,9 +379,9 @@ ceiling / VOR / tier) via `ProjectionsBoard`. Roster and players tables join
 ESPN `Player.id` → GSIS through `getPlayerMap` + `lib/projection-join.ts`, then
 show Floor / Med / Ceil (and VOR on the players board). Scoring slug from league
 reception points (`ppr` / `standard`); season file falls back to `league.season - 1`
-when the hub calendar leads the NFL year. **Weekly start/sit is deferred** —
-store snapshots are season-level totals, not weekly posteriors; UI copy says so
-explicitly. Baseball stays projection-free by design (roadmap 4.6 — landed).
+when the hub calendar leads the NFL year. **Weekly start/sit** uses a separate
+typical-week export (see 4.5) — season boards stay season-only by design.
+Baseball stays projection-free by design (roadmap 4.6 — landed).
 
 ### 4.5 Decision tools — LANDED
 Football `tools` tab ships snapshot-backed decision surfaces without calling
@@ -397,9 +397,16 @@ Football `tools` tab ships snapshot-backed decision surfaces without calling
   `ffa export-draft-sim` → `draft_sim/{scoring}/{season}/slot_{N}.json`
   (pick rates + availability). Hub switches slot via `?view=draft&slot=N`.
   Nightly refresh exports all slots for PPR + standard.
+- **Start/Sit** — typical-week player posteriors from
+  `ffa export-weekly-projections` →
+  `weekly_projections/{scoring}/{season}.json` (`grain: typical_week`).
+  Hub: `getWeeklyProjectionSnapshot` + `StartSitBoard`
+  (`?view=start-sit`). Same bootstrap atom as season sims, but one game per
+  sample — **not** schedule-/opponent-adjusted.
 
-**Still deferred (needs weekly posteriors — same gap as start/sit):** playoff
-odds MC. Season totals must not be dressed up as playoff probabilities.
+**Still deferred:** playoff-odds MC. Typical-week player quantiles are not
+joint week×team scores through the ESPN schedule — do not dress them (or
+season totals) as playoff probabilities.
 
 ### 4.6 Baseball — LANDED
 **Decision: keep baseball data-rich but projection-free.** The `ffa` engine
@@ -440,7 +447,8 @@ Fold in continuously rather than saving for the end.
 - **`refresh.yml`.** Wired as the 4.2/4.3 projection + player-map producer.
   ~~Year-round cron~~ → **NFL-season cron (Sept–Jan, Tue–Sat)**. ~~Still needs a
   promote step~~ → **LANDED:** `promote` job (WIF) copies JSON into
-  `gs://…-sj-data/projections|player_map/`. Requires `ffa-deployer`
+  `gs://…-sj-data/projections|player_map|draft_sim|weekly_projections/`. Requires
+  `ffa-deployer`
   `objectUser` on the bucket (`setup-github-deployer.sh`). Hub must mount the
   bucket (deploy-hub `bucket` input) to serve promoted files.
 - **Accessibility and performance budgets.** ~~once phase 3 lands~~ → **LANDED:**
@@ -472,9 +480,10 @@ shape. Phase 3.1 (unify views) before any other UI work so nothing ships twice.
 | C — Product | ~~3.1~~ → ~~3.2~~ → ~~3.3~~ → ~~3.4~~ → ~~3.5~~ → ~~3.6~~ | `apps/web` |
 | D — Engine | ~~4.1~~ … ~~4.6~~ | `src/ffa` + football hub surfaces; baseball ESPN-only |
 
-A, B, and D barely overlap with remaining C polish. Playoff-odds / weekly
-posterior exporters remain optional football follow-ups (shared with start/sit)
-— not blockers for closing phase 4. Baseball modeling is explicitly out of scope.
+A, B, and D barely overlap with remaining C polish. Playoff-odds MC (schedule ×
+joint week×team scores) remains an optional football follow-up — typical-week
+player posteriors + start/sit shipped with 4.5. Baseball modeling is explicitly
+out of scope.
 
 **Fastest visible wins** remaining: 3.2 (a decade of history appears), 3.3
 (tables become usable). 2.1 is done — draft and matchup data persist for zero

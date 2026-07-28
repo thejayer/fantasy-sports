@@ -108,7 +108,8 @@ export function ProjectionsBoard({
         Season projections · {snapshot.scoring.toUpperCase()} · {snapshot.n_sims}{" "}
         sims · NFL {snapshot.season}
         {generated ? ` · generated ${generated}` : ""}. Floor / median / ceiling
-        are posterior quantiles — not week-to-week start/sit.
+        are season posterior quantiles — not week-to-week start/sit (use Tools →
+        Start/Sit for typical-week posteriors).
       </p>
       <DataTable
         rows={snapshot.players}

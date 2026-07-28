@@ -13,6 +13,7 @@ import type {
   PlayerMapSnapshot,
   ProjectionSnapshot,
   Team,
+  WeeklyProjectionSnapshot,
 } from "@/lib/data";
 import { isPitcher } from "@/lib/baseball";
 import {
@@ -195,6 +196,7 @@ export function LeagueView({
   toolsView = "trade",
   draftSlot = 1,
   draftSimSnapshot = null,
+  weeklyProjectionSnapshot = null,
 }: {
   league: LeagueSnapshot;
   seasons: number[];
@@ -212,6 +214,7 @@ export function LeagueView({
   toolsView?: ToolsView;
   draftSlot?: number;
   draftSimSnapshot?: DraftSimSnapshot | null;
+  weeklyProjectionSnapshot?: WeeklyProjectionSnapshot | null;
 }) {
   const leagueId = league.league_id;
   const isBaseball = league.sport === "baseball";
@@ -398,6 +401,7 @@ export function LeagueView({
             projectionSnapshot={projectionSnapshot}
             playerMap={playerMap}
             draftSimSnapshot={draftSimSnapshot}
+            weeklyProjectionSnapshot={weeklyProjectionSnapshot}
           />
         )
       ) : null}
