@@ -27,12 +27,15 @@ FailureKind = Literal[
 # must — and `sj sync` treats *any* failure as fatal so Cloud Scheduler sees it.
 TOLERATED_BACKFILL_KINDS: frozenset[FailureKind] = frozenset({"invalid_league"})
 
-# ESPN activity endpoints are unavailable before the 2019 season in espn-api.
+# ESPN activity / free-agent endpoints are unavailable before 2019 in espn-api.
 ACTIVITY_MIN_SEASON = 2019
+FREE_AGENT_MIN_SEASON = 2019
 DEFAULT_ESPN_TIMEOUT_SECONDS = 30.0
 DEFAULT_ESPN_MAX_ATTEMPTS = 4
 DEFAULT_ACTIVITY_PAGE_SIZE = 25
 DEFAULT_ACTIVITY_MAX_PAGES = 40
+DEFAULT_FREE_AGENT_SIZE = 50
+MAX_FREE_AGENT_SIZE = 150
 
 T = TypeVar("T")
 
@@ -235,6 +238,61 @@ def _activity_unsupported(exc: BaseException) -> bool:
     return "cant retrieve" in msg or "can't retrieve" in msg or "cant use recent" in msg
 
 
+def _free_agents_unsupported(exc: BaseException) -> bool:
+    msg = str(exc).lower()
+    return (
+        "cant use free" in msg
+        or "can't use free" in msg
+        or "before 2019" in msg
+        or "cant retrieve" in msg
+        or "can't retrieve" in msg
+    )
+
+
+def free_agent_size() -> int:
+    """ESPN ``limit`` for free_agents (default 50). Cap keeps snapshots small."""
+    raw = os.environ.get("SJ_FREE_AGENT_SIZE", "").strip()
+    if not raw:
+        return DEFAULT_FREE_AGENT_SIZE
+    try:
+        value = int(raw)
+    except ValueError:
+        return DEFAULT_FREE_AGENT_SIZE
+    return max(1, min(value, MAX_FREE_AGENT_SIZE))
+
+
+def fetch_free_agents(
+    league: Any,
+    *,
+    size: int | None = None,
+) -> list[Any]:
+    """Fetch FREEAGENT + WAIVERS pool (espn-api; empty before 2019).
+
+    Football costs three HTTP calls (kona_player_info + schedule + ratings);
+    baseball is one. Docstring says current season only — historical years
+    that error are treated as unsupported (empty list), not sync failures.
+    """
+    season = int(getattr(league, "year", 0) or 0)
+    if season and season < FREE_AGENT_MIN_SEASON:
+        return []
+    if not callable(getattr(league, "free_agents", None)):
+        return []
+    limit = DEFAULT_FREE_AGENT_SIZE if size is None else size
+    limit = max(1, min(int(limit), MAX_FREE_AGENT_SIZE))
+    try:
+        return list(
+            espn_call(
+                lambda: league.free_agents(size=limit),
+                label="free_agents",
+            )
+            or []
+        )
+    except Exception as exc:
+        if _free_agents_unsupported(exc):
+            return []
+        raise
+
+
 def fetch_recent_activity(
     league: Any,
     *,
@@ -278,9 +336,10 @@ def build_snapshot(league: Any, spec: LeagueSpec, season: int) -> dict[str, Any]
     league-shaped object -- the live ESPN client, or ``sj.sample`` -- goes
     through one definition of the snapshot schema.
     """
-    # recent_activity is an extra ESPN call (paged); settings come free from
-    # the League constructor's mSettings fetch (roadmap 2.4).
+    # recent_activity (paged) + free_agents (size-capped) are extra ESPN calls;
+    # settings come free from the League constructor's mSettings fetch.
     activities = fetch_recent_activity(league)
+    agents = fetch_free_agents(league, size=free_agent_size())
     snapshot = serialize_league(
         league,
         league_id=spec.id,
@@ -289,6 +348,7 @@ def build_snapshot(league: Any, spec: LeagueSpec, season: int) -> dict[str, Any]
         season=season,
         espn_league_id=spec.espn_league_id,
         transactions=activities,
+        free_agents=agents,
     )
     # Prefer the friendly registry name over ESPN's raw settings name.
     snapshot["name"] = spec.name

@@ -240,6 +240,22 @@ def serialize_transactions(activities: list[Any] | None) -> list[dict[str, Any]]
     return [serialize_activity(activity) for activity in (activities or [])]
 
 
+def serialize_free_agent(player: Any) -> dict[str, Any]:
+    """Compact FA row — skip baseball season_stats bloat (wire is id + ownership)."""
+    return serialize_player(player, sport=None)
+
+
+def serialize_free_agents(players: list[Any] | None) -> list[dict[str, Any]]:
+    rows = [serialize_free_agent(player) for player in (players or [])]
+    rows.sort(
+        key=lambda row: (
+            -(row.get("percent_owned") or 0.0),
+            row.get("name") or "",
+        )
+    )
+    return rows
+
+
 def serialize_league(
     league: Any,
     *,
@@ -249,6 +265,7 @@ def serialize_league(
     season: int,
     espn_league_id: int,
     transactions: list[Any] | None = None,
+    free_agents: list[Any] | None = None,
 ) -> dict[str, Any]:
     settings = getattr(league, "settings", None)
     teams = [serialize_team(t, sport=sport) for t in (getattr(league, "teams", None) or [])]
@@ -279,6 +296,7 @@ def serialize_league(
         "settings": serialize_settings(league),
         "draft": serialize_draft(league),
         "transactions": serialize_transactions(transactions),
+        "free_agents": serialize_free_agents(free_agents),
         "teams": teams,
         "players": _unique_players(teams),
     }

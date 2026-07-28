@@ -169,6 +169,8 @@ export type LeagueSnapshot = {
   settings?: LeagueSettings;
   draft?: DraftPick[];
   transactions?: Transaction[];
+  /** ESPN FREEAGENT + WAIVERS pool (size-capped at sync); empty before 2019. */
+  free_agents?: Player[];
   teams: Team[];
   players: Player[];
 };
@@ -268,6 +270,10 @@ type TransactionsFile = {
   transactions: Transaction[];
 };
 
+type FreeAgentsFile = {
+  free_agents: Player[];
+};
+
 function dataRoots(): string[] {
   const roots = [
     process.env.SJ_DATA_DIR,
@@ -337,6 +343,7 @@ function assembleFromParts(
   draft: DraftFile | null,
   settings: SettingsFile | null,
   transactions: TransactionsFile | null,
+  freeAgents: FreeAgentsFile | null,
 ): LeagueSnapshot {
   const matchupById = matchups?.teams ?? {};
   const rosterById = rosters.teams ?? {};
@@ -368,6 +375,7 @@ function assembleFromParts(
     settings: settings?.settings ?? {},
     draft: draft?.draft ?? [],
     transactions: transactions?.transactions ?? [],
+    free_agents: freeAgents?.free_agents ?? [],
     teams,
     players: rosters.players ?? [],
   };
@@ -403,13 +411,18 @@ async function loadSnapshotFromRoot(
   const draft = manifest.files.draft
     ? await readJson<DraftFile>(path.join(directory, manifest.files.draft))
     : null;
-  // Optional until seasons are re-synced after roadmap 2.4.
+  // Optional until seasons are re-synced after settings / FA sync slices.
   const settings = manifest.files.settings
     ? await readJson<SettingsFile>(path.join(directory, manifest.files.settings))
     : null;
   const transactions = manifest.files.transactions
     ? await readJson<TransactionsFile>(
         path.join(directory, manifest.files.transactions),
+      )
+    : null;
+  const freeAgents = manifest.files.free_agents
+    ? await readJson<FreeAgentsFile>(
+        path.join(directory, manifest.files.free_agents),
       )
     : null;
   return assembleFromParts(
@@ -420,6 +433,7 @@ async function loadSnapshotFromRoot(
     draft,
     settings,
     transactions,
+    freeAgents,
   );
 }
 

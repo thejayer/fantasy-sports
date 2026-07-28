@@ -2,10 +2,10 @@
 
 import { DataTable, type DataTableColumn } from "@/components/DataTable";
 import { EmptyState } from "@/components/EmptyState";
-import type { ProjectionPlayer } from "@/lib/data";
+import type { WaiverBoardData, WaiverRow } from "@/lib/decision-tools";
 import { formatProjectionPoints } from "@/lib/projection-join";
 
-function columns(): DataTableColumn<ProjectionPlayer>[] {
+function columns(): DataTableColumn<WaiverRow>[] {
   return [
     {
       id: "position",
@@ -29,6 +29,16 @@ function columns(): DataTableColumn<ProjectionPlayer>[] {
       sortable: true,
       sortValue: (row) => row.team,
       cell: (row) => row.team ?? "—",
+    },
+    {
+      id: "percent_owned",
+      header: "% Own",
+      sortable: true,
+      defaultSortDirection: "desc",
+      numeric: true,
+      sortValue: (row) => row.percent_owned,
+      cell: (row) =>
+        row.percent_owned == null ? "—" : row.percent_owned.toFixed(1),
     },
     {
       id: "floor",
@@ -69,36 +79,56 @@ function columns(): DataTableColumn<ProjectionPlayer>[] {
   ];
 }
 
-export function WaiverBoard({ players }: { players: ProjectionPlayer[] }) {
-  if (!players.length) {
+export function WaiverBoard({ board }: { board: WaiverBoardData }) {
+  const { rows, source } = board;
+
+  if (!rows.length) {
+    if (source === "espn") {
+      return (
+        <EmptyState title="No free agents in this snapshot">
+          Sync wrote an empty ESPN free-agent pool (pre-2019 seasons, or ESPN
+          returned none for this week). Re-run <code>sj sync</code> for the
+          current season to refresh.
+        </EmptyState>
+      );
+    }
     return (
       <EmptyState title="No unrostered projections to rank">
-        This board lists engine players not on any roster in the snapshot —
-        a waiver proxy until ESPN free agents are synced (roadmap 2.4). With
-        synthetic fixture ESPN ids, almost everyone looks unrostered; use live
-        sync + player map for a real wire.
+        This board falls back to engine players not on any roster when the
+        season has no synced ESPN free agents. With synthetic fixture ESPN ids,
+        almost everyone looks unrostered; use live sync + player map for a real
+        wire.
       </EmptyState>
     );
   }
 
+  const lede =
+    source === "espn"
+      ? `ESPN free agents / waivers (${rows.length} players, size-capped at sync). Season projection quantiles join through the player map when available; unmapped rows still show % owned.`
+      : `Unrostered season projections ranked by VOR (${rows.length} players). Fallback used because this snapshot has no ESPN free_agents list — re-sync the current season to load the wire.`;
+
   return (
     <div className="waiver-board">
       <p className="lede" style={{ marginTop: "0.75rem" }}>
-        Unrostered season projections ranked by VOR ({players.length} players).
-        Not ESPN free agents — rostered GSIS ids are subtracted via the player
-        map.
+        {lede}
       </p>
       <DataTable
-        rows={players}
+        rows={rows}
         columns={columns()}
-        getRowKey={(row) => row.player_id}
-        searchPlaceholder="Search waiver proxies…"
+        getRowKey={(row) => row.espn_id ?? row.player_id}
+        searchPlaceholder={
+          source === "espn" ? "Search free agents…" : "Search waiver proxies…"
+        }
         searchText={(row) =>
           [row.player_name, row.position, row.team].filter(Boolean).join(" ")
         }
         pageSize={25}
         emptyMessage="No players match this search or filter."
-        initialSort={{ columnId: "vor", direction: "desc" }}
+        initialSort={
+          source === "espn"
+            ? { columnId: "percent_owned", direction: "desc" }
+            : { columnId: "vor", direction: "desc" }
+        }
       />
     </div>
   );

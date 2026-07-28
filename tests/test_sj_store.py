@@ -78,6 +78,7 @@ def test_write_emits_v2_layout_and_lists(tmp_path: Path):
     assert (season_dir / "draft.json").exists()
     assert (season_dir / "settings.json").exists()
     assert (season_dir / "transactions.json").exists()
+    assert (season_dir / "free_agents.json").exists()
     # Writers must not leave a v1 monolith behind.
     assert not (tmp_path / "football-main" / "2025.json").exists()
 

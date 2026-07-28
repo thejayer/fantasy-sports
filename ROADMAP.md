@@ -239,12 +239,17 @@ Shipped the high-leverage slice without ballooning snapshot size:
   ESPN request; this is what makes `format: dynasty` mean something on disk.
 - **Transactions / trades** via paged `recent_activity` (both sports; empty
   before 2019) → `transactions.json` (fills the 2.2 stub).
+- **Free agents / waivers** via `league.free_agents` (both sports; empty before
+  2019; size-capped, default 50, `SJ_FREE_AGENT_SIZE` up to 150) →
+  `free_agents.json`. Hub Waivers tab prefers this list (joined to season
+  projections through the player map) and falls back to unrostered projections
+  when the season has no FA file.
 - **Retry / backoff / timeouts** around ESPN HTTP (`SJ_ESPN_TIMEOUT`,
   `SJ_ESPN_MAX_ATTEMPTS`). espn-api has neither; `--throttle` only spaces
   league-seasons.
 
-Deferred (size / API gaps): box scores, free agents, per-week player stats,
-playoff brackets — pull those when a phase-3 page needs them.
+Deferred (size / API gaps): box scores, per-week player stats, playoff
+brackets — pull those when a page needs them.
 
 ### 2.5 Backfill and validate — LANDED
 Committed `fixtures/sj/` are regenerated from the live serializer via
@@ -378,13 +383,13 @@ Football `tools` tab ships snapshot-backed decision surfaces without calling
 - **Trade** — pick two rosters, check players to offer, see before/after Σ
   floor / median / ceiling / VOR (independent quantile sums; no joint samples
   in store).
-- **Waivers** — unrostered projection rows by VOR (proxy until ESPN
-  `free_agents` sync exists — roadmap 2.4).
+- **Waivers** — ESPN `free_agents` when synced (2.4 leftover); else unrostered
+  projection rows by VOR as fallback.
 - **Strength** — per-team season projection totals via the player map.
 
 **Deferred in-tab (“More”):** Monte Carlo draft assistant (needs
-`export-draft-sim` artifacts), playoff-odds MC (needs weekly team posteriors),
-true ESPN FA wire. Use `ffa draft-sim` from the CLI until those exporters land.
+`export-draft-sim` artifacts), playoff-odds MC (needs weekly team posteriors).
+Use `ffa draft-sim` from the CLI until those exporters land.
 
 ### 4.6 Baseball — LANDED
 **Decision: keep baseball data-rich but projection-free.** The `ffa` engine

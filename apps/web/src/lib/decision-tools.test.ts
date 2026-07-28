@@ -14,6 +14,7 @@ import {
   sumRosterProjections,
   teamStrengthRows,
   unrosteredProjectionRows,
+  waiverBoardRows,
 } from "@/lib/decision-tools";
 import {
   attachPlayerProjections,
@@ -136,6 +137,53 @@ describe("decision-tools (roadmap 4.5)", () => {
     expect(ids).toContain("00-0033280");
     expect(ids).toContain("00-0036322");
     expect(open[0].vor! >= open[open.length - 1].vor!).toBe(true);
+    const board = waiverBoardRows(league, map, snap);
+    expect(board.source).toBe("proxy");
+    expect(board.rows.map((r) => r.player_id)).toEqual(ids);
+  });
+
+  it("prefers ESPN free_agents when present", () => {
+    const league = {
+      league_id: "demo",
+      espn_league_id: 1,
+      sport: "football",
+      format: "redraft",
+      season: 2026,
+      name: "Demo",
+      team_count: 1,
+      current_week: 1,
+      teams: [team(1, "A", [mahomes])],
+      players: [mahomes],
+      free_agents: [
+        {
+          ...cmc,
+          slot: "FA",
+          status: "FREEAGENT",
+          percent_owned: 22.5,
+        },
+        {
+          id: 999001,
+          name: "Unmapped Wire",
+          position: "TE",
+          slot: "FA",
+          pro_team: "BUF",
+          injury_status: "ACTIVE",
+          status: "WAIVERS",
+          percent_owned: 8.0,
+          total_points: 10,
+          projected_total_points: 12,
+          avg_points: 1,
+        },
+      ],
+    } as LeagueSnapshot;
+    const board = waiverBoardRows(league, map, snap);
+    expect(board.source).toBe("espn");
+    expect(board.rows).toHaveLength(2);
+    expect(board.rows[0].player_id).toBe("00-0033280");
+    expect(board.rows[0].vor).toBeGreaterThan(0);
+    expect(board.rows[0].percent_owned).toBe(22.5);
+    expect(board.rows[1].player_name).toBe("Unmapped Wire");
+    expect(board.rows[1].vor).toBeNull();
   });
 
   it("ranks team strength by median", () => {

@@ -188,6 +188,9 @@ def extract_espn_players_from_snapshot(
     for player in snapshot.get("players") or []:
         if isinstance(player, Mapping):
             _add(player)
+    for player in snapshot.get("free_agents") or []:
+        if isinstance(player, Mapping):
+            _add(player)
     return list(seen.values())
 
 

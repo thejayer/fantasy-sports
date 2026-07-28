@@ -20,6 +20,7 @@ On-disk layout (schema_version 2, roadmap 2.2)::
         draft.json
         settings.json
         transactions.json
+        free_agents.json
 
 Legacy schema_version 1 monoliths (``{league_id}/{season}.json``) remain
 readable — committed fixtures still use that shape. Writers only emit v2.

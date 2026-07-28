@@ -94,6 +94,408 @@
   ],
   "espn_league_id": 94266,
   "format": "dynasty",
+  "free_agents": [
+    {
+      "acquisition_type": "ADD",
+      "avg_points": 4.2,
+      "eligible_slots": [
+        "K",
+        "BE",
+        "IR"
+      ],
+      "id": 202650003,
+      "injured": false,
+      "injury_status": null,
+      "name": "Terry Anderson",
+      "percent_owned": 98.6,
+      "position": "K",
+      "pro_team": "BAL",
+      "projected_total_points": 88.8,
+      "slot": "FA",
+      "status": "WAIVERS",
+      "total_points": 70.8
+    },
+    {
+      "acquisition_type": "WAIVER",
+      "avg_points": 13.0,
+      "eligible_slots": [
+        "WR",
+        "BE",
+        "IR"
+      ],
+      "id": 202650009,
+      "injured": false,
+      "injury_status": "DOUBTFUL",
+      "name": "Walter Wright",
+      "percent_owned": 97.4,
+      "position": "WR",
+      "pro_team": "CIN",
+      "projected_total_points": 227.5,
+      "slot": "FA",
+      "status": "WAIVERS",
+      "total_points": 220.6
+    },
+    {
+      "acquisition_type": "WAIVER",
+      "avg_points": 14.5,
+      "eligible_slots": [
+        "WR",
+        "BE",
+        "IR"
+      ],
+      "id": 202650019,
+      "injured": false,
+      "injury_status": null,
+      "name": "Jose Harris",
+      "percent_owned": 96.3,
+      "position": "WR",
+      "pro_team": "BUF",
+      "projected_total_points": 256.2,
+      "slot": "FA",
+      "status": "FREEAGENT",
+      "total_points": 246.1
+    },
+    {
+      "acquisition_type": "WAIVER",
+      "avg_points": 4.3,
+      "eligible_slots": [
+        "QB",
+        "BE",
+        "IR"
+      ],
+      "id": 202650017,
+      "injured": false,
+      "injury_status": null,
+      "name": "Wayne Hill",
+      "percent_owned": 94.9,
+      "position": "QB",
+      "pro_team": "CHI",
+      "projected_total_points": 91.0,
+      "slot": "FA",
+      "status": "FREEAGENT",
+      "total_points": 72.4
+    },
+    {
+      "acquisition_type": "TRADE",
+      "avg_points": 11.5,
+      "eligible_slots": [
+        "D/ST",
+        "BE",
+        "IR"
+      ],
+      "id": 202650010,
+      "injured": true,
+      "injury_status": "OUT",
+      "name": "PIT D/ST",
+      "percent_owned": 88.5,
+      "position": "D/ST",
+      "pro_team": "NYJ",
+      "projected_total_points": 215.2,
+      "slot": "FA",
+      "status": "FREEAGENT",
+      "total_points": 195.4
+    },
+    {
+      "acquisition_type": "TRADE",
+      "avg_points": 8.3,
+      "eligible_slots": [
+        "K",
+        "BE",
+        "IR"
+      ],
+      "id": 202650014,
+      "injured": false,
+      "injury_status": "INJURY_RESERVE",
+      "name": "Scott Hall",
+      "percent_owned": 79.7,
+      "position": "K",
+      "pro_team": "LAR",
+      "projected_total_points": 155.2,
+      "slot": "FA",
+      "status": "FREEAGENT",
+      "total_points": 141.1
+    },
+    {
+      "acquisition_type": "WAIVER",
+      "avg_points": 7.8,
+      "eligible_slots": [
+        "WR",
+        "BE",
+        "IR"
+      ],
+      "id": 202650005,
+      "injured": true,
+      "injury_status": null,
+      "name": "Alan Hill",
+      "percent_owned": 78.4,
+      "position": "WR",
+      "pro_team": "TB",
+      "projected_total_points": 133.2,
+      "slot": "FA",
+      "status": "FREEAGENT",
+      "total_points": 132.4
+    },
+    {
+      "acquisition_type": "TRADE",
+      "avg_points": 5.7,
+      "eligible_slots": [
+        "D/ST",
+        "BE",
+        "IR"
+      ],
+      "id": 202650008,
+      "injured": false,
+      "injury_status": "QUESTIONABLE",
+      "name": "DET D/ST",
+      "percent_owned": 74.9,
+      "position": "D/ST",
+      "pro_team": "CAR",
+      "projected_total_points": 88.3,
+      "slot": "FA",
+      "status": "FREEAGENT",
+      "total_points": 97.2
+    },
+    {
+      "acquisition_type": "TRADE",
+      "avg_points": 17.8,
+      "eligible_slots": [
+        "QB",
+        "BE",
+        "IR"
+      ],
+      "id": 202650004,
+      "injured": false,
+      "injury_status": null,
+      "name": "Matthew Wood",
+      "percent_owned": 71.5,
+      "position": "QB",
+      "pro_team": "PHI",
+      "projected_total_points": 382.2,
+      "slot": "FA",
+      "status": "FREEAGENT",
+      "total_points": 302.2
+    },
+    {
+      "acquisition_type": "DRAFT",
+      "avg_points": 14.7,
+      "eligible_slots": [
+        "QB",
+        "BE",
+        "IR"
+      ],
+      "id": 202650018,
+      "injured": false,
+      "injury_status": null,
+      "name": "Jeremy Morris",
+      "percent_owned": 67.1,
+      "position": "QB",
+      "pro_team": "GB",
+      "projected_total_points": 222.2,
+      "slot": "FA",
+      "status": "WAIVERS",
+      "total_points": 249.8
+    },
+    {
+      "acquisition_type": "TRADE",
+      "avg_points": 10.9,
+      "eligible_slots": [
+        "K",
+        "BE",
+        "IR"
+      ],
+      "id": 202650013,
+      "injured": false,
+      "injury_status": "DOUBTFUL",
+      "name": "Anthony Watson",
+      "percent_owned": 60.7,
+      "position": "K",
+      "pro_team": "PHI",
+      "projected_total_points": 156.1,
+      "slot": "FA",
+      "status": "FREEAGENT",
+      "total_points": 185.9
+    },
+    {
+      "acquisition_type": "ADD",
+      "avg_points": 12.4,
+      "eligible_slots": [
+        "K",
+        "BE",
+        "IR"
+      ],
+      "id": 202650006,
+      "injured": false,
+      "injury_status": null,
+      "name": "Jeremy Ross",
+      "percent_owned": 54.9,
+      "position": "K",
+      "pro_team": "BUF",
+      "projected_total_points": 200.1,
+      "slot": "FA",
+      "status": "WAIVERS",
+      "total_points": 211.6
+    },
+    {
+      "acquisition_type": "ADD",
+      "avg_points": 0.6,
+      "eligible_slots": [
+        "TE",
+        "BE",
+        "IR"
+      ],
+      "id": 202650011,
+      "injured": false,
+      "injury_status": "INJURY_RESERVE",
+      "name": "Nicholas Anderson",
+      "percent_owned": 47.4,
+      "position": "TE",
+      "pro_team": "CHI",
+      "projected_total_points": 9.6,
+      "slot": "FA",
+      "status": "FREEAGENT",
+      "total_points": 10.7
+    },
+    {
+      "acquisition_type": "ADD",
+      "avg_points": 17.6,
+      "eligible_slots": [
+        "RB",
+        "BE",
+        "IR"
+      ],
+      "id": 202650002,
+      "injured": true,
+      "injury_status": null,
+      "name": "Steven Young",
+      "percent_owned": 46.1,
+      "position": "RB",
+      "pro_team": "ATL",
+      "projected_total_points": 292.3,
+      "slot": "FA",
+      "status": "FREEAGENT",
+      "total_points": 298.8
+    },
+    {
+      "acquisition_type": "ADD",
+      "avg_points": 1.1,
+      "eligible_slots": [
+        "WR",
+        "BE",
+        "IR"
+      ],
+      "id": 202650012,
+      "injured": false,
+      "injury_status": "ACTIVE",
+      "name": "Charles Robinson",
+      "percent_owned": 39.1,
+      "position": "WR",
+      "pro_team": "BAL",
+      "projected_total_points": 22.8,
+      "slot": "FA",
+      "status": "WAIVERS",
+      "total_points": 18.5
+    },
+    {
+      "acquisition_type": "WAIVER",
+      "avg_points": 17.9,
+      "eligible_slots": [
+        "QB",
+        "BE",
+        "IR"
+      ],
+      "id": 202650015,
+      "injured": false,
+      "injury_status": null,
+      "name": "Kenneth Cox",
+      "percent_owned": 36.0,
+      "position": "QB",
+      "pro_team": "GB",
+      "projected_total_points": 230.9,
+      "slot": "FA",
+      "status": "WAIVERS",
+      "total_points": 304.9
+    },
+    {
+      "acquisition_type": "TRADE",
+      "avg_points": 7.1,
+      "eligible_slots": [
+        "WR",
+        "BE",
+        "IR"
+      ],
+      "id": 202650007,
+      "injured": false,
+      "injury_status": "QUESTIONABLE",
+      "name": "Richard Long",
+      "percent_owned": 8.1,
+      "position": "WR",
+      "pro_team": "PIT",
+      "projected_total_points": 96.7,
+      "slot": "FA",
+      "status": "FREEAGENT",
+      "total_points": 120.0
+    },
+    {
+      "acquisition_type": "WAIVER",
+      "avg_points": 5.1,
+      "eligible_slots": [
+        "WR",
+        "BE",
+        "IR"
+      ],
+      "id": 202650000,
+      "injured": true,
+      "injury_status": "INJURY_RESERVE",
+      "name": "Sean Morgan",
+      "percent_owned": 0.1,
+      "position": "WR",
+      "pro_team": "TEN",
+      "projected_total_points": 93.8,
+      "slot": "FA",
+      "status": "WAIVERS",
+      "total_points": 87.5
+    },
+    {
+      "acquisition_type": "TRADE",
+      "avg_points": 11.7,
+      "eligible_slots": [
+        "QB",
+        "BE",
+        "IR"
+      ],
+      "id": 202650016,
+      "injured": false,
+      "injury_status": null,
+      "name": "Carl Adams",
+      "percent_owned": -1.0,
+      "position": "QB",
+      "pro_team": "LV",
+      "projected_total_points": 186.9,
+      "slot": "FA",
+      "status": "FREEAGENT",
+      "total_points": 199.6
+    },
+    {
+      "acquisition_type": "DRAFT",
+      "avg_points": 17.6,
+      "eligible_slots": [
+        "QB",
+        "BE",
+        "IR"
+      ],
+      "id": 202650001,
+      "injured": false,
+      "injury_status": null,
+      "name": "Jason Clark",
+      "percent_owned": -1.0,
+      "position": "QB",
+      "pro_team": "BAL",
+      "projected_total_points": 264.2,
+      "slot": "FA",
+      "status": "FREEAGENT",
+      "total_points": 299.2
+    }
+  ],
   "league_id": "football-dynasty",
   "name": "Strictly Jayers Football Dynasty",
   "period_label": "week",

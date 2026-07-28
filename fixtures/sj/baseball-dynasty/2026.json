@@ -94,6 +94,408 @@
   ],
   "espn_league_id": 2499137,
   "format": "dynasty",
+  "free_agents": [
+    {
+      "acquisition_type": "TRADE",
+      "avg_points": 23.4,
+      "eligible_slots": [
+        "SP",
+        "BE",
+        "IL"
+      ],
+      "id": 202650018,
+      "injured": false,
+      "injury_status": null,
+      "name": "Wayne Morales",
+      "percent_owned": 97.3,
+      "position": "SP",
+      "pro_team": "TOR",
+      "projected_total_points": 502.9,
+      "slot": "FA",
+      "status": "WAIVERS",
+      "total_points": 608.0
+    },
+    {
+      "acquisition_type": "ADD",
+      "avg_points": 10.6,
+      "eligible_slots": [
+        "OF",
+        "BE",
+        "IL"
+      ],
+      "id": 202650019,
+      "injured": false,
+      "injury_status": null,
+      "name": "Michael Myers",
+      "percent_owned": 94.8,
+      "position": "OF",
+      "pro_team": "BOS",
+      "projected_total_points": 340.1,
+      "slot": "FA",
+      "status": "FREEAGENT",
+      "total_points": 274.5
+    },
+    {
+      "acquisition_type": "DRAFT",
+      "avg_points": 9.3,
+      "eligible_slots": [
+        "1B",
+        "BE",
+        "IL"
+      ],
+      "id": 202650003,
+      "injured": false,
+      "injury_status": "ACTIVE",
+      "name": "John Hernandez",
+      "percent_owned": 93.6,
+      "position": "1B",
+      "pro_team": "KC",
+      "projected_total_points": 284.9,
+      "slot": "FA",
+      "status": "WAIVERS",
+      "total_points": 241.9
+    },
+    {
+      "acquisition_type": "TRADE",
+      "avg_points": 32.3,
+      "eligible_slots": [
+        "SP",
+        "BE",
+        "IL"
+      ],
+      "id": 202650016,
+      "injured": false,
+      "injury_status": null,
+      "name": "Eric Campbell",
+      "percent_owned": 89.9,
+      "position": "SP",
+      "pro_team": "OAK",
+      "projected_total_points": 1019.9,
+      "slot": "FA",
+      "status": "FREEAGENT",
+      "total_points": 840.0
+    },
+    {
+      "acquisition_type": "TRADE",
+      "avg_points": 12.0,
+      "eligible_slots": [
+        "RP",
+        "BE",
+        "IL"
+      ],
+      "id": 202650002,
+      "injured": true,
+      "injury_status": "INJURY_RESERVE",
+      "name": "Eric Gutierrez",
+      "percent_owned": 86.2,
+      "position": "RP",
+      "pro_team": "TOR",
+      "projected_total_points": 302.1,
+      "slot": "FA",
+      "status": "FREEAGENT",
+      "total_points": 312.1
+    },
+    {
+      "acquisition_type": "TRADE",
+      "avg_points": 9.2,
+      "eligible_slots": [
+        "RP",
+        "BE",
+        "IL"
+      ],
+      "id": 202650009,
+      "injured": false,
+      "injury_status": "QUESTIONABLE",
+      "name": "Aaron Nguyen",
+      "percent_owned": 84.8,
+      "position": "RP",
+      "pro_team": "MIA",
+      "projected_total_points": 274.8,
+      "slot": "FA",
+      "status": "WAIVERS",
+      "total_points": 239.8
+    },
+    {
+      "acquisition_type": "TRADE",
+      "avg_points": 26.2,
+      "eligible_slots": [
+        "RP",
+        "BE",
+        "IL"
+      ],
+      "id": 202650007,
+      "injured": false,
+      "injury_status": "DOUBTFUL",
+      "name": "Bradley Anderson",
+      "percent_owned": 78.2,
+      "position": "RP",
+      "pro_team": "LAA",
+      "projected_total_points": 625.3,
+      "slot": "FA",
+      "status": "FREEAGENT",
+      "total_points": 680.7
+    },
+    {
+      "acquisition_type": "ADD",
+      "avg_points": 31.3,
+      "eligible_slots": [
+        "OF",
+        "BE",
+        "IL"
+      ],
+      "id": 202650011,
+      "injured": false,
+      "injury_status": null,
+      "name": "Russell Jones",
+      "percent_owned": 71.1,
+      "position": "OF",
+      "pro_team": "TB",
+      "projected_total_points": 694.3,
+      "slot": "FA",
+      "status": "FREEAGENT",
+      "total_points": 814.1
+    },
+    {
+      "acquisition_type": "ADD",
+      "avg_points": 15.4,
+      "eligible_slots": [
+        "RP",
+        "BE",
+        "IL"
+      ],
+      "id": 202650012,
+      "injured": false,
+      "injury_status": null,
+      "name": "Russell Thomas",
+      "percent_owned": 70.5,
+      "position": "RP",
+      "pro_team": "DET",
+      "projected_total_points": 476.4,
+      "slot": "FA",
+      "status": "WAIVERS",
+      "total_points": 400.5
+    },
+    {
+      "acquisition_type": "ADD",
+      "avg_points": 18.0,
+      "eligible_slots": [
+        "OF",
+        "BE",
+        "IL"
+      ],
+      "id": 202650014,
+      "injured": false,
+      "injury_status": "INJURY_RESERVE",
+      "name": "Keith Wood",
+      "percent_owned": 68.0,
+      "position": "OF",
+      "pro_team": "TOR",
+      "projected_total_points": 567.4,
+      "slot": "FA",
+      "status": "FREEAGENT",
+      "total_points": 466.9
+    },
+    {
+      "acquisition_type": "TRADE",
+      "avg_points": 8.2,
+      "eligible_slots": [
+        "SP",
+        "BE",
+        "IL"
+      ],
+      "id": 202650017,
+      "injured": false,
+      "injury_status": null,
+      "name": "George Wilson",
+      "percent_owned": 60.0,
+      "position": "SP",
+      "pro_team": "SEA",
+      "projected_total_points": 216.2,
+      "slot": "FA",
+      "status": "FREEAGENT",
+      "total_points": 213.2
+    },
+    {
+      "acquisition_type": "DRAFT",
+      "avg_points": 1.0,
+      "eligible_slots": [
+        "OF",
+        "BE",
+        "IL"
+      ],
+      "id": 202650013,
+      "injured": false,
+      "injury_status": null,
+      "name": "Joshua Wright",
+      "percent_owned": 52.4,
+      "position": "OF",
+      "pro_team": "KC",
+      "projected_total_points": 29.0,
+      "slot": "FA",
+      "status": "FREEAGENT",
+      "total_points": 24.8
+    },
+    {
+      "acquisition_type": "WAIVER",
+      "avg_points": 0.0,
+      "eligible_slots": [
+        "OF",
+        "BE",
+        "IL"
+      ],
+      "id": 202650015,
+      "injured": false,
+      "injury_status": "OUT",
+      "name": "Jonathan Sanchez",
+      "percent_owned": 47.8,
+      "position": "OF",
+      "pro_team": "CIN",
+      "projected_total_points": null,
+      "slot": "FA",
+      "status": "WAIVERS",
+      "total_points": 0.0
+    },
+    {
+      "acquisition_type": "ADD",
+      "avg_points": 20.0,
+      "eligible_slots": [
+        "RP",
+        "BE",
+        "IL"
+      ],
+      "id": 202650000,
+      "injured": false,
+      "injury_status": null,
+      "name": "Keith Gonzalez",
+      "percent_owned": 46.6,
+      "position": "RP",
+      "pro_team": "WSH",
+      "projected_total_points": 488.0,
+      "slot": "FA",
+      "status": "WAIVERS",
+      "total_points": 520.3
+    },
+    {
+      "acquisition_type": "DRAFT",
+      "avg_points": 32.5,
+      "eligible_slots": [
+        "1B",
+        "BE",
+        "IL"
+      ],
+      "id": 202650001,
+      "injured": false,
+      "injury_status": null,
+      "name": "Jordan Richardson",
+      "percent_owned": 45.7,
+      "position": "1B",
+      "pro_team": "PIT",
+      "projected_total_points": 893.6,
+      "slot": "FA",
+      "status": "FREEAGENT",
+      "total_points": 845.1
+    },
+    {
+      "acquisition_type": "DRAFT",
+      "avg_points": 5.8,
+      "eligible_slots": [
+        "RP",
+        "BE",
+        "IL"
+      ],
+      "id": 202650005,
+      "injured": true,
+      "injury_status": null,
+      "name": "Dennis Reed",
+      "percent_owned": 45.1,
+      "position": "RP",
+      "pro_team": "CHC",
+      "projected_total_points": 153.7,
+      "slot": "FA",
+      "status": "FREEAGENT",
+      "total_points": 149.6
+    },
+    {
+      "acquisition_type": "TRADE",
+      "avg_points": 18.9,
+      "eligible_slots": [
+        "SP",
+        "BE",
+        "IL"
+      ],
+      "id": 202650010,
+      "injured": false,
+      "injury_status": null,
+      "name": "Ethan James",
+      "percent_owned": 45.1,
+      "position": "SP",
+      "pro_team": "COL",
+      "projected_total_points": 547.5,
+      "slot": "FA",
+      "status": "FREEAGENT",
+      "total_points": 492.0
+    },
+    {
+      "acquisition_type": "ADD",
+      "avg_points": 4.1,
+      "eligible_slots": [
+        "OF",
+        "BE",
+        "IL"
+      ],
+      "id": 202650004,
+      "injured": false,
+      "injury_status": "INJURY_RESERVE",
+      "name": "Jonathan Thompson",
+      "percent_owned": 32.3,
+      "position": "OF",
+      "pro_team": "STL",
+      "projected_total_points": 117.5,
+      "slot": "FA",
+      "status": "FREEAGENT",
+      "total_points": 107.2
+    },
+    {
+      "acquisition_type": "TRADE",
+      "avg_points": 19.3,
+      "eligible_slots": [
+        "RP",
+        "BE",
+        "IL"
+      ],
+      "id": 202650006,
+      "injured": false,
+      "injury_status": null,
+      "name": "Brandon Rivera",
+      "percent_owned": 30.9,
+      "position": "RP",
+      "pro_team": "TB",
+      "projected_total_points": 531.9,
+      "slot": "FA",
+      "status": "WAIVERS",
+      "total_points": 501.3
+    },
+    {
+      "acquisition_type": "TRADE",
+      "avg_points": 28.2,
+      "eligible_slots": [
+        "RP",
+        "BE",
+        "IL"
+      ],
+      "id": 202650008,
+      "injured": false,
+      "injury_status": "ACTIVE",
+      "name": "Thomas Gutierrez",
+      "percent_owned": -1.0,
+      "position": "RP",
+      "pro_team": "MIA",
+      "projected_total_points": 830.5,
+      "slot": "FA",
+      "status": "FREEAGENT",
+      "total_points": 732.5
+    }
+  ],
   "league_id": "baseball-dynasty",
   "name": "Strictly Jayers Baseball",
   "period_label": "period",

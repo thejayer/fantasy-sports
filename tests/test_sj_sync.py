@@ -20,6 +20,7 @@ from sj.registry import LeagueSpec, load_registry
 from sj.sample import sample_league
 from sj.sync import (
     ACTIVITY_MIN_SEASON,
+    FREE_AGENT_MIN_SEASON,
     SyncAllFailed,
     SyncFailure,
     SyncResult,
@@ -27,6 +28,7 @@ from sj.sync import (
     espn_call,
     espn_credentials,
     failures_should_fail_run,
+    fetch_free_agents,
     fetch_recent_activity,
     notify_hub_revalidate,
     open_espn_league,
@@ -322,11 +324,15 @@ def test_sync_league_season_writes_snapshot(
     assert (season_dir / "manifest.json").exists()
     assert (season_dir / "settings.json").exists()
     assert (season_dir / "transactions.json").exists()
+    assert (season_dir / "free_agents.json").exists()
     assert not (tmp_path / "football-main" / "2025.json").exists()
     settings = json.loads((season_dir / "settings.json").read_text(encoding="utf-8"))
     txns = json.loads((season_dir / "transactions.json").read_text(encoding="utf-8"))
+    agents = json.loads((season_dir / "free_agents.json").read_text(encoding="utf-8"))
     assert settings["settings"]["faab"] is True
     assert len(txns["transactions"]) >= 1
+    assert len(agents["free_agents"]) >= 1
+    assert agents["free_agents"][0]["slot"] == "FA"
 
 
 def test_espn_call_retries_transient_errors(monkeypatch):
@@ -378,6 +384,31 @@ def test_fetch_recent_activity_pages_until_short(monkeypatch):
         "size": 2,
         "offset": 2,
     }
+
+
+def test_fetch_free_agents_empty_before_2019():
+    league = MagicMock()
+    league.year = FREE_AGENT_MIN_SEASON - 1
+    assert fetch_free_agents(league) == []
+    league.free_agents.assert_not_called()
+
+
+def test_fetch_free_agents_passes_size(monkeypatch):
+    monkeypatch.setattr("sj.sync.time.sleep", lambda *_a, **_k: None)
+    league = MagicMock()
+    league.year = 2025
+    league.free_agents.return_value = [MagicMock(name="fa")]
+    items = fetch_free_agents(league, size=10)
+    assert len(items) == 1
+    assert league.free_agents.call_args.kwargs == {"size": 10}
+
+
+def test_fetch_free_agents_unsupported_returns_empty(monkeypatch):
+    monkeypatch.setattr("sj.sync.time.sleep", lambda *_a, **_k: None)
+    league = MagicMock()
+    league.year = 2020
+    league.free_agents.side_effect = Exception("Cant use free agents before 2019")
+    assert fetch_free_agents(league) == []
 
 
 # ---------------------------------------------------------------------------
