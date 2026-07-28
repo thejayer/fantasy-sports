@@ -2,8 +2,11 @@
 
 Member hub for Strictly Jayers fantasy leagues. V1 focuses on ESPN league
 data: standings, teams, rosters, players, matchups (weekly scores / schedule /
-playoff seeds), and multi-season history (all-time, champions, records, H2H).
-Loading / empty / error states and mobile table cards are in place (roadmap 3.6).
+playoff seeds), draft results, activity/transactions, free agents (football
+Tools → Waivers; baseball Waivers tab), and multi-season history (all-time,
+champions, records, H2H). Loading / empty / error states and mobile table cards
+are in place (roadmap 3.6). Full registry history needs a one-time
+`sj backfill` (see below); committed fixtures stay current-season only.
 
 For the current state of the site and the plan to build it out, see
 [AUDIT.md](AUDIT.md) and [ROADMAP.md](ROADMAP.md).
@@ -21,11 +24,11 @@ Registry: [`configs/leagues.yaml`](configs/leagues.yaml)
 ### Baseball scope (roadmap 4.6)
 
 **Projection-free by design.** `sj` syncs ESPN baseball snapshots (standings,
-rosters with batter/pitcher boards, matchups, history). The `ffa` analytics
-engine is NFL-only — no MLB ingest, no baseball projection snapshots, no trade
-tools on category leagues. Baseball `projections` / `tools` tabs in the hub
-explain that boundary; do not stub a half engine. Revisit only with a dedicated
-MLB modeling plan.
+rosters with batter/pitcher boards, matchups, draft results, activity, free
+agents, history). The `ffa` analytics engine is NFL-only — no MLB ingest, no
+baseball projection snapshots, no trade/sim tools on category leagues. Baseball
+`projections` / `tools` tabs explain that boundary; FA browsing is the Waivers
+tab. Do not stub a half engine. Revisit only with a dedicated MLB modeling plan.
 
 ## Production (Cloud Run) — preferred
 

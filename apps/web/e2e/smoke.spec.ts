@@ -92,4 +92,22 @@ test.describe("hub smoke", () => {
     // Fixture overlay maps roster ESPN id → weekly Mahomes GSIS; UI keeps roster name.
     await expect(page.getByText("Roy Thompson")).toBeVisible();
   });
+
+  test("draft results tab shows ESPN picks", async ({ page }) => {
+    await page.goto("/leagues/football-main?tab=draft");
+    await expect(page.getByText(/ESPN draft results/i)).toBeVisible();
+    await expect(page.getByText("Juan Phillips")).toBeVisible();
+  });
+
+  test("activity tab lists transactions", async ({ page }) => {
+    await page.goto("/leagues/football-main?tab=activity");
+    await expect(page.getByText(/League activity from ESPN/i)).toBeVisible();
+    await expect(page.getByRole("cell", { name: "FA ADDED" }).first()).toBeVisible();
+  });
+
+  test("baseball waivers tab lists free agents", async ({ page }) => {
+    await page.goto("/leagues/baseball-dynasty?tab=waivers");
+    await expect(page.getByText(/ESPN free agents/i)).toBeVisible();
+    await expect(page.getByText("Wayne Morales")).toBeVisible();
+  });
 });
