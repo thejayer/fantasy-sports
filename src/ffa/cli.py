@@ -12,7 +12,7 @@ from pathlib import Path
 import typer
 
 from ffa.backtest import GENERATORS as _GENERATORS
-from ffa.backtest import run_backtest
+from ffa.backtest import build_player_level, run_backtest, years_exp_from_rosters
 from ffa.calibration import (
     dispersion_decomposition,
     dispersion_direction,
@@ -22,6 +22,7 @@ from ffa.draft import simulate_draft, summarize_user_picks
 from ffa.games import GAMES_MODELS
 from ffa.ingest import ingest_seasons, open_warehouse
 from ffa.league import load_league
+from ffa.level import LevelModel
 from ffa.optimize import optimize_lineup
 from ffa.projection import project_per_game, project_season
 from ffa.ranking import assign_tiers, compute_vor
@@ -145,6 +146,11 @@ def simulate(
     level_mean: float = typer.Option(
         1.0, "--level-mean", help="Level multiplier mean; <1 also de-biases down (recommended 0.90)."
     ),
+    conditioned_level: bool = typer.Option(
+        False,
+        "--conditioned-level",
+        help="Use LevelModel (tier + years_exp + collapse) instead of global level scalars.",
+    ),
     include_rookies: bool = typer.Option(
         False, "--include-rookies", help="Project this season's draft class from cohorts."
     ),
@@ -156,7 +162,7 @@ def simulate(
     _, summary = _load_simulation_summary(
         league, season, samples, lookback, decay, expected_games, seed, db, raw_dir,
         generator=generator, games_model=games_model, level_sd=level_sd, level_mean=level_mean,
-        include_rookies=include_rookies,
+        conditioned_level=conditioned_level, include_rookies=include_rookies,
     )
 
     if out is not None:
@@ -168,6 +174,25 @@ def simulate(
     show = [*cols, "points_mean", "points_sd", "q05", "q50", "q95"]
     show = [c for c in show if c in summary.columns]
     typer.echo(summary[show].head(limit).round(1).to_string(index=False))
+
+
+def _load_years_exp(con, seasons: list[int]):
+    """Rosters ``years_exp`` for LevelModel joins, or None if unavailable."""
+    if not seasons:
+        return None
+    placeholders = ",".join("?" for _ in seasons)
+    try:
+        rosters = con.execute(
+            f"SELECT * FROM rosters WHERE season IN ({placeholders})", seasons
+        ).df()
+    except Exception:  # noqa: BLE001 -- missing view / older warehouse
+        return None
+    if rosters is None or rosters.empty:
+        return None
+    try:
+        return years_exp_from_rosters(rosters)
+    except ValueError:
+        return None
 
 
 def _load_simulation_summary(
@@ -184,6 +209,7 @@ def _load_simulation_summary(
     games_model: str = "fixed",
     level_sd: float = 0.0,
     level_mean: float = 1.0,
+    conditioned_level: bool = False,
     include_rookies: bool = False,
 ):
     """Shared helper: pull weekly history -> samples -> posterior summary.
@@ -191,6 +217,11 @@ def _load_simulation_summary(
     ``generator`` chooses the simulator: ``bootstrap`` (phase 3),
     ``learned`` (phase 5), or ``quantile`` (phase 6). All three return
     the same long DataFrame, so downstream code is identical.
+
+    With ``conditioned_level``, build a per-player LevelModel table (tier +
+    ``years_exp`` + collapse) and pass it as ``player_level`` — the
+    calibrated phase-18 path. Global ``--level-sd`` / ``--level-mean`` remain
+    the fallback for players absent from that table.
 
     With ``include_rookies``, the target season's draft class is projected
     from prior-class cohorts and appended (:mod:`ffa.rookies`).
@@ -218,6 +249,27 @@ def _load_simulation_summary(
     if weekly.empty:
         typer.echo(f"No weekly history for seasons {seasons}. Run `ffa ingest` first.")
         raise typer.Exit(code=1)
+
+    player_level = None
+    if conditioned_level:
+        years_exp = _load_years_exp(con, [season])
+        if years_exp is None or years_exp.empty:
+            typer.echo(
+                "--conditioned-level: no rosters years_exp for season "
+                f"{season}; using tier-only LevelModel (experience = unknown)."
+            )
+        player_level = build_player_level(
+            weekly,
+            season,
+            cfg,
+            LevelModel(),
+            lookback=lookback,
+            years_exp=years_exp,
+        )
+        typer.echo(
+            f"--conditioned-level: LevelModel table for {len(player_level):,} players."
+        )
+
     samples_df = simulator(
         weekly,
         target_season=season,
@@ -228,6 +280,7 @@ def _load_simulation_summary(
         games_model=games_model,
         level_sd=level_sd,
         level_mean=level_mean,
+        player_level=player_level,
         seed=seed,
     )
     if include_rookies:
@@ -291,6 +344,11 @@ def rank(
     level_mean: float = typer.Option(
         1.0, "--level-mean", help="Level multiplier mean; <1 also de-biases down (recommended 0.90)."
     ),
+    conditioned_level: bool = typer.Option(
+        False,
+        "--conditioned-level",
+        help="Use LevelModel (tier + years_exp + collapse) instead of global level scalars.",
+    ),
     include_rookies: bool = typer.Option(
         False, "--include-rookies", help="Project this season's draft class from cohorts."
     ),
@@ -301,7 +359,7 @@ def rank(
     cfg, summary = _load_simulation_summary(
         league, season, samples, lookback, decay, expected_games, seed, db, raw_dir,
         generator=generator, games_model=games_model, level_sd=level_sd, level_mean=level_mean,
-        include_rookies=include_rookies,
+        conditioned_level=conditioned_level, include_rookies=include_rookies,
     )
     ranked = compute_vor(summary, cfg.roster)
     ranked = assign_tiers(ranked, n_tiers=n_tiers)
@@ -334,6 +392,11 @@ def optimize(
     level_mean: float = typer.Option(
         1.0, "--level-mean", help="Level multiplier mean; <1 also de-biases down (recommended 0.90)."
     ),
+    conditioned_level: bool = typer.Option(
+        False,
+        "--conditioned-level",
+        help="Use LevelModel (tier + years_exp + collapse) instead of global level scalars.",
+    ),
     include_rookies: bool = typer.Option(
         False, "--include-rookies", help="Project this season's draft class from cohorts."
     ),
@@ -346,7 +409,7 @@ def optimize(
     cfg, summary = _load_simulation_summary(
         league, season, samples, lookback, decay, expected_games, seed, db, raw_dir,
         generator=generator, games_model=games_model, level_sd=level_sd, level_mean=level_mean,
-        include_rookies=include_rookies,
+        conditioned_level=conditioned_level, include_rookies=include_rookies,
     )
     ranked = compute_vor(summary, cfg.roster)
     if budget is not None:
@@ -386,6 +449,11 @@ def draft_sim(
     level_mean: float = typer.Option(
         1.0, "--level-mean", help="Level multiplier mean; <1 also de-biases down (recommended 0.90)."
     ),
+    conditioned_level: bool = typer.Option(
+        False,
+        "--conditioned-level",
+        help="Use LevelModel (tier + years_exp + collapse) instead of global level scalars.",
+    ),
     include_rookies: bool = typer.Option(
         False, "--include-rookies", help="Project this season's draft class from cohorts."
     ),
@@ -396,7 +464,7 @@ def draft_sim(
     cfg, summary = _load_simulation_summary(
         league, season, samples, lookback, decay, expected_games, seed, db, raw_dir,
         generator=generator, games_model=games_model, level_sd=level_sd, level_mean=level_mean,
-        include_rookies=include_rookies,
+        conditioned_level=conditioned_level, include_rookies=include_rookies,
     )
     ranked = compute_vor(summary, cfg.roster)
     result = simulate_draft(
@@ -436,6 +504,11 @@ def backtest(
     ),
     level_mean: float = typer.Option(
         1.0, "--level-mean", help="Level multiplier mean; <1 also de-biases down (recommended 0.90)."
+    ),
+    conditioned_level: bool = typer.Option(
+        False,
+        "--conditioned-level",
+        help="Use LevelModel (tier + years_exp + collapse) instead of global level scalars.",
     ),
     include_rookies: bool = typer.Option(
         False, "--include-rookies", help="Also project + score each season's draft class."
@@ -491,6 +564,19 @@ def backtest(
             raise typer.Exit(code=1)
 
     holdouts = list(range(start, last + 1))
+    level_model = LevelModel() if conditioned_level else None
+    years_exp = None
+    if conditioned_level:
+        years_exp = _load_years_exp(con, holdouts)
+        if years_exp is None or years_exp.empty:
+            typer.echo(
+                "--conditioned-level: no rosters years_exp; using tier-only LevelModel."
+            )
+        else:
+            typer.echo(
+                f"--conditioned-level: years_exp for {years_exp['player_id'].nunique():,} players."
+            )
+
     metrics_frames = []
     players_frames = []
     for gen_name in generator:
@@ -506,7 +592,9 @@ def backtest(
             min_realized_games=min_games,
             games_model=games_model,
             level_sd=level_sd,
-        level_mean=level_mean,
+            level_mean=level_mean,
+            level_model=level_model,
+            years_exp=years_exp,
             include_rookies=include_rookies,
             draft_picks=draft_picks,
             seed=seed,

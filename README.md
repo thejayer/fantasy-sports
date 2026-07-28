@@ -731,10 +731,10 @@ Conditioning is what makes it work: central coverage 0.74 → 0.80, the
 decision-relevant **mid tier 0.70 → 0.80**, stars to a near-perfect 0.92,
 **bias stays near zero** (the per-tier rate avoids the global-collapse
 disaster), and ranking even ticks up. Used via
-`run_backtest(level_model=LevelModel(), years_exp=...)`; the global
-`--level-sd`/`--level-mean` remain the CLI default until the conditioned
-model is wired through the draft commands (the rosters join is the only
-missing plumbing).
+`run_backtest(level_model=LevelModel(), years_exp=...)` or the CLI flag
+`--conditioned-level` on `simulate` / `rank` / `optimize` / `draft-sim` /
+`backtest` (joins `years_exp` from rosters). Global `--level-sd` /
+`--level-mean` remain available as the scalar fallback.
 
 Central q05-q95 coverage across the full calibration arc: 0.30 (fixed) →
 0.55 (games) → 0.70 (bust) → 0.75 (level) → **0.80 (role)**. Honest
@@ -744,9 +744,10 @@ on what any marginal model can do.
 
 ## What's next, post-phase-18
 
-- Wire the conditioned `LevelModel` (with the `years_exp` rosters join)
-  through the `simulate`/`rank`/`draft-sim` CLI commands so the calibrated
-  config is usable at draft time, not just in the backtest.
+- ~~Wire the conditioned `LevelModel` through `simulate`/`rank`/`draft-sim`~~ —
+  done (`--conditioned-level`; roadmap 4.1).
+- Projection snapshots the hub can read (roadmap 4.2) and ESPN↔nflverse player
+  ID mapping with a coverage metric (roadmap 4.3).
 - Per-position joint-distribution learning (copula over stat vectors) --
   the lever for cross-stat realism once the marginals are calibrated.
 - Schedule-aware adjustments and dashboard-output pricing against
