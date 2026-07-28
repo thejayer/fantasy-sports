@@ -183,7 +183,8 @@ Override defaults with `SJ_BUCKET`, `SJ_SCHEDULE`, `GCP_REGION`.
 After the sync job has been deployed at least once:
 
 ```bash
-NOTIFY_EMAIL=you@example.com ./scripts/setup-sync-alerting.sh
+./scripts/setup-sync-alerting.sh
+# defaults to austincwiley@gmail.com; override with NOTIFY_EMAIL=…
 ```
 
 Creates (or updates) a Cloud Monitoring alert that emails when the `sj-sync`

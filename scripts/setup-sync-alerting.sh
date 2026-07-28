@@ -6,7 +6,8 @@
 #   - You can receive alert email (or pass an existing channel id)
 #
 # Run in Cloud Shell:
-#   NOTIFY_EMAIL=you@example.com ./scripts/setup-sync-alerting.sh
+#   ./scripts/setup-sync-alerting.sh
+#   # or override: NOTIFY_EMAIL=other@example.com ./scripts/setup-sync-alerting.sh
 #
 # Optional:
 #   NOTIFICATION_CHANNEL=projects/.../notificationChannels/123   # reuse one
@@ -20,9 +21,10 @@ REGION="${GCP_REGION:-us-central1}"
 JOB="${SJ_JOB:-sj-sync}"
 POLICY_DISPLAY="${SJ_ALERT_POLICY:-Strictly Jayers sync job failed}"
 CHANNEL_DISPLAY="${SJ_CHANNEL_DISPLAY:-Strictly Jayers sync alerts}"
+NOTIFY_EMAIL="${NOTIFY_EMAIL:-austincwiley@gmail.com}"
 
-if [[ -z "${NOTIFY_EMAIL:-}" && -z "${NOTIFICATION_CHANNEL:-}" ]]; then
-  echo "Set NOTIFY_EMAIL=you@example.com or NOTIFICATION_CHANNEL=projects/.../notificationChannels/ID" >&2
+if [[ -z "${NOTIFY_EMAIL}" && -z "${NOTIFICATION_CHANNEL:-}" ]]; then
+  echo "Set NOTIFY_EMAIL=… or NOTIFICATION_CHANNEL=projects/.../notificationChannels/ID" >&2
   exit 1
 fi
 
