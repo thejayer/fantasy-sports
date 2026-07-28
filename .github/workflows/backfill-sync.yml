@@ -99,25 +99,22 @@ jobs:
             # Match Dockerfile.sync scheduled default.
             ARGS=(--args=sync,--current-only)
           fi
-          echo "Starting $MODE on job $JOB …"
+          WAIT_ARGS=()
+          if [ "$WAIT" = "true" ]; then
+            # `gcloud run jobs executions wait` is not a command — use execute --wait.
+            WAIT_ARGS+=(--wait)
+          fi
+          echo "Starting $MODE on job $JOB ${WAIT_ARGS[*]:-}…"
+          # Progress chatter is on stderr; keep the last format line as the name.
           EXEC=$(gcloud run jobs execute "$JOB" \
             --project "$PROJECT_ID" \
             --region "$REGION" \
             "${ARGS[@]}" \
-            --format='value(metadata.name)')
+            "${WAIT_ARGS[@]}" \
+            --format='value(metadata.name)' | tail -n1)
           echo "execution=$EXEC" >> "$GITHUB_OUTPUT"
-          echo "Started execution: $EXEC"
+          echo "Execution: $EXEC"
           if [ "$WAIT" = "true" ]; then
-            echo "Waiting for $EXEC to finish…"
-            gcloud run jobs executions wait "$EXEC" \
-              --project "$PROJECT_ID" \
-              --region "$REGION"
-            STATUS=$(gcloud run jobs executions describe "$EXEC" \
-              --project "$PROJECT_ID" \
-              --region "$REGION" \
-              --format='value(status.conditions[0].status)')
-            echo "Wait finished; top condition status=$STATUS"
-            # Fail the workflow if the execution did not succeed.
             SUCCEEDED=$(gcloud run jobs executions describe "$EXEC" \
               --project "$PROJECT_ID" \
               --region "$REGION" \
@@ -128,6 +125,7 @@ jobs:
                 --project "$PROJECT_ID" --region "$REGION"
               exit 1
             fi
+            echo "Execution succeeded."
           fi
 
       - name: Summary
