@@ -1,0 +1,40 @@
+import { readFileSync } from "fs";
+import path from "path";
+import { describe, expect, it } from "vitest";
+
+/**
+ * Roadmap 3.1: one sport-aware LeagueView — football must not keep a parallel
+ * inline branch on the league page, and must inherit season chips / Win%.
+ */
+describe("LeagueView unification", () => {
+  const pageSource = readFileSync(
+    path.join(process.cwd(), "src/app/leagues/[leagueId]/page.tsx"),
+    "utf8",
+  );
+  const viewSource = readFileSync(
+    path.join(process.cwd(), "src/components/LeagueView.tsx"),
+    "utf8",
+  );
+
+  it("league page renders LeagueView for every sport", () => {
+    expect(pageSource).toMatch(/import \{ LeagueView \} from "@\/components\/LeagueView"/);
+    expect(pageSource).toMatch(/<LeagueView/);
+    expect(pageSource).not.toMatch(/sport === "baseball"/);
+    expect(pageSource).not.toMatch(/BaseballLeagueView/);
+    expect(pageSource).not.toMatch(/function record\(/);
+  });
+
+  it("shared view includes season chips, win%, injury dots, and sport-gated columns", () => {
+    expect(viewSource).toMatch(/season-chip/);
+    expect(viewSource).toMatch(/Win%/);
+    expect(viewSource).toMatch(/status-dot/);
+    expect(viewSource).toMatch(/table-scroll/);
+    expect(viewSource).toMatch(/sportFormatLabel/);
+    // Football keeps PF/PA; baseball keeps role switcher + counting stats.
+    expect(viewSource).toMatch(/"PF"/);
+    expect(viewSource).toMatch(/<th>PA<\/th>/);
+    expect(viewSource).toMatch(/RoleSwitcher/);
+    expect(viewSource).toMatch(/FootballPlayersTable/);
+    expect(viewSource).toMatch(/BaseballPlayersTable/);
+  });
+});
