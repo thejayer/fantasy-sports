@@ -100,7 +100,7 @@ export function FreeAgentsBoard({
       <DataTable
         rows={agents}
         columns={columns(sport)}
-        getRowKey={(row, index) => String(row.id ?? `fa-${index}`)}
+        getRowKey={(row) => String(row.id ?? row.name ?? "fa")}
         searchPlaceholder="Search free agents…"
         searchText={(row) =>
           [row.name, row.position, row.pro_team, row.status]
