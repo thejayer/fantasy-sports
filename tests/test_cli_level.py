@@ -6,7 +6,7 @@ from pathlib import Path
 
 import pandas as pd
 import pytest
-from typer.testing import CliRunner
+import typer.main
 
 from ffa.backtest import build_player_level, years_exp_from_rosters
 from ffa.cli import _load_simulation_summary, app
@@ -75,20 +75,24 @@ def test_build_player_level_includes_collapse_and_experience():
     assert coll_fringe > coll_star
 
 
+def _command_option_names(command_name: str) -> set[str]:
+    """Inspect Click params directly — Rich help can interleave ANSI in flag text."""
+    click_app = typer.main.get_command(app)
+    cmd = click_app.commands[command_name]
+    names: set[str] = set()
+    for param in cmd.params:
+        names.update(param.opts)
+        names.update(param.secondary_opts)
+    return names
+
+
 def test_simulate_cli_exposes_conditioned_level_flag():
-    # Wide COLUMNS so Rich/Typer doesn't wrap the flag name across lines in CI.
-    result = CliRunner().invoke(app, ["simulate", "--help"], env={"COLUMNS": "200"})
-    assert result.exit_code == 0
-    assert "conditioned-level" in result.stdout
+    assert "--conditioned-level" in _command_option_names("simulate")
 
 
 def test_rank_draft_backtest_expose_conditioned_level_flag():
     for command in ("rank", "draft-sim", "optimize", "backtest"):
-        result = CliRunner().invoke(
-            app, [command, "--help"], env={"COLUMNS": "200"}
-        )
-        assert result.exit_code == 0, command
-        assert "conditioned-level" in result.stdout, command
+        assert "--conditioned-level" in _command_option_names(command), command
 
 
 def test_load_simulation_summary_conditioned_builds_player_level(tmp_path, monkeypatch):
