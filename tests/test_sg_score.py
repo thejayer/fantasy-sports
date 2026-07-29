@@ -2,7 +2,6 @@
 
 from sg.rounds import fixture_event_rounds, fixture_player_rounds
 from sg.score import (
-    build_scoreboard_payload,
     compare_h2h,
     score_round_slots,
     score_team_week,

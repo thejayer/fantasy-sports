@@ -18,7 +18,7 @@ from sg.rounds import (
 from sg.settings import GolfSettings, validate_golf_settings
 
 
-def to_par_points(to_par: float | int | None) -> float:
+def to_par_points(to_par: float | None) -> float:
     """``neg_to_par``: birdie (-1) → +1 fantasy point."""
     if to_par is None:
         return 0.0
