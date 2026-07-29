@@ -4,6 +4,7 @@ import { unstable_cache } from "next/cache";
 import { cache } from "react";
 
 import { SJ_SNAPSHOTS_CACHE_TAG } from "@/lib/cache-tags";
+import { dataRoots } from "@/lib/hub-paths";
 import { requireSession } from "@/lib/session";
 import {
   CorruptSnapshotError,
@@ -13,6 +14,7 @@ import {
 
 export { CorruptSnapshotError } from "@/lib/snapshot-json";
 export { SJ_SNAPSHOTS_CACHE_TAG } from "@/lib/cache-tags";
+export { dataRoots, hubDataRoot, snapshotDataRoots } from "@/lib/hub-paths";
 
 export type SeasonStats = {
   AB?: number;
@@ -471,19 +473,10 @@ type FreeAgentsFile = {
 type LineupsFile = GolfLineupsSnapshot;
 type ScoreboardFile = GolfScoreboardSnapshot;
 
-function dataRoots(): string[] {
-  const roots = [
-    process.env.SJ_DATA_DIR,
-    path.resolve(process.cwd(), "../../data/sj"),
-    path.resolve(process.cwd(), "../../fixtures/sj"),
-    path.resolve(process.cwd(), "fixtures/sj"),
-  ].filter((value): value is string => Boolean(value));
-  return [...new Set(roots)];
-}
-
 /**
  * Snapshots live on a read-only Cloud Storage mount refreshed by the sj-sync
- * job. Reads go through Next's Data Cache (`unstable_cache`) with TTL from
+ * job. Hub-native golf lives under `SJ_HUB_DIR` (see `lib/hub-paths.ts`).
+ * Reads go through Next's Data Cache (`unstable_cache`) with TTL from
  * `SJ_CACHE_TTL_MS` (default 60s) and tag `sj-snapshots` for explicit
  * revalidation via `POST /api/revalidate` after sync.
  */
@@ -655,13 +648,22 @@ async function loadSnapshotFromRoot(
  */
 export const getLeagueIndex = cache(async (): Promise<LeagueIndexItem[]> => {
   await requireSession();
-  for (const root of dataRoots()) {
-    const index = await readJson<{ leagues: LeagueIndexItem[] }>(path.join(root, "index.json"));
-    if (index?.leagues?.length) {
-      return index.leagues;
+  // Merge every root's index. Later roots win on (league_id, season) so the
+  // hub-native root (listed first in dataRoots) is overlaid by ESPN only when
+  // keys collide — we reverse-merge so hub/golf wins collisions.
+  const byKey = new Map<string, LeagueIndexItem>();
+  for (const root of [...dataRoots()].reverse()) {
+    const index = await readJson<{ leagues: LeagueIndexItem[] }>(
+      path.join(root, "index.json"),
+    );
+    for (const row of index?.leagues ?? []) {
+      byKey.set(`${row.league_id}:${row.season}`, row);
     }
   }
-  return [];
+  return [...byKey.values()].sort(
+    (a, b) =>
+      a.league_id.localeCompare(b.league_id) || b.season - a.season,
+  );
 });
 
 export async function getLatestLeagues(): Promise<LeagueIndexItem[]> {

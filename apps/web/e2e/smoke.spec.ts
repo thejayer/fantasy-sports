@@ -5,7 +5,10 @@ import path from "node:path";
 /**
  * Fixture-backed smoke paths (roadmap 1.2). Requires AUTH_DEV_BYPASS=1 and
  * committed fixtures/sj (forced via SJ_DATA_DIR in playwright.config.ts).
+ * Hub-native writes (golf create, members) go to SJ_HUB_DIR (.playwright-hub-data).
  */
+
+const HUB_DIR = path.resolve(__dirname, "../.playwright-hub-data");
 test.describe("hub smoke", () => {
   test("leagues list shows Strictly Jayers leagues including golf", async ({
     page,
@@ -79,9 +82,8 @@ test.describe("hub smoke", () => {
     });
     await expect(page.getByText("Scottie Scheffler").first()).toBeVisible();
 
-    const root = path.resolve(__dirname, "../../../fixtures/sj");
-    fs.rmSync(path.join(root, slug), { recursive: true, force: true });
-    const indexPath = path.join(root, "index.json");
+    fs.rmSync(path.join(HUB_DIR, slug), { recursive: true, force: true });
+    const indexPath = path.join(HUB_DIR, "index.json");
     try {
       const index = JSON.parse(fs.readFileSync(indexPath, "utf8")) as {
         leagues?: Array<{ league_id?: string }>;
@@ -112,10 +114,9 @@ test.describe("hub smoke", () => {
     await expect(page.getByRole("columnheader", { name: "Keeper", exact: true })).toBeVisible();
     await expect(page.getByRole("cell", { name: "Yes" }).first()).toBeVisible();
 
-    // Create writes under SJ_DATA_DIR (fixtures in e2e) — remove ephemeral league.
-    const root = path.resolve(__dirname, "../../../fixtures/sj");
-    fs.rmSync(path.join(root, slug), { recursive: true, force: true });
-    const indexPath = path.join(root, "index.json");
+    // Create writes under SJ_HUB_DIR — remove ephemeral league.
+    fs.rmSync(path.join(HUB_DIR, slug), { recursive: true, force: true });
+    const indexPath = path.join(HUB_DIR, "index.json");
     try {
       const index = JSON.parse(fs.readFileSync(indexPath, "utf8")) as {
         generated_at?: string;
@@ -197,10 +198,7 @@ test.describe("hub smoke", () => {
   });
 
   test("admin center adds email and links an ESPN team", async ({ page }) => {
-    const membersPath = path.resolve(
-      __dirname,
-      "../../../fixtures/sj/hub_members.json",
-    );
+    const membersPath = path.join(HUB_DIR, "hub_members.json");
     fs.rmSync(membersPath, { force: true });
     try {
       await page.goto("/admin");

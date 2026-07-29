@@ -5,6 +5,7 @@ const port = Number(process.env.PORT ?? 3000);
 const baseURL = process.env.PLAYWRIGHT_BASE_URL ?? `http://127.0.0.1:${port}`;
 const appRoot = __dirname;
 const fixturesDir = path.resolve(appRoot, "../../fixtures/sj");
+const hubDir = path.resolve(appRoot, ".playwright-hub-data");
 const standaloneRoot = path.resolve(appRoot, ".next/standalone");
 const standaloneServer = path.join(standaloneRoot, "server.js");
 
@@ -14,8 +15,9 @@ const standaloneServer = path.join(standaloneRoot, "server.js");
  * via the npm script / CI env before starting this config's webServer.
  *
  * SJ_DATA_DIR points at committed fixtures so a local data/sj seed cannot make
- * assertions flake. Starts the same standalone server.js the Dockerfile uses
- * (after copying `.next/static` beside it).
+ * assertions flake. SJ_HUB_DIR is a writable sidecar for golf/members so create
+ * flows never mutate fixtures/sj. Starts the same standalone server.js the
+ * Dockerfile uses (after copying `.next/static` beside it).
  */
 export default defineConfig({
   testDir: "./e2e",
@@ -47,6 +49,7 @@ export default defineConfig({
       HOSTNAME: "127.0.0.1",
       PORT: String(port),
       SJ_DATA_DIR: process.env.SJ_DATA_DIR ?? fixturesDir,
+      SJ_HUB_DIR: process.env.SJ_HUB_DIR ?? hubDir,
     },
   },
 });

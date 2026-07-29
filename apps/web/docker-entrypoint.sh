@@ -1,13 +1,14 @@
 #!/bin/sh
 # Cloud Run entrypoint for the Strictly Jayers hub.
 #
-# In production the snapshot directory is a read-only Cloud Storage mount kept
-# fresh by the sj-sync Cloud Run Job, so this script normally just starts the
-# server. Startup sync stays available (SJ_SYNC_ON_START=1) for local runs and
-# for deployments without a bucket.
+# In production SJ_DATA_DIR is a read-only GCS mount (ESPN sync store) and
+# SJ_HUB_DIR is a separate read-write GCS mount (golf / members). Startup sync
+# stays available (SJ_SYNC_ON_START=1) for local runs without a bucket.
 set -eu
 
 DATA_DIR="${SJ_DATA_DIR:-/app/data/sj}"
+HUB_DIR="${SJ_HUB_DIR:-/app/data/hub}"
+mkdir -p "$HUB_DIR" 2>/dev/null || true
 
 # Production (SJ_SYNC_ON_START=0): do not probe SJ_DATA_DIR before listen.
 # A slow/broken GCS FUSE mount can hang `test -f` / `test -w` and Cloud Run

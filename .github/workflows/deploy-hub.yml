@@ -40,7 +40,11 @@ on:
         required: true
         default: "sj-hub"
       bucket:
-        description: "GCS snapshot bucket to mount (blank = baked fixtures; recommended until runtime SA has objectViewer)"
+        description: "GCS ESPN snapshot bucket to mount RO (blank = baked fixtures)"
+        required: false
+        default: ""
+      hub_bucket:
+        description: "GCS hub-native bucket (golf/members) mounted RW at /app/data/hub — create via setup-sync-infra.sh"
         required: false
         default: ""
       min_instances:
@@ -72,6 +76,7 @@ jobs:
       # image-only deploys matched the last healthy revision. Pass bucket via
       # workflow_dispatch after ./scripts/setup-sync-infra.sh.
       BUCKET: ${{ github.event.inputs.bucket || '' }}
+      HUB_BUCKET: ${{ github.event.inputs.hub_bucket || '' }}
       MIN_INSTANCES: ${{ github.event.inputs.min_instances || '0' }}
     steps:
       - name: Validate inputs
@@ -85,13 +90,17 @@ jobs:
                 exit 1 ;;
             esac
           done
-          case "$BUCKET" in
-            ""|*[!A-Za-z0-9_.-]*)
-              if [ -n "$BUCKET" ]; then
-                echo "Invalid bucket name: $BUCKET" >&2
-                exit 1
-              fi ;;
-          esac
+          for pair in "bucket=$BUCKET" "hub_bucket=$HUB_BUCKET"; do
+            name=${pair%%=*}
+            value=${pair#*=}
+            case "$value" in
+              ""|*[!A-Za-z0-9_.-]*)
+                if [ -n "$value" ]; then
+                  echo "Invalid $name: $value" >&2
+                  exit 1
+                fi ;;
+            esac
+          done
           case "$MIN_INSTANCES" in
             ""|*[!0-9]*)
               echo "Invalid min_instances: must be a non-negative integer." >&2
@@ -160,24 +169,37 @@ jobs:
             --min-instances "$MIN_INSTANCES"
             --max-instances 5
             --cpu-boost
-            --set-env-vars "SJ_SYNC_ON_START=0,AUTH_TRUST_HOST=true,SJ_DATA_DIR=/app/data/sj,AUTH_URL=$AUTH_URL"
+            --set-env-vars "SJ_SYNC_ON_START=0,AUTH_TRUST_HOST=true,SJ_DATA_DIR=/app/data/sj,SJ_HUB_DIR=/app/data/hub,AUTH_URL=$AUTH_URL"
             --set-secrets "AUTH_SECRET=sj-auth-secret:latest,AUTH_GOOGLE_ID=sj-auth-google-id:latest,AUTH_GOOGLE_SECRET=sj-auth-google-secret:latest,ALLOWED_EMAILS=sj-allowed-emails:latest"
           )
+          # Always clear then re-add volumes so a prior revision cannot leave a
+          # dangling mount when inputs change.
+          VOLUME_ARGS=(--clear-volumes --clear-volume-mounts)
           if [ -n "$BUCKET" ]; then
-            echo "Mounting gs://$BUCKET at /app/data/sj (uid/gid 1001)"
+            echo "Mounting gs://$BUCKET RO at /app/data/sj (ESPN sync store)"
             # Sync job owns writes; hub mounts read-only. uid/gid must match the
             # non-root sjhub user (1001). gcloud mount-options use semicolons
             # (commas would be parsed as separate volume keys → "unexpected gid").
-            ARGS+=(
+            VOLUME_ARGS+=(
               --add-volume "name=sjdata,type=cloud-storage,bucket=$BUCKET,readonly=true,mount-options=uid=1001;gid=1001"
               --add-volume-mount "volume=sjdata,mount-path=/app/data/sj"
             )
           else
-            # clear-volumes alone leaves dangling volume_mounts on the service
-            # template (error: mounts reference volumes named [sjdata]…).
-            echo "No bucket set — clearing volumes + mounts; hub serves baked fixtures"
-            ARGS+=(--clear-volumes --clear-volume-mounts)
+            echo "No ESPN bucket — hub will fall back to baked fixtures for SJ_DATA_DIR"
           fi
+          if [ -n "$HUB_BUCKET" ]; then
+            echo "Mounting gs://$HUB_BUCKET RW at /app/data/hub (golf / members)"
+            VOLUME_ARGS+=(
+              --add-volume "name=sjhub,type=cloud-storage,bucket=$HUB_BUCKET,readonly=false,mount-options=uid=1001;gid=1001"
+              --add-volume-mount "volume=sjhub,mount-path=/app/data/hub"
+            )
+          else
+            echo "No hub_bucket — SJ_HUB_DIR=/app/data/hub is container-local (ephemeral)"
+          fi
+          if [ -z "$BUCKET" ] && [ -z "$HUB_BUCKET" ]; then
+            echo "No buckets set — clearing volumes + mounts"
+          fi
+          ARGS+=("${VOLUME_ARGS[@]}")
           gcloud run deploy "$SERVICE" "${ARGS[@]}"
 
           LIVE_URL="$(gcloud run services describe "$SERVICE" \

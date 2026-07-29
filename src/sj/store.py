@@ -119,6 +119,25 @@ def _index_document(leagues: list[dict[str, Any]]) -> dict[str, Any]:
     }
 
 
+def _refuse_espn_overwrite_of_golf(
+    existing: dict[str, Any] | None,
+    incoming: dict[str, Any],
+) -> None:
+    """Block sync from clobbering a hub-native golf season in a shared store.
+
+    Golf should live under ``SJ_HUB_DIR`` / a separate hub bucket; this guard is
+    belt-and-suspenders if files ever share a root with ESPN sync.
+    """
+    if not existing:
+        return
+    if existing.get("sport") == "golf" and incoming.get("sport") != "golf":
+        raise ValueError(
+            f"refusing to overwrite hub-native golf league "
+            f"{existing.get('league_id')} {existing.get('season')} with "
+            f"sport={incoming.get('sport')!r}"
+        )
+
+
 class SnapshotStore(Protocol):
     """Read/write league-season snapshots."""
 
@@ -139,6 +158,7 @@ class FileStore:
         payload = _stamp(snapshot)
         league_id = payload["league_id"]
         season = int(payload["season"])
+        _refuse_espn_overwrite_of_golf(self.read(league_id, season), payload)
         parts = split_snapshot(payload)
         directory = self.root / season_dir_rel(league_id, season)
         directory.mkdir(parents=True, exist_ok=True)
@@ -255,6 +275,7 @@ class GcsStore:
         payload = _stamp(snapshot)
         league_id = payload["league_id"]
         season = int(payload["season"])
+        _refuse_espn_overwrite_of_golf(self.read(league_id, season), payload)
         parts = split_snapshot(payload)
         bucket = self._get_bucket()
         directory = season_dir_rel(league_id, season)

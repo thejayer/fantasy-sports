@@ -149,6 +149,36 @@ def test_upsert_replaces_same_season_entry(tmp_path: Path):
     assert items[0]["synced_at"] != first
 
 
+def test_espn_write_preserves_sibling_golf_index_row(tmp_path: Path):
+    """Sync upsert must not drop a hub-native golf row already in index.json."""
+    store = FileStore(tmp_path)
+    golf = snapshot(2026)
+    golf["league_id"] = "golf-main"
+    golf["sport"] = "golf"
+    golf["espn_league_id"] = None
+    store.write(golf)
+
+    store.write(snapshot(2026))  # football-main
+
+    leagues = {(row["league_id"], row["season"], row["sport"]) for row in store.list()}
+    assert ("golf-main", 2026, "golf") in leagues
+    assert ("football-main", 2026, "football") in leagues
+
+
+def test_espn_write_refuses_to_overwrite_golf_season(tmp_path: Path):
+    store = FileStore(tmp_path)
+    golf = snapshot(2026)
+    golf["league_id"] = "shared-id"
+    golf["sport"] = "golf"
+    golf["espn_league_id"] = None
+    store.write(golf)
+
+    espn = snapshot(2026)
+    espn["league_id"] = "shared-id"
+    with pytest.raises(ValueError, match="hub-native golf"):
+        store.write(espn)
+
+
 def test_missing_index_falls_back_to_full_rebuild(tmp_path: Path):
     store = FileStore(tmp_path)
     store.write(snapshot(2024))

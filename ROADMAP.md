@@ -451,10 +451,14 @@ Fold in continuously rather than saving for the end.
 - **Storage.** If weekly and projection data outgrow JSON-on-GCS, the pattern is
   already established elsewhere in the repo: Parquet plus DuckDB, as `src/ffa`
   does.
-- **Member admin / email↔team ACL.** Hub `/admin` + `{SJ_DATA_DIR}/hub_members.json`
+- **Member admin / email↔team ACL.** Hub `/admin` + `{SJ_HUB_DIR}/hub_members.json`
   (add Google emails, roles, link one franchise per league from snapshots).
   Sign-in allowlist = `ALLOWED_EMAILS` ∪ members file. Next: enforce links on
-  golf auction/lineup mutations; writable members store on production GCS.
+  golf auction/lineup mutations.
+- **Hub-native store isolation.** Golf / members / auction rooms write under
+  `SJ_HUB_DIR` (prod: separate RW GCS `…-sj-hub`); ESPN sync stays on
+  `SJ_DATA_DIR` (RO `…-sj-data`). Indexes merged at read time; sync refuses to
+  overwrite `sport=golf`.
 - **Live ESPN vs fixtures.** Committed `fixtures/sj` and accidental `data/sj`
   copies are dummy team names. Restore with `source .env.espn && rm -rf data/sj
   && sj sync --current-only` (+ `sj backfill` for history) and mount the GCS

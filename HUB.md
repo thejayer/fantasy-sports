@@ -126,18 +126,26 @@ Optional: `ADMIN_EMAILS` (not a Secret Manager entry yet) bootstraps who can ope
 
 ### Members / admin center
 
-Hub UI **`/admin`** manages `{SJ_DATA_DIR}/hub_members.json`:
+Hub UI **`/admin`** manages `{SJ_HUB_DIR}/hub_members.json`:
 
 - Add Google emails (also grants sign-in when not listed in `ALLOWED_EMAILS`)
 - Role: `admin` | `member`
 - Link one franchise per league from the **current** snapshot teams (ESPN owners
   show as display names on the team options)
 
-Sign-in allowlist = `ALLOWED_EMAILS` ∪ member emails in that file. Production
-hub mounts GCS **read-only**, so admin writes work locally against `data/sj`
-(or any writable `SJ_DATA_DIR`); for prod, either use a writable members path or
-keep using Secret Manager for emails and sync `hub_members.json` into the bucket
-via ops. Team links are ready for future “my team” / auction ACL.
+Sign-in allowlist = `ALLOWED_EMAILS` ∪ member emails in that file.
+
+### Hub-native store (golf) vs ESPN sync store
+
+| Env | Path (prod) | Mount | Owns |
+|---|---|---|---|
+| `SJ_DATA_DIR` | `/app/data/sj` | GCS **RO** (`…-sj-data`) | ESPN football/baseball from `sj sync` |
+| `SJ_HUB_DIR` | `/app/data/hub` | GCS **RW** (`…-sj-hub`) | Golf leagues, auction rooms, `hub_members.json` |
+
+`getLeagueIndex` merges both indexes. Sync/backfill never write golf (`platform: hub`
+skipped) and refuse to overwrite `sport=golf` if paths collide. Create the hub
+bucket with `./scripts/setup-sync-infra.sh`, then deploy hub with both
+`bucket` and `hub_bucket` workflow inputs.
 
 ### Create / populate (Cloud Shell)
 

@@ -29,6 +29,9 @@ pip-delete-this-directory.txt
 data/
 artifacts/
 
+# Playwright hub-native write root (golf/members e2e)
+apps/web/.playwright-hub-data/
+
 # IDE / OS
 .idea/
 .vscode/
