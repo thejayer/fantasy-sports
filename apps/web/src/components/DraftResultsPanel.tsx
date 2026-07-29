@@ -59,7 +59,7 @@ export function DraftResultsPanel({
   const golfLede = isAuction
     ? `OWGR auction · ${picks.length} picks · $${golf?.draft.budget ?? "?"} budget · first 5 slots GS, rest BE${
         showKeepers ? " · includes keepers" : ""
-      }. Offline simulated bids (not a live nomination room).`
+      }.`
     : `OWGR snake draft · ${picks.length} picks · first 5 slots per team are GS (starters), rest BE${
         showKeepers ? " · early rounds marked keepers" : ""
       }. Weekly Alt1/Alt2 live on Lineup.`;
@@ -73,6 +73,17 @@ export function DraftResultsPanel({
               showKeepers ? " · includes keepers" : ""
             }${showBids ? " · auction bids shown when present" : ""}. Filter by team below. Football Monte Carlo slot sims stay under Tools → Draft.`}
       </p>
+      {isGolf && isAuction && !picks.length ? (
+        <p className="league-meta">
+          No picks yet.{" "}
+          <Link
+            href={`/leagues/${league.league_id}?season=${league.season}&tab=auction&team=1`}
+          >
+            Open live nomination room
+          </Link>{" "}
+          or recreate with an offline auction draft.
+        </p>
+      ) : null}
 
       {budgetRows.length ? (
         <div className="panel table-scroll" style={{ marginTop: "0.75rem" }}>

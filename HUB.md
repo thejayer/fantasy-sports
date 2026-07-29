@@ -31,18 +31,16 @@ baseball projection snapshots, no trade/sim tools on category leagues. Baseball
 `projections` / `tools` tabs explain that boundary; FA browsing is the Waivers
 tab. Do not stub a half engine. Revisit only with a dedicated MLB modeling plan.
 
-### Golf scope (roadmap 6.4a–e + 6.5 + auction/keepers)
+### Golf scope (roadmap 6.4a–e + 6.5 + auction/keepers + live room)
 
 **Hub-native** PGA Tour counting leagues (LIV real-team model) — not ESPN and
-not `ffa`. Package: `src/sg` (`sg create-league`, snake **or** auction draft
-with optional keepers, fixture FedEx events + lineups + EOD scoreboard +
-standings + history matchup arrays). Fixture `golf-main` stays snake; Create
-UI `/leagues/new` can run offline auction (`budget`) + keepers
-(`keeper_slots`). Hub surfaces (sport-aware `LeagueView`): Standings, Teams,
-Settings, Schedule, Lineup, Scoreboard, Draft (budget board + bids/keepers),
-History. Team pages: `GolfRosterView` GS/BE + current-event alts. Scoring
-stays offline — no live tour scrapes. Tee-time locks fail closed (UTC). Live
-nomination rooms are out of scope.
+not `ffa`. Package: `src/sg` (snake **or** offline auction + keepers) plus hub
+live nomination room (`auction_room.json`, polled). Fixture `golf-main` stays
+snake. Create UI can run offline auction or **Live nomination room** (empty
+draft → Auction tab). Hub surfaces: Standings, Teams, Settings, Schedule,
+Lineup, Scoreboard, Draft, **Auction**, History. Scoring stays offline — no
+live tour scrapes. Tee locks fail closed (UTC). Room is file-backed + HTTP
+polling (no websockets/Redis).
 
 ## Production (Cloud Run) — preferred
 

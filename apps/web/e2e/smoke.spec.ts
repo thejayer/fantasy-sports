@@ -45,6 +45,56 @@ test.describe("hub smoke", () => {
     await expect(page.getByRole("link", { name: "All teams" })).toBeVisible();
   });
 
+  test("live golf auction room nominate and sell", async ({ page }) => {
+    const slug = `golf-live-${Date.now().toString(36).slice(-6)}`;
+    await page.goto("/leagues/new");
+    await page.locator('input[name="league_id"]').fill(slug);
+    await page.locator('input[name="name"]').fill("Live Auction");
+    await page.locator('select[name="draft_style"]').selectOption("auction");
+    await page.getByText(/Live nomination room/i).click();
+    await page.locator('input[name="team_count"]').fill("6");
+    await page.locator('input[name="bench"]').fill("2");
+    await page.getByRole("button", { name: /Create golf league/i }).click();
+    await page.waitForURL(new RegExp(`/leagues/${slug}.*tab=auction`));
+    await expect(page.getByText(/Live OWGR auction/i)).toBeVisible();
+    await page.getByRole("button", { name: /Start auction/i }).click();
+    await expect(page.getByText(/Nominate/i).first()).toBeVisible();
+    await page.locator("select").filter({ hasText: /Scheffler|Select/ }).last().selectOption({ index: 1 });
+    await page.getByRole("button", { name: /^Nominate$/i }).click();
+    await expect(page.getByText(/Bidding/i).first()).toBeVisible();
+    // Switch acting team to team 2 and bid, then pass others via timer/pass.
+    await page.getByLabel(/Acting team/i).selectOption({ index: 1 });
+    await page.getByRole("button", { name: /\+\$1/i }).click();
+    await expect(page.getByText(/high bid/i)).toBeVisible();
+    // Remaining teams pass until sold.
+    for (const idx of [0, 2, 3, 4, 5]) {
+      await page.getByLabel(/Acting team/i).selectOption({ index: idx });
+      const pass = page.getByRole("button", { name: /^Pass$/i });
+      if (await pass.isVisible().catch(() => false)) {
+        await pass.click();
+      }
+    }
+    await expect(page.getByRole("heading", { name: /^Sold$/i })).toBeVisible({
+      timeout: 15_000,
+    });
+    await expect(page.getByText("Scottie Scheffler").first()).toBeVisible();
+
+    const root = path.resolve(__dirname, "../../../fixtures/sj");
+    fs.rmSync(path.join(root, slug), { recursive: true, force: true });
+    const indexPath = path.join(root, "index.json");
+    try {
+      const index = JSON.parse(fs.readFileSync(indexPath, "utf8")) as {
+        leagues?: Array<{ league_id?: string }>;
+      };
+      index.leagues = (index.leagues ?? []).filter(
+        (row) => row.league_id !== slug,
+      );
+      fs.writeFileSync(indexPath, `${JSON.stringify(index, null, 2)}\n`);
+    } catch {
+      /* ignore */
+    }
+  });
+
   test("create golf auction league shows bids and keepers", async ({ page }) => {
     const slug = `golf-auc-${Date.now().toString(36).slice(-6)}`;
     await page.goto("/leagues/new");

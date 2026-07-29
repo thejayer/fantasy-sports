@@ -3,6 +3,7 @@ import { ActivityPanel } from "@/components/ActivityPanel";
 import { DraftResultsPanel } from "@/components/DraftResultsPanel";
 import { EmptyState } from "@/components/EmptyState";
 import { FreeAgentsBoard } from "@/components/FreeAgentsBoard";
+import { AuctionRoomPanel } from "@/components/AuctionRoomPanel";
 import { GolfLineupPanel } from "@/components/GolfLineupPanel";
 import { GolfSchedulePanel } from "@/components/GolfSchedulePanel";
 import { GolfScoreboardPanel } from "@/components/GolfScoreboardPanel";
@@ -237,7 +238,7 @@ const BASEBALL_TABS = [
   "tools",
 ] as const;
 
-/** Golf lane (roadmap 6.4a–e + 6.5 hub surfaces). */
+/** Golf lane (roadmap 6.4a–e + 6.5 + live auction). */
 const GOLF_TABS = [
   "standings",
   "teams",
@@ -246,6 +247,7 @@ const GOLF_TABS = [
   "lineup",
   "scoreboard",
   "draft",
+  "auction",
   "history",
 ] as const;
 
@@ -292,7 +294,7 @@ export function LeagueView({
   draftTeamId?: number;
   /** Golf event id (`?tab=lineup|scoreboard&event=`). */
   golfEventId?: string;
-  /** Golf lineup team filter (`?tab=lineup&team=`). */
+  /** Golf lineup / auction team filter (`?tab=lineup|auction&team=`). */
   golfLineupTeamId?: number;
   projectionSnapshot?: ProjectionSnapshot | null;
   playerMap?: PlayerMapSnapshot | null;
@@ -362,6 +364,10 @@ export function LeagueView({
       : "";
   const scoreboardQuery =
     active === "scoreboard" && golfEventId ? `&event=${golfEventId}` : "";
+  const auctionQuery =
+    active === "auction" && golfLineupTeamId != null
+      ? `&team=${golfLineupTeamId}`
+      : "";
 
   const seasonHrefExtra =
     active === "players" && activeRole
@@ -376,15 +382,17 @@ export function LeagueView({
             ? lineupQuery
             : active === "scoreboard"
               ? scoreboardQuery
-              : active === "activity"
-                ? `&view=${activityView}`
-                : active === "history"
-                  ? `&view=${historyView}${historyPair}`
-                  : active === "projections"
-                    ? scoringQuery
-                    : active === "tools"
-                      ? toolsPair
-                      : "";
+              : active === "auction"
+                ? auctionQuery
+                : active === "activity"
+                  ? `&view=${activityView}`
+                  : active === "history"
+                    ? `&view=${historyView}${historyPair}`
+                    : active === "projections"
+                      ? scoringQuery
+                      : active === "tools"
+                        ? toolsPair
+                        : "";
 
   const players = isBaseball
     ? league.players.filter((player) => {
@@ -518,6 +526,10 @@ export function LeagueView({
 
       {active === "draft" ? (
         <DraftResultsPanel league={league} teamId={draftTeamId} />
+      ) : null}
+
+      {active === "auction" && isGolf ? (
+        <AuctionRoomPanel league={league} teamId={golfLineupTeamId} />
       ) : null}
 
       {active === "activity" ? (
