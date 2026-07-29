@@ -22,6 +22,8 @@ class GolfRegistryDefaults(BaseModel):
     missed_cut_mode: Literal["off", "alt1", "alt1_2"] = "alt1"
     draft_style: Literal["snake", "auction"] = "snake"
     keepers: bool = False
+    keeper_slots: int = 0
+    budget: int = 200
     multipliers: dict[str, float] = Field(
         default_factory=lambda: {"regular": 1.0, "signature": 1.5, "major": 2.0}
     )

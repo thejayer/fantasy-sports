@@ -1,10 +1,10 @@
 /**
- * Hub-native fantasy golf (roadmap Phase 6 / 6.4a–b).
+ * Hub-native fantasy golf (roadmap Phase 6).
  * Client-safe settings helpers + snapshot builder — no tour feed, no `ffa`.
  * Disk writes live in `golf-store.ts` (server-only).
  */
 
-import { runSnakeDraft } from "@/lib/golf-draft";
+import { runGolfDraft } from "@/lib/golf-draft";
 import { buildLineupsPayload, GOLF_FIXTURE_NOW } from "@/lib/golf-lineup";
 import {
   applyMatchupsFromScoreboard,
@@ -18,13 +18,23 @@ export const GOLF_STARTERS = 5;
 export const GOLF_MIN_BENCH = 2;
 export const GOLF_MAX_BENCH = 20;
 export const GOLF_DEFAULT_BENCH = 10;
+export const GOLF_DEFAULT_BUDGET = 200;
+export const GOLF_MIN_BUDGET = 50;
+export const GOLF_MAX_BUDGET = 1000;
+export const GOLF_DEFAULT_KEEPER_SLOTS = 2;
+export const GOLF_MAX_KEEPER_SLOTS = 5;
 
 export type GolfFormat = "h2h" | "season_points";
 export type MissedCutMode = "off" | "alt1" | "alt1_2";
 export type DraftStyle = "snake" | "auction";
 
 export type GolfSettings = {
-  draft: { style: DraftStyle; keepers: boolean };
+  draft: {
+    style: DraftStyle;
+    keepers: boolean;
+    keeper_slots: number;
+    budget: number;
+  };
   roster: { starters: number; bench: number };
   captain_tiebreaker: boolean;
   missed_cut: { mode: MissedCutMode };
@@ -39,7 +49,12 @@ export type GolfSettings = {
 };
 
 export const DEFAULT_GOLF_SETTINGS: GolfSettings = {
-  draft: { style: "snake", keepers: false },
+  draft: {
+    style: "snake",
+    keepers: false,
+    keeper_slots: 0,
+    budget: GOLF_DEFAULT_BUDGET,
+  },
   roster: { starters: GOLF_STARTERS, bench: GOLF_DEFAULT_BENCH },
   captain_tiebreaker: true,
   missed_cut: { mode: "alt1" },
@@ -64,6 +79,8 @@ export type CreateGolfLeagueInput = {
   missed_cut: MissedCutMode;
   draft_style: DraftStyle;
   keepers: boolean;
+  keeper_slots?: number;
+  budget?: number;
   multipliers: { regular: number; signature: number; major: number };
 };
 
@@ -84,14 +101,37 @@ const TEAM_NAMES = [
   "Trophy Club",
 ];
 
-export function parseGolfSettings(
-  raw: unknown,
-): GolfSettings | null {
+export function parseGolfSettings(raw: unknown): GolfSettings | null {
   if (!raw || typeof raw !== "object") return null;
   const golf = (raw as { golf?: unknown }).golf;
   if (!golf || typeof golf !== "object") return null;
-  // Trust snapshot shape from sg / create API; display is fail-soft.
-  return { ...DEFAULT_GOLF_SETTINGS, ...(golf as GolfSettings) };
+  const merged = {
+    ...DEFAULT_GOLF_SETTINGS,
+    ...(golf as GolfSettings),
+    draft: {
+      ...DEFAULT_GOLF_SETTINGS.draft,
+      ...((golf as GolfSettings).draft ?? {}),
+    },
+  };
+  return normalizeDraftSettings(merged);
+}
+
+function normalizeDraftSettings(golf: GolfSettings): GolfSettings {
+  const draft = { ...golf.draft };
+  if (!draft.keepers) {
+    draft.keepers = false;
+    draft.keeper_slots = 0;
+  } else if (draft.keeper_slots <= 0) {
+    draft.keeper_slots = GOLF_DEFAULT_KEEPER_SLOTS;
+  }
+  if (
+    draft.budget < GOLF_MIN_BUDGET ||
+    draft.budget > GOLF_MAX_BUDGET ||
+    !Number.isFinite(draft.budget)
+  ) {
+    draft.budget = GOLF_DEFAULT_BUDGET;
+  }
+  return { ...golf, draft };
 }
 
 export function validateCreateGolfLeague(
@@ -113,8 +153,24 @@ export function validateCreateGolfLeague(
   if (input.format !== "h2h" && input.format !== "season_points") {
     return "format must be h2h or season_points";
   }
+  if (input.draft_style !== "snake" && input.draft_style !== "auction") {
+    return "draft style must be snake or auction";
+  }
   if (!["off", "alt1", "alt1_2"].includes(input.missed_cut)) {
     return "missed cut mode must be off, alt1, or alt1_2";
+  }
+  const budget = input.budget ?? GOLF_DEFAULT_BUDGET;
+  if (budget < GOLF_MIN_BUDGET || budget > GOLF_MAX_BUDGET) {
+    return `budget must be ${GOLF_MIN_BUDGET}–${GOLF_MAX_BUDGET}`;
+  }
+  if (input.keepers) {
+    const slots = input.keeper_slots ?? GOLF_DEFAULT_KEEPER_SLOTS;
+    if (slots < 1 || slots > GOLF_MAX_KEEPER_SLOTS) {
+      return `keeper slots must be 1–${GOLF_MAX_KEEPER_SLOTS}`;
+    }
+    if (slots > GOLF_STARTERS + input.bench) {
+      return "keeper slots cannot exceed roster size";
+    }
   }
   for (const key of ["regular", "signature", "major"] as const) {
     if (!(input.multipliers[key] > 0)) {
@@ -139,13 +195,23 @@ function teamNames(count: number): string[] {
 export function buildGolfSnapshot(
   input: CreateGolfLeagueInput & { run_draft?: boolean },
 ) {
-  const golf: GolfSettings = {
+  const keepers = Boolean(input.keepers);
+  const keeperSlots = keepers
+    ? (input.keeper_slots ?? GOLF_DEFAULT_KEEPER_SLOTS)
+    : 0;
+  const budget = input.budget ?? GOLF_DEFAULT_BUDGET;
+  const golf = normalizeDraftSettings({
     ...DEFAULT_GOLF_SETTINGS,
-    draft: { style: input.draft_style, keepers: input.keepers },
+    draft: {
+      style: input.draft_style,
+      keepers,
+      keeper_slots: keeperSlots,
+      budget,
+    },
     roster: { starters: GOLF_STARTERS, bench: input.bench },
     missed_cut: { mode: input.missed_cut },
     multipliers: { ...input.multipliers },
-  };
+  });
   const names = teamNames(input.team_count);
   const teams = names.map((name, index) => ({
     team_id: index + 1,
@@ -169,20 +235,25 @@ export function buildGolfSnapshot(
     schedule: [] as number[],
     scores: [] as Array<number | null>,
     outcomes: [] as string[],
-    roster: [] as ReturnType<typeof runSnakeDraft>["players"],
+    roster: [] as ReturnType<typeof runGolfDraft>["players"],
   }));
-  const runDraft = input.run_draft !== false && input.draft_style === "snake";
+  const runDraft = input.run_draft !== false;
   const drafted = runDraft
-    ? runSnakeDraft(teams, { starters: GOLF_STARTERS, bench: input.bench })
+    ? runGolfDraft(teams, golf.draft.style, {
+        starters: GOLF_STARTERS,
+        bench: input.bench,
+        keepers: golf.draft.keepers,
+        keeper_slots: golf.draft.keeper_slots,
+        budget: golf.draft.budget,
+      })
     : { draft: [], players: [], free_agents: [] };
   const synced_at = new Date().toISOString();
-  const lineups =
-    runDraft
-      ? buildLineupsPayload(teams, input.season, golf, {
-          savedAt: synced_at,
-          nowIso: GOLF_FIXTURE_NOW,
-        })
-      : undefined;
+  const lineups = runDraft
+    ? buildLineupsPayload(teams, input.season, golf, {
+        savedAt: synced_at,
+        nowIso: GOLF_FIXTURE_NOW,
+      })
+    : undefined;
   const scoreboard = lineups
     ? buildScoreboardPayload(teams, lineups, golf, synced_at)
     : undefined;

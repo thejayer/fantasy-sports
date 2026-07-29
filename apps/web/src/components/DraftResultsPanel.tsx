@@ -6,6 +6,8 @@ import {
   draftHasKeepers,
   draftResultRows,
 } from "@/lib/draft-results";
+import { draftBudgetRows, type GolfDraftPick } from "@/lib/golf-draft";
+import { DEFAULT_GOLF_SETTINGS, parseGolfSettings } from "@/lib/golf";
 
 export function DraftResultsPanel({
   league,
@@ -18,16 +20,30 @@ export function DraftResultsPanel({
   const rows = draftResultRows(league, teamId);
   const showBids = draftHasBids(picks);
   const showKeepers = draftHasKeepers(picks);
+  const showNominator = picks.some((p) => p.nominating_team_id != null);
 
   const isGolf = league.sport === "golf";
+  const golf = isGolf
+    ? (parseGolfSettings(league.settings) ?? DEFAULT_GOLF_SETTINGS)
+    : null;
+  const isAuction = golf?.draft.style === "auction";
+  const nameById = new Map(league.teams.map((t) => [t.team_id, t.name]));
+  const budgetRows =
+    isGolf && (isAuction || showBids)
+      ? draftBudgetRows(
+          league.teams,
+          picks as GolfDraftPick[],
+          golf?.draft.budget ?? DEFAULT_GOLF_SETTINGS.draft.budget,
+        )
+      : [];
 
   if (!picks.length) {
     return (
       <EmptyState title="No draft results in this snapshot">
         {isGolf ? (
           <>
-            Snake-draft the synthetic OWGR pool with <code>sg create-league</code>{" "}
-            (or hub Create golf league). Auction drafts stay a settings stub.
+            Draft the synthetic OWGR pool with <code>sg create-league</code> or
+            hub Create golf league (snake or auction, optional keepers).
           </>
         ) : (
           <>
@@ -40,15 +56,63 @@ export function DraftResultsPanel({
     );
   }
 
+  const golfLede = isAuction
+    ? `OWGR auction · ${picks.length} picks · $${golf?.draft.budget ?? "?"} budget · first 5 slots GS, rest BE${
+        showKeepers ? " · includes keepers" : ""
+      }. Offline simulated bids (not a live nomination room).`
+    : `OWGR snake draft · ${picks.length} picks · first 5 slots per team are GS (starters), rest BE${
+        showKeepers ? " · early rounds marked keepers" : ""
+      }. Weekly Alt1/Alt2 live on Lineup.`;
+
   return (
     <div className="draft-results-panel" style={{ marginTop: "0.75rem" }}>
       <p className="lede">
         {isGolf
-          ? `OWGR snake draft · ${picks.length} picks · first 5 slots per team are GS (starters), rest BE. Weekly Alt1/Alt2 live on Lineup.`
+          ? golfLede
           : `ESPN draft results · ${picks.length} picks${
               showKeepers ? " · includes keepers" : ""
             }${showBids ? " · auction bids shown when present" : ""}. Filter by team below. Football Monte Carlo slot sims stay under Tools → Draft.`}
       </p>
+
+      {budgetRows.length ? (
+        <div className="panel table-scroll" style={{ marginTop: "0.75rem" }}>
+          <h3 style={{ margin: "0.75rem 1rem 0" }}>Auction budgets</h3>
+          <table className="table-cards">
+            <thead>
+              <tr>
+                <th>Team</th>
+                <th>Picks</th>
+                {showKeepers ? <th>Keepers</th> : null}
+                <th className="numeric">Spent</th>
+                <th className="numeric">Left</th>
+              </tr>
+            </thead>
+            <tbody>
+              {budgetRows.map((row) => (
+                <tr key={row.team_id}>
+                  <td data-label="Team">
+                    <Link
+                      href={`/leagues/${league.league_id}/teams/${row.team_id}?season=${league.season}`}
+                    >
+                      {row.name}
+                    </Link>
+                  </td>
+                  <td data-label="Picks">{row.picks}</td>
+                  {showKeepers ? (
+                    <td data-label="Keepers">{row.keepers}</td>
+                  ) : null}
+                  <td data-label="Spent" className="numeric">
+                    ${row.spent}
+                  </td>
+                  <td data-label="Left" className="numeric">
+                    ${row.remaining}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      ) : null}
 
       <div className="tabs" style={{ marginTop: "0.5rem" }}>
         <Link
@@ -84,11 +148,14 @@ export function DraftResultsPanel({
                 <th>Player</th>
                 {showKeepers ? <th>Keeper</th> : null}
                 {showBids ? <th className="numeric">Bid</th> : null}
+                {showNominator ? <th>Nominated by</th> : null}
               </tr>
             </thead>
             <tbody>
               {rows.map((row) => (
-                <tr key={`${row.round}-${row.round_pick}-${row.player_id}-${row.pickIndex}`}>
+                <tr
+                  key={`${row.round}-${row.round_pick}-${row.player_id}-${row.pickIndex}`}
+                >
                   <td data-label="#">{row.pickIndex}</td>
                   <td data-label="Rd">{row.round ?? "—"}</td>
                   <td data-label="Pick">{row.round_pick ?? "—"}</td>
@@ -110,7 +177,15 @@ export function DraftResultsPanel({
                   {showBids ? (
                     <td data-label="Bid" className="numeric">
                       {(row.bid_amount ?? 0) > 0
-                        ? row.bid_amount.toFixed(0)
+                        ? `$${row.bid_amount.toFixed(0)}`
+                        : "—"}
+                    </td>
+                  ) : null}
+                  {showNominator ? (
+                    <td data-label="Nominated by">
+                      {row.nominating_team_id != null
+                        ? (nameById.get(row.nominating_team_id) ??
+                          `#${row.nominating_team_id}`)
                         : "—"}
                     </td>
                   ) : null}

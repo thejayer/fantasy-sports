@@ -78,7 +78,12 @@ export type ScoringFormatRow = {
 
 /** Nested golf knobs under ``settings.golf`` (roadmap 6.1). */
 export type GolfLeagueSettings = {
-  draft?: { style?: string; keepers?: boolean };
+  draft?: {
+    style?: string;
+    keepers?: boolean;
+    keeper_slots?: number;
+    budget?: number;
+  };
   roster?: { starters?: number; bench?: number };
   captain_tiebreaker?: boolean;
   missed_cut?: { mode?: string };

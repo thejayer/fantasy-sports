@@ -481,7 +481,7 @@ new package (working name `src/sg` / CLI `sg`) — do **not** extend `src/ffa`
 | Tour / pool | PGA Tour events; draft pool = **all OWGR** players |
 | League size | Manager-configured **6–14** teams |
 | Season format | Manager choice: **H2H** *or* **season cumulative points** |
-| Draft | Once per year; MVP = **snake**; auction + keepers = settings (defaults off) |
+| Draft | Once per year; **snake** or **auction** (offline sim); keepers optional |
 | Cap | Auction draft establishes acquisition cost; **no weekly salary** |
 | Roster | **5 starters** + bench (**2–20**, manager-configured; default TBD ~8–10) |
 | Captain | Selected each week; **tiebreaker only** (not a points multiplier) |
@@ -582,13 +582,14 @@ are per-event exceptions, not general playoff-hole logic.
 | Slice | Delivers | Notes |
 |---|---|---|
 | **6.4a** League create + settings | ~~Golf league in registry/hub; format, roster size, MC mode, multipliers~~ | **LANDED:** `golf-main` registry + fixtures, `src/sg` settings/snapshot/`sg create-league`, hub `/leagues/new` + Settings tab. No live tour data. |
-| **6.4b** Snake draft + roster | ~~One draft/year; 5 + bench; OWGR pool fixture~~ | **LANDED:** synthetic OWGR pool (`sg.pool` / hub `golf-draft`), snake runner, fixtures + create auto-draft, `DraftResultsPanel` + `GolfRosterView`. Auction/keepers later. |
+| **6.4b** Snake draft + roster | ~~One draft/year; 5 + bench; OWGR pool fixture~~ | **LANDED:** synthetic OWGR pool (`sg.pool` / hub `golf-draft`), snake runner, fixtures + create auto-draft, `DraftResultsPanel` + `GolfRosterView`. |
+| **6.4b+** Auction + keepers | ~~Offline auction + keeper clauses~~ | **LANDED:** `run_auction_draft` / hub mirror; `budget` + `keeper_slots`; Draft tab budget board + Bid/Keeper/Nominator columns. Live nomination room still out of scope. |
 | **6.4c** Weekly lineup | ~~Set starters / captain / alts; tee-time locks~~ | **LANDED:** fixture FedEx events + tee times, `lineups` concern, hub Lineup tab + `POST …/lineups`, fail-closed locks. |
 | **6.4d** EOD scorer + board | ~~Counting scoreboard for the event week~~ | **LANDED:** fixture round cards + `sg.score` (best 4/5, weekend alts, multiplier, captain TB), `scoreboard` concern, hub Scoreboard tab. |
 | **6.4e** Standings | ~~H2H record *or* season points per settings~~ | **LANDED:** derive W–L–T / PF from `scoreboard` at snapshot build (`sg.standings` + hub mirror); Standings tab shows record+PF (h2h) or points (season_points). |
 
 Out of MVP: live hole-by-hole, LIV tour, DFS salary, public/open leagues,
-playoff-hole scoring, auction UI, keeper clauses, in-round swap after tee.
+playoff-hole scoring, live nomination/bid room, in-round swap after tee.
 
 ### 6.5 Hub surfaces — LANDED
 
@@ -617,8 +618,8 @@ lane** with its own sync/score package.
   store tee times in UTC and fail closed (late change rejected).
 - **MC + alt edge cases** — Friday WD vs Saturday DNS vs 36-hole cut; encode
   explicit status rules in the scorer tests.
-- **Scope creep** — auction, keepers, live scoring, LIV: settings stubs only
-  until MVP slices 6.4a–e ship.
+- **Scope creep** — live scoring, LIV, interactive nomination room stay out of
+  the offline draft path.
 
 ---
 

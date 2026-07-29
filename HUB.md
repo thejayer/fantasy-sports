@@ -31,19 +31,18 @@ baseball projection snapshots, no trade/sim tools on category leagues. Baseball
 `projections` / `tools` tabs explain that boundary; FA browsing is the Waivers
 tab. Do not stub a half engine. Revisit only with a dedicated MLB modeling plan.
 
-### Golf scope (roadmap 6.4a–e + 6.5)
+### Golf scope (roadmap 6.4a–e + 6.5 + auction/keepers)
 
 **Hub-native** PGA Tour counting leagues (LIV real-team model) — not ESPN and
-not `ffa`. Package: `src/sg` (`sg create-league`, snake draft, fixture FedEx
-events + lineups + EOD scoreboard + standings + history matchup arrays).
-Fixture `golf-main` ships settings, drafted rosters (5 `GS` + bench `BE`),
-weekly lineups with synthetic tee times, precomputed `scoreboard`, standings,
-and ESPN-shaped `schedule`/`scores`/`outcomes` for History. Create UI:
-`/leagues/new`. Hub surfaces (sport-aware `LeagueView`): Standings, Teams,
-Settings, Schedule (`GolfSchedulePanel`), Lineup, Scoreboard (expandable
-daily slots), Draft, History. Team pages: `GolfRosterView` GS/BE sections +
-current-event alts. Scoring stays offline in `sg` — no live tour scrapes from
-Next. Tee-time locks fail closed (UTC).
+not `ffa`. Package: `src/sg` (`sg create-league`, snake **or** auction draft
+with optional keepers, fixture FedEx events + lineups + EOD scoreboard +
+standings + history matchup arrays). Fixture `golf-main` stays snake; Create
+UI `/leagues/new` can run offline auction (`budget`) + keepers
+(`keeper_slots`). Hub surfaces (sport-aware `LeagueView`): Standings, Teams,
+Settings, Schedule, Lineup, Scoreboard, Draft (budget board + bids/keepers),
+History. Team pages: `GolfRosterView` GS/BE + current-event alts. Scoring
+stays offline — no live tour scrapes. Tee-time locks fail closed (UTC). Live
+nomination rooms are out of scope.
 
 ## Production (Cloud Run) — preferred
 

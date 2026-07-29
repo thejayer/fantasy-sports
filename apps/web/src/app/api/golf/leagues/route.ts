@@ -35,6 +35,9 @@ export async function POST(request: Request) {
     draft_style:
       (body.draft_style as CreateGolfLeagueInput["draft_style"]) ?? "snake",
     keepers: Boolean(body.keepers),
+    keeper_slots:
+      body.keeper_slots != null ? Number(body.keeper_slots) : undefined,
+    budget: body.budget != null ? Number(body.budget) : undefined,
     multipliers: {
       regular: Number(body.multipliers?.regular ?? 1),
       signature: Number(body.multipliers?.signature ?? 1.5),

@@ -5,7 +5,7 @@ from __future__ import annotations
 from datetime import datetime, timezone
 from typing import Any
 
-from sg.draft import run_snake_draft
+from sg.draft import run_golf_draft
 from sg.lineup import build_lineups_payload
 from sg.schedule import FIXTURE_NOW
 from sg.score import build_scoreboard_payload
@@ -100,7 +100,7 @@ def build_golf_snapshot(
     players: list[dict[str, Any]] = []
     free_agents: list[dict[str, Any]] = []
     if run_draft:
-        draft, players, free_agents = run_snake_draft(teams, settings)
+        draft, players, free_agents = run_golf_draft(teams, settings)
 
     lineups: dict[str, Any] | None = None
     scoreboard: dict[str, Any] | None = None
@@ -179,6 +179,8 @@ def golf_settings_from_registry(spec: Any) -> GolfSettings:
             "draft": {
                 "style": block.get("draft_style", "snake"),
                 "keepers": bool(block.get("keepers", False)),
+                "keeper_slots": int(block.get("keeper_slots", 0)),
+                "budget": int(block.get("budget", DEFAULT_GOLF_SETTINGS.draft.budget)),
             },
             "roster": {
                 "starters": 5,

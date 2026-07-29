@@ -9184,6 +9184,8 @@
     "golf": {
       "captain_tiebreaker": true,
       "draft": {
+        "budget": 200,
+        "keeper_slots": 0,
         "keepers": false,
         "style": "snake"
       },

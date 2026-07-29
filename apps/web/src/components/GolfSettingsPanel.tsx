@@ -12,12 +12,19 @@ function modeLabel(mode: string): string {
 export function GolfSettingsPanel({ league }: { league: LeagueSnapshot }) {
   const golf: GolfSettings =
     parseGolfSettings(league.settings) ?? DEFAULT_GOLF_SETTINGS;
+  const draftBits = [
+    golf.draft.style,
+    golf.draft.keepers
+      ? `${golf.draft.keeper_slots} keeper${golf.draft.keeper_slots === 1 ? "" : "s"}`
+      : null,
+    golf.draft.style === "auction" ? `$${golf.draft.budget} budget` : null,
+  ].filter(Boolean);
   const rows: Array<[string, string]> = [
     ["Format", league.format === "season_points" ? "Season points" : "Head-to-head"],
     ["Teams", String(league.team_count)],
     ["Starters", String(golf.roster.starters)],
     ["Bench", String(golf.roster.bench)],
-    ["Draft", `${golf.draft.style}${golf.draft.keepers ? " · keepers" : ""}`],
+    ["Draft", draftBits.join(" · ")],
     ["Captain", golf.captain_tiebreaker ? "Tiebreaker only" : "Off"],
     ["Missed cut", modeLabel(golf.missed_cut.mode)],
     [
@@ -37,9 +44,9 @@ export function GolfSettingsPanel({ league }: { league: LeagueSnapshot }) {
     <div className="panel">
       <h3>League settings</h3>
       <p className="lede" style={{ marginTop: 0 }}>
-        PGA Tour counting model (roadmap 6.4a–e). Snake draft, OWGR pool,
-        weekly lineups with tee-time locks, EOD scoreboard, and standings are
-        in — no live tour feed.
+        PGA Tour counting model. Offline snake or auction draft (optional
+        keepers), weekly lineups with tee-time locks, EOD scoreboard, and
+        standings — no live tour feed.
       </p>
       <dl className="settings-grid">
         {rows.map(([label, value]) => (
