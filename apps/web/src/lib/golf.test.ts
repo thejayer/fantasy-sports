@@ -35,6 +35,9 @@ describe("golf create helpers", () => {
     expect(snap.teams[0]?.roster.filter((p) => p.slot === "GS")).toHaveLength(5);
     expect(snap.scoreboard?.events).toHaveLength(2);
     expect(snap.scoreboard?.events[0]?.pairings.length).toBeGreaterThan(0);
+    expect(snap.teams.some((t) => t.wins + t.losses + t.ties > 0)).toBe(true);
+    expect(snap.teams[0]?.team_id).toBe(1);
+    expect(Math.min(...snap.teams.map((t) => t.standing ?? 99))).toBe(1);
   });
 
   it("rejects out-of-range team counts and bad slugs", () => {

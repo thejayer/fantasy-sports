@@ -13,12 +13,8 @@ def test_snake_pick_order_reverses_even_rounds():
 
 
 def test_run_snake_draft_fills_rosters_and_picks():
-    teams = [
-        {"team_id": i, "name": f"T{i}", "roster": []} for i in range(1, 7)
-    ]
-    settings = GolfSettings.model_validate(
-        {"roster": {"starters": 5, "bench": 4}}
-    )
+    teams = [{"team_id": i, "name": f"T{i}", "roster": []} for i in range(1, 7)]
+    settings = GolfSettings.model_validate({"roster": {"starters": 5, "bench": 4}})
     picks, players, free_agents = run_snake_draft(teams, settings)
     assert len(picks) == 6 * 9
     assert picks[0]["player_name"] == "Scottie Scheffler"
@@ -45,7 +41,8 @@ def test_build_golf_snapshot_drafts_by_default():
         synced_at="2026-07-27T00:00:00+00:00",
     )
     assert len(snap["draft"]) == 8 * 15
-    assert snap["teams"][0]["roster"][0]["name"] == "Scottie Scheffler"
+    team1 = next(t for t in snap["teams"] if t["team_id"] == 1)
+    assert team1["roster"][0]["name"] == "Scottie Scheffler"
     assert len(snap["players"]) == 120
     empty = build_golf_snapshot(
         league_id="golf-empty",

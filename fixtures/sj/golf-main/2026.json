@@ -9223,14 +9223,14 @@
       "abbrev": "FP",
       "division": "",
       "logo_url": null,
-      "losses": 0,
+      "losses": 2,
       "name": "Fairway Phantoms",
       "outcomes": [],
       "owners": [
         "Owner 1"
       ],
-      "points_against": 0.0,
-      "points_for": 0.0,
+      "points_against": 66.5,
+      "points_for": 59.5,
       "roster": [
         {
           "acquisition_type": "DRAFT",
@@ -9595,7 +9595,7 @@
       ],
       "schedule": [],
       "scores": [],
-      "standing": 1,
+      "standing": 5,
       "team_id": 1,
       "ties": 0,
       "win_pct": 0.0,
@@ -9611,8 +9611,8 @@
       "owners": [
         "Owner 2"
       ],
-      "points_against": 0.0,
-      "points_for": 0.0,
+      "points_against": 59.5,
+      "points_for": 66.5,
       "roster": [
         {
           "acquisition_type": "DRAFT",
@@ -9980,21 +9980,21 @@
       "standing": 2,
       "team_id": 2,
       "ties": 0,
-      "win_pct": 0.0,
-      "wins": 0
+      "win_pct": 1.0,
+      "wins": 2
     },
     {
       "abbrev": "STS",
       "division": "",
       "logo_url": null,
-      "losses": 0,
+      "losses": 2,
       "name": "Sand Trap Syndicate",
       "outcomes": [],
       "owners": [
         "Owner 3"
       ],
-      "points_against": 0.0,
-      "points_for": 0.0,
+      "points_against": -24.5,
+      "points_for": -77.0,
       "roster": [
         {
           "acquisition_type": "DRAFT",
@@ -10359,7 +10359,7 @@
       ],
       "schedule": [],
       "scores": [],
-      "standing": 3,
+      "standing": 7,
       "team_id": 3,
       "ties": 0,
       "win_pct": 0.0,
@@ -10375,8 +10375,8 @@
       "owners": [
         "Owner 4"
       ],
-      "points_against": 0.0,
-      "points_for": 0.0,
+      "points_against": -77.0,
+      "points_for": -24.5,
       "roster": [
         {
           "acquisition_type": "DRAFT",
@@ -10744,21 +10744,21 @@
       "standing": 4,
       "team_id": 4,
       "ties": 0,
-      "win_pct": 0.0,
-      "wins": 0
+      "win_pct": 1.0,
+      "wins": 2
     },
     {
       "abbrev": "EE",
       "division": "",
       "logo_url": null,
-      "losses": 0,
+      "losses": 2,
       "name": "Eagle Eyes",
       "outcomes": [],
       "owners": [
         "Owner 5"
       ],
-      "points_against": 0.0,
-      "points_for": 0.0,
+      "points_against": 3.5,
+      "points_for": -87.5,
       "roster": [
         {
           "acquisition_type": "DRAFT",
@@ -11123,7 +11123,7 @@
       ],
       "schedule": [],
       "scores": [],
-      "standing": 5,
+      "standing": 8,
       "team_id": 5,
       "ties": 0,
       "win_pct": 0.0,
@@ -11139,8 +11139,8 @@
       "owners": [
         "Owner 6"
       ],
-      "points_against": 0.0,
-      "points_for": 0.0,
+      "points_against": -87.5,
+      "points_for": 3.5,
       "roster": [
         {
           "acquisition_type": "DRAFT",
@@ -11505,24 +11505,24 @@
       ],
       "schedule": [],
       "scores": [],
-      "standing": 6,
+      "standing": 3,
       "team_id": 6,
       "ties": 0,
-      "win_pct": 0.0,
-      "wins": 0
+      "win_pct": 1.0,
+      "wins": 2
     },
     {
       "abbrev": "AA",
       "division": "",
       "logo_url": null,
-      "losses": 0,
+      "losses": 2,
       "name": "Ace Alliance",
       "outcomes": [],
       "owners": [
         "Owner 7"
       ],
-      "points_against": 0.0,
-      "points_for": 0.0,
+      "points_against": 136.5,
+      "points_for": 3.5,
       "roster": [
         {
           "acquisition_type": "DRAFT",
@@ -11887,7 +11887,7 @@
       ],
       "schedule": [],
       "scores": [],
-      "standing": 7,
+      "standing": 6,
       "team_id": 7,
       "ties": 0,
       "win_pct": 0.0,
@@ -11903,8 +11903,8 @@
       "owners": [
         "Owner 8"
       ],
-      "points_against": 0.0,
-      "points_for": 0.0,
+      "points_against": 3.5,
+      "points_for": 136.5,
       "roster": [
         {
           "acquisition_type": "DRAFT",
@@ -12269,11 +12269,11 @@
       ],
       "schedule": [],
       "scores": [],
-      "standing": 8,
+      "standing": 1,
       "team_id": 8,
       "ties": 0,
-      "win_pct": 0.0,
-      "wins": 0
+      "win_pct": 1.0,
+      "wins": 2
     }
   ],
   "transactions": []

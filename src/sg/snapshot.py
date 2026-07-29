@@ -16,6 +16,7 @@ from sg.settings import (
     validate_golf_settings,
     validate_team_count,
 )
+from sg.standings import apply_standings_from_scoreboard
 from sj.snapshot_layout import SCHEMA_VERSION
 
 _GOLF_TEAM_NAMES = (
@@ -121,6 +122,8 @@ def build_golf_snapshot(
             },
             scored_at=stamp,
         )
+        # Season standings from scored weeks (roadmap 6.4e).
+        apply_standings_from_scoreboard(teams, scoreboard, fmt)
 
     payload: dict[str, Any] = {
         "schema_version": SCHEMA_VERSION,

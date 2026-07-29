@@ -31,18 +31,18 @@ baseball projection snapshots, no trade/sim tools on category leagues. Baseball
 `projections` / `tools` tabs explain that boundary; FA browsing is the Waivers
 tab. Do not stub a half engine. Revisit only with a dedicated MLB modeling plan.
 
-### Golf scope (roadmap 6.4a–d)
+### Golf scope (roadmap 6.4a–e)
 
 **Hub-native** PGA Tour counting leagues (LIV real-team model) — not ESPN and
 not `ffa`. Package: `src/sg` (`sg create-league`, snake draft, fixture FedEx
-events + lineups + EOD scoreboard). Fixture `golf-main` ships settings, drafted
-rosters (5 `GS` + bench `BE`), weekly lineups with synthetic tee times, and
-precomputed `scoreboard` (best 4/5 midweek, weekend alts, multipliers). Create
-UI: `/leagues/new`. Hub: Settings, Draft (`DraftResultsPanel`), Lineup
-(`GolfLineupPanel` + `POST /api/golf/leagues/{id}/lineups`), Schedule chips,
-Scoreboard (`GolfScoreboardPanel`), team `GolfRosterView`. Scoring is offline in
-`sg.score` — do not scrape live tour scores from Next handlers. Tee-time locks
-fail closed (UTC). Standings W–L–T / season points land in 6.4e.
+events + lineups + EOD scoreboard + standings). Fixture `golf-main` ships
+settings, drafted rosters (5 `GS` + bench `BE`), weekly lineups with synthetic
+tee times, precomputed `scoreboard`, and season standings derived from scored
+weeks (`format: h2h` → W–L–T + PF/PA; `season_points` → points). Create UI:
+`/leagues/new`. Hub: Settings, Draft, Lineup, Schedule, Scoreboard
+(`GolfScoreboardPanel`), Standings, team `GolfRosterView`. Scoring/standings are
+offline in `sg` — do not scrape live tour scores from Next handlers. Tee-time
+locks fail closed (UTC).
 
 ## Production (Cloud Run) — preferred
 

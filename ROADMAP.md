@@ -585,7 +585,7 @@ are per-event exceptions, not general playoff-hole logic.
 | **6.4b** Snake draft + roster | ~~One draft/year; 5 + bench; OWGR pool fixture~~ | **LANDED:** synthetic OWGR pool (`sg.pool` / hub `golf-draft`), snake runner, fixtures + create auto-draft, `DraftResultsPanel` + `GolfRosterView`. Auction/keepers later. |
 | **6.4c** Weekly lineup | ~~Set starters / captain / alts; tee-time locks~~ | **LANDED:** fixture FedEx events + tee times, `lineups` concern, hub Lineup tab + `POST …/lineups`, fail-closed locks. |
 | **6.4d** EOD scorer + board | ~~Counting scoreboard for the event week~~ | **LANDED:** fixture round cards + `sg.score` (best 4/5, weekend alts, multiplier, captain TB), `scoreboard` concern, hub Scoreboard tab. |
-| **6.4e** Standings | H2H record *or* season points per settings | Matchups tab pattern |
+| **6.4e** Standings | ~~H2H record *or* season points per settings~~ | **LANDED:** derive W–L–T / PF from `scoreboard` at snapshot build (`sg.standings` + hub mirror); Standings tab shows record+PF (h2h) or points (season_points). |
 
 Out of MVP: live hole-by-hole, LIV tour, DFS salary, public/open leagues,
 playoff-hole scoring, auction UI, keeper clauses, in-round swap after tee.
@@ -639,7 +639,7 @@ shape. Phase 3.1 (unify views) before any other UI work so nothing ships twice.
 | B — Data | ~~1.4~~, ~~2.1~~, ~~2.2~~, ~~2.3~~, ~~2.4~~, ~~2.5~~ | `src/sj`, `configs` |
 | C — Product | ~~3.1~~ → ~~3.2~~ → ~~3.3~~ → ~~3.4~~ → ~~3.5~~ → ~~3.6~~ | `apps/web` |
 | D — Engine | ~~4.1~~ … ~~4.6~~ | `src/ffa` + football hub surfaces; baseball ESPN-only |
-| F — Golf | ~~6.4a~~ → ~~6.4b~~ → ~~6.4c~~ → ~~6.4d~~ → **6.4e** | new `src/sg` + hub golf sport lane |
+| F — Golf | ~~6.4a~~ → ~~6.4b~~ → ~~6.4c~~ → ~~6.4d~~ → ~~6.4e~~ | new `src/sg` + hub golf sport lane (MVP slices landed) |
 
 A, B, and D barely overlap with remaining C polish. Playoff make-odds MC
 (schedule × typical-week draws × greedy lineups) shipped with 4.5; bracket

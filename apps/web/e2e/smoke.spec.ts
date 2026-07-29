@@ -67,6 +67,16 @@ test.describe("hub smoke", () => {
     await expect(page.getByText("Fairway Phantoms").first()).toBeVisible();
   });
 
+  test("golf standings show H2H records from scored weeks", async ({ page }) => {
+    await page.goto("/leagues/golf-main?tab=standings");
+    await expect(page.getByText(/H2H record from scored event weeks/i)).toBeVisible();
+    await expect(page.getByRole("columnheader", { name: "Record" })).toBeVisible();
+    await expect(page.getByRole("columnheader", { name: "PF" })).toBeVisible();
+    await expect(page.getByText("Bogey Bandits").first()).toBeVisible();
+    // Fixture leader after 6.4e derivation (2-0 from two scored events).
+    await expect(page.getByText("2-0").first()).toBeVisible();
+  });
+
   test("football standings render fixture team names", async ({ page }) => {
     await page.goto("/leagues/football-main");
     await expect(page.getByText("Gridiron Goons")).toBeVisible();

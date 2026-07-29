@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import { DEFAULT_GOLF_SETTINGS } from "./golf";
 import {
+  applyStandingsFromScoreboard,
   buildScoreboardPayload,
   compareH2h,
   scoreTeamWeek,
@@ -121,5 +122,12 @@ describe("golf score", () => {
     const away = board.events[0]!.teams["2"]!;
     expect(["W", "L", "T"]).toContain(compareH2h(home, away));
     expect(fixtureEventRounds("x", [1]).rounds).toHaveLength(4);
+
+    applyStandingsFromScoreboard(teams, board, "h2h");
+    expect(teams.map((t) => t.team_id)).toEqual([1, 2]);
+    expect(Math.min(...teams.map((t) => t.standing ?? 99))).toBe(1);
+    expect(
+      teams.some((t) => t.wins + t.losses + t.ties > 0),
+    ).toBe(true);
   });
 });
