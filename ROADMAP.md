@@ -451,6 +451,14 @@ Fold in continuously rather than saving for the end.
 - **Storage.** If weekly and projection data outgrow JSON-on-GCS, the pattern is
   already established elsewhere in the repo: Parquet plus DuckDB, as `src/ffa`
   does.
+- **Member admin / email↔team ACL.** Hub `/admin` + `{SJ_DATA_DIR}/hub_members.json`
+  (add Google emails, roles, link one franchise per league from snapshots).
+  Sign-in allowlist = `ALLOWED_EMAILS` ∪ members file. Next: enforce links on
+  golf auction/lineup mutations; writable members store on production GCS.
+- **Live ESPN vs fixtures.** Committed `fixtures/sj` and accidental `data/sj`
+  copies are dummy team names. Restore with `source .env.espn && rm -rf data/sj
+  && sj sync --current-only` (+ `sj backfill` for history) and mount the GCS
+  bucket on the hub. Not a code change — ops + cookies.
 - **`refresh.yml`.** Wired as the 4.2/4.3 projection + player-map producer.
   ~~Year-round cron~~ → **NFL-season cron (Sept–Jan, Tue–Sat)**. ~~Still needs a
   promote step~~ → **LANDED:** `promote` job (WIF) copies JSON into

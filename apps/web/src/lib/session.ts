@@ -3,6 +3,11 @@ import { cache } from "react";
 import type { Session } from "next-auth";
 
 import { auth } from "@/auth";
+import {
+  canAccessAdmin,
+  parseAllowedEmailsEnv,
+} from "@/lib/hub-members";
+import { readHubMembers } from "@/lib/hub-members-store";
 
 /**
  * Authorization backstop for the data layer.
@@ -36,6 +41,27 @@ export const requireSession = cache(async (): Promise<Session | null> => {
   const session = await auth();
   if (!session?.user) {
     redirect("/login");
+  }
+  return session;
+});
+
+/**
+ * Admin center gate. With AUTH_DEV_BYPASS, always allowed (local tooling).
+ * Otherwise requires a signed-in email that is an admin (or bootstrap allowlist).
+ */
+export const requireAdmin = cache(async (): Promise<Session | null> => {
+  if (devBypassEnabled()) {
+    return null;
+  }
+  const session = await requireSession();
+  const email = session?.user?.email;
+  const file = await readHubMembers();
+  const ok = canAccessAdmin(email, file, {
+    envAllowlist: parseAllowedEmailsEnv(process.env.ALLOWED_EMAILS),
+    adminEmailsEnv: parseAllowedEmailsEnv(process.env.ADMIN_EMAILS),
+  });
+  if (!ok) {
+    redirect("/leagues");
   }
   return session;
 });

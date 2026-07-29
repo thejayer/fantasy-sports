@@ -2,6 +2,12 @@ import type { Metadata } from "next";
 import { Syne, Source_Sans_3 } from "next/font/google";
 import Link from "next/link";
 import { auth, signOut } from "@/auth";
+import {
+  canAccessAdmin,
+  parseAllowedEmailsEnv,
+} from "@/lib/hub-members";
+import { readHubMembers } from "@/lib/hub-members-store";
+import { devBypassEnabled } from "@/lib/session";
 import "./globals.css";
 
 const display = Syne({
@@ -47,7 +53,20 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const session = process.env.AUTH_DEV_BYPASS === "1" ? null : await auth();
+  const bypass = devBypassEnabled();
+  const session = bypass ? null : await auth();
+  let showAdmin = bypass;
+  if (!showAdmin && session?.user?.email) {
+    try {
+      const file = await readHubMembers();
+      showAdmin = canAccessAdmin(session.user.email, file, {
+        envAllowlist: parseAllowedEmailsEnv(process.env.ALLOWED_EMAILS),
+        adminEmailsEnv: parseAllowedEmailsEnv(process.env.ADMIN_EMAILS),
+      });
+    } catch {
+      showAdmin = false;
+    }
+  }
 
   return (
     <html lang="en">
@@ -60,6 +79,7 @@ export default async function RootLayout({
             </Link>
             <nav className="nav-links">
               <Link href="/leagues">Leagues</Link>
+              {showAdmin ? <Link href="/admin">Admin</Link> : null}
               {session?.user ? (
                 <>
                   <span className="nav-user" title={session.user.email ?? undefined}>

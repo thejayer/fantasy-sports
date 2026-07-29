@@ -117,9 +117,27 @@ Do not commit secret values.
 | `sj-auth-secret` | `AUTH_SECRET` | Next.js / Auth.js |
 | `sj-auth-google-id` | `AUTH_GOOGLE_ID` | Next.js / Auth.js |
 | `sj-auth-google-secret` | `AUTH_GOOGLE_SECRET` | Next.js / Auth.js |
-| `sj-allowed-emails` | `ALLOWED_EMAILS` | Next.js allowlist |
+| `sj-allowed-emails` | `ALLOWED_EMAILS` | Next.js allowlist (unioned with `hub_members.json`) |
 | `sj-espn-s2` | `ESPN_S2` | ESPN sync (container start / CLI) |
 | `sj-espn-swid` | `ESPN_SWID` | ESPN sync (container start / CLI) |
+
+Optional: `ADMIN_EMAILS` (not a Secret Manager entry yet) bootstraps who can open
+`/admin` until `hub_members.json` contains at least one `admin` role.
+
+### Members / admin center
+
+Hub UI **`/admin`** manages `{SJ_DATA_DIR}/hub_members.json`:
+
+- Add Google emails (also grants sign-in when not listed in `ALLOWED_EMAILS`)
+- Role: `admin` | `member`
+- Link one franchise per league from the **current** snapshot teams (ESPN owners
+  show as display names on the team options)
+
+Sign-in allowlist = `ALLOWED_EMAILS` ∪ member emails in that file. Production
+hub mounts GCS **read-only**, so admin writes work locally against `data/sj`
+(or any writable `SJ_DATA_DIR`); for prod, either use a writable members path or
+keep using Secret Manager for emails and sync `hub_members.json` into the bucket
+via ops. Team links are ready for future “my team” / auction ACL.
 
 ### Create / populate (Cloud Shell)
 
@@ -245,6 +263,11 @@ source .env.espn
 pip install -e ".[dev,gcs]"
 
 sj sync --current-only                 # writes to ./data/sj
+sj status
+
+# Replace fixture/dummy copies under data/sj with live ESPN:
+#   rm -rf data/sj && source .env.espn && sj sync --current-only
+#   sj backfill   # optional multi-season history
 SJ_GCS_BUCKET=... sj sync              # writes to Cloud Storage
 sj status                              # what's in the store
 ```
