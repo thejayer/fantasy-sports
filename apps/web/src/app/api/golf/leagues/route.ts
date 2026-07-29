@@ -6,8 +6,8 @@ import {
   buildGolfSnapshot,
   type CreateGolfLeagueInput,
   validateCreateGolfLeague,
-  writeGolfLeagueSnapshot,
 } from "@/lib/golf";
+import { writeGolfLeagueSnapshot } from "@/lib/golf-store";
 import { requireSession } from "@/lib/session";
 
 export const dynamic = "force-dynamic";
