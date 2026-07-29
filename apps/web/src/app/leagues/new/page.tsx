@@ -12,8 +12,8 @@ export default function NewLeaguePage() {
       <h2>Create golf league</h2>
       <p className="lede">
         Private PGA Tour fantasy with the LIV real-team counting model
-        (roadmap 6.4a). Pick format, roster depth, missed-cut alts, and event
-        multipliers — tour scoring comes later.
+        (roadmap 6.4a–e). Pick format, roster depth, missed-cut alts, and event
+        multipliers — create seeds draft, lineups, scoreboard, and standings.
       </p>
       <CreateGolfLeagueForm />
     </main>

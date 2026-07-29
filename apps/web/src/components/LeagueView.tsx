@@ -217,7 +217,7 @@ const BASEBALL_TABS = [
   "tools",
 ] as const;
 
-/** Golf lane (roadmap 6.4a–c / 6.5) — settings, draft, lineup; score later. */
+/** Golf lane (roadmap 6.4a–e) — settings, draft, lineup, scoreboard, standings. */
 const GOLF_TABS = [
   "standings",
   "teams",
@@ -398,7 +398,7 @@ export function LeagueView({
           ? ` · synced ${new Date(league.synced_at).toLocaleString()}`
           : ""}
         {isGolf
-          ? ". PGA Tour counting league — settings, OWGR snake draft, weekly lineups with tee-time locks; EOD scoring next (roadmap 6.4)."
+          ? ". PGA Tour counting league — settings, draft, lineups, scoreboard, and standings from scored weeks (roadmap 6.4a–e)."
           : isBaseball
             ? ". Standings, matchups, draft, activity, waivers, history, and batter/pitcher boards from ESPN — projection-free by design (roadmap 4.6)."
             : ". Standings, matchups, draft, activity, history, rosters, projections, and decision tools."}
