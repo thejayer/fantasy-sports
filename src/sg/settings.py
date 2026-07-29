@@ -19,11 +19,44 @@ STARTERS = 5
 MIN_BENCH = 2
 MAX_BENCH = 20
 DEFAULT_BENCH = 10
+DEFAULT_AUCTION_BUDGET = 200
+MIN_AUCTION_BUDGET = 50
+MAX_AUCTION_BUDGET = 1000
+DEFAULT_KEEPER_SLOTS = 2
+MAX_KEEPER_SLOTS = 5
 
 
 class GolfDraftSettings(BaseModel):
     style: DraftStyle = "snake"
     keepers: bool = False
+    # Used when keepers=True; forced to 0 when keepers=False.
+    keeper_slots: int = 0
+    # Auction salary budget per team (ignored for snake).
+    budget: int = DEFAULT_AUCTION_BUDGET
+
+    @field_validator("keeper_slots")
+    @classmethod
+    def keeper_slots_range(cls, value: int) -> int:
+        if value < 0 or value > MAX_KEEPER_SLOTS:
+            raise ValueError(f"keeper_slots must be 0–{MAX_KEEPER_SLOTS}")
+        return value
+
+    @field_validator("budget")
+    @classmethod
+    def budget_range(cls, value: int) -> int:
+        if value < MIN_AUCTION_BUDGET or value > MAX_AUCTION_BUDGET:
+            raise ValueError(f"budget must be {MIN_AUCTION_BUDGET}–{MAX_AUCTION_BUDGET}")
+        return value
+
+    @model_validator(mode="after")
+    def normalize_keepers(self) -> GolfDraftSettings:
+        if not self.keepers:
+            self.keepers = False
+            self.keeper_slots = 0
+            return self
+        if self.keeper_slots <= 0:
+            self.keeper_slots = DEFAULT_KEEPER_SLOTS
+        return self
 
 
 class GolfRosterSettings(BaseModel):

@@ -26,27 +26,34 @@ def create_league_cmd(
     format: str = typer.Option("h2h", "--format", help="h2h | season_points"),
     teams: int = typer.Option(10, "--teams", help="Team count (6–14)"),
     bench: int = typer.Option(DEFAULT_BENCH, "--bench", help="Bench size (2–20)"),
-    missed_cut: str = typer.Option(
-        "alt1", "--missed-cut", help="off | alt1 | alt1_2"
-    ),
+    missed_cut: str = typer.Option("alt1", "--missed-cut", help="off | alt1 | alt1_2"),
     regular_mult: float = typer.Option(1.0, "--mult-regular"),
     signature_mult: float = typer.Option(1.5, "--mult-signature"),
     major_mult: float = typer.Option(2.0, "--mult-major"),
     draft_style: str = typer.Option("snake", "--draft-style", help="snake | auction"),
     keepers: bool = typer.Option(False, "--keepers/--no-keepers"),
+    keeper_slots: int = typer.Option(
+        0, "--keeper-slots", help="Keepers per team when --keepers (default 2)."
+    ),
+    budget: int = typer.Option(200, "--budget", help="Auction budget per team."),
     store_dir: Path | None = typer.Option(
         None, help="Write here instead of the default local data directory."
     ),
     short_name: str | None = typer.Option(None, "--short-name"),
     run_draft: bool = typer.Option(
-        True, "--draft/--no-draft", help="Snake-draft the OWGR fixture pool."
+        True, "--draft/--no-draft", help="Draft the OWGR fixture pool (snake or auction)."
     ),
 ) -> None:
-    """Create a golf league with settings + optional snake draft (6.4a/b)."""
+    """Create a golf league with settings + optional offline draft."""
     golf = GolfSettings.model_validate(
         {
             **DEFAULT_GOLF_SETTINGS.model_dump(mode="json"),
-            "draft": {"style": draft_style, "keepers": keepers},
+            "draft": {
+                "style": draft_style,
+                "keepers": keepers,
+                "keeper_slots": keeper_slots,
+                "budget": budget,
+            },
             "roster": {"starters": 5, "bench": bench},
             "missed_cut": {"mode": missed_cut},
             "multipliers": {
@@ -56,12 +63,6 @@ def create_league_cmd(
             },
         }
     )
-    if draft_style != "snake" and run_draft:
-        typer.echo(
-            "warning: only snake drafts run offline; writing empty draft board",
-            err=True,
-        )
-        run_draft = False
     snapshot = build_golf_snapshot(
         league_id=league_id,
         name=name,

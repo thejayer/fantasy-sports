@@ -4,9 +4,14 @@ import { useRouter } from "next/navigation";
 import { useState, useTransition, type FormEvent } from "react";
 import {
   GOLF_DEFAULT_BENCH,
+  GOLF_DEFAULT_BUDGET,
+  GOLF_DEFAULT_KEEPER_SLOTS,
   GOLF_MAX_BENCH,
+  GOLF_MAX_BUDGET,
+  GOLF_MAX_KEEPER_SLOTS,
   GOLF_MAX_TEAMS,
   GOLF_MIN_BENCH,
+  GOLF_MIN_BUDGET,
   GOLF_MIN_TEAMS,
 } from "@/lib/golf";
 
@@ -16,6 +21,8 @@ export function CreateGolfLeagueForm() {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
+  const [draftStyle, setDraftStyle] = useState<"snake" | "auction">("snake");
+  const [keepers, setKeepers] = useState(false);
 
   function onSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -32,6 +39,8 @@ export function CreateGolfLeagueForm() {
       missed_cut: String(form.get("missed_cut")),
       draft_style: String(form.get("draft_style")),
       keepers: form.get("keepers") === "on",
+      keeper_slots: Number(form.get("keeper_slots") || GOLF_DEFAULT_KEEPER_SLOTS),
+      budget: Number(form.get("budget") || GOLF_DEFAULT_BUDGET),
       multipliers: {
         regular: Number(form.get("mult_regular")),
         signature: Number(form.get("mult_signature")),
@@ -53,7 +62,7 @@ export function CreateGolfLeagueForm() {
         setError(payload.error || `Create failed (${res.status})`);
         return;
       }
-      router.push(`/leagues/${payload.league_id}?tab=settings`);
+      router.push(`/leagues/${payload.league_id}?tab=draft`);
       router.refresh();
     });
   }
@@ -132,15 +141,56 @@ export function CreateGolfLeagueForm() {
         </label>
         <label>
           Draft style
-          <select name="draft_style" defaultValue="snake">
+          <select
+            name="draft_style"
+            value={draftStyle}
+            onChange={(e) =>
+              setDraftStyle(e.target.value === "auction" ? "auction" : "snake")
+            }
+          >
             <option value="snake">Snake</option>
-            <option value="auction">Auction (later)</option>
+            <option value="auction">Auction</option>
           </select>
         </label>
         <label className="form-check">
-          <input name="keepers" type="checkbox" />
-          Keepers (default off)
+          <input
+            name="keepers"
+            type="checkbox"
+            checked={keepers}
+            onChange={(e) => setKeepers(e.target.checked)}
+          />
+          Keepers
         </label>
+        {keepers ? (
+          <label>
+            Keeper slots (1–{GOLF_MAX_KEEPER_SLOTS})
+            <input
+              name="keeper_slots"
+              type="number"
+              min={1}
+              max={GOLF_MAX_KEEPER_SLOTS}
+              defaultValue={GOLF_DEFAULT_KEEPER_SLOTS}
+              required
+            />
+          </label>
+        ) : (
+          <input type="hidden" name="keeper_slots" value={0} />
+        )}
+        {draftStyle === "auction" ? (
+          <label>
+            Auction budget ({GOLF_MIN_BUDGET}–{GOLF_MAX_BUDGET})
+            <input
+              name="budget"
+              type="number"
+              min={GOLF_MIN_BUDGET}
+              max={GOLF_MAX_BUDGET}
+              defaultValue={GOLF_DEFAULT_BUDGET}
+              required
+            />
+          </label>
+        ) : (
+          <input type="hidden" name="budget" value={GOLF_DEFAULT_BUDGET} />
+        )}
         <label>
           Regular multiplier
           <input
@@ -177,9 +227,12 @@ export function CreateGolfLeagueForm() {
       </div>
 
       <p className="league-meta">
-        Creates teams, runs a snake draft over the synthetic OWGR pool (5 GS +
-        bench), seeds weekly lineups / scoreboard / standings for fixture FedEx
-        events, and writes under the local store (<code>data/sj</code>).
+        Creates teams, runs an offline {draftStyle} draft over the synthetic
+        OWGR pool (5 GS + bench
+        {keepers ? `, ${GOLF_DEFAULT_KEEPER_SLOTS}+ keepers` : ""}), seeds weekly
+        lineups / scoreboard / standings, and writes under{" "}
+        <code>data/sj</code>. Auction bids are simulated — not a live nomination
+        room.
       </p>
 
       {error ? (

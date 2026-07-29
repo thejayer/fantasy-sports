@@ -73,5 +73,7 @@ def test_registry_golf_defaults_merge():
     assert settings.missed_cut.mode == "alt1_2"
     assert settings.draft.style == "auction"
     assert settings.draft.keepers is True
+    assert settings.draft.keeper_slots == 2  # default when keepers on + slots 0
+    assert settings.draft.budget == 200
     assert settings.multipliers.major == 2.5
     assert validate_golf_settings(None).roster.bench == 10

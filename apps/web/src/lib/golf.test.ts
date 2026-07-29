@@ -46,6 +46,30 @@ describe("golf create helpers", () => {
     );
   });
 
+  it("runs an offline auction with keepers and bids", () => {
+    const snap = buildGolfSnapshot({
+      league_id: "golf-auction",
+      name: "Auction Golf",
+      season: 2026,
+      format: "h2h",
+      team_count: 8,
+      bench: 10,
+      missed_cut: "alt1",
+      draft_style: "auction",
+      keepers: true,
+      keeper_slots: 2,
+      budget: 200,
+      multipliers: { regular: 1, signature: 1.5, major: 2 },
+    });
+    expect(snap.settings.golf.draft.style).toBe("auction");
+    expect(snap.settings.golf.draft.keepers).toBe(true);
+    expect(snap.settings.golf.draft.keeper_slots).toBe(2);
+    expect(snap.draft).toHaveLength(8 * 15);
+    expect(snap.draft.some((p) => p.keeper)).toBe(true);
+    expect(snap.draft.every((p) => (p.bid_amount ?? 0) >= 1)).toBe(true);
+    expect(snap.draft.some((p) => p.nominating_team_id != null)).toBe(true);
+  });
+
   it("rejects out-of-range team counts and bad slugs", () => {
     expect(
       validateCreateGolfLeague({

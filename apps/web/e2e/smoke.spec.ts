@@ -1,4 +1,6 @@
 import { expect, test } from "@playwright/test";
+import fs from "node:fs";
+import path from "node:path";
 
 /**
  * Fixture-backed smoke paths (roadmap 1.2). Requires AUTH_DEV_BYPASS=1 and
@@ -41,6 +43,44 @@ test.describe("hub smoke", () => {
     await expect(page.getByText(/OWGR snake draft · \d+ picks/i)).toBeVisible();
     await expect(page.getByText("Scottie Scheffler").first()).toBeVisible();
     await expect(page.getByRole("link", { name: "All teams" })).toBeVisible();
+  });
+
+  test("create golf auction league shows bids and keepers", async ({ page }) => {
+    const slug = `golf-auc-${Date.now().toString(36).slice(-6)}`;
+    await page.goto("/leagues/new");
+    await page.locator('input[name="league_id"]').fill(slug);
+    await page.locator('input[name="name"]').fill("Auction Demo");
+    await page.locator('select[name="draft_style"]').selectOption("auction");
+    await page.locator('input[name="keepers"]').check();
+    await page.locator('input[name="team_count"]').fill("6");
+    await page.locator('input[name="bench"]').fill("4");
+    await page.getByRole("button", { name: /Create golf league/i }).click();
+    await page.waitForURL(new RegExp(`/leagues/${slug}`));
+    await expect(page.getByText(/OWGR auction/i)).toBeVisible();
+    await expect(page.getByRole("heading", { name: /Auction budgets/i })).toBeVisible();
+    await expect(page.getByRole("columnheader", { name: "Bid", exact: true })).toBeVisible();
+    await expect(page.getByRole("columnheader", { name: "Keeper", exact: true })).toBeVisible();
+    await expect(page.getByRole("cell", { name: "Yes" }).first()).toBeVisible();
+
+    // Create writes under SJ_DATA_DIR (fixtures in e2e) — remove ephemeral league.
+    const root = path.resolve(__dirname, "../../../fixtures/sj");
+    fs.rmSync(path.join(root, slug), { recursive: true, force: true });
+    const indexPath = path.join(root, "index.json");
+    try {
+      const index = JSON.parse(fs.readFileSync(indexPath, "utf8")) as {
+        generated_at?: string;
+        leagues?: Array<{ league_id?: string }>;
+      };
+      index.leagues = (index.leagues ?? []).filter(
+        (row) => row.league_id !== slug,
+      );
+      fs.writeFileSync(
+        indexPath,
+        `${JSON.stringify(index, null, 2)}\n`,
+      );
+    } catch {
+      /* ignore missing index */
+    }
   });
 
   test("golf team roster shows GS and OWGR", async ({ page }) => {
