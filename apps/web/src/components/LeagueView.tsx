@@ -75,9 +75,15 @@ function StandingsTable({
   leagueId: string;
 }) {
   const isFootball = league.sport === "football";
-  const showPoints = league.teams.some((team) => team.points_for != null);
-  const showAgainst = isFootball;
-  const pointsLabel = isFootball ? "PF" : "Points";
+  const isGolf = league.sport === "golf";
+  const seasonPoints = isGolf && league.format === "season_points";
+  const showRecord = !seasonPoints;
+  const showPoints =
+    isFootball ||
+    isGolf ||
+    league.teams.some((team) => team.points_for != null);
+  const showAgainst = isFootball || (isGolf && !seasonPoints);
+  const pointsLabel = isFootball || (isGolf && !seasonPoints) ? "PF" : "Points";
 
   if (!league.teams.length) {
     return (
@@ -87,22 +93,36 @@ function StandingsTable({
     );
   }
 
+  const rows = isGolf
+    ? [...league.teams].sort(
+        (a, b) =>
+          (a.standing ?? 999) - (b.standing ?? 999) || a.team_id - b.team_id,
+      )
+    : league.teams;
+
   return (
     <div className="panel table-scroll">
+      {isGolf ? (
+        <p className="league-meta" style={{ margin: "0.75rem 1rem 0" }}>
+          {seasonPoints
+            ? "Season points from scored event weeks (roadmap 6.4e)."
+            : "H2H record from scored event weeks (roadmap 6.4e)."}
+        </p>
+      ) : null}
       <table className="table-cards">
         <thead>
           <tr>
             <th>#</th>
             <th>Team</th>
             <th>Owner</th>
-            <th>Record</th>
-            <th>Win%</th>
-            {isFootball || showPoints ? <th>{pointsLabel}</th> : null}
+            {showRecord ? <th>Record</th> : null}
+            {showRecord ? <th>Win%</th> : null}
+            {showPoints ? <th>{pointsLabel}</th> : null}
             {showAgainst ? <th>PA</th> : null}
           </tr>
         </thead>
         <tbody>
-          {league.teams.map((team) => (
+          {rows.map((team) => (
             <tr key={team.team_id}>
               <td data-label="#">{team.standing ?? "—"}</td>
               <td data-label="Team">
@@ -113,9 +133,13 @@ function StandingsTable({
                 </Link>
               </td>
               <td data-label="Owner">{team.owners.join(", ") || "—"}</td>
-              <td data-label="Record">{recordLabel(team)}</td>
-              <td data-label="Win%">{winPctLabel(team)}</td>
-              {isFootball || showPoints ? (
+              {showRecord ? (
+                <td data-label="Record">{recordLabel(team)}</td>
+              ) : null}
+              {showRecord ? (
+                <td data-label="Win%">{winPctLabel(team)}</td>
+              ) : null}
+              {showPoints ? (
                 <td data-label={pointsLabel}>
                   {team.points_for?.toFixed?.(1) ?? "—"}
                 </td>
@@ -193,7 +217,7 @@ const BASEBALL_TABS = [
   "tools",
 ] as const;
 
-/** Golf lane (roadmap 6.4a–c / 6.5) — settings, draft, lineup; score later. */
+/** Golf lane (roadmap 6.4a–e) — settings, draft, lineup, scoreboard, standings. */
 const GOLF_TABS = [
   "standings",
   "teams",
@@ -374,7 +398,7 @@ export function LeagueView({
           ? ` · synced ${new Date(league.synced_at).toLocaleString()}`
           : ""}
         {isGolf
-          ? ". PGA Tour counting league — settings, OWGR snake draft, weekly lineups with tee-time locks; EOD scoring next (roadmap 6.4)."
+          ? ". PGA Tour counting league — settings, draft, lineups, scoreboard, and standings from scored weeks (roadmap 6.4a–e)."
           : isBaseball
             ? ". Standings, matchups, draft, activity, waivers, history, and batter/pitcher boards from ESPN — projection-free by design (roadmap 4.6)."
             : ". Standings, matchups, draft, activity, history, rosters, projections, and decision tools."}

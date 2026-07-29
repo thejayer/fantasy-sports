@@ -12,6 +12,88 @@ import type {
 import type { GolfSettings } from "@/lib/golf";
 import type { GolfLineupsFile } from "@/lib/golf-lineup";
 
+function winPct(wins: number, losses: number, ties: number): number {
+  const games = wins + losses + ties;
+  if (games <= 0) return 0;
+  return (wins + 0.5 * ties) / games;
+}
+
+/**
+ * Mutate ``teams`` with season aggregates from scored events (roadmap 6.4e).
+ * Returns the same array ordered by ``team_id`` (UI sorts by ``standing``).
+ */
+export function applyStandingsFromScoreboard(
+  teams: Team[],
+  scoreboard: GolfScoreboardSnapshot | undefined,
+  format: string,
+): Team[] {
+  const seasonPoints = format === "season_points";
+  const byId = new Map<number, Team>();
+  for (const team of teams) {
+    team.wins = 0;
+    team.losses = 0;
+    team.ties = 0;
+    team.points_for = 0;
+    team.points_against = 0;
+    team.win_pct = 0;
+    byId.set(team.team_id, team);
+  }
+
+  const events = scoreboard?.events ?? [];
+  if (!seasonPoints) {
+    for (const event of events) {
+      for (const pair of event.pairings) {
+        const home = byId.get(pair.home_team_id);
+        const away = byId.get(pair.away_team_id);
+        if (!home || !away) continue;
+        home.points_for = (home.points_for ?? 0) + pair.home_total;
+        home.points_against = (home.points_against ?? 0) + pair.away_total;
+        away.points_for = (away.points_for ?? 0) + pair.away_total;
+        away.points_against = (away.points_against ?? 0) + pair.home_total;
+        if (pair.outcome === "W") {
+          home.wins += 1;
+          away.losses += 1;
+        } else if (pair.outcome === "L") {
+          home.losses += 1;
+          away.wins += 1;
+        } else {
+          home.ties += 1;
+          away.ties += 1;
+        }
+      }
+    }
+  } else {
+    for (const event of events) {
+      for (const [tid, week] of Object.entries(event.teams)) {
+        const team = byId.get(Number(tid));
+        if (!team) continue;
+        team.points_for = (team.points_for ?? 0) + week.week_total;
+      }
+    }
+  }
+
+  for (const team of teams) {
+    team.win_pct = winPct(team.wins, team.losses, team.ties);
+  }
+
+  const ranked = [...teams].sort((a, b) => {
+    if (seasonPoints) {
+      return (b.points_for ?? 0) - (a.points_for ?? 0) || a.team_id - b.team_id;
+    }
+    return (
+      (b.win_pct ?? 0) - (a.win_pct ?? 0) ||
+      (b.points_for ?? 0) - (a.points_for ?? 0) ||
+      a.team_id - b.team_id
+    );
+  });
+  ranked.forEach((team, index) => {
+    team.standing = index + 1;
+  });
+  // Keep payload order by team_id; Standings UI sorts by standing.
+  teams.sort((a, b) => a.team_id - b.team_id);
+  return teams;
+}
+
 type RoundRow = {
   player_id: number;
   round: number;
