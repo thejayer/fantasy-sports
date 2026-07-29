@@ -141,7 +141,7 @@ function playerRow(golfer: OwgrPlayer, slot: string): GolfPlayerRow {
   };
 }
 
-type DraftTeam = {
+export type DraftTeam = {
   team_id: number;
   name: string;
   roster: GolfPlayerRow[];

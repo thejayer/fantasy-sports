@@ -1,6 +1,11 @@
 import { describe, expect, it } from "vitest";
 
-import { owgrPool, poolSizeForLeague, runSnakeDraft } from "./golf-draft";
+import {
+  type DraftTeam,
+  owgrPool,
+  poolSizeForLeague,
+  runSnakeDraft,
+} from "./golf-draft";
 
 describe("golf snake draft", () => {
   it("builds a stable OWGR pool", () => {
@@ -15,7 +20,7 @@ describe("golf snake draft", () => {
   });
 
   it("snakes picks and fills GS then BE", () => {
-    const teams = [1, 2, 3, 4].map((team_id) => ({
+    const teams: DraftTeam[] = [1, 2, 3, 4].map((team_id) => ({
       team_id,
       name: `Team ${team_id}`,
       roster: [],
