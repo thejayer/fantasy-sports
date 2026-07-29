@@ -94,6 +94,60 @@ export function applyStandingsFromScoreboard(
   return teams;
 }
 
+/**
+ * Fill ESPN-shaped ``schedule`` / ``scores`` / ``outcomes`` from pairings
+ * so History Records + H2H work for golf (roadmap 6.5).
+ */
+export function applyMatchupsFromScoreboard(
+  teams: Team[],
+  scoreboard: GolfScoreboardSnapshot | undefined,
+): Team[] {
+  type MatchupTeam = Team & {
+    schedule: number[];
+    scores: Array<number | null>;
+    outcomes: string[];
+  };
+  const byId = new Map<number, MatchupTeam>();
+  for (const team of teams) {
+    const row = team as MatchupTeam;
+    row.schedule = [];
+    row.scores = [];
+    row.outcomes = [];
+    byId.set(row.team_id, row);
+  }
+
+  for (const event of scoreboard?.events ?? []) {
+    const seen = new Set<number>();
+    for (const pair of event.pairings) {
+      const home = byId.get(pair.home_team_id);
+      const away = byId.get(pair.away_team_id);
+      if (!home || !away) continue;
+      const homeOut =
+        pair.outcome === "W" || pair.outcome === "L" || pair.outcome === "T"
+          ? pair.outcome
+          : "T";
+      const awayOut =
+        homeOut === "W" ? "L" : homeOut === "L" ? "W" : "T";
+      home.schedule.push(pair.away_team_id);
+      home.scores.push(pair.home_total);
+      home.outcomes.push(homeOut);
+      away.schedule.push(pair.home_team_id);
+      away.scores.push(pair.away_total);
+      away.outcomes.push(awayOut);
+      seen.add(pair.home_team_id);
+      seen.add(pair.away_team_id);
+    }
+    for (const team of byId.values()) {
+      if (seen.has(team.team_id)) continue;
+      const week = event.teams[String(team.team_id)];
+      team.schedule.push(team.team_id);
+      team.scores.push(week?.week_total ?? 0);
+      team.outcomes.push("U");
+    }
+  }
+  return teams;
+}
+
 type RoundRow = {
   player_id: number;
   round: number;

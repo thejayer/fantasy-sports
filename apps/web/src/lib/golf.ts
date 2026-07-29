@@ -7,6 +7,7 @@
 import { runSnakeDraft } from "@/lib/golf-draft";
 import { buildLineupsPayload, GOLF_FIXTURE_NOW } from "@/lib/golf-lineup";
 import {
+  applyMatchupsFromScoreboard,
   applyStandingsFromScoreboard,
   buildScoreboardPayload,
 } from "@/lib/golf-score";
@@ -187,6 +188,7 @@ export function buildGolfSnapshot(
     : undefined;
   if (scoreboard) {
     applyStandingsFromScoreboard(teams, scoreboard, input.format);
+    applyMatchupsFromScoreboard(teams, scoreboard);
   }
   return {
     schema_version: 2,
