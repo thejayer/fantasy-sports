@@ -39,6 +39,7 @@ CONCERN_FILES = (
     "settings.json",
     "transactions.json",
     "free_agents.json",
+    "lineups.json",
 )
 
 
@@ -81,6 +82,7 @@ def split_snapshot(snapshot: dict[str, Any]) -> dict[str, dict[str, Any]]:
         "settings": "settings.json",
         "transactions": "transactions.json",
         "free_agents": "free_agents.json",
+        "lineups": "lineups.json",
     }
     manifest = {
         "schema_version": SCHEMA_VERSION,
@@ -122,6 +124,15 @@ def split_snapshot(snapshot: dict[str, Any]) -> dict[str, dict[str, Any]]:
         "free_agents.json": {
             "free_agents": list(snapshot.get("free_agents") or [])
         },
+        # Golf weekly lineups (roadmap 6.4c); empty shell for ESPN sports.
+        "lineups.json": snapshot.get("lineups")
+        if isinstance(snapshot.get("lineups"), dict)
+        else {
+            "period_label": snapshot.get("period_label"),
+            "current_event_id": None,
+            "events": [],
+            "teams": {},
+        },
     }
 
 
@@ -141,6 +152,7 @@ def assemble_snapshot(parts: dict[str, dict[str, Any]]) -> dict[str, Any]:
     settings_part = _optional_part(parts, "settings", "settings.json") or {}
     transactions_part = _optional_part(parts, "transactions", "transactions.json") or {}
     free_agents_part = _optional_part(parts, "free_agents", "free_agents.json") or {}
+    lineups_part = _optional_part(parts, "lineups", "lineups.json") or {}
 
     roster_by_id = rosters.get("teams") or {}
     matchup_by_id = matchups.get("teams") or {}
@@ -162,7 +174,7 @@ def assemble_snapshot(parts: dict[str, dict[str, Any]]) -> dict[str, Any]:
     if not isinstance(settings, dict):
         settings = {}
 
-    return {
+    payload = {
         "league_id": manifest["league_id"],
         "espn_league_id": manifest.get("espn_league_id"),
         "sport": manifest.get("sport"),
@@ -183,6 +195,25 @@ def assemble_snapshot(parts: dict[str, dict[str, Any]]) -> dict[str, Any]:
         "teams": teams,
         "players": list(rosters.get("players") or []),
     }
+    if lineups_part:
+        # Concern file may be the lineups object itself (not nested).
+        nested = lineups_part.get("lineups")
+        candidate = (
+            nested
+            if isinstance(nested, dict)
+            else lineups_part
+            if "teams" in lineups_part or "events" in lineups_part
+            else None
+        )
+        # ESPN sports keep an empty on-disk shell for layout parity; only attach
+        # a top-level `lineups` key when golf (or another writer) filled it in.
+        if isinstance(candidate, dict) and (
+            bool(candidate.get("teams"))
+            or bool(candidate.get("events"))
+            or candidate.get("current_event_id") is not None
+        ):
+            payload["lineups"] = candidate
+    return payload
 
 
 def _part(

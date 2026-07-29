@@ -37,6 +37,21 @@ def fixture_team_count(spec: LeagueSpec) -> int:
 def expected_fixture_snapshot(spec: LeagueSpec, season: int | None = None) -> dict[str, Any]:
     """Build the snapshot that should be committed for one league-season."""
     target = spec.current_season if season is None else season
+    if spec.sport == "golf":
+        from sg.snapshot import build_golf_snapshot, golf_settings_from_registry
+
+        # Pass FIXED_TIMESTAMP into the builder so lineup saved_at / lock stamps
+        # stay deterministic (not wall-clock).
+        return build_golf_snapshot(
+            league_id=spec.id,
+            name=spec.name,
+            short_name=spec.short_name,
+            season=target,
+            format=spec.format,
+            team_count=int(spec.team_count or fixture_team_count(spec)),
+            golf=golf_settings_from_registry(spec),
+            synced_at=FIXED_TIMESTAMP,
+        )
     snapshot = sample_snapshot(spec, target, teams=fixture_team_count(spec))
     return {**snapshot, "synced_at": FIXED_TIMESTAMP}
 

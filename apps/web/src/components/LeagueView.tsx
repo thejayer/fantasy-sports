@@ -3,6 +3,7 @@ import { ActivityPanel } from "@/components/ActivityPanel";
 import { DraftResultsPanel } from "@/components/DraftResultsPanel";
 import { EmptyState } from "@/components/EmptyState";
 import { FreeAgentsBoard } from "@/components/FreeAgentsBoard";
+import { GolfLineupPanel } from "@/components/GolfLineupPanel";
 import { GolfSettingsPanel } from "@/components/GolfSettingsPanel";
 import { HistoryPanel, type HistoryView } from "@/components/HistoryPanel";
 import { MatchupsPanel, type MatchupsView } from "@/components/MatchupsPanel";
@@ -191,7 +192,7 @@ const BASEBALL_TABS = [
   "tools",
 ] as const;
 
-/** Golf lane (roadmap 6.4a–b / 6.5) — settings + draft; lineup/score later. */
+/** Golf lane (roadmap 6.4a–c / 6.5) — settings, draft, lineup; score later. */
 const GOLF_TABS = [
   "standings",
   "teams",
@@ -216,6 +217,8 @@ export function LeagueView({
   h2hB,
   activityView = "all",
   draftTeamId,
+  golfEventId,
+  golfLineupTeamId,
   projectionSnapshot = null,
   playerMap = null,
   projectionScoring = null,
@@ -242,6 +245,10 @@ export function LeagueView({
   activityView?: ActivityView;
   /** ESPN draft-results team filter (`?tab=draft&team=`). */
   draftTeamId?: number;
+  /** Golf lineup event id (`?tab=lineup&event=`). */
+  golfEventId?: string;
+  /** Golf lineup team filter (`?tab=lineup&team=`). */
+  golfLineupTeamId?: number;
   projectionSnapshot?: ProjectionSnapshot | null;
   playerMap?: PlayerMapSnapshot | null;
   projectionScoring?: string | null;
@@ -303,6 +310,12 @@ export function LeagueView({
       ? `&scoring=${projectionScoring}`
       : "";
 
+  const lineupQuery =
+    active === "lineup"
+      ? (golfEventId ? `&event=${golfEventId}` : "") +
+        (golfLineupTeamId != null ? `&team=${golfLineupTeamId}` : "")
+      : "";
+
   const seasonHrefExtra =
     active === "players" && activeRole
       ? `&role=${activeRole}`
@@ -312,15 +325,17 @@ export function LeagueView({
           ? draftTeamId != null
             ? `&team=${draftTeamId}`
             : ""
-          : active === "activity"
-            ? `&view=${activityView}`
-            : active === "history"
-              ? `&view=${historyView}${historyPair}`
-              : active === "projections"
-                ? scoringQuery
-                : active === "tools"
-                  ? toolsPair
-                  : "";
+          : active === "lineup"
+            ? lineupQuery
+            : active === "activity"
+              ? `&view=${activityView}`
+              : active === "history"
+                ? `&view=${historyView}${historyPair}`
+                : active === "projections"
+                  ? scoringQuery
+                  : active === "tools"
+                    ? toolsPair
+                    : "";
 
   const players = isBaseball
     ? league.players.filter((player) => {
@@ -358,7 +373,7 @@ export function LeagueView({
           ? ` · synced ${new Date(league.synced_at).toLocaleString()}`
           : ""}
         {isGolf
-          ? ". PGA Tour counting league — settings, OWGR snake draft, and rosters; weekly lineups and EOD scoring in later slices (roadmap 6.4)."
+          ? ". PGA Tour counting league — settings, OWGR snake draft, weekly lineups with tee-time locks; EOD scoring next (roadmap 6.4)."
           : isBaseball
             ? ". Standings, matchups, draft, activity, waivers, history, and batter/pitcher boards from ESPN — projection-free by design (roadmap 4.6)."
             : ". Standings, matchups, draft, activity, history, rosters, projections, and decision tools."}
@@ -385,6 +400,10 @@ export function LeagueView({
               (name === "draft" && draftTeamId != null
                 ? `&team=${draftTeamId}`
                 : "") +
+              (name === "lineup"
+                ? (golfEventId ? `&event=${golfEventId}` : "") +
+                  (golfLineupTeamId != null ? `&team=${golfLineupTeamId}` : "")
+                : "") +
               (name === "activity" ? `&view=${activityView}` : "") +
               (name === "history" ? `&view=${historyView}${historyPair}` : "") +
               (name === "projections" && projectionScoring
@@ -410,17 +429,53 @@ export function LeagueView({
       ) : null}
 
       {active === "schedule" && isGolf ? (
-        <EmptyState title="FedExCup schedule not loaded yet">
-          Event slate + multipliers land with the <code>sg</code> data plane
-          (roadmap 6.2). Multiplier defaults are on the Settings tab.
-        </EmptyState>
+        league.lineups?.events?.length ? (
+          <div className="panel table-scroll" style={{ marginTop: "0.75rem" }}>
+            <table className="table-cards">
+              <thead>
+                <tr>
+                  <th>Week</th>
+                  <th>Event</th>
+                  <th>Tier</th>
+                  <th>Starts (UTC)</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody>
+                {league.lineups.events.map((event) => (
+                  <tr key={event.event_id}>
+                    <td data-label="Week">{event.week}</td>
+                    <td data-label="Event">{event.name}</td>
+                    <td data-label="Tier">{event.multiplier_tier}</td>
+                    <td data-label="Starts">
+                      {new Date(event.starts_at).toLocaleString()}
+                    </td>
+                    <td data-label="">
+                      <Link
+                        href={`/leagues/${leagueId}?season=${league.season}&tab=lineup&event=${event.event_id}`}
+                      >
+                        Set lineup
+                      </Link>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        ) : (
+          <EmptyState title="FedExCup schedule not loaded yet">
+            Fixture events ship with create/seed lineups (roadmap 6.4c). Live
+            slate ingest is still later (6.2).
+          </EmptyState>
+        )
       ) : null}
 
       {active === "lineup" && isGolf ? (
-        <EmptyState title="Weekly lineups come in 6.4c">
-          Set five starters, captain (tiebreaker), and optional alts once the
-          draft board exists. Per-player tee-time locks are not live yet.
-        </EmptyState>
+        <GolfLineupPanel
+          league={league}
+          eventId={golfEventId}
+          teamId={golfLineupTeamId}
+        />
       ) : null}
 
       {active === "scoreboard" && isGolf ? (
