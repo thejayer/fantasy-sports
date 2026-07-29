@@ -238,7 +238,9 @@ export default async function LeagueDetailPage({ params, searchParams }: Props) 
           : undefined
       }
       golfLineupTeamId={
-        tab === "lineup" && team != null && !Number.isNaN(team)
+        (tab === "lineup" || tab === "auction") &&
+        team != null &&
+        !Number.isNaN(team)
           ? team
           : undefined
       }

@@ -81,6 +81,8 @@ export type CreateGolfLeagueInput = {
   keepers: boolean;
   keeper_slots?: number;
   budget?: number;
+  /** When false, skip offline draft (live auction room fills it). */
+  run_draft?: boolean;
   multipliers: { regular: number; signature: number; major: number };
 };
 

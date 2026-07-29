@@ -38,6 +38,7 @@ export async function POST(request: Request) {
     keeper_slots:
       body.keeper_slots != null ? Number(body.keeper_slots) : undefined,
     budget: body.budget != null ? Number(body.budget) : undefined,
+    run_draft: body.run_draft !== false,
     multipliers: {
       regular: Number(body.multipliers?.regular ?? 1),
       signature: Number(body.multipliers?.signature ?? 1.5),

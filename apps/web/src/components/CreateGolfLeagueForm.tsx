@@ -23,6 +23,7 @@ export function CreateGolfLeagueForm() {
   const [error, setError] = useState<string | null>(null);
   const [draftStyle, setDraftStyle] = useState<"snake" | "auction">("snake");
   const [keepers, setKeepers] = useState(false);
+  const [liveAuction, setLiveAuction] = useState(false);
 
   function onSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -38,9 +39,12 @@ export function CreateGolfLeagueForm() {
       bench: Number(form.get("bench")),
       missed_cut: String(form.get("missed_cut")),
       draft_style: String(form.get("draft_style")),
-      keepers: form.get("keepers") === "on",
+      keepers: draftStyle === "auction" && liveAuction
+        ? false
+        : form.get("keepers") === "on",
       keeper_slots: Number(form.get("keeper_slots") || GOLF_DEFAULT_KEEPER_SLOTS),
       budget: Number(form.get("budget") || GOLF_DEFAULT_BUDGET),
+      run_draft: !(draftStyle === "auction" && liveAuction),
       multipliers: {
         regular: Number(form.get("mult_regular")),
         signature: Number(form.get("mult_signature")),
@@ -62,7 +66,25 @@ export function CreateGolfLeagueForm() {
         setError(payload.error || `Create failed (${res.status})`);
         return;
       }
-      router.push(`/leagues/${payload.league_id}?tab=draft`);
+      const leagueId = payload.league_id;
+      if (!leagueId) {
+        setError("create succeeded without league id");
+        return;
+      }
+      if (draftStyle === "auction" && liveAuction) {
+        await fetch(`/api/golf/leagues/${leagueId}/auction`, {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({
+            season: body.season,
+            bid_window_ms: 8_000,
+            bid_hard_cap_ms: 30_000,
+          }),
+        });
+        router.push(`/leagues/${leagueId}?tab=auction&team=1`);
+      } else {
+        router.push(`/leagues/${leagueId}?tab=draft`);
+      }
       router.refresh();
     });
   }
@@ -177,17 +199,27 @@ export function CreateGolfLeagueForm() {
           <input type="hidden" name="keeper_slots" value={0} />
         )}
         {draftStyle === "auction" ? (
-          <label>
-            Auction budget ({GOLF_MIN_BUDGET}–{GOLF_MAX_BUDGET})
-            <input
-              name="budget"
-              type="number"
-              min={GOLF_MIN_BUDGET}
-              max={GOLF_MAX_BUDGET}
-              defaultValue={GOLF_DEFAULT_BUDGET}
-              required
-            />
-          </label>
+          <>
+            <label>
+              Auction budget ({GOLF_MIN_BUDGET}–{GOLF_MAX_BUDGET})
+              <input
+                name="budget"
+                type="number"
+                min={GOLF_MIN_BUDGET}
+                max={GOLF_MAX_BUDGET}
+                defaultValue={GOLF_DEFAULT_BUDGET}
+                required
+              />
+            </label>
+            <label className="form-check">
+              <input
+                type="checkbox"
+                checked={liveAuction}
+                onChange={(e) => setLiveAuction(e.target.checked)}
+              />
+              Live nomination room (skip offline draft)
+            </label>
+          </>
         ) : (
           <input type="hidden" name="budget" value={GOLF_DEFAULT_BUDGET} />
         )}
@@ -227,12 +259,9 @@ export function CreateGolfLeagueForm() {
       </div>
 
       <p className="league-meta">
-        Creates teams, runs an offline {draftStyle} draft over the synthetic
-        OWGR pool (5 GS + bench
-        {keepers ? `, ${GOLF_DEFAULT_KEEPER_SLOTS}+ keepers` : ""}), seeds weekly
-        lineups / scoreboard / standings, and writes under{" "}
-        <code>data/sj</code>. Auction bids are simulated — not a live nomination
-        room.
+        {draftStyle === "auction" && liveAuction
+          ? "Creates teams with an empty draft board and opens the live nomination room (file-backed + polling). Finalize writes draft/rosters/lineups."
+          : `Creates teams, runs an offline ${draftStyle} draft over the synthetic OWGR pool (5 GS + bench${keepers ? `, keepers` : ""}), seeds weekly lineups / scoreboard / standings under data/sj.`}
       </p>
 
       {error ? (
