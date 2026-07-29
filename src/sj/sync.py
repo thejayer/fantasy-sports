@@ -237,8 +237,24 @@ def open_espn_league(spec: LeagueSpec, season: int) -> Any:
 
 
 def _activity_unsupported(exc: BaseException) -> bool:
+    """ESPN often refuses historical activity with misleading errors.
+
+    Pre-2019 is gated separately. For 2019–prior-current, ``recent_activity``
+    can raise ``ESPNInvalidLeague`` ("League N does not exist") even when the
+    League constructor and standings/rosters succeed — treat that as "no
+    activity", not a failed season sync.
+    """
+    from espn_api.requests.espn_requests import ESPNInvalidLeague
+
+    if isinstance(exc, ESPNInvalidLeague):
+        return True
     msg = str(exc).lower()
-    return "cant retrieve" in msg or "can't retrieve" in msg or "cant use recent" in msg
+    return (
+        "cant retrieve" in msg
+        or "can't retrieve" in msg
+        or "cant use recent" in msg
+        or "does not exist" in msg
+    )
 
 
 def _free_agents_unsupported(exc: BaseException) -> bool:

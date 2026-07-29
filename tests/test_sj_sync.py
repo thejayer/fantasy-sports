@@ -386,6 +386,16 @@ def test_fetch_recent_activity_pages_until_short(monkeypatch):
     }
 
 
+def test_fetch_recent_activity_treats_invalid_league_as_empty():
+    """Historical activity endpoints often raise ESPNInvalidLeague falsely."""
+    league = MagicMock()
+    league.year = 2019
+    league.recent_activity.side_effect = ESPNInvalidLeague(
+        "League 39790 does not exist"
+    )
+    assert fetch_recent_activity(league) == []
+
+
 def test_fetch_free_agents_empty_before_2019():
     league = MagicMock()
     league.year = FREE_AGENT_MIN_SEASON - 1
