@@ -11,11 +11,18 @@ export default async function LeaguesPage() {
 
   return (
     <main className="section">
-      <h2>Leagues</h2>
-      <p className="lede">
-        Every active Strictly Jayers league on ESPN. Open one for standings,
-        matchups, history, and rosters.
-      </p>
+      <div className="section-head">
+        <div>
+          <h2>Leagues</h2>
+          <p className="lede">
+            Strictly Jayers leagues — ESPN football/baseball snapshots plus
+            hub-native golf. Open one for standings, history, and rosters.
+          </p>
+        </div>
+        <Link className="button" href="/leagues/new">
+          Create golf league
+        </Link>
+      </div>
       <div className="league-list">
         {leagues.map((league) => (
           <Link
@@ -35,8 +42,8 @@ export default async function LeaguesPage() {
         ))}
         {!leagues.length ? (
           <EmptyState title="No league snapshots yet">
-            Run <code>sj sync</code> with ESPN credentials, or{" "}
-            <code>sj seed</code> / committed fixtures for local development.
+            Run <code>sj sync</code> with ESPN credentials,{" "}
+            <code>sj seed</code> / committed fixtures, or create a golf league.
           </EmptyState>
         ) : null}
       </div>

@@ -92,6 +92,11 @@ def test_expected_fixture_snapshot_is_schema_complete():
         assert "scoring_type" in snap and "period_label" in snap
         team = snap["teams"][0]
         assert {"schedule", "scores", "outcomes", "win_pct", "logo_url"} <= set(team)
+        if spec.sport == "golf":
+            # 6.4a: empty rosters until OWGR draft (6.4b).
+            assert team["roster"] == []
+            assert snap["settings"].get("golf", {}).get("roster", {}).get("starters") == 5
+            continue
         player = team["roster"][0]
         assert {
             "status",
@@ -114,7 +119,7 @@ def test_committed_fixtures_readable_as_v1_monolith():
 @pytest.mark.parametrize(
     ("command", "needle"),
     [
-        (["regenerate-fixtures", "--fixtures-dir"], "regenerated 3"),
+        (["regenerate-fixtures", "--fixtures-dir"], "regenerated 4"),
         (["validate-fixtures", "--fixtures-dir"], "fixtures ok"),
     ],
 )

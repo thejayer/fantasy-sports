@@ -35,3 +35,23 @@ leagues:
     seasons: [2018, 2019, 2020, 2021, 2022, 2023, 2024, 2025, 2026]
     current_season: 2026
     espn_url: https://fantasy.espn.com/football/league?leagueId=94266
+
+  # Hub-native golf (roadmap Phase 6) — not ESPN. Seed/fixtures via `sg` / regenerate.
+  - id: golf-main
+    name: Strictly Jayers Golf
+    short_name: Golf Main
+    sport: golf
+    format: h2h
+    platform: hub
+    seasons: [2026]
+    current_season: 2026
+    team_count: 8
+    golf:
+      bench: 10
+      missed_cut_mode: alt1
+      draft_style: snake
+      keepers: false
+      multipliers:
+        regular: 1.0
+        signature: 1.5
+        major: 2.0

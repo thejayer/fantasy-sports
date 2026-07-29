@@ -54,8 +54,13 @@ def leagues_cmd(
     """List leagues in the registry."""
     reg = load_registry(registry)
     for lg in reg.leagues:
+        platform = (
+            f"espn={lg.espn_league_id}"
+            if lg.platform == "espn"
+            else f"platform={lg.platform}"
+        )
         typer.echo(
-            f"{lg.id:20} {lg.sport:10} {lg.format:8} espn={lg.espn_league_id} "
+            f"{lg.id:20} {lg.sport:10} {lg.format:14} {platform} "
             f"current={lg.current_season} seasons={len(lg.seasons)}"
         )
 

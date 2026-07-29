@@ -613,6 +613,18 @@ def sample_snapshot(
     teams: int = DEFAULT_TEAM_COUNT,
 ) -> dict[str, Any]:
     """Build one synthetic snapshot in the live sync's exact schema."""
+    if spec.sport == "golf":
+        from sg.snapshot import build_golf_snapshot, golf_settings_from_registry
+
+        return build_golf_snapshot(
+            league_id=spec.id,
+            name=spec.name,
+            short_name=spec.short_name,
+            season=season,
+            format=spec.format,
+            team_count=int(spec.team_count or teams),
+            golf=golf_settings_from_registry(spec),
+        )
     return build_snapshot(sample_league(spec, season, teams=teams), spec, season)
 
 
@@ -663,7 +675,9 @@ def seed_store(
         if seasons is not None:
             target_seasons = [s for s in target_seasons if s in seasons]
         for season in target_seasons:
-            snapshot = sample_snapshot(spec, season, teams=teams)
+            # Golf uses registry team_count (6–14); ESPN seeds use --teams.
+            season_teams = int(spec.team_count) if spec.sport == "golf" and spec.team_count else teams
+            snapshot = sample_snapshot(spec, season, teams=season_teams)
             location = store.write(snapshot)
             written.append((spec.id, season, location))
             emit(
