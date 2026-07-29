@@ -31,13 +31,15 @@ baseball projection snapshots, no trade/sim tools on category leagues. Baseball
 `projections` / `tools` tabs explain that boundary; FA browsing is the Waivers
 tab. Do not stub a half engine. Revisit only with a dedicated MLB modeling plan.
 
-### Golf scope (roadmap 6.4a)
+### Golf scope (roadmap 6.4a–b)
 
 **Hub-native** PGA Tour counting leagues (LIV real-team model) — not ESPN and
-not `ffa`. Package: `src/sg` (`sg create-league`, `sg seed-registry`). Fixture
-`golf-main` ships settings + empty teams. Create UI: `/leagues/new`. Settings
-tab shows format, bench, missed-cut alts, multipliers. Draft / lineup / EOD
-scorer are later slices — do not scrape live tour scores from Next handlers.
+not `ffa`. Package: `src/sg` (`sg create-league`, snake draft over synthetic
+OWGR pool). Fixture `golf-main` ships settings + drafted rosters (5 `GS` +
+bench `BE`). Create UI: `/leagues/new` (auto-drafts on create). Hub: Settings
+tab + Draft results (`DraftResultsPanel`) + team `GolfRosterView`. Weekly
+lineup / EOD scorer are later slices — do not scrape live tour scores from
+Next handlers.
 
 ## Production (Cloud Run) — preferred
 

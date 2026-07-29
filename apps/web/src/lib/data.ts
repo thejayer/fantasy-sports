@@ -34,6 +34,8 @@ export type SeasonStats = {
   WHIP?: number;
   OUTS?: number;
   IP?: number;
+  /** Synthetic OWGR rank on golf roster rows (roadmap 6.4b). */
+  OWGR?: number;
 };
 
 export type Player = {

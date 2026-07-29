@@ -38,6 +38,7 @@ def test_build_golf_snapshot_shape():
         format="h2h",
         team_count=8,
         synced_at="2026-07-27T00:00:00+00:00",
+        run_draft=False,
     )
     assert snap["sport"] == "golf"
     assert snap["espn_league_id"] is None

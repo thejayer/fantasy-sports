@@ -1,8 +1,10 @@
 /**
- * Hub-native fantasy golf (roadmap Phase 6 / 6.4a).
+ * Hub-native fantasy golf (roadmap Phase 6 / 6.4a–b).
  * Client-safe settings helpers + snapshot builder — no tour feed, no `ffa`.
  * Disk writes live in `golf-store.ts` (server-only).
  */
+
+import { runSnakeDraft } from "@/lib/golf-draft";
 
 export const GOLF_MIN_TEAMS = 6;
 export const GOLF_MAX_TEAMS = 14;
@@ -128,7 +130,9 @@ function teamNames(count: number): string[] {
   );
 }
 
-export function buildGolfSnapshot(input: CreateGolfLeagueInput) {
+export function buildGolfSnapshot(
+  input: CreateGolfLeagueInput & { run_draft?: boolean },
+) {
   const golf: GolfSettings = {
     ...DEFAULT_GOLF_SETTINGS,
     draft: { style: input.draft_style, keepers: input.keepers },
@@ -159,8 +163,12 @@ export function buildGolfSnapshot(input: CreateGolfLeagueInput) {
     schedule: [] as number[],
     scores: [] as Array<number | null>,
     outcomes: [] as string[],
-    roster: [] as unknown[],
+    roster: [] as ReturnType<typeof runSnakeDraft>["players"],
   }));
+  const runDraft = input.run_draft !== false && input.draft_style === "snake";
+  const drafted = runDraft
+    ? runSnakeDraft(teams, { starters: GOLF_STARTERS, bench: input.bench })
+    : { draft: [], players: [], free_agents: [] };
   const synced_at = new Date().toISOString();
   return {
     schema_version: 2,
@@ -181,10 +189,10 @@ export function buildGolfSnapshot(input: CreateGolfLeagueInput) {
       scoring_type: "GOLF_COUNTING",
       golf,
     },
-    draft: [] as unknown[],
+    draft: drafted.draft,
     transactions: [] as unknown[],
-    free_agents: [] as unknown[],
+    free_agents: drafted.free_agents,
     teams,
-    players: [] as unknown[],
+    players: drafted.players,
   };
 }
