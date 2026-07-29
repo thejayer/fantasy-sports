@@ -50,6 +50,14 @@ test.describe("hub smoke", () => {
     await expect(page.getByRole("columnheader", { name: "OWGR" })).toBeVisible();
   });
 
+  test("golf lineup tab shows event chips and roster locks", async ({ page }) => {
+    await page.goto("/leagues/golf-main?tab=lineup");
+    await expect(page.getByText(/THE PLAYERS Championship/i).first()).toBeVisible();
+    await expect(page.getByText(/Set five starters/i)).toBeVisible();
+    await expect(page.getByText("Scottie Scheffler").first()).toBeVisible();
+    await expect(page.getByRole("button", { name: /Save lineup/i })).toBeVisible();
+  });
+
   test("football standings render fixture team names", async ({ page }) => {
     await page.goto("/leagues/football-main");
     await expect(page.getByText("Gridiron Goons")).toBeVisible();

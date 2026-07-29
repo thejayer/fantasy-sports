@@ -5,6 +5,7 @@
  */
 
 import { runSnakeDraft } from "@/lib/golf-draft";
+import { buildLineupsPayload, GOLF_FIXTURE_NOW } from "@/lib/golf-lineup";
 
 export const GOLF_MIN_TEAMS = 6;
 export const GOLF_MAX_TEAMS = 14;
@@ -170,6 +171,13 @@ export function buildGolfSnapshot(
     ? runSnakeDraft(teams, { starters: GOLF_STARTERS, bench: input.bench })
     : { draft: [], players: [], free_agents: [] };
   const synced_at = new Date().toISOString();
+  const lineups =
+    runDraft
+      ? buildLineupsPayload(teams, input.season, golf, {
+          savedAt: synced_at,
+          nowIso: GOLF_FIXTURE_NOW,
+        })
+      : undefined;
   return {
     schema_version: 2,
     league_id: input.league_id,
@@ -181,7 +189,7 @@ export function buildGolfSnapshot(
     short_name: (input.short_name || input.name).trim(),
     scoring_type: "GOLF_COUNTING",
     team_count: input.team_count,
-    current_week: null as number | null,
+    current_week: lineups ? 1 : (null as number | null),
     period_label: "event",
     synced_at,
     settings: {
@@ -194,5 +202,6 @@ export function buildGolfSnapshot(
     free_agents: drafted.free_agents,
     teams,
     players: drafted.players,
+    ...(lineups ? { lineups } : {}),
   };
 }

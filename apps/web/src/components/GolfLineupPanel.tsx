@@ -1,0 +1,329 @@
+"use client";
+
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useMemo, useState, useTransition } from "react";
+import { EmptyState } from "@/components/EmptyState";
+import type { LeagueSnapshot, Team } from "@/lib/data";
+import {
+  DEFAULT_GOLF_SETTINGS,
+  parseGolfSettings,
+} from "@/lib/golf";
+import {
+  GOLF_FIXTURE_NOW,
+  playerIsLocked,
+  type GolfEventMeta,
+  type GolfWeekLineup,
+} from "@/lib/golf-lineup";
+
+function resolveEventId(
+  league: LeagueSnapshot,
+  eventId?: string,
+): string | null {
+  const events = league.lineups?.events ?? [];
+  if (!events.length) return null;
+  if (eventId && events.some((e) => e.event_id === eventId)) return eventId;
+  return (
+    league.lineups?.current_event_id ??
+    events.find((e) => e.week === league.current_week)?.event_id ??
+    events[0]?.event_id ??
+    null
+  );
+}
+
+function LineupForm({
+  league,
+  event,
+  team,
+  stored,
+  showAlt1,
+  showAlt2,
+  now,
+}: {
+  league: LeagueSnapshot;
+  event: GolfEventMeta;
+  team: Team;
+  stored: GolfWeekLineup | null;
+  showAlt1: boolean;
+  showAlt2: boolean;
+  now: Date;
+}) {
+  const router = useRouter();
+  const [starters, setStarters] = useState<number[]>(
+    () => stored?.starters ?? [],
+  );
+  const [captain, setCaptain] = useState<number | "">(
+    () => stored?.captain ?? "",
+  );
+  const [alt1, setAlt1] = useState<number | "">(() => stored?.alt1 ?? "");
+  const [alt2, setAlt2] = useState<number | "">(() => stored?.alt2 ?? "");
+  const [error, setError] = useState<string | null>(null);
+  const [message, setMessage] = useState<string | null>(null);
+  const [pending, startTransition] = useTransition();
+
+  const roster = team.roster ?? [];
+  const byId = new Map(
+    roster
+      .map((p) => [Number(p.id), p] as const)
+      .filter(([id]) => !Number.isNaN(id)),
+  );
+
+  function toggleStarter(playerId: number) {
+    if (playerIsLocked(playerId, event.tee_times, now)) return;
+    setStarters((prev) => {
+      if (prev.includes(playerId)) {
+        const next = prev.filter((id) => id !== playerId);
+        if (captain === playerId) setCaptain(next[0] ?? "");
+        return next;
+      }
+      if (prev.length >= 5) return prev;
+      return [...prev, playerId];
+    });
+  }
+
+  function onSave() {
+    setError(null);
+    setMessage(null);
+    startTransition(async () => {
+      const res = await fetch(`/api/golf/leagues/${league.league_id}/lineups`, {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          season: league.season,
+          team_id: team.team_id,
+          event_id: event.event_id,
+          starters,
+          captain: captain === "" ? null : captain,
+          alt1: alt1 === "" ? null : alt1,
+          alt2: alt2 === "" ? null : alt2,
+        }),
+      });
+      const payload = (await res.json().catch(() => ({}))) as {
+        error?: string;
+      };
+      if (!res.ok) {
+        setError(payload.error || `Save failed (${res.status})`);
+        return;
+      }
+      setMessage("Lineup saved.");
+      router.refresh();
+    });
+  }
+
+  return (
+    <div className="panel" style={{ padding: "1rem", marginTop: "0.75rem" }}>
+      <h3 style={{ marginTop: 0 }}>Roster</h3>
+      <ul className="lineup-roster">
+        {roster.map((player) => {
+          const id = Number(player.id);
+          const locked = playerIsLocked(id, event.tee_times, now);
+          const selected = starters.includes(id);
+          const tee = event.tee_times?.[String(id)];
+          return (
+            <li key={`${id}-${player.slot}`}>
+              <label className={locked ? "is-locked" : ""}>
+                <input
+                  type="checkbox"
+                  checked={selected}
+                  disabled={locked || (!selected && starters.length >= 5)}
+                  onChange={() => toggleStarter(id)}
+                />
+                <span>
+                  <strong>{player.name}</strong>
+                  <span className="league-meta">
+                    {" "}
+                    · {player.slot ?? "—"}
+                    {tee ? ` · tee ${new Date(tee).toLocaleString()}` : ""}
+                    {locked ? " · LOCKED" : ""}
+                  </span>
+                </span>
+              </label>
+            </li>
+          );
+        })}
+      </ul>
+
+      <div className="form-grid" style={{ marginTop: "1rem" }}>
+        <label>
+          Captain
+          <select
+            value={captain}
+            onChange={(e) =>
+              setCaptain(e.target.value ? Number(e.target.value) : "")
+            }
+          >
+            <option value="">Select…</option>
+            {starters.map((id) => (
+              <option key={id} value={id}>
+                {byId.get(id)?.name ?? id}
+              </option>
+            ))}
+          </select>
+        </label>
+        {showAlt1 ? (
+          <label>
+            Alt1
+            <select
+              value={alt1}
+              onChange={(e) =>
+                setAlt1(e.target.value ? Number(e.target.value) : "")
+              }
+            >
+              <option value="">None</option>
+              {roster
+                .map((p) => Number(p.id))
+                .filter((id) => !starters.includes(id))
+                .map((id) => (
+                  <option
+                    key={id}
+                    value={id}
+                    disabled={playerIsLocked(id, event.tee_times, now)}
+                  >
+                    {byId.get(id)?.name ?? id}
+                  </option>
+                ))}
+            </select>
+          </label>
+        ) : null}
+        {showAlt2 ? (
+          <label>
+            Alt2
+            <select
+              value={alt2}
+              onChange={(e) =>
+                setAlt2(e.target.value ? Number(e.target.value) : "")
+              }
+            >
+              <option value="">None</option>
+              {roster
+                .map((p) => Number(p.id))
+                .filter((id) => !starters.includes(id) && id !== alt1)
+                .map((id) => (
+                  <option
+                    key={id}
+                    value={id}
+                    disabled={playerIsLocked(id, event.tee_times, now)}
+                  >
+                    {byId.get(id)?.name ?? id}
+                  </option>
+                ))}
+            </select>
+          </label>
+        ) : null}
+      </div>
+
+      {error ? (
+        <p className="form-error" role="alert">
+          {error}
+        </p>
+      ) : null}
+      {message ? <p className="league-meta">{message}</p> : null}
+
+      <button
+        className="button"
+        type="button"
+        disabled={pending || starters.length !== 5 || captain === ""}
+        onClick={onSave}
+        style={{ marginTop: "1rem" }}
+      >
+        {pending ? "Saving…" : "Save lineup"}
+      </button>
+    </div>
+  );
+}
+
+export function GolfLineupPanel({
+  league,
+  eventId,
+  teamId,
+}: {
+  league: LeagueSnapshot;
+  eventId?: string;
+  teamId?: number;
+}) {
+  const events = league.lineups?.events ?? [];
+  const activeEventId = resolveEventId(league, eventId);
+  const activeEvent = events.find((e) => e.event_id === activeEventId) ?? null;
+  const activeTeamId = teamId ?? league.teams[0]?.team_id;
+  const team = league.teams.find((t) => t.team_id === activeTeamId) ?? null;
+  const golf = parseGolfSettings(league.settings) ?? DEFAULT_GOLF_SETTINGS;
+  const showAlt1 =
+    golf.missed_cut.mode === "alt1" || golf.missed_cut.mode === "alt1_2";
+  const showAlt2 = golf.missed_cut.mode === "alt1_2";
+
+  const stored: GolfWeekLineup | null =
+    activeEventId && activeTeamId != null
+      ? (league.lineups?.teams[String(activeTeamId)]?.[activeEventId] ?? null)
+      : null;
+
+  const formKey = `${activeEventId}-${activeTeamId}-${stored?.saved_at ?? "none"}`;
+
+  const now = useMemo(() => {
+    // Fixtures use a fixed clock so tee locks stay demoable offline.
+    if (league.synced_at?.startsWith("2026-07-27")) {
+      return new Date(GOLF_FIXTURE_NOW);
+    }
+    return new Date();
+  }, [league.synced_at]);
+
+  if (!events.length || !activeEvent || !team) {
+    return (
+      <EmptyState title="No lineup events yet">
+        Fixture FedEx events land with create/seed. Regenerate golf fixtures or
+        create a new golf league.
+      </EmptyState>
+    );
+  }
+
+  return (
+    <div className="golf-lineup-panel" style={{ marginTop: "0.75rem" }}>
+      <p className="lede">
+        Set five starters, a captain (tiebreaker only), and missed-cut alts.
+        Players lock at their fixture R1 tee time (UTC) — fail closed.
+      </p>
+
+      <div className="tabs" style={{ marginTop: "0.5rem" }}>
+        {events.map((event) => (
+          <Link
+            key={event.event_id}
+            href={`/leagues/${league.league_id}?season=${league.season}&tab=lineup&event=${event.event_id}&team=${activeTeamId}`}
+            className={`tab${event.event_id === activeEventId ? " active" : ""}`}
+          >
+            W{event.week} · {event.name}
+          </Link>
+        ))}
+      </div>
+
+      <div className="tabs" style={{ marginTop: "0.5rem" }}>
+        {league.teams.map((item) => (
+          <Link
+            key={item.team_id}
+            href={`/leagues/${league.league_id}?season=${league.season}&tab=lineup&event=${activeEventId}&team=${item.team_id}`}
+            className={`tab${item.team_id === activeTeamId ? " active" : ""}`}
+          >
+            {item.abbrev || item.name}
+          </Link>
+        ))}
+      </div>
+
+      <p className="league-meta" style={{ marginTop: "0.75rem" }}>
+        {activeEvent.name} · {activeEvent.multiplier_tier} · starts{" "}
+        {new Date(activeEvent.starts_at).toLocaleString()} · team {team.name}
+        {stored?.saved_at
+          ? ` · saved ${new Date(stored.saved_at).toLocaleString()}`
+          : ""}
+      </p>
+
+      <LineupForm
+        key={formKey}
+        league={league}
+        event={activeEvent}
+        team={team}
+        stored={stored}
+        showAlt1={showAlt1}
+        showAlt2={showAlt2}
+        now={now}
+      />
+    </div>
+  );
+}

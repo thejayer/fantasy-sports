@@ -37,9 +37,9 @@ export function GolfSettingsPanel({ league }: { league: LeagueSnapshot }) {
     <div className="panel">
       <h3>League settings</h3>
       <p className="lede" style={{ marginTop: 0 }}>
-        PGA Tour counting model (roadmap 6.1). Snake draft + OWGR pool are in
-        (6.4b); weekly lineups and end-of-day scoring come next — no live tour
-        feed.
+        PGA Tour counting model (roadmap 6.1). Snake draft, OWGR pool, and
+        weekly lineups with tee-time locks are in; end-of-day scoring is next —
+        no live tour feed.
       </p>
       <dl className="settings-grid">
         {rows.map(([label, value]) => (

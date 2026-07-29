@@ -624,6 +624,7 @@ def sample_snapshot(
             format=spec.format,
             team_count=int(spec.team_count or teams),
             golf=golf_settings_from_registry(spec),
+            synced_at=None,  # callers (fixtures) may stamp after
         )
     return build_snapshot(sample_league(spec, season, teams=teams), spec, season)
 

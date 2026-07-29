@@ -42,6 +42,7 @@ type Props = {
     team?: string;
     scoring?: string;
     slot?: string;
+    event?: string;
   }>;
 };
 
@@ -78,6 +79,7 @@ export default async function LeagueDetailPage({ params, searchParams }: Props) 
     team: teamParam,
     scoring: scoringParam,
     slot: slotParam,
+    event: eventParam,
   } = await searchParams;
   const seasons = await getLeagueSeasons(leagueId);
   const season = seasonParam ? Number(seasonParam) : undefined;
@@ -227,6 +229,14 @@ export default async function LeagueDetailPage({ params, searchParams }: Props) 
       activityView={activityView}
       draftTeamId={
         tab === "draft" && team != null && !Number.isNaN(team)
+          ? team
+          : undefined
+      }
+      golfEventId={
+        tab === "lineup" && eventParam ? eventParam : undefined
+      }
+      golfLineupTeamId={
+        tab === "lineup" && team != null && !Number.isNaN(team)
           ? team
           : undefined
       }

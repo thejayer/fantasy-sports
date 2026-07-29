@@ -6,6 +6,8 @@ from datetime import datetime, timezone
 from typing import Any
 
 from sg.draft import run_snake_draft
+from sg.lineup import build_lineups_payload
+from sg.schedule import FIXTURE_NOW
 from sg.settings import (
     DEFAULT_GOLF_SETTINGS,
     GolfSettings,
@@ -57,6 +59,7 @@ def build_golf_snapshot(
     golf: GolfSettings | dict[str, Any] | None = None,
     synced_at: str | None = None,
     run_draft: bool = True,
+    build_lineups: bool = True,
 ) -> dict[str, Any]:
     """Golf league snapshot with settings; snake-drafts OWGR pool by default (6.4b)."""
     fmt = validate_golf_format(format)
@@ -94,7 +97,21 @@ def build_golf_snapshot(
     if run_draft:
         draft, players, free_agents = run_snake_draft(teams, settings)
 
-    return {
+    lineups: dict[str, Any] | None = None
+    current_week: int | None = None
+    if build_lineups and run_draft:
+        # Deterministic lock stamps when regenerating fixtures.
+        now_iso = FIXTURE_NOW if synced_at == "2026-07-27T00:00:00+00:00" else stamp
+        lineups = build_lineups_payload(
+            teams,
+            settings,
+            season=season,
+            saved_at=stamp,
+            now_iso=now_iso,
+        )
+        current_week = 1
+
+    payload: dict[str, Any] = {
         "schema_version": SCHEMA_VERSION,
         "league_id": league_id,
         "espn_league_id": None,
@@ -105,7 +122,7 @@ def build_golf_snapshot(
         "short_name": short_name or name,
         "scoring_type": "GOLF_COUNTING",
         "team_count": teams_n,
-        "current_week": None,
+        "current_week": current_week,
         "period_label": "event",
         "synced_at": stamp,
         "settings": {
@@ -119,6 +136,9 @@ def build_golf_snapshot(
         "teams": teams,
         "players": players,
     }
+    if lineups is not None:
+        payload["lineups"] = lineups
+    return payload
 
 
 def golf_settings_from_registry(spec: Any) -> GolfSettings:

@@ -178,8 +178,8 @@ export function CreateGolfLeagueForm() {
 
       <p className="league-meta">
         Creates teams, runs a snake draft over the synthetic OWGR pool (5 GS +
-        bench), and writes under the local store (<code>data/sj</code>). Tour
-        scoring and weekly lineups come later.
+        bench), seeds weekly lineups for fixture FedEx events, and writes under
+        the local store (<code>data/sj</code>). Tour EOD scoring comes later.
       </p>
 
       {error ? (

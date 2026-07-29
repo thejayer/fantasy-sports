@@ -66,6 +66,15 @@ export async function writeGolfLeagueSnapshot(
   for (const team of snapshot.teams) {
     rosterById[String(team.team_id)] = team.roster ?? [];
   }
+  const lineups =
+    "lineups" in snapshot && snapshot.lineups
+      ? snapshot.lineups
+      : {
+          period_label: snapshot.period_label,
+          current_event_id: null,
+          events: [],
+          teams: {},
+        };
   const files = {
     "standings.json": {
       scoring_type: snapshot.scoring_type,
@@ -79,6 +88,7 @@ export async function writeGolfLeagueSnapshot(
     "settings.json": { settings: snapshot.settings },
     "transactions.json": { transactions: [] },
     "free_agents.json": { free_agents: snapshot.free_agents ?? [] },
+    "lineups.json": lineups,
   } as const;
 
   for (const [name, payload] of Object.entries(files)) {
@@ -109,6 +119,7 @@ export async function writeGolfLeagueSnapshot(
       settings: "settings.json",
       transactions: "transactions.json",
       free_agents: "free_agents.json",
+      lineups: "lineups.json",
     },
   };
   await fs.writeFile(

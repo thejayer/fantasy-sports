@@ -251,6 +251,35 @@ export type Team = {
   roster: Player[];
 };
 
+/** Golf weekly lineups concern (roadmap 6.4c). */
+export type GolfLineupsSnapshot = {
+  period_label?: string;
+  current_event_id: string | null;
+  events: Array<{
+    event_id: string;
+    name: string;
+    week: number;
+    starts_at: string;
+    multiplier_tier: string;
+    tee_times?: Record<string, string>;
+  }>;
+  teams: Record<
+    string,
+    Record<
+      string,
+      {
+        starters: number[];
+        captain: number;
+        alt1?: number | null;
+        alt2?: number | null;
+        saved_at: string;
+        locked_at?: string | null;
+        locks?: Record<string, string>;
+      }
+    >
+  >;
+};
+
 export type LeagueSnapshot = {
   league_id: string;
   short_name?: string;
@@ -271,6 +300,8 @@ export type LeagueSnapshot = {
   transactions?: Transaction[];
   /** ESPN FREEAGENT + WAIVERS pool (size-capped at sync); empty before 2019. */
   free_agents?: Player[];
+  /** Present on hub-native golf leagues after 6.4c. */
+  lineups?: GolfLineupsSnapshot;
   teams: Team[];
   players: Player[];
 };
@@ -374,6 +405,8 @@ type FreeAgentsFile = {
   free_agents: Player[];
 };
 
+type LineupsFile = GolfLineupsSnapshot;
+
 function dataRoots(): string[] {
   const roots = [
     process.env.SJ_DATA_DIR,
@@ -444,6 +477,7 @@ function assembleFromParts(
   settings: SettingsFile | null,
   transactions: TransactionsFile | null,
   freeAgents: FreeAgentsFile | null,
+  lineups: LineupsFile | null,
 ): LeagueSnapshot {
   const matchupById = matchups?.teams ?? {};
   const rosterById = rosters.teams ?? {};
@@ -476,6 +510,7 @@ function assembleFromParts(
     draft: draft?.draft ?? [],
     transactions: transactions?.transactions ?? [],
     free_agents: freeAgents?.free_agents ?? [],
+    lineups: lineups ?? undefined,
     teams,
     players: rosters.players ?? [],
   };
@@ -525,6 +560,9 @@ async function loadSnapshotFromRoot(
         path.join(directory, manifest.files.free_agents),
       )
     : null;
+  const lineups = manifest.files.lineups
+    ? await readJson<LineupsFile>(path.join(directory, manifest.files.lineups))
+    : null;
   return assembleFromParts(
     manifest,
     standings,
@@ -534,6 +572,7 @@ async function loadSnapshotFromRoot(
     settings,
     transactions,
     freeAgents,
+    lineups,
   );
 }
 
