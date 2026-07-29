@@ -13,11 +13,12 @@ For the current state of the site and the plan to build it out, see
 
 ## Leagues (current scope)
 
-| id | Sport | Format | ESPN league id | Seasons |
+| id | Sport | Format | Platform | Seasons |
 |---|---|---|---|---|
-| `baseball-dynasty` | baseball | dynasty | 2499137 | 2024–2026 |
-| `football-main` | football | redraft | 39790 | 2015–2026 |
-| `football-dynasty` | football | dynasty | 94266 | 2018–2026 |
+| `baseball-dynasty` | baseball | dynasty | ESPN `2499137` | 2024–2026 |
+| `football-main` | football | redraft | ESPN `39790` | 2015–2026 |
+| `football-dynasty` | football | dynasty | ESPN `94266` | 2018–2026 |
+| `golf-main` | golf | h2h | hub (no ESPN) | 2026 |
 
 Registry: [`configs/leagues.yaml`](configs/leagues.yaml)
 
@@ -29,6 +30,14 @@ agents, history). The `ffa` analytics engine is NFL-only — no MLB ingest, no
 baseball projection snapshots, no trade/sim tools on category leagues. Baseball
 `projections` / `tools` tabs explain that boundary; FA browsing is the Waivers
 tab. Do not stub a half engine. Revisit only with a dedicated MLB modeling plan.
+
+### Golf scope (roadmap 6.4a)
+
+**Hub-native** PGA Tour counting leagues (LIV real-team model) — not ESPN and
+not `ffa`. Package: `src/sg` (`sg create-league`, `sg seed-registry`). Fixture
+`golf-main` ships settings + empty teams. Create UI: `/leagues/new`. Settings
+tab shows format, bench, missed-cut alts, multipliers. Draft / lineup / EOD
+scorer are later slices — do not scrape live tour scores from Next handlers.
 
 ## Production (Cloud Run) — preferred
 

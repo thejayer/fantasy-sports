@@ -26,6 +26,7 @@ FIXTURE_TEAM_COUNTS: dict[str, int] = {
     "football-main": 4,
     "football-dynasty": 3,
     "baseball-dynasty": 3,
+    "golf-main": 8,
 }
 
 

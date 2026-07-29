@@ -205,6 +205,9 @@ def espn_call(
 
 
 def open_espn_league(spec: LeagueSpec, season: int) -> Any:
+    if not spec.is_espn() or spec.espn_league_id is None:
+        raise ValueError(f"{spec.id}: not an ESPN league (platform={spec.platform})")
+
     espn_s2, swid = espn_credentials()
     if not espn_s2 or not swid:
         raise RuntimeError(
@@ -405,6 +408,9 @@ def sync_registry(
     results: list[SyncResult] = []
     failures: list[SyncFailure] = []
     for spec in selected:
+        if not spec.is_espn():
+            emit(f"skip {spec.id}: platform={spec.platform} (not ESPN)")
+            continue
         target_seasons = [spec.current_season] if current_only else list(spec.seasons)
         if seasons is not None:
             target_seasons = [s for s in target_seasons if s in seasons]

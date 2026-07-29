@@ -10,7 +10,12 @@ ROOT = Path(__file__).resolve().parents[1]
 def test_load_default_registry():
     registry = load_registry(ROOT / "configs" / "leagues.yaml")
     ids = {lg.id for lg in registry.leagues}
-    assert ids == {"baseball-dynasty", "football-main", "football-dynasty"}
+    assert ids == {
+        "baseball-dynasty",
+        "football-main",
+        "football-dynasty",
+        "golf-main",
+    }
 
 
 def test_registry_espn_ids_and_formats():
@@ -31,6 +36,15 @@ def test_registry_espn_ids_and_formats():
     assert dynasty.espn_league_id == 94266
     assert dynasty.format == "dynasty"
     assert dynasty.seasons[0] == 2018
+
+    golf = registry.by_id("golf-main")
+    assert golf.sport == "golf"
+    assert golf.format == "h2h"
+    assert golf.platform == "hub"
+    assert golf.espn_league_id is None
+    assert golf.team_count == 8
+    assert golf.golf is not None
+    assert golf.golf.missed_cut_mode == "alt1"
 
 
 def test_unknown_league_raises():

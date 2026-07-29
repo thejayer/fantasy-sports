@@ -5,7 +5,7 @@ import { expect, test } from "@playwright/test";
  * committed fixtures/sj (forced via SJ_DATA_DIR in playwright.config.ts).
  */
 test.describe("hub smoke", () => {
-  test("leagues list shows the three Strictly Jayers leagues", async ({
+  test("leagues list shows Strictly Jayers leagues including golf", async ({
     page,
   }) => {
     await page.goto("/leagues");
@@ -19,6 +19,21 @@ test.describe("hub smoke", () => {
     await expect(
       page.getByRole("link", { name: /Strictly Jayers Baseball/ }),
     ).toBeVisible();
+    await expect(
+      page.getByRole("link", { name: /Strictly Jayers Golf/ }),
+    ).toBeVisible();
+    await expect(
+      page.getByRole("link", { name: /Create golf league/i }),
+    ).toBeVisible();
+  });
+
+  test("golf league settings tab shows counting knobs", async ({ page }) => {
+    await page.goto("/leagues/golf-main?tab=settings");
+    await expect(page.getByRole("heading", { name: /Strictly Jayers Golf/i })).toBeVisible();
+    await expect(page.getByText(/League settings/i)).toBeVisible();
+    await expect(page.getByText(/Missed cut/i)).toBeVisible();
+    await expect(page.getByText(/Event multipliers/i)).toBeVisible();
+    await expect(page.getByText(/no tour feed yet/i)).toBeVisible();
   });
 
   test("football standings render fixture team names", async ({ page }) => {

@@ -1,0 +1,223 @@
+{
+  "current_week": null,
+  "draft": [],
+  "espn_league_id": null,
+  "format": "h2h",
+  "free_agents": [],
+  "league_id": "golf-main",
+  "name": "Strictly Jayers Golf",
+  "period_label": "event",
+  "players": [],
+  "schema_version": 2,
+  "scoring_type": "GOLF_COUNTING",
+  "season": 2026,
+  "settings": {
+    "golf": {
+      "captain_tiebreaker": true,
+      "draft": {
+        "keepers": false,
+        "style": "snake"
+      },
+      "missed_cut": {
+        "mode": "alt1"
+      },
+      "multipliers": {
+        "major": 2.0,
+        "regular": 1.0,
+        "signature": 1.5
+      },
+      "roster": {
+        "bench": 10,
+        "starters": 5
+      },
+      "schedule": {
+        "exclude": [],
+        "include": [],
+        "source": "fedex_cup"
+      },
+      "scoring": {
+        "grain": "end_of_day",
+        "player_points": "neg_to_par",
+        "sat_sun_count": 5,
+        "thu_fri_count": 4
+      }
+    },
+    "scoring_type": "GOLF_COUNTING",
+    "team_count": 8
+  },
+  "short_name": "Golf Main",
+  "sport": "golf",
+  "synced_at": "2026-07-27T00:00:00+00:00",
+  "team_count": 8,
+  "teams": [
+    {
+      "abbrev": "FP",
+      "division": "",
+      "logo_url": null,
+      "losses": 0,
+      "name": "Fairway Phantoms",
+      "outcomes": [],
+      "owners": [
+        "Owner 1"
+      ],
+      "points_against": 0.0,
+      "points_for": 0.0,
+      "roster": [],
+      "schedule": [],
+      "scores": [],
+      "standing": 1,
+      "team_id": 1,
+      "ties": 0,
+      "win_pct": 0.0,
+      "wins": 0
+    },
+    {
+      "abbrev": "PHP",
+      "division": "",
+      "logo_url": null,
+      "losses": 0,
+      "name": "Pin High Posse",
+      "outcomes": [],
+      "owners": [
+        "Owner 2"
+      ],
+      "points_against": 0.0,
+      "points_for": 0.0,
+      "roster": [],
+      "schedule": [],
+      "scores": [],
+      "standing": 2,
+      "team_id": 2,
+      "ties": 0,
+      "win_pct": 0.0,
+      "wins": 0
+    },
+    {
+      "abbrev": "STS",
+      "division": "",
+      "logo_url": null,
+      "losses": 0,
+      "name": "Sand Trap Syndicate",
+      "outcomes": [],
+      "owners": [
+        "Owner 3"
+      ],
+      "points_against": 0.0,
+      "points_for": 0.0,
+      "roster": [],
+      "schedule": [],
+      "scores": [],
+      "standing": 3,
+      "team_id": 3,
+      "ties": 0,
+      "win_pct": 0.0,
+      "wins": 0
+    },
+    {
+      "abbrev": "BB",
+      "division": "",
+      "logo_url": null,
+      "losses": 0,
+      "name": "Birdie Brigade",
+      "outcomes": [],
+      "owners": [
+        "Owner 4"
+      ],
+      "points_against": 0.0,
+      "points_for": 0.0,
+      "roster": [],
+      "schedule": [],
+      "scores": [],
+      "standing": 4,
+      "team_id": 4,
+      "ties": 0,
+      "win_pct": 0.0,
+      "wins": 0
+    },
+    {
+      "abbrev": "EE",
+      "division": "",
+      "logo_url": null,
+      "losses": 0,
+      "name": "Eagle Eyes",
+      "outcomes": [],
+      "owners": [
+        "Owner 5"
+      ],
+      "points_against": 0.0,
+      "points_for": 0.0,
+      "roster": [],
+      "schedule": [],
+      "scores": [],
+      "standing": 5,
+      "team_id": 5,
+      "ties": 0,
+      "win_pct": 0.0,
+      "wins": 0
+    },
+    {
+      "abbrev": "RR",
+      "division": "",
+      "logo_url": null,
+      "losses": 0,
+      "name": "Rough Riders",
+      "outcomes": [],
+      "owners": [
+        "Owner 6"
+      ],
+      "points_against": 0.0,
+      "points_for": 0.0,
+      "roster": [],
+      "schedule": [],
+      "scores": [],
+      "standing": 6,
+      "team_id": 6,
+      "ties": 0,
+      "win_pct": 0.0,
+      "wins": 0
+    },
+    {
+      "abbrev": "AA",
+      "division": "",
+      "logo_url": null,
+      "losses": 0,
+      "name": "Ace Alliance",
+      "outcomes": [],
+      "owners": [
+        "Owner 7"
+      ],
+      "points_against": 0.0,
+      "points_for": 0.0,
+      "roster": [],
+      "schedule": [],
+      "scores": [],
+      "standing": 7,
+      "team_id": 7,
+      "ties": 0,
+      "win_pct": 0.0,
+      "wins": 0
+    },
+    {
+      "abbrev": "BB",
+      "division": "",
+      "logo_url": null,
+      "losses": 0,
+      "name": "Bogey Bandits",
+      "outcomes": [],
+      "owners": [
+        "Owner 8"
+      ],
+      "points_against": 0.0,
+      "points_for": 0.0,
+      "roster": [],
+      "schedule": [],
+      "scores": [],
+      "standing": 8,
+      "team_id": 8,
+      "ties": 0,
+      "win_pct": 0.0,
+      "wins": 0
+    }
+  ],
+  "transactions": []
+}

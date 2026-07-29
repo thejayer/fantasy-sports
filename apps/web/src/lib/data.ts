@@ -74,6 +74,30 @@ export type ScoringFormatRow = {
   points?: number | null;
 };
 
+/** Nested golf knobs under ``settings.golf`` (roadmap 6.1). */
+export type GolfLeagueSettings = {
+  draft?: { style?: string; keepers?: boolean };
+  roster?: { starters?: number; bench?: number };
+  captain_tiebreaker?: boolean;
+  missed_cut?: { mode?: string };
+  schedule?: {
+    source?: string;
+    include?: string[];
+    exclude?: string[];
+  };
+  multipliers?: {
+    regular?: number;
+    signature?: number;
+    major?: number;
+  };
+  scoring?: {
+    grain?: string;
+    player_points?: string;
+    thu_fri_count?: number;
+    sat_sun_count?: number;
+  };
+};
+
 export type LeagueSettings = {
   scoring_type?: string | null;
   reg_season_count?: number | null;
@@ -92,6 +116,8 @@ export type LeagueSettings = {
   division_map?: Record<string, string>;
   position_slot_counts?: Record<string, number | null>;
   scoring_format?: ScoringFormatRow[];
+  /** Present on hub-native golf leagues (roadmap 6.4a). */
+  golf?: GolfLeagueSettings;
 };
 
 export type TransactionAction = {
@@ -226,7 +252,8 @@ export type Team = {
 export type LeagueSnapshot = {
   league_id: string;
   short_name?: string;
-  espn_league_id: number;
+  /** Null for hub-native sports (golf). */
+  espn_league_id: number | null;
   sport: string;
   format: string;
   season: number;
@@ -248,7 +275,7 @@ export type LeagueSnapshot = {
 
 export type LeagueIndexItem = {
   league_id: string;
-  espn_league_id: number;
+  espn_league_id: number | null;
   name: string;
   sport: string;
   format: string;
@@ -293,7 +320,7 @@ export type LeagueHistoryArchive = {
 type SeasonManifest = {
   schema_version: number;
   league_id: string;
-  espn_league_id: number;
+  espn_league_id: number | null;
   sport: string;
   format: string;
   season: number;

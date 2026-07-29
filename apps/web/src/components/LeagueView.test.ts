@@ -60,6 +60,10 @@ describe("LeagueView unification", () => {
     expect(viewSource).toMatch(/Baseball stays projection-free by design/);
     expect(viewSource).toMatch(/Decision tools are football-only by design/);
     expect(viewSource).not.toMatch(/until roadmap 4\.6/);
+    // Roadmap 6.4a: golf lane on the shared LeagueView (settings + empty stubs).
+    expect(viewSource).toMatch(/GOLF_TABS/);
+    expect(viewSource).toMatch(/GolfSettingsPanel/);
+    expect(viewSource).toMatch(/isGolf/);
     expect(viewSource).not.toMatch(/^["']use client["']/m);
   });
 

@@ -3,6 +3,7 @@ import { ActivityPanel } from "@/components/ActivityPanel";
 import { DraftResultsPanel } from "@/components/DraftResultsPanel";
 import { EmptyState } from "@/components/EmptyState";
 import { FreeAgentsBoard } from "@/components/FreeAgentsBoard";
+import { GolfSettingsPanel } from "@/components/GolfSettingsPanel";
 import { HistoryPanel, type HistoryView } from "@/components/HistoryPanel";
 import { MatchupsPanel, type MatchupsView } from "@/components/MatchupsPanel";
 import { PlayersDataTable } from "@/components/PlayersDataTable";
@@ -190,6 +191,18 @@ const BASEBALL_TABS = [
   "tools",
 ] as const;
 
+/** Golf lane (roadmap 6.4a/6.5) — settings now; draft/lineup/score later. */
+const GOLF_TABS = [
+  "standings",
+  "teams",
+  "settings",
+  "schedule",
+  "lineup",
+  "scoreboard",
+  "draft",
+  "history",
+] as const;
+
 export function LeagueView({
   league,
   seasons,
@@ -247,8 +260,12 @@ export function LeagueView({
 }) {
   const leagueId = league.league_id;
   const isBaseball = league.sport === "baseball";
-  const period = league.period_label || (isBaseball ? "period" : "week");
-  const tabs = isBaseball ? BASEBALL_TABS : FOOTBALL_TABS;
+  const isGolf = league.sport === "golf";
+  const isFootball = league.sport === "football";
+  const period =
+    league.period_label ||
+    (isGolf ? "event" : isBaseball ? "period" : "week");
+  const tabs = isGolf ? GOLF_TABS : isBaseball ? BASEBALL_TABS : FOOTBALL_TABS;
   const active = (tabs as readonly string[]).includes(tab) ? tab : "standings";
   const activeRole = isBaseball ? role : undefined;
   const halfPprFallback = usesHalfPprScoringFallback(league);
@@ -316,7 +333,7 @@ export function LeagueView({
   const espnToGsis = indexPlayerMap(playerMap);
   const byGsis = indexProjections(projectionSnapshot);
   const playersWithProjections =
-    !isBaseball && projectionSnapshot
+    isFootball && projectionSnapshot
       ? attachPlayerProjections(players, espnToGsis, byGsis)
       : players;
 
@@ -331,6 +348,7 @@ export function LeagueView({
           {league.current_week ? ` · ${period} ${league.current_week}` : ""}
           {league.scoring_type ? ` · ${league.scoring_type}` : ""}
           {isBaseball ? " · ESPN data · no engine projections" : ""}
+          {isGolf ? " · hub golf · no tour feed yet" : ""}
         </span>
       </div>
       <h2>{league.name}</h2>
@@ -339,9 +357,11 @@ export function LeagueView({
         {league.synced_at
           ? ` · synced ${new Date(league.synced_at).toLocaleString()}`
           : ""}
-        {isBaseball
-          ? ". Standings, matchups, draft, activity, waivers, history, and batter/pitcher boards from ESPN — projection-free by design (roadmap 4.6)."
-          : ". Standings, matchups, draft, activity, history, rosters, projections, and decision tools."}
+        {isGolf
+          ? ". PGA Tour counting league — settings and empty teams now; draft, lineups, and EOD scoring in later slices (roadmap 6.4)."
+          : isBaseball
+            ? ". Standings, matchups, draft, activity, waivers, history, and batter/pitcher boards from ESPN — projection-free by design (roadmap 4.6)."
+            : ". Standings, matchups, draft, activity, history, rosters, projections, and decision tools."}
       </p>
 
       <SeasonSwitcher
@@ -385,6 +405,31 @@ export function LeagueView({
 
       {active === "teams" ? <TeamsList league={league} leagueId={leagueId} /> : null}
 
+      {active === "settings" && isGolf ? (
+        <GolfSettingsPanel league={league} />
+      ) : null}
+
+      {active === "schedule" && isGolf ? (
+        <EmptyState title="FedExCup schedule not loaded yet">
+          Event slate + multipliers land with the <code>sg</code> data plane
+          (roadmap 6.2). Multiplier defaults are on the Settings tab.
+        </EmptyState>
+      ) : null}
+
+      {active === "lineup" && isGolf ? (
+        <EmptyState title="Weekly lineups come in 6.4c">
+          Set five starters, captain (tiebreaker), and optional alts once the
+          draft board exists. Per-player tee-time locks are not live yet.
+        </EmptyState>
+      ) : null}
+
+      {active === "scoreboard" && isGolf ? (
+        <EmptyState title="End-of-day scoring comes in 6.4d">
+          Counting scoreboard (best 4 of 5 midweek, all 5 weekend) needs round
+          files from <code>sg</code> — no live tour API calls from the hub.
+        </EmptyState>
+      ) : null}
+
       {active === "players" ? (
         <>
           {isBaseball ? (
@@ -399,7 +444,7 @@ export function LeagueView({
             players={playersWithProjections}
             sport={league.sport}
             role={role}
-            showProjections={!isBaseball && Boolean(projectionSnapshot)}
+            showProjections={isFootball && Boolean(projectionSnapshot)}
           />
         </>
       ) : null}
@@ -409,7 +454,14 @@ export function LeagueView({
       ) : null}
 
       {active === "draft" ? (
-        <DraftResultsPanel league={league} teamId={draftTeamId} />
+        isGolf ? (
+          <EmptyState title="Snake draft comes in 6.4b">
+            One draft per year from the OWGR pool. Auction and keepers stay
+            settings stubs until after the MVP snake board ships.
+          </EmptyState>
+        ) : (
+          <DraftResultsPanel league={league} teamId={draftTeamId} />
+        )
       ) : null}
 
       {active === "activity" ? (

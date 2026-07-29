@@ -39,6 +39,11 @@ export function injuryTone(player: Player): "ok" | "warn" | "bad" {
 /** Title-case sport/format for the league kicker pill. */
 export function sportFormatLabel(sport: string, format: string): string {
   const title = (value: string) =>
-    value ? value.charAt(0).toUpperCase() + value.slice(1) : value;
+    value
+      ? value
+          .split("_")
+          .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+          .join(" ")
+      : value;
   return `${title(sport)} · ${title(format)}`;
 }

@@ -33,6 +33,17 @@
       "sport": "football",
       "synced_at": "2026-07-27T00:00:00+00:00",
       "team_count": 4
+    },
+    {
+      "espn_league_id": null,
+      "format": "h2h",
+      "league_id": "golf-main",
+      "name": "Strictly Jayers Golf",
+      "path": "golf-main/2026.json",
+      "season": 2026,
+      "sport": "golf",
+      "synced_at": "2026-07-27T00:00:00+00:00",
+      "team_count": 8
     }
   ]
 }
