@@ -1,13 +1,4696 @@
 {
   "current_week": null,
-  "draft": [],
+  "draft": [
+    {
+      "bid_amount": 0,
+      "keeper": false,
+      "nominating_team_id": null,
+      "player_id": 1,
+      "player_name": "Scottie Scheffler",
+      "round": 1,
+      "round_pick": 1,
+      "team_id": 1
+    },
+    {
+      "bid_amount": 0,
+      "keeper": false,
+      "nominating_team_id": null,
+      "player_id": 2,
+      "player_name": "Rory McIlroy",
+      "round": 1,
+      "round_pick": 2,
+      "team_id": 2
+    },
+    {
+      "bid_amount": 0,
+      "keeper": false,
+      "nominating_team_id": null,
+      "player_id": 3,
+      "player_name": "Xander Schauffele",
+      "round": 1,
+      "round_pick": 3,
+      "team_id": 3
+    },
+    {
+      "bid_amount": 0,
+      "keeper": false,
+      "nominating_team_id": null,
+      "player_id": 4,
+      "player_name": "Collin Morikawa",
+      "round": 1,
+      "round_pick": 4,
+      "team_id": 4
+    },
+    {
+      "bid_amount": 0,
+      "keeper": false,
+      "nominating_team_id": null,
+      "player_id": 5,
+      "player_name": "Ludvig Aberg",
+      "round": 1,
+      "round_pick": 5,
+      "team_id": 5
+    },
+    {
+      "bid_amount": 0,
+      "keeper": false,
+      "nominating_team_id": null,
+      "player_id": 6,
+      "player_name": "Jon Rahm",
+      "round": 1,
+      "round_pick": 6,
+      "team_id": 6
+    },
+    {
+      "bid_amount": 0,
+      "keeper": false,
+      "nominating_team_id": null,
+      "player_id": 7,
+      "player_name": "Wyndham Clark",
+      "round": 1,
+      "round_pick": 7,
+      "team_id": 7
+    },
+    {
+      "bid_amount": 0,
+      "keeper": false,
+      "nominating_team_id": null,
+      "player_id": 8,
+      "player_name": "Viktor Hovland",
+      "round": 1,
+      "round_pick": 8,
+      "team_id": 8
+    },
+    {
+      "bid_amount": 0,
+      "keeper": false,
+      "nominating_team_id": null,
+      "player_id": 9,
+      "player_name": "Patrick Cantlay",
+      "round": 2,
+      "round_pick": 1,
+      "team_id": 8
+    },
+    {
+      "bid_amount": 0,
+      "keeper": false,
+      "nominating_team_id": null,
+      "player_id": 10,
+      "player_name": "Tommy Fleetwood",
+      "round": 2,
+      "round_pick": 2,
+      "team_id": 7
+    },
+    {
+      "bid_amount": 0,
+      "keeper": false,
+      "nominating_team_id": null,
+      "player_id": 11,
+      "player_name": "Hideki Matsuyama",
+      "round": 2,
+      "round_pick": 3,
+      "team_id": 6
+    },
+    {
+      "bid_amount": 0,
+      "keeper": false,
+      "nominating_team_id": null,
+      "player_id": 12,
+      "player_name": "Justin Thomas",
+      "round": 2,
+      "round_pick": 4,
+      "team_id": 5
+    },
+    {
+      "bid_amount": 0,
+      "keeper": false,
+      "nominating_team_id": null,
+      "player_id": 13,
+      "player_name": "Sahith Theegala",
+      "round": 2,
+      "round_pick": 5,
+      "team_id": 4
+    },
+    {
+      "bid_amount": 0,
+      "keeper": false,
+      "nominating_team_id": null,
+      "player_id": 14,
+      "player_name": "Max Homa",
+      "round": 2,
+      "round_pick": 6,
+      "team_id": 3
+    },
+    {
+      "bid_amount": 0,
+      "keeper": false,
+      "nominating_team_id": null,
+      "player_id": 15,
+      "player_name": "Brian Harman",
+      "round": 2,
+      "round_pick": 7,
+      "team_id": 2
+    },
+    {
+      "bid_amount": 0,
+      "keeper": false,
+      "nominating_team_id": null,
+      "player_id": 16,
+      "player_name": "Matt Fitzpatrick",
+      "round": 2,
+      "round_pick": 8,
+      "team_id": 1
+    },
+    {
+      "bid_amount": 0,
+      "keeper": false,
+      "nominating_team_id": null,
+      "player_id": 17,
+      "player_name": "Tony Finau",
+      "round": 3,
+      "round_pick": 1,
+      "team_id": 1
+    },
+    {
+      "bid_amount": 0,
+      "keeper": false,
+      "nominating_team_id": null,
+      "player_id": 18,
+      "player_name": "Sam Burns",
+      "round": 3,
+      "round_pick": 2,
+      "team_id": 2
+    },
+    {
+      "bid_amount": 0,
+      "keeper": false,
+      "nominating_team_id": null,
+      "player_id": 19,
+      "player_name": "Jordan Spieth",
+      "round": 3,
+      "round_pick": 3,
+      "team_id": 3
+    },
+    {
+      "bid_amount": 0,
+      "keeper": false,
+      "nominating_team_id": null,
+      "player_id": 20,
+      "player_name": "Shane Lowry",
+      "round": 3,
+      "round_pick": 4,
+      "team_id": 4
+    },
+    {
+      "bid_amount": 0,
+      "keeper": false,
+      "nominating_team_id": null,
+      "player_id": 21,
+      "player_name": "Russell Henley",
+      "round": 3,
+      "round_pick": 5,
+      "team_id": 5
+    },
+    {
+      "bid_amount": 0,
+      "keeper": false,
+      "nominating_team_id": null,
+      "player_id": 22,
+      "player_name": "Sungjae Im",
+      "round": 3,
+      "round_pick": 6,
+      "team_id": 6
+    },
+    {
+      "bid_amount": 0,
+      "keeper": false,
+      "nominating_team_id": null,
+      "player_id": 23,
+      "player_name": "Jason Day",
+      "round": 3,
+      "round_pick": 7,
+      "team_id": 7
+    },
+    {
+      "bid_amount": 0,
+      "keeper": false,
+      "nominating_team_id": null,
+      "player_id": 24,
+      "player_name": "Tom Kim",
+      "round": 3,
+      "round_pick": 8,
+      "team_id": 8
+    },
+    {
+      "bid_amount": 0,
+      "keeper": false,
+      "nominating_team_id": null,
+      "player_id": 25,
+      "player_name": "Sepp Straka",
+      "round": 4,
+      "round_pick": 1,
+      "team_id": 8
+    },
+    {
+      "bid_amount": 0,
+      "keeper": false,
+      "nominating_team_id": null,
+      "player_id": 26,
+      "player_name": "Chris Kirk",
+      "round": 4,
+      "round_pick": 2,
+      "team_id": 7
+    },
+    {
+      "bid_amount": 0,
+      "keeper": false,
+      "nominating_team_id": null,
+      "player_id": 27,
+      "player_name": "Byeong Hun An",
+      "round": 4,
+      "round_pick": 3,
+      "team_id": 6
+    },
+    {
+      "bid_amount": 0,
+      "keeper": false,
+      "nominating_team_id": null,
+      "player_id": 28,
+      "player_name": "Cameron Young",
+      "round": 4,
+      "round_pick": 4,
+      "team_id": 5
+    },
+    {
+      "bid_amount": 0,
+      "keeper": false,
+      "nominating_team_id": null,
+      "player_id": 29,
+      "player_name": "Keegan Bradley",
+      "round": 4,
+      "round_pick": 5,
+      "team_id": 4
+    },
+    {
+      "bid_amount": 0,
+      "keeper": false,
+      "nominating_team_id": null,
+      "player_id": 30,
+      "player_name": "Adam Scott",
+      "round": 4,
+      "round_pick": 6,
+      "team_id": 3
+    },
+    {
+      "bid_amount": 0,
+      "keeper": false,
+      "nominating_team_id": null,
+      "player_id": 31,
+      "player_name": "Billy Horschel",
+      "round": 4,
+      "round_pick": 7,
+      "team_id": 2
+    },
+    {
+      "bid_amount": 0,
+      "keeper": false,
+      "nominating_team_id": null,
+      "player_id": 32,
+      "player_name": "Corey Conners",
+      "round": 4,
+      "round_pick": 8,
+      "team_id": 1
+    },
+    {
+      "bid_amount": 0,
+      "keeper": false,
+      "nominating_team_id": null,
+      "player_id": 33,
+      "player_name": "Si Woo Kim",
+      "round": 5,
+      "round_pick": 1,
+      "team_id": 1
+    },
+    {
+      "bid_amount": 0,
+      "keeper": false,
+      "nominating_team_id": null,
+      "player_id": 34,
+      "player_name": "Harris English",
+      "round": 5,
+      "round_pick": 2,
+      "team_id": 2
+    },
+    {
+      "bid_amount": 0,
+      "keeper": false,
+      "nominating_team_id": null,
+      "player_id": 35,
+      "player_name": "Aaron Rai",
+      "round": 5,
+      "round_pick": 3,
+      "team_id": 3
+    },
+    {
+      "bid_amount": 0,
+      "keeper": false,
+      "nominating_team_id": null,
+      "player_id": 36,
+      "player_name": "Akira Aoyama",
+      "round": 5,
+      "round_pick": 4,
+      "team_id": 4
+    },
+    {
+      "bid_amount": 0,
+      "keeper": false,
+      "nominating_team_id": null,
+      "player_id": 37,
+      "player_name": "Denny McCarthy",
+      "round": 5,
+      "round_pick": 5,
+      "team_id": 5
+    },
+    {
+      "bid_amount": 0,
+      "keeper": false,
+      "nominating_team_id": null,
+      "player_id": 38,
+      "player_name": "Eric Cole",
+      "round": 5,
+      "round_pick": 6,
+      "team_id": 6
+    },
+    {
+      "bid_amount": 0,
+      "keeper": false,
+      "nominating_team_id": null,
+      "player_id": 39,
+      "player_name": "Stephan Jaeger",
+      "round": 5,
+      "round_pick": 7,
+      "team_id": 7
+    },
+    {
+      "bid_amount": 0,
+      "keeper": false,
+      "nominating_team_id": null,
+      "player_id": 40,
+      "player_name": "Alex Noren",
+      "round": 5,
+      "round_pick": 8,
+      "team_id": 8
+    },
+    {
+      "bid_amount": 0,
+      "keeper": false,
+      "nominating_team_id": null,
+      "player_id": 41,
+      "player_name": "Min Woo Lee",
+      "round": 6,
+      "round_pick": 1,
+      "team_id": 8
+    },
+    {
+      "bid_amount": 0,
+      "keeper": false,
+      "nominating_team_id": null,
+      "player_id": 42,
+      "player_name": "Nick Taylor",
+      "round": 6,
+      "round_pick": 2,
+      "team_id": 7
+    },
+    {
+      "bid_amount": 0,
+      "keeper": false,
+      "nominating_team_id": null,
+      "player_id": 43,
+      "player_name": "Will Zalatoris",
+      "round": 6,
+      "round_pick": 3,
+      "team_id": 6
+    },
+    {
+      "bid_amount": 0,
+      "keeper": false,
+      "nominating_team_id": null,
+      "player_id": 44,
+      "player_name": "Davis Thompson",
+      "round": 6,
+      "round_pick": 4,
+      "team_id": 5
+    },
+    {
+      "bid_amount": 0,
+      "keeper": false,
+      "nominating_team_id": null,
+      "player_id": 45,
+      "player_name": "J.T. Poston",
+      "round": 6,
+      "round_pick": 5,
+      "team_id": 4
+    },
+    {
+      "bid_amount": 0,
+      "keeper": false,
+      "nominating_team_id": null,
+      "player_id": 46,
+      "player_name": "Adam Hadwin",
+      "round": 6,
+      "round_pick": 6,
+      "team_id": 3
+    },
+    {
+      "bid_amount": 0,
+      "keeper": false,
+      "nominating_team_id": null,
+      "player_id": 47,
+      "player_name": "Taylor Pendrith",
+      "round": 6,
+      "round_pick": 7,
+      "team_id": 2
+    },
+    {
+      "bid_amount": 0,
+      "keeper": false,
+      "nominating_team_id": null,
+      "player_id": 48,
+      "player_name": "Austin Eckroat",
+      "round": 6,
+      "round_pick": 8,
+      "team_id": 1
+    },
+    {
+      "bid_amount": 0,
+      "keeper": false,
+      "nominating_team_id": null,
+      "player_id": 49,
+      "player_name": "Jake Knapp",
+      "round": 7,
+      "round_pick": 1,
+      "team_id": 1
+    },
+    {
+      "bid_amount": 0,
+      "keeper": false,
+      "nominating_team_id": null,
+      "player_id": 50,
+      "player_name": "Nicolai Hojgaard",
+      "round": 7,
+      "round_pick": 2,
+      "team_id": 2
+    },
+    {
+      "bid_amount": 0,
+      "keeper": false,
+      "nominating_team_id": null,
+      "player_id": 51,
+      "player_name": "OWGR Golfer 51",
+      "round": 7,
+      "round_pick": 3,
+      "team_id": 3
+    },
+    {
+      "bid_amount": 0,
+      "keeper": false,
+      "nominating_team_id": null,
+      "player_id": 52,
+      "player_name": "OWGR Golfer 52",
+      "round": 7,
+      "round_pick": 4,
+      "team_id": 4
+    },
+    {
+      "bid_amount": 0,
+      "keeper": false,
+      "nominating_team_id": null,
+      "player_id": 53,
+      "player_name": "OWGR Golfer 53",
+      "round": 7,
+      "round_pick": 5,
+      "team_id": 5
+    },
+    {
+      "bid_amount": 0,
+      "keeper": false,
+      "nominating_team_id": null,
+      "player_id": 54,
+      "player_name": "OWGR Golfer 54",
+      "round": 7,
+      "round_pick": 6,
+      "team_id": 6
+    },
+    {
+      "bid_amount": 0,
+      "keeper": false,
+      "nominating_team_id": null,
+      "player_id": 55,
+      "player_name": "OWGR Golfer 55",
+      "round": 7,
+      "round_pick": 7,
+      "team_id": 7
+    },
+    {
+      "bid_amount": 0,
+      "keeper": false,
+      "nominating_team_id": null,
+      "player_id": 56,
+      "player_name": "OWGR Golfer 56",
+      "round": 7,
+      "round_pick": 8,
+      "team_id": 8
+    },
+    {
+      "bid_amount": 0,
+      "keeper": false,
+      "nominating_team_id": null,
+      "player_id": 57,
+      "player_name": "OWGR Golfer 57",
+      "round": 8,
+      "round_pick": 1,
+      "team_id": 8
+    },
+    {
+      "bid_amount": 0,
+      "keeper": false,
+      "nominating_team_id": null,
+      "player_id": 58,
+      "player_name": "OWGR Golfer 58",
+      "round": 8,
+      "round_pick": 2,
+      "team_id": 7
+    },
+    {
+      "bid_amount": 0,
+      "keeper": false,
+      "nominating_team_id": null,
+      "player_id": 59,
+      "player_name": "OWGR Golfer 59",
+      "round": 8,
+      "round_pick": 3,
+      "team_id": 6
+    },
+    {
+      "bid_amount": 0,
+      "keeper": false,
+      "nominating_team_id": null,
+      "player_id": 60,
+      "player_name": "OWGR Golfer 60",
+      "round": 8,
+      "round_pick": 4,
+      "team_id": 5
+    },
+    {
+      "bid_amount": 0,
+      "keeper": false,
+      "nominating_team_id": null,
+      "player_id": 61,
+      "player_name": "OWGR Golfer 61",
+      "round": 8,
+      "round_pick": 5,
+      "team_id": 4
+    },
+    {
+      "bid_amount": 0,
+      "keeper": false,
+      "nominating_team_id": null,
+      "player_id": 62,
+      "player_name": "OWGR Golfer 62",
+      "round": 8,
+      "round_pick": 6,
+      "team_id": 3
+    },
+    {
+      "bid_amount": 0,
+      "keeper": false,
+      "nominating_team_id": null,
+      "player_id": 63,
+      "player_name": "OWGR Golfer 63",
+      "round": 8,
+      "round_pick": 7,
+      "team_id": 2
+    },
+    {
+      "bid_amount": 0,
+      "keeper": false,
+      "nominating_team_id": null,
+      "player_id": 64,
+      "player_name": "OWGR Golfer 64",
+      "round": 8,
+      "round_pick": 8,
+      "team_id": 1
+    },
+    {
+      "bid_amount": 0,
+      "keeper": false,
+      "nominating_team_id": null,
+      "player_id": 65,
+      "player_name": "OWGR Golfer 65",
+      "round": 9,
+      "round_pick": 1,
+      "team_id": 1
+    },
+    {
+      "bid_amount": 0,
+      "keeper": false,
+      "nominating_team_id": null,
+      "player_id": 66,
+      "player_name": "OWGR Golfer 66",
+      "round": 9,
+      "round_pick": 2,
+      "team_id": 2
+    },
+    {
+      "bid_amount": 0,
+      "keeper": false,
+      "nominating_team_id": null,
+      "player_id": 67,
+      "player_name": "OWGR Golfer 67",
+      "round": 9,
+      "round_pick": 3,
+      "team_id": 3
+    },
+    {
+      "bid_amount": 0,
+      "keeper": false,
+      "nominating_team_id": null,
+      "player_id": 68,
+      "player_name": "OWGR Golfer 68",
+      "round": 9,
+      "round_pick": 4,
+      "team_id": 4
+    },
+    {
+      "bid_amount": 0,
+      "keeper": false,
+      "nominating_team_id": null,
+      "player_id": 69,
+      "player_name": "OWGR Golfer 69",
+      "round": 9,
+      "round_pick": 5,
+      "team_id": 5
+    },
+    {
+      "bid_amount": 0,
+      "keeper": false,
+      "nominating_team_id": null,
+      "player_id": 70,
+      "player_name": "OWGR Golfer 70",
+      "round": 9,
+      "round_pick": 6,
+      "team_id": 6
+    },
+    {
+      "bid_amount": 0,
+      "keeper": false,
+      "nominating_team_id": null,
+      "player_id": 71,
+      "player_name": "OWGR Golfer 71",
+      "round": 9,
+      "round_pick": 7,
+      "team_id": 7
+    },
+    {
+      "bid_amount": 0,
+      "keeper": false,
+      "nominating_team_id": null,
+      "player_id": 72,
+      "player_name": "OWGR Golfer 72",
+      "round": 9,
+      "round_pick": 8,
+      "team_id": 8
+    },
+    {
+      "bid_amount": 0,
+      "keeper": false,
+      "nominating_team_id": null,
+      "player_id": 73,
+      "player_name": "OWGR Golfer 73",
+      "round": 10,
+      "round_pick": 1,
+      "team_id": 8
+    },
+    {
+      "bid_amount": 0,
+      "keeper": false,
+      "nominating_team_id": null,
+      "player_id": 74,
+      "player_name": "OWGR Golfer 74",
+      "round": 10,
+      "round_pick": 2,
+      "team_id": 7
+    },
+    {
+      "bid_amount": 0,
+      "keeper": false,
+      "nominating_team_id": null,
+      "player_id": 75,
+      "player_name": "OWGR Golfer 75",
+      "round": 10,
+      "round_pick": 3,
+      "team_id": 6
+    },
+    {
+      "bid_amount": 0,
+      "keeper": false,
+      "nominating_team_id": null,
+      "player_id": 76,
+      "player_name": "OWGR Golfer 76",
+      "round": 10,
+      "round_pick": 4,
+      "team_id": 5
+    },
+    {
+      "bid_amount": 0,
+      "keeper": false,
+      "nominating_team_id": null,
+      "player_id": 77,
+      "player_name": "OWGR Golfer 77",
+      "round": 10,
+      "round_pick": 5,
+      "team_id": 4
+    },
+    {
+      "bid_amount": 0,
+      "keeper": false,
+      "nominating_team_id": null,
+      "player_id": 78,
+      "player_name": "OWGR Golfer 78",
+      "round": 10,
+      "round_pick": 6,
+      "team_id": 3
+    },
+    {
+      "bid_amount": 0,
+      "keeper": false,
+      "nominating_team_id": null,
+      "player_id": 79,
+      "player_name": "OWGR Golfer 79",
+      "round": 10,
+      "round_pick": 7,
+      "team_id": 2
+    },
+    {
+      "bid_amount": 0,
+      "keeper": false,
+      "nominating_team_id": null,
+      "player_id": 80,
+      "player_name": "OWGR Golfer 80",
+      "round": 10,
+      "round_pick": 8,
+      "team_id": 1
+    },
+    {
+      "bid_amount": 0,
+      "keeper": false,
+      "nominating_team_id": null,
+      "player_id": 81,
+      "player_name": "OWGR Golfer 81",
+      "round": 11,
+      "round_pick": 1,
+      "team_id": 1
+    },
+    {
+      "bid_amount": 0,
+      "keeper": false,
+      "nominating_team_id": null,
+      "player_id": 82,
+      "player_name": "OWGR Golfer 82",
+      "round": 11,
+      "round_pick": 2,
+      "team_id": 2
+    },
+    {
+      "bid_amount": 0,
+      "keeper": false,
+      "nominating_team_id": null,
+      "player_id": 83,
+      "player_name": "OWGR Golfer 83",
+      "round": 11,
+      "round_pick": 3,
+      "team_id": 3
+    },
+    {
+      "bid_amount": 0,
+      "keeper": false,
+      "nominating_team_id": null,
+      "player_id": 84,
+      "player_name": "OWGR Golfer 84",
+      "round": 11,
+      "round_pick": 4,
+      "team_id": 4
+    },
+    {
+      "bid_amount": 0,
+      "keeper": false,
+      "nominating_team_id": null,
+      "player_id": 85,
+      "player_name": "OWGR Golfer 85",
+      "round": 11,
+      "round_pick": 5,
+      "team_id": 5
+    },
+    {
+      "bid_amount": 0,
+      "keeper": false,
+      "nominating_team_id": null,
+      "player_id": 86,
+      "player_name": "OWGR Golfer 86",
+      "round": 11,
+      "round_pick": 6,
+      "team_id": 6
+    },
+    {
+      "bid_amount": 0,
+      "keeper": false,
+      "nominating_team_id": null,
+      "player_id": 87,
+      "player_name": "OWGR Golfer 87",
+      "round": 11,
+      "round_pick": 7,
+      "team_id": 7
+    },
+    {
+      "bid_amount": 0,
+      "keeper": false,
+      "nominating_team_id": null,
+      "player_id": 88,
+      "player_name": "OWGR Golfer 88",
+      "round": 11,
+      "round_pick": 8,
+      "team_id": 8
+    },
+    {
+      "bid_amount": 0,
+      "keeper": false,
+      "nominating_team_id": null,
+      "player_id": 89,
+      "player_name": "OWGR Golfer 89",
+      "round": 12,
+      "round_pick": 1,
+      "team_id": 8
+    },
+    {
+      "bid_amount": 0,
+      "keeper": false,
+      "nominating_team_id": null,
+      "player_id": 90,
+      "player_name": "OWGR Golfer 90",
+      "round": 12,
+      "round_pick": 2,
+      "team_id": 7
+    },
+    {
+      "bid_amount": 0,
+      "keeper": false,
+      "nominating_team_id": null,
+      "player_id": 91,
+      "player_name": "OWGR Golfer 91",
+      "round": 12,
+      "round_pick": 3,
+      "team_id": 6
+    },
+    {
+      "bid_amount": 0,
+      "keeper": false,
+      "nominating_team_id": null,
+      "player_id": 92,
+      "player_name": "OWGR Golfer 92",
+      "round": 12,
+      "round_pick": 4,
+      "team_id": 5
+    },
+    {
+      "bid_amount": 0,
+      "keeper": false,
+      "nominating_team_id": null,
+      "player_id": 93,
+      "player_name": "OWGR Golfer 93",
+      "round": 12,
+      "round_pick": 5,
+      "team_id": 4
+    },
+    {
+      "bid_amount": 0,
+      "keeper": false,
+      "nominating_team_id": null,
+      "player_id": 94,
+      "player_name": "OWGR Golfer 94",
+      "round": 12,
+      "round_pick": 6,
+      "team_id": 3
+    },
+    {
+      "bid_amount": 0,
+      "keeper": false,
+      "nominating_team_id": null,
+      "player_id": 95,
+      "player_name": "OWGR Golfer 95",
+      "round": 12,
+      "round_pick": 7,
+      "team_id": 2
+    },
+    {
+      "bid_amount": 0,
+      "keeper": false,
+      "nominating_team_id": null,
+      "player_id": 96,
+      "player_name": "OWGR Golfer 96",
+      "round": 12,
+      "round_pick": 8,
+      "team_id": 1
+    },
+    {
+      "bid_amount": 0,
+      "keeper": false,
+      "nominating_team_id": null,
+      "player_id": 97,
+      "player_name": "OWGR Golfer 97",
+      "round": 13,
+      "round_pick": 1,
+      "team_id": 1
+    },
+    {
+      "bid_amount": 0,
+      "keeper": false,
+      "nominating_team_id": null,
+      "player_id": 98,
+      "player_name": "OWGR Golfer 98",
+      "round": 13,
+      "round_pick": 2,
+      "team_id": 2
+    },
+    {
+      "bid_amount": 0,
+      "keeper": false,
+      "nominating_team_id": null,
+      "player_id": 99,
+      "player_name": "OWGR Golfer 99",
+      "round": 13,
+      "round_pick": 3,
+      "team_id": 3
+    },
+    {
+      "bid_amount": 0,
+      "keeper": false,
+      "nominating_team_id": null,
+      "player_id": 100,
+      "player_name": "OWGR Golfer 100",
+      "round": 13,
+      "round_pick": 4,
+      "team_id": 4
+    },
+    {
+      "bid_amount": 0,
+      "keeper": false,
+      "nominating_team_id": null,
+      "player_id": 101,
+      "player_name": "OWGR Golfer 101",
+      "round": 13,
+      "round_pick": 5,
+      "team_id": 5
+    },
+    {
+      "bid_amount": 0,
+      "keeper": false,
+      "nominating_team_id": null,
+      "player_id": 102,
+      "player_name": "OWGR Golfer 102",
+      "round": 13,
+      "round_pick": 6,
+      "team_id": 6
+    },
+    {
+      "bid_amount": 0,
+      "keeper": false,
+      "nominating_team_id": null,
+      "player_id": 103,
+      "player_name": "OWGR Golfer 103",
+      "round": 13,
+      "round_pick": 7,
+      "team_id": 7
+    },
+    {
+      "bid_amount": 0,
+      "keeper": false,
+      "nominating_team_id": null,
+      "player_id": 104,
+      "player_name": "OWGR Golfer 104",
+      "round": 13,
+      "round_pick": 8,
+      "team_id": 8
+    },
+    {
+      "bid_amount": 0,
+      "keeper": false,
+      "nominating_team_id": null,
+      "player_id": 105,
+      "player_name": "OWGR Golfer 105",
+      "round": 14,
+      "round_pick": 1,
+      "team_id": 8
+    },
+    {
+      "bid_amount": 0,
+      "keeper": false,
+      "nominating_team_id": null,
+      "player_id": 106,
+      "player_name": "OWGR Golfer 106",
+      "round": 14,
+      "round_pick": 2,
+      "team_id": 7
+    },
+    {
+      "bid_amount": 0,
+      "keeper": false,
+      "nominating_team_id": null,
+      "player_id": 107,
+      "player_name": "OWGR Golfer 107",
+      "round": 14,
+      "round_pick": 3,
+      "team_id": 6
+    },
+    {
+      "bid_amount": 0,
+      "keeper": false,
+      "nominating_team_id": null,
+      "player_id": 108,
+      "player_name": "OWGR Golfer 108",
+      "round": 14,
+      "round_pick": 4,
+      "team_id": 5
+    },
+    {
+      "bid_amount": 0,
+      "keeper": false,
+      "nominating_team_id": null,
+      "player_id": 109,
+      "player_name": "OWGR Golfer 109",
+      "round": 14,
+      "round_pick": 5,
+      "team_id": 4
+    },
+    {
+      "bid_amount": 0,
+      "keeper": false,
+      "nominating_team_id": null,
+      "player_id": 110,
+      "player_name": "OWGR Golfer 110",
+      "round": 14,
+      "round_pick": 6,
+      "team_id": 3
+    },
+    {
+      "bid_amount": 0,
+      "keeper": false,
+      "nominating_team_id": null,
+      "player_id": 111,
+      "player_name": "OWGR Golfer 111",
+      "round": 14,
+      "round_pick": 7,
+      "team_id": 2
+    },
+    {
+      "bid_amount": 0,
+      "keeper": false,
+      "nominating_team_id": null,
+      "player_id": 112,
+      "player_name": "OWGR Golfer 112",
+      "round": 14,
+      "round_pick": 8,
+      "team_id": 1
+    },
+    {
+      "bid_amount": 0,
+      "keeper": false,
+      "nominating_team_id": null,
+      "player_id": 113,
+      "player_name": "OWGR Golfer 113",
+      "round": 15,
+      "round_pick": 1,
+      "team_id": 1
+    },
+    {
+      "bid_amount": 0,
+      "keeper": false,
+      "nominating_team_id": null,
+      "player_id": 114,
+      "player_name": "OWGR Golfer 114",
+      "round": 15,
+      "round_pick": 2,
+      "team_id": 2
+    },
+    {
+      "bid_amount": 0,
+      "keeper": false,
+      "nominating_team_id": null,
+      "player_id": 115,
+      "player_name": "OWGR Golfer 115",
+      "round": 15,
+      "round_pick": 3,
+      "team_id": 3
+    },
+    {
+      "bid_amount": 0,
+      "keeper": false,
+      "nominating_team_id": null,
+      "player_id": 116,
+      "player_name": "OWGR Golfer 116",
+      "round": 15,
+      "round_pick": 4,
+      "team_id": 4
+    },
+    {
+      "bid_amount": 0,
+      "keeper": false,
+      "nominating_team_id": null,
+      "player_id": 117,
+      "player_name": "OWGR Golfer 117",
+      "round": 15,
+      "round_pick": 5,
+      "team_id": 5
+    },
+    {
+      "bid_amount": 0,
+      "keeper": false,
+      "nominating_team_id": null,
+      "player_id": 118,
+      "player_name": "OWGR Golfer 118",
+      "round": 15,
+      "round_pick": 6,
+      "team_id": 6
+    },
+    {
+      "bid_amount": 0,
+      "keeper": false,
+      "nominating_team_id": null,
+      "player_id": 119,
+      "player_name": "OWGR Golfer 119",
+      "round": 15,
+      "round_pick": 7,
+      "team_id": 7
+    },
+    {
+      "bid_amount": 0,
+      "keeper": false,
+      "nominating_team_id": null,
+      "player_id": 120,
+      "player_name": "OWGR Golfer 120",
+      "round": 15,
+      "round_pick": 8,
+      "team_id": 8
+    }
+  ],
   "espn_league_id": null,
   "format": "h2h",
-  "free_agents": [],
+  "free_agents": [
+    {
+      "acquisition_type": "FREEAGENT",
+      "avg_points": null,
+      "eligible_slots": [
+        "GS",
+        "BE",
+        "ALT"
+      ],
+      "id": 121,
+      "injured": false,
+      "injury_status": null,
+      "name": "OWGR Golfer 121",
+      "percent_owned": null,
+      "position": "G",
+      "pro_team": null,
+      "projected_total_points": null,
+      "role": "golfer",
+      "season_stats": {
+        "OWGR": 121.0
+      },
+      "slot": "FA",
+      "status": "ACTIVE",
+      "total_points": 0.0
+    },
+    {
+      "acquisition_type": "FREEAGENT",
+      "avg_points": null,
+      "eligible_slots": [
+        "GS",
+        "BE",
+        "ALT"
+      ],
+      "id": 122,
+      "injured": false,
+      "injury_status": null,
+      "name": "OWGR Golfer 122",
+      "percent_owned": null,
+      "position": "G",
+      "pro_team": null,
+      "projected_total_points": null,
+      "role": "golfer",
+      "season_stats": {
+        "OWGR": 122.0
+      },
+      "slot": "FA",
+      "status": "ACTIVE",
+      "total_points": 0.0
+    },
+    {
+      "acquisition_type": "FREEAGENT",
+      "avg_points": null,
+      "eligible_slots": [
+        "GS",
+        "BE",
+        "ALT"
+      ],
+      "id": 123,
+      "injured": false,
+      "injury_status": null,
+      "name": "OWGR Golfer 123",
+      "percent_owned": null,
+      "position": "G",
+      "pro_team": null,
+      "projected_total_points": null,
+      "role": "golfer",
+      "season_stats": {
+        "OWGR": 123.0
+      },
+      "slot": "FA",
+      "status": "ACTIVE",
+      "total_points": 0.0
+    },
+    {
+      "acquisition_type": "FREEAGENT",
+      "avg_points": null,
+      "eligible_slots": [
+        "GS",
+        "BE",
+        "ALT"
+      ],
+      "id": 124,
+      "injured": false,
+      "injury_status": null,
+      "name": "OWGR Golfer 124",
+      "percent_owned": null,
+      "position": "G",
+      "pro_team": null,
+      "projected_total_points": null,
+      "role": "golfer",
+      "season_stats": {
+        "OWGR": 124.0
+      },
+      "slot": "FA",
+      "status": "ACTIVE",
+      "total_points": 0.0
+    },
+    {
+      "acquisition_type": "FREEAGENT",
+      "avg_points": null,
+      "eligible_slots": [
+        "GS",
+        "BE",
+        "ALT"
+      ],
+      "id": 125,
+      "injured": false,
+      "injury_status": null,
+      "name": "OWGR Golfer 125",
+      "percent_owned": null,
+      "position": "G",
+      "pro_team": null,
+      "projected_total_points": null,
+      "role": "golfer",
+      "season_stats": {
+        "OWGR": 125.0
+      },
+      "slot": "FA",
+      "status": "ACTIVE",
+      "total_points": 0.0
+    },
+    {
+      "acquisition_type": "FREEAGENT",
+      "avg_points": null,
+      "eligible_slots": [
+        "GS",
+        "BE",
+        "ALT"
+      ],
+      "id": 126,
+      "injured": false,
+      "injury_status": null,
+      "name": "OWGR Golfer 126",
+      "percent_owned": null,
+      "position": "G",
+      "pro_team": null,
+      "projected_total_points": null,
+      "role": "golfer",
+      "season_stats": {
+        "OWGR": 126.0
+      },
+      "slot": "FA",
+      "status": "ACTIVE",
+      "total_points": 0.0
+    },
+    {
+      "acquisition_type": "FREEAGENT",
+      "avg_points": null,
+      "eligible_slots": [
+        "GS",
+        "BE",
+        "ALT"
+      ],
+      "id": 127,
+      "injured": false,
+      "injury_status": null,
+      "name": "OWGR Golfer 127",
+      "percent_owned": null,
+      "position": "G",
+      "pro_team": null,
+      "projected_total_points": null,
+      "role": "golfer",
+      "season_stats": {
+        "OWGR": 127.0
+      },
+      "slot": "FA",
+      "status": "ACTIVE",
+      "total_points": 0.0
+    },
+    {
+      "acquisition_type": "FREEAGENT",
+      "avg_points": null,
+      "eligible_slots": [
+        "GS",
+        "BE",
+        "ALT"
+      ],
+      "id": 128,
+      "injured": false,
+      "injury_status": null,
+      "name": "OWGR Golfer 128",
+      "percent_owned": null,
+      "position": "G",
+      "pro_team": null,
+      "projected_total_points": null,
+      "role": "golfer",
+      "season_stats": {
+        "OWGR": 128.0
+      },
+      "slot": "FA",
+      "status": "ACTIVE",
+      "total_points": 0.0
+    },
+    {
+      "acquisition_type": "FREEAGENT",
+      "avg_points": null,
+      "eligible_slots": [
+        "GS",
+        "BE",
+        "ALT"
+      ],
+      "id": 129,
+      "injured": false,
+      "injury_status": null,
+      "name": "OWGR Golfer 129",
+      "percent_owned": null,
+      "position": "G",
+      "pro_team": null,
+      "projected_total_points": null,
+      "role": "golfer",
+      "season_stats": {
+        "OWGR": 129.0
+      },
+      "slot": "FA",
+      "status": "ACTIVE",
+      "total_points": 0.0
+    },
+    {
+      "acquisition_type": "FREEAGENT",
+      "avg_points": null,
+      "eligible_slots": [
+        "GS",
+        "BE",
+        "ALT"
+      ],
+      "id": 130,
+      "injured": false,
+      "injury_status": null,
+      "name": "OWGR Golfer 130",
+      "percent_owned": null,
+      "position": "G",
+      "pro_team": null,
+      "projected_total_points": null,
+      "role": "golfer",
+      "season_stats": {
+        "OWGR": 130.0
+      },
+      "slot": "FA",
+      "status": "ACTIVE",
+      "total_points": 0.0
+    },
+    {
+      "acquisition_type": "FREEAGENT",
+      "avg_points": null,
+      "eligible_slots": [
+        "GS",
+        "BE",
+        "ALT"
+      ],
+      "id": 131,
+      "injured": false,
+      "injury_status": null,
+      "name": "OWGR Golfer 131",
+      "percent_owned": null,
+      "position": "G",
+      "pro_team": null,
+      "projected_total_points": null,
+      "role": "golfer",
+      "season_stats": {
+        "OWGR": 131.0
+      },
+      "slot": "FA",
+      "status": "ACTIVE",
+      "total_points": 0.0
+    },
+    {
+      "acquisition_type": "FREEAGENT",
+      "avg_points": null,
+      "eligible_slots": [
+        "GS",
+        "BE",
+        "ALT"
+      ],
+      "id": 132,
+      "injured": false,
+      "injury_status": null,
+      "name": "OWGR Golfer 132",
+      "percent_owned": null,
+      "position": "G",
+      "pro_team": null,
+      "projected_total_points": null,
+      "role": "golfer",
+      "season_stats": {
+        "OWGR": 132.0
+      },
+      "slot": "FA",
+      "status": "ACTIVE",
+      "total_points": 0.0
+    },
+    {
+      "acquisition_type": "FREEAGENT",
+      "avg_points": null,
+      "eligible_slots": [
+        "GS",
+        "BE",
+        "ALT"
+      ],
+      "id": 133,
+      "injured": false,
+      "injury_status": null,
+      "name": "OWGR Golfer 133",
+      "percent_owned": null,
+      "position": "G",
+      "pro_team": null,
+      "projected_total_points": null,
+      "role": "golfer",
+      "season_stats": {
+        "OWGR": 133.0
+      },
+      "slot": "FA",
+      "status": "ACTIVE",
+      "total_points": 0.0
+    },
+    {
+      "acquisition_type": "FREEAGENT",
+      "avg_points": null,
+      "eligible_slots": [
+        "GS",
+        "BE",
+        "ALT"
+      ],
+      "id": 134,
+      "injured": false,
+      "injury_status": null,
+      "name": "OWGR Golfer 134",
+      "percent_owned": null,
+      "position": "G",
+      "pro_team": null,
+      "projected_total_points": null,
+      "role": "golfer",
+      "season_stats": {
+        "OWGR": 134.0
+      },
+      "slot": "FA",
+      "status": "ACTIVE",
+      "total_points": 0.0
+    },
+    {
+      "acquisition_type": "FREEAGENT",
+      "avg_points": null,
+      "eligible_slots": [
+        "GS",
+        "BE",
+        "ALT"
+      ],
+      "id": 135,
+      "injured": false,
+      "injury_status": null,
+      "name": "OWGR Golfer 135",
+      "percent_owned": null,
+      "position": "G",
+      "pro_team": null,
+      "projected_total_points": null,
+      "role": "golfer",
+      "season_stats": {
+        "OWGR": 135.0
+      },
+      "slot": "FA",
+      "status": "ACTIVE",
+      "total_points": 0.0
+    },
+    {
+      "acquisition_type": "FREEAGENT",
+      "avg_points": null,
+      "eligible_slots": [
+        "GS",
+        "BE",
+        "ALT"
+      ],
+      "id": 136,
+      "injured": false,
+      "injury_status": null,
+      "name": "OWGR Golfer 136",
+      "percent_owned": null,
+      "position": "G",
+      "pro_team": null,
+      "projected_total_points": null,
+      "role": "golfer",
+      "season_stats": {
+        "OWGR": 136.0
+      },
+      "slot": "FA",
+      "status": "ACTIVE",
+      "total_points": 0.0
+    },
+    {
+      "acquisition_type": "FREEAGENT",
+      "avg_points": null,
+      "eligible_slots": [
+        "GS",
+        "BE",
+        "ALT"
+      ],
+      "id": 137,
+      "injured": false,
+      "injury_status": null,
+      "name": "OWGR Golfer 137",
+      "percent_owned": null,
+      "position": "G",
+      "pro_team": null,
+      "projected_total_points": null,
+      "role": "golfer",
+      "season_stats": {
+        "OWGR": 137.0
+      },
+      "slot": "FA",
+      "status": "ACTIVE",
+      "total_points": 0.0
+    },
+    {
+      "acquisition_type": "FREEAGENT",
+      "avg_points": null,
+      "eligible_slots": [
+        "GS",
+        "BE",
+        "ALT"
+      ],
+      "id": 138,
+      "injured": false,
+      "injury_status": null,
+      "name": "OWGR Golfer 138",
+      "percent_owned": null,
+      "position": "G",
+      "pro_team": null,
+      "projected_total_points": null,
+      "role": "golfer",
+      "season_stats": {
+        "OWGR": 138.0
+      },
+      "slot": "FA",
+      "status": "ACTIVE",
+      "total_points": 0.0
+    },
+    {
+      "acquisition_type": "FREEAGENT",
+      "avg_points": null,
+      "eligible_slots": [
+        "GS",
+        "BE",
+        "ALT"
+      ],
+      "id": 139,
+      "injured": false,
+      "injury_status": null,
+      "name": "OWGR Golfer 139",
+      "percent_owned": null,
+      "position": "G",
+      "pro_team": null,
+      "projected_total_points": null,
+      "role": "golfer",
+      "season_stats": {
+        "OWGR": 139.0
+      },
+      "slot": "FA",
+      "status": "ACTIVE",
+      "total_points": 0.0
+    },
+    {
+      "acquisition_type": "FREEAGENT",
+      "avg_points": null,
+      "eligible_slots": [
+        "GS",
+        "BE",
+        "ALT"
+      ],
+      "id": 140,
+      "injured": false,
+      "injury_status": null,
+      "name": "OWGR Golfer 140",
+      "percent_owned": null,
+      "position": "G",
+      "pro_team": null,
+      "projected_total_points": null,
+      "role": "golfer",
+      "season_stats": {
+        "OWGR": 140.0
+      },
+      "slot": "FA",
+      "status": "ACTIVE",
+      "total_points": 0.0
+    }
+  ],
   "league_id": "golf-main",
   "name": "Strictly Jayers Golf",
   "period_label": "event",
-  "players": [],
+  "players": [
+    {
+      "acquisition_type": "DRAFT",
+      "avg_points": null,
+      "eligible_slots": [
+        "GS",
+        "BE",
+        "ALT"
+      ],
+      "fantasy_team": "Fairway Phantoms",
+      "id": 1,
+      "injured": false,
+      "injury_status": null,
+      "name": "Scottie Scheffler",
+      "percent_owned": null,
+      "position": "G",
+      "pro_team": "USA",
+      "projected_total_points": null,
+      "role": "golfer",
+      "season_stats": {
+        "OWGR": 1.0
+      },
+      "slot": "GS",
+      "status": "ACTIVE",
+      "total_points": 0.0
+    },
+    {
+      "acquisition_type": "DRAFT",
+      "avg_points": null,
+      "eligible_slots": [
+        "GS",
+        "BE",
+        "ALT"
+      ],
+      "fantasy_team": "Pin High Posse",
+      "id": 2,
+      "injured": false,
+      "injury_status": null,
+      "name": "Rory McIlroy",
+      "percent_owned": null,
+      "position": "G",
+      "pro_team": "NIR",
+      "projected_total_points": null,
+      "role": "golfer",
+      "season_stats": {
+        "OWGR": 2.0
+      },
+      "slot": "GS",
+      "status": "ACTIVE",
+      "total_points": 0.0
+    },
+    {
+      "acquisition_type": "DRAFT",
+      "avg_points": null,
+      "eligible_slots": [
+        "GS",
+        "BE",
+        "ALT"
+      ],
+      "fantasy_team": "Sand Trap Syndicate",
+      "id": 3,
+      "injured": false,
+      "injury_status": null,
+      "name": "Xander Schauffele",
+      "percent_owned": null,
+      "position": "G",
+      "pro_team": "USA",
+      "projected_total_points": null,
+      "role": "golfer",
+      "season_stats": {
+        "OWGR": 3.0
+      },
+      "slot": "GS",
+      "status": "ACTIVE",
+      "total_points": 0.0
+    },
+    {
+      "acquisition_type": "DRAFT",
+      "avg_points": null,
+      "eligible_slots": [
+        "GS",
+        "BE",
+        "ALT"
+      ],
+      "fantasy_team": "Birdie Brigade",
+      "id": 4,
+      "injured": false,
+      "injury_status": null,
+      "name": "Collin Morikawa",
+      "percent_owned": null,
+      "position": "G",
+      "pro_team": "USA",
+      "projected_total_points": null,
+      "role": "golfer",
+      "season_stats": {
+        "OWGR": 4.0
+      },
+      "slot": "GS",
+      "status": "ACTIVE",
+      "total_points": 0.0
+    },
+    {
+      "acquisition_type": "DRAFT",
+      "avg_points": null,
+      "eligible_slots": [
+        "GS",
+        "BE",
+        "ALT"
+      ],
+      "fantasy_team": "Eagle Eyes",
+      "id": 5,
+      "injured": false,
+      "injury_status": null,
+      "name": "Ludvig Aberg",
+      "percent_owned": null,
+      "position": "G",
+      "pro_team": "SWE",
+      "projected_total_points": null,
+      "role": "golfer",
+      "season_stats": {
+        "OWGR": 5.0
+      },
+      "slot": "GS",
+      "status": "ACTIVE",
+      "total_points": 0.0
+    },
+    {
+      "acquisition_type": "DRAFT",
+      "avg_points": null,
+      "eligible_slots": [
+        "GS",
+        "BE",
+        "ALT"
+      ],
+      "fantasy_team": "Rough Riders",
+      "id": 6,
+      "injured": false,
+      "injury_status": null,
+      "name": "Jon Rahm",
+      "percent_owned": null,
+      "position": "G",
+      "pro_team": "ESP",
+      "projected_total_points": null,
+      "role": "golfer",
+      "season_stats": {
+        "OWGR": 6.0
+      },
+      "slot": "GS",
+      "status": "ACTIVE",
+      "total_points": 0.0
+    },
+    {
+      "acquisition_type": "DRAFT",
+      "avg_points": null,
+      "eligible_slots": [
+        "GS",
+        "BE",
+        "ALT"
+      ],
+      "fantasy_team": "Ace Alliance",
+      "id": 7,
+      "injured": false,
+      "injury_status": null,
+      "name": "Wyndham Clark",
+      "percent_owned": null,
+      "position": "G",
+      "pro_team": "USA",
+      "projected_total_points": null,
+      "role": "golfer",
+      "season_stats": {
+        "OWGR": 7.0
+      },
+      "slot": "GS",
+      "status": "ACTIVE",
+      "total_points": 0.0
+    },
+    {
+      "acquisition_type": "DRAFT",
+      "avg_points": null,
+      "eligible_slots": [
+        "GS",
+        "BE",
+        "ALT"
+      ],
+      "fantasy_team": "Bogey Bandits",
+      "id": 8,
+      "injured": false,
+      "injury_status": null,
+      "name": "Viktor Hovland",
+      "percent_owned": null,
+      "position": "G",
+      "pro_team": "NOR",
+      "projected_total_points": null,
+      "role": "golfer",
+      "season_stats": {
+        "OWGR": 8.0
+      },
+      "slot": "GS",
+      "status": "ACTIVE",
+      "total_points": 0.0
+    },
+    {
+      "acquisition_type": "DRAFT",
+      "avg_points": null,
+      "eligible_slots": [
+        "GS",
+        "BE",
+        "ALT"
+      ],
+      "fantasy_team": "Bogey Bandits",
+      "id": 9,
+      "injured": false,
+      "injury_status": null,
+      "name": "Patrick Cantlay",
+      "percent_owned": null,
+      "position": "G",
+      "pro_team": "USA",
+      "projected_total_points": null,
+      "role": "golfer",
+      "season_stats": {
+        "OWGR": 9.0
+      },
+      "slot": "GS",
+      "status": "ACTIVE",
+      "total_points": 0.0
+    },
+    {
+      "acquisition_type": "DRAFT",
+      "avg_points": null,
+      "eligible_slots": [
+        "GS",
+        "BE",
+        "ALT"
+      ],
+      "fantasy_team": "Ace Alliance",
+      "id": 10,
+      "injured": false,
+      "injury_status": null,
+      "name": "Tommy Fleetwood",
+      "percent_owned": null,
+      "position": "G",
+      "pro_team": "ENG",
+      "projected_total_points": null,
+      "role": "golfer",
+      "season_stats": {
+        "OWGR": 10.0
+      },
+      "slot": "GS",
+      "status": "ACTIVE",
+      "total_points": 0.0
+    },
+    {
+      "acquisition_type": "DRAFT",
+      "avg_points": null,
+      "eligible_slots": [
+        "GS",
+        "BE",
+        "ALT"
+      ],
+      "fantasy_team": "Rough Riders",
+      "id": 11,
+      "injured": false,
+      "injury_status": null,
+      "name": "Hideki Matsuyama",
+      "percent_owned": null,
+      "position": "G",
+      "pro_team": "JPN",
+      "projected_total_points": null,
+      "role": "golfer",
+      "season_stats": {
+        "OWGR": 11.0
+      },
+      "slot": "GS",
+      "status": "ACTIVE",
+      "total_points": 0.0
+    },
+    {
+      "acquisition_type": "DRAFT",
+      "avg_points": null,
+      "eligible_slots": [
+        "GS",
+        "BE",
+        "ALT"
+      ],
+      "fantasy_team": "Eagle Eyes",
+      "id": 12,
+      "injured": false,
+      "injury_status": null,
+      "name": "Justin Thomas",
+      "percent_owned": null,
+      "position": "G",
+      "pro_team": "USA",
+      "projected_total_points": null,
+      "role": "golfer",
+      "season_stats": {
+        "OWGR": 12.0
+      },
+      "slot": "GS",
+      "status": "ACTIVE",
+      "total_points": 0.0
+    },
+    {
+      "acquisition_type": "DRAFT",
+      "avg_points": null,
+      "eligible_slots": [
+        "GS",
+        "BE",
+        "ALT"
+      ],
+      "fantasy_team": "Birdie Brigade",
+      "id": 13,
+      "injured": false,
+      "injury_status": null,
+      "name": "Sahith Theegala",
+      "percent_owned": null,
+      "position": "G",
+      "pro_team": "USA",
+      "projected_total_points": null,
+      "role": "golfer",
+      "season_stats": {
+        "OWGR": 13.0
+      },
+      "slot": "GS",
+      "status": "ACTIVE",
+      "total_points": 0.0
+    },
+    {
+      "acquisition_type": "DRAFT",
+      "avg_points": null,
+      "eligible_slots": [
+        "GS",
+        "BE",
+        "ALT"
+      ],
+      "fantasy_team": "Sand Trap Syndicate",
+      "id": 14,
+      "injured": false,
+      "injury_status": null,
+      "name": "Max Homa",
+      "percent_owned": null,
+      "position": "G",
+      "pro_team": "USA",
+      "projected_total_points": null,
+      "role": "golfer",
+      "season_stats": {
+        "OWGR": 14.0
+      },
+      "slot": "GS",
+      "status": "ACTIVE",
+      "total_points": 0.0
+    },
+    {
+      "acquisition_type": "DRAFT",
+      "avg_points": null,
+      "eligible_slots": [
+        "GS",
+        "BE",
+        "ALT"
+      ],
+      "fantasy_team": "Pin High Posse",
+      "id": 15,
+      "injured": false,
+      "injury_status": null,
+      "name": "Brian Harman",
+      "percent_owned": null,
+      "position": "G",
+      "pro_team": "USA",
+      "projected_total_points": null,
+      "role": "golfer",
+      "season_stats": {
+        "OWGR": 15.0
+      },
+      "slot": "GS",
+      "status": "ACTIVE",
+      "total_points": 0.0
+    },
+    {
+      "acquisition_type": "DRAFT",
+      "avg_points": null,
+      "eligible_slots": [
+        "GS",
+        "BE",
+        "ALT"
+      ],
+      "fantasy_team": "Fairway Phantoms",
+      "id": 16,
+      "injured": false,
+      "injury_status": null,
+      "name": "Matt Fitzpatrick",
+      "percent_owned": null,
+      "position": "G",
+      "pro_team": "ENG",
+      "projected_total_points": null,
+      "role": "golfer",
+      "season_stats": {
+        "OWGR": 16.0
+      },
+      "slot": "GS",
+      "status": "ACTIVE",
+      "total_points": 0.0
+    },
+    {
+      "acquisition_type": "DRAFT",
+      "avg_points": null,
+      "eligible_slots": [
+        "GS",
+        "BE",
+        "ALT"
+      ],
+      "fantasy_team": "Fairway Phantoms",
+      "id": 17,
+      "injured": false,
+      "injury_status": null,
+      "name": "Tony Finau",
+      "percent_owned": null,
+      "position": "G",
+      "pro_team": "USA",
+      "projected_total_points": null,
+      "role": "golfer",
+      "season_stats": {
+        "OWGR": 17.0
+      },
+      "slot": "GS",
+      "status": "ACTIVE",
+      "total_points": 0.0
+    },
+    {
+      "acquisition_type": "DRAFT",
+      "avg_points": null,
+      "eligible_slots": [
+        "GS",
+        "BE",
+        "ALT"
+      ],
+      "fantasy_team": "Pin High Posse",
+      "id": 18,
+      "injured": false,
+      "injury_status": null,
+      "name": "Sam Burns",
+      "percent_owned": null,
+      "position": "G",
+      "pro_team": "USA",
+      "projected_total_points": null,
+      "role": "golfer",
+      "season_stats": {
+        "OWGR": 18.0
+      },
+      "slot": "GS",
+      "status": "ACTIVE",
+      "total_points": 0.0
+    },
+    {
+      "acquisition_type": "DRAFT",
+      "avg_points": null,
+      "eligible_slots": [
+        "GS",
+        "BE",
+        "ALT"
+      ],
+      "fantasy_team": "Sand Trap Syndicate",
+      "id": 19,
+      "injured": false,
+      "injury_status": null,
+      "name": "Jordan Spieth",
+      "percent_owned": null,
+      "position": "G",
+      "pro_team": "USA",
+      "projected_total_points": null,
+      "role": "golfer",
+      "season_stats": {
+        "OWGR": 19.0
+      },
+      "slot": "GS",
+      "status": "ACTIVE",
+      "total_points": 0.0
+    },
+    {
+      "acquisition_type": "DRAFT",
+      "avg_points": null,
+      "eligible_slots": [
+        "GS",
+        "BE",
+        "ALT"
+      ],
+      "fantasy_team": "Birdie Brigade",
+      "id": 20,
+      "injured": false,
+      "injury_status": null,
+      "name": "Shane Lowry",
+      "percent_owned": null,
+      "position": "G",
+      "pro_team": "IRL",
+      "projected_total_points": null,
+      "role": "golfer",
+      "season_stats": {
+        "OWGR": 20.0
+      },
+      "slot": "GS",
+      "status": "ACTIVE",
+      "total_points": 0.0
+    },
+    {
+      "acquisition_type": "DRAFT",
+      "avg_points": null,
+      "eligible_slots": [
+        "GS",
+        "BE",
+        "ALT"
+      ],
+      "fantasy_team": "Eagle Eyes",
+      "id": 21,
+      "injured": false,
+      "injury_status": null,
+      "name": "Russell Henley",
+      "percent_owned": null,
+      "position": "G",
+      "pro_team": "USA",
+      "projected_total_points": null,
+      "role": "golfer",
+      "season_stats": {
+        "OWGR": 21.0
+      },
+      "slot": "GS",
+      "status": "ACTIVE",
+      "total_points": 0.0
+    },
+    {
+      "acquisition_type": "DRAFT",
+      "avg_points": null,
+      "eligible_slots": [
+        "GS",
+        "BE",
+        "ALT"
+      ],
+      "fantasy_team": "Rough Riders",
+      "id": 22,
+      "injured": false,
+      "injury_status": null,
+      "name": "Sungjae Im",
+      "percent_owned": null,
+      "position": "G",
+      "pro_team": "KOR",
+      "projected_total_points": null,
+      "role": "golfer",
+      "season_stats": {
+        "OWGR": 22.0
+      },
+      "slot": "GS",
+      "status": "ACTIVE",
+      "total_points": 0.0
+    },
+    {
+      "acquisition_type": "DRAFT",
+      "avg_points": null,
+      "eligible_slots": [
+        "GS",
+        "BE",
+        "ALT"
+      ],
+      "fantasy_team": "Ace Alliance",
+      "id": 23,
+      "injured": false,
+      "injury_status": null,
+      "name": "Jason Day",
+      "percent_owned": null,
+      "position": "G",
+      "pro_team": "AUS",
+      "projected_total_points": null,
+      "role": "golfer",
+      "season_stats": {
+        "OWGR": 23.0
+      },
+      "slot": "GS",
+      "status": "ACTIVE",
+      "total_points": 0.0
+    },
+    {
+      "acquisition_type": "DRAFT",
+      "avg_points": null,
+      "eligible_slots": [
+        "GS",
+        "BE",
+        "ALT"
+      ],
+      "fantasy_team": "Bogey Bandits",
+      "id": 24,
+      "injured": false,
+      "injury_status": null,
+      "name": "Tom Kim",
+      "percent_owned": null,
+      "position": "G",
+      "pro_team": "KOR",
+      "projected_total_points": null,
+      "role": "golfer",
+      "season_stats": {
+        "OWGR": 24.0
+      },
+      "slot": "GS",
+      "status": "ACTIVE",
+      "total_points": 0.0
+    },
+    {
+      "acquisition_type": "DRAFT",
+      "avg_points": null,
+      "eligible_slots": [
+        "GS",
+        "BE",
+        "ALT"
+      ],
+      "fantasy_team": "Bogey Bandits",
+      "id": 25,
+      "injured": false,
+      "injury_status": null,
+      "name": "Sepp Straka",
+      "percent_owned": null,
+      "position": "G",
+      "pro_team": "AUT",
+      "projected_total_points": null,
+      "role": "golfer",
+      "season_stats": {
+        "OWGR": 25.0
+      },
+      "slot": "GS",
+      "status": "ACTIVE",
+      "total_points": 0.0
+    },
+    {
+      "acquisition_type": "DRAFT",
+      "avg_points": null,
+      "eligible_slots": [
+        "GS",
+        "BE",
+        "ALT"
+      ],
+      "fantasy_team": "Ace Alliance",
+      "id": 26,
+      "injured": false,
+      "injury_status": null,
+      "name": "Chris Kirk",
+      "percent_owned": null,
+      "position": "G",
+      "pro_team": "USA",
+      "projected_total_points": null,
+      "role": "golfer",
+      "season_stats": {
+        "OWGR": 26.0
+      },
+      "slot": "GS",
+      "status": "ACTIVE",
+      "total_points": 0.0
+    },
+    {
+      "acquisition_type": "DRAFT",
+      "avg_points": null,
+      "eligible_slots": [
+        "GS",
+        "BE",
+        "ALT"
+      ],
+      "fantasy_team": "Rough Riders",
+      "id": 27,
+      "injured": false,
+      "injury_status": null,
+      "name": "Byeong Hun An",
+      "percent_owned": null,
+      "position": "G",
+      "pro_team": "KOR",
+      "projected_total_points": null,
+      "role": "golfer",
+      "season_stats": {
+        "OWGR": 27.0
+      },
+      "slot": "GS",
+      "status": "ACTIVE",
+      "total_points": 0.0
+    },
+    {
+      "acquisition_type": "DRAFT",
+      "avg_points": null,
+      "eligible_slots": [
+        "GS",
+        "BE",
+        "ALT"
+      ],
+      "fantasy_team": "Eagle Eyes",
+      "id": 28,
+      "injured": false,
+      "injury_status": null,
+      "name": "Cameron Young",
+      "percent_owned": null,
+      "position": "G",
+      "pro_team": "USA",
+      "projected_total_points": null,
+      "role": "golfer",
+      "season_stats": {
+        "OWGR": 28.0
+      },
+      "slot": "GS",
+      "status": "ACTIVE",
+      "total_points": 0.0
+    },
+    {
+      "acquisition_type": "DRAFT",
+      "avg_points": null,
+      "eligible_slots": [
+        "GS",
+        "BE",
+        "ALT"
+      ],
+      "fantasy_team": "Birdie Brigade",
+      "id": 29,
+      "injured": false,
+      "injury_status": null,
+      "name": "Keegan Bradley",
+      "percent_owned": null,
+      "position": "G",
+      "pro_team": "USA",
+      "projected_total_points": null,
+      "role": "golfer",
+      "season_stats": {
+        "OWGR": 29.0
+      },
+      "slot": "GS",
+      "status": "ACTIVE",
+      "total_points": 0.0
+    },
+    {
+      "acquisition_type": "DRAFT",
+      "avg_points": null,
+      "eligible_slots": [
+        "GS",
+        "BE",
+        "ALT"
+      ],
+      "fantasy_team": "Sand Trap Syndicate",
+      "id": 30,
+      "injured": false,
+      "injury_status": null,
+      "name": "Adam Scott",
+      "percent_owned": null,
+      "position": "G",
+      "pro_team": "AUS",
+      "projected_total_points": null,
+      "role": "golfer",
+      "season_stats": {
+        "OWGR": 30.0
+      },
+      "slot": "GS",
+      "status": "ACTIVE",
+      "total_points": 0.0
+    },
+    {
+      "acquisition_type": "DRAFT",
+      "avg_points": null,
+      "eligible_slots": [
+        "GS",
+        "BE",
+        "ALT"
+      ],
+      "fantasy_team": "Pin High Posse",
+      "id": 31,
+      "injured": false,
+      "injury_status": null,
+      "name": "Billy Horschel",
+      "percent_owned": null,
+      "position": "G",
+      "pro_team": "USA",
+      "projected_total_points": null,
+      "role": "golfer",
+      "season_stats": {
+        "OWGR": 31.0
+      },
+      "slot": "GS",
+      "status": "ACTIVE",
+      "total_points": 0.0
+    },
+    {
+      "acquisition_type": "DRAFT",
+      "avg_points": null,
+      "eligible_slots": [
+        "GS",
+        "BE",
+        "ALT"
+      ],
+      "fantasy_team": "Fairway Phantoms",
+      "id": 32,
+      "injured": false,
+      "injury_status": null,
+      "name": "Corey Conners",
+      "percent_owned": null,
+      "position": "G",
+      "pro_team": "CAN",
+      "projected_total_points": null,
+      "role": "golfer",
+      "season_stats": {
+        "OWGR": 32.0
+      },
+      "slot": "GS",
+      "status": "ACTIVE",
+      "total_points": 0.0
+    },
+    {
+      "acquisition_type": "DRAFT",
+      "avg_points": null,
+      "eligible_slots": [
+        "GS",
+        "BE",
+        "ALT"
+      ],
+      "fantasy_team": "Fairway Phantoms",
+      "id": 33,
+      "injured": false,
+      "injury_status": null,
+      "name": "Si Woo Kim",
+      "percent_owned": null,
+      "position": "G",
+      "pro_team": "KOR",
+      "projected_total_points": null,
+      "role": "golfer",
+      "season_stats": {
+        "OWGR": 33.0
+      },
+      "slot": "GS",
+      "status": "ACTIVE",
+      "total_points": 0.0
+    },
+    {
+      "acquisition_type": "DRAFT",
+      "avg_points": null,
+      "eligible_slots": [
+        "GS",
+        "BE",
+        "ALT"
+      ],
+      "fantasy_team": "Pin High Posse",
+      "id": 34,
+      "injured": false,
+      "injury_status": null,
+      "name": "Harris English",
+      "percent_owned": null,
+      "position": "G",
+      "pro_team": "USA",
+      "projected_total_points": null,
+      "role": "golfer",
+      "season_stats": {
+        "OWGR": 34.0
+      },
+      "slot": "GS",
+      "status": "ACTIVE",
+      "total_points": 0.0
+    },
+    {
+      "acquisition_type": "DRAFT",
+      "avg_points": null,
+      "eligible_slots": [
+        "GS",
+        "BE",
+        "ALT"
+      ],
+      "fantasy_team": "Sand Trap Syndicate",
+      "id": 35,
+      "injured": false,
+      "injury_status": null,
+      "name": "Aaron Rai",
+      "percent_owned": null,
+      "position": "G",
+      "pro_team": "ENG",
+      "projected_total_points": null,
+      "role": "golfer",
+      "season_stats": {
+        "OWGR": 35.0
+      },
+      "slot": "GS",
+      "status": "ACTIVE",
+      "total_points": 0.0
+    },
+    {
+      "acquisition_type": "DRAFT",
+      "avg_points": null,
+      "eligible_slots": [
+        "GS",
+        "BE",
+        "ALT"
+      ],
+      "fantasy_team": "Birdie Brigade",
+      "id": 36,
+      "injured": false,
+      "injury_status": null,
+      "name": "Akira Aoyama",
+      "percent_owned": null,
+      "position": "G",
+      "pro_team": "JPN",
+      "projected_total_points": null,
+      "role": "golfer",
+      "season_stats": {
+        "OWGR": 36.0
+      },
+      "slot": "GS",
+      "status": "ACTIVE",
+      "total_points": 0.0
+    },
+    {
+      "acquisition_type": "DRAFT",
+      "avg_points": null,
+      "eligible_slots": [
+        "GS",
+        "BE",
+        "ALT"
+      ],
+      "fantasy_team": "Eagle Eyes",
+      "id": 37,
+      "injured": false,
+      "injury_status": null,
+      "name": "Denny McCarthy",
+      "percent_owned": null,
+      "position": "G",
+      "pro_team": "USA",
+      "projected_total_points": null,
+      "role": "golfer",
+      "season_stats": {
+        "OWGR": 37.0
+      },
+      "slot": "GS",
+      "status": "ACTIVE",
+      "total_points": 0.0
+    },
+    {
+      "acquisition_type": "DRAFT",
+      "avg_points": null,
+      "eligible_slots": [
+        "GS",
+        "BE",
+        "ALT"
+      ],
+      "fantasy_team": "Rough Riders",
+      "id": 38,
+      "injured": false,
+      "injury_status": null,
+      "name": "Eric Cole",
+      "percent_owned": null,
+      "position": "G",
+      "pro_team": "USA",
+      "projected_total_points": null,
+      "role": "golfer",
+      "season_stats": {
+        "OWGR": 38.0
+      },
+      "slot": "GS",
+      "status": "ACTIVE",
+      "total_points": 0.0
+    },
+    {
+      "acquisition_type": "DRAFT",
+      "avg_points": null,
+      "eligible_slots": [
+        "GS",
+        "BE",
+        "ALT"
+      ],
+      "fantasy_team": "Ace Alliance",
+      "id": 39,
+      "injured": false,
+      "injury_status": null,
+      "name": "Stephan Jaeger",
+      "percent_owned": null,
+      "position": "G",
+      "pro_team": "GER",
+      "projected_total_points": null,
+      "role": "golfer",
+      "season_stats": {
+        "OWGR": 39.0
+      },
+      "slot": "GS",
+      "status": "ACTIVE",
+      "total_points": 0.0
+    },
+    {
+      "acquisition_type": "DRAFT",
+      "avg_points": null,
+      "eligible_slots": [
+        "GS",
+        "BE",
+        "ALT"
+      ],
+      "fantasy_team": "Bogey Bandits",
+      "id": 40,
+      "injured": false,
+      "injury_status": null,
+      "name": "Alex Noren",
+      "percent_owned": null,
+      "position": "G",
+      "pro_team": "SWE",
+      "projected_total_points": null,
+      "role": "golfer",
+      "season_stats": {
+        "OWGR": 40.0
+      },
+      "slot": "GS",
+      "status": "ACTIVE",
+      "total_points": 0.0
+    },
+    {
+      "acquisition_type": "DRAFT",
+      "avg_points": null,
+      "eligible_slots": [
+        "GS",
+        "BE",
+        "ALT"
+      ],
+      "fantasy_team": "Bogey Bandits",
+      "id": 41,
+      "injured": false,
+      "injury_status": null,
+      "name": "Min Woo Lee",
+      "percent_owned": null,
+      "position": "G",
+      "pro_team": "AUS",
+      "projected_total_points": null,
+      "role": "golfer",
+      "season_stats": {
+        "OWGR": 41.0
+      },
+      "slot": "BE",
+      "status": "ACTIVE",
+      "total_points": 0.0
+    },
+    {
+      "acquisition_type": "DRAFT",
+      "avg_points": null,
+      "eligible_slots": [
+        "GS",
+        "BE",
+        "ALT"
+      ],
+      "fantasy_team": "Ace Alliance",
+      "id": 42,
+      "injured": false,
+      "injury_status": null,
+      "name": "Nick Taylor",
+      "percent_owned": null,
+      "position": "G",
+      "pro_team": "CAN",
+      "projected_total_points": null,
+      "role": "golfer",
+      "season_stats": {
+        "OWGR": 42.0
+      },
+      "slot": "BE",
+      "status": "ACTIVE",
+      "total_points": 0.0
+    },
+    {
+      "acquisition_type": "DRAFT",
+      "avg_points": null,
+      "eligible_slots": [
+        "GS",
+        "BE",
+        "ALT"
+      ],
+      "fantasy_team": "Rough Riders",
+      "id": 43,
+      "injured": false,
+      "injury_status": null,
+      "name": "Will Zalatoris",
+      "percent_owned": null,
+      "position": "G",
+      "pro_team": "USA",
+      "projected_total_points": null,
+      "role": "golfer",
+      "season_stats": {
+        "OWGR": 43.0
+      },
+      "slot": "BE",
+      "status": "ACTIVE",
+      "total_points": 0.0
+    },
+    {
+      "acquisition_type": "DRAFT",
+      "avg_points": null,
+      "eligible_slots": [
+        "GS",
+        "BE",
+        "ALT"
+      ],
+      "fantasy_team": "Eagle Eyes",
+      "id": 44,
+      "injured": false,
+      "injury_status": null,
+      "name": "Davis Thompson",
+      "percent_owned": null,
+      "position": "G",
+      "pro_team": "USA",
+      "projected_total_points": null,
+      "role": "golfer",
+      "season_stats": {
+        "OWGR": 44.0
+      },
+      "slot": "BE",
+      "status": "ACTIVE",
+      "total_points": 0.0
+    },
+    {
+      "acquisition_type": "DRAFT",
+      "avg_points": null,
+      "eligible_slots": [
+        "GS",
+        "BE",
+        "ALT"
+      ],
+      "fantasy_team": "Birdie Brigade",
+      "id": 45,
+      "injured": false,
+      "injury_status": null,
+      "name": "J.T. Poston",
+      "percent_owned": null,
+      "position": "G",
+      "pro_team": "USA",
+      "projected_total_points": null,
+      "role": "golfer",
+      "season_stats": {
+        "OWGR": 45.0
+      },
+      "slot": "BE",
+      "status": "ACTIVE",
+      "total_points": 0.0
+    },
+    {
+      "acquisition_type": "DRAFT",
+      "avg_points": null,
+      "eligible_slots": [
+        "GS",
+        "BE",
+        "ALT"
+      ],
+      "fantasy_team": "Sand Trap Syndicate",
+      "id": 46,
+      "injured": false,
+      "injury_status": null,
+      "name": "Adam Hadwin",
+      "percent_owned": null,
+      "position": "G",
+      "pro_team": "CAN",
+      "projected_total_points": null,
+      "role": "golfer",
+      "season_stats": {
+        "OWGR": 46.0
+      },
+      "slot": "BE",
+      "status": "ACTIVE",
+      "total_points": 0.0
+    },
+    {
+      "acquisition_type": "DRAFT",
+      "avg_points": null,
+      "eligible_slots": [
+        "GS",
+        "BE",
+        "ALT"
+      ],
+      "fantasy_team": "Pin High Posse",
+      "id": 47,
+      "injured": false,
+      "injury_status": null,
+      "name": "Taylor Pendrith",
+      "percent_owned": null,
+      "position": "G",
+      "pro_team": "CAN",
+      "projected_total_points": null,
+      "role": "golfer",
+      "season_stats": {
+        "OWGR": 47.0
+      },
+      "slot": "BE",
+      "status": "ACTIVE",
+      "total_points": 0.0
+    },
+    {
+      "acquisition_type": "DRAFT",
+      "avg_points": null,
+      "eligible_slots": [
+        "GS",
+        "BE",
+        "ALT"
+      ],
+      "fantasy_team": "Fairway Phantoms",
+      "id": 48,
+      "injured": false,
+      "injury_status": null,
+      "name": "Austin Eckroat",
+      "percent_owned": null,
+      "position": "G",
+      "pro_team": "USA",
+      "projected_total_points": null,
+      "role": "golfer",
+      "season_stats": {
+        "OWGR": 48.0
+      },
+      "slot": "BE",
+      "status": "ACTIVE",
+      "total_points": 0.0
+    },
+    {
+      "acquisition_type": "DRAFT",
+      "avg_points": null,
+      "eligible_slots": [
+        "GS",
+        "BE",
+        "ALT"
+      ],
+      "fantasy_team": "Fairway Phantoms",
+      "id": 49,
+      "injured": false,
+      "injury_status": null,
+      "name": "Jake Knapp",
+      "percent_owned": null,
+      "position": "G",
+      "pro_team": "USA",
+      "projected_total_points": null,
+      "role": "golfer",
+      "season_stats": {
+        "OWGR": 49.0
+      },
+      "slot": "BE",
+      "status": "ACTIVE",
+      "total_points": 0.0
+    },
+    {
+      "acquisition_type": "DRAFT",
+      "avg_points": null,
+      "eligible_slots": [
+        "GS",
+        "BE",
+        "ALT"
+      ],
+      "fantasy_team": "Pin High Posse",
+      "id": 50,
+      "injured": false,
+      "injury_status": null,
+      "name": "Nicolai Hojgaard",
+      "percent_owned": null,
+      "position": "G",
+      "pro_team": "DEN",
+      "projected_total_points": null,
+      "role": "golfer",
+      "season_stats": {
+        "OWGR": 50.0
+      },
+      "slot": "BE",
+      "status": "ACTIVE",
+      "total_points": 0.0
+    },
+    {
+      "acquisition_type": "DRAFT",
+      "avg_points": null,
+      "eligible_slots": [
+        "GS",
+        "BE",
+        "ALT"
+      ],
+      "fantasy_team": "Sand Trap Syndicate",
+      "id": 51,
+      "injured": false,
+      "injury_status": null,
+      "name": "OWGR Golfer 51",
+      "percent_owned": null,
+      "position": "G",
+      "pro_team": null,
+      "projected_total_points": null,
+      "role": "golfer",
+      "season_stats": {
+        "OWGR": 51.0
+      },
+      "slot": "BE",
+      "status": "ACTIVE",
+      "total_points": 0.0
+    },
+    {
+      "acquisition_type": "DRAFT",
+      "avg_points": null,
+      "eligible_slots": [
+        "GS",
+        "BE",
+        "ALT"
+      ],
+      "fantasy_team": "Birdie Brigade",
+      "id": 52,
+      "injured": false,
+      "injury_status": null,
+      "name": "OWGR Golfer 52",
+      "percent_owned": null,
+      "position": "G",
+      "pro_team": null,
+      "projected_total_points": null,
+      "role": "golfer",
+      "season_stats": {
+        "OWGR": 52.0
+      },
+      "slot": "BE",
+      "status": "ACTIVE",
+      "total_points": 0.0
+    },
+    {
+      "acquisition_type": "DRAFT",
+      "avg_points": null,
+      "eligible_slots": [
+        "GS",
+        "BE",
+        "ALT"
+      ],
+      "fantasy_team": "Eagle Eyes",
+      "id": 53,
+      "injured": false,
+      "injury_status": null,
+      "name": "OWGR Golfer 53",
+      "percent_owned": null,
+      "position": "G",
+      "pro_team": null,
+      "projected_total_points": null,
+      "role": "golfer",
+      "season_stats": {
+        "OWGR": 53.0
+      },
+      "slot": "BE",
+      "status": "ACTIVE",
+      "total_points": 0.0
+    },
+    {
+      "acquisition_type": "DRAFT",
+      "avg_points": null,
+      "eligible_slots": [
+        "GS",
+        "BE",
+        "ALT"
+      ],
+      "fantasy_team": "Rough Riders",
+      "id": 54,
+      "injured": false,
+      "injury_status": null,
+      "name": "OWGR Golfer 54",
+      "percent_owned": null,
+      "position": "G",
+      "pro_team": null,
+      "projected_total_points": null,
+      "role": "golfer",
+      "season_stats": {
+        "OWGR": 54.0
+      },
+      "slot": "BE",
+      "status": "ACTIVE",
+      "total_points": 0.0
+    },
+    {
+      "acquisition_type": "DRAFT",
+      "avg_points": null,
+      "eligible_slots": [
+        "GS",
+        "BE",
+        "ALT"
+      ],
+      "fantasy_team": "Ace Alliance",
+      "id": 55,
+      "injured": false,
+      "injury_status": null,
+      "name": "OWGR Golfer 55",
+      "percent_owned": null,
+      "position": "G",
+      "pro_team": null,
+      "projected_total_points": null,
+      "role": "golfer",
+      "season_stats": {
+        "OWGR": 55.0
+      },
+      "slot": "BE",
+      "status": "ACTIVE",
+      "total_points": 0.0
+    },
+    {
+      "acquisition_type": "DRAFT",
+      "avg_points": null,
+      "eligible_slots": [
+        "GS",
+        "BE",
+        "ALT"
+      ],
+      "fantasy_team": "Bogey Bandits",
+      "id": 56,
+      "injured": false,
+      "injury_status": null,
+      "name": "OWGR Golfer 56",
+      "percent_owned": null,
+      "position": "G",
+      "pro_team": null,
+      "projected_total_points": null,
+      "role": "golfer",
+      "season_stats": {
+        "OWGR": 56.0
+      },
+      "slot": "BE",
+      "status": "ACTIVE",
+      "total_points": 0.0
+    },
+    {
+      "acquisition_type": "DRAFT",
+      "avg_points": null,
+      "eligible_slots": [
+        "GS",
+        "BE",
+        "ALT"
+      ],
+      "fantasy_team": "Bogey Bandits",
+      "id": 57,
+      "injured": false,
+      "injury_status": null,
+      "name": "OWGR Golfer 57",
+      "percent_owned": null,
+      "position": "G",
+      "pro_team": null,
+      "projected_total_points": null,
+      "role": "golfer",
+      "season_stats": {
+        "OWGR": 57.0
+      },
+      "slot": "BE",
+      "status": "ACTIVE",
+      "total_points": 0.0
+    },
+    {
+      "acquisition_type": "DRAFT",
+      "avg_points": null,
+      "eligible_slots": [
+        "GS",
+        "BE",
+        "ALT"
+      ],
+      "fantasy_team": "Ace Alliance",
+      "id": 58,
+      "injured": false,
+      "injury_status": null,
+      "name": "OWGR Golfer 58",
+      "percent_owned": null,
+      "position": "G",
+      "pro_team": null,
+      "projected_total_points": null,
+      "role": "golfer",
+      "season_stats": {
+        "OWGR": 58.0
+      },
+      "slot": "BE",
+      "status": "ACTIVE",
+      "total_points": 0.0
+    },
+    {
+      "acquisition_type": "DRAFT",
+      "avg_points": null,
+      "eligible_slots": [
+        "GS",
+        "BE",
+        "ALT"
+      ],
+      "fantasy_team": "Rough Riders",
+      "id": 59,
+      "injured": false,
+      "injury_status": null,
+      "name": "OWGR Golfer 59",
+      "percent_owned": null,
+      "position": "G",
+      "pro_team": null,
+      "projected_total_points": null,
+      "role": "golfer",
+      "season_stats": {
+        "OWGR": 59.0
+      },
+      "slot": "BE",
+      "status": "ACTIVE",
+      "total_points": 0.0
+    },
+    {
+      "acquisition_type": "DRAFT",
+      "avg_points": null,
+      "eligible_slots": [
+        "GS",
+        "BE",
+        "ALT"
+      ],
+      "fantasy_team": "Eagle Eyes",
+      "id": 60,
+      "injured": false,
+      "injury_status": null,
+      "name": "OWGR Golfer 60",
+      "percent_owned": null,
+      "position": "G",
+      "pro_team": null,
+      "projected_total_points": null,
+      "role": "golfer",
+      "season_stats": {
+        "OWGR": 60.0
+      },
+      "slot": "BE",
+      "status": "ACTIVE",
+      "total_points": 0.0
+    },
+    {
+      "acquisition_type": "DRAFT",
+      "avg_points": null,
+      "eligible_slots": [
+        "GS",
+        "BE",
+        "ALT"
+      ],
+      "fantasy_team": "Birdie Brigade",
+      "id": 61,
+      "injured": false,
+      "injury_status": null,
+      "name": "OWGR Golfer 61",
+      "percent_owned": null,
+      "position": "G",
+      "pro_team": null,
+      "projected_total_points": null,
+      "role": "golfer",
+      "season_stats": {
+        "OWGR": 61.0
+      },
+      "slot": "BE",
+      "status": "ACTIVE",
+      "total_points": 0.0
+    },
+    {
+      "acquisition_type": "DRAFT",
+      "avg_points": null,
+      "eligible_slots": [
+        "GS",
+        "BE",
+        "ALT"
+      ],
+      "fantasy_team": "Sand Trap Syndicate",
+      "id": 62,
+      "injured": false,
+      "injury_status": null,
+      "name": "OWGR Golfer 62",
+      "percent_owned": null,
+      "position": "G",
+      "pro_team": null,
+      "projected_total_points": null,
+      "role": "golfer",
+      "season_stats": {
+        "OWGR": 62.0
+      },
+      "slot": "BE",
+      "status": "ACTIVE",
+      "total_points": 0.0
+    },
+    {
+      "acquisition_type": "DRAFT",
+      "avg_points": null,
+      "eligible_slots": [
+        "GS",
+        "BE",
+        "ALT"
+      ],
+      "fantasy_team": "Pin High Posse",
+      "id": 63,
+      "injured": false,
+      "injury_status": null,
+      "name": "OWGR Golfer 63",
+      "percent_owned": null,
+      "position": "G",
+      "pro_team": null,
+      "projected_total_points": null,
+      "role": "golfer",
+      "season_stats": {
+        "OWGR": 63.0
+      },
+      "slot": "BE",
+      "status": "ACTIVE",
+      "total_points": 0.0
+    },
+    {
+      "acquisition_type": "DRAFT",
+      "avg_points": null,
+      "eligible_slots": [
+        "GS",
+        "BE",
+        "ALT"
+      ],
+      "fantasy_team": "Fairway Phantoms",
+      "id": 64,
+      "injured": false,
+      "injury_status": null,
+      "name": "OWGR Golfer 64",
+      "percent_owned": null,
+      "position": "G",
+      "pro_team": null,
+      "projected_total_points": null,
+      "role": "golfer",
+      "season_stats": {
+        "OWGR": 64.0
+      },
+      "slot": "BE",
+      "status": "ACTIVE",
+      "total_points": 0.0
+    },
+    {
+      "acquisition_type": "DRAFT",
+      "avg_points": null,
+      "eligible_slots": [
+        "GS",
+        "BE",
+        "ALT"
+      ],
+      "fantasy_team": "Fairway Phantoms",
+      "id": 65,
+      "injured": false,
+      "injury_status": null,
+      "name": "OWGR Golfer 65",
+      "percent_owned": null,
+      "position": "G",
+      "pro_team": null,
+      "projected_total_points": null,
+      "role": "golfer",
+      "season_stats": {
+        "OWGR": 65.0
+      },
+      "slot": "BE",
+      "status": "ACTIVE",
+      "total_points": 0.0
+    },
+    {
+      "acquisition_type": "DRAFT",
+      "avg_points": null,
+      "eligible_slots": [
+        "GS",
+        "BE",
+        "ALT"
+      ],
+      "fantasy_team": "Pin High Posse",
+      "id": 66,
+      "injured": false,
+      "injury_status": null,
+      "name": "OWGR Golfer 66",
+      "percent_owned": null,
+      "position": "G",
+      "pro_team": null,
+      "projected_total_points": null,
+      "role": "golfer",
+      "season_stats": {
+        "OWGR": 66.0
+      },
+      "slot": "BE",
+      "status": "ACTIVE",
+      "total_points": 0.0
+    },
+    {
+      "acquisition_type": "DRAFT",
+      "avg_points": null,
+      "eligible_slots": [
+        "GS",
+        "BE",
+        "ALT"
+      ],
+      "fantasy_team": "Sand Trap Syndicate",
+      "id": 67,
+      "injured": false,
+      "injury_status": null,
+      "name": "OWGR Golfer 67",
+      "percent_owned": null,
+      "position": "G",
+      "pro_team": null,
+      "projected_total_points": null,
+      "role": "golfer",
+      "season_stats": {
+        "OWGR": 67.0
+      },
+      "slot": "BE",
+      "status": "ACTIVE",
+      "total_points": 0.0
+    },
+    {
+      "acquisition_type": "DRAFT",
+      "avg_points": null,
+      "eligible_slots": [
+        "GS",
+        "BE",
+        "ALT"
+      ],
+      "fantasy_team": "Birdie Brigade",
+      "id": 68,
+      "injured": false,
+      "injury_status": null,
+      "name": "OWGR Golfer 68",
+      "percent_owned": null,
+      "position": "G",
+      "pro_team": null,
+      "projected_total_points": null,
+      "role": "golfer",
+      "season_stats": {
+        "OWGR": 68.0
+      },
+      "slot": "BE",
+      "status": "ACTIVE",
+      "total_points": 0.0
+    },
+    {
+      "acquisition_type": "DRAFT",
+      "avg_points": null,
+      "eligible_slots": [
+        "GS",
+        "BE",
+        "ALT"
+      ],
+      "fantasy_team": "Eagle Eyes",
+      "id": 69,
+      "injured": false,
+      "injury_status": null,
+      "name": "OWGR Golfer 69",
+      "percent_owned": null,
+      "position": "G",
+      "pro_team": null,
+      "projected_total_points": null,
+      "role": "golfer",
+      "season_stats": {
+        "OWGR": 69.0
+      },
+      "slot": "BE",
+      "status": "ACTIVE",
+      "total_points": 0.0
+    },
+    {
+      "acquisition_type": "DRAFT",
+      "avg_points": null,
+      "eligible_slots": [
+        "GS",
+        "BE",
+        "ALT"
+      ],
+      "fantasy_team": "Rough Riders",
+      "id": 70,
+      "injured": false,
+      "injury_status": null,
+      "name": "OWGR Golfer 70",
+      "percent_owned": null,
+      "position": "G",
+      "pro_team": null,
+      "projected_total_points": null,
+      "role": "golfer",
+      "season_stats": {
+        "OWGR": 70.0
+      },
+      "slot": "BE",
+      "status": "ACTIVE",
+      "total_points": 0.0
+    },
+    {
+      "acquisition_type": "DRAFT",
+      "avg_points": null,
+      "eligible_slots": [
+        "GS",
+        "BE",
+        "ALT"
+      ],
+      "fantasy_team": "Ace Alliance",
+      "id": 71,
+      "injured": false,
+      "injury_status": null,
+      "name": "OWGR Golfer 71",
+      "percent_owned": null,
+      "position": "G",
+      "pro_team": null,
+      "projected_total_points": null,
+      "role": "golfer",
+      "season_stats": {
+        "OWGR": 71.0
+      },
+      "slot": "BE",
+      "status": "ACTIVE",
+      "total_points": 0.0
+    },
+    {
+      "acquisition_type": "DRAFT",
+      "avg_points": null,
+      "eligible_slots": [
+        "GS",
+        "BE",
+        "ALT"
+      ],
+      "fantasy_team": "Bogey Bandits",
+      "id": 72,
+      "injured": false,
+      "injury_status": null,
+      "name": "OWGR Golfer 72",
+      "percent_owned": null,
+      "position": "G",
+      "pro_team": null,
+      "projected_total_points": null,
+      "role": "golfer",
+      "season_stats": {
+        "OWGR": 72.0
+      },
+      "slot": "BE",
+      "status": "ACTIVE",
+      "total_points": 0.0
+    },
+    {
+      "acquisition_type": "DRAFT",
+      "avg_points": null,
+      "eligible_slots": [
+        "GS",
+        "BE",
+        "ALT"
+      ],
+      "fantasy_team": "Bogey Bandits",
+      "id": 73,
+      "injured": false,
+      "injury_status": null,
+      "name": "OWGR Golfer 73",
+      "percent_owned": null,
+      "position": "G",
+      "pro_team": null,
+      "projected_total_points": null,
+      "role": "golfer",
+      "season_stats": {
+        "OWGR": 73.0
+      },
+      "slot": "BE",
+      "status": "ACTIVE",
+      "total_points": 0.0
+    },
+    {
+      "acquisition_type": "DRAFT",
+      "avg_points": null,
+      "eligible_slots": [
+        "GS",
+        "BE",
+        "ALT"
+      ],
+      "fantasy_team": "Ace Alliance",
+      "id": 74,
+      "injured": false,
+      "injury_status": null,
+      "name": "OWGR Golfer 74",
+      "percent_owned": null,
+      "position": "G",
+      "pro_team": null,
+      "projected_total_points": null,
+      "role": "golfer",
+      "season_stats": {
+        "OWGR": 74.0
+      },
+      "slot": "BE",
+      "status": "ACTIVE",
+      "total_points": 0.0
+    },
+    {
+      "acquisition_type": "DRAFT",
+      "avg_points": null,
+      "eligible_slots": [
+        "GS",
+        "BE",
+        "ALT"
+      ],
+      "fantasy_team": "Rough Riders",
+      "id": 75,
+      "injured": false,
+      "injury_status": null,
+      "name": "OWGR Golfer 75",
+      "percent_owned": null,
+      "position": "G",
+      "pro_team": null,
+      "projected_total_points": null,
+      "role": "golfer",
+      "season_stats": {
+        "OWGR": 75.0
+      },
+      "slot": "BE",
+      "status": "ACTIVE",
+      "total_points": 0.0
+    },
+    {
+      "acquisition_type": "DRAFT",
+      "avg_points": null,
+      "eligible_slots": [
+        "GS",
+        "BE",
+        "ALT"
+      ],
+      "fantasy_team": "Eagle Eyes",
+      "id": 76,
+      "injured": false,
+      "injury_status": null,
+      "name": "OWGR Golfer 76",
+      "percent_owned": null,
+      "position": "G",
+      "pro_team": null,
+      "projected_total_points": null,
+      "role": "golfer",
+      "season_stats": {
+        "OWGR": 76.0
+      },
+      "slot": "BE",
+      "status": "ACTIVE",
+      "total_points": 0.0
+    },
+    {
+      "acquisition_type": "DRAFT",
+      "avg_points": null,
+      "eligible_slots": [
+        "GS",
+        "BE",
+        "ALT"
+      ],
+      "fantasy_team": "Birdie Brigade",
+      "id": 77,
+      "injured": false,
+      "injury_status": null,
+      "name": "OWGR Golfer 77",
+      "percent_owned": null,
+      "position": "G",
+      "pro_team": null,
+      "projected_total_points": null,
+      "role": "golfer",
+      "season_stats": {
+        "OWGR": 77.0
+      },
+      "slot": "BE",
+      "status": "ACTIVE",
+      "total_points": 0.0
+    },
+    {
+      "acquisition_type": "DRAFT",
+      "avg_points": null,
+      "eligible_slots": [
+        "GS",
+        "BE",
+        "ALT"
+      ],
+      "fantasy_team": "Sand Trap Syndicate",
+      "id": 78,
+      "injured": false,
+      "injury_status": null,
+      "name": "OWGR Golfer 78",
+      "percent_owned": null,
+      "position": "G",
+      "pro_team": null,
+      "projected_total_points": null,
+      "role": "golfer",
+      "season_stats": {
+        "OWGR": 78.0
+      },
+      "slot": "BE",
+      "status": "ACTIVE",
+      "total_points": 0.0
+    },
+    {
+      "acquisition_type": "DRAFT",
+      "avg_points": null,
+      "eligible_slots": [
+        "GS",
+        "BE",
+        "ALT"
+      ],
+      "fantasy_team": "Pin High Posse",
+      "id": 79,
+      "injured": false,
+      "injury_status": null,
+      "name": "OWGR Golfer 79",
+      "percent_owned": null,
+      "position": "G",
+      "pro_team": null,
+      "projected_total_points": null,
+      "role": "golfer",
+      "season_stats": {
+        "OWGR": 79.0
+      },
+      "slot": "BE",
+      "status": "ACTIVE",
+      "total_points": 0.0
+    },
+    {
+      "acquisition_type": "DRAFT",
+      "avg_points": null,
+      "eligible_slots": [
+        "GS",
+        "BE",
+        "ALT"
+      ],
+      "fantasy_team": "Fairway Phantoms",
+      "id": 80,
+      "injured": false,
+      "injury_status": null,
+      "name": "OWGR Golfer 80",
+      "percent_owned": null,
+      "position": "G",
+      "pro_team": null,
+      "projected_total_points": null,
+      "role": "golfer",
+      "season_stats": {
+        "OWGR": 80.0
+      },
+      "slot": "BE",
+      "status": "ACTIVE",
+      "total_points": 0.0
+    },
+    {
+      "acquisition_type": "DRAFT",
+      "avg_points": null,
+      "eligible_slots": [
+        "GS",
+        "BE",
+        "ALT"
+      ],
+      "fantasy_team": "Fairway Phantoms",
+      "id": 81,
+      "injured": false,
+      "injury_status": null,
+      "name": "OWGR Golfer 81",
+      "percent_owned": null,
+      "position": "G",
+      "pro_team": null,
+      "projected_total_points": null,
+      "role": "golfer",
+      "season_stats": {
+        "OWGR": 81.0
+      },
+      "slot": "BE",
+      "status": "ACTIVE",
+      "total_points": 0.0
+    },
+    {
+      "acquisition_type": "DRAFT",
+      "avg_points": null,
+      "eligible_slots": [
+        "GS",
+        "BE",
+        "ALT"
+      ],
+      "fantasy_team": "Pin High Posse",
+      "id": 82,
+      "injured": false,
+      "injury_status": null,
+      "name": "OWGR Golfer 82",
+      "percent_owned": null,
+      "position": "G",
+      "pro_team": null,
+      "projected_total_points": null,
+      "role": "golfer",
+      "season_stats": {
+        "OWGR": 82.0
+      },
+      "slot": "BE",
+      "status": "ACTIVE",
+      "total_points": 0.0
+    },
+    {
+      "acquisition_type": "DRAFT",
+      "avg_points": null,
+      "eligible_slots": [
+        "GS",
+        "BE",
+        "ALT"
+      ],
+      "fantasy_team": "Sand Trap Syndicate",
+      "id": 83,
+      "injured": false,
+      "injury_status": null,
+      "name": "OWGR Golfer 83",
+      "percent_owned": null,
+      "position": "G",
+      "pro_team": null,
+      "projected_total_points": null,
+      "role": "golfer",
+      "season_stats": {
+        "OWGR": 83.0
+      },
+      "slot": "BE",
+      "status": "ACTIVE",
+      "total_points": 0.0
+    },
+    {
+      "acquisition_type": "DRAFT",
+      "avg_points": null,
+      "eligible_slots": [
+        "GS",
+        "BE",
+        "ALT"
+      ],
+      "fantasy_team": "Birdie Brigade",
+      "id": 84,
+      "injured": false,
+      "injury_status": null,
+      "name": "OWGR Golfer 84",
+      "percent_owned": null,
+      "position": "G",
+      "pro_team": null,
+      "projected_total_points": null,
+      "role": "golfer",
+      "season_stats": {
+        "OWGR": 84.0
+      },
+      "slot": "BE",
+      "status": "ACTIVE",
+      "total_points": 0.0
+    },
+    {
+      "acquisition_type": "DRAFT",
+      "avg_points": null,
+      "eligible_slots": [
+        "GS",
+        "BE",
+        "ALT"
+      ],
+      "fantasy_team": "Eagle Eyes",
+      "id": 85,
+      "injured": false,
+      "injury_status": null,
+      "name": "OWGR Golfer 85",
+      "percent_owned": null,
+      "position": "G",
+      "pro_team": null,
+      "projected_total_points": null,
+      "role": "golfer",
+      "season_stats": {
+        "OWGR": 85.0
+      },
+      "slot": "BE",
+      "status": "ACTIVE",
+      "total_points": 0.0
+    },
+    {
+      "acquisition_type": "DRAFT",
+      "avg_points": null,
+      "eligible_slots": [
+        "GS",
+        "BE",
+        "ALT"
+      ],
+      "fantasy_team": "Rough Riders",
+      "id": 86,
+      "injured": false,
+      "injury_status": null,
+      "name": "OWGR Golfer 86",
+      "percent_owned": null,
+      "position": "G",
+      "pro_team": null,
+      "projected_total_points": null,
+      "role": "golfer",
+      "season_stats": {
+        "OWGR": 86.0
+      },
+      "slot": "BE",
+      "status": "ACTIVE",
+      "total_points": 0.0
+    },
+    {
+      "acquisition_type": "DRAFT",
+      "avg_points": null,
+      "eligible_slots": [
+        "GS",
+        "BE",
+        "ALT"
+      ],
+      "fantasy_team": "Ace Alliance",
+      "id": 87,
+      "injured": false,
+      "injury_status": null,
+      "name": "OWGR Golfer 87",
+      "percent_owned": null,
+      "position": "G",
+      "pro_team": null,
+      "projected_total_points": null,
+      "role": "golfer",
+      "season_stats": {
+        "OWGR": 87.0
+      },
+      "slot": "BE",
+      "status": "ACTIVE",
+      "total_points": 0.0
+    },
+    {
+      "acquisition_type": "DRAFT",
+      "avg_points": null,
+      "eligible_slots": [
+        "GS",
+        "BE",
+        "ALT"
+      ],
+      "fantasy_team": "Bogey Bandits",
+      "id": 88,
+      "injured": false,
+      "injury_status": null,
+      "name": "OWGR Golfer 88",
+      "percent_owned": null,
+      "position": "G",
+      "pro_team": null,
+      "projected_total_points": null,
+      "role": "golfer",
+      "season_stats": {
+        "OWGR": 88.0
+      },
+      "slot": "BE",
+      "status": "ACTIVE",
+      "total_points": 0.0
+    },
+    {
+      "acquisition_type": "DRAFT",
+      "avg_points": null,
+      "eligible_slots": [
+        "GS",
+        "BE",
+        "ALT"
+      ],
+      "fantasy_team": "Bogey Bandits",
+      "id": 89,
+      "injured": false,
+      "injury_status": null,
+      "name": "OWGR Golfer 89",
+      "percent_owned": null,
+      "position": "G",
+      "pro_team": null,
+      "projected_total_points": null,
+      "role": "golfer",
+      "season_stats": {
+        "OWGR": 89.0
+      },
+      "slot": "BE",
+      "status": "ACTIVE",
+      "total_points": 0.0
+    },
+    {
+      "acquisition_type": "DRAFT",
+      "avg_points": null,
+      "eligible_slots": [
+        "GS",
+        "BE",
+        "ALT"
+      ],
+      "fantasy_team": "Ace Alliance",
+      "id": 90,
+      "injured": false,
+      "injury_status": null,
+      "name": "OWGR Golfer 90",
+      "percent_owned": null,
+      "position": "G",
+      "pro_team": null,
+      "projected_total_points": null,
+      "role": "golfer",
+      "season_stats": {
+        "OWGR": 90.0
+      },
+      "slot": "BE",
+      "status": "ACTIVE",
+      "total_points": 0.0
+    },
+    {
+      "acquisition_type": "DRAFT",
+      "avg_points": null,
+      "eligible_slots": [
+        "GS",
+        "BE",
+        "ALT"
+      ],
+      "fantasy_team": "Rough Riders",
+      "id": 91,
+      "injured": false,
+      "injury_status": null,
+      "name": "OWGR Golfer 91",
+      "percent_owned": null,
+      "position": "G",
+      "pro_team": null,
+      "projected_total_points": null,
+      "role": "golfer",
+      "season_stats": {
+        "OWGR": 91.0
+      },
+      "slot": "BE",
+      "status": "ACTIVE",
+      "total_points": 0.0
+    },
+    {
+      "acquisition_type": "DRAFT",
+      "avg_points": null,
+      "eligible_slots": [
+        "GS",
+        "BE",
+        "ALT"
+      ],
+      "fantasy_team": "Eagle Eyes",
+      "id": 92,
+      "injured": false,
+      "injury_status": null,
+      "name": "OWGR Golfer 92",
+      "percent_owned": null,
+      "position": "G",
+      "pro_team": null,
+      "projected_total_points": null,
+      "role": "golfer",
+      "season_stats": {
+        "OWGR": 92.0
+      },
+      "slot": "BE",
+      "status": "ACTIVE",
+      "total_points": 0.0
+    },
+    {
+      "acquisition_type": "DRAFT",
+      "avg_points": null,
+      "eligible_slots": [
+        "GS",
+        "BE",
+        "ALT"
+      ],
+      "fantasy_team": "Birdie Brigade",
+      "id": 93,
+      "injured": false,
+      "injury_status": null,
+      "name": "OWGR Golfer 93",
+      "percent_owned": null,
+      "position": "G",
+      "pro_team": null,
+      "projected_total_points": null,
+      "role": "golfer",
+      "season_stats": {
+        "OWGR": 93.0
+      },
+      "slot": "BE",
+      "status": "ACTIVE",
+      "total_points": 0.0
+    },
+    {
+      "acquisition_type": "DRAFT",
+      "avg_points": null,
+      "eligible_slots": [
+        "GS",
+        "BE",
+        "ALT"
+      ],
+      "fantasy_team": "Sand Trap Syndicate",
+      "id": 94,
+      "injured": false,
+      "injury_status": null,
+      "name": "OWGR Golfer 94",
+      "percent_owned": null,
+      "position": "G",
+      "pro_team": null,
+      "projected_total_points": null,
+      "role": "golfer",
+      "season_stats": {
+        "OWGR": 94.0
+      },
+      "slot": "BE",
+      "status": "ACTIVE",
+      "total_points": 0.0
+    },
+    {
+      "acquisition_type": "DRAFT",
+      "avg_points": null,
+      "eligible_slots": [
+        "GS",
+        "BE",
+        "ALT"
+      ],
+      "fantasy_team": "Pin High Posse",
+      "id": 95,
+      "injured": false,
+      "injury_status": null,
+      "name": "OWGR Golfer 95",
+      "percent_owned": null,
+      "position": "G",
+      "pro_team": null,
+      "projected_total_points": null,
+      "role": "golfer",
+      "season_stats": {
+        "OWGR": 95.0
+      },
+      "slot": "BE",
+      "status": "ACTIVE",
+      "total_points": 0.0
+    },
+    {
+      "acquisition_type": "DRAFT",
+      "avg_points": null,
+      "eligible_slots": [
+        "GS",
+        "BE",
+        "ALT"
+      ],
+      "fantasy_team": "Fairway Phantoms",
+      "id": 96,
+      "injured": false,
+      "injury_status": null,
+      "name": "OWGR Golfer 96",
+      "percent_owned": null,
+      "position": "G",
+      "pro_team": null,
+      "projected_total_points": null,
+      "role": "golfer",
+      "season_stats": {
+        "OWGR": 96.0
+      },
+      "slot": "BE",
+      "status": "ACTIVE",
+      "total_points": 0.0
+    },
+    {
+      "acquisition_type": "DRAFT",
+      "avg_points": null,
+      "eligible_slots": [
+        "GS",
+        "BE",
+        "ALT"
+      ],
+      "fantasy_team": "Fairway Phantoms",
+      "id": 97,
+      "injured": false,
+      "injury_status": null,
+      "name": "OWGR Golfer 97",
+      "percent_owned": null,
+      "position": "G",
+      "pro_team": null,
+      "projected_total_points": null,
+      "role": "golfer",
+      "season_stats": {
+        "OWGR": 97.0
+      },
+      "slot": "BE",
+      "status": "ACTIVE",
+      "total_points": 0.0
+    },
+    {
+      "acquisition_type": "DRAFT",
+      "avg_points": null,
+      "eligible_slots": [
+        "GS",
+        "BE",
+        "ALT"
+      ],
+      "fantasy_team": "Pin High Posse",
+      "id": 98,
+      "injured": false,
+      "injury_status": null,
+      "name": "OWGR Golfer 98",
+      "percent_owned": null,
+      "position": "G",
+      "pro_team": null,
+      "projected_total_points": null,
+      "role": "golfer",
+      "season_stats": {
+        "OWGR": 98.0
+      },
+      "slot": "BE",
+      "status": "ACTIVE",
+      "total_points": 0.0
+    },
+    {
+      "acquisition_type": "DRAFT",
+      "avg_points": null,
+      "eligible_slots": [
+        "GS",
+        "BE",
+        "ALT"
+      ],
+      "fantasy_team": "Sand Trap Syndicate",
+      "id": 99,
+      "injured": false,
+      "injury_status": null,
+      "name": "OWGR Golfer 99",
+      "percent_owned": null,
+      "position": "G",
+      "pro_team": null,
+      "projected_total_points": null,
+      "role": "golfer",
+      "season_stats": {
+        "OWGR": 99.0
+      },
+      "slot": "BE",
+      "status": "ACTIVE",
+      "total_points": 0.0
+    },
+    {
+      "acquisition_type": "DRAFT",
+      "avg_points": null,
+      "eligible_slots": [
+        "GS",
+        "BE",
+        "ALT"
+      ],
+      "fantasy_team": "Birdie Brigade",
+      "id": 100,
+      "injured": false,
+      "injury_status": null,
+      "name": "OWGR Golfer 100",
+      "percent_owned": null,
+      "position": "G",
+      "pro_team": null,
+      "projected_total_points": null,
+      "role": "golfer",
+      "season_stats": {
+        "OWGR": 100.0
+      },
+      "slot": "BE",
+      "status": "ACTIVE",
+      "total_points": 0.0
+    },
+    {
+      "acquisition_type": "DRAFT",
+      "avg_points": null,
+      "eligible_slots": [
+        "GS",
+        "BE",
+        "ALT"
+      ],
+      "fantasy_team": "Eagle Eyes",
+      "id": 101,
+      "injured": false,
+      "injury_status": null,
+      "name": "OWGR Golfer 101",
+      "percent_owned": null,
+      "position": "G",
+      "pro_team": null,
+      "projected_total_points": null,
+      "role": "golfer",
+      "season_stats": {
+        "OWGR": 101.0
+      },
+      "slot": "BE",
+      "status": "ACTIVE",
+      "total_points": 0.0
+    },
+    {
+      "acquisition_type": "DRAFT",
+      "avg_points": null,
+      "eligible_slots": [
+        "GS",
+        "BE",
+        "ALT"
+      ],
+      "fantasy_team": "Rough Riders",
+      "id": 102,
+      "injured": false,
+      "injury_status": null,
+      "name": "OWGR Golfer 102",
+      "percent_owned": null,
+      "position": "G",
+      "pro_team": null,
+      "projected_total_points": null,
+      "role": "golfer",
+      "season_stats": {
+        "OWGR": 102.0
+      },
+      "slot": "BE",
+      "status": "ACTIVE",
+      "total_points": 0.0
+    },
+    {
+      "acquisition_type": "DRAFT",
+      "avg_points": null,
+      "eligible_slots": [
+        "GS",
+        "BE",
+        "ALT"
+      ],
+      "fantasy_team": "Ace Alliance",
+      "id": 103,
+      "injured": false,
+      "injury_status": null,
+      "name": "OWGR Golfer 103",
+      "percent_owned": null,
+      "position": "G",
+      "pro_team": null,
+      "projected_total_points": null,
+      "role": "golfer",
+      "season_stats": {
+        "OWGR": 103.0
+      },
+      "slot": "BE",
+      "status": "ACTIVE",
+      "total_points": 0.0
+    },
+    {
+      "acquisition_type": "DRAFT",
+      "avg_points": null,
+      "eligible_slots": [
+        "GS",
+        "BE",
+        "ALT"
+      ],
+      "fantasy_team": "Bogey Bandits",
+      "id": 104,
+      "injured": false,
+      "injury_status": null,
+      "name": "OWGR Golfer 104",
+      "percent_owned": null,
+      "position": "G",
+      "pro_team": null,
+      "projected_total_points": null,
+      "role": "golfer",
+      "season_stats": {
+        "OWGR": 104.0
+      },
+      "slot": "BE",
+      "status": "ACTIVE",
+      "total_points": 0.0
+    },
+    {
+      "acquisition_type": "DRAFT",
+      "avg_points": null,
+      "eligible_slots": [
+        "GS",
+        "BE",
+        "ALT"
+      ],
+      "fantasy_team": "Bogey Bandits",
+      "id": 105,
+      "injured": false,
+      "injury_status": null,
+      "name": "OWGR Golfer 105",
+      "percent_owned": null,
+      "position": "G",
+      "pro_team": null,
+      "projected_total_points": null,
+      "role": "golfer",
+      "season_stats": {
+        "OWGR": 105.0
+      },
+      "slot": "BE",
+      "status": "ACTIVE",
+      "total_points": 0.0
+    },
+    {
+      "acquisition_type": "DRAFT",
+      "avg_points": null,
+      "eligible_slots": [
+        "GS",
+        "BE",
+        "ALT"
+      ],
+      "fantasy_team": "Ace Alliance",
+      "id": 106,
+      "injured": false,
+      "injury_status": null,
+      "name": "OWGR Golfer 106",
+      "percent_owned": null,
+      "position": "G",
+      "pro_team": null,
+      "projected_total_points": null,
+      "role": "golfer",
+      "season_stats": {
+        "OWGR": 106.0
+      },
+      "slot": "BE",
+      "status": "ACTIVE",
+      "total_points": 0.0
+    },
+    {
+      "acquisition_type": "DRAFT",
+      "avg_points": null,
+      "eligible_slots": [
+        "GS",
+        "BE",
+        "ALT"
+      ],
+      "fantasy_team": "Rough Riders",
+      "id": 107,
+      "injured": false,
+      "injury_status": null,
+      "name": "OWGR Golfer 107",
+      "percent_owned": null,
+      "position": "G",
+      "pro_team": null,
+      "projected_total_points": null,
+      "role": "golfer",
+      "season_stats": {
+        "OWGR": 107.0
+      },
+      "slot": "BE",
+      "status": "ACTIVE",
+      "total_points": 0.0
+    },
+    {
+      "acquisition_type": "DRAFT",
+      "avg_points": null,
+      "eligible_slots": [
+        "GS",
+        "BE",
+        "ALT"
+      ],
+      "fantasy_team": "Eagle Eyes",
+      "id": 108,
+      "injured": false,
+      "injury_status": null,
+      "name": "OWGR Golfer 108",
+      "percent_owned": null,
+      "position": "G",
+      "pro_team": null,
+      "projected_total_points": null,
+      "role": "golfer",
+      "season_stats": {
+        "OWGR": 108.0
+      },
+      "slot": "BE",
+      "status": "ACTIVE",
+      "total_points": 0.0
+    },
+    {
+      "acquisition_type": "DRAFT",
+      "avg_points": null,
+      "eligible_slots": [
+        "GS",
+        "BE",
+        "ALT"
+      ],
+      "fantasy_team": "Birdie Brigade",
+      "id": 109,
+      "injured": false,
+      "injury_status": null,
+      "name": "OWGR Golfer 109",
+      "percent_owned": null,
+      "position": "G",
+      "pro_team": null,
+      "projected_total_points": null,
+      "role": "golfer",
+      "season_stats": {
+        "OWGR": 109.0
+      },
+      "slot": "BE",
+      "status": "ACTIVE",
+      "total_points": 0.0
+    },
+    {
+      "acquisition_type": "DRAFT",
+      "avg_points": null,
+      "eligible_slots": [
+        "GS",
+        "BE",
+        "ALT"
+      ],
+      "fantasy_team": "Sand Trap Syndicate",
+      "id": 110,
+      "injured": false,
+      "injury_status": null,
+      "name": "OWGR Golfer 110",
+      "percent_owned": null,
+      "position": "G",
+      "pro_team": null,
+      "projected_total_points": null,
+      "role": "golfer",
+      "season_stats": {
+        "OWGR": 110.0
+      },
+      "slot": "BE",
+      "status": "ACTIVE",
+      "total_points": 0.0
+    },
+    {
+      "acquisition_type": "DRAFT",
+      "avg_points": null,
+      "eligible_slots": [
+        "GS",
+        "BE",
+        "ALT"
+      ],
+      "fantasy_team": "Pin High Posse",
+      "id": 111,
+      "injured": false,
+      "injury_status": null,
+      "name": "OWGR Golfer 111",
+      "percent_owned": null,
+      "position": "G",
+      "pro_team": null,
+      "projected_total_points": null,
+      "role": "golfer",
+      "season_stats": {
+        "OWGR": 111.0
+      },
+      "slot": "BE",
+      "status": "ACTIVE",
+      "total_points": 0.0
+    },
+    {
+      "acquisition_type": "DRAFT",
+      "avg_points": null,
+      "eligible_slots": [
+        "GS",
+        "BE",
+        "ALT"
+      ],
+      "fantasy_team": "Fairway Phantoms",
+      "id": 112,
+      "injured": false,
+      "injury_status": null,
+      "name": "OWGR Golfer 112",
+      "percent_owned": null,
+      "position": "G",
+      "pro_team": null,
+      "projected_total_points": null,
+      "role": "golfer",
+      "season_stats": {
+        "OWGR": 112.0
+      },
+      "slot": "BE",
+      "status": "ACTIVE",
+      "total_points": 0.0
+    },
+    {
+      "acquisition_type": "DRAFT",
+      "avg_points": null,
+      "eligible_slots": [
+        "GS",
+        "BE",
+        "ALT"
+      ],
+      "fantasy_team": "Fairway Phantoms",
+      "id": 113,
+      "injured": false,
+      "injury_status": null,
+      "name": "OWGR Golfer 113",
+      "percent_owned": null,
+      "position": "G",
+      "pro_team": null,
+      "projected_total_points": null,
+      "role": "golfer",
+      "season_stats": {
+        "OWGR": 113.0
+      },
+      "slot": "BE",
+      "status": "ACTIVE",
+      "total_points": 0.0
+    },
+    {
+      "acquisition_type": "DRAFT",
+      "avg_points": null,
+      "eligible_slots": [
+        "GS",
+        "BE",
+        "ALT"
+      ],
+      "fantasy_team": "Pin High Posse",
+      "id": 114,
+      "injured": false,
+      "injury_status": null,
+      "name": "OWGR Golfer 114",
+      "percent_owned": null,
+      "position": "G",
+      "pro_team": null,
+      "projected_total_points": null,
+      "role": "golfer",
+      "season_stats": {
+        "OWGR": 114.0
+      },
+      "slot": "BE",
+      "status": "ACTIVE",
+      "total_points": 0.0
+    },
+    {
+      "acquisition_type": "DRAFT",
+      "avg_points": null,
+      "eligible_slots": [
+        "GS",
+        "BE",
+        "ALT"
+      ],
+      "fantasy_team": "Sand Trap Syndicate",
+      "id": 115,
+      "injured": false,
+      "injury_status": null,
+      "name": "OWGR Golfer 115",
+      "percent_owned": null,
+      "position": "G",
+      "pro_team": null,
+      "projected_total_points": null,
+      "role": "golfer",
+      "season_stats": {
+        "OWGR": 115.0
+      },
+      "slot": "BE",
+      "status": "ACTIVE",
+      "total_points": 0.0
+    },
+    {
+      "acquisition_type": "DRAFT",
+      "avg_points": null,
+      "eligible_slots": [
+        "GS",
+        "BE",
+        "ALT"
+      ],
+      "fantasy_team": "Birdie Brigade",
+      "id": 116,
+      "injured": false,
+      "injury_status": null,
+      "name": "OWGR Golfer 116",
+      "percent_owned": null,
+      "position": "G",
+      "pro_team": null,
+      "projected_total_points": null,
+      "role": "golfer",
+      "season_stats": {
+        "OWGR": 116.0
+      },
+      "slot": "BE",
+      "status": "ACTIVE",
+      "total_points": 0.0
+    },
+    {
+      "acquisition_type": "DRAFT",
+      "avg_points": null,
+      "eligible_slots": [
+        "GS",
+        "BE",
+        "ALT"
+      ],
+      "fantasy_team": "Eagle Eyes",
+      "id": 117,
+      "injured": false,
+      "injury_status": null,
+      "name": "OWGR Golfer 117",
+      "percent_owned": null,
+      "position": "G",
+      "pro_team": null,
+      "projected_total_points": null,
+      "role": "golfer",
+      "season_stats": {
+        "OWGR": 117.0
+      },
+      "slot": "BE",
+      "status": "ACTIVE",
+      "total_points": 0.0
+    },
+    {
+      "acquisition_type": "DRAFT",
+      "avg_points": null,
+      "eligible_slots": [
+        "GS",
+        "BE",
+        "ALT"
+      ],
+      "fantasy_team": "Rough Riders",
+      "id": 118,
+      "injured": false,
+      "injury_status": null,
+      "name": "OWGR Golfer 118",
+      "percent_owned": null,
+      "position": "G",
+      "pro_team": null,
+      "projected_total_points": null,
+      "role": "golfer",
+      "season_stats": {
+        "OWGR": 118.0
+      },
+      "slot": "BE",
+      "status": "ACTIVE",
+      "total_points": 0.0
+    },
+    {
+      "acquisition_type": "DRAFT",
+      "avg_points": null,
+      "eligible_slots": [
+        "GS",
+        "BE",
+        "ALT"
+      ],
+      "fantasy_team": "Ace Alliance",
+      "id": 119,
+      "injured": false,
+      "injury_status": null,
+      "name": "OWGR Golfer 119",
+      "percent_owned": null,
+      "position": "G",
+      "pro_team": null,
+      "projected_total_points": null,
+      "role": "golfer",
+      "season_stats": {
+        "OWGR": 119.0
+      },
+      "slot": "BE",
+      "status": "ACTIVE",
+      "total_points": 0.0
+    },
+    {
+      "acquisition_type": "DRAFT",
+      "avg_points": null,
+      "eligible_slots": [
+        "GS",
+        "BE",
+        "ALT"
+      ],
+      "fantasy_team": "Bogey Bandits",
+      "id": 120,
+      "injured": false,
+      "injury_status": null,
+      "name": "OWGR Golfer 120",
+      "percent_owned": null,
+      "position": "G",
+      "pro_team": null,
+      "projected_total_points": null,
+      "role": "golfer",
+      "season_stats": {
+        "OWGR": 120.0
+      },
+      "slot": "BE",
+      "status": "ACTIVE",
+      "total_points": 0.0
+    }
+  ],
   "schema_version": 2,
   "scoring_type": "GOLF_COUNTING",
   "season": 2026,
@@ -62,7 +4745,368 @@
       ],
       "points_against": 0.0,
       "points_for": 0.0,
-      "roster": [],
+      "roster": [
+        {
+          "acquisition_type": "DRAFT",
+          "avg_points": null,
+          "eligible_slots": [
+            "GS",
+            "BE",
+            "ALT"
+          ],
+          "id": 1,
+          "injured": false,
+          "injury_status": null,
+          "name": "Scottie Scheffler",
+          "percent_owned": null,
+          "position": "G",
+          "pro_team": "USA",
+          "projected_total_points": null,
+          "role": "golfer",
+          "season_stats": {
+            "OWGR": 1.0
+          },
+          "slot": "GS",
+          "status": "ACTIVE",
+          "total_points": 0.0
+        },
+        {
+          "acquisition_type": "DRAFT",
+          "avg_points": null,
+          "eligible_slots": [
+            "GS",
+            "BE",
+            "ALT"
+          ],
+          "id": 16,
+          "injured": false,
+          "injury_status": null,
+          "name": "Matt Fitzpatrick",
+          "percent_owned": null,
+          "position": "G",
+          "pro_team": "ENG",
+          "projected_total_points": null,
+          "role": "golfer",
+          "season_stats": {
+            "OWGR": 16.0
+          },
+          "slot": "GS",
+          "status": "ACTIVE",
+          "total_points": 0.0
+        },
+        {
+          "acquisition_type": "DRAFT",
+          "avg_points": null,
+          "eligible_slots": [
+            "GS",
+            "BE",
+            "ALT"
+          ],
+          "id": 17,
+          "injured": false,
+          "injury_status": null,
+          "name": "Tony Finau",
+          "percent_owned": null,
+          "position": "G",
+          "pro_team": "USA",
+          "projected_total_points": null,
+          "role": "golfer",
+          "season_stats": {
+            "OWGR": 17.0
+          },
+          "slot": "GS",
+          "status": "ACTIVE",
+          "total_points": 0.0
+        },
+        {
+          "acquisition_type": "DRAFT",
+          "avg_points": null,
+          "eligible_slots": [
+            "GS",
+            "BE",
+            "ALT"
+          ],
+          "id": 32,
+          "injured": false,
+          "injury_status": null,
+          "name": "Corey Conners",
+          "percent_owned": null,
+          "position": "G",
+          "pro_team": "CAN",
+          "projected_total_points": null,
+          "role": "golfer",
+          "season_stats": {
+            "OWGR": 32.0
+          },
+          "slot": "GS",
+          "status": "ACTIVE",
+          "total_points": 0.0
+        },
+        {
+          "acquisition_type": "DRAFT",
+          "avg_points": null,
+          "eligible_slots": [
+            "GS",
+            "BE",
+            "ALT"
+          ],
+          "id": 33,
+          "injured": false,
+          "injury_status": null,
+          "name": "Si Woo Kim",
+          "percent_owned": null,
+          "position": "G",
+          "pro_team": "KOR",
+          "projected_total_points": null,
+          "role": "golfer",
+          "season_stats": {
+            "OWGR": 33.0
+          },
+          "slot": "GS",
+          "status": "ACTIVE",
+          "total_points": 0.0
+        },
+        {
+          "acquisition_type": "DRAFT",
+          "avg_points": null,
+          "eligible_slots": [
+            "GS",
+            "BE",
+            "ALT"
+          ],
+          "id": 48,
+          "injured": false,
+          "injury_status": null,
+          "name": "Austin Eckroat",
+          "percent_owned": null,
+          "position": "G",
+          "pro_team": "USA",
+          "projected_total_points": null,
+          "role": "golfer",
+          "season_stats": {
+            "OWGR": 48.0
+          },
+          "slot": "BE",
+          "status": "ACTIVE",
+          "total_points": 0.0
+        },
+        {
+          "acquisition_type": "DRAFT",
+          "avg_points": null,
+          "eligible_slots": [
+            "GS",
+            "BE",
+            "ALT"
+          ],
+          "id": 49,
+          "injured": false,
+          "injury_status": null,
+          "name": "Jake Knapp",
+          "percent_owned": null,
+          "position": "G",
+          "pro_team": "USA",
+          "projected_total_points": null,
+          "role": "golfer",
+          "season_stats": {
+            "OWGR": 49.0
+          },
+          "slot": "BE",
+          "status": "ACTIVE",
+          "total_points": 0.0
+        },
+        {
+          "acquisition_type": "DRAFT",
+          "avg_points": null,
+          "eligible_slots": [
+            "GS",
+            "BE",
+            "ALT"
+          ],
+          "id": 64,
+          "injured": false,
+          "injury_status": null,
+          "name": "OWGR Golfer 64",
+          "percent_owned": null,
+          "position": "G",
+          "pro_team": null,
+          "projected_total_points": null,
+          "role": "golfer",
+          "season_stats": {
+            "OWGR": 64.0
+          },
+          "slot": "BE",
+          "status": "ACTIVE",
+          "total_points": 0.0
+        },
+        {
+          "acquisition_type": "DRAFT",
+          "avg_points": null,
+          "eligible_slots": [
+            "GS",
+            "BE",
+            "ALT"
+          ],
+          "id": 65,
+          "injured": false,
+          "injury_status": null,
+          "name": "OWGR Golfer 65",
+          "percent_owned": null,
+          "position": "G",
+          "pro_team": null,
+          "projected_total_points": null,
+          "role": "golfer",
+          "season_stats": {
+            "OWGR": 65.0
+          },
+          "slot": "BE",
+          "status": "ACTIVE",
+          "total_points": 0.0
+        },
+        {
+          "acquisition_type": "DRAFT",
+          "avg_points": null,
+          "eligible_slots": [
+            "GS",
+            "BE",
+            "ALT"
+          ],
+          "id": 80,
+          "injured": false,
+          "injury_status": null,
+          "name": "OWGR Golfer 80",
+          "percent_owned": null,
+          "position": "G",
+          "pro_team": null,
+          "projected_total_points": null,
+          "role": "golfer",
+          "season_stats": {
+            "OWGR": 80.0
+          },
+          "slot": "BE",
+          "status": "ACTIVE",
+          "total_points": 0.0
+        },
+        {
+          "acquisition_type": "DRAFT",
+          "avg_points": null,
+          "eligible_slots": [
+            "GS",
+            "BE",
+            "ALT"
+          ],
+          "id": 81,
+          "injured": false,
+          "injury_status": null,
+          "name": "OWGR Golfer 81",
+          "percent_owned": null,
+          "position": "G",
+          "pro_team": null,
+          "projected_total_points": null,
+          "role": "golfer",
+          "season_stats": {
+            "OWGR": 81.0
+          },
+          "slot": "BE",
+          "status": "ACTIVE",
+          "total_points": 0.0
+        },
+        {
+          "acquisition_type": "DRAFT",
+          "avg_points": null,
+          "eligible_slots": [
+            "GS",
+            "BE",
+            "ALT"
+          ],
+          "id": 96,
+          "injured": false,
+          "injury_status": null,
+          "name": "OWGR Golfer 96",
+          "percent_owned": null,
+          "position": "G",
+          "pro_team": null,
+          "projected_total_points": null,
+          "role": "golfer",
+          "season_stats": {
+            "OWGR": 96.0
+          },
+          "slot": "BE",
+          "status": "ACTIVE",
+          "total_points": 0.0
+        },
+        {
+          "acquisition_type": "DRAFT",
+          "avg_points": null,
+          "eligible_slots": [
+            "GS",
+            "BE",
+            "ALT"
+          ],
+          "id": 97,
+          "injured": false,
+          "injury_status": null,
+          "name": "OWGR Golfer 97",
+          "percent_owned": null,
+          "position": "G",
+          "pro_team": null,
+          "projected_total_points": null,
+          "role": "golfer",
+          "season_stats": {
+            "OWGR": 97.0
+          },
+          "slot": "BE",
+          "status": "ACTIVE",
+          "total_points": 0.0
+        },
+        {
+          "acquisition_type": "DRAFT",
+          "avg_points": null,
+          "eligible_slots": [
+            "GS",
+            "BE",
+            "ALT"
+          ],
+          "id": 112,
+          "injured": false,
+          "injury_status": null,
+          "name": "OWGR Golfer 112",
+          "percent_owned": null,
+          "position": "G",
+          "pro_team": null,
+          "projected_total_points": null,
+          "role": "golfer",
+          "season_stats": {
+            "OWGR": 112.0
+          },
+          "slot": "BE",
+          "status": "ACTIVE",
+          "total_points": 0.0
+        },
+        {
+          "acquisition_type": "DRAFT",
+          "avg_points": null,
+          "eligible_slots": [
+            "GS",
+            "BE",
+            "ALT"
+          ],
+          "id": 113,
+          "injured": false,
+          "injury_status": null,
+          "name": "OWGR Golfer 113",
+          "percent_owned": null,
+          "position": "G",
+          "pro_team": null,
+          "projected_total_points": null,
+          "role": "golfer",
+          "season_stats": {
+            "OWGR": 113.0
+          },
+          "slot": "BE",
+          "status": "ACTIVE",
+          "total_points": 0.0
+        }
+      ],
       "schedule": [],
       "scores": [],
       "standing": 1,
@@ -83,7 +5127,368 @@
       ],
       "points_against": 0.0,
       "points_for": 0.0,
-      "roster": [],
+      "roster": [
+        {
+          "acquisition_type": "DRAFT",
+          "avg_points": null,
+          "eligible_slots": [
+            "GS",
+            "BE",
+            "ALT"
+          ],
+          "id": 2,
+          "injured": false,
+          "injury_status": null,
+          "name": "Rory McIlroy",
+          "percent_owned": null,
+          "position": "G",
+          "pro_team": "NIR",
+          "projected_total_points": null,
+          "role": "golfer",
+          "season_stats": {
+            "OWGR": 2.0
+          },
+          "slot": "GS",
+          "status": "ACTIVE",
+          "total_points": 0.0
+        },
+        {
+          "acquisition_type": "DRAFT",
+          "avg_points": null,
+          "eligible_slots": [
+            "GS",
+            "BE",
+            "ALT"
+          ],
+          "id": 15,
+          "injured": false,
+          "injury_status": null,
+          "name": "Brian Harman",
+          "percent_owned": null,
+          "position": "G",
+          "pro_team": "USA",
+          "projected_total_points": null,
+          "role": "golfer",
+          "season_stats": {
+            "OWGR": 15.0
+          },
+          "slot": "GS",
+          "status": "ACTIVE",
+          "total_points": 0.0
+        },
+        {
+          "acquisition_type": "DRAFT",
+          "avg_points": null,
+          "eligible_slots": [
+            "GS",
+            "BE",
+            "ALT"
+          ],
+          "id": 18,
+          "injured": false,
+          "injury_status": null,
+          "name": "Sam Burns",
+          "percent_owned": null,
+          "position": "G",
+          "pro_team": "USA",
+          "projected_total_points": null,
+          "role": "golfer",
+          "season_stats": {
+            "OWGR": 18.0
+          },
+          "slot": "GS",
+          "status": "ACTIVE",
+          "total_points": 0.0
+        },
+        {
+          "acquisition_type": "DRAFT",
+          "avg_points": null,
+          "eligible_slots": [
+            "GS",
+            "BE",
+            "ALT"
+          ],
+          "id": 31,
+          "injured": false,
+          "injury_status": null,
+          "name": "Billy Horschel",
+          "percent_owned": null,
+          "position": "G",
+          "pro_team": "USA",
+          "projected_total_points": null,
+          "role": "golfer",
+          "season_stats": {
+            "OWGR": 31.0
+          },
+          "slot": "GS",
+          "status": "ACTIVE",
+          "total_points": 0.0
+        },
+        {
+          "acquisition_type": "DRAFT",
+          "avg_points": null,
+          "eligible_slots": [
+            "GS",
+            "BE",
+            "ALT"
+          ],
+          "id": 34,
+          "injured": false,
+          "injury_status": null,
+          "name": "Harris English",
+          "percent_owned": null,
+          "position": "G",
+          "pro_team": "USA",
+          "projected_total_points": null,
+          "role": "golfer",
+          "season_stats": {
+            "OWGR": 34.0
+          },
+          "slot": "GS",
+          "status": "ACTIVE",
+          "total_points": 0.0
+        },
+        {
+          "acquisition_type": "DRAFT",
+          "avg_points": null,
+          "eligible_slots": [
+            "GS",
+            "BE",
+            "ALT"
+          ],
+          "id": 47,
+          "injured": false,
+          "injury_status": null,
+          "name": "Taylor Pendrith",
+          "percent_owned": null,
+          "position": "G",
+          "pro_team": "CAN",
+          "projected_total_points": null,
+          "role": "golfer",
+          "season_stats": {
+            "OWGR": 47.0
+          },
+          "slot": "BE",
+          "status": "ACTIVE",
+          "total_points": 0.0
+        },
+        {
+          "acquisition_type": "DRAFT",
+          "avg_points": null,
+          "eligible_slots": [
+            "GS",
+            "BE",
+            "ALT"
+          ],
+          "id": 50,
+          "injured": false,
+          "injury_status": null,
+          "name": "Nicolai Hojgaard",
+          "percent_owned": null,
+          "position": "G",
+          "pro_team": "DEN",
+          "projected_total_points": null,
+          "role": "golfer",
+          "season_stats": {
+            "OWGR": 50.0
+          },
+          "slot": "BE",
+          "status": "ACTIVE",
+          "total_points": 0.0
+        },
+        {
+          "acquisition_type": "DRAFT",
+          "avg_points": null,
+          "eligible_slots": [
+            "GS",
+            "BE",
+            "ALT"
+          ],
+          "id": 63,
+          "injured": false,
+          "injury_status": null,
+          "name": "OWGR Golfer 63",
+          "percent_owned": null,
+          "position": "G",
+          "pro_team": null,
+          "projected_total_points": null,
+          "role": "golfer",
+          "season_stats": {
+            "OWGR": 63.0
+          },
+          "slot": "BE",
+          "status": "ACTIVE",
+          "total_points": 0.0
+        },
+        {
+          "acquisition_type": "DRAFT",
+          "avg_points": null,
+          "eligible_slots": [
+            "GS",
+            "BE",
+            "ALT"
+          ],
+          "id": 66,
+          "injured": false,
+          "injury_status": null,
+          "name": "OWGR Golfer 66",
+          "percent_owned": null,
+          "position": "G",
+          "pro_team": null,
+          "projected_total_points": null,
+          "role": "golfer",
+          "season_stats": {
+            "OWGR": 66.0
+          },
+          "slot": "BE",
+          "status": "ACTIVE",
+          "total_points": 0.0
+        },
+        {
+          "acquisition_type": "DRAFT",
+          "avg_points": null,
+          "eligible_slots": [
+            "GS",
+            "BE",
+            "ALT"
+          ],
+          "id": 79,
+          "injured": false,
+          "injury_status": null,
+          "name": "OWGR Golfer 79",
+          "percent_owned": null,
+          "position": "G",
+          "pro_team": null,
+          "projected_total_points": null,
+          "role": "golfer",
+          "season_stats": {
+            "OWGR": 79.0
+          },
+          "slot": "BE",
+          "status": "ACTIVE",
+          "total_points": 0.0
+        },
+        {
+          "acquisition_type": "DRAFT",
+          "avg_points": null,
+          "eligible_slots": [
+            "GS",
+            "BE",
+            "ALT"
+          ],
+          "id": 82,
+          "injured": false,
+          "injury_status": null,
+          "name": "OWGR Golfer 82",
+          "percent_owned": null,
+          "position": "G",
+          "pro_team": null,
+          "projected_total_points": null,
+          "role": "golfer",
+          "season_stats": {
+            "OWGR": 82.0
+          },
+          "slot": "BE",
+          "status": "ACTIVE",
+          "total_points": 0.0
+        },
+        {
+          "acquisition_type": "DRAFT",
+          "avg_points": null,
+          "eligible_slots": [
+            "GS",
+            "BE",
+            "ALT"
+          ],
+          "id": 95,
+          "injured": false,
+          "injury_status": null,
+          "name": "OWGR Golfer 95",
+          "percent_owned": null,
+          "position": "G",
+          "pro_team": null,
+          "projected_total_points": null,
+          "role": "golfer",
+          "season_stats": {
+            "OWGR": 95.0
+          },
+          "slot": "BE",
+          "status": "ACTIVE",
+          "total_points": 0.0
+        },
+        {
+          "acquisition_type": "DRAFT",
+          "avg_points": null,
+          "eligible_slots": [
+            "GS",
+            "BE",
+            "ALT"
+          ],
+          "id": 98,
+          "injured": false,
+          "injury_status": null,
+          "name": "OWGR Golfer 98",
+          "percent_owned": null,
+          "position": "G",
+          "pro_team": null,
+          "projected_total_points": null,
+          "role": "golfer",
+          "season_stats": {
+            "OWGR": 98.0
+          },
+          "slot": "BE",
+          "status": "ACTIVE",
+          "total_points": 0.0
+        },
+        {
+          "acquisition_type": "DRAFT",
+          "avg_points": null,
+          "eligible_slots": [
+            "GS",
+            "BE",
+            "ALT"
+          ],
+          "id": 111,
+          "injured": false,
+          "injury_status": null,
+          "name": "OWGR Golfer 111",
+          "percent_owned": null,
+          "position": "G",
+          "pro_team": null,
+          "projected_total_points": null,
+          "role": "golfer",
+          "season_stats": {
+            "OWGR": 111.0
+          },
+          "slot": "BE",
+          "status": "ACTIVE",
+          "total_points": 0.0
+        },
+        {
+          "acquisition_type": "DRAFT",
+          "avg_points": null,
+          "eligible_slots": [
+            "GS",
+            "BE",
+            "ALT"
+          ],
+          "id": 114,
+          "injured": false,
+          "injury_status": null,
+          "name": "OWGR Golfer 114",
+          "percent_owned": null,
+          "position": "G",
+          "pro_team": null,
+          "projected_total_points": null,
+          "role": "golfer",
+          "season_stats": {
+            "OWGR": 114.0
+          },
+          "slot": "BE",
+          "status": "ACTIVE",
+          "total_points": 0.0
+        }
+      ],
       "schedule": [],
       "scores": [],
       "standing": 2,
@@ -104,7 +5509,368 @@
       ],
       "points_against": 0.0,
       "points_for": 0.0,
-      "roster": [],
+      "roster": [
+        {
+          "acquisition_type": "DRAFT",
+          "avg_points": null,
+          "eligible_slots": [
+            "GS",
+            "BE",
+            "ALT"
+          ],
+          "id": 3,
+          "injured": false,
+          "injury_status": null,
+          "name": "Xander Schauffele",
+          "percent_owned": null,
+          "position": "G",
+          "pro_team": "USA",
+          "projected_total_points": null,
+          "role": "golfer",
+          "season_stats": {
+            "OWGR": 3.0
+          },
+          "slot": "GS",
+          "status": "ACTIVE",
+          "total_points": 0.0
+        },
+        {
+          "acquisition_type": "DRAFT",
+          "avg_points": null,
+          "eligible_slots": [
+            "GS",
+            "BE",
+            "ALT"
+          ],
+          "id": 14,
+          "injured": false,
+          "injury_status": null,
+          "name": "Max Homa",
+          "percent_owned": null,
+          "position": "G",
+          "pro_team": "USA",
+          "projected_total_points": null,
+          "role": "golfer",
+          "season_stats": {
+            "OWGR": 14.0
+          },
+          "slot": "GS",
+          "status": "ACTIVE",
+          "total_points": 0.0
+        },
+        {
+          "acquisition_type": "DRAFT",
+          "avg_points": null,
+          "eligible_slots": [
+            "GS",
+            "BE",
+            "ALT"
+          ],
+          "id": 19,
+          "injured": false,
+          "injury_status": null,
+          "name": "Jordan Spieth",
+          "percent_owned": null,
+          "position": "G",
+          "pro_team": "USA",
+          "projected_total_points": null,
+          "role": "golfer",
+          "season_stats": {
+            "OWGR": 19.0
+          },
+          "slot": "GS",
+          "status": "ACTIVE",
+          "total_points": 0.0
+        },
+        {
+          "acquisition_type": "DRAFT",
+          "avg_points": null,
+          "eligible_slots": [
+            "GS",
+            "BE",
+            "ALT"
+          ],
+          "id": 30,
+          "injured": false,
+          "injury_status": null,
+          "name": "Adam Scott",
+          "percent_owned": null,
+          "position": "G",
+          "pro_team": "AUS",
+          "projected_total_points": null,
+          "role": "golfer",
+          "season_stats": {
+            "OWGR": 30.0
+          },
+          "slot": "GS",
+          "status": "ACTIVE",
+          "total_points": 0.0
+        },
+        {
+          "acquisition_type": "DRAFT",
+          "avg_points": null,
+          "eligible_slots": [
+            "GS",
+            "BE",
+            "ALT"
+          ],
+          "id": 35,
+          "injured": false,
+          "injury_status": null,
+          "name": "Aaron Rai",
+          "percent_owned": null,
+          "position": "G",
+          "pro_team": "ENG",
+          "projected_total_points": null,
+          "role": "golfer",
+          "season_stats": {
+            "OWGR": 35.0
+          },
+          "slot": "GS",
+          "status": "ACTIVE",
+          "total_points": 0.0
+        },
+        {
+          "acquisition_type": "DRAFT",
+          "avg_points": null,
+          "eligible_slots": [
+            "GS",
+            "BE",
+            "ALT"
+          ],
+          "id": 46,
+          "injured": false,
+          "injury_status": null,
+          "name": "Adam Hadwin",
+          "percent_owned": null,
+          "position": "G",
+          "pro_team": "CAN",
+          "projected_total_points": null,
+          "role": "golfer",
+          "season_stats": {
+            "OWGR": 46.0
+          },
+          "slot": "BE",
+          "status": "ACTIVE",
+          "total_points": 0.0
+        },
+        {
+          "acquisition_type": "DRAFT",
+          "avg_points": null,
+          "eligible_slots": [
+            "GS",
+            "BE",
+            "ALT"
+          ],
+          "id": 51,
+          "injured": false,
+          "injury_status": null,
+          "name": "OWGR Golfer 51",
+          "percent_owned": null,
+          "position": "G",
+          "pro_team": null,
+          "projected_total_points": null,
+          "role": "golfer",
+          "season_stats": {
+            "OWGR": 51.0
+          },
+          "slot": "BE",
+          "status": "ACTIVE",
+          "total_points": 0.0
+        },
+        {
+          "acquisition_type": "DRAFT",
+          "avg_points": null,
+          "eligible_slots": [
+            "GS",
+            "BE",
+            "ALT"
+          ],
+          "id": 62,
+          "injured": false,
+          "injury_status": null,
+          "name": "OWGR Golfer 62",
+          "percent_owned": null,
+          "position": "G",
+          "pro_team": null,
+          "projected_total_points": null,
+          "role": "golfer",
+          "season_stats": {
+            "OWGR": 62.0
+          },
+          "slot": "BE",
+          "status": "ACTIVE",
+          "total_points": 0.0
+        },
+        {
+          "acquisition_type": "DRAFT",
+          "avg_points": null,
+          "eligible_slots": [
+            "GS",
+            "BE",
+            "ALT"
+          ],
+          "id": 67,
+          "injured": false,
+          "injury_status": null,
+          "name": "OWGR Golfer 67",
+          "percent_owned": null,
+          "position": "G",
+          "pro_team": null,
+          "projected_total_points": null,
+          "role": "golfer",
+          "season_stats": {
+            "OWGR": 67.0
+          },
+          "slot": "BE",
+          "status": "ACTIVE",
+          "total_points": 0.0
+        },
+        {
+          "acquisition_type": "DRAFT",
+          "avg_points": null,
+          "eligible_slots": [
+            "GS",
+            "BE",
+            "ALT"
+          ],
+          "id": 78,
+          "injured": false,
+          "injury_status": null,
+          "name": "OWGR Golfer 78",
+          "percent_owned": null,
+          "position": "G",
+          "pro_team": null,
+          "projected_total_points": null,
+          "role": "golfer",
+          "season_stats": {
+            "OWGR": 78.0
+          },
+          "slot": "BE",
+          "status": "ACTIVE",
+          "total_points": 0.0
+        },
+        {
+          "acquisition_type": "DRAFT",
+          "avg_points": null,
+          "eligible_slots": [
+            "GS",
+            "BE",
+            "ALT"
+          ],
+          "id": 83,
+          "injured": false,
+          "injury_status": null,
+          "name": "OWGR Golfer 83",
+          "percent_owned": null,
+          "position": "G",
+          "pro_team": null,
+          "projected_total_points": null,
+          "role": "golfer",
+          "season_stats": {
+            "OWGR": 83.0
+          },
+          "slot": "BE",
+          "status": "ACTIVE",
+          "total_points": 0.0
+        },
+        {
+          "acquisition_type": "DRAFT",
+          "avg_points": null,
+          "eligible_slots": [
+            "GS",
+            "BE",
+            "ALT"
+          ],
+          "id": 94,
+          "injured": false,
+          "injury_status": null,
+          "name": "OWGR Golfer 94",
+          "percent_owned": null,
+          "position": "G",
+          "pro_team": null,
+          "projected_total_points": null,
+          "role": "golfer",
+          "season_stats": {
+            "OWGR": 94.0
+          },
+          "slot": "BE",
+          "status": "ACTIVE",
+          "total_points": 0.0
+        },
+        {
+          "acquisition_type": "DRAFT",
+          "avg_points": null,
+          "eligible_slots": [
+            "GS",
+            "BE",
+            "ALT"
+          ],
+          "id": 99,
+          "injured": false,
+          "injury_status": null,
+          "name": "OWGR Golfer 99",
+          "percent_owned": null,
+          "position": "G",
+          "pro_team": null,
+          "projected_total_points": null,
+          "role": "golfer",
+          "season_stats": {
+            "OWGR": 99.0
+          },
+          "slot": "BE",
+          "status": "ACTIVE",
+          "total_points": 0.0
+        },
+        {
+          "acquisition_type": "DRAFT",
+          "avg_points": null,
+          "eligible_slots": [
+            "GS",
+            "BE",
+            "ALT"
+          ],
+          "id": 110,
+          "injured": false,
+          "injury_status": null,
+          "name": "OWGR Golfer 110",
+          "percent_owned": null,
+          "position": "G",
+          "pro_team": null,
+          "projected_total_points": null,
+          "role": "golfer",
+          "season_stats": {
+            "OWGR": 110.0
+          },
+          "slot": "BE",
+          "status": "ACTIVE",
+          "total_points": 0.0
+        },
+        {
+          "acquisition_type": "DRAFT",
+          "avg_points": null,
+          "eligible_slots": [
+            "GS",
+            "BE",
+            "ALT"
+          ],
+          "id": 115,
+          "injured": false,
+          "injury_status": null,
+          "name": "OWGR Golfer 115",
+          "percent_owned": null,
+          "position": "G",
+          "pro_team": null,
+          "projected_total_points": null,
+          "role": "golfer",
+          "season_stats": {
+            "OWGR": 115.0
+          },
+          "slot": "BE",
+          "status": "ACTIVE",
+          "total_points": 0.0
+        }
+      ],
       "schedule": [],
       "scores": [],
       "standing": 3,
@@ -125,7 +5891,368 @@
       ],
       "points_against": 0.0,
       "points_for": 0.0,
-      "roster": [],
+      "roster": [
+        {
+          "acquisition_type": "DRAFT",
+          "avg_points": null,
+          "eligible_slots": [
+            "GS",
+            "BE",
+            "ALT"
+          ],
+          "id": 4,
+          "injured": false,
+          "injury_status": null,
+          "name": "Collin Morikawa",
+          "percent_owned": null,
+          "position": "G",
+          "pro_team": "USA",
+          "projected_total_points": null,
+          "role": "golfer",
+          "season_stats": {
+            "OWGR": 4.0
+          },
+          "slot": "GS",
+          "status": "ACTIVE",
+          "total_points": 0.0
+        },
+        {
+          "acquisition_type": "DRAFT",
+          "avg_points": null,
+          "eligible_slots": [
+            "GS",
+            "BE",
+            "ALT"
+          ],
+          "id": 13,
+          "injured": false,
+          "injury_status": null,
+          "name": "Sahith Theegala",
+          "percent_owned": null,
+          "position": "G",
+          "pro_team": "USA",
+          "projected_total_points": null,
+          "role": "golfer",
+          "season_stats": {
+            "OWGR": 13.0
+          },
+          "slot": "GS",
+          "status": "ACTIVE",
+          "total_points": 0.0
+        },
+        {
+          "acquisition_type": "DRAFT",
+          "avg_points": null,
+          "eligible_slots": [
+            "GS",
+            "BE",
+            "ALT"
+          ],
+          "id": 20,
+          "injured": false,
+          "injury_status": null,
+          "name": "Shane Lowry",
+          "percent_owned": null,
+          "position": "G",
+          "pro_team": "IRL",
+          "projected_total_points": null,
+          "role": "golfer",
+          "season_stats": {
+            "OWGR": 20.0
+          },
+          "slot": "GS",
+          "status": "ACTIVE",
+          "total_points": 0.0
+        },
+        {
+          "acquisition_type": "DRAFT",
+          "avg_points": null,
+          "eligible_slots": [
+            "GS",
+            "BE",
+            "ALT"
+          ],
+          "id": 29,
+          "injured": false,
+          "injury_status": null,
+          "name": "Keegan Bradley",
+          "percent_owned": null,
+          "position": "G",
+          "pro_team": "USA",
+          "projected_total_points": null,
+          "role": "golfer",
+          "season_stats": {
+            "OWGR": 29.0
+          },
+          "slot": "GS",
+          "status": "ACTIVE",
+          "total_points": 0.0
+        },
+        {
+          "acquisition_type": "DRAFT",
+          "avg_points": null,
+          "eligible_slots": [
+            "GS",
+            "BE",
+            "ALT"
+          ],
+          "id": 36,
+          "injured": false,
+          "injury_status": null,
+          "name": "Akira Aoyama",
+          "percent_owned": null,
+          "position": "G",
+          "pro_team": "JPN",
+          "projected_total_points": null,
+          "role": "golfer",
+          "season_stats": {
+            "OWGR": 36.0
+          },
+          "slot": "GS",
+          "status": "ACTIVE",
+          "total_points": 0.0
+        },
+        {
+          "acquisition_type": "DRAFT",
+          "avg_points": null,
+          "eligible_slots": [
+            "GS",
+            "BE",
+            "ALT"
+          ],
+          "id": 45,
+          "injured": false,
+          "injury_status": null,
+          "name": "J.T. Poston",
+          "percent_owned": null,
+          "position": "G",
+          "pro_team": "USA",
+          "projected_total_points": null,
+          "role": "golfer",
+          "season_stats": {
+            "OWGR": 45.0
+          },
+          "slot": "BE",
+          "status": "ACTIVE",
+          "total_points": 0.0
+        },
+        {
+          "acquisition_type": "DRAFT",
+          "avg_points": null,
+          "eligible_slots": [
+            "GS",
+            "BE",
+            "ALT"
+          ],
+          "id": 52,
+          "injured": false,
+          "injury_status": null,
+          "name": "OWGR Golfer 52",
+          "percent_owned": null,
+          "position": "G",
+          "pro_team": null,
+          "projected_total_points": null,
+          "role": "golfer",
+          "season_stats": {
+            "OWGR": 52.0
+          },
+          "slot": "BE",
+          "status": "ACTIVE",
+          "total_points": 0.0
+        },
+        {
+          "acquisition_type": "DRAFT",
+          "avg_points": null,
+          "eligible_slots": [
+            "GS",
+            "BE",
+            "ALT"
+          ],
+          "id": 61,
+          "injured": false,
+          "injury_status": null,
+          "name": "OWGR Golfer 61",
+          "percent_owned": null,
+          "position": "G",
+          "pro_team": null,
+          "projected_total_points": null,
+          "role": "golfer",
+          "season_stats": {
+            "OWGR": 61.0
+          },
+          "slot": "BE",
+          "status": "ACTIVE",
+          "total_points": 0.0
+        },
+        {
+          "acquisition_type": "DRAFT",
+          "avg_points": null,
+          "eligible_slots": [
+            "GS",
+            "BE",
+            "ALT"
+          ],
+          "id": 68,
+          "injured": false,
+          "injury_status": null,
+          "name": "OWGR Golfer 68",
+          "percent_owned": null,
+          "position": "G",
+          "pro_team": null,
+          "projected_total_points": null,
+          "role": "golfer",
+          "season_stats": {
+            "OWGR": 68.0
+          },
+          "slot": "BE",
+          "status": "ACTIVE",
+          "total_points": 0.0
+        },
+        {
+          "acquisition_type": "DRAFT",
+          "avg_points": null,
+          "eligible_slots": [
+            "GS",
+            "BE",
+            "ALT"
+          ],
+          "id": 77,
+          "injured": false,
+          "injury_status": null,
+          "name": "OWGR Golfer 77",
+          "percent_owned": null,
+          "position": "G",
+          "pro_team": null,
+          "projected_total_points": null,
+          "role": "golfer",
+          "season_stats": {
+            "OWGR": 77.0
+          },
+          "slot": "BE",
+          "status": "ACTIVE",
+          "total_points": 0.0
+        },
+        {
+          "acquisition_type": "DRAFT",
+          "avg_points": null,
+          "eligible_slots": [
+            "GS",
+            "BE",
+            "ALT"
+          ],
+          "id": 84,
+          "injured": false,
+          "injury_status": null,
+          "name": "OWGR Golfer 84",
+          "percent_owned": null,
+          "position": "G",
+          "pro_team": null,
+          "projected_total_points": null,
+          "role": "golfer",
+          "season_stats": {
+            "OWGR": 84.0
+          },
+          "slot": "BE",
+          "status": "ACTIVE",
+          "total_points": 0.0
+        },
+        {
+          "acquisition_type": "DRAFT",
+          "avg_points": null,
+          "eligible_slots": [
+            "GS",
+            "BE",
+            "ALT"
+          ],
+          "id": 93,
+          "injured": false,
+          "injury_status": null,
+          "name": "OWGR Golfer 93",
+          "percent_owned": null,
+          "position": "G",
+          "pro_team": null,
+          "projected_total_points": null,
+          "role": "golfer",
+          "season_stats": {
+            "OWGR": 93.0
+          },
+          "slot": "BE",
+          "status": "ACTIVE",
+          "total_points": 0.0
+        },
+        {
+          "acquisition_type": "DRAFT",
+          "avg_points": null,
+          "eligible_slots": [
+            "GS",
+            "BE",
+            "ALT"
+          ],
+          "id": 100,
+          "injured": false,
+          "injury_status": null,
+          "name": "OWGR Golfer 100",
+          "percent_owned": null,
+          "position": "G",
+          "pro_team": null,
+          "projected_total_points": null,
+          "role": "golfer",
+          "season_stats": {
+            "OWGR": 100.0
+          },
+          "slot": "BE",
+          "status": "ACTIVE",
+          "total_points": 0.0
+        },
+        {
+          "acquisition_type": "DRAFT",
+          "avg_points": null,
+          "eligible_slots": [
+            "GS",
+            "BE",
+            "ALT"
+          ],
+          "id": 109,
+          "injured": false,
+          "injury_status": null,
+          "name": "OWGR Golfer 109",
+          "percent_owned": null,
+          "position": "G",
+          "pro_team": null,
+          "projected_total_points": null,
+          "role": "golfer",
+          "season_stats": {
+            "OWGR": 109.0
+          },
+          "slot": "BE",
+          "status": "ACTIVE",
+          "total_points": 0.0
+        },
+        {
+          "acquisition_type": "DRAFT",
+          "avg_points": null,
+          "eligible_slots": [
+            "GS",
+            "BE",
+            "ALT"
+          ],
+          "id": 116,
+          "injured": false,
+          "injury_status": null,
+          "name": "OWGR Golfer 116",
+          "percent_owned": null,
+          "position": "G",
+          "pro_team": null,
+          "projected_total_points": null,
+          "role": "golfer",
+          "season_stats": {
+            "OWGR": 116.0
+          },
+          "slot": "BE",
+          "status": "ACTIVE",
+          "total_points": 0.0
+        }
+      ],
       "schedule": [],
       "scores": [],
       "standing": 4,
@@ -146,7 +6273,368 @@
       ],
       "points_against": 0.0,
       "points_for": 0.0,
-      "roster": [],
+      "roster": [
+        {
+          "acquisition_type": "DRAFT",
+          "avg_points": null,
+          "eligible_slots": [
+            "GS",
+            "BE",
+            "ALT"
+          ],
+          "id": 5,
+          "injured": false,
+          "injury_status": null,
+          "name": "Ludvig Aberg",
+          "percent_owned": null,
+          "position": "G",
+          "pro_team": "SWE",
+          "projected_total_points": null,
+          "role": "golfer",
+          "season_stats": {
+            "OWGR": 5.0
+          },
+          "slot": "GS",
+          "status": "ACTIVE",
+          "total_points": 0.0
+        },
+        {
+          "acquisition_type": "DRAFT",
+          "avg_points": null,
+          "eligible_slots": [
+            "GS",
+            "BE",
+            "ALT"
+          ],
+          "id": 12,
+          "injured": false,
+          "injury_status": null,
+          "name": "Justin Thomas",
+          "percent_owned": null,
+          "position": "G",
+          "pro_team": "USA",
+          "projected_total_points": null,
+          "role": "golfer",
+          "season_stats": {
+            "OWGR": 12.0
+          },
+          "slot": "GS",
+          "status": "ACTIVE",
+          "total_points": 0.0
+        },
+        {
+          "acquisition_type": "DRAFT",
+          "avg_points": null,
+          "eligible_slots": [
+            "GS",
+            "BE",
+            "ALT"
+          ],
+          "id": 21,
+          "injured": false,
+          "injury_status": null,
+          "name": "Russell Henley",
+          "percent_owned": null,
+          "position": "G",
+          "pro_team": "USA",
+          "projected_total_points": null,
+          "role": "golfer",
+          "season_stats": {
+            "OWGR": 21.0
+          },
+          "slot": "GS",
+          "status": "ACTIVE",
+          "total_points": 0.0
+        },
+        {
+          "acquisition_type": "DRAFT",
+          "avg_points": null,
+          "eligible_slots": [
+            "GS",
+            "BE",
+            "ALT"
+          ],
+          "id": 28,
+          "injured": false,
+          "injury_status": null,
+          "name": "Cameron Young",
+          "percent_owned": null,
+          "position": "G",
+          "pro_team": "USA",
+          "projected_total_points": null,
+          "role": "golfer",
+          "season_stats": {
+            "OWGR": 28.0
+          },
+          "slot": "GS",
+          "status": "ACTIVE",
+          "total_points": 0.0
+        },
+        {
+          "acquisition_type": "DRAFT",
+          "avg_points": null,
+          "eligible_slots": [
+            "GS",
+            "BE",
+            "ALT"
+          ],
+          "id": 37,
+          "injured": false,
+          "injury_status": null,
+          "name": "Denny McCarthy",
+          "percent_owned": null,
+          "position": "G",
+          "pro_team": "USA",
+          "projected_total_points": null,
+          "role": "golfer",
+          "season_stats": {
+            "OWGR": 37.0
+          },
+          "slot": "GS",
+          "status": "ACTIVE",
+          "total_points": 0.0
+        },
+        {
+          "acquisition_type": "DRAFT",
+          "avg_points": null,
+          "eligible_slots": [
+            "GS",
+            "BE",
+            "ALT"
+          ],
+          "id": 44,
+          "injured": false,
+          "injury_status": null,
+          "name": "Davis Thompson",
+          "percent_owned": null,
+          "position": "G",
+          "pro_team": "USA",
+          "projected_total_points": null,
+          "role": "golfer",
+          "season_stats": {
+            "OWGR": 44.0
+          },
+          "slot": "BE",
+          "status": "ACTIVE",
+          "total_points": 0.0
+        },
+        {
+          "acquisition_type": "DRAFT",
+          "avg_points": null,
+          "eligible_slots": [
+            "GS",
+            "BE",
+            "ALT"
+          ],
+          "id": 53,
+          "injured": false,
+          "injury_status": null,
+          "name": "OWGR Golfer 53",
+          "percent_owned": null,
+          "position": "G",
+          "pro_team": null,
+          "projected_total_points": null,
+          "role": "golfer",
+          "season_stats": {
+            "OWGR": 53.0
+          },
+          "slot": "BE",
+          "status": "ACTIVE",
+          "total_points": 0.0
+        },
+        {
+          "acquisition_type": "DRAFT",
+          "avg_points": null,
+          "eligible_slots": [
+            "GS",
+            "BE",
+            "ALT"
+          ],
+          "id": 60,
+          "injured": false,
+          "injury_status": null,
+          "name": "OWGR Golfer 60",
+          "percent_owned": null,
+          "position": "G",
+          "pro_team": null,
+          "projected_total_points": null,
+          "role": "golfer",
+          "season_stats": {
+            "OWGR": 60.0
+          },
+          "slot": "BE",
+          "status": "ACTIVE",
+          "total_points": 0.0
+        },
+        {
+          "acquisition_type": "DRAFT",
+          "avg_points": null,
+          "eligible_slots": [
+            "GS",
+            "BE",
+            "ALT"
+          ],
+          "id": 69,
+          "injured": false,
+          "injury_status": null,
+          "name": "OWGR Golfer 69",
+          "percent_owned": null,
+          "position": "G",
+          "pro_team": null,
+          "projected_total_points": null,
+          "role": "golfer",
+          "season_stats": {
+            "OWGR": 69.0
+          },
+          "slot": "BE",
+          "status": "ACTIVE",
+          "total_points": 0.0
+        },
+        {
+          "acquisition_type": "DRAFT",
+          "avg_points": null,
+          "eligible_slots": [
+            "GS",
+            "BE",
+            "ALT"
+          ],
+          "id": 76,
+          "injured": false,
+          "injury_status": null,
+          "name": "OWGR Golfer 76",
+          "percent_owned": null,
+          "position": "G",
+          "pro_team": null,
+          "projected_total_points": null,
+          "role": "golfer",
+          "season_stats": {
+            "OWGR": 76.0
+          },
+          "slot": "BE",
+          "status": "ACTIVE",
+          "total_points": 0.0
+        },
+        {
+          "acquisition_type": "DRAFT",
+          "avg_points": null,
+          "eligible_slots": [
+            "GS",
+            "BE",
+            "ALT"
+          ],
+          "id": 85,
+          "injured": false,
+          "injury_status": null,
+          "name": "OWGR Golfer 85",
+          "percent_owned": null,
+          "position": "G",
+          "pro_team": null,
+          "projected_total_points": null,
+          "role": "golfer",
+          "season_stats": {
+            "OWGR": 85.0
+          },
+          "slot": "BE",
+          "status": "ACTIVE",
+          "total_points": 0.0
+        },
+        {
+          "acquisition_type": "DRAFT",
+          "avg_points": null,
+          "eligible_slots": [
+            "GS",
+            "BE",
+            "ALT"
+          ],
+          "id": 92,
+          "injured": false,
+          "injury_status": null,
+          "name": "OWGR Golfer 92",
+          "percent_owned": null,
+          "position": "G",
+          "pro_team": null,
+          "projected_total_points": null,
+          "role": "golfer",
+          "season_stats": {
+            "OWGR": 92.0
+          },
+          "slot": "BE",
+          "status": "ACTIVE",
+          "total_points": 0.0
+        },
+        {
+          "acquisition_type": "DRAFT",
+          "avg_points": null,
+          "eligible_slots": [
+            "GS",
+            "BE",
+            "ALT"
+          ],
+          "id": 101,
+          "injured": false,
+          "injury_status": null,
+          "name": "OWGR Golfer 101",
+          "percent_owned": null,
+          "position": "G",
+          "pro_team": null,
+          "projected_total_points": null,
+          "role": "golfer",
+          "season_stats": {
+            "OWGR": 101.0
+          },
+          "slot": "BE",
+          "status": "ACTIVE",
+          "total_points": 0.0
+        },
+        {
+          "acquisition_type": "DRAFT",
+          "avg_points": null,
+          "eligible_slots": [
+            "GS",
+            "BE",
+            "ALT"
+          ],
+          "id": 108,
+          "injured": false,
+          "injury_status": null,
+          "name": "OWGR Golfer 108",
+          "percent_owned": null,
+          "position": "G",
+          "pro_team": null,
+          "projected_total_points": null,
+          "role": "golfer",
+          "season_stats": {
+            "OWGR": 108.0
+          },
+          "slot": "BE",
+          "status": "ACTIVE",
+          "total_points": 0.0
+        },
+        {
+          "acquisition_type": "DRAFT",
+          "avg_points": null,
+          "eligible_slots": [
+            "GS",
+            "BE",
+            "ALT"
+          ],
+          "id": 117,
+          "injured": false,
+          "injury_status": null,
+          "name": "OWGR Golfer 117",
+          "percent_owned": null,
+          "position": "G",
+          "pro_team": null,
+          "projected_total_points": null,
+          "role": "golfer",
+          "season_stats": {
+            "OWGR": 117.0
+          },
+          "slot": "BE",
+          "status": "ACTIVE",
+          "total_points": 0.0
+        }
+      ],
       "schedule": [],
       "scores": [],
       "standing": 5,
@@ -167,7 +6655,368 @@
       ],
       "points_against": 0.0,
       "points_for": 0.0,
-      "roster": [],
+      "roster": [
+        {
+          "acquisition_type": "DRAFT",
+          "avg_points": null,
+          "eligible_slots": [
+            "GS",
+            "BE",
+            "ALT"
+          ],
+          "id": 6,
+          "injured": false,
+          "injury_status": null,
+          "name": "Jon Rahm",
+          "percent_owned": null,
+          "position": "G",
+          "pro_team": "ESP",
+          "projected_total_points": null,
+          "role": "golfer",
+          "season_stats": {
+            "OWGR": 6.0
+          },
+          "slot": "GS",
+          "status": "ACTIVE",
+          "total_points": 0.0
+        },
+        {
+          "acquisition_type": "DRAFT",
+          "avg_points": null,
+          "eligible_slots": [
+            "GS",
+            "BE",
+            "ALT"
+          ],
+          "id": 11,
+          "injured": false,
+          "injury_status": null,
+          "name": "Hideki Matsuyama",
+          "percent_owned": null,
+          "position": "G",
+          "pro_team": "JPN",
+          "projected_total_points": null,
+          "role": "golfer",
+          "season_stats": {
+            "OWGR": 11.0
+          },
+          "slot": "GS",
+          "status": "ACTIVE",
+          "total_points": 0.0
+        },
+        {
+          "acquisition_type": "DRAFT",
+          "avg_points": null,
+          "eligible_slots": [
+            "GS",
+            "BE",
+            "ALT"
+          ],
+          "id": 22,
+          "injured": false,
+          "injury_status": null,
+          "name": "Sungjae Im",
+          "percent_owned": null,
+          "position": "G",
+          "pro_team": "KOR",
+          "projected_total_points": null,
+          "role": "golfer",
+          "season_stats": {
+            "OWGR": 22.0
+          },
+          "slot": "GS",
+          "status": "ACTIVE",
+          "total_points": 0.0
+        },
+        {
+          "acquisition_type": "DRAFT",
+          "avg_points": null,
+          "eligible_slots": [
+            "GS",
+            "BE",
+            "ALT"
+          ],
+          "id": 27,
+          "injured": false,
+          "injury_status": null,
+          "name": "Byeong Hun An",
+          "percent_owned": null,
+          "position": "G",
+          "pro_team": "KOR",
+          "projected_total_points": null,
+          "role": "golfer",
+          "season_stats": {
+            "OWGR": 27.0
+          },
+          "slot": "GS",
+          "status": "ACTIVE",
+          "total_points": 0.0
+        },
+        {
+          "acquisition_type": "DRAFT",
+          "avg_points": null,
+          "eligible_slots": [
+            "GS",
+            "BE",
+            "ALT"
+          ],
+          "id": 38,
+          "injured": false,
+          "injury_status": null,
+          "name": "Eric Cole",
+          "percent_owned": null,
+          "position": "G",
+          "pro_team": "USA",
+          "projected_total_points": null,
+          "role": "golfer",
+          "season_stats": {
+            "OWGR": 38.0
+          },
+          "slot": "GS",
+          "status": "ACTIVE",
+          "total_points": 0.0
+        },
+        {
+          "acquisition_type": "DRAFT",
+          "avg_points": null,
+          "eligible_slots": [
+            "GS",
+            "BE",
+            "ALT"
+          ],
+          "id": 43,
+          "injured": false,
+          "injury_status": null,
+          "name": "Will Zalatoris",
+          "percent_owned": null,
+          "position": "G",
+          "pro_team": "USA",
+          "projected_total_points": null,
+          "role": "golfer",
+          "season_stats": {
+            "OWGR": 43.0
+          },
+          "slot": "BE",
+          "status": "ACTIVE",
+          "total_points": 0.0
+        },
+        {
+          "acquisition_type": "DRAFT",
+          "avg_points": null,
+          "eligible_slots": [
+            "GS",
+            "BE",
+            "ALT"
+          ],
+          "id": 54,
+          "injured": false,
+          "injury_status": null,
+          "name": "OWGR Golfer 54",
+          "percent_owned": null,
+          "position": "G",
+          "pro_team": null,
+          "projected_total_points": null,
+          "role": "golfer",
+          "season_stats": {
+            "OWGR": 54.0
+          },
+          "slot": "BE",
+          "status": "ACTIVE",
+          "total_points": 0.0
+        },
+        {
+          "acquisition_type": "DRAFT",
+          "avg_points": null,
+          "eligible_slots": [
+            "GS",
+            "BE",
+            "ALT"
+          ],
+          "id": 59,
+          "injured": false,
+          "injury_status": null,
+          "name": "OWGR Golfer 59",
+          "percent_owned": null,
+          "position": "G",
+          "pro_team": null,
+          "projected_total_points": null,
+          "role": "golfer",
+          "season_stats": {
+            "OWGR": 59.0
+          },
+          "slot": "BE",
+          "status": "ACTIVE",
+          "total_points": 0.0
+        },
+        {
+          "acquisition_type": "DRAFT",
+          "avg_points": null,
+          "eligible_slots": [
+            "GS",
+            "BE",
+            "ALT"
+          ],
+          "id": 70,
+          "injured": false,
+          "injury_status": null,
+          "name": "OWGR Golfer 70",
+          "percent_owned": null,
+          "position": "G",
+          "pro_team": null,
+          "projected_total_points": null,
+          "role": "golfer",
+          "season_stats": {
+            "OWGR": 70.0
+          },
+          "slot": "BE",
+          "status": "ACTIVE",
+          "total_points": 0.0
+        },
+        {
+          "acquisition_type": "DRAFT",
+          "avg_points": null,
+          "eligible_slots": [
+            "GS",
+            "BE",
+            "ALT"
+          ],
+          "id": 75,
+          "injured": false,
+          "injury_status": null,
+          "name": "OWGR Golfer 75",
+          "percent_owned": null,
+          "position": "G",
+          "pro_team": null,
+          "projected_total_points": null,
+          "role": "golfer",
+          "season_stats": {
+            "OWGR": 75.0
+          },
+          "slot": "BE",
+          "status": "ACTIVE",
+          "total_points": 0.0
+        },
+        {
+          "acquisition_type": "DRAFT",
+          "avg_points": null,
+          "eligible_slots": [
+            "GS",
+            "BE",
+            "ALT"
+          ],
+          "id": 86,
+          "injured": false,
+          "injury_status": null,
+          "name": "OWGR Golfer 86",
+          "percent_owned": null,
+          "position": "G",
+          "pro_team": null,
+          "projected_total_points": null,
+          "role": "golfer",
+          "season_stats": {
+            "OWGR": 86.0
+          },
+          "slot": "BE",
+          "status": "ACTIVE",
+          "total_points": 0.0
+        },
+        {
+          "acquisition_type": "DRAFT",
+          "avg_points": null,
+          "eligible_slots": [
+            "GS",
+            "BE",
+            "ALT"
+          ],
+          "id": 91,
+          "injured": false,
+          "injury_status": null,
+          "name": "OWGR Golfer 91",
+          "percent_owned": null,
+          "position": "G",
+          "pro_team": null,
+          "projected_total_points": null,
+          "role": "golfer",
+          "season_stats": {
+            "OWGR": 91.0
+          },
+          "slot": "BE",
+          "status": "ACTIVE",
+          "total_points": 0.0
+        },
+        {
+          "acquisition_type": "DRAFT",
+          "avg_points": null,
+          "eligible_slots": [
+            "GS",
+            "BE",
+            "ALT"
+          ],
+          "id": 102,
+          "injured": false,
+          "injury_status": null,
+          "name": "OWGR Golfer 102",
+          "percent_owned": null,
+          "position": "G",
+          "pro_team": null,
+          "projected_total_points": null,
+          "role": "golfer",
+          "season_stats": {
+            "OWGR": 102.0
+          },
+          "slot": "BE",
+          "status": "ACTIVE",
+          "total_points": 0.0
+        },
+        {
+          "acquisition_type": "DRAFT",
+          "avg_points": null,
+          "eligible_slots": [
+            "GS",
+            "BE",
+            "ALT"
+          ],
+          "id": 107,
+          "injured": false,
+          "injury_status": null,
+          "name": "OWGR Golfer 107",
+          "percent_owned": null,
+          "position": "G",
+          "pro_team": null,
+          "projected_total_points": null,
+          "role": "golfer",
+          "season_stats": {
+            "OWGR": 107.0
+          },
+          "slot": "BE",
+          "status": "ACTIVE",
+          "total_points": 0.0
+        },
+        {
+          "acquisition_type": "DRAFT",
+          "avg_points": null,
+          "eligible_slots": [
+            "GS",
+            "BE",
+            "ALT"
+          ],
+          "id": 118,
+          "injured": false,
+          "injury_status": null,
+          "name": "OWGR Golfer 118",
+          "percent_owned": null,
+          "position": "G",
+          "pro_team": null,
+          "projected_total_points": null,
+          "role": "golfer",
+          "season_stats": {
+            "OWGR": 118.0
+          },
+          "slot": "BE",
+          "status": "ACTIVE",
+          "total_points": 0.0
+        }
+      ],
       "schedule": [],
       "scores": [],
       "standing": 6,
@@ -188,7 +7037,368 @@
       ],
       "points_against": 0.0,
       "points_for": 0.0,
-      "roster": [],
+      "roster": [
+        {
+          "acquisition_type": "DRAFT",
+          "avg_points": null,
+          "eligible_slots": [
+            "GS",
+            "BE",
+            "ALT"
+          ],
+          "id": 7,
+          "injured": false,
+          "injury_status": null,
+          "name": "Wyndham Clark",
+          "percent_owned": null,
+          "position": "G",
+          "pro_team": "USA",
+          "projected_total_points": null,
+          "role": "golfer",
+          "season_stats": {
+            "OWGR": 7.0
+          },
+          "slot": "GS",
+          "status": "ACTIVE",
+          "total_points": 0.0
+        },
+        {
+          "acquisition_type": "DRAFT",
+          "avg_points": null,
+          "eligible_slots": [
+            "GS",
+            "BE",
+            "ALT"
+          ],
+          "id": 10,
+          "injured": false,
+          "injury_status": null,
+          "name": "Tommy Fleetwood",
+          "percent_owned": null,
+          "position": "G",
+          "pro_team": "ENG",
+          "projected_total_points": null,
+          "role": "golfer",
+          "season_stats": {
+            "OWGR": 10.0
+          },
+          "slot": "GS",
+          "status": "ACTIVE",
+          "total_points": 0.0
+        },
+        {
+          "acquisition_type": "DRAFT",
+          "avg_points": null,
+          "eligible_slots": [
+            "GS",
+            "BE",
+            "ALT"
+          ],
+          "id": 23,
+          "injured": false,
+          "injury_status": null,
+          "name": "Jason Day",
+          "percent_owned": null,
+          "position": "G",
+          "pro_team": "AUS",
+          "projected_total_points": null,
+          "role": "golfer",
+          "season_stats": {
+            "OWGR": 23.0
+          },
+          "slot": "GS",
+          "status": "ACTIVE",
+          "total_points": 0.0
+        },
+        {
+          "acquisition_type": "DRAFT",
+          "avg_points": null,
+          "eligible_slots": [
+            "GS",
+            "BE",
+            "ALT"
+          ],
+          "id": 26,
+          "injured": false,
+          "injury_status": null,
+          "name": "Chris Kirk",
+          "percent_owned": null,
+          "position": "G",
+          "pro_team": "USA",
+          "projected_total_points": null,
+          "role": "golfer",
+          "season_stats": {
+            "OWGR": 26.0
+          },
+          "slot": "GS",
+          "status": "ACTIVE",
+          "total_points": 0.0
+        },
+        {
+          "acquisition_type": "DRAFT",
+          "avg_points": null,
+          "eligible_slots": [
+            "GS",
+            "BE",
+            "ALT"
+          ],
+          "id": 39,
+          "injured": false,
+          "injury_status": null,
+          "name": "Stephan Jaeger",
+          "percent_owned": null,
+          "position": "G",
+          "pro_team": "GER",
+          "projected_total_points": null,
+          "role": "golfer",
+          "season_stats": {
+            "OWGR": 39.0
+          },
+          "slot": "GS",
+          "status": "ACTIVE",
+          "total_points": 0.0
+        },
+        {
+          "acquisition_type": "DRAFT",
+          "avg_points": null,
+          "eligible_slots": [
+            "GS",
+            "BE",
+            "ALT"
+          ],
+          "id": 42,
+          "injured": false,
+          "injury_status": null,
+          "name": "Nick Taylor",
+          "percent_owned": null,
+          "position": "G",
+          "pro_team": "CAN",
+          "projected_total_points": null,
+          "role": "golfer",
+          "season_stats": {
+            "OWGR": 42.0
+          },
+          "slot": "BE",
+          "status": "ACTIVE",
+          "total_points": 0.0
+        },
+        {
+          "acquisition_type": "DRAFT",
+          "avg_points": null,
+          "eligible_slots": [
+            "GS",
+            "BE",
+            "ALT"
+          ],
+          "id": 55,
+          "injured": false,
+          "injury_status": null,
+          "name": "OWGR Golfer 55",
+          "percent_owned": null,
+          "position": "G",
+          "pro_team": null,
+          "projected_total_points": null,
+          "role": "golfer",
+          "season_stats": {
+            "OWGR": 55.0
+          },
+          "slot": "BE",
+          "status": "ACTIVE",
+          "total_points": 0.0
+        },
+        {
+          "acquisition_type": "DRAFT",
+          "avg_points": null,
+          "eligible_slots": [
+            "GS",
+            "BE",
+            "ALT"
+          ],
+          "id": 58,
+          "injured": false,
+          "injury_status": null,
+          "name": "OWGR Golfer 58",
+          "percent_owned": null,
+          "position": "G",
+          "pro_team": null,
+          "projected_total_points": null,
+          "role": "golfer",
+          "season_stats": {
+            "OWGR": 58.0
+          },
+          "slot": "BE",
+          "status": "ACTIVE",
+          "total_points": 0.0
+        },
+        {
+          "acquisition_type": "DRAFT",
+          "avg_points": null,
+          "eligible_slots": [
+            "GS",
+            "BE",
+            "ALT"
+          ],
+          "id": 71,
+          "injured": false,
+          "injury_status": null,
+          "name": "OWGR Golfer 71",
+          "percent_owned": null,
+          "position": "G",
+          "pro_team": null,
+          "projected_total_points": null,
+          "role": "golfer",
+          "season_stats": {
+            "OWGR": 71.0
+          },
+          "slot": "BE",
+          "status": "ACTIVE",
+          "total_points": 0.0
+        },
+        {
+          "acquisition_type": "DRAFT",
+          "avg_points": null,
+          "eligible_slots": [
+            "GS",
+            "BE",
+            "ALT"
+          ],
+          "id": 74,
+          "injured": false,
+          "injury_status": null,
+          "name": "OWGR Golfer 74",
+          "percent_owned": null,
+          "position": "G",
+          "pro_team": null,
+          "projected_total_points": null,
+          "role": "golfer",
+          "season_stats": {
+            "OWGR": 74.0
+          },
+          "slot": "BE",
+          "status": "ACTIVE",
+          "total_points": 0.0
+        },
+        {
+          "acquisition_type": "DRAFT",
+          "avg_points": null,
+          "eligible_slots": [
+            "GS",
+            "BE",
+            "ALT"
+          ],
+          "id": 87,
+          "injured": false,
+          "injury_status": null,
+          "name": "OWGR Golfer 87",
+          "percent_owned": null,
+          "position": "G",
+          "pro_team": null,
+          "projected_total_points": null,
+          "role": "golfer",
+          "season_stats": {
+            "OWGR": 87.0
+          },
+          "slot": "BE",
+          "status": "ACTIVE",
+          "total_points": 0.0
+        },
+        {
+          "acquisition_type": "DRAFT",
+          "avg_points": null,
+          "eligible_slots": [
+            "GS",
+            "BE",
+            "ALT"
+          ],
+          "id": 90,
+          "injured": false,
+          "injury_status": null,
+          "name": "OWGR Golfer 90",
+          "percent_owned": null,
+          "position": "G",
+          "pro_team": null,
+          "projected_total_points": null,
+          "role": "golfer",
+          "season_stats": {
+            "OWGR": 90.0
+          },
+          "slot": "BE",
+          "status": "ACTIVE",
+          "total_points": 0.0
+        },
+        {
+          "acquisition_type": "DRAFT",
+          "avg_points": null,
+          "eligible_slots": [
+            "GS",
+            "BE",
+            "ALT"
+          ],
+          "id": 103,
+          "injured": false,
+          "injury_status": null,
+          "name": "OWGR Golfer 103",
+          "percent_owned": null,
+          "position": "G",
+          "pro_team": null,
+          "projected_total_points": null,
+          "role": "golfer",
+          "season_stats": {
+            "OWGR": 103.0
+          },
+          "slot": "BE",
+          "status": "ACTIVE",
+          "total_points": 0.0
+        },
+        {
+          "acquisition_type": "DRAFT",
+          "avg_points": null,
+          "eligible_slots": [
+            "GS",
+            "BE",
+            "ALT"
+          ],
+          "id": 106,
+          "injured": false,
+          "injury_status": null,
+          "name": "OWGR Golfer 106",
+          "percent_owned": null,
+          "position": "G",
+          "pro_team": null,
+          "projected_total_points": null,
+          "role": "golfer",
+          "season_stats": {
+            "OWGR": 106.0
+          },
+          "slot": "BE",
+          "status": "ACTIVE",
+          "total_points": 0.0
+        },
+        {
+          "acquisition_type": "DRAFT",
+          "avg_points": null,
+          "eligible_slots": [
+            "GS",
+            "BE",
+            "ALT"
+          ],
+          "id": 119,
+          "injured": false,
+          "injury_status": null,
+          "name": "OWGR Golfer 119",
+          "percent_owned": null,
+          "position": "G",
+          "pro_team": null,
+          "projected_total_points": null,
+          "role": "golfer",
+          "season_stats": {
+            "OWGR": 119.0
+          },
+          "slot": "BE",
+          "status": "ACTIVE",
+          "total_points": 0.0
+        }
+      ],
       "schedule": [],
       "scores": [],
       "standing": 7,
@@ -209,7 +7419,368 @@
       ],
       "points_against": 0.0,
       "points_for": 0.0,
-      "roster": [],
+      "roster": [
+        {
+          "acquisition_type": "DRAFT",
+          "avg_points": null,
+          "eligible_slots": [
+            "GS",
+            "BE",
+            "ALT"
+          ],
+          "id": 8,
+          "injured": false,
+          "injury_status": null,
+          "name": "Viktor Hovland",
+          "percent_owned": null,
+          "position": "G",
+          "pro_team": "NOR",
+          "projected_total_points": null,
+          "role": "golfer",
+          "season_stats": {
+            "OWGR": 8.0
+          },
+          "slot": "GS",
+          "status": "ACTIVE",
+          "total_points": 0.0
+        },
+        {
+          "acquisition_type": "DRAFT",
+          "avg_points": null,
+          "eligible_slots": [
+            "GS",
+            "BE",
+            "ALT"
+          ],
+          "id": 9,
+          "injured": false,
+          "injury_status": null,
+          "name": "Patrick Cantlay",
+          "percent_owned": null,
+          "position": "G",
+          "pro_team": "USA",
+          "projected_total_points": null,
+          "role": "golfer",
+          "season_stats": {
+            "OWGR": 9.0
+          },
+          "slot": "GS",
+          "status": "ACTIVE",
+          "total_points": 0.0
+        },
+        {
+          "acquisition_type": "DRAFT",
+          "avg_points": null,
+          "eligible_slots": [
+            "GS",
+            "BE",
+            "ALT"
+          ],
+          "id": 24,
+          "injured": false,
+          "injury_status": null,
+          "name": "Tom Kim",
+          "percent_owned": null,
+          "position": "G",
+          "pro_team": "KOR",
+          "projected_total_points": null,
+          "role": "golfer",
+          "season_stats": {
+            "OWGR": 24.0
+          },
+          "slot": "GS",
+          "status": "ACTIVE",
+          "total_points": 0.0
+        },
+        {
+          "acquisition_type": "DRAFT",
+          "avg_points": null,
+          "eligible_slots": [
+            "GS",
+            "BE",
+            "ALT"
+          ],
+          "id": 25,
+          "injured": false,
+          "injury_status": null,
+          "name": "Sepp Straka",
+          "percent_owned": null,
+          "position": "G",
+          "pro_team": "AUT",
+          "projected_total_points": null,
+          "role": "golfer",
+          "season_stats": {
+            "OWGR": 25.0
+          },
+          "slot": "GS",
+          "status": "ACTIVE",
+          "total_points": 0.0
+        },
+        {
+          "acquisition_type": "DRAFT",
+          "avg_points": null,
+          "eligible_slots": [
+            "GS",
+            "BE",
+            "ALT"
+          ],
+          "id": 40,
+          "injured": false,
+          "injury_status": null,
+          "name": "Alex Noren",
+          "percent_owned": null,
+          "position": "G",
+          "pro_team": "SWE",
+          "projected_total_points": null,
+          "role": "golfer",
+          "season_stats": {
+            "OWGR": 40.0
+          },
+          "slot": "GS",
+          "status": "ACTIVE",
+          "total_points": 0.0
+        },
+        {
+          "acquisition_type": "DRAFT",
+          "avg_points": null,
+          "eligible_slots": [
+            "GS",
+            "BE",
+            "ALT"
+          ],
+          "id": 41,
+          "injured": false,
+          "injury_status": null,
+          "name": "Min Woo Lee",
+          "percent_owned": null,
+          "position": "G",
+          "pro_team": "AUS",
+          "projected_total_points": null,
+          "role": "golfer",
+          "season_stats": {
+            "OWGR": 41.0
+          },
+          "slot": "BE",
+          "status": "ACTIVE",
+          "total_points": 0.0
+        },
+        {
+          "acquisition_type": "DRAFT",
+          "avg_points": null,
+          "eligible_slots": [
+            "GS",
+            "BE",
+            "ALT"
+          ],
+          "id": 56,
+          "injured": false,
+          "injury_status": null,
+          "name": "OWGR Golfer 56",
+          "percent_owned": null,
+          "position": "G",
+          "pro_team": null,
+          "projected_total_points": null,
+          "role": "golfer",
+          "season_stats": {
+            "OWGR": 56.0
+          },
+          "slot": "BE",
+          "status": "ACTIVE",
+          "total_points": 0.0
+        },
+        {
+          "acquisition_type": "DRAFT",
+          "avg_points": null,
+          "eligible_slots": [
+            "GS",
+            "BE",
+            "ALT"
+          ],
+          "id": 57,
+          "injured": false,
+          "injury_status": null,
+          "name": "OWGR Golfer 57",
+          "percent_owned": null,
+          "position": "G",
+          "pro_team": null,
+          "projected_total_points": null,
+          "role": "golfer",
+          "season_stats": {
+            "OWGR": 57.0
+          },
+          "slot": "BE",
+          "status": "ACTIVE",
+          "total_points": 0.0
+        },
+        {
+          "acquisition_type": "DRAFT",
+          "avg_points": null,
+          "eligible_slots": [
+            "GS",
+            "BE",
+            "ALT"
+          ],
+          "id": 72,
+          "injured": false,
+          "injury_status": null,
+          "name": "OWGR Golfer 72",
+          "percent_owned": null,
+          "position": "G",
+          "pro_team": null,
+          "projected_total_points": null,
+          "role": "golfer",
+          "season_stats": {
+            "OWGR": 72.0
+          },
+          "slot": "BE",
+          "status": "ACTIVE",
+          "total_points": 0.0
+        },
+        {
+          "acquisition_type": "DRAFT",
+          "avg_points": null,
+          "eligible_slots": [
+            "GS",
+            "BE",
+            "ALT"
+          ],
+          "id": 73,
+          "injured": false,
+          "injury_status": null,
+          "name": "OWGR Golfer 73",
+          "percent_owned": null,
+          "position": "G",
+          "pro_team": null,
+          "projected_total_points": null,
+          "role": "golfer",
+          "season_stats": {
+            "OWGR": 73.0
+          },
+          "slot": "BE",
+          "status": "ACTIVE",
+          "total_points": 0.0
+        },
+        {
+          "acquisition_type": "DRAFT",
+          "avg_points": null,
+          "eligible_slots": [
+            "GS",
+            "BE",
+            "ALT"
+          ],
+          "id": 88,
+          "injured": false,
+          "injury_status": null,
+          "name": "OWGR Golfer 88",
+          "percent_owned": null,
+          "position": "G",
+          "pro_team": null,
+          "projected_total_points": null,
+          "role": "golfer",
+          "season_stats": {
+            "OWGR": 88.0
+          },
+          "slot": "BE",
+          "status": "ACTIVE",
+          "total_points": 0.0
+        },
+        {
+          "acquisition_type": "DRAFT",
+          "avg_points": null,
+          "eligible_slots": [
+            "GS",
+            "BE",
+            "ALT"
+          ],
+          "id": 89,
+          "injured": false,
+          "injury_status": null,
+          "name": "OWGR Golfer 89",
+          "percent_owned": null,
+          "position": "G",
+          "pro_team": null,
+          "projected_total_points": null,
+          "role": "golfer",
+          "season_stats": {
+            "OWGR": 89.0
+          },
+          "slot": "BE",
+          "status": "ACTIVE",
+          "total_points": 0.0
+        },
+        {
+          "acquisition_type": "DRAFT",
+          "avg_points": null,
+          "eligible_slots": [
+            "GS",
+            "BE",
+            "ALT"
+          ],
+          "id": 104,
+          "injured": false,
+          "injury_status": null,
+          "name": "OWGR Golfer 104",
+          "percent_owned": null,
+          "position": "G",
+          "pro_team": null,
+          "projected_total_points": null,
+          "role": "golfer",
+          "season_stats": {
+            "OWGR": 104.0
+          },
+          "slot": "BE",
+          "status": "ACTIVE",
+          "total_points": 0.0
+        },
+        {
+          "acquisition_type": "DRAFT",
+          "avg_points": null,
+          "eligible_slots": [
+            "GS",
+            "BE",
+            "ALT"
+          ],
+          "id": 105,
+          "injured": false,
+          "injury_status": null,
+          "name": "OWGR Golfer 105",
+          "percent_owned": null,
+          "position": "G",
+          "pro_team": null,
+          "projected_total_points": null,
+          "role": "golfer",
+          "season_stats": {
+            "OWGR": 105.0
+          },
+          "slot": "BE",
+          "status": "ACTIVE",
+          "total_points": 0.0
+        },
+        {
+          "acquisition_type": "DRAFT",
+          "avg_points": null,
+          "eligible_slots": [
+            "GS",
+            "BE",
+            "ALT"
+          ],
+          "id": 120,
+          "injured": false,
+          "injury_status": null,
+          "name": "OWGR Golfer 120",
+          "percent_owned": null,
+          "position": "G",
+          "pro_team": null,
+          "projected_total_points": null,
+          "role": "golfer",
+          "season_stats": {
+            "OWGR": 120.0
+          },
+          "slot": "BE",
+          "status": "ACTIVE",
+          "total_points": 0.0
+        }
+      ],
       "schedule": [],
       "scores": [],
       "standing": 8,

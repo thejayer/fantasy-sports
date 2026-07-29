@@ -19,12 +19,23 @@ export function DraftResultsPanel({
   const showBids = draftHasBids(picks);
   const showKeepers = draftHasKeepers(picks);
 
+  const isGolf = league.sport === "golf";
+
   if (!picks.length) {
     return (
       <EmptyState title="No draft results in this snapshot">
-        ESPN draft picks land in <code>draft.json</code> after{" "}
-        <code>sj sync</code> / <code>sj backfill</code>. This is the historical
-        draft board — not the Monte Carlo Draft tool under Tools.
+        {isGolf ? (
+          <>
+            Snake-draft the synthetic OWGR pool with <code>sg create-league</code>{" "}
+            (or hub Create golf league). Auction drafts stay a settings stub.
+          </>
+        ) : (
+          <>
+            ESPN draft picks land in <code>draft.json</code> after{" "}
+            <code>sj sync</code> / <code>sj backfill</code>. This is the
+            historical draft board — not the Monte Carlo Draft tool under Tools.
+          </>
+        )}
       </EmptyState>
     );
   }
@@ -32,10 +43,11 @@ export function DraftResultsPanel({
   return (
     <div className="draft-results-panel" style={{ marginTop: "0.75rem" }}>
       <p className="lede">
-        ESPN draft results · {picks.length} picks
-        {showKeepers ? " · includes keepers" : ""}
-        {showBids ? " · auction bids shown when present" : ""}. Filter by team
-        below. Football Monte Carlo slot sims stay under Tools → Draft.
+        {isGolf
+          ? `OWGR snake draft · ${picks.length} picks · first 5 slots per team are GS (starters), rest BE until weekly lineup (6.4c).`
+          : `ESPN draft results · ${picks.length} picks${
+              showKeepers ? " · includes keepers" : ""
+            }${showBids ? " · auction bids shown when present" : ""}. Filter by team below. Football Monte Carlo slot sims stay under Tools → Draft.`}
       </p>
 
       <div className="tabs" style={{ marginTop: "0.5rem" }}>

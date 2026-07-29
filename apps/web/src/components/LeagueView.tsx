@@ -191,7 +191,7 @@ const BASEBALL_TABS = [
   "tools",
 ] as const;
 
-/** Golf lane (roadmap 6.4a/6.5) — settings now; draft/lineup/score later. */
+/** Golf lane (roadmap 6.4a–b / 6.5) — settings + draft; lineup/score later. */
 const GOLF_TABS = [
   "standings",
   "teams",
@@ -358,7 +358,7 @@ export function LeagueView({
           ? ` · synced ${new Date(league.synced_at).toLocaleString()}`
           : ""}
         {isGolf
-          ? ". PGA Tour counting league — settings and empty teams now; draft, lineups, and EOD scoring in later slices (roadmap 6.4)."
+          ? ". PGA Tour counting league — settings, OWGR snake draft, and rosters; weekly lineups and EOD scoring in later slices (roadmap 6.4)."
           : isBaseball
             ? ". Standings, matchups, draft, activity, waivers, history, and batter/pitcher boards from ESPN — projection-free by design (roadmap 4.6)."
             : ". Standings, matchups, draft, activity, history, rosters, projections, and decision tools."}
@@ -454,14 +454,7 @@ export function LeagueView({
       ) : null}
 
       {active === "draft" ? (
-        isGolf ? (
-          <EmptyState title="Snake draft comes in 6.4b">
-            One draft per year from the OWGR pool. Auction and keepers stay
-            settings stubs until after the MVP snake board ships.
-          </EmptyState>
-        ) : (
-          <DraftResultsPanel league={league} teamId={draftTeamId} />
-        )
+        <DraftResultsPanel league={league} teamId={draftTeamId} />
       ) : null}
 
       {active === "activity" ? (

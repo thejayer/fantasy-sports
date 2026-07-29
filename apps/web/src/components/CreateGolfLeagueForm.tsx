@@ -177,9 +177,9 @@ export function CreateGolfLeagueForm() {
       </div>
 
       <p className="league-meta">
-        Creates empty teams and persists settings under the local store (
-        <code>data/sj</code>). Starters are fixed at 5. No OWGR draft or tour
-        scores yet (6.4b+).
+        Creates teams, runs a snake draft over the synthetic OWGR pool (5 GS +
+        bench), and writes under the local store (<code>data/sj</code>). Tour
+        scoring and weekly lineups come later.
       </p>
 
       {error ? (

@@ -29,6 +29,10 @@ describe("golf create helpers", () => {
       DEFAULT_GOLF_SETTINGS.roster.starters,
     );
     expect(snap.settings.golf.missed_cut.mode).toBe("alt1");
+    expect(snap.draft).toHaveLength(10 * 15);
+    expect(snap.draft[0]?.player_name).toBe("Scottie Scheffler");
+    expect(snap.teams[0]?.roster).toHaveLength(15);
+    expect(snap.teams[0]?.roster.filter((p) => p.slot === "GS")).toHaveLength(5);
   });
 
   it("rejects out-of-range team counts and bad slugs", () => {

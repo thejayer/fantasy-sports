@@ -93,9 +93,12 @@ def test_expected_fixture_snapshot_is_schema_complete():
         team = snap["teams"][0]
         assert {"schedule", "scores", "outcomes", "win_pct", "logo_url"} <= set(team)
         if spec.sport == "golf":
-            # 6.4a: empty rosters until OWGR draft (6.4b).
-            assert team["roster"] == []
-            assert snap["settings"].get("golf", {}).get("roster", {}).get("starters") == 5
+            # 6.4b: snake draft fills 5 GS + bench from synthetic OWGR pool.
+            bench = snap["settings"]["golf"]["roster"]["bench"]
+            assert len(team["roster"]) == 5 + bench
+            assert team["roster"][0]["slot"] == "GS"
+            assert len(snap["draft"]) == snap["team_count"] * (5 + bench)
+            assert snap["draft"][0]["player_name"] == "Scottie Scheffler"
             continue
         player = team["roster"][0]
         assert {

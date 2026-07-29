@@ -33,7 +33,21 @@ test.describe("hub smoke", () => {
     await expect(page.getByText(/League settings/i)).toBeVisible();
     await expect(page.getByText(/Missed cut/i)).toBeVisible();
     await expect(page.getByText(/Event multipliers/i)).toBeVisible();
-    await expect(page.getByText(/no tour feed yet/i)).toBeVisible();
+    await expect(page.getByText(/no live tour feed/i)).toBeVisible();
+  });
+
+  test("golf draft tab shows OWGR snake picks", async ({ page }) => {
+    await page.goto("/leagues/golf-main?tab=draft");
+    await expect(page.getByText(/OWGR snake draft · \d+ picks/i)).toBeVisible();
+    await expect(page.getByText("Scottie Scheffler").first()).toBeVisible();
+    await expect(page.getByRole("link", { name: "All teams" })).toBeVisible();
+  });
+
+  test("golf team roster shows GS and OWGR", async ({ page }) => {
+    await page.goto("/leagues/golf-main/teams/1");
+    await expect(page.getByRole("heading", { name: /Fairway Phantoms/i })).toBeVisible();
+    await expect(page.getByText("Scottie Scheffler")).toBeVisible();
+    await expect(page.getByRole("columnheader", { name: "OWGR" })).toBeVisible();
   });
 
   test("football standings render fixture team names", async ({ page }) => {

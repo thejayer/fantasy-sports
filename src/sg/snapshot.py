@@ -1,10 +1,11 @@
-"""Build hub-compatible golf league snapshots (no ESPN, no tour feed yet)."""
+"""Build hub-compatible golf league snapshots (no ESPN, no live tour feed)."""
 
 from __future__ import annotations
 
 from datetime import datetime, timezone
 from typing import Any
 
+from sg.draft import run_snake_draft
 from sg.settings import (
     DEFAULT_GOLF_SETTINGS,
     GolfSettings,
@@ -55,8 +56,9 @@ def build_golf_snapshot(
     team_count: int,
     golf: GolfSettings | dict[str, Any] | None = None,
     synced_at: str | None = None,
+    run_draft: bool = True,
 ) -> dict[str, Any]:
-    """Empty-roster golf league with settings knobs (roadmap 6.4a)."""
+    """Golf league snapshot with settings; snake-drafts OWGR pool by default (6.4b)."""
     fmt = validate_golf_format(format)
     teams_n = validate_team_count(team_count)
     settings = validate_golf_settings(golf)
@@ -86,6 +88,12 @@ def build_golf_snapshot(
             }
         )
 
+    draft: list[dict[str, Any]] = []
+    players: list[dict[str, Any]] = []
+    free_agents: list[dict[str, Any]] = []
+    if run_draft:
+        draft, players, free_agents = run_snake_draft(teams, settings)
+
     return {
         "schema_version": SCHEMA_VERSION,
         "league_id": league_id,
@@ -105,11 +113,11 @@ def build_golf_snapshot(
             "scoring_type": "GOLF_COUNTING",
             "golf": settings.model_dump(mode="json"),
         },
-        "draft": [],
+        "draft": draft,
         "transactions": [],
-        "free_agents": [],
+        "free_agents": free_agents,
         "teams": teams,
-        "players": [],
+        "players": players,
     }
 
 

@@ -38,8 +38,11 @@ def create_league_cmd(
         None, help="Write here instead of the default local data directory."
     ),
     short_name: str | None = typer.Option(None, "--short-name"),
+    run_draft: bool = typer.Option(
+        True, "--draft/--no-draft", help="Snake-draft the OWGR fixture pool."
+    ),
 ) -> None:
-    """Create a golf league snapshot with settings (roadmap 6.4a). No tour data."""
+    """Create a golf league with settings + optional snake draft (6.4a/b)."""
     golf = GolfSettings.model_validate(
         {
             **DEFAULT_GOLF_SETTINGS.model_dump(mode="json"),
@@ -53,6 +56,12 @@ def create_league_cmd(
             },
         }
     )
+    if draft_style != "snake" and run_draft:
+        typer.echo(
+            "warning: only snake drafts run offline; writing empty draft board",
+            err=True,
+        )
+        run_draft = False
     snapshot = build_golf_snapshot(
         league_id=league_id,
         name=name,
@@ -61,10 +70,14 @@ def create_league_cmd(
         format=format,
         team_count=teams,
         golf=golf,
+        run_draft=run_draft,
     )
     root = Path(store_dir) if store_dir is not None else DEFAULT_STORE_DIR
     location = FileStore(root).write(snapshot)
-    typer.echo(f"wrote {location} ({snapshot['team_count']} teams, format={format})")
+    typer.echo(
+        f"wrote {location} ({snapshot['team_count']} teams, format={format}, "
+        f"{len(snapshot['draft'])} draft picks)"
+    )
 
 
 @app.command("seed-registry")

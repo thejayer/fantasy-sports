@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { BaseballRosterView } from "@/components/BaseballRosterView";
 import { EmptyState } from "@/components/EmptyState";
+import { GolfRosterView } from "@/components/GolfRosterView";
 import { SeasonSwitcher } from "@/components/SeasonSwitcher";
 import {
   getLeagueSeasons,
@@ -58,6 +59,12 @@ export default async function TeamPage({ params, searchParams }: Props) {
         team={team}
         seasons={seasons}
       />
+    );
+  }
+
+  if (league.sport === "golf") {
+    return (
+      <GolfRosterView league={league} team={team} seasons={seasons} />
     );
   }
 

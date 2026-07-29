@@ -62,6 +62,10 @@ export async function writeGolfLeagueSnapshot(
     standing: team.standing,
     division: team.division,
   }));
+  const rosterById: Record<string, unknown[]> = {};
+  for (const team of snapshot.teams) {
+    rosterById[String(team.team_id)] = team.roster ?? [];
+  }
   const files = {
     "standings.json": {
       scoring_type: snapshot.scoring_type,
@@ -69,12 +73,12 @@ export async function writeGolfLeagueSnapshot(
       period_label: snapshot.period_label,
       teams: standingsTeams,
     },
-    "rosters.json": { teams: {}, players: [] },
+    "rosters.json": { teams: rosterById, players: snapshot.players ?? [] },
     "matchups.json": { period_label: snapshot.period_label, teams: {} },
-    "draft.json": { draft: [] },
+    "draft.json": { draft: snapshot.draft ?? [] },
     "settings.json": { settings: snapshot.settings },
     "transactions.json": { transactions: [] },
-    "free_agents.json": { free_agents: [] },
+    "free_agents.json": { free_agents: snapshot.free_agents ?? [] },
   } as const;
 
   for (const [name, payload] of Object.entries(files)) {
