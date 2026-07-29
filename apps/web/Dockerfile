@@ -49,7 +49,7 @@ RUN pip install --no-cache-dir --constraint requirements-lock.txt \
 
 # One fixtures copy for entrypoint seed + offline fallback.
 COPY fixtures/sj ./fixtures/sj
-RUN mkdir -p /app/data/sj \
+RUN mkdir -p /app/data/sj /app/data/hub \
     && cp -a /app/fixtures/sj/. /app/data/sj/
 
 # Next standalone output (built with apps/web as the app root).
@@ -71,6 +71,7 @@ ENV NODE_ENV=production \
     PORT=8080 \
     HOSTNAME=0.0.0.0 \
     SJ_DATA_DIR=/app/data/sj \
+    SJ_HUB_DIR=/app/data/hub \
     SJ_SYNC_ON_START=1 \
     AUTH_TRUST_HOST=true \
     PYTHONUNBUFFERED=1 \

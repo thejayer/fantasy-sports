@@ -14,14 +14,16 @@ set -euo pipefail
 PROJECT="${GCP_PROJECT:-fantasy-sports-analytics}"
 REGION="${GCP_REGION:-us-central1}"
 BUCKET="${SJ_BUCKET:-${PROJECT}-sj-data}"
+HUB_BUCKET="${SJ_HUB_BUCKET:-${PROJECT}-sj-hub}"
 JOB="${SJ_JOB:-sj-sync}"
 SCHEDULE="${SJ_SCHEDULE:-*/30 * * * *}"
 SCHEDULER_JOB="${SJ_SCHEDULER_JOB:-sj-sync-trigger}"
 
-echo "Project:  ${PROJECT}"
-echo "Region:   ${REGION}"
-echo "Bucket:   gs://${BUCKET}"
-echo "Schedule: ${SCHEDULE}"
+echo "Project:     ${PROJECT}"
+echo "Region:      ${REGION}"
+echo "ESPN bucket: gs://${BUCKET}"
+echo "Hub bucket:  gs://${HUB_BUCKET}"
+echo "Schedule:    ${SCHEDULE}"
 echo
 
 gcloud config set project "${PROJECT}" >/dev/null
@@ -36,9 +38,10 @@ gcloud services enable \
 PROJECT_NUMBER="$(gcloud projects describe "${PROJECT}" --format='value(projectNumber)')"
 RUNTIME_SA="${CLOUD_RUN_SA:-${PROJECT_NUMBER}-compute@developer.gserviceaccount.com}"
 
-# --- Bucket -----------------------------------------------------------------
+# --- Buckets ----------------------------------------------------------------
+# ESPN sync store (sj-sync writes; hub mounts read-only).
 if gcloud storage buckets describe "gs://${BUCKET}" --project="${PROJECT}" >/dev/null 2>&1; then
-  echo "bucket already exists"
+  echo "ESPN bucket already exists"
 else
   gcloud storage buckets create "gs://${BUCKET}" \
     --project="${PROJECT}" \
@@ -47,12 +50,24 @@ else
   echo "created gs://${BUCKET}"
 fi
 
-# The sync job writes snapshots; the hub service only reads them (through a
-# read-only volume mount). Grant each the least role that supports its job.
+# Hub-native store (golf leagues, hub_members). Hub mounts read-write.
+# Kept separate so sj sync/backfill never share index.json or season dirs.
+if gcloud storage buckets describe "gs://${HUB_BUCKET}" --project="${PROJECT}" >/dev/null 2>&1; then
+  echo "hub bucket already exists"
+else
+  gcloud storage buckets create "gs://${HUB_BUCKET}" \
+    --project="${PROJECT}" \
+    --location="${REGION}" \
+    --uniform-bucket-level-access
+  echo "created gs://${HUB_BUCKET}"
+fi
+
+# The sync job writes ESPN snapshots; the hub service reads them RO and writes
+# hub-native data to the hub bucket. Grant each the least role that supports
+# its job.
 #
-# By default both run as the project's compute SA, so it gets the writer role.
-# Set SJ_SYNC_SA / SJ_HUB_SA to dedicated accounts to split them properly, and
-# the hub drops to read-only.
+# By default both run as the project's compute SA.
+# Set SJ_SYNC_SA / SJ_HUB_SA to dedicated accounts to split them properly.
 SYNC_SA="${SJ_SYNC_SA:-${RUNTIME_SA}}"
 HUB_SA="${SJ_HUB_SA:-${RUNTIME_SA}}"
 
@@ -62,16 +77,22 @@ gcloud storage buckets add-iam-policy-binding "gs://${BUCKET}" \
   --member="serviceAccount:${SYNC_SA}" \
   --role="roles/storage.objectUser" \
   --quiet >/dev/null
-echo "granted objectUser (write) on the bucket to ${SYNC_SA}"
+echo "granted objectUser (write) on ESPN bucket to ${SYNC_SA}"
+
+gcloud storage buckets add-iam-policy-binding "gs://${HUB_BUCKET}" \
+  --member="serviceAccount:${HUB_SA}" \
+  --role="roles/storage.objectUser" \
+  --quiet >/dev/null
+echo "granted objectUser (write) on hub bucket to ${HUB_SA}"
 
 if [[ "${HUB_SA}" != "${SYNC_SA}" ]]; then
   gcloud storage buckets add-iam-policy-binding "gs://${BUCKET}" \
     --member="serviceAccount:${HUB_SA}" \
     --role="roles/storage.objectViewer" \
     --quiet >/dev/null
-  echo "granted objectViewer (read-only) on the bucket to ${HUB_SA}"
+  echo "granted objectViewer (read-only) on ESPN bucket to ${HUB_SA}"
 else
-  echo "hub shares ${SYNC_SA}; set SJ_HUB_SA to give the hub read-only access"
+  echo "hub shares ${SYNC_SA} on ESPN bucket; set SJ_HUB_SA for read-only split"
 fi
 
 # --- Scheduler --------------------------------------------------------------
@@ -122,7 +143,8 @@ Next:
   1. GitHub → Actions → "deploy sync job" → Run workflow
        bucket: ${BUCKET}
   2. GitHub → Actions → "deploy hub" → Run workflow
-       (mounts gs://${BUCKET} read-only at /app/data/sj)
+       bucket:     ${BUCKET}          (RO at /app/data/sj — ESPN)
+       hub_bucket: ${HUB_BUCKET}      (RW at /app/data/hub — golf/members)
   3. One-time history backfill:
        gcloud run jobs execute ${JOB} --args=backfill \\
          --region=${REGION} --project=${PROJECT}

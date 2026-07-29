@@ -1,20 +1,15 @@
 /**
  * Server-only golf snapshot writer (Node `fs`). Keep out of client bundles.
+ *
+ * Writes under `SJ_HUB_DIR` (see hub-paths) so ESPN sync/backfill never share
+ * season directories or index.json with hub-native golf.
  */
 
 import { promises as fs } from "fs";
 import path from "path";
 
 import type { buildGolfSnapshot } from "@/lib/golf";
-
-function writableDataRoot(): string {
-  if (process.env.SJ_DATA_DIR) return process.env.SJ_DATA_DIR;
-  return path.resolve(process.cwd(), "../../data/sj");
-}
-
-function fixturesRoot(): string {
-  return path.resolve(process.cwd(), "../../fixtures/sj");
-}
+import { hubDataRoot } from "@/lib/hub-paths";
 
 async function readIndex(
   root: string,
@@ -32,14 +27,14 @@ async function readIndex(
 }
 
 /**
- * Write a v2 golf season into the local store and upsert index.json.
- * Seeds the writable index from fixtures when the store has no index yet so
- * creating golf does not hide ESPN fixture leagues (first-root wins).
+ * Write a v2 golf season into the hub store and upsert that store's index.json.
+ * Hub index lists golf only — ESPN leagues come from the snapshot root index
+ * and are merged at read time in getLeagueIndex.
  */
 export async function writeGolfLeagueSnapshot(
   snapshot: ReturnType<typeof buildGolfSnapshot>,
 ): Promise<{ root: string; path: string }> {
-  const root = writableDataRoot();
+  const root = hubDataRoot();
   const seasonDir = path.join(
     root,
     snapshot.league_id,
@@ -138,10 +133,9 @@ export async function writeGolfLeagueSnapshot(
     "utf8",
   );
 
-  let index = await readIndex(root);
-  if (!index.leagues.length) {
-    index = await readIndex(fixturesRoot());
-  }
+  // Keep hub index golf-only (plus any other hub-native rows already there).
+  // Do not seed ESPN fixtures into the hub index — getLeagueIndex merges roots.
+  const index = await readIndex(root);
   const entry = {
     league_id: snapshot.league_id,
     espn_league_id: null,

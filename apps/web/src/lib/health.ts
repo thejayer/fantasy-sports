@@ -33,6 +33,8 @@ export type HealthReport = {
 
 const DEFAULT_STALE_AFTER_SECONDS = 2 * 60 * 60; // two hours — four missed 30m syncs
 
+/** ESPN / synced snapshot roots only — hub-native golf (`SJ_HUB_DIR`) is excluded
+ * so a quiet golf league cannot mark the uptime probe stale. */
 function dataRoots(): string[] {
   const roots = [
     process.env.SJ_DATA_DIR,

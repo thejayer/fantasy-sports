@@ -1,7 +1,6 @@
 /**
- * Server-only hub_members.json persistence.
- * Lives beside league snapshots under SJ_DATA_DIR (writable local / seed store).
- * Production GCS mounts are often read-only — admin writes need a writable root.
+ * Server-only hub_members.json persistence under SJ_HUB_DIR (hub-native store).
+ * Kept out of the ESPN snapshot root so sync/backfill never touch it.
  */
 
 import { promises as fs } from "fs";
@@ -11,10 +10,10 @@ import {
   emptyMembersFile,
   type HubMembersFile,
 } from "@/lib/hub-members";
+import { hubDataRoot } from "@/lib/hub-paths";
 
 function writableDataRoot(): string {
-  if (process.env.SJ_DATA_DIR) return process.env.SJ_DATA_DIR;
-  return path.resolve(process.cwd(), "../../data/sj");
+  return hubDataRoot();
 }
 
 export function hubMembersPath(root = writableDataRoot()): string {

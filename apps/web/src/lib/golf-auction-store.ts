@@ -18,9 +18,10 @@ import {
 } from "@/lib/golf";
 import type { LeagueSnapshot } from "@/lib/data";
 
+import { hubDataRoot } from "@/lib/hub-paths";
+
 function writableDataRoot(): string {
-  if (process.env.SJ_DATA_DIR) return process.env.SJ_DATA_DIR;
-  return path.resolve(process.cwd(), "../../data/sj");
+  return hubDataRoot();
 }
 
 export function auctionRoomPath(leagueId: string, season: number): string {
