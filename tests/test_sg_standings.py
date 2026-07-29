@@ -125,6 +125,12 @@ def test_build_golf_snapshot_h2h_has_records():
     assert snap["teams"][0]["team_id"] == 1
     assert min(t["standing"] for t in snap["teams"]) == 1
     assert sum(t["wins"] for t in snap["teams"]) == sum(t["losses"] for t in snap["teams"])
+    # History arrays projected from scoreboard pairings (roadmap 6.5).
+    t1 = snap["teams"][0]
+    assert len(t1["schedule"]) == len(snap["scoreboard"]["events"])
+    assert len(t1["scores"]) == len(t1["schedule"])
+    assert len(t1["outcomes"]) == len(t1["schedule"])
+    assert any(o in ("W", "L", "T") for o in t1["outcomes"])
 
 
 def test_build_golf_snapshot_season_points():

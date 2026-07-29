@@ -4,6 +4,7 @@ import { DraftResultsPanel } from "@/components/DraftResultsPanel";
 import { EmptyState } from "@/components/EmptyState";
 import { FreeAgentsBoard } from "@/components/FreeAgentsBoard";
 import { GolfLineupPanel } from "@/components/GolfLineupPanel";
+import { GolfSchedulePanel } from "@/components/GolfSchedulePanel";
 import { GolfScoreboardPanel } from "@/components/GolfScoreboardPanel";
 import { GolfSettingsPanel } from "@/components/GolfSettingsPanel";
 import { HistoryPanel, type HistoryView } from "@/components/HistoryPanel";
@@ -162,6 +163,7 @@ function TeamsList({
   league: LeagueSnapshot;
   leagueId: string;
 }) {
+  const isGolf = league.sport === "golf";
   if (!league.teams.length) {
     return (
       <EmptyState title="No teams yet">
@@ -172,22 +174,40 @@ function TeamsList({
 
   return (
     <div className="league-list">
-      {league.teams.map((team: Team) => (
-        <Link
-          key={team.team_id}
-          className="league-link"
-          href={`/leagues/${leagueId}/teams/${team.team_id}?season=${league.season}`}
-        >
-          <div>
-            <strong>{team.name}</strong>
-            <div className="league-meta">
-              {team.owners.join(", ") || "No owner listed"} · {recordLabel(team)}{" "}
-              ({winPctLabel(team)})
+      {isGolf ? (
+        <p className="lede" style={{ marginBottom: "0.75rem" }}>
+          Season rosters are GS starters + BE bench. Open a team for current-event
+          Alt1/Alt2, or use the Lineup tab to set the week.
+        </p>
+      ) : null}
+      {league.teams.map((team: Team) => {
+        const gs = isGolf
+          ? team.roster.filter((p) => p.slot === "GS").length
+          : null;
+        const be = isGolf
+          ? team.roster.filter((p) => p.slot === "BE").length
+          : null;
+        return (
+          <Link
+            key={team.team_id}
+            className="league-link"
+            href={`/leagues/${leagueId}/teams/${team.team_id}?season=${league.season}`}
+          >
+            <div>
+              <strong>{team.name}</strong>
+              <div className="league-meta">
+                {team.owners.join(", ") || "No owner listed"} ·{" "}
+                {recordLabel(team)} ({winPctLabel(team)})
+              </div>
             </div>
-          </div>
-          <span className="pill">{team.roster.length} on roster</span>
-        </Link>
-      ))}
+            <span className="pill">
+              {isGolf
+                ? `${gs} GS · ${be} BE`
+                : `${team.roster.length} on roster`}
+            </span>
+          </Link>
+        );
+      })}
     </div>
   );
 }
@@ -217,7 +237,7 @@ const BASEBALL_TABS = [
   "tools",
 ] as const;
 
-/** Golf lane (roadmap 6.4a–e) — settings, draft, lineup, scoreboard, standings. */
+/** Golf lane (roadmap 6.4a–e + 6.5 hub surfaces). */
 const GOLF_TABS = [
   "standings",
   "teams",
@@ -270,7 +290,7 @@ export function LeagueView({
   activityView?: ActivityView;
   /** ESPN draft-results team filter (`?tab=draft&team=`). */
   draftTeamId?: number;
-  /** Golf lineup event id (`?tab=lineup&event=`). */
+  /** Golf event id (`?tab=lineup|scoreboard&event=`). */
   golfEventId?: string;
   /** Golf lineup team filter (`?tab=lineup&team=`). */
   golfLineupTeamId?: number;
@@ -340,6 +360,8 @@ export function LeagueView({
       ? (golfEventId ? `&event=${golfEventId}` : "") +
         (golfLineupTeamId != null ? `&team=${golfLineupTeamId}` : "")
       : "";
+  const scoreboardQuery =
+    active === "scoreboard" && golfEventId ? `&event=${golfEventId}` : "";
 
   const seasonHrefExtra =
     active === "players" && activeRole
@@ -352,15 +374,17 @@ export function LeagueView({
             : ""
           : active === "lineup"
             ? lineupQuery
-            : active === "activity"
-              ? `&view=${activityView}`
-              : active === "history"
-                ? `&view=${historyView}${historyPair}`
-                : active === "projections"
-                  ? scoringQuery
-                  : active === "tools"
-                    ? toolsPair
-                    : "";
+            : active === "scoreboard"
+              ? scoreboardQuery
+              : active === "activity"
+                ? `&view=${activityView}`
+                : active === "history"
+                  ? `&view=${historyView}${historyPair}`
+                  : active === "projections"
+                    ? scoringQuery
+                    : active === "tools"
+                      ? toolsPair
+                      : "";
 
   const players = isBaseball
     ? league.players.filter((player) => {
@@ -454,45 +478,7 @@ export function LeagueView({
       ) : null}
 
       {active === "schedule" && isGolf ? (
-        league.lineups?.events?.length ? (
-          <div className="panel table-scroll" style={{ marginTop: "0.75rem" }}>
-            <table className="table-cards">
-              <thead>
-                <tr>
-                  <th>Week</th>
-                  <th>Event</th>
-                  <th>Tier</th>
-                  <th>Starts (UTC)</th>
-                  <th></th>
-                </tr>
-              </thead>
-              <tbody>
-                {league.lineups.events.map((event) => (
-                  <tr key={event.event_id}>
-                    <td data-label="Week">{event.week}</td>
-                    <td data-label="Event">{event.name}</td>
-                    <td data-label="Tier">{event.multiplier_tier}</td>
-                    <td data-label="Starts">
-                      {new Date(event.starts_at).toLocaleString()}
-                    </td>
-                    <td data-label="">
-                      <Link
-                        href={`/leagues/${leagueId}?season=${league.season}&tab=lineup&event=${event.event_id}`}
-                      >
-                        Set lineup
-                      </Link>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        ) : (
-          <EmptyState title="FedExCup schedule not loaded yet">
-            Fixture events ship with create/seed lineups (roadmap 6.4c). Live
-            slate ingest is still later (6.2).
-          </EmptyState>
-        )
+        <GolfSchedulePanel league={league} />
       ) : null}
 
       {active === "lineup" && isGolf ? (
@@ -553,6 +539,7 @@ export function LeagueView({
           view={historyView}
           a={h2hA}
           b={h2hB}
+          sport={league.sport}
         />
       ) : null}
 

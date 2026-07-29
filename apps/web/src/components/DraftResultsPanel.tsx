@@ -44,7 +44,7 @@ export function DraftResultsPanel({
     <div className="draft-results-panel" style={{ marginTop: "0.75rem" }}>
       <p className="lede">
         {isGolf
-          ? `OWGR snake draft · ${picks.length} picks · first 5 slots per team are GS (starters), rest BE until weekly lineup (6.4c).`
+          ? `OWGR snake draft · ${picks.length} picks · first 5 slots per team are GS (starters), rest BE. Weekly Alt1/Alt2 live on Lineup.`
           : `ESPN draft results · ${picks.length} picks${
               showKeepers ? " · includes keepers" : ""
             }${showBids ? " · auction bids shown when present" : ""}. Filter by team below. Football Monte Carlo slot sims stay under Tools → Draft.`}

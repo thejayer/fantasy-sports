@@ -46,8 +46,8 @@ test.describe("hub smoke", () => {
   test("golf team roster shows GS and OWGR", async ({ page }) => {
     await page.goto("/leagues/golf-main/teams/1");
     await expect(page.getByRole("heading", { name: /Fairway Phantoms/i })).toBeVisible();
-    await expect(page.getByText("Scottie Scheffler")).toBeVisible();
-    await expect(page.getByRole("columnheader", { name: "OWGR" })).toBeVisible();
+    await expect(page.getByRole("cell", { name: "Scottie Scheffler" })).toBeVisible();
+    await expect(page.getByRole("columnheader", { name: "OWGR" }).first()).toBeVisible();
   });
 
   test("golf lineup tab shows event chips and roster locks", async ({ page }) => {
@@ -75,6 +75,35 @@ test.describe("hub smoke", () => {
     await expect(page.getByText("Bogey Bandits").first()).toBeVisible();
     // Fixture leader after 6.4e derivation (2-0 from two scored events).
     await expect(page.getByText("2-0").first()).toBeVisible();
+  });
+
+  test("golf schedule tab shows multipliers and lineup links", async ({ page }) => {
+    await page.goto("/leagues/golf-main?tab=schedule");
+    await expect(page.getByText(/Curated FedExCup counting slate/i)).toBeVisible();
+    await expect(page.getByRole("columnheader", { name: "×" })).toBeVisible();
+    await expect(page.getByText(/THE PLAYERS Championship/i).first()).toBeVisible();
+    await expect(page.getByRole("link", { name: "Set lineup" }).first()).toBeVisible();
+    await expect(page.getByRole("link", { name: "Scoreboard" }).first()).toBeVisible();
+  });
+
+  test("golf teams tab shows GS/BE roster pills", async ({ page }) => {
+    await page.goto("/leagues/golf-main?tab=teams");
+    await expect(page.getByText(/Season rosters are GS starters/i)).toBeVisible();
+    await expect(page.getByText(/5 GS · \d+ BE/).first()).toBeVisible();
+  });
+
+  test("golf history tab shows archive meta from scored weeks", async ({ page }) => {
+    await page.goto("/leagues/golf-main?tab=history");
+    await expect(page.getByText(/event weeks projected from the scoreboard/i)).toBeVisible();
+    await expect(page.getByRole("link", { name: "All-time" })).toBeVisible();
+  });
+
+  test("golf team roster shows starters section and event alts", async ({ page }) => {
+    await page.goto("/leagues/golf-main/teams/1");
+    await expect(page.getByRole("heading", { name: /Starters \(GS\)/i })).toBeVisible();
+    await expect(page.getByRole("heading", { name: /Bench \(BE\)/i })).toBeVisible();
+    await expect(page.getByText(/Current event lineup/i)).toBeVisible();
+    await expect(page.getByText(/Alt1/i).first()).toBeVisible();
   });
 
   test("football standings render fixture team names", async ({ page }) => {

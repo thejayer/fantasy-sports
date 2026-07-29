@@ -2,6 +2,7 @@ import Link from "next/link";
 import { EmptyState } from "@/components/EmptyState";
 import type {
   GolfScoreboardEvent,
+  GolfScoreboardTeamWeek,
   LeagueSnapshot,
 } from "@/lib/data";
 
@@ -26,6 +27,68 @@ function resolveEvent(
   );
 }
 
+function playerLabel(
+  league: LeagueSnapshot,
+  playerId: number,
+): string {
+  return (
+    league.players.find((p) => p.id === playerId)?.name ?? `#${playerId}`
+  );
+}
+
+function RoundSlots({
+  league,
+  week,
+}: {
+  league: LeagueSnapshot;
+  week: GolfScoreboardTeamWeek;
+}) {
+  const rounds = (["1", "2", "3", "4"] as const)
+    .map((key) => week.by_round[key])
+    .filter(Boolean);
+  if (!rounds.length) return null;
+  return (
+    <div style={{ marginTop: "0.5rem" }}>
+      {rounds.map((rnd) => (
+        <details key={rnd!.round} style={{ marginBottom: "0.35rem" }}>
+          <summary>
+            {rnd!.label} · {formatPoints(rnd!.points)} pts ·{" "}
+            {rnd!.slots.length} slots
+          </summary>
+          <div className="table-wrap" style={{ marginTop: "0.35rem" }}>
+            <table className="table-cards">
+              <thead>
+                <tr>
+                  <th>Player</th>
+                  <th>Source</th>
+                  <th>Status</th>
+                  <th>To par</th>
+                  <th>Pts</th>
+                </tr>
+              </thead>
+              <tbody>
+                {rnd!.slots.map((slot) => (
+                  <tr key={`${rnd!.round}-${slot.starter_id}-${slot.player_id}`}>
+                    <td data-label="Player">
+                      {playerLabel(league, slot.player_id)}
+                    </td>
+                    <td data-label="Source">{slot.source}</td>
+                    <td data-label="Status">{slot.status}</td>
+                    <td data-label="To par">
+                      {slot.to_par == null ? "—" : formatPoints(slot.to_par)}
+                    </td>
+                    <td data-label="Pts">{formatPoints(slot.points)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </details>
+      ))}
+    </div>
+  );
+}
+
 export function GolfScoreboardPanel({
   league,
   eventId,
@@ -39,8 +102,8 @@ export function GolfScoreboardPanel({
   if (!events.length || !active) {
     return (
       <EmptyState title="No scored events yet">
-        End-of-day counting lands with fixture round files (roadmap 6.4d).
-        Regenerate golf fixtures or create a new golf league.
+        End-of-day counting uses fixture round files. Regenerate golf fixtures
+        or create a new golf league.
       </EmptyState>
     );
   }
@@ -64,8 +127,8 @@ export function GolfScoreboardPanel({
     <div className="golf-scoreboard-panel" style={{ marginTop: "0.75rem" }}>
       <p className="lede">
         Counting scoreboard — best 4 of 5 Thu/Fri, all 5 Sat/Sun, missed-cut
-        alts on the weekend, then event multiplier. Fixture rounds only (no
-        live tour feed).
+        alts on the weekend, then event multiplier. Expand a team for
+        per-player daily slots. Fixture rounds only (no live tour feed).
       </p>
 
       <div className="tabs" style={{ marginTop: "0.5rem" }}>
@@ -81,8 +144,12 @@ export function GolfScoreboardPanel({
       </div>
 
       <p className="league-meta" style={{ marginTop: "0.75rem" }}>
-        {active.name} · {active.multiplier_tier} ×{formatPoints(active.multiplier)}{" "}
-        · scored {active.scored_at.replace("T", " ").replace(/\.\d{3}Z$/, " UTC").replace(/\+00:00$/, " UTC")}
+        {active.name} · {active.multiplier_tier} ×
+        {formatPoints(active.multiplier)} · scored{" "}
+        {active.scored_at
+          .replace("T", " ")
+          .replace(/\.\d{3}Z$/, " UTC")
+          .replace(/\+00:00$/, " UTC")}
       </p>
 
       {active.pairings.length ? (
@@ -100,9 +167,7 @@ export function GolfScoreboardPanel({
               </thead>
               <tbody>
                 {active.pairings.map((pair) => (
-                  <tr
-                    key={`${pair.home_team_id}-${pair.away_team_id}`}
-                  >
+                  <tr key={`${pair.home_team_id}-${pair.away_team_id}`}>
                     <td data-label="Matchup">
                       {pair.home_name ?? pair.home_team_id} vs{" "}
                       {pair.away_name ?? pair.away_team_id}
@@ -137,7 +202,14 @@ export function GolfScoreboardPanel({
             <tbody>
               {ranked.map((row) => (
                 <tr key={row.teamId}>
-                  <td data-label="Team">{row.name}</td>
+                  <td data-label="Team">
+                    <details>
+                      <summary>
+                        <strong>{row.name}</strong>
+                      </summary>
+                      <RoundSlots league={league} week={row.week} />
+                    </details>
+                  </td>
                   <td data-label="Raw">{formatPoints(row.week.week_raw)}</td>
                   <td data-label="Total">
                     <strong>{formatPoints(row.week.week_total)}</strong>
@@ -146,7 +218,10 @@ export function GolfScoreboardPanel({
                     {formatPoints(row.week.captain_week)}
                   </td>
                   {(["1", "2", "3", "4"] as const).map((rnd) => (
-                    <td key={rnd} data-label={row.week.by_round[rnd]?.label ?? rnd}>
+                    <td
+                      key={rnd}
+                      data-label={row.week.by_round[rnd]?.label ?? rnd}
+                    >
                       {formatPoints(row.week.by_round[rnd]?.points ?? 0)}
                     </td>
                   ))}

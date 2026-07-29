@@ -464,7 +464,7 @@ Fold in continuously rather than saving for the end.
 
 ---
 
-## Phase 6 — Fantasy golf (PGA Tour) — PLANNED
+## Phase 6 — Fantasy golf (PGA Tour) — MVP + hub surfaces LANDED
 
 Private fantasy golf in the **same Strictly Jayers hub** as football/baseball
 (Auth.js allowlist, season chips, sport-aware `LeagueView`). Model is the
@@ -590,16 +590,21 @@ are per-event exceptions, not general playoff-hole logic.
 Out of MVP: live hole-by-hole, LIV tour, DFS salary, public/open leagues,
 playoff-hole scoring, auction UI, keeper clauses, in-round swap after tee.
 
-### 6.5 Hub surfaces
+### 6.5 Hub surfaces — LANDED
 
 Extend sport-aware `LeagueView` (do not fork a golf-only page tree):
 
-- Standings / Teams / roster (golf slots: starters, bench, alts)
-- Schedule (curated FedEx events + multipliers)
-- Lineup (week-scoped)
-- Scoreboard (daily counting + week total)
-- Draft results (ESPN-style board pattern already used for football/baseball)
-- History when multi-season golf snapshots exist
+- ~~Standings / Teams / roster (golf slots: starters, bench, alts)~~ — GS/BE
+  sections + current-event Alt1/Alt2 on team pages; Teams list GS/BE pills
+- ~~Schedule (curated FedEx events + multipliers)~~ — `GolfSchedulePanel` with
+  resolved × from settings + Lineup/Scoreboard links
+- ~~Lineup (week-scoped)~~ — from 6.4c
+- ~~Scoreboard (daily counting + week total)~~ — expandable per-player round
+  slots; `?event=` deep-links work for scoreboard
+- ~~Draft results (ESPN-style board pattern)~~ — shared `DraftResultsPanel`
+- ~~History when multi-season golf snapshots exist~~ — scoreboard pairings
+  project into team `schedule`/`scores`/`outcomes` for Records/H2H; single
+  fixture season ships today, multi-year grows under the same league id
 
 Baseball stays projection-free; football keeps `ffa`. Golf is a **third sport
 lane** with its own sync/score package.
@@ -639,7 +644,7 @@ shape. Phase 3.1 (unify views) before any other UI work so nothing ships twice.
 | B — Data | ~~1.4~~, ~~2.1~~, ~~2.2~~, ~~2.3~~, ~~2.4~~, ~~2.5~~ | `src/sj`, `configs` |
 | C — Product | ~~3.1~~ → ~~3.2~~ → ~~3.3~~ → ~~3.4~~ → ~~3.5~~ → ~~3.6~~ | `apps/web` |
 | D — Engine | ~~4.1~~ … ~~4.6~~ | `src/ffa` + football hub surfaces; baseball ESPN-only |
-| F — Golf | ~~6.4a~~ → ~~6.4b~~ → ~~6.4c~~ → ~~6.4d~~ → ~~6.4e~~ | new `src/sg` + hub golf sport lane (MVP slices landed) |
+| F — Golf | ~~6.4a–e~~ → ~~6.5~~ | `src/sg` + hub golf sport lane (MVP + hub surfaces) |
 
 A, B, and D barely overlap with remaining C polish. Playoff make-odds MC
 (schedule × typical-week draws × greedy lineups) shipped with 4.5; bracket

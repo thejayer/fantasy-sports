@@ -320,6 +320,7 @@ export function HistoryPanel({
   view = "standings",
   a,
   b,
+  sport,
 }: {
   archive: LeagueHistoryArchive | null;
   leagueId: string;
@@ -327,19 +328,31 @@ export function HistoryPanel({
   view?: HistoryView;
   a?: number;
   b?: number;
+  sport?: string;
 }) {
   const active: HistoryView = ["standings", "champions", "records", "h2h"].includes(
     view,
   )
     ? view
     : "standings";
+  const isGolf = sport === "golf";
 
   if (!archive || archive.seasons.length === 0) {
     return (
       <div className="history-panel">
         <p className="league-meta">
-          No multi-season history on disk for this league. Run{" "}
-          <code>sj seed</code> or sync past seasons to populate the archive.
+          {isGolf ? (
+            <>
+              No golf seasons on disk yet. Create a league or regenerate{" "}
+              <code>golf-main</code> fixtures; multi-season archives grow as you
+              add years under the same league id.
+            </>
+          ) : (
+            <>
+              No multi-season history on disk for this league. Run{" "}
+              <code>sj seed</code> or sync past seasons to populate the archive.
+            </>
+          )}
         </p>
       </div>
     );
@@ -350,6 +363,9 @@ export function HistoryPanel({
       <p className="league-meta" style={{ marginTop: 0 }}>
         {seasonCountLabel(archive)} · franchises keyed by team id · owners may
         change year to year
+        {isGolf
+          ? " · event weeks projected from the scoreboard into Records / H2H"
+          : ""}
       </p>
       <ViewSwitcher
         leagueId={leagueId}

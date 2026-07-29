@@ -9225,7 +9225,10 @@
       "logo_url": null,
       "losses": 2,
       "name": "Fairway Phantoms",
-      "outcomes": [],
+      "outcomes": [
+        "L",
+        "L"
+      ],
       "owners": [
         "Owner 1"
       ],
@@ -9593,8 +9596,14 @@
           "total_points": 0.0
         }
       ],
-      "schedule": [],
-      "scores": [],
+      "schedule": [
+        2,
+        2
+      ],
+      "scores": [
+        25.5,
+        34.0
+      ],
       "standing": 5,
       "team_id": 1,
       "ties": 0,
@@ -9607,7 +9616,10 @@
       "logo_url": null,
       "losses": 0,
       "name": "Pin High Posse",
-      "outcomes": [],
+      "outcomes": [
+        "W",
+        "W"
+      ],
       "owners": [
         "Owner 2"
       ],
@@ -9975,8 +9987,14 @@
           "total_points": 0.0
         }
       ],
-      "schedule": [],
-      "scores": [],
+      "schedule": [
+        1,
+        1
+      ],
+      "scores": [
+        28.5,
+        38.0
+      ],
       "standing": 2,
       "team_id": 2,
       "ties": 0,
@@ -9989,7 +10007,10 @@
       "logo_url": null,
       "losses": 2,
       "name": "Sand Trap Syndicate",
-      "outcomes": [],
+      "outcomes": [
+        "L",
+        "L"
+      ],
       "owners": [
         "Owner 3"
       ],
@@ -10357,8 +10378,14 @@
           "total_points": 0.0
         }
       ],
-      "schedule": [],
-      "scores": [],
+      "schedule": [
+        4,
+        4
+      ],
+      "scores": [
+        -33.0,
+        -44.0
+      ],
       "standing": 7,
       "team_id": 3,
       "ties": 0,
@@ -10371,7 +10398,10 @@
       "logo_url": null,
       "losses": 0,
       "name": "Birdie Brigade",
-      "outcomes": [],
+      "outcomes": [
+        "W",
+        "W"
+      ],
       "owners": [
         "Owner 4"
       ],
@@ -10739,8 +10769,14 @@
           "total_points": 0.0
         }
       ],
-      "schedule": [],
-      "scores": [],
+      "schedule": [
+        3,
+        3
+      ],
+      "scores": [
+        -10.5,
+        -14.0
+      ],
       "standing": 4,
       "team_id": 4,
       "ties": 0,
@@ -10753,7 +10789,10 @@
       "logo_url": null,
       "losses": 2,
       "name": "Eagle Eyes",
-      "outcomes": [],
+      "outcomes": [
+        "L",
+        "L"
+      ],
       "owners": [
         "Owner 5"
       ],
@@ -11121,8 +11160,14 @@
           "total_points": 0.0
         }
       ],
-      "schedule": [],
-      "scores": [],
+      "schedule": [
+        6,
+        6
+      ],
+      "scores": [
+        -37.5,
+        -50.0
+      ],
       "standing": 8,
       "team_id": 5,
       "ties": 0,
@@ -11135,7 +11180,10 @@
       "logo_url": null,
       "losses": 0,
       "name": "Rough Riders",
-      "outcomes": [],
+      "outcomes": [
+        "W",
+        "W"
+      ],
       "owners": [
         "Owner 6"
       ],
@@ -11503,8 +11551,14 @@
           "total_points": 0.0
         }
       ],
-      "schedule": [],
-      "scores": [],
+      "schedule": [
+        5,
+        5
+      ],
+      "scores": [
+        1.5,
+        2.0
+      ],
       "standing": 3,
       "team_id": 6,
       "ties": 0,
@@ -11517,7 +11571,10 @@
       "logo_url": null,
       "losses": 2,
       "name": "Ace Alliance",
-      "outcomes": [],
+      "outcomes": [
+        "L",
+        "L"
+      ],
       "owners": [
         "Owner 7"
       ],
@@ -11885,8 +11942,14 @@
           "total_points": 0.0
         }
       ],
-      "schedule": [],
-      "scores": [],
+      "schedule": [
+        8,
+        8
+      ],
+      "scores": [
+        1.5,
+        2.0
+      ],
       "standing": 6,
       "team_id": 7,
       "ties": 0,
@@ -11899,7 +11962,10 @@
       "logo_url": null,
       "losses": 0,
       "name": "Bogey Bandits",
-      "outcomes": [],
+      "outcomes": [
+        "W",
+        "W"
+      ],
       "owners": [
         "Owner 8"
       ],
@@ -12267,8 +12333,14 @@
           "total_points": 0.0
         }
       ],
-      "schedule": [],
-      "scores": [],
+      "schedule": [
+        7,
+        7
+      ],
+      "scores": [
+        58.5,
+        78.0
+      ],
       "standing": 1,
       "team_id": 8,
       "ties": 0,
