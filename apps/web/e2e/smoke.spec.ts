@@ -196,6 +196,38 @@ test.describe("hub smoke", () => {
     await expect(page.getByText(/Alt1/i).first()).toBeVisible();
   });
 
+  test("admin center adds email and links an ESPN team", async ({ page }) => {
+    const membersPath = path.resolve(
+      __dirname,
+      "../../../fixtures/sj/hub_members.json",
+    );
+    fs.rmSync(membersPath, { force: true });
+    try {
+      await page.goto("/admin");
+      await expect(page.getByRole("heading", { name: /^Admin$/i })).toBeVisible();
+      await expect(page.getByRole("link", { name: /^Admin$/i })).toBeVisible();
+      await page.getByPlaceholder("member@gmail.com").fill("demo@example.com");
+      await page.getByRole("button", { name: /^Add$/i }).click();
+      await expect(
+        page.getByRole("cell", { name: "demo@example.com" }),
+      ).toBeVisible();
+
+      const footballSelect = page.getByLabel(
+        /Strictly Jayers Football(?! Dynasty)/i,
+      );
+      await footballSelect.selectOption({ index: 1 });
+      await expect(page.getByRole("cell", { name: /Hail Mary|End Zone|Turf|Gridiron/i })).toBeVisible();
+
+      page.once("dialog", (dialog) => dialog.accept());
+      await page.getByRole("button", { name: /^Remove$/i }).click();
+      await expect(
+        page.getByRole("cell", { name: "demo@example.com" }),
+      ).toHaveCount(0);
+    } finally {
+      fs.rmSync(membersPath, { force: true });
+    }
+  });
+
   test("football standings render fixture team names", async ({ page }) => {
     await page.goto("/leagues/football-main");
     await expect(page.getByText("Gridiron Goons")).toBeVisible();
