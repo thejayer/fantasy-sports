@@ -639,10 +639,16 @@ shape. Phase 3.1 (unify views) before any other UI work so nothing ships twice.
 | B — Data | ~~1.4~~, ~~2.1~~, ~~2.2~~, ~~2.3~~, ~~2.4~~, ~~2.5~~ | `src/sj`, `configs` |
 | C — Product | ~~3.1~~ → ~~3.2~~ → ~~3.3~~ → ~~3.4~~ → ~~3.5~~ → ~~3.6~~ | `apps/web` |
 | D — Engine | ~~4.1~~ … ~~4.6~~ | `src/ffa` + football hub surfaces; baseball ESPN-only |
+| F — Golf | **6.4a → 6.4e** (planned) | new `src/sg` + hub golf sport lane |
 
 A, B, and D barely overlap with remaining C polish. Playoff make-odds MC
 (schedule × typical-week draws × greedy lineups) shipped with 4.5; bracket
 champion odds remain optional. Baseball modeling is explicitly out of scope.
+
+**Phase 6 (golf)** is a new product track: private PGA Tour fantasy with the
+LIV real-team counting model. It does not block remaining football/baseball
+polish; start when feed + MVP slices (6.4a–e) are staffed. Do not put golf
+scoring into `src/ffa`.
 
 **Fastest visible wins** remaining: 3.2 (a decade of history appears), 3.3
 (tables become usable). 2.1 is done — draft and matchup data persist for zero
