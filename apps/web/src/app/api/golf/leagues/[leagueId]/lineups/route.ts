@@ -6,6 +6,7 @@ import { getLeagueSnapshot } from "@/lib/data";
 import {
   applyLocks,
   golfSettingsFromLeagueSettings,
+  lineupClock,
   validateWeekLineup,
   type GolfWeekLineup,
 } from "@/lib/golf-lineup";
@@ -72,6 +73,7 @@ export async function POST(request: Request, { params }: Props) {
       .filter((id): id is number => id != null && !Number.isNaN(id)),
   );
   const previous = league.lineups.teams[String(teamId)]?.[eventId] ?? null;
+  const now = lineupClock(league.synced_at);
   const draft = {
     starters: (body.starters ?? []).map(Number),
     captain: Number(body.captain),
@@ -83,7 +85,7 @@ export async function POST(request: Request, { params }: Props) {
     golf,
     teeTimes: event.tee_times,
     previous,
-    now: new Date(),
+    now,
   });
   if (error) {
     return NextResponse.json({ error }, { status: 400 });
@@ -98,7 +100,7 @@ export async function POST(request: Request, { params }: Props) {
       locks: previous?.locks ?? {},
     },
     event.tee_times,
-    new Date(),
+    now,
   );
 
   try {

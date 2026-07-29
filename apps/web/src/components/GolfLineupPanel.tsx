@@ -1,8 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { useMemo, useState, useTransition } from "react";
+import { useMemo, useState } from "react";
 import { EmptyState } from "@/components/EmptyState";
 import type { LeagueSnapshot, Team } from "@/lib/data";
 import {
@@ -10,11 +9,18 @@ import {
   parseGolfSettings,
 } from "@/lib/golf";
 import {
-  GOLF_FIXTURE_NOW,
+  lineupClock,
   playerIsLocked,
   type GolfEventMeta,
   type GolfWeekLineup,
 } from "@/lib/golf-lineup";
+
+/** Deterministic UTC label — avoids SSR/client `toLocaleString` mismatch. */
+function formatUtc(iso: string): string {
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return iso;
+  return d.toISOString().replace("T", " ").replace(/\.\d{3}Z$/, " UTC");
+}
 
 function resolveEventId(
   league: LeagueSnapshot,
@@ -39,6 +45,8 @@ function LineupForm({
   showAlt1,
   showAlt2,
   now,
+  onSaved,
+  onError,
 }: {
   league: LeagueSnapshot;
   event: GolfEventMeta;
@@ -47,8 +55,9 @@ function LineupForm({
   showAlt1: boolean;
   showAlt2: boolean;
   now: Date;
+  onSaved: (savedAt: string) => void;
+  onError: (message: string | null) => void;
 }) {
-  const router = useRouter();
   const [starters, setStarters] = useState<number[]>(
     () => stored?.starters ?? [],
   );
@@ -57,9 +66,7 @@ function LineupForm({
   );
   const [alt1, setAlt1] = useState<number | "">(() => stored?.alt1 ?? "");
   const [alt2, setAlt2] = useState<number | "">(() => stored?.alt2 ?? "");
-  const [error, setError] = useState<string | null>(null);
-  const [message, setMessage] = useState<string | null>(null);
-  const [pending, startTransition] = useTransition();
+  const [pending, setPending] = useState(false);
 
   const roster = team.roster ?? [];
   const byId = new Map(
@@ -81,10 +88,11 @@ function LineupForm({
     });
   }
 
-  function onSave() {
-    setError(null);
-    setMessage(null);
-    startTransition(async () => {
+  async function onSave() {
+    if (pending) return;
+    onError(null);
+    setPending(true);
+    try {
       const res = await fetch(`/api/golf/leagues/${league.league_id}/lineups`, {
         method: "POST",
         headers: { "content-type": "application/json" },
@@ -100,14 +108,18 @@ function LineupForm({
       });
       const payload = (await res.json().catch(() => ({}))) as {
         error?: string;
+        lineup?: { saved_at?: string };
       };
       if (!res.ok) {
-        setError(payload.error || `Save failed (${res.status})`);
+        onError(payload.error || `Save failed (${res.status})`);
         return;
       }
-      setMessage("Lineup saved.");
-      router.refresh();
-    });
+      onSaved(payload.lineup?.saved_at ?? new Date().toISOString());
+    } catch {
+      onError("Save failed (network)");
+    } finally {
+      setPending(false);
+    }
   }
 
   return (
@@ -133,7 +145,7 @@ function LineupForm({
                   <span className="league-meta">
                     {" "}
                     · {player.slot ?? "—"}
-                    {tee ? ` · tee ${new Date(tee).toLocaleString()}` : ""}
+                    {tee ? ` · tee ${formatUtc(tee)}` : ""}
                     {locked ? " · LOCKED" : ""}
                   </span>
                 </span>
@@ -212,13 +224,6 @@ function LineupForm({
         ) : null}
       </div>
 
-      {error ? (
-        <p className="form-error" role="alert">
-          {error}
-        </p>
-      ) : null}
-      {message ? <p className="league-meta">{message}</p> : null}
-
       <button
         className="button"
         type="button"
@@ -229,6 +234,71 @@ function LineupForm({
         {pending ? "Saving…" : "Save lineup"}
       </button>
     </div>
+  );
+}
+
+function LineupEditor({
+  league,
+  event,
+  team,
+  stored,
+  showAlt1,
+  showAlt2,
+  now,
+}: {
+  league: LeagueSnapshot;
+  event: GolfEventMeta;
+  team: Team;
+  stored: GolfWeekLineup | null;
+  showAlt1: boolean;
+  showAlt2: boolean;
+  now: Date;
+}) {
+  const [message, setMessage] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [savedAtOverride, setSavedAtOverride] = useState<string | null>(null);
+  const savedAt = savedAtOverride ?? stored?.saved_at ?? null;
+  const formKey = stored?.saved_at ?? "none";
+
+  return (
+    <>
+      <p className="league-meta" style={{ marginTop: "0.75rem" }}>
+        {event.name} · {event.multiplier_tier} · starts{" "}
+        {formatUtc(event.starts_at)} · team {team.name}
+        {savedAt ? ` · saved ${formatUtc(savedAt)}` : ""}
+      </p>
+
+      {error ? (
+        <p className="form-error" role="alert">
+          {error}
+        </p>
+      ) : null}
+      {message ? (
+        <p className="league-meta" role="status">
+          {message}
+        </p>
+      ) : null}
+
+      <LineupForm
+        key={formKey}
+        league={league}
+        event={event}
+        team={team}
+        stored={stored}
+        showAlt1={showAlt1}
+        showAlt2={showAlt2}
+        now={now}
+        onSaved={(nextSavedAt) => {
+          setError(null);
+          setMessage("Lineup saved.");
+          setSavedAtOverride(nextSavedAt);
+        }}
+        onError={(value) => {
+          setMessage(null);
+          setError(value);
+        }}
+      />
+    </>
   );
 }
 
@@ -256,15 +326,7 @@ export function GolfLineupPanel({
       ? (league.lineups?.teams[String(activeTeamId)]?.[activeEventId] ?? null)
       : null;
 
-  const formKey = `${activeEventId}-${activeTeamId}-${stored?.saved_at ?? "none"}`;
-
-  const now = useMemo(() => {
-    // Fixtures use a fixed clock so tee locks stay demoable offline.
-    if (league.synced_at?.startsWith("2026-07-27")) {
-      return new Date(GOLF_FIXTURE_NOW);
-    }
-    return new Date();
-  }, [league.synced_at]);
+  const now = useMemo(() => lineupClock(league.synced_at), [league.synced_at]);
 
   if (!events.length || !activeEvent || !team) {
     return (
@@ -306,16 +368,9 @@ export function GolfLineupPanel({
         ))}
       </div>
 
-      <p className="league-meta" style={{ marginTop: "0.75rem" }}>
-        {activeEvent.name} · {activeEvent.multiplier_tier} · starts{" "}
-        {new Date(activeEvent.starts_at).toLocaleString()} · team {team.name}
-        {stored?.saved_at
-          ? ` · saved ${new Date(stored.saved_at).toLocaleString()}`
-          : ""}
-      </p>
-
-      <LineupForm
-        key={formKey}
+      {/* Remount clears save status when switching event/team. */}
+      <LineupEditor
+        key={`${activeEventId}-${activeTeamId}`}
         league={league}
         event={activeEvent}
         team={team}

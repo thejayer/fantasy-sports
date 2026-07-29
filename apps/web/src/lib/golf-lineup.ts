@@ -40,6 +40,18 @@ export type GolfLineupsFile = {
 /** Deterministic fixture clock (matches Python `FIXTURE_NOW`). */
 export const GOLF_FIXTURE_NOW = "2026-03-12T14:00:00+00:00";
 
+/**
+ * Wall clock for lock checks. Committed fixtures use a fixed `synced_at`
+ * (`2026-07-27…`); evaluate tee times against `GOLF_FIXTURE_NOW` so R1 locks
+ * stay demoable long after the fixture event dates have passed.
+ */
+export function lineupClock(syncedAt: string | null | undefined): Date {
+  if (syncedAt?.startsWith("2026-07-27")) {
+    return new Date(GOLF_FIXTURE_NOW);
+  }
+  return new Date();
+}
+
 export function fixtureEvents(season: number): GolfEventMeta[] {
   return [
     {

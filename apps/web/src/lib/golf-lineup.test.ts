@@ -5,6 +5,7 @@ import {
   buildLineupsPayload,
   defaultLineupFromRoster,
   GOLF_FIXTURE_NOW,
+  lineupClock,
   playerIsLocked,
   validateWeekLineup,
 } from "./golf-lineup";
@@ -26,6 +27,15 @@ function fakeRoster(n: number): Player[] {
 }
 
 describe("golf lineups", () => {
+  it("uses fixture clock for committed fixture synced_at", () => {
+    expect(lineupClock("2026-07-27T00:00:00+00:00").toISOString()).toBe(
+      new Date(GOLF_FIXTURE_NOW).toISOString(),
+    );
+    expect(lineupClock("2026-07-29T12:00:00+00:00").getTime()).toBeGreaterThan(
+      new Date(GOLF_FIXTURE_NOW).getTime(),
+    );
+  });
+
   it("defaults starters captain and alts from roster", () => {
     const lineup = defaultLineupFromRoster(
       fakeRoster(15),
