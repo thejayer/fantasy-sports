@@ -464,6 +464,159 @@ Fold in continuously rather than saving for the end.
 
 ---
 
+## Phase 6 — Fantasy golf (PGA Tour) — PLANNED
+
+Private fantasy golf in the **same Strictly Jayers hub** as football/baseball
+(Auth.js allowlist, season chips, sport-aware `LeagueView`). Model is the
+**LIV Golf real-team counting score**, not official LIV Fantasy (4 + sub +
+LIV team). Tour scope: **PGA Tour / FedExCup only**. Engine work lives in a
+new package (working name `src/sg` / CLI `sg`) — do **not** extend `src/ffa`
+(NFL analytics) for golf.
+
+### 6.0 Product model (locked)
+
+| Area | Decision |
+|---|---|
+| Placement | Hub sport alongside football + baseball (not a separate app) |
+| Tour / pool | PGA Tour events; draft pool = **all OWGR** players |
+| League size | Manager-configured **6–14** teams |
+| Season format | Manager choice: **H2H** *or* **season cumulative points** |
+| Draft | Once per year; MVP = **snake**; auction + keepers = settings (defaults off) |
+| Cap | Auction draft establishes acquisition cost; **no weekly salary** |
+| Roster | **5 starters** + bench (**2–20**, manager-configured; default TBD ~8–10) |
+| Captain | Selected each week; **tiebreaker only** (not a points multiplier) |
+| Lineup locks | Per player, before **that player's** round tee time |
+| Counting | Thu/Fri: best **4 of 5** starter rounds; Sat/Sun: **all 5** |
+| Player score | Round **to-par**; fantasy points = **−(to-par)** (under-par positive) |
+| Missed cut / WD | League setting: **off / alt1 / alt1+2** — alts fill **weekend only** |
+| Schedule | Full FedExCup slate; manager may curate which events count |
+| Multipliers | Per-event on the **week total** (e.g. regular 1×, signature 1.5×, major 2×) |
+| Scoring cadence | **End-of-day** (not live in-round) |
+| Playoff holes | Out of MVP; handle edge cases as exceptions |
+
+**Alternates (option C):** when enabled, owner names Alt1 (and optionally Alt2)
+from the bench. If a starter misses the cut (or WD before the weekend), Alt1
+then Alt2 supply Sat/Sun rounds for counting. Thursday/Friday still use the
+original five starters (best 4 of 5). When alts are **off**, a MC starter
+simply contributes nothing on the weekend.
+
+### 6.1 League settings schema (sketch)
+
+Persisted with the league (hub settings / golf-specific JSON — exact file
+layout lands with 6.2). Illustrative shape:
+
+```yaml
+# golf league settings (conceptual)
+sport: golf
+team_count: 10                    # 6–14
+format: h2h                       # h2h | season_points
+draft:
+  style: snake                    # snake | auction
+  keepers: false
+roster:
+  starters: 5                     # fixed for MVP
+  bench: 10                       # 2–20
+captain_tiebreaker: true
+missed_cut:
+  mode: alt1                      # off | alt1 | alt1_2
+schedule:
+  source: fedex_cup               # curated from official slate
+  include: []                     # optional allow-list of event ids
+  exclude: []                     # optional deny-list
+multipliers:
+  regular: 1.0
+  signature: 1.5
+  major: 2.0
+scoring:
+  grain: end_of_day
+  player_points: neg_to_par       # points = -(strokes - par)
+  thu_fri_count: 4
+  sat_sun_count: 5
+```
+
+Hub create-league UI exposes these knobs; defaults should make a playable
+league without every toggle.
+
+### 6.2 Data plane (`sg` — not `ffa`)
+
+New offline pipeline, same hub pattern as `sj` / projection exports:
+
+1. **Ingest** — OWGR universe + PGA Tour schedule/field/round scores (source
+   TBD: official / licensed feed preferred over brittle scrape).
+2. **Normalize** — per-player per-round `{event_id, round, to_par, status}`
+   with statuses for DNS / WD / MC / active.
+3. **Export** — JSON (or Parquet later) under a golf store root the hub reads
+   session-gated, e.g. `golf/{league_id}/{season}/…` or shared
+   `golf/events/{season}/{event_id}.json`.
+4. **Score week** — pure function of lineups + round file + league settings
+   (counting + alts + multiplier). Hub never calls live tour APIs at request
+   time; EOD job writes artifacts, hub displays them.
+
+Fixtures/seeds for offline UI tests (same role as `sj seed` / `fixtures/sj`).
+
+### 6.3 Week scoring algorithm (normative)
+
+For one team in one counting event:
+
+1. Resolve the owner's **locked lineup** (5 starters, captain, Alt1/Alt2).
+2. For each calendar round R ∈ {Thu, Fri, Sat, Sun} that the event plays:
+   - Build the five **active** starter scores for R (to-par → points).
+   - If R is weekend and `missed_cut.mode ≠ off`, replace MC/WD starters
+     with Alt1 then Alt2 for that round only.
+   - **Thu/Fri:** team round points = sum of the best `thu_fri_count` (4)
+     active scores.
+   - **Sat/Sun:** team round points = sum of all `sat_sun_count` (5) active
+     scores (missing round → 0 for that slot).
+3. `week_raw = Σ team round points`.
+4. `week_total = week_raw × event_multiplier`.
+5. **H2H:** compare `week_total`; tie → higher captain `week` points
+   (sum of captain's counting rounds that week); still tied → draw.
+6. **Season points:** add `week_total` into season standings (H2H leagues
+   track W–L–T instead or in addition — exact standings columns in 6.5).
+
+Opposite-field / short-field events follow the curated schedule; odd formats
+are per-event exceptions, not general playoff-hole logic.
+
+### 6.4 MVP slices (build order)
+
+| Slice | Delivers | Notes |
+|---|---|---|
+| **6.4a** League create + settings | Golf league in registry/hub; format, roster size, MC mode, multipliers | No live tour data yet |
+| **6.4b** Snake draft + roster | One draft/year; 5 + bench; OWGR pool fixture | Auction/keepers later |
+| **6.4c** Weekly lineup | Set starters / captain / alts; tee-time locks | Client + snapshot of locks |
+| **6.4d** EOD scorer + board | Counting scoreboard for the event week | `sg` job + hub read |
+| **6.4e** Standings | H2H record *or* season points per settings | Matchups tab pattern |
+
+Out of MVP: live hole-by-hole, LIV tour, DFS salary, public/open leagues,
+playoff-hole scoring, auction UI, keeper clauses, in-round swap after tee.
+
+### 6.5 Hub surfaces
+
+Extend sport-aware `LeagueView` (do not fork a golf-only page tree):
+
+- Standings / Teams / roster (golf slots: starters, bench, alts)
+- Schedule (curated FedEx events + multipliers)
+- Lineup (week-scoped)
+- Scoreboard (daily counting + week total)
+- Draft results (ESPN-style board pattern already used for football/baseball)
+- History when multi-season golf snapshots exist
+
+Baseball stays projection-free; football keeps `ffa`. Golf is a **third sport
+lane** with its own sync/score package.
+
+### 6.6 Risks
+
+- **Data rights / feed quality** — largest external dependency; fixtures unblock
+  UI, production needs a durable PGAT+OWGR source.
+- **Tee-time locks** — per-player lock times are timezone- and wave-sensitive;
+  store tee times in UTC and fail closed (late change rejected).
+- **MC + alt edge cases** — Friday WD vs Saturday DNS vs 36-hole cut; encode
+  explicit status rules in the scorer tests.
+- **Scope creep** — auction, keepers, live scoring, LIV: settings stubs only
+  until MVP slices 6.4a–e ship.
+
+---
+
 ## Sequencing
 
 **Phase 5 ops closeout is in** (cache, promote, cold-start knobs, a11y/perf
@@ -486,10 +639,16 @@ shape. Phase 3.1 (unify views) before any other UI work so nothing ships twice.
 | B — Data | ~~1.4~~, ~~2.1~~, ~~2.2~~, ~~2.3~~, ~~2.4~~, ~~2.5~~ | `src/sj`, `configs` |
 | C — Product | ~~3.1~~ → ~~3.2~~ → ~~3.3~~ → ~~3.4~~ → ~~3.5~~ → ~~3.6~~ | `apps/web` |
 | D — Engine | ~~4.1~~ … ~~4.6~~ | `src/ffa` + football hub surfaces; baseball ESPN-only |
+| F — Golf | **6.4a → 6.4e** (planned) | new `src/sg` + hub golf sport lane |
 
 A, B, and D barely overlap with remaining C polish. Playoff make-odds MC
 (schedule × typical-week draws × greedy lineups) shipped with 4.5; bracket
 champion odds remain optional. Baseball modeling is explicitly out of scope.
+
+**Phase 6 (golf)** is a new product track: private PGA Tour fantasy with the
+LIV real-team counting model. It does not block remaining football/baseball
+polish; start when feed + MVP slices (6.4a–e) are staffed. Do not put golf
+scoring into `src/ffa`.
 
 **Fastest visible wins** remaining: 3.2 (a decade of history appears), 3.3
 (tables become usable). 2.1 is done — draft and matchup data persist for zero
