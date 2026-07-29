@@ -8,15 +8,14 @@ set -eu
 
 DATA_DIR="${SJ_DATA_DIR:-/app/data/sj}"
 HUB_DIR="${SJ_HUB_DIR:-/app/data/hub}"
-mkdir -p "$HUB_DIR" 2>/dev/null || true
 
-# Production (SJ_SYNC_ON_START=0): do not probe SJ_DATA_DIR before listen.
-# A slow/broken GCS FUSE mount can hang `test -f` / `test -w` and Cloud Run
-# kills the revision for never binding PORT. Next reads the store on request.
+# Production (SJ_SYNC_ON_START=0): do not mkdir/stat/test GCS FUSE mounts before
+# listen. A slow/broken mount hangs the entrypoint and Cloud Run kills the
+# revision for never binding PORT. Next reads both stores on request.
 if [ "${SJ_SYNC_ON_START:-0}" != "1" ]; then
-  echo "Starting hub (SJ_SYNC_ON_START=0); store at $DATA_DIR"
+  echo "Starting hub (SJ_SYNC_ON_START=0); ESPN=$DATA_DIR hub=$HUB_DIR"
 else
-  mkdir -p "$DATA_DIR" 2>/dev/null || true
+  mkdir -p "$DATA_DIR" "$HUB_DIR" 2>/dev/null || true
 
   writable=0
   # Cap FUSE/stat waits so a bad mount cannot block Node forever.
@@ -54,6 +53,7 @@ export PORT="${PORT:-8080}"
 # Always bind all interfaces; public URL is AUTH_URL (see deploy-hub.yml).
 export HOSTNAME=0.0.0.0
 export SJ_DATA_DIR="$DATA_DIR"
+export SJ_HUB_DIR="$HUB_DIR"
 export AUTH_TRUST_HOST="${AUTH_TRUST_HOST:-true}"
 
 if [ -z "${AUTH_URL:-}" ]; then
