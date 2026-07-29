@@ -1,6 +1,10 @@
+import NextAuth from "next-auth";
 import { NextResponse } from "next/server";
-import { auth } from "./auth";
-import { safeCallbackUrl } from "./lib/safe-redirect";
+
+import { authConfig } from "@/auth.config";
+import { safeCallbackUrl } from "@/lib/safe-redirect";
+
+const { auth } = NextAuth(authConfig);
 
 export default auth((req) => {
   const { pathname, search } = req.nextUrl;
