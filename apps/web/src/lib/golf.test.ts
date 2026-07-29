@@ -33,6 +33,8 @@ describe("golf create helpers", () => {
     expect(snap.draft[0]?.player_name).toBe("Scottie Scheffler");
     expect(snap.teams[0]?.roster).toHaveLength(15);
     expect(snap.teams[0]?.roster.filter((p) => p.slot === "GS")).toHaveLength(5);
+    expect(snap.scoreboard?.events).toHaveLength(2);
+    expect(snap.scoreboard?.events[0]?.pairings.length).toBeGreaterThan(0);
   });
 
   it("rejects out-of-range team counts and bad slugs", () => {

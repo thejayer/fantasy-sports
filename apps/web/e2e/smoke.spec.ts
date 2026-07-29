@@ -58,6 +58,15 @@ test.describe("hub smoke", () => {
     await expect(page.getByRole("button", { name: /Save lineup/i })).toBeVisible();
   });
 
+  test("golf scoreboard tab shows week totals and H2H", async ({ page }) => {
+    await page.goto("/leagues/golf-main?tab=scoreboard");
+    await expect(page.getByText(/Counting scoreboard/i)).toBeVisible();
+    await expect(page.getByText(/THE PLAYERS Championship/i).first()).toBeVisible();
+    await expect(page.getByRole("heading", { name: /Head-to-head/i })).toBeVisible();
+    await expect(page.getByRole("heading", { name: /Week totals/i })).toBeVisible();
+    await expect(page.getByText("Fairway Phantoms").first()).toBeVisible();
+  });
+
   test("football standings render fixture team names", async ({ page }) => {
     await page.goto("/leagues/football-main");
     await expect(page.getByText("Gridiron Goons")).toBeVisible();

@@ -4,6 +4,7 @@ import { DraftResultsPanel } from "@/components/DraftResultsPanel";
 import { EmptyState } from "@/components/EmptyState";
 import { FreeAgentsBoard } from "@/components/FreeAgentsBoard";
 import { GolfLineupPanel } from "@/components/GolfLineupPanel";
+import { GolfScoreboardPanel } from "@/components/GolfScoreboardPanel";
 import { GolfSettingsPanel } from "@/components/GolfSettingsPanel";
 import { HistoryPanel, type HistoryView } from "@/components/HistoryPanel";
 import { MatchupsPanel, type MatchupsView } from "@/components/MatchupsPanel";
@@ -479,10 +480,7 @@ export function LeagueView({
       ) : null}
 
       {active === "scoreboard" && isGolf ? (
-        <EmptyState title="End-of-day scoring comes in 6.4d">
-          Counting scoreboard (best 4 of 5 midweek, all 5 weekend) needs round
-          files from <code>sg</code> — no live tour API calls from the hub.
-        </EmptyState>
+        <GolfScoreboardPanel league={league} eventId={golfEventId} />
       ) : null}
 
       {active === "players" ? (

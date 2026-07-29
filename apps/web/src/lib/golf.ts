@@ -6,6 +6,7 @@
 
 import { runSnakeDraft } from "@/lib/golf-draft";
 import { buildLineupsPayload, GOLF_FIXTURE_NOW } from "@/lib/golf-lineup";
+import { buildScoreboardPayload } from "@/lib/golf-score";
 
 export const GOLF_MIN_TEAMS = 6;
 export const GOLF_MAX_TEAMS = 14;
@@ -178,6 +179,9 @@ export function buildGolfSnapshot(
           nowIso: GOLF_FIXTURE_NOW,
         })
       : undefined;
+  const scoreboard = lineups
+    ? buildScoreboardPayload(teams, lineups, golf, synced_at)
+    : undefined;
   return {
     schema_version: 2,
     league_id: input.league_id,
@@ -203,5 +207,6 @@ export function buildGolfSnapshot(
     teams,
     players: drafted.players,
     ...(lineups ? { lineups } : {}),
+    ...(scoreboard ? { scoreboard } : {}),
   };
 }

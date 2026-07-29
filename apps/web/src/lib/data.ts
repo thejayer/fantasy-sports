@@ -280,6 +280,62 @@ export type GolfLineupsSnapshot = {
   >;
 };
 
+/** Golf EOD scoreboard concern (roadmap 6.4d). */
+export type GolfScoreboardRound = {
+  round: number;
+  label: string;
+  points: number;
+  counted_player_ids: number[];
+  dropped_player_ids: number[];
+  slots: Array<{
+    player_id: number;
+    starter_id: number;
+    source: string;
+    status: string;
+    to_par: number | null;
+    points: number;
+  }>;
+};
+
+export type GolfScoreboardTeamWeek = {
+  starters: number[];
+  captain: number;
+  alt1?: number | null;
+  alt2?: number | null;
+  week_raw: number;
+  week_total: number;
+  captain_week: number;
+  multiplier: number;
+  by_round: Record<string, GolfScoreboardRound>;
+};
+
+export type GolfScoreboardEvent = {
+  event_id: string;
+  name?: string | null;
+  week?: number | null;
+  multiplier_tier: string;
+  multiplier: number;
+  scored_at: string;
+  teams: Record<string, GolfScoreboardTeamWeek>;
+  pairings: Array<{
+    home_team_id: number;
+    away_team_id: number;
+    home_name?: string | null;
+    away_name?: string | null;
+    home_total: number;
+    away_total: number;
+    home_captain_week?: number;
+    away_captain_week?: number;
+    outcome: "W" | "L" | "T" | string;
+  }>;
+};
+
+export type GolfScoreboardSnapshot = {
+  period_label?: string;
+  current_event_id: string | null;
+  events: GolfScoreboardEvent[];
+};
+
 export type LeagueSnapshot = {
   league_id: string;
   short_name?: string;
@@ -302,6 +358,8 @@ export type LeagueSnapshot = {
   free_agents?: Player[];
   /** Present on hub-native golf leagues after 6.4c. */
   lineups?: GolfLineupsSnapshot;
+  /** Present on hub-native golf leagues after 6.4d. */
+  scoreboard?: GolfScoreboardSnapshot;
   teams: Team[];
   players: Player[];
 };
@@ -406,6 +464,7 @@ type FreeAgentsFile = {
 };
 
 type LineupsFile = GolfLineupsSnapshot;
+type ScoreboardFile = GolfScoreboardSnapshot;
 
 function dataRoots(): string[] {
   const roots = [
@@ -478,6 +537,7 @@ function assembleFromParts(
   transactions: TransactionsFile | null,
   freeAgents: FreeAgentsFile | null,
   lineups: LineupsFile | null,
+  scoreboard: ScoreboardFile | null,
 ): LeagueSnapshot {
   const matchupById = matchups?.teams ?? {};
   const rosterById = rosters.teams ?? {};
@@ -511,6 +571,7 @@ function assembleFromParts(
     transactions: transactions?.transactions ?? [],
     free_agents: freeAgents?.free_agents ?? [],
     lineups: lineups ?? undefined,
+    scoreboard: scoreboard ?? undefined,
     teams,
     players: rosters.players ?? [],
   };
@@ -563,6 +624,11 @@ async function loadSnapshotFromRoot(
   const lineups = manifest.files.lineups
     ? await readJson<LineupsFile>(path.join(directory, manifest.files.lineups))
     : null;
+  const scoreboard = manifest.files.scoreboard
+    ? await readJson<ScoreboardFile>(
+        path.join(directory, manifest.files.scoreboard),
+      )
+    : null;
   return assembleFromParts(
     manifest,
     standings,
@@ -573,6 +639,7 @@ async function loadSnapshotFromRoot(
     transactions,
     freeAgents,
     lineups,
+    scoreboard,
   );
 }
 
