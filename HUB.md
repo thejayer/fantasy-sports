@@ -75,9 +75,10 @@ protection is the CI gate). Manual rollback / first-time:
 
 1. GitHub → **Actions** → **deploy hub** → **Run workflow**
 2. Defaults are fine (`fantasy-sports-analytics` / `us-central1` / `sj-hub`)
-3. Leave **bucket** blank to serve baked fixtures (default for CD). Set it to
-   `fantasy-sports-analytics-sj-data` only after `./scripts/setup-sync-infra.sh`
-   has granted the hub runtime SA read access on that bucket.
+3. Set **bucket** to `fantasy-sports-analytics-sj-data` after
+   `./scripts/setup-sync-infra.sh` (hub mounts it **RW** for ESPN + golf).
+   Leave blank on push/CD to **keep** the existing volume (blank no longer
+   clears mounts). Ignore deprecated **hub_bucket**.
 4. When it finishes, copy the printed URL
 
 ### Google OAuth redirect (required after first deploy)
@@ -139,13 +140,13 @@ Sign-in allowlist = `ALLOWED_EMAILS` ∪ member emails in that file.
 
 | Env | Path (prod) | Mount | Owns |
 |---|---|---|---|
-| `SJ_DATA_DIR` | `/app/data/sj` | GCS **RO** (`…-sj-data`) | ESPN football/baseball from `sj sync` |
-| `SJ_HUB_DIR` | `/app/data/hub` | GCS **RW** (`…-sj-hub`) | Golf leagues, auction rooms, `hub_members.json` |
+| `SJ_DATA_DIR` | `/app/data/sj` | GCS **RW** (`…-sj-data`) | ESPN football/baseball from `sj sync` |
+| `SJ_HUB_DIR` | `/app/data/sj` | same mount | Golf leagues, auction rooms, `hub_members.json` |
 
-`getLeagueIndex` merges both indexes. Sync/backfill never write golf (`platform: hub`
-skipped) and refuse to overwrite `sport=golf` if paths collide. Create the hub
-bucket with `./scripts/setup-sync-infra.sh`, then deploy hub with both
-`bucket` and `hub_bucket` workflow inputs.
+Prod uses **one** RW mount. A second FUSE volume (`…-sj-hub`) failed Cloud Run
+PORT probes. `getLeagueIndex` still merges roots when they differ (local sibling
+`data/hub`). Sync/backfill skip `platform: hub` and refuse to overwrite
+`sport=golf`. Deploy hub with **bucket** only (`hub_bucket` is ignored).
 
 ### Create / populate (Cloud Shell)
 
@@ -181,14 +182,17 @@ they survive Cloud Run restarts and stay identical across instances.
 
 ```
 Cloud Scheduler ──▶ Cloud Run Job (sj-sync) ──▶ gs://<project>-sj-data
-                                                        │ (read-only mount)
+                                                        │ (RW mount)
                                                         ▼
                                               Cloud Run service (sj-hub)
+                                         (ESPN reads + golf/members writes)
 ```
 
-- **Writes:** the `sj-sync` job runs `sj sync --current-only` on a schedule
+- **ESPN writes:** the `sj-sync` job runs `sj sync --current-only` on a schedule
   (default every 30 minutes) with ESPN cookies from Secret Manager.
-- **Reads:** the hub mounts the bucket read-only at `/app/data/sj` and caches
+- **Hub writes:** golf leagues, auction rooms, and `hub_members.json` go to the
+  same bucket (`SJ_HUB_DIR=/app/data/sj`). Sync skips `platform: hub` / golf.
+- **Reads:** the hub mounts the bucket read-write at `/app/data/sj` and caches
   snapshot JSON via Next.js Data Cache (`unstable_cache`, tag `sj-snapshots`)
   for `SJ_CACHE_TTL_MS` (default 60s). After sync, POST
   `https://<hub>/api/revalidate` with `Authorization: Bearer $SJ_REVALIDATE_SECRET`
