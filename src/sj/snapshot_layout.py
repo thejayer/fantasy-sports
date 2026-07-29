@@ -40,6 +40,7 @@ CONCERN_FILES = (
     "transactions.json",
     "free_agents.json",
     "lineups.json",
+    "scoreboard.json",
 )
 
 
@@ -83,6 +84,7 @@ def split_snapshot(snapshot: dict[str, Any]) -> dict[str, dict[str, Any]]:
         "transactions": "transactions.json",
         "free_agents": "free_agents.json",
         "lineups": "lineups.json",
+        "scoreboard": "scoreboard.json",
     }
     manifest = {
         "schema_version": SCHEMA_VERSION,
@@ -133,6 +135,14 @@ def split_snapshot(snapshot: dict[str, Any]) -> dict[str, dict[str, Any]]:
             "events": [],
             "teams": {},
         },
+        # Golf EOD scoreboard (roadmap 6.4d); empty shell for ESPN sports.
+        "scoreboard.json": snapshot.get("scoreboard")
+        if isinstance(snapshot.get("scoreboard"), dict)
+        else {
+            "period_label": snapshot.get("period_label"),
+            "current_event_id": None,
+            "events": [],
+        },
     }
 
 
@@ -153,6 +163,7 @@ def assemble_snapshot(parts: dict[str, dict[str, Any]]) -> dict[str, Any]:
     transactions_part = _optional_part(parts, "transactions", "transactions.json") or {}
     free_agents_part = _optional_part(parts, "free_agents", "free_agents.json") or {}
     lineups_part = _optional_part(parts, "lineups", "lineups.json") or {}
+    scoreboard_part = _optional_part(parts, "scoreboard", "scoreboard.json") or {}
 
     roster_by_id = rosters.get("teams") or {}
     matchup_by_id = matchups.get("teams") or {}
@@ -213,6 +224,20 @@ def assemble_snapshot(parts: dict[str, dict[str, Any]]) -> dict[str, Any]:
             or candidate.get("current_event_id") is not None
         ):
             payload["lineups"] = candidate
+    if scoreboard_part:
+        nested = scoreboard_part.get("scoreboard")
+        candidate = (
+            nested
+            if isinstance(nested, dict)
+            else scoreboard_part
+            if "events" in scoreboard_part or "teams" in scoreboard_part
+            else None
+        )
+        if isinstance(candidate, dict) and (
+            bool(candidate.get("events"))
+            or candidate.get("current_event_id") is not None
+        ):
+            payload["scoreboard"] = candidate
     return payload
 
 

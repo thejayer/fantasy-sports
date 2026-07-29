@@ -8,6 +8,7 @@ from typing import Any
 from sg.draft import run_snake_draft
 from sg.lineup import build_lineups_payload
 from sg.schedule import FIXTURE_NOW
+from sg.score import build_scoreboard_payload
 from sg.settings import (
     DEFAULT_GOLF_SETTINGS,
     GolfSettings,
@@ -98,6 +99,7 @@ def build_golf_snapshot(
         draft, players, free_agents = run_snake_draft(teams, settings)
 
     lineups: dict[str, Any] | None = None
+    scoreboard: dict[str, Any] | None = None
     current_week: int | None = None
     if build_lineups and run_draft:
         # Deterministic lock stamps when regenerating fixtures.
@@ -110,6 +112,15 @@ def build_golf_snapshot(
             now_iso=now_iso,
         )
         current_week = 1
+        # Score both fixture events offline (roadmap 6.4d).
+        scoreboard = build_scoreboard_payload(
+            {
+                "settings": {"golf": settings.model_dump(mode="json")},
+                "teams": teams,
+                "lineups": lineups,
+            },
+            scored_at=stamp,
+        )
 
     payload: dict[str, Any] = {
         "schema_version": SCHEMA_VERSION,
@@ -138,6 +149,8 @@ def build_golf_snapshot(
     }
     if lineups is not None:
         payload["lineups"] = lineups
+    if scoreboard is not None:
+        payload["scoreboard"] = scoreboard
     return payload
 
 

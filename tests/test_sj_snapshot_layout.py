@@ -150,6 +150,7 @@ def test_split_round_trip_preserves_monolith_fields():
         "transactions.json",
         "free_agents.json",
         "lineups.json",
+        "scoreboard.json",
     }
     assert parts["manifest.json"]["schema_version"] == SCHEMA_VERSION
     assert parts["settings.json"]["settings"]["faab"] is True
@@ -170,6 +171,8 @@ def test_split_round_trip_preserves_monolith_fields():
     assert "lineups" not in reassembled
     assert parts["lineups.json"]["events"] == []
     assert parts["lineups.json"]["teams"] == {}
+    assert "scoreboard" not in reassembled
+    assert parts["scoreboard.json"]["events"] == []
 
 
 def test_assemble_attaches_filled_golf_lineups():
@@ -184,6 +187,25 @@ def test_assemble_attaches_filled_golf_lineups():
     reassembled = assemble_snapshot(parts)
     assert reassembled["lineups"]["current_event_id"] == "2026-players"
     assert reassembled["lineups"]["teams"]["1"]["captain"] == 10
+
+
+def test_assemble_attaches_filled_golf_scoreboard():
+    original = _monolith()
+    original["scoreboard"] = {
+        "period_label": "event",
+        "current_event_id": "2026-players",
+        "events": [
+            {
+                "event_id": "2026-players",
+                "multiplier": 1.5,
+                "teams": {"1": {"week_total": 12.0}},
+                "pairings": [],
+            }
+        ],
+    }
+    parts = split_snapshot(original)
+    reassembled = assemble_snapshot(parts)
+    assert reassembled["scoreboard"]["events"][0]["multiplier"] == 1.5
 
 
 def test_assemble_accepts_concern_name_keys():

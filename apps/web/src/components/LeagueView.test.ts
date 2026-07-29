@@ -64,6 +64,7 @@ describe("LeagueView unification", () => {
     expect(viewSource).toMatch(/GOLF_TABS/);
     expect(viewSource).toMatch(/GolfSettingsPanel/);
     expect(viewSource).toMatch(/GolfLineupPanel/);
+    expect(viewSource).toMatch(/GolfScoreboardPanel/);
     expect(viewSource).toMatch(/isGolf/);
     expect(viewSource).not.toMatch(/Snake draft comes in 6\.4b/);
     expect(viewSource).not.toMatch(/Weekly lineups come in 6\.4c/);
