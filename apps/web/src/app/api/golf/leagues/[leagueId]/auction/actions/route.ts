@@ -17,6 +17,11 @@ import {
   readAuctionRoom,
   writeAuctionRoom,
 } from "@/lib/golf-auction-store";
+import {
+  enforceAuctionControl,
+  enforceAuctionFinalize,
+  enforceTeamAction,
+} from "@/lib/franchise-acl";
 import { requireSession } from "@/lib/session";
 
 export const dynamic = "force-dynamic";
@@ -70,9 +75,12 @@ export async function POST(request: Request, { params }: Props) {
     let next: AuctionRoom;
     const now = new Date();
     switch (action) {
-      case "start":
+      case "start": {
+        const denied = await enforceAuctionControl(leagueId);
+        if (denied) return denied;
         next = startAuctionRoom(room, now);
         break;
+      }
       case "nominate": {
         const teamId = Number(body.team_id);
         const playerId = Number(body.player_id);
@@ -82,6 +90,8 @@ export async function POST(request: Request, { params }: Props) {
             { status: 400 },
           );
         }
+        const denied = await enforceTeamAction(leagueId, teamId);
+        if (denied) return denied;
         next = nominatePlayer(room, teamId, playerId, now);
         break;
       }
@@ -94,6 +104,8 @@ export async function POST(request: Request, { params }: Props) {
             { status: 400 },
           );
         }
+        const denied = await enforceTeamAction(leagueId, teamId);
+        if (denied) return denied;
         next = placeBid(room, teamId, amount, now);
         break;
       }
@@ -105,10 +117,14 @@ export async function POST(request: Request, { params }: Props) {
             { status: 400 },
           );
         }
+        const denied = await enforceTeamAction(leagueId, teamId);
+        if (denied) return denied;
         next = passBid(room, teamId, now);
         break;
       }
       case "finalize": {
+        const denied = await enforceAuctionFinalize(leagueId);
+        if (denied) return denied;
         const league = await getLeagueSnapshot(leagueId, season);
         if (!league) {
           return NextResponse.json(

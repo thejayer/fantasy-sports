@@ -453,8 +453,9 @@ Fold in continuously rather than saving for the end.
   does.
 - **Member admin / email↔team ACL.** Hub `/admin` + `{SJ_HUB_DIR}/hub_members.json`
   (add Google emails, roles, link one franchise per league from snapshots).
-  Sign-in allowlist = `ALLOWED_EMAILS` ∪ members file. Next: enforce links on
-  golf auction/lineup mutations.
+  Sign-in allowlist = `ALLOWED_EMAILS` ∪ members file. Golf auction/lineup
+  mutations enforce the link (admins + `AUTH_DEV_BYPASS` may act as any team;
+  finalize is admin-only).
 - **Hub-native store isolation.** Golf / members / auction rooms write under
   `SJ_HUB_DIR`. Prod shares the ESPN GCS bucket RW at `/app/data/sj` (dual FUSE
   failed Cloud Run PORT probes); sync skips `platform: hub` and refuses

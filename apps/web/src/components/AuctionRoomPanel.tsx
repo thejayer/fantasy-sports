@@ -12,6 +12,7 @@ import {
 } from "@/lib/golf-auction-room";
 import { draftBudgetRows } from "@/lib/golf-draft";
 import { DEFAULT_GOLF_SETTINGS, parseGolfSettings } from "@/lib/golf";
+import type { GolfActingScope } from "@/lib/hub-members";
 
 async function fetchRoom(
   leagueId: string,
@@ -30,18 +31,37 @@ async function fetchRoom(
 export function AuctionRoomPanel({
   league,
   teamId,
+  actingScope,
 }: {
   league: LeagueSnapshot;
   teamId?: number;
+  actingScope?: GolfActingScope;
 }) {
   const golf = parseGolfSettings(league.settings) ?? DEFAULT_GOLF_SETTINGS;
+  const allowedTeamIds =
+    actingScope?.allowedTeamIds ?? league.teams.map((t) => t.team_id);
+  const canPickActingTeam = allowedTeamIds.length > 1;
+  const canControlAuction = actingScope?.canControlAuction ?? true;
+  const canFinalizeAuction = actingScope?.canFinalizeAuction ?? true;
   const [room, setRoom] = useState<AuctionRoom | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
-  const [actingTeamLocal, setActingTeamLocal] = useState<number>(
-    teamId ?? league.teams[0]?.team_id ?? 1,
+  const defaultTeam =
+    (teamId != null && allowedTeamIds.includes(teamId)
+      ? teamId
+      : undefined) ??
+    allowedTeamIds[0] ??
+    league.teams[0]?.team_id ??
+    1;
+  const [actingTeamLocal, setActingTeamLocal] = useState<number>(defaultTeam);
+  const effectiveTeam = canPickActingTeam
+    ? (teamId != null && allowedTeamIds.includes(teamId)
+        ? teamId
+        : actingTeamLocal)
+    : (allowedTeamIds[0] ?? defaultTeam);
+  const actingTeams = league.teams.filter((t) =>
+    allowedTeamIds.includes(t.team_id),
   );
-  const effectiveTeam = teamId ?? actingTeamLocal;
   const [bidAmount, setBidAmount] = useState(1);
   const [nominee, setNominee] = useState<number | "">("");
   const [nowTick, setNowTick] = useState(() => Date.now());
@@ -182,6 +202,9 @@ export function AuctionRoomPanel({
           File-backed multiplayer auction — nominate, bid, and pass with a
           short timer. Polls every second. Not a websocket room.
         </p>
+        {actingScope?.hint ? (
+          <p className="league-meta">{actingScope.hint}</p>
+        ) : null}
         {league.draft?.length ? (
           <p className="league-meta">
             This season already has a completed draft (
@@ -196,7 +219,7 @@ export function AuctionRoomPanel({
           <button
             className="button"
             type="button"
-            disabled={busy}
+            disabled={busy || !canControlAuction}
             onClick={() => void createRoom()}
           >
             {busy ? "Opening…" : "Open auction room"}
@@ -216,19 +239,28 @@ export function AuctionRoomPanel({
       <p className="lede">
         Live OWGR auction · phase <strong>{room.phase}</strong> · rev{" "}
         {room.revision} · acting as{" "}
-        <select
-          value={effectiveTeam}
-          onChange={(e) => setActingTeamLocal(Number(e.target.value))}
-          aria-label="Acting team"
-        >
-          {league.teams.map((t) => (
-            <option key={t.team_id} value={t.team_id}>
-              {t.name}
-            </option>
-          ))}
-        </select>
+        {canPickActingTeam ? (
+          <select
+            value={effectiveTeam}
+            onChange={(e) => setActingTeamLocal(Number(e.target.value))}
+            aria-label="Acting team"
+          >
+            {actingTeams.map((t) => (
+              <option key={t.team_id} value={t.team_id}>
+                {t.name}
+              </option>
+            ))}
+          </select>
+        ) : (
+          <strong aria-label="Acting team">
+            {actingTeams[0]?.name ?? `team ${effectiveTeam}`}
+          </strong>
+        )}
         . Max bid ${maxBid}.
       </p>
+      {actingScope?.hint && !canPickActingTeam ? (
+        <p className="league-meta">{actingScope.hint}</p>
+      ) : null}
 
       {error ? (
         <p className="form-error" role="alert">
@@ -245,7 +277,7 @@ export function AuctionRoomPanel({
           <button
             className="button"
             type="button"
-            disabled={busy}
+            disabled={busy || !canControlAuction}
             onClick={() => void runAction("start")}
           >
             Start auction
@@ -372,11 +404,14 @@ export function AuctionRoomPanel({
           <button
             className="button"
             type="button"
-            disabled={busy}
+            disabled={busy || !canFinalizeAuction}
             onClick={() => void runAction("finalize")}
           >
             Finalize draft
           </button>
+          {!canFinalizeAuction ? (
+            <p className="league-meta">Only an admin can finalize.</p>
+          ) : null}
         </div>
       ) : null}
 

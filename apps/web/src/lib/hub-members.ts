@@ -183,3 +183,146 @@ export function teamLinkForLeague(
 ): HubMemberTeamLink | undefined {
   return member?.teams.find((t) => t.league_id === leagueId);
 }
+
+export type FranchiseAclOk = { ok: true; mode: "bypass" | "linked" };
+export type FranchiseAclDeny = { ok: false; error: string };
+export type FranchiseAclResult = FranchiseAclOk | FranchiseAclDeny;
+
+export type FranchiseAclContext = {
+  email: string | null | undefined;
+  file: HubMembersFile | null;
+  leagueId: string;
+  envAllowlist?: string[];
+  adminEmailsEnv?: string[];
+  /** AUTH_DEV_BYPASS — local/e2e multi-team tooling. */
+  devBypass?: boolean;
+};
+
+function adminOpts(ctx: FranchiseAclContext) {
+  return {
+    envAllowlist: ctx.envAllowlist,
+    adminEmailsEnv: ctx.adminEmailsEnv,
+  };
+}
+
+/** Commissioner / bootstrap admin / local bypass may act as any franchise. */
+export function canBypassFranchiseAcl(ctx: FranchiseAclContext): boolean {
+  if (ctx.devBypass) return true;
+  return canAccessAdmin(ctx.email, ctx.file, adminOpts(ctx));
+}
+
+/**
+ * Team-scoped mutations (auction nominate/bid/pass, lineup save).
+ * Admins and AUTH_DEV_BYPASS may use any team_id; members must match their
+ * linked franchise for the league.
+ */
+export function assertCanActAsTeam(
+  ctx: FranchiseAclContext & { teamId: number },
+): FranchiseAclResult {
+  if (canBypassFranchiseAcl(ctx)) {
+    return { ok: true, mode: "bypass" };
+  }
+  if (!ctx.email) {
+    return { ok: false, error: "sign in required" };
+  }
+  const member = findMember(ctx.file ?? emptyMembersFile(), ctx.email);
+  const link = teamLinkForLeague(member, ctx.leagueId);
+  if (!link) {
+    return {
+      ok: false,
+      error:
+        "No franchise linked for this league. Ask an admin to link your team in /admin.",
+    };
+  }
+  if (link.team_id !== ctx.teamId) {
+    const label = link.team_name ?? `team ${link.team_id}`;
+    return {
+      ok: false,
+      error: `You can only act as ${label}.`,
+    };
+  }
+  return { ok: true, mode: "linked" };
+}
+
+/**
+ * Open/start auction room — admin, or any member linked to the league.
+ */
+export function assertCanControlAuction(
+  ctx: FranchiseAclContext,
+): FranchiseAclResult {
+  if (canBypassFranchiseAcl(ctx)) {
+    return { ok: true, mode: "bypass" };
+  }
+  if (!ctx.email) {
+    return { ok: false, error: "sign in required" };
+  }
+  const member = findMember(ctx.file ?? emptyMembersFile(), ctx.email);
+  if (teamLinkForLeague(member, ctx.leagueId)) {
+    return { ok: true, mode: "linked" };
+  }
+  return {
+    ok: false,
+    error:
+      "Link a franchise for this league in /admin (or ask an admin) before controlling the auction.",
+  };
+}
+
+/** Finalize writes draft/rosters — admin / bypass only. */
+export function assertCanFinalizeAuction(
+  ctx: FranchiseAclContext,
+): FranchiseAclResult {
+  if (canBypassFranchiseAcl(ctx)) {
+    return { ok: true, mode: "bypass" };
+  }
+  return {
+    ok: false,
+    error: "Only an admin can finalize the auction.",
+  };
+}
+
+/** UI scope for golf auction / lineup panels. */
+export type GolfActingScope = {
+  allowedTeamIds: number[];
+  canControlAuction: boolean;
+  canFinalizeAuction: boolean;
+  hint?: string;
+};
+
+export function golfActingScope(
+  ctx: FranchiseAclContext,
+  leagueTeamIds: number[],
+): GolfActingScope {
+  if (canBypassFranchiseAcl(ctx)) {
+    return {
+      allowedTeamIds: [...leagueTeamIds],
+      canControlAuction: true,
+      canFinalizeAuction: true,
+    };
+  }
+  if (!ctx.email) {
+    return {
+      allowedTeamIds: [],
+      canControlAuction: false,
+      canFinalizeAuction: false,
+      hint: "Sign in to act in this league.",
+    };
+  }
+  const member = findMember(ctx.file ?? emptyMembersFile(), ctx.email);
+  const link = teamLinkForLeague(member, ctx.leagueId);
+  if (!link || !leagueTeamIds.includes(link.team_id)) {
+    return {
+      allowedTeamIds: [],
+      canControlAuction: false,
+      canFinalizeAuction: false,
+      hint: "Ask an admin to link your franchise for this league in /admin.",
+    };
+  }
+  return {
+    allowedTeamIds: [link.team_id],
+    canControlAuction: true,
+    canFinalizeAuction: false,
+    hint: link.team_name
+      ? `Acting as ${link.team_name}.`
+      : `Acting as team ${link.team_id}.`,
+  };
+}
