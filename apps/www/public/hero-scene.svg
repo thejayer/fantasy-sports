@@ -1,76 +1,78 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 900" fill="none" role="img" aria-hidden="true">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 1000" fill="none" role="img" aria-hidden="true">
   <defs>
-    <linearGradient id="sky" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0%" stop-color="#1a2433"/>
-      <stop offset="55%" stop-color="#243041"/>
-      <stop offset="100%" stop-color="#0f3d45"/>
+    <linearGradient id="sky" x1="0" y1="0" x2="0.85" y2="1">
+      <stop offset="0%" stop-color="#15202c"/>
+      <stop offset="45%" stop-color="#1c2b3a"/>
+      <stop offset="100%" stop-color="#0d3a42"/>
     </linearGradient>
-    <linearGradient id="glow" x1="0.2" y1="0.1" x2="0.9" y2="0.9">
-      <stop offset="0%" stop-color="#1aa6b7" stop-opacity="0.45"/>
-      <stop offset="60%" stop-color="#1aa6b7" stop-opacity="0"/>
-      <stop offset="100%" stop-color="#e06b3a" stop-opacity="0.28"/>
+    <radialGradient id="lamp" cx="0.72" cy="0.28" r="0.45">
+      <stop offset="0%" stop-color="#1aa6b7" stop-opacity="0.55"/>
+      <stop offset="55%" stop-color="#1aa6b7" stop-opacity="0.12"/>
+      <stop offset="100%" stop-color="#1aa6b7" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="ember" cx="0.22" cy="0.55" r="0.4">
+      <stop offset="0%" stop-color="#e06b3a" stop-opacity="0.35"/>
+      <stop offset="70%" stop-color="#e06b3a" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="floor" x1="0.5" y1="0.55" x2="0.5" y2="1">
+      <stop offset="0%" stop-color="#0a1016" stop-opacity="0"/>
+      <stop offset="35%" stop-color="#0a1016" stop-opacity="0.65"/>
+      <stop offset="100%" stop-color="#070b10"/>
     </linearGradient>
-    <linearGradient id="floor" x1="0.5" y1="0" x2="0.5" y2="1">
-      <stop offset="0%" stop-color="#0d141c" stop-opacity="0"/>
-      <stop offset="40%" stop-color="#0d141c" stop-opacity="0.55"/>
-      <stop offset="100%" stop-color="#0a1016" stop-opacity="0.92"/>
-    </linearGradient>
-    <filter id="soft" x="-20%" y="-20%" width="140%" height="140%">
-      <feGaussianBlur stdDeviation="18"/>
-    </filter>
   </defs>
 
-  <rect width="1200" height="900" fill="url(#sky)"/>
-  <rect width="1200" height="900" fill="url(#glow)"/>
+  <rect width="1600" height="1000" fill="url(#sky)"/>
+  <rect width="1600" height="1000" fill="url(#lamp)"/>
+  <rect width="1600" height="1000" fill="url(#ember)"/>
 
-  <!-- distant window lights / city hush -->
-  <g opacity="0.35">
-    <rect x="140" y="220" width="18" height="28" rx="2" fill="#d7e6ea"/>
-    <rect x="170" y="240" width="14" height="22" rx="2" fill="#1aa6b7"/>
-    <rect x="198" y="210" width="16" height="30" rx="2" fill="#f0c4a8"/>
-    <rect x="920" y="190" width="20" height="34" rx="2" fill="#d7e6ea"/>
-    <rect x="952" y="210" width="14" height="24" rx="2" fill="#e06b3a"/>
-    <rect x="980" y="180" width="18" height="32" rx="2" fill="#1aa6b7"/>
+  <!-- far wall windows -->
+  <g opacity="0.55">
+    <rect x="180" y="180" width="34" height="56" rx="3" fill="#d7e6ea"/>
+    <rect x="230" y="205" width="28" height="48" rx="3" fill="#1aa6b7"/>
+    <rect x="274" y="170" width="32" height="60" rx="3" fill="#f0c4a8"/>
+    <rect x="1280" y="150" width="36" height="62" rx="3" fill="#d7e6ea"/>
+    <rect x="1330" y="175" width="28" height="50" rx="3" fill="#e06b3a"/>
+    <rect x="1374" y="140" width="34" height="58" rx="3" fill="#1aa6b7"/>
   </g>
 
-  <!-- soft lamp bloom -->
-  <ellipse cx="860" cy="430" rx="160" ry="90" fill="#1aa6b7" opacity="0.18" filter="url(#soft)"/>
-  <ellipse cx="320" cy="520" rx="180" ry="100" fill="#e06b3a" opacity="0.12" filter="url(#soft)"/>
+  <!-- room floor wash -->
+  <path d="M0 560 C420 470, 1180 470, 1600 560 L1600 1000 L0 1000 Z" fill="url(#floor)"/>
 
-  <!-- table plane -->
-  <path d="M80 620 C320 540, 880 540, 1120 620 L1180 900 L20 900 Z" fill="url(#floor)"/>
-  <path d="M160 640 C380 580, 820 580, 1040 640" stroke="#f4f7fb" stroke-opacity="0.08" stroke-width="2"/>
+  <!-- people silhouettes at table -->
+  <g fill="#060a0f">
+    <ellipse cx="420" cy="690" rx="92" ry="24"/>
+    <path d="M345 690 C345 545 495 545 495 690 Z"/>
+    <circle cx="420" cy="500" r="48"/>
 
-  <!-- chairs / silhouettes around a table -->
-  <g fill="#0b1219" opacity="0.72">
-    <ellipse cx="300" cy="668" rx="70" ry="18"/>
-    <path d="M250 668 C250 560, 350 560, 350 668"/>
-    <ellipse cx="520" cy="650" rx="64" ry="16"/>
-    <path d="M475 650 C475 548, 565 548, 565 650"/>
-    <ellipse cx="740" cy="650" rx="64" ry="16"/>
-    <path d="M695 650 C695 548, 785 548, 785 650"/>
-    <ellipse cx="940" cy="668" rx="70" ry="18"/>
-    <path d="M890 668 C890 560, 990 560, 990 668"/>
+    <ellipse cx="640" cy="665" rx="84" ry="22"/>
+    <path d="M570 665 C570 530 710 530 710 665 Z"/>
+    <circle cx="640" cy="485" r="44"/>
+
+    <ellipse cx="900" cy="665" rx="84" ry="22"/>
+    <path d="M830 665 C830 530 970 530 970 665 Z"/>
+    <circle cx="900" cy="485" r="44"/>
+
+    <ellipse cx="1140" cy="690" rx="92" ry="24"/>
+    <path d="M1065 690 C1065 545 1215 545 1215 690 Z"/>
+    <circle cx="1140" cy="500" r="48"/>
   </g>
 
-  <!-- table top -->
-  <ellipse cx="620" cy="690" rx="310" ry="54" fill="#16202c" stroke="#f4f7fb" stroke-opacity="0.1"/>
-  <ellipse cx="620" cy="686" rx="290" ry="42" fill="#1c2836"/>
+  <!-- table -->
+  <ellipse cx="780" cy="720" rx="420" ry="78" fill="#121a24" stroke="#f4f7fb" stroke-opacity="0.14" stroke-width="3"/>
+  <ellipse cx="780" cy="708" rx="390" ry="58" fill="#1a2533"/>
 
-  <!-- drinks / objects on table -->
-  <g>
-    <rect x="470" y="650" width="18" height="34" rx="4" fill="#1aa6b7" opacity="0.85"/>
-    <rect x="560" y="646" width="16" height="38" rx="4" fill="#e06b3a" opacity="0.75"/>
-    <rect x="680" y="648" width="18" height="36" rx="4" fill="#8fd0d8" opacity="0.8"/>
-    <rect x="760" y="652" width="15" height="32" rx="4" fill="#f0c4a8" opacity="0.7"/>
-    <circle cx="620" cy="678" r="28" fill="#243041" stroke="#1aa6b7" stroke-opacity="0.45" stroke-width="2"/>
-    <circle cx="620" cy="678" r="8" fill="#1aa6b7" opacity="0.7"/>
-  </g>
+  <!-- drinks / chips / center piece -->
+  <rect x="560" y="655" width="28" height="52" rx="6" fill="#1aa6b7"/>
+  <rect x="640" y="648" width="24" height="58" rx="6" fill="#e06b3a"/>
+  <rect x="880" y="650" width="28" height="56" rx="6" fill="#8fd0d8"/>
+  <rect x="960" y="658" width="24" height="50" rx="6" fill="#f0c4a8"/>
+  <circle cx="780" cy="695" r="46" fill="#243041" stroke="#1aa6b7" stroke-width="4"/>
+  <circle cx="780" cy="695" r="14" fill="#1aa6b7"/>
 
-  <!-- foreground grain lines -->
-  <g stroke="#f4f7fb" stroke-opacity="0.04" stroke-width="1">
-    <path d="M0 760 H1200"/>
-    <path d="M0 800 H1200"/>
-    <path d="M0 840 H1200"/>
+  <!-- near-edge grain -->
+  <g stroke="#f4f7fb" stroke-opacity="0.05" stroke-width="2">
+    <path d="M0 820 H1600"/>
+    <path d="M0 870 H1600"/>
+    <path d="M0 920 H1600"/>
   </g>
 </svg>
