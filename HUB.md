@@ -9,7 +9,9 @@ are in place (roadmap 3.6). Full registry history needs a one-time
 `sj backfill` (see below); committed fixtures stay current-season only.
 
 For the current state of the site and the plan to build it out, see
-[AUDIT.md](AUDIT.md) and [ROADMAP.md](ROADMAP.md).
+[AUDIT.md](AUDIT.md) (security / correctness baseline),
+[AUDIT-COMPETITIVE.md](AUDIT-COMPETITIVE.md) (feature and UI/UX gaps vs ESPN,
+Yahoo, Sleeper, and FantasyPros), and [ROADMAP.md](ROADMAP.md) (phases 0–9).
 
 ## Leagues (current scope)
 
