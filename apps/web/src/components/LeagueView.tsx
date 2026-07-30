@@ -40,8 +40,10 @@ import {
   attachPlayerProjections,
   indexPlayerMap,
   indexProjections,
+  projectionCoverage,
   usesHalfPprScoringFallback,
 } from "@/lib/projection-join";
+import { StatusLegend } from "@/components/StatusLegend";
 import type { GolfActingScope } from "@/lib/hub-members";
 
 function RoleSwitcher({
@@ -441,10 +443,14 @@ export function LeagueView({
 
   const espnToGsis = indexPlayerMap(playerMap);
   const byGsis = indexProjections(projectionSnapshot);
-  const playersWithProjections =
+  const joinedPlayers =
     isFootball && projectionSnapshot
       ? attachPlayerProjections(players, espnToGsis, byGsis)
-      : players;
+      : null;
+  const playersWithProjections = joinedPlayers ?? players;
+  const playersCoverage = joinedPlayers
+    ? projectionCoverage(joinedPlayers)
+    : null;
 
   return (
     <main className={`section league-view sport-${league.sport}`}>
@@ -569,7 +575,9 @@ export function LeagueView({
             showProjections={isFootball && Boolean(projectionSnapshot)}
             leagueId={leagueId}
             season={league.season}
+            projectionCoverage={playersCoverage}
           />
+          <StatusLegend sport={league.sport} />
         </>
       ) : null}
 

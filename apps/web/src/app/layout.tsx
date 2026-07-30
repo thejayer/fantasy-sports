@@ -3,6 +3,7 @@ import { Syne, Source_Sans_3 } from "next/font/google";
 import Link from "next/link";
 import { auth, signOut } from "@/auth";
 import { MobileNav } from "@/components/MobileNav";
+import { THEME_INIT_SCRIPT, ThemeToggle } from "@/components/ThemeToggle";
 import {
   canAccessAdmin,
   parseAllowedEmailsEnv,
@@ -70,7 +71,11 @@ export default async function RootLayout({
   }
 
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
+      <head>
+        {/* Applies a saved theme override before first paint (roadmap 7.10). */}
+        <script dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }} />
+      </head>
       <body className={`${display.variable} ${body.variable}`}>
         <div className="atmosphere" aria-hidden />
         <div className="shell">
@@ -81,6 +86,7 @@ export default async function RootLayout({
             <nav className="nav-links">
               <Link href="/leagues">Leagues</Link>
               {showAdmin ? <Link href="/admin">Admin</Link> : null}
+              <ThemeToggle />
               {session?.user ? (
                 <>
                   <span className="nav-user" title={session.user.email ?? undefined}>

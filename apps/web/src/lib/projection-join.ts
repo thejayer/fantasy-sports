@@ -143,3 +143,25 @@ export function formatProjectionPoints(
   if (value == null || Number.isNaN(value)) return "—";
   return value.toFixed(digits);
 }
+
+export type ProjectionCoverage = {
+  mapped: number;
+  total: number;
+  rate: number;
+};
+
+/**
+ * How many rows on a board actually joined a projection (roadmap 7.10).
+ *
+ * The players board rendered four columns of em dashes per row when the join
+ * missed, with nothing saying why, so a member could not tell "no projection for
+ * this player" from "this feature is broken" (AUDIT-COMPETITIVE #6). The team
+ * page already disclosed its rate; this lets every board do the same.
+ */
+export function projectionCoverage(
+  players: PlayerWithProjection[],
+): ProjectionCoverage {
+  const total = players.length;
+  const mapped = players.filter((player) => player.projection).length;
+  return { mapped, total, rate: total ? mapped / total : 0 };
+}

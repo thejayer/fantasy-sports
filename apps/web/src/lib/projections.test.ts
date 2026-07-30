@@ -2,6 +2,57 @@ import { readFileSync } from "node:fs";
 import path from "node:path";
 import { describe, expect, it } from "vitest";
 
+import { projectionCoverage } from "@/lib/projection-join";
+import type { PlayerWithProjection } from "@/lib/projection-join";
+
+function row(mapped: boolean): PlayerWithProjection {
+  return {
+    id: 1,
+    name: "X",
+    position: "QB",
+    slot: "QB",
+    pro_team: "KC",
+    injury_status: null,
+    total_points: 0,
+    projected_total_points: null,
+    avg_points: null,
+    projection: mapped
+      ? {
+          player_id: "00-1",
+          player_name: "X",
+          position: "QB",
+          team: "KC",
+          points_mean: 1,
+          points_sd: 1,
+          floor: 1,
+          median: 2,
+          ceiling: 3,
+          vor: 4,
+          tier: 1,
+        }
+      : null,
+  };
+}
+
+describe("projectionCoverage (roadmap 7.10)", () => {
+  it("reports the join rate so a wall of dashes is explained", () => {
+    expect(projectionCoverage([row(true), row(false), row(false), row(false)]))
+      .toEqual({ mapped: 1, total: 4, rate: 0.25 });
+  });
+
+  it("reports zero coverage, which hides the quantile columns entirely", () => {
+    expect(projectionCoverage([row(false), row(false)])).toEqual({
+      mapped: 0,
+      total: 2,
+      rate: 0,
+    });
+  });
+
+  it("does not divide by zero on an empty board", () => {
+    expect(projectionCoverage([])).toEqual({ mapped: 0, total: 0, rate: 0 });
+  });
+});
+
 describe("projection snapshots (roadmap 4.2)", () => {
   it("ships fixture JSON the hub reader can resolve", () => {
     const fixture = path.resolve(
