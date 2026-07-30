@@ -54,10 +54,10 @@ export function AuctionRoomPanel({
     league.teams[0]?.team_id ??
     1;
   const [actingTeamLocal, setActingTeamLocal] = useState<number>(defaultTeam);
+  // URL ?team= only seeds the default; admins/bypass must be able to switch
+  // franchises via the picker (e2e multi-team bid/pass).
   const effectiveTeam = canPickActingTeam
-    ? (teamId != null && allowedTeamIds.includes(teamId)
-        ? teamId
-        : actingTeamLocal)
+    ? actingTeamLocal
     : (allowedTeamIds[0] ?? defaultTeam);
   const actingTeams = league.teams.filter((t) =>
     allowedTeamIds.includes(t.team_id),

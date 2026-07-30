@@ -59,7 +59,13 @@ test.describe("hub smoke", () => {
     await page.locator('input[name="bench"]').fill("2");
     await page.getByRole("button", { name: /Create golf league/i }).click();
     await page.waitForURL(new RegExp(`/leagues/${slug}.*tab=auction`));
-    await expect(page.getByText(/Live OWGR auction/i)).toBeVisible();
+    const openRoom = page.getByRole("button", { name: /Open auction room/i });
+    if (await openRoom.isVisible().catch(() => false)) {
+      await openRoom.click();
+    }
+    await expect(page.getByText(/Live OWGR auction/i)).toBeVisible({
+      timeout: 15_000,
+    });
     await page.getByRole("button", { name: /Start auction/i }).click();
     await expect(page.getByText(/Nominate/i).first()).toBeVisible();
     await page.locator("select").filter({ hasText: /Scheffler|Select/ }).last().selectOption({ index: 1 });

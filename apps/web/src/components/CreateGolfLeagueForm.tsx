@@ -72,15 +72,38 @@ export function CreateGolfLeagueForm() {
         return;
       }
       if (draftStyle === "auction" && liveAuction) {
-        await fetch(`/api/golf/leagues/${leagueId}/auction`, {
-          method: "POST",
-          headers: { "content-type": "application/json" },
-          body: JSON.stringify({
-            season: body.season,
-            bid_window_ms: 8_000,
-            bid_hard_cap_ms: 30_000,
-          }),
-        });
+        // Index cache can lag the snapshot write; retry briefly so the room
+        // exists before we land on the auction tab.
+        let roomOk = false;
+        let lastError = "failed to open auction room";
+        for (let attempt = 0; attempt < 5; attempt++) {
+          const roomRes = await fetch(
+            `/api/golf/leagues/${leagueId}/auction`,
+            {
+              method: "POST",
+              headers: { "content-type": "application/json" },
+              body: JSON.stringify({
+                season: body.season,
+                bid_window_ms: 8_000,
+                bid_hard_cap_ms: 30_000,
+              }),
+            },
+          );
+          const roomPayload = (await roomRes.json().catch(() => ({}))) as {
+            error?: string;
+            room?: unknown;
+          };
+          if (roomRes.ok && roomPayload.room) {
+            roomOk = true;
+            break;
+          }
+          lastError = roomPayload.error || lastError;
+          await new Promise((r) => setTimeout(r, 200 * (attempt + 1)));
+        }
+        if (!roomOk) {
+          setError(lastError);
+          return;
+        }
         router.push(`/leagues/${leagueId}?tab=auction&team=1`);
       } else {
         router.push(`/leagues/${leagueId}?tab=draft`);
