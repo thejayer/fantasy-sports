@@ -1,117 +1,84 @@
-import Link from "next/link";
-import { EmptyState } from "@/components/EmptyState";
+/**
+ * League feed shell (roadmap 7.6 / 7.7).
+ * Server component: builds the system event stream + digest, loads UGC, then
+ * hands a client FeedPanel the live surface.
+ */
+
+import { FeedPanel } from "@/components/FeedPanel";
 import type { LeagueSnapshot } from "@/lib/data";
 import {
-  activityRowsForLeague,
-  type ActivityView,
-} from "@/lib/activity";
+  buildWeeklyDigest,
+  digestAsFeedEvent,
+  latestDigestPeriod,
+} from "@/lib/digest";
+import { systemFeedEvents, type FeedEventFilter } from "@/lib/feed-events";
+import { readFeed } from "@/lib/feed-store";
+import type { ActivityView } from "@/lib/activity";
+import { getViewer, getViewerFranchise } from "@/lib/viewer";
+import { canAccessAdmin, parseAllowedEmailsEnv } from "@/lib/hub-members";
+import { readHubMembers } from "@/lib/hub-members-store";
+import { devBypassEnabled } from "@/lib/session";
 
-function ViewSwitcher({
-  leagueId,
-  season,
-  view,
-}: {
-  leagueId: string;
-  season: number;
-  view: ActivityView;
-}) {
-  const views: Array<{ id: ActivityView; label: string }> = [
-    { id: "all", label: "All" },
-    { id: "trades", label: "Trades" },
-    { id: "waivers", label: "Adds / drops" },
-  ];
-  return (
-    <div className="tabs" style={{ marginTop: "0.5rem" }}>
-      {views.map((item) => (
-        <Link
-          key={item.id}
-          href={`/leagues/${leagueId}?season=${season}&tab=activity&view=${item.id}`}
-          className={`tab${view === item.id ? " active" : ""}`}
-        >
-          {item.label}
-        </Link>
-      ))}
-    </div>
-  );
+function toEventFilter(view: ActivityView): FeedEventFilter {
+  if (view === "trades") return "trades";
+  if (view === "waivers") return "waivers";
+  if (view === "results") return "results";
+  if (view === "draft") return "draft";
+  return "all";
 }
 
-export function ActivityPanel({
+export async function ActivityPanel({
   league,
   view = "all",
 }: {
   league: LeagueSnapshot;
   view?: ActivityView;
 }) {
-  const all = activityRowsForLeague(league, "all");
-  const rows = activityRowsForLeague(league, view);
+  const filter = toEventFilter(view);
+  const events = systemFeedEvents(league, filter === "all" ? "all" : filter);
 
-  if (!all.length) {
-    return (
-      <EmptyState title="No transactions in this snapshot">
-        ESPN <code>recent_activity</code> is empty for some seasons (notably
-        before 2019) or when nothing has moved yet. Re-run <code>sj sync</code>{" "}
-        for the current season to refresh.
-      </EmptyState>
-    );
-  }
+  const digestPeriod = latestDigestPeriod(league);
+  const digestEvents =
+    digestPeriod != null
+      ? (() => {
+          const digest = buildWeeklyDigest(league, digestPeriod);
+          return digest ? [digestAsFeedEvent(digest)] : [];
+        })()
+      : [];
 
-  const showBids = all.some((row) => row.bidAmount > 0);
+  // Digests ride with "all" and "results"; omit from other filters.
+  const merged =
+    view === "all" || view === "results"
+      ? [...digestEvents, ...events].sort(
+          (a, b) => b.sortKey - a.sortKey || a.id.localeCompare(b.id),
+        )
+      : events;
+
+  const initialFeed = await readFeed(league.league_id, league.season);
+  const viewer = await getViewer();
+  const franchise = await getViewerFranchise(league.league_id);
+  const members = await readHubMembers().catch(() => null);
+  const isAdmin =
+    devBypassEnabled() ||
+    canAccessAdmin(viewer.email, members, {
+      envAllowlist: parseAllowedEmailsEnv(process.env.ALLOWED_EMAILS),
+      adminEmailsEnv: parseAllowedEmailsEnv(process.env.ADMIN_EMAILS),
+    });
+  const canPost = Boolean(
+    devBypassEnabled() || isAdmin || franchise != null,
+  );
 
   return (
-    <div className="activity-panel" style={{ marginTop: "0.75rem" }}>
-      <p className="lede">
-        League activity from ESPN ({all.length} actions). Trades and
-        adds/drops share one ledger; FAAB bids show when present.
-      </p>
-      <ViewSwitcher
-        leagueId={league.league_id}
-        season={league.season}
-        view={view}
-      />
-      {!rows.length ? (
-        <EmptyState title="Nothing in this filter">
-          Try All, or switch to another activity view.
-        </EmptyState>
-      ) : (
-        <div className="panel table-scroll" style={{ marginTop: "0.75rem" }}>
-          <table className="table-cards">
-            <thead>
-              <tr>
-                <th>Date</th>
-                <th>Team</th>
-                <th>Action</th>
-                <th>Player</th>
-                {showBids ? <th className="numeric">Bid</th> : null}
-              </tr>
-            </thead>
-            <tbody>
-              {rows.map((row) => (
-                <tr key={row.key}>
-                  <td data-label="Date">{row.dateLabel}</td>
-                  <td data-label="Team">
-                    {row.teamId != null ? (
-                      <Link
-                        href={`/leagues/${league.league_id}/teams/${row.teamId}?season=${league.season}`}
-                      >
-                        {row.teamName}
-                      </Link>
-                    ) : (
-                      row.teamName
-                    )}
-                  </td>
-                  <td data-label="Action">{row.action}</td>
-                  <td data-label="Player">{row.playerName}</td>
-                  {showBids ? (
-                    <td data-label="Bid" className="numeric">
-                      {row.bidAmount > 0 ? row.bidAmount.toFixed(0) : "—"}
-                    </td>
-                  ) : null}
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      )}
-    </div>
+    <FeedPanel
+      leagueId={league.league_id}
+      season={league.season}
+      view={view}
+      events={merged}
+      initialFeed={initialFeed}
+      viewerEmail={viewer.email}
+      canPost={canPost}
+      canModerate={isAdmin}
+      digestPeriod={digestPeriod}
+    />
   );
 }

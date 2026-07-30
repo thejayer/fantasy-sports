@@ -408,10 +408,17 @@ test.describe("hub smoke", () => {
     await expect(page.getByText("Juan Phillips")).toBeVisible();
   });
 
-  test("activity tab lists transactions", async ({ page }) => {
+  test("feed tab shows system events from transactions", async ({ page }) => {
     await page.goto("/leagues/football-main?tab=activity");
-    await expect(page.getByText(/League activity from ESPN/i)).toBeVisible();
-    await expect(page.getByRole("cell", { name: "FA ADDED" }).first()).toBeVisible();
+    await expect(page.getByText(/League feed/i)).toBeVisible();
+    await expect(page.getByText(/FA ADDED/i).first()).toBeVisible();
+    await expect(page.getByRole("link", { name: "Feed" })).toBeVisible();
+  });
+
+  test("tools landing cards name each decision tool", async ({ page }) => {
+    await page.goto("/leagues/football-main?tab=tools");
+    await expect(page.getByRole("heading", { name: "Trade Desk" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Playoff Odds" })).toBeVisible();
   });
 
   test("baseball waivers tab lists free agents", async ({ page }) => {
