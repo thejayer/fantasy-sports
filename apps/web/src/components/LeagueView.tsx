@@ -9,6 +9,7 @@ import { GolfSchedulePanel } from "@/components/GolfSchedulePanel";
 import { GolfScoreboardPanel } from "@/components/GolfScoreboardPanel";
 import { GolfSettingsPanel } from "@/components/GolfSettingsPanel";
 import { HistoryPanel, type HistoryView } from "@/components/HistoryPanel";
+import { LeagueTabs, tabLabel } from "@/components/LeagueTabs";
 import { MatchupsPanel, type MatchupsView } from "@/components/MatchupsPanel";
 import { PlayersDataTable } from "@/components/PlayersDataTable";
 import { ProjectionsBoard } from "@/components/ProjectionsBoard";
@@ -34,6 +35,7 @@ import {
   sportFormatLabel,
   winPctLabel,
 } from "@/lib/league";
+import { syncedLabel } from "@/lib/member-home";
 import {
   attachPlayerProjections,
   indexPlayerMap,
@@ -459,16 +461,19 @@ export function LeagueView({
         </span>
       </div>
       <h2>{league.name}</h2>
-      <p className="lede">
+      {/*
+        The lede used to enumerate the tabs, which the tab strip right below
+        already does, and it cost three lines of a phone viewport before any
+        data (roadmap 7.5). Keep only what the tabs cannot say.
+      */}
+      <p className="lede league-lede">
         {league.team_count} teams
-        {league.synced_at
-          ? ` · synced ${new Date(league.synced_at).toLocaleString()}`
-          : ""}
+        {syncedLabel(league.synced_at) ? ` · synced ${syncedLabel(league.synced_at)}` : ""}
         {isGolf
-          ? ". PGA Tour counting league — settings, draft, lineups, scoreboard, and standings from scored weeks (roadmap 6.4a–e)."
+          ? " · hub-native PGA Tour counting league"
           : isBaseball
-            ? ". Standings, matchups, draft, activity, waivers, history, and batter/pitcher boards from ESPN — projection-free by design (roadmap 4.6)."
-            : ". Standings, matchups, draft, activity, history, rosters, projections, and decision tools."}
+            ? " · projection-free by design"
+            : ""}
       </p>
 
       <SeasonSwitcher
@@ -479,36 +484,32 @@ export function LeagueView({
         }
       />
 
-      <div className="tabs">
-        {tabs.map((name) => (
-          <Link
-            key={name}
-            href={
-              `/leagues/${leagueId}?season=${league.season}&tab=${name}` +
-              (name === "players" && activeRole ? `&role=${activeRole}` : "") +
-              (name === "matchups"
-                ? `&view=${matchupsView}${week != null ? `&week=${week}` : ""}`
-                : "") +
-              (name === "draft" && draftTeamId != null
-                ? `&team=${draftTeamId}`
-                : "") +
-              (name === "lineup"
-                ? (golfEventId ? `&event=${golfEventId}` : "") +
-                  (golfLineupTeamId != null ? `&team=${golfLineupTeamId}` : "")
-                : "") +
-              (name === "activity" ? `&view=${activityView}` : "") +
-              (name === "history" ? `&view=${historyView}${historyPair}` : "") +
-              (name === "projections" && projectionScoring
-                ? `&scoring=${projectionScoring}`
-                : "") +
-              (name === "tools" ? toolsPair : "")
-            }
-            className={`tab${active === name ? " active" : ""}`}
-          >
-            {name}
-          </Link>
-        ))}
-      </div>
+      <LeagueTabs
+        active={active}
+        tabs={tabs.map((name) => ({
+          id: name,
+          label: tabLabel(name),
+          href:
+            `/leagues/${leagueId}?season=${league.season}&tab=${name}` +
+            (name === "players" && activeRole ? `&role=${activeRole}` : "") +
+            (name === "matchups"
+              ? `&view=${matchupsView}${week != null ? `&week=${week}` : ""}`
+              : "") +
+            (name === "draft" && draftTeamId != null
+              ? `&team=${draftTeamId}`
+              : "") +
+            (name === "lineup"
+              ? (golfEventId ? `&event=${golfEventId}` : "") +
+                (golfLineupTeamId != null ? `&team=${golfLineupTeamId}` : "")
+              : "") +
+            (name === "activity" ? `&view=${activityView}` : "") +
+            (name === "history" ? `&view=${historyView}${historyPair}` : "") +
+            (name === "projections" && projectionScoring
+              ? `&scoring=${projectionScoring}`
+              : "") +
+            (name === "tools" ? toolsPair : ""),
+        }))}
+      />
 
       {active === "standings" ? (
         <StandingsTable

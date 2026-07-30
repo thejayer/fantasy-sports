@@ -50,6 +50,11 @@ export default defineConfig({
       PORT: String(port),
       SJ_DATA_DIR: process.env.SJ_DATA_DIR ?? fixturesDir,
       SJ_HUB_DIR: process.env.SJ_HUB_DIR ?? hubDir,
+      // AUTH_DEV_BYPASS has no session to resolve a franchise from, so the
+      // roadmap 7.1 viewer layer needs an impersonation address to exercise
+      // (see lib/viewer.ts). Matches the email the admin-center spec adds.
+      SJ_DEV_VIEWER_EMAIL:
+        process.env.SJ_DEV_VIEWER_EMAIL ?? "demo@example.com",
     },
   },
 });

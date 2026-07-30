@@ -234,14 +234,100 @@ test.describe("hub smoke", () => {
         }),
       ).toBeVisible();
 
+      // Roadmap 7.1/7.2: the same link now drives the member dashboard and the
+      // "You" marker. Asserted here rather than in its own spec because this
+      // test owns hub_members.json and the specs run in parallel locally.
+      await page.goto("/");
+      await expect(
+        page.getByRole("heading", { name: /Welcome back/i }),
+      ).toBeVisible();
+      await expect(page.getByText(/leagues linked to your franchise/i)).toBeVisible();
+      await expect(
+        page.getByRole("link", { name: new RegExp(linkedLabel!.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "i") }).first(),
+      ).toBeVisible();
+
+      await page.goto("/leagues/football-main");
+      await expect(page.getByText("You", { exact: true }).first()).toBeVisible();
+
+      await page.goto("/leagues/football-main?tab=matchups");
+      await expect(page.getByText(/Your matchup/i)).toBeVisible();
+
+      // Selection is component state, so a fresh load has nothing active and no
+      // Remove button — pick the row first.
+      await page.goto("/admin");
+      await page.getByRole("cell", { name: "demo@example.com" }).click();
       page.once("dialog", (dialog) => dialog.accept());
       await page.getByRole("button", { name: /^Remove$/i }).click();
       await expect(
         page.getByRole("cell", { name: "demo@example.com" }),
       ).toHaveCount(0);
+
+      // Unlinked again: the hero is the front door, not an empty dashboard.
+      await page.goto("/");
+      await expect(
+        page.getByRole("heading", { name: /Leagues, teams, and players/i }),
+      ).toBeVisible();
     } finally {
       fs.rmSync(membersPath, { force: true });
     }
+  });
+
+  test("player names link to a player page (roadmap 7.3)", async ({ page }) => {
+    await page.goto("/leagues/football-main?tab=players");
+    // The board pages at 25 rows, so search rather than assuming page one.
+    await page.getByPlaceholder(/Search players/i).fill("Juan Phillips");
+    const link = page.getByRole("link", { name: "Juan Phillips" });
+    await expect(link).toBeVisible();
+    await link.click();
+    await expect(page.getByRole("heading", { name: "Juan Phillips" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: /Eligibility/i })).toBeVisible();
+    await expect(page.getByText(/Lineup slot/i)).toBeVisible();
+  });
+
+  test("franchise page shows a career and rivalries (roadmap 7.3)", async ({
+    page,
+  }) => {
+    await page.goto("/leagues/football-main/franchises/1");
+    await expect(page.getByRole("heading", { name: /Gridiron Goons/i })).toBeVisible();
+    await expect(page.getByRole("heading", { name: /Season by season/i })).toBeVisible();
+    await expect(page.getByRole("heading", { name: /Rivalries/i })).toBeVisible();
+  });
+
+  test("team page shows its own season results (roadmap 7.4)", async ({
+    page,
+  }) => {
+    await page.goto("/leagues/football-main/teams/1");
+    await expect(page.getByRole("heading", { name: /Season results/i })).toBeVisible();
+    await expect(page.getByRole("columnheader", { name: "Opponent" })).toBeVisible();
+  });
+
+  test("football settings tab renders synced ESPN settings (roadmap 7.9)", async ({
+    page,
+  }) => {
+    await page.goto("/leagues/football-main?tab=settings");
+    await expect(page.getByText(/As ESPN reports them/i)).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Roster", exact: true })).toBeVisible();
+    await expect(page.getByText(/Slots/i).first()).toBeVisible();
+  });
+
+  test("secondary tabs live behind the More disclosure (roadmap 7.5)", async ({
+    page,
+  }) => {
+    await page.goto("/leagues/football-main");
+    // History is not a primary tab, so it must not be in the visible row.
+    await expect(page.getByRole("link", { name: "History" })).toBeHidden();
+    await page.getByRole("group").filter({ hasText: "More" }).first().click();
+    await expect(page.getByRole("link", { name: "History" })).toBeVisible();
+  });
+
+  test("single-season fixtures render no season chips (roadmap 3.2/7.5)", async ({
+    page,
+  }) => {
+    // Committed fixtures are current-season only, so the switcher hides itself.
+    // The 4-visible + "N more" split is unit-tested against a 12-season league.
+    await page.goto("/leagues/football-main");
+    await expect(page.locator(".season-switch")).toHaveCount(0);
+    await expect(page.getByRole("link", { name: "Standings" })).toBeVisible();
   });
 
   test("football standings render fixture team names", async ({ page }) => {

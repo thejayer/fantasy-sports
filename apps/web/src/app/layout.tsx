@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Syne, Source_Sans_3 } from "next/font/google";
 import Link from "next/link";
 import { auth, signOut } from "@/auth";
+import { MobileNav } from "@/components/MobileNav";
 import {
   canAccessAdmin,
   parseAllowedEmailsEnv,
@@ -101,6 +102,7 @@ export default async function RootLayout({
           </header>
           {children}
         </div>
+        <MobileNav showAdmin={showAdmin} />
       </body>
     </html>
   );

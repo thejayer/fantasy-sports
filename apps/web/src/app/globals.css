@@ -173,6 +173,12 @@ button,
   opacity: 0.8;
 }
 
+/* League header stays one line so data is not pushed off a phone (7.5). */
+.section .lede.league-lede {
+  margin-bottom: 0.9rem;
+  max-width: none;
+}
+
 .section-head {
   display: flex;
   flex-wrap: wrap;
@@ -531,6 +537,106 @@ tr:last-child td {
   color: var(--chalk);
   opacity: 1;
   box-shadow: none;
+}
+
+/* Overflow disclosure for tabs and season chips (roadmap 7.5) */
+.chip-overflow {
+  position: relative;
+}
+
+.chip-overflow > summary {
+  cursor: pointer;
+  list-style: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+.chip-overflow > summary::-webkit-details-marker {
+  display: none;
+}
+
+.chip-overflow > summary::after {
+  content: "▾";
+  font-size: 0.7em;
+  opacity: 0.7;
+}
+
+.chip-overflow[open] > summary::after {
+  content: "▴";
+}
+
+.chip-overflow-menu {
+  position: absolute;
+  z-index: 20;
+  top: calc(100% + 0.35rem);
+  left: 0;
+  display: grid;
+  gap: 0.3rem;
+  min-width: 9rem;
+  padding: 0.55rem;
+  border-radius: calc(var(--radius) - 6px);
+  background: color-mix(in srgb, var(--chalk) 92%, white);
+  box-shadow: var(--shadow), inset 0 0 0 1px var(--line);
+}
+
+.chip-overflow-menu .tab,
+.chip-overflow-menu .season-chip {
+  box-shadow: none;
+  text-align: left;
+  opacity: 0.9;
+}
+
+.chip-overflow-menu .tab:hover,
+.chip-overflow-menu .season-chip:hover {
+  background: rgba(255, 255, 255, 0.75);
+  opacity: 1;
+}
+
+/*
+  The tab strip is deliberately NOT sticky. A sticky strip covered the auction
+  room's buttons once the page scrolled — a sticky element over interactive
+  content is a real hazard, not just a test failure. The overflow disclosure
+  already solved the row-of-ten-pills problem on its own.
+*/
+
+/* Wide tables keep their header visible inside their own scroll container. */
+.panel.table-scroll thead th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  background: color-mix(in srgb, var(--chalk) 88%, white);
+}
+
+/* Mobile bottom bar (roadmap 7.5) */
+.mobile-nav {
+  display: none;
+}
+
+@media (max-width: 720px) {
+  .mobile-nav {
+    position: fixed;
+    inset: auto 0 0 0;
+    z-index: 40;
+    display: flex;
+    justify-content: space-around;
+    gap: 0.25rem;
+    padding: 0.55rem 0.75rem;
+    padding-bottom: max(0.55rem, env(safe-area-inset-bottom));
+    background: color-mix(in srgb, var(--chalk) 94%, white);
+    box-shadow: 0 -8px 24px rgba(15, 42, 32, 0.12);
+    font-size: 0.92rem;
+  }
+
+  .mobile-nav a {
+    padding: 0.4rem 0.9rem;
+    border-radius: 999px;
+  }
+
+  /* Leave room so the bar never covers the last row of a table. */
+  body {
+    padding-bottom: 3.75rem;
+  }
 }
 
 .login-page {
@@ -1339,6 +1445,44 @@ tr.is-upcoming td {
 }
 
 @media (max-width: 720px) {
+  /*
+    Wrapping chip rows are the main reason a phone shows more chrome than data
+    (roadmap 7.5). Scroll them sideways on one line instead: 14 week chips or 9
+    position filters cost a single row rather than three.
+  */
+  .table-filters,
+  .week-switch,
+  .season-switch,
+  .league-tabs,
+  .matchups-subtabs {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .table-filters::-webkit-scrollbar,
+  .week-switch::-webkit-scrollbar,
+  .season-switch::-webkit-scrollbar,
+  .league-tabs::-webkit-scrollbar,
+  .matchups-subtabs::-webkit-scrollbar {
+    display: none;
+  }
+
+  .table-filters > *,
+  .week-switch > *,
+  .season-switch > *,
+  .league-tabs > * {
+    flex: 0 0 auto;
+  }
+
+  /* An absolutely-positioned menu inside an overflow container gets clipped. */
+  .league-tabs,
+  .season-switch {
+    overflow-x: visible;
+    flex-wrap: wrap;
+  }
+
   .table-cards thead {
     display: none;
   }
