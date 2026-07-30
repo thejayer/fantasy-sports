@@ -26,6 +26,7 @@ import {
 } from "@/lib/projection-join";
 import { resolveGolfActingScope } from "@/lib/franchise-acl";
 import { getViewerTeamId } from "@/lib/viewer";
+import { parsePlayerTableQuery } from "@/lib/player-table";
 
 // See app/page.tsx. Already dynamic today, but declared so adding
 // generateStaticParams later cannot silently freeze snapshot data.
@@ -45,6 +46,12 @@ type Props = {
     scoring?: string;
     slot?: string;
     event?: string;
+    q?: string;
+    pos?: string;
+    sort?: string;
+    dir?: string;
+    p?: string;
+    dp?: string;
   }>;
 };
 
@@ -82,6 +89,12 @@ export default async function LeagueDetailPage({ params, searchParams }: Props) 
     scoring: scoringParam,
     slot: slotParam,
     event: eventParam,
+    q: qParam,
+    pos: posParam,
+    sort: sortParam,
+    dir: dirParam,
+    p: pageParam,
+    dp: draftPageParam,
   } = await searchParams;
   const seasons = await getLeagueSeasons(leagueId);
   const season = seasonParam ? Number(seasonParam) : undefined;
@@ -234,6 +247,22 @@ export default async function LeagueDetailPage({ params, searchParams }: Props) 
     ? linkedTeamId
     : undefined;
 
+  const playersQuery = parsePlayerTableQuery({
+    q: qParam,
+    pos: posParam,
+    sort: sortParam,
+    dir: dirParam,
+    p: pageParam,
+    defaultSort:
+      league.sport === "football" && projectionBundle.snapshot
+        ? "vor"
+        : "fpts",
+  });
+  const draftPage = Math.max(
+    1,
+    Number.parseInt(draftPageParam ?? "1", 10) || 1,
+  );
+
   return (
     <LeagueView
       league={league}
@@ -252,6 +281,8 @@ export default async function LeagueDetailPage({ params, searchParams }: Props) 
           ? team
           : undefined
       }
+      draftPage={draftPage}
+      playersQuery={playersQuery}
       golfEventId={
         (tab === "lineup" || tab === "scoreboard") && eventParam
           ? eventParam

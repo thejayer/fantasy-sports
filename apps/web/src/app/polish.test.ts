@@ -57,4 +57,14 @@ describe("roadmap 3.6 polish surface", () => {
       existsSync(path.join(WEB_ROOT, "scripts/check-bundle-budget.mjs")),
     ).toBe(true);
   });
+
+  it("ships a post-build HTML document budget check (roadmap 7.11)", () => {
+    const pkg = JSON.parse(
+      readFileSync(path.join(WEB_ROOT, "package.json"), "utf8"),
+    );
+    expect(pkg.scripts["verify:html-budget"]).toMatch(/check-html-budget/);
+    expect(
+      existsSync(path.join(WEB_ROOT, "scripts/check-html-budget.mjs")),
+    ).toBe(true);
+  });
 });

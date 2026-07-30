@@ -105,6 +105,10 @@ jobs:
       - name: Assert client bundle budgets
         run: npm run verify:bundle-budget
 
+      # Roadmap 7.11 — largest HTML document must stay under 100 KB (fixtures).
+      - name: Assert HTML document budgets
+        run: npm run verify:html-budget
+
       # The hub went from 14 advisories to 0; without a gate that silently
       # drifts back. Dependabot (roadmap 1.5) opens PRs when advisories land
       # against an untouched dependency so this stays actionable rather than

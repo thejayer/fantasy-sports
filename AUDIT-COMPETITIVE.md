@@ -481,7 +481,7 @@ competing with push products, in a group that already has a Discord.
 | 8 | No settings tab for ESPN sports; no "Open in ESPN" deep links | P1 | **Fixed** — roadmap 7.9 + 7.3 |
 | 9 | Baseball missing the projection-free tooling (cats, two-start, caps) | P2 | Open — roadmap 8.2 |
 | 10 | Golf missing reminders, projected leaderboard, segment limits | P2 | Open — roadmap 8.3 |
-| 11 | 239 KB largest page vs a 100 KB target; full row sets to client | P2 | Open — roadmap 7.11 |
+| 11 | 239 KB largest page vs a 100 KB target; full row sets to client | P2 | **Fixed** — roadmap 7.11 (server players board + slim scoreboard/draft + CI gate) |
 | 12 | No dark mode, no imagery, no live/freshness affordances, no legend | P2 | **Fixed** for theme/legend/freshness/crests (7.10 + 7.3); typographic pass open |
 | 13 | No outbound channel at all — no email, push, or digest | P1 | **Fixed** for digest surface + Discord webhook (7.7); email / tee-time reminders open |
 

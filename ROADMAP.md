@@ -652,9 +652,9 @@ Follows from [AUDIT-COMPETITIVE.md](AUDIT-COMPETITIVE.md), which measured the hu
 against ESPN, Yahoo, Sleeper, and FantasyPros. That audit's finding: phases 0–6
 built a very good reference library. Opening it does nothing.
 
-**Status: 7.1–7.10 have landed** (7.8 without Δ playoff-odds re-sim). Open:
-7.11 (payload budget) and the deferred 7.8 Δ playoff-odds / golf tee-time
-reminder bits of 7.7. Measured results are in "What done looks like" at the end.
+**Status: 7.1–7.11 have landed** (7.8 without Δ playoff-odds re-sim). Open:
+the deferred 7.8 Δ playoff-odds / golf tee-time reminder bits of 7.7, then
+phase 8. Measured results are in "What done looks like" at the end.
 
 **Nine of its thirteen findings are blocked on nothing** — they are ordering,
 emphasis, naming, and display over data already synced and already modelled. So
@@ -873,22 +873,23 @@ Still open: keeper status on rosters and the draft board.
 - **Hierarchy.** The viewer's row and matchup are promoted (7.1); a general
   typographic pass is still open.
 
-### 7.11 Hold the payload budget — OPEN
+### 7.11 Hold the payload budget — LANDED
 
-`verify:bundle-budget` guards JS. Nothing guards HTML, and the largest route is
-**244 KB** against ROADMAP's own < 100 KB target.
+Chose server-side search/sort/page deliberately: instant client search over the
+full set was the reason every row serialized into the RSC payload.
 
-Cause: `DataTable` is a client component and `PlayersDataTable` passes it every
-row (348 for baseball) so 25 can render. That trade buys instant client-side
-search, so it is a real decision, not a bug — but pick one deliberately: move
-search/sort/page to `searchParams` on the server, or trim client rows to the
-displayed fields. Add an HTML-size assertion to the `web` CI job either way, and
-include the 204-row golf scoreboard.
-
-Phase 7 left this alone on purpose rather than half-doing it: the fix changes how
-every board is filtered, so it wants its own change and its own CI gate. It did
-not get worse — the new detail pages are the smallest routes in the app (38 KB
-player, 68 KB franchise, 46 KB settings).
+- **Players board** is a server `PlayersBoard` — `q` / `pos` / `sort` / `dir` /
+  `p` on the URL, slim flat rows (no `season_stats` blob), one page of 25 in the
+  document. `PlayersDataTable` client path removed. Baseball `role=all` stays
+  identity + FPts; counting-stat columns require Batter / Pitcher (emitting both
+  sets of mostly-dash columns was what put the combined view over budget).
+- **Golf scoreboard** keeps week totals only; per-player round slots link out to
+  the team page instead of expanding 160 rows inline.
+- **Draft results** paginate at 40 picks (`dp=`), which cuts the 120-pick golf
+  board.
+- **CI gate:** `npm run verify:html-budget` after build (web job) boots
+  standalone against fixtures and fails if any watched route exceeds 100 KB raw
+  (`SJ_HTML_BUDGET_BYTES`).
 
 ---
 
@@ -1012,11 +1013,10 @@ argument that put 3.1 ahead of the rest of phase 3.
 
 Everything else in phase 7 is independent and can land in any order: ~~7.3~~
 (dead ends), ~~7.4~~ (team game log), ~~7.9~~ (settings), ~~7.10~~ (visual),
-7.11 (payload budget).
+~~7.11 (payload budget)~~.
 
-**Remaining in phase 7:** 7.11 (payload budget + an HTML-size CI gate), plus
-the deferred pieces under 7.7 (scheduled Discord / golf tee-time reminders) and
-7.8 (Δ playoff-odds counterfactual export).
+**Remaining in phase 7:** deferred pieces under 7.7 (scheduled Discord / golf
+tee-time reminders) and 7.8 (Δ playoff-odds counterfactual export).
 
 | Track | Contents | Touches |
 |---|---|---|
@@ -1024,7 +1024,7 @@ the deferred pieces under 7.7 (scheduled Discord / golf tee-time reminders) and
 | H — Depth surfaces | ~~7.3~~, ~~7.4~~, ~~7.9~~ | `apps/web` routes + `lib/data.ts` |
 | I — Social | ~~7.6 → 7.7~~ | feed.json + digest + Discord webhook |
 | J — Tools packaging | ~~7.8~~ (Δ odds open) | `apps/web`; ffa re-run still needed for Δ |
-| K — Craft | ~~7.10~~, 7.11 | `globals.css`, CI |
+| K — Craft | ~~7.10~~, ~~7.11~~ | `globals.css`, HTML + JS CI budgets |
 | L — Sport depth | 8.1 · 8.2 · 8.3 | `src/sj` · `apps/web` · `src/sg` |
 
 G, H, and K barely overlap. I is the only track that introduces user-generated
@@ -1083,15 +1083,14 @@ Concrete targets, baselined against [AUDIT.md](AUDIT.md) (phase 0) and
 | Outbound messages the hub can send | 0 | **Discord digest (admin)** | weekly recap + golf lineup reminder |
 | Decision tools defaulting to your roster | 0 of 6 | **6 of 6** | 6 of 6 |
 | Decision tools stating a verdict | 0 of 6 | **Trade Desk** | trade, start/sit, waivers |
-| Largest page payload | 239 KB | 244 KB | < 100 KB, CI-gated |
+| Largest page payload | 239 KB | **75 KB** (football players; CI-gated) | < 100 KB, CI-gated |
 | Colour schemes | 1 (light) | **light + dark + auto** | light + dark |
 | Screens rendering a team logo | 0 | **4** | standings, matchups, teams, headers |
 | Boards disclosing projection coverage | 1 (team page) | **3** | every board that shows quantiles |
-| `apps/web` tests | 138 | **272** | plus component + smoke |
+| `apps/web` tests | 138 | **272+** | plus component + smoke |
 
-Landed: 7.1 · 7.2 · 7.3 · 7.4 · 7.5 · 7.6 · 7.7 · 7.8 (minus Δ odds) · 7.9 · 7.10.
-Open: **7.11** (payload budget), Δ playoff-odds export, golf tee-time reminders,
-and phase 8.
+Landed: 7.1–7.11 (7.8 minus Δ odds).
+Open: Δ playoff-odds export, golf tee-time reminders, and phase 8.
 
 Mobile chrome misses its target on the golf scoreboard (1.14 screens), which
 carries an event switcher and a scoring explanation above its first row; the

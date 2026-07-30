@@ -11,7 +11,7 @@ import { GolfSettingsPanel } from "@/components/GolfSettingsPanel";
 import { HistoryPanel, type HistoryView } from "@/components/HistoryPanel";
 import { LeagueTabs, tabLabel } from "@/components/LeagueTabs";
 import { MatchupsPanel, type MatchupsView } from "@/components/MatchupsPanel";
-import { PlayersDataTable } from "@/components/PlayersDataTable";
+import { PlayersBoard } from "@/components/PlayersBoard";
 import { ProjectionsBoard } from "@/components/ProjectionsBoard";
 import { SeasonSwitcher } from "@/components/SeasonSwitcher";
 import { SettingsPanel } from "@/components/SettingsPanel";
@@ -30,6 +30,7 @@ import type {
 } from "@/lib/data";
 import type { ActivityView } from "@/lib/activity";
 import { isPitcher } from "@/lib/baseball";
+import type { PlayerTableQuery } from "@/lib/player-table";
 import {
   recordLabel,
   sportFormatLabel,
@@ -297,6 +298,8 @@ export function LeagueView({
   h2hB,
   activityView = "all",
   draftTeamId,
+  draftPage = 1,
+  playersQuery,
   golfEventId,
   golfLineupTeamId,
   golfActingScope,
@@ -327,6 +330,10 @@ export function LeagueView({
   activityView?: ActivityView;
   /** ESPN draft-results team filter (`?tab=draft&team=`). */
   draftTeamId?: number;
+  /** Draft results page (`?tab=draft&dp=`). */
+  draftPage?: number;
+  /** Players board query (`?tab=players&q&pos&sort&dir&p`). */
+  playersQuery?: PlayerTableQuery;
   /** Golf event id (`?tab=lineup|scoreboard&event=`). */
   golfEventId?: string;
   /** Golf lineup / auction team filter (`?tab=lineup|auction&team=`). */
@@ -568,13 +575,23 @@ export function LeagueView({
               role={role}
             />
           ) : null}
-          <PlayersDataTable
+          <PlayersBoard
             players={playersWithProjections}
             sport={league.sport}
             role={role}
             showProjections={isFootball && Boolean(projectionSnapshot)}
             leagueId={leagueId}
             season={league.season}
+            query={
+              playersQuery ?? {
+                q: "",
+                pos: null,
+                sort:
+                  isFootball && projectionSnapshot ? "vor" : "fpts",
+                dir: "desc",
+                page: 1,
+              }
+            }
             projectionCoverage={playersCoverage}
           />
           <StatusLegend sport={league.sport} />
@@ -591,7 +608,11 @@ export function LeagueView({
       ) : null}
 
       {active === "draft" ? (
-        <DraftResultsPanel league={league} teamId={draftTeamId} />
+        <DraftResultsPanel
+          league={league}
+          teamId={draftTeamId}
+          page={draftPage}
+        />
       ) : null}
 
       {active === "auction" && isGolf ? (
