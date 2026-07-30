@@ -197,8 +197,14 @@ surface already exists — and no way to say "nice pick."
 
 ### 3. Everything is a dead end — P1
 
-No cell in any table in the app is a link to a deeper view, with the sole
-exception of team names.
+Team names link to team pages, and golf's schedule links across to lineup and
+scoreboard. Beyond that, every link in the app is a navigation chip — a tab, a
+season, a week, a sub-view. No data cell opens anything deeper:
+
+```
+$ rg -n 'player\.name|row\.name' apps/web/src/components/*.tsx | rg -i 'link|href'
+(no matches — no player name is a link anywhere in the app)
+```
 
 | Clicked thing | Competitors | Hub |
 |---|---|---|
