@@ -469,29 +469,29 @@ competing with push products, in a group that already has a Discord.
 
 ## Summary
 
-| # | Finding | Severity | Blocked on |
+| # | Finding | Severity | Status |
 |---|---|---|---|
-| 1 | Hub does not know which team is yours (franchise link unused outside golf) | **P0 product** | nothing — data on disk |
-| 2 | No social layer: no chat, recaps, reactions, power rankings | **P0 product** | new writable concern |
-| 3 | No player pages, box scores, manager pages; logos unrendered | P1 | player/manager pages: nothing; box scores: sync 2.4 |
-| 4 | Team pages drop schedule/scores entirely (`loadTeamSelective`) | P1 | nothing |
-| 5 | 21–28 identical nav pills; >1 screen of chrome on mobile | P1 | nothing |
-| 6 | Empty projection columns rendered without coverage disclosure | P1 | nothing |
-| 7 | Decision tools unnamed, not roster-aware, no verdict/Δ framing | P1 | nothing |
-| 8 | No settings tab for ESPN sports; no "Open in ESPN" deep links | P1 | nothing |
-| 9 | Baseball missing the projection-free tooling (cats, two-start, caps) | P2 | some feed work |
-| 10 | Golf missing reminders, projected leaderboard, segment limits | P2 | tour feed for live |
-| 11 | 239 KB largest page vs a 100 KB target; full row sets to client | P2 | nothing |
-| 12 | No dark mode, no imagery, no live/freshness affordances, no legend | P2 | nothing |
-| 13 | No outbound channel at all — no email, push, or digest | P1 | mail/webhook transport |
+| 1 | Hub does not know which team is yours (franchise link unused outside golf) | **P0 product** | **Fixed** — roadmap 7.1 + 7.2 |
+| 2 | No social layer: no chat, recaps, reactions, power rankings | **P0 product** | Open — roadmap 7.6 / 7.7 |
+| 3 | No player pages, box scores, manager pages; logos unrendered | P1 | **Fixed** for pages/logos/deep links (7.3); box scores need sync 8.1 |
+| 4 | Team pages drop schedule/scores entirely (`loadTeamSelective`) | P1 | **Fixed** — roadmap 7.4 |
+| 5 | 21–28 identical nav pills; >1 screen of chrome on mobile | P1 | **Fixed** — roadmap 7.5 (28 → 19 pills; 1.13 → 0.87 mobile screens) |
+| 6 | Empty projection columns rendered without coverage disclosure | P1 | **Fixed** — roadmap 7.10 |
+| 7 | Decision tools unnamed, not roster-aware, no verdict/Δ framing | P1 | Partly — roster-aware defaults in 7.1; naming/verdicts open in 7.8 |
+| 8 | No settings tab for ESPN sports; no "Open in ESPN" deep links | P1 | **Fixed** — roadmap 7.9 + 7.3 |
+| 9 | Baseball missing the projection-free tooling (cats, two-start, caps) | P2 | Open — roadmap 8.2 |
+| 10 | Golf missing reminders, projected leaderboard, segment limits | P2 | Open — roadmap 8.3 |
+| 11 | 239 KB largest page vs a 100 KB target; full row sets to client | P2 | Open — roadmap 7.11 |
+| 12 | No dark mode, no imagery, no live/freshness affordances, no legend | P2 | **Fixed** for theme/legend/freshness/crests (7.10 + 7.3); typographic pass open |
+| 13 | No outbound channel at all — no email, push, or digest | P1 | Open — roadmap 7.7 |
 
-**Nine of thirteen findings are blocked on nothing.** They are display,
+**Nine of thirteen findings were blocked on nothing.** They were display,
 ordering, emphasis, and naming over data that is already synced, already
 modelled, and already on disk. That is the shape of a product that was built
 data-layer-first and never had its surface designed — which is exactly what
-phases 2–4 optimized for, and exactly what Phase 7 has to correct.
+phases 2–4 optimized for, and exactly what Phase 7 corrects.
 
-The two-sentence version:
+The two-sentence version, as written at audit time:
 
 > The hub has better projections than ESPN, better playoff odds than anyone, and
 > a decade more history than a new league could have — and it opens on a
@@ -499,3 +499,7 @@ The two-sentence version:
 > way for one member to talk to another.
 >
 > Fix the second sentence and the first one starts to matter.
+
+Two of those three are now fixed: the hub opens on a member dashboard and marks
+your team on every screen it appears on. **The social layer is what remains**, and
+it is the single largest gap left against Sleeper — see roadmap 7.6 and 7.7.
