@@ -29,12 +29,51 @@ import {
 } from "@/lib/projection-join";
 
 export type ToolsView =
+  | "home"
   | "trade"
   | "waivers"
   | "strength"
   | "draft"
   | "start-sit"
   | "playoff-odds";
+
+/** Proper nouns + one-line promises (roadmap 7.8). URL ids stay stable. */
+export const TOOL_CARDS: Array<{
+  id: Exclude<ToolsView, "home">;
+  name: string;
+  promise: string;
+}> = [
+  {
+    id: "trade",
+    name: "Trade Desk",
+    promise: "See which side gains season points — and by how much.",
+  },
+  {
+    id: "waivers",
+    name: "Wire Watch",
+    promise: "Rank free agents by floor, median, ceiling, and VOR.",
+  },
+  {
+    id: "strength",
+    name: "Roster Power",
+    promise: "League-wide season strength from calibrated projections.",
+  },
+  {
+    id: "draft",
+    name: "Draft Board",
+    promise: "Pick rates and ADP from offline Monte Carlo draft sims.",
+  },
+  {
+    id: "start-sit",
+    name: "Start / Sit",
+    promise: "Typical-week posteriors for the tough lineup calls.",
+  },
+  {
+    id: "playoff-odds",
+    name: "Playoff Odds",
+    promise: "Make-playoffs probability from the remaining H2H slate.",
+  },
+];
 
 function toolsHref(
   leagueId: string,
@@ -76,12 +115,8 @@ function ViewSwitcher({
   slot?: number;
 }) {
   const views: Array<{ id: ToolsView; label: string }> = [
-    { id: "trade", label: "Trade" },
-    { id: "waivers", label: "Waivers" },
-    { id: "strength", label: "Strength" },
-    { id: "draft", label: "Draft" },
-    { id: "start-sit", label: "Start/Sit" },
-    { id: "playoff-odds", label: "Playoffs" },
+    { id: "home", label: "Tools" },
+    ...TOOL_CARDS.map((card) => ({ id: card.id as ToolsView, label: card.name })),
   ];
   return (
     <div className="tabs" style={{ marginTop: "0.5rem" }}>
@@ -94,6 +129,57 @@ function ViewSwitcher({
           {item.label}
         </Link>
       ))}
+    </div>
+  );
+}
+
+function ToolsLanding({
+  leagueId,
+  season,
+  a,
+  b,
+  team,
+  slot,
+}: {
+  leagueId: string;
+  season: number;
+  a?: number;
+  b?: number;
+  team?: number;
+  slot?: number;
+}) {
+  return (
+    <div style={{ marginTop: "0.75rem" }}>
+      <p className="lede">
+        Decision tools over calibrated projections — each one defaults to your
+        roster when you are linked. Δ playoff-odds pricing needs an offline
+        counterfactual export and is still open.
+      </p>
+      <div
+        className="tools-landing"
+        style={{
+          display: "grid",
+          gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
+          gap: "0.75rem",
+          marginTop: "0.75rem",
+        }}
+      >
+        {TOOL_CARDS.map((card) => (
+          <Link
+            key={card.id}
+            href={toolsHref(leagueId, season, card.id, { a, b, team, slot })}
+            className="panel"
+            style={{ textDecoration: "none", color: "inherit" }}
+          >
+            <h3 style={{ margin: "0 0 0.35rem", fontSize: "1.05rem" }}>
+              {card.name}
+            </h3>
+            <p className="league-meta" style={{ margin: 0 }}>
+              {card.promise}
+            </p>
+          </Link>
+        ))}
+      </div>
     </div>
   );
 }
@@ -248,6 +334,17 @@ export function ToolsPanel({
             ? `Hub season ${league.season}; weekly boards use NFL ${weeklyProjectionSnapshot!.season} (nearest available export). `
             : null}
         </p>
+      ) : null}
+
+      {view === "home" ? (
+        <ToolsLanding
+          leagueId={league.league_id}
+          season={league.season}
+          a={teamA}
+          b={teamB}
+          team={startSitTeamId}
+          slot={slot}
+        />
       ) : null}
 
       {view === "trade" ? (

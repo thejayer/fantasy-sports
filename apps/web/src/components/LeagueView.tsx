@@ -303,7 +303,7 @@ export function LeagueView({
   projectionSnapshot = null,
   playerMap = null,
   projectionScoring = null,
-  toolsView = "trade",
+  toolsView = "home",
   toolsTeamA,
   toolsTeamB,
   toolsTeamId,
