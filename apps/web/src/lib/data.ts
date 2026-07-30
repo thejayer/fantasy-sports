@@ -994,6 +994,42 @@ export const getWeekBoxScore = cache(
 );
 
 /**
+ * Week numbers that have an on-disk ``weeks/{N}.json`` for this league-season.
+ * Union across data roots (like ``listDraftSimSlots``). Session-gated.
+ * Player game logs list these then call ``getWeekBoxScore`` per week.
+ */
+export const listWeekBoxScoreWeeks = cache(
+  async (leagueId: string, season: number): Promise<number[]> => {
+    await requireSession();
+    const index = await getLeagueIndex();
+    const match = index.find(
+      (item) => item.league_id === leagueId && item.season === season,
+    );
+    if (!match) return [];
+
+    const found = new Set<number>();
+    const dirRel = path.join(weekBoxScoreDir(match.path), "weeks");
+    for (const root of dataRoots()) {
+      const dir = path.join(root, dirRel);
+      let entries: string[];
+      try {
+        entries = await fs.readdir(dir);
+      } catch (err) {
+        if (isNotFoundFsError(err)) continue;
+        throw err;
+      }
+      for (const name of entries) {
+        const m = /^(\d+)\.json$/.exec(name);
+        if (!m) continue;
+        const week = Number(m[1]);
+        if (Number.isInteger(week) && week >= 1) found.add(week);
+      }
+    }
+    return [...found].sort((a, b) => a - b);
+  },
+);
+
+/**
  * Read playoff FP samples under ``playoff_odds/{league_id}/{season}.samples.json``
  * for Trade Desk Δ make-playoffs (roadmap 7.8).
  */

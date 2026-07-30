@@ -2,14 +2,19 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { EmptyState } from "@/components/EmptyState";
+import { PlayerWeekLogPanel } from "@/components/PlayerWeekLogPanel";
 import { SeasonSwitcher } from "@/components/SeasonSwitcher";
 import { StatChips } from "@/components/StatChips";
+import { buildPlayerWeekGameLog } from "@/lib/box-score";
 import {
   getLeagueSeasons,
   getLeagueSnapshot,
   getPlayerMap,
   getProjectionSnapshot,
+  getWeekBoxScore,
   getWeeklyProjectionSnapshot,
+  listWeekBoxScoreWeeks,
+  type WeekBoxScoreSnapshot,
 } from "@/lib/data";
 import { espnPlayerUrl } from "@/lib/espn-links";
 import { injuryTone } from "@/lib/league";
@@ -55,6 +60,7 @@ export default async function PlayerPage({ params, searchParams }: Props) {
 
   let seasonProjection = null;
   let weeklyProjection = null;
+  let weekLog = null;
   if (isFootball) {
     const scoring = scoringSlugFromLeague(league);
     for (const year of projectionSeasonCandidates(league.season)) {
@@ -79,6 +85,21 @@ export default async function PlayerPage({ params, searchParams }: Props) {
       }
       if (seasonProjection || weeklyProjection) break;
     }
+
+    const weekNums = await listWeekBoxScoreWeeks(
+      league.league_id,
+      league.season,
+    );
+    const weekSnaps: WeekBoxScoreSnapshot[] = [];
+    for (const week of weekNums) {
+      const snap = await getWeekBoxScore(
+        league.league_id,
+        league.season,
+        week,
+      );
+      if (snap) weekSnaps.push(snap);
+    }
+    weekLog = buildPlayerWeekGameLog(weekSnaps, player.id ?? playerId);
   }
 
   const statusLabel = player.injury_status || player.status || "Healthy";
@@ -136,6 +157,10 @@ export default async function PlayerPage({ params, searchParams }: Props) {
           no entry for id {String(player.id)}. Committed fixtures use synthetic
           ESPN ids, so offline coverage is expected to be near zero.
         </p>
+      ) : null}
+
+      {isFootball && weekLog ? (
+        <PlayerWeekLogPanel league={league} log={weekLog} />
       ) : null}
 
       <section className="player-section">
@@ -219,7 +244,9 @@ export default async function PlayerPage({ params, searchParams }: Props) {
           <a href={espnUrl} rel="noreferrer noopener" target="_blank">
             Open on ESPN ↗
           </a>{" "}
-          for news, game logs, and splits the hub does not sync.
+          {isFootball
+            ? "for news and splits beyond the synced week box scores."
+            : "for news, game logs, and splits the hub does not sync."}
         </p>
       ) : null}
     </main>

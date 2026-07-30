@@ -316,6 +316,17 @@ test.describe("hub smoke", () => {
     await expect(page.getByText(/Lineup slot/i)).toBeVisible();
   });
 
+  test("football player page shows multi-week game log (roadmap 8.1)", async ({
+    page,
+  }) => {
+    await page.goto("/leagues/football-main/players/202600001");
+    await expect(page.getByRole("heading", { name: "Juan Phillips" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: /Game log/i })).toBeVisible();
+    await expect(page.getByText(/18\.7/)).toBeVisible();
+    await expect(page.getByText(/12\.3/)).toBeVisible();
+    await expect(page.getByRole("link", { name: "Box" }).first()).toBeVisible();
+  });
+
   test("franchise page shows a career and rivalries (roadmap 7.3)", async ({
     page,
   }) => {
