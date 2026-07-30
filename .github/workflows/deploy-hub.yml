@@ -51,6 +51,10 @@ on:
         description: "Cloud Run min instances (0=scale-to-zero; 1=always warm)"
         required: true
         default: "0"
+      auth_url:
+        description: "Public Auth.js URL (blank = keep existing custom domain, else Cloud Run URL)"
+        required: false
+        default: ""
 
 permissions:
   contents: read
@@ -79,6 +83,9 @@ jobs:
       MIN_INSTANCES: ${{ github.event.inputs.min_instances || '0' }}
       EVENT_NAME: ${{ github.event_name }}
       DEFAULT_BUCKET: fantasy-sports-analytics-sj-data
+      AUTH_URL_INPUT: ${{ github.event.inputs.auth_url || '' }}
+      # Preferred public host after ./scripts/setup-hub-domain.sh --cutover
+      PREFERRED_AUTH_HOST: fantasy.strictlyjayers.com
     steps:
       - name: Validate inputs
         run: |
@@ -147,17 +154,32 @@ jobs:
 
       - name: Resolve AUTH_URL and deploy
         run: |
-          # Prefer the existing public URL so redeploys are one gcloud call.
-          # First-time create: regional run.app form from GCP_PROJECT_NUMBER
-          # (do not call gcloud projects.describe — needs Resource Manager API).
-          # Reconcile if Cloud Run returns a different status.url.
-          AUTH_URL="$(gcloud run services describe "$SERVICE" \
+          # AUTH_URL priority:
+          #   1) workflow_dispatch auth_url input
+          #   2) existing service AUTH_URL if custom (not *.run.app) — survives CD
+          #   3) Cloud Run status.url / first-create regional form
+          # Do not clobber fantasy.strictlyjayers.com after domain cutover.
+          RUN_URL="$(gcloud run services describe "$SERVICE" \
             --project "$PROJECT_ID" --region "$REGION" \
             --format='value(status.url)' 2>/dev/null || true)"
-          if [ -z "$AUTH_URL" ]; then
-            AUTH_URL="https://${SERVICE}-${GCP_PROJECT_NUMBER}.${REGION}.run.app"
+          if [ -z "$RUN_URL" ]; then
+            RUN_URL="https://${SERVICE}-${GCP_PROJECT_NUMBER}.${REGION}.run.app"
           fi
-          echo "Using AUTH_URL=$AUTH_URL"
+          CURRENT_AUTH="$(gcloud run services describe "$SERVICE" \
+            --project "$PROJECT_ID" --region "$REGION" \
+            --format='yaml(spec.template.spec.containers[0].env)' 2>/dev/null \
+            | awk '/name: AUTH_URL/{getline; if ($1=="value:") {print $2; exit}}' \
+            || true)"
+          if [ -n "$AUTH_URL_INPUT" ]; then
+            AUTH_URL="$AUTH_URL_INPUT"
+            echo "Using AUTH_URL from workflow input"
+          elif [ -n "$CURRENT_AUTH" ] && [[ "$CURRENT_AUTH" != *".run.app"* ]]; then
+            AUTH_URL="$CURRENT_AUTH"
+            echo "Keeping existing custom AUTH_URL"
+          else
+            AUTH_URL="$RUN_URL"
+          fi
+          echo "Using AUTH_URL=$AUTH_URL (Cloud Run URL: $RUN_URL)"
 
           # Hub-native golf/members share the ESPN store path. Dual GCS FUSE
           # mounts (RO ESPN + RW hub bucket) failed Cloud Run PORT probes.
@@ -203,7 +225,9 @@ jobs:
           LIVE_URL="$(gcloud run services describe "$SERVICE" \
             --project "$PROJECT_ID" --region "$REGION" \
             --format='value(status.url)')"
-          if [ "$LIVE_URL" != "$AUTH_URL" ]; then
+          # Only reconcile when we intended a *.run.app AUTH_URL (never overwrite
+          # fantasy.strictlyjayers.com / other custom hosts with the run.app URL).
+          if [[ "$AUTH_URL" == *".run.app"* ]] && [ -n "$LIVE_URL" ] && [ "$LIVE_URL" != "$AUTH_URL" ]; then
             echo "Reconciling AUTH_URL: $AUTH_URL → $LIVE_URL"
             gcloud run services update "$SERVICE" \
               --project "$PROJECT_ID" \
@@ -213,19 +237,20 @@ jobs:
           fi
           echo "AUTH_URL=$AUTH_URL" >> "$GITHUB_ENV"
           echo "SERVICE_URL=$AUTH_URL" >> "$GITHUB_ENV"
+          echo "RUN_URL=$LIVE_URL" >> "$GITHUB_ENV"
 
       - name: Print the live URL
         run: |
           echo "Deployed to: $SERVICE_URL"
+          echo "Cloud Run URL: $RUN_URL"
           echo
           echo "Add these to the Google OAuth client (APIs & Services → Credentials):"
           echo "  Authorized JavaScript origin:  $SERVICE_URL"
           echo "  Authorized redirect URI:       $SERVICE_URL/api/auth/callback/google"
-          # Cloud Run also exposes a *.us-central1.run.app form; add both if Google
-          # shows redirect_uri_mismatch.
-          ALT="$(gcloud run services describe "$SERVICE" \
-            --project "$PROJECT_ID" --region "$REGION" \
-            --format 'value(status.address.url)' 2>/dev/null || true)"
-          if [ -n "$ALT" ] && [ "$ALT" != "$SERVICE_URL" ]; then
-            echo "  Also add origin/redirect for:   $ALT"
+          if [ -n "$RUN_URL" ] && [ "$RUN_URL" != "$SERVICE_URL" ]; then
+            echo "  Also keep origin/redirect for:  $RUN_URL"
+            echo "  Also keep redirect URI:         $RUN_URL/api/auth/callback/google"
           fi
+          echo
+          echo "Custom domain (Spaceship): ./scripts/setup-hub-domain.sh"
+          echo "  Preferred host: https://$PREFERRED_AUTH_HOST"
