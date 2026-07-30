@@ -40,7 +40,7 @@ on:
         required: true
         default: "sj-hub"
       bucket:
-        description: "GCS bucket to mount RW at /app/data/sj (ESPN + hub golf/members). Blank = leave existing mounts unchanged"
+        description: "GCS bucket RW at /app/data/sj (ESPN + golf). Blank on manual = leave mounts; push CD defaults to …-sj-data"
         required: false
         default: ""
       hub_bucket:
@@ -72,12 +72,13 @@ jobs:
       PROJECT_ID: ${{ github.event.inputs.project_id || 'fantasy-sports-analytics' }}
       REGION: ${{ github.event.inputs.region || 'us-central1' }}
       SERVICE: ${{ github.event.inputs.service || 'sj-hub' }}
-      # Opt-in GCS mount. Auto-mounting the bucket broke CD (port probe) while
-      # image-only deploys matched the last healthy revision. Pass bucket via
-      # workflow_dispatch after ./scripts/setup-sync-infra.sh.
+      # Push CD remounts the known prod bucket (single RW). Manual dispatch with
+      # blank bucket leaves volumes unchanged (rollback image-only).
       BUCKET: ${{ github.event.inputs.bucket || '' }}
       HUB_BUCKET: ${{ github.event.inputs.hub_bucket || '' }}
       MIN_INSTANCES: ${{ github.event.inputs.min_instances || '0' }}
+      EVENT_NAME: ${{ github.event_name }}
+      DEFAULT_BUCKET: fantasy-sports-analytics-sj-data
     steps:
       - name: Validate inputs
         run: |
@@ -178,6 +179,12 @@ jobs:
           if [ -n "$HUB_BUCKET" ]; then
             echo "Note: hub_bucket=$HUB_BUCKET is ignored (dual FUSE disabled; hub shares ESPN bucket)"
           fi
+          # Failed dual-mount deploys can leave a broken volume template on the
+          # service. Push CD must clear + remount single RW or PORT probes fail.
+          if [ -z "$BUCKET" ] && [ "$EVENT_NAME" = "push" ]; then
+            BUCKET="$DEFAULT_BUCKET"
+            echo "Push CD: defaulting bucket to $BUCKET"
+          fi
           if [ -n "$BUCKET" ]; then
             echo "Mounting gs://$BUCKET RW at /app/data/sj (ESPN + hub golf/members)"
             # uid/gid must match non-root sjhub (1001). gcloud mount-options use
@@ -189,7 +196,6 @@ jobs:
               --add-volume-mount "volume=sjdata,mount-path=/app/data/sj"
             )
           else
-            # Push CD and blank dispatch must NOT wipe an existing live mount.
             echo "No bucket input — leaving Cloud Run volumes unchanged"
           fi
           gcloud run deploy "$SERVICE" "${ARGS[@]}"

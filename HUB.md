@@ -77,8 +77,9 @@ protection is the CI gate). Manual rollback / first-time:
 2. Defaults are fine (`fantasy-sports-analytics` / `us-central1` / `sj-hub`)
 3. Set **bucket** to `fantasy-sports-analytics-sj-data` after
    `./scripts/setup-sync-infra.sh` (hub mounts it **RW** for ESPN + golf).
-   Leave blank on push/CD to **keep** the existing volume (blank no longer
-   clears mounts). Ignore deprecated **hub_bucket**.
+   Push-to-`main` CD defaults to that bucket and remounts (clears any stale
+   dual-FUSE template). Manual deploy with blank **bucket** leaves volumes
+   unchanged (image-only rollback). Ignore deprecated **hub_bucket**.
 4. When it finishes, copy the printed URL
 
 ### Google OAuth redirect (required after first deploy)
