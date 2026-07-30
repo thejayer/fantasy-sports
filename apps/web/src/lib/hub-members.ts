@@ -290,6 +290,35 @@ export function assertCanControlAuction(
   };
 }
 
+/**
+ * League feed posts (comments, reactions, polls, votes) — same bar as auction
+ * control: linked franchise for the league, or admin / AUTH_DEV_BYPASS.
+ */
+export function assertCanPostToFeed(
+  ctx: FranchiseAclContext,
+): FranchiseAclResult {
+  const result = assertCanControlAuction(ctx);
+  if (result.ok) return result;
+  return {
+    ok: false,
+    error:
+      "Link a franchise for this league in /admin (or ask an admin) before posting to the feed.",
+  };
+}
+
+/** Soft-delete comments/polls — admin / bypass only. */
+export function assertCanModerateFeed(
+  ctx: FranchiseAclContext,
+): FranchiseAclResult {
+  if (canBypassFranchiseAcl(ctx)) {
+    return { ok: true, mode: "bypass" };
+  }
+  return {
+    ok: false,
+    error: "Only an admin can moderate the feed.",
+  };
+}
+
 /** Finalize writes draft/rosters — admin / bypass only. */
 export function assertCanFinalizeAuction(
   ctx: FranchiseAclContext,

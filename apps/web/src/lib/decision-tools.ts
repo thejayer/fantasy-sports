@@ -139,6 +139,100 @@ export function applyTradeRosters(
   return { rosterA, rosterB };
 }
 
+export type TradeFinderHit = {
+  giveIds: string[];
+  getIds: string[];
+  giveNames: string[];
+  getNames: string[];
+  sideADeltaMedian: number;
+  sideBDeltaMedian: number;
+  jointMedian: number;
+};
+
+/**
+ * Bounded 2-for-1 Trade Finder (roadmap 7.8). Tries A→B packages where one
+ * side sends two mapped players and the other sends one, ranked by joint
+ * median improvement. Caps enumeration so the hub stays offline-friendly.
+ */
+export function findTwoForOneTrades(
+  teamA: Team,
+  teamB: Team,
+  espnToGsis: Map<string, string>,
+  byGsis: Map<string, ProjectionPlayer>,
+  opts?: { limit?: number; maxCandidatesPerSide?: number },
+): TradeFinderHit[] {
+  const limit = opts?.limit ?? 8;
+  const maxCand = opts?.maxCandidatesPerSide ?? 8;
+  const mapped = (roster: Player[]) =>
+    rosterWithProjections(roster, espnToGsis, byGsis)
+      .filter((p) => p.projection != null)
+      .sort(
+        (a, b) => (b.projection?.median ?? 0) - (a.projection?.median ?? 0),
+      )
+      .slice(0, maxCand);
+
+  const aPlayers = mapped(teamA.roster ?? []);
+  const bPlayers = mapped(teamB.roster ?? []);
+  const hits: TradeFinderHit[] = [];
+
+  const consider = (give: PlayerWithProjection[], get: PlayerWithProjection[]) => {
+    const giveIds = give
+      .map((p) => normalizeEspnId(p.id))
+      .filter((id): id is string => Boolean(id));
+    const getIds = get
+      .map((p) => normalizeEspnId(p.id))
+      .filter((id): id is string => Boolean(id));
+    if (!giveIds.length || !getIds.length) return;
+    const { sideA, sideB } = evaluateTrade(
+      teamA,
+      teamB,
+      giveIds,
+      getIds,
+      espnToGsis,
+      byGsis,
+    );
+    const joint = sideA.deltaMedian + sideB.deltaMedian;
+    // Prefer packages that help both sides, or at least improve the joint pie.
+    if (joint <= 0.5 && (sideA.deltaMedian < 0 || sideB.deltaMedian < 0)) {
+      return;
+    }
+    hits.push({
+      giveIds,
+      getIds,
+      giveNames: give.map((p) => p.name ?? "Player"),
+      getNames: get.map((p) => p.name ?? "Player"),
+      sideADeltaMedian: sideA.deltaMedian,
+      sideBDeltaMedian: sideB.deltaMedian,
+      jointMedian: joint,
+    });
+  };
+
+  // A sends 2, B sends 1
+  for (let i = 0; i < aPlayers.length; i++) {
+    for (let j = i + 1; j < aPlayers.length; j++) {
+      for (const recv of bPlayers) {
+        consider([aPlayers[i], aPlayers[j]], [recv]);
+      }
+    }
+  }
+  // A sends 1, B sends 2
+  for (const send of aPlayers) {
+    for (let i = 0; i < bPlayers.length; i++) {
+      for (let j = i + 1; j < bPlayers.length; j++) {
+        consider([send], [bPlayers[i], bPlayers[j]]);
+      }
+    }
+  }
+
+  return hits
+    .sort(
+      (a, b) =>
+        b.jointMedian - a.jointMedian ||
+        b.sideADeltaMedian - a.sideADeltaMedian,
+    )
+    .slice(0, limit);
+}
+
 export function evaluateTrade(
   teamA: Team,
   teamB: Team,

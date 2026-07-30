@@ -102,12 +102,15 @@ export default async function LeagueDetailPage({ params, searchParams }: Props) 
       : "standings"
   ) as HistoryView;
   const activityView = (
-    ["all", "trades", "waivers"].includes(viewParam ?? "")
+    ["all", "trades", "waivers", "results", "draft", "talk"].includes(
+      viewParam ?? "",
+    )
       ? viewParam
       : "all"
   ) as ActivityView;
   const toolsView = (
     [
+      "home",
       "trade",
       "waivers",
       "strength",
@@ -116,7 +119,7 @@ export default async function LeagueDetailPage({ params, searchParams }: Props) 
       "playoff-odds",
     ].includes(viewParam ?? "")
       ? viewParam
-      : "trade"
+      : "home"
   ) as ToolsView;
 
   const league = await getLeagueSnapshot(

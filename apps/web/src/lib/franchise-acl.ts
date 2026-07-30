@@ -10,6 +10,8 @@ import {
   assertCanActAsTeam,
   assertCanControlAuction,
   assertCanFinalizeAuction,
+  assertCanModerateFeed,
+  assertCanPostToFeed,
   golfActingScope,
   parseAllowedEmailsEnv,
   type FranchiseAclContext,
@@ -73,6 +75,24 @@ export async function enforceAuctionFinalize(
   const session = await requireSession();
   const ctx = await aclContext(leagueId, session);
   const result = assertCanFinalizeAuction(ctx);
+  return result.ok ? null : deny(result.error);
+}
+
+export async function enforceFeedPost(
+  leagueId: string,
+): Promise<NextResponse | null> {
+  const session = await requireSession();
+  const ctx = await aclContext(leagueId, session);
+  const result = assertCanPostToFeed(ctx);
+  return result.ok ? null : deny(result.error);
+}
+
+export async function enforceFeedModerate(
+  leagueId: string,
+): Promise<NextResponse | null> {
+  const session = await requireSession();
+  const ctx = await aclContext(leagueId, session);
+  const result = assertCanModerateFeed(ctx);
   return result.ok ? null : deny(result.error);
 }
 

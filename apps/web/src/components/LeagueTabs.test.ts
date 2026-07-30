@@ -23,6 +23,7 @@ const FOOTBALL = tabs(
 describe("tabLabel (roadmap 7.5)", () => {
   it("writes real labels instead of route slugs", () => {
     expect(tabLabel("standings")).toBe("Standings");
+    expect(tabLabel("activity")).toBe("Feed");
     expect(tabLabel("start-sit")).toBe("Start-sit");
     expect(tabLabel("scoreboard")).toBe("Scoreboard");
   });
@@ -40,13 +41,13 @@ describe("splitTabs", () => {
       "teams",
       "players",
       "matchups",
-      "projections",
+      "activity",
       "tools",
     ]);
     expect(hidden.map((t) => t.id)).toEqual([
       "draft",
-      "activity",
       "history",
+      "projections",
       "settings",
     ]);
   });
@@ -70,7 +71,7 @@ describe("splitTabs", () => {
       "players",
       "matchups",
       "draft",
-      "projections",
+      "activity",
       "tools",
     ]);
   });

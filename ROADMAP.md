@@ -652,9 +652,9 @@ Follows from [AUDIT-COMPETITIVE.md](AUDIT-COMPETITIVE.md), which measured the hu
 against ESPN, Yahoo, Sleeper, and FantasyPros. That audit's finding: phases 0–6
 built a very good reference library. Opening it does nothing.
 
-**Status: 7.1–7.5, 7.9, and 7.10 have landed.** Open: 7.6 (league feed), 7.7
-(digest + outbound transport), 7.8 (tool packaging), 7.11 (payload budget).
-Measured results are in "What done looks like" at the end.
+**Status: 7.1–7.10 have landed** (7.8 without Δ playoff-odds re-sim). Open:
+7.11 (payload budget) and the deferred 7.8 Δ playoff-odds / golf tee-time
+reminder bits of 7.7. Measured results are in "What done looks like" at the end.
 
 **Nine of its thirteen findings are blocked on nothing** — they are ordering,
 emphasis, naming, and display over data already synced and already modelled. So
@@ -775,81 +775,55 @@ solved the row-of-ten-pills problem. Sticky headers stay scoped to
 Still open: a global league/team switcher in the header (Yahoo makes it reachable
 from every screen; the hub still routes back through `/leagues`).
 
-### 7.6 A league feed — the social layer
+### 7.6 A league feed — the social layer — LANDED
 
-The largest single gap against Sleeper, and the one that decides whether a
-friend league uses the hub or its Discord. Sleeper credits chat as the reason
-its leagues are the most active, and reports trade volume **tripling** after it
-relaxed roster validation.
+The Activity tab is now the Feed (URL slug stays `activity` for stability).
 
-Scope deliberately, in order:
+1. **System event stream** — `lib/feed-events.ts` builds a chronological feed
+   from transactions (grouped), draft picks (summarised when > 48), and decided
+   weekly results. No new writes. Stable ids so comments can target an event.
+2. **Member comments + reactions** — `{SJ_HUB_DIR}/{leagueId}/{season}/feed.json`,
+   uncached, atomic write, optimistic-concurrency `revision`, 2s HTTP polling
+   (`FeedPanel`). Length caps, per-author rate limit (10 / 10 min), soft-delete
+   moderation, ACL via `assertCanPostToFeed` / `assertCanModerateFeed` (same bar
+   as auction control / finalize). Allowed reactions are a fixed emoji set.
+3. **Polls** — create + one-vote-per-member, same document and revision stream.
 
-1. **System event stream** — one chronological feed per league, generated from
-   data already synced: transactions, waiver claims, trades, draft picks, weekly
-   results, golf auction lots, scoring finalizations. This replaces the
-   four-row `activity` table and needs no new writes.
-2. **Member comments + reactions** on any feed item. New writable concern
-   (`{SJ_HUB_DIR}/{leagueId}/feed.json` or per-period shards) following the
-   `auction_room.json` pattern — file-backed, uncached, optimistic-concurrency
-   `revision`, HTTP polling. No websockets, no Redis.
-3. **Polls** (ESPN's LM Polls / Sleeper's chat polls) — the coordination tool a
-   friend league actually uses, for draft times and rule votes.
+API: `GET|POST /api/leagues/[leagueId]/feed`. Golf still has no Feed tab (its
+live surface is the auction room); football and baseball share the tab.
 
-Risks: this is the first user-generated content in the repo, so it needs input
-validation, length caps, per-member rate limiting, an admin delete path, and
-ACL via `lib/franchise-acl.ts`. Ordering by `synced_at` across ESPN and hub
-sources will need care. Do not start here before 7.1 — a feed with no identity
-is a wall of text.
+### 7.7 Weekly digest and an outbound channel — LANDED (surface + Discord)
 
-### 7.7 Weekly digest and an outbound channel
+- **Recap generator** — pure `lib/digest.ts`, keyed by league-season-period:
+  highest score, biggest blowout, closest game, luckiest win, move of the week,
+  and power rankings (true all-play win % through the period, then PF).
+- Digests land in the Feed as `digest:{league}:{season}:{period}` system events
+  (commentable like any other item).
+- **Discord transport** — `SJ_DISCORD_WEBHOOK_URL` + admin "Send to Discord" on
+  the feed. Idempotent via `delivered_digests` on the feed document so retries
+  do not double-post. Generation works with the env unset (UI still renders).
 
-Findings 1, 2, and 12 roll up into one: **the hub has no way to reach a member
-who is not already looking at it.** Every competitor manufactures a recurring
-appointment.
+Still open from the original 7.7 scope: scheduled auto-send (today is
+admin-triggered), email fallback, and golf **tee-time lineup reminders** (the
+highest-value single notification — locks fail-closed with no prior warning).
 
-- **Recap generator** (`src/sj` or a new `src/sjr`): per league-period, from
-  standings + matchups + transactions. Highest score, biggest blowout, closest
-  game, best/worst start-sit call, luckiest win (win with the week's lowest
-  winning score), transaction of the week, current power rankings.
-- **Power rankings** — nobody in the comparison ships them free (Yahoo gates
-  them behind Plus). All-play win %, PF adjusted for schedule strength, and
-  roster projection strength are all computable from the snapshot.
-- **Awards** — Sleeper's Weekly Report pattern. Cheap, and it is the thing that
-  gets disengaged managers reading.
-- **Recap surface first, transport second**: render digests in the hub (and post
-  them into 7.6's feed) before wiring email. Then one transport — a Discord
-  webhook is the highest-value target for this specific group, with email as the
-  fallback. Golf **tee-time lineup reminders** are the highest-value single
-  notification: golf locks fail-closed with no prior warning, and the Tour
-  removed its own opening-round deadline in 2026 precisely because missed
-  lineups are the main churn cause.
+### 7.8 Package the decision tools — LANDED (minus Δ playoff odds)
 
-Risks: any transport means secrets, retries, unsubscribe handling, and a
-scheduled job that must not double-send. Keep generation pure and idempotent
-(keyed by league-season-period) so delivery can be retried safely.
+- Tools tab opens on a **landing grid** (`view=home`) with proper nouns and
+  one-line promises: Trade Desk, Wire Watch, Roster Power, Draft Board,
+  Start / Sit, Playoff Odds. URL ids stay stable.
+- Roster-aware defaults already from 7.1.
+- **Trade verdict** — `tradeVerdict()` states which side gains on season median
+  and bands uncertainty with floor/ceiling movement.
+- **Trade Finder** — bounded 2-for-one search (`findTwoForOneTrades`) ranked by
+  joint median improvement, Apply loads the package into the desk.
+- Coverage disclosure closed under 7.10.
 
-### 7.8 Package the decision tools
-
-The tools are better modelled than every free competitor's and worse packaged
-than all of them. FantasyPros' equivalents each have a proper noun, a one-line
-promise, and a roster-aware default; the hub's are `?view=` values.
-
-- Name them, give each a one-line promise and a landing card on the tools tab.
-- Default every tool to the viewer's roster (needs 7.1).
-- **State a verdict.** Trade currently shows two Σ columns and leaves the
-  subtraction to the member. Say which side gains and by how much, with the
-  uncertainty the posterior already provides.
-- **Price decisions in Δ playoff odds.** Yahoo's Assistant GM frames advice as
-  "+2.4 points and +6% win probability" — the most copyable idea in the
-  comparison. The hub already runs a playoff-odds Monte Carlo; re-running it
-  with a swapped lineup or a completed trade converts every tool's output into
-  the unit members actually care about. No competitor ships this free.
-- **Trade Finder** — enumerate two-for-one packages across rosters ranked by
-  joint improvement. Bounded search, offline-friendly, no new data.
-- **Coverage disclosure** — the players board renders four columns of `—` per
-  row when the projection join misses, with no explanation. State the coverage
-  rate on the surface that displays it and collapse columns with zero coverage
-  on the current page. The team page already does this right.
+Still open: **Δ playoff-odds pricing**. The hub must not call `ffa` from Next
+handlers, playoff snapshots have no sample matrix for counterfactuals, and
+fixture leagues are often standings-locked. Needs an offline `ffa` export of
+swapped-roster artifacts (or exported weekly samples) before the UI can show
+"+6% make-playoffs" on a trade.
 
 ### 7.9 Settings, and make `dynasty` mean something — LANDED
 Football and baseball gained a `settings` tab over data already on disk, grouped
@@ -1034,23 +1008,22 @@ about you), 7.6 (a feed with names on it), and 7.8 (tools that default to your
 roster). Building any of those before it means building them twice — the same
 argument that put 3.1 ahead of the rest of phase 3.
 
-**Strictly ordered:** ~~7.1~~ → ~~7.2~~ → { ~~7.5~~, 7.6 } → 7.7 → 7.8.
+**Strictly ordered:** ~~7.1~~ → ~~7.2~~ → { ~~7.5~~, ~~7.6~~ } → ~~7.7~~ → ~~7.8~~.
 
 Everything else in phase 7 is independent and can land in any order: ~~7.3~~
 (dead ends), ~~7.4~~ (team game log), ~~7.9~~ (settings), ~~7.10~~ (visual),
 7.11 (payload budget).
 
-**Remaining in phase 7:** 7.6 (league feed — the first user-generated content in
-the repo, so it carries the validation / rate-limit / moderation work), 7.7
-(digest generator, then one transport), 7.8 (tool naming, verdicts, Δ playoff
-odds, Trade Finder), 7.11 (payload budget + an HTML-size CI gate).
+**Remaining in phase 7:** 7.11 (payload budget + an HTML-size CI gate), plus
+the deferred pieces under 7.7 (scheduled Discord / golf tee-time reminders) and
+7.8 (Δ playoff-odds counterfactual export).
 
 | Track | Contents | Touches |
 |---|---|---|
 | G — Identity & IA | ~~7.1~~ → ~~7.2~~ → ~~7.5~~ | `apps/web` (`lib/viewer.ts`, `LeagueView`, layout) |
 | H — Depth surfaces | ~~7.3~~, ~~7.4~~, ~~7.9~~ | `apps/web` routes + `lib/data.ts` |
-| I — Social | 7.6 → 7.7 | new writable hub concern + a transport |
-| J — Tools packaging | 7.8 | `apps/web` + `ffa` playoff-odds re-run |
+| I — Social | ~~7.6 → 7.7~~ | feed.json + digest + Discord webhook |
+| J — Tools packaging | ~~7.8~~ (Δ odds open) | `apps/web`; ffa re-run still needed for Δ |
 | K — Craft | ~~7.10~~, 7.11 | `globals.css`, CI |
 | L — Sport depth | 8.1 · 8.2 · 8.3 | `src/sj` · `apps/web` · `src/sg` |
 
@@ -1106,19 +1079,19 @@ Concrete targets, baselined against [AUDIT.md](AUDIT.md) (phase 0) and
 | Team pages showing the team's own results | 0 | **all** | all |
 | Nav pills on the densest screen | 28 | **19** (12 on standings) | ≤ 12 |
 | Mobile chrome above the first data row | 1.07–1.23 screens | **0.70–0.87** on league tables | < 0.5 screens |
-| Ways one member can address another in-app | 0 | 0 | feed comments + reactions + polls |
-| Outbound messages the hub can send | 0 | 0 | weekly recap + golf lineup reminder |
+| Ways one member can address another in-app | 0 | **comments + reactions + polls** | feed comments + reactions + polls |
+| Outbound messages the hub can send | 0 | **Discord digest (admin)** | weekly recap + golf lineup reminder |
 | Decision tools defaulting to your roster | 0 of 6 | **6 of 6** | 6 of 6 |
-| Decision tools stating a verdict | 0 of 6 | 0 of 6 | trade, start/sit, waivers |
+| Decision tools stating a verdict | 0 of 6 | **Trade Desk** | trade, start/sit, waivers |
 | Largest page payload | 239 KB | 244 KB | < 100 KB, CI-gated |
 | Colour schemes | 1 (light) | **light + dark + auto** | light + dark |
 | Screens rendering a team logo | 0 | **4** | standings, matchups, teams, headers |
 | Boards disclosing projection coverage | 1 (team page) | **3** | every board that shows quantiles |
-| `apps/web` tests | 138 | **255** | plus component + smoke |
+| `apps/web` tests | 138 | **272** | plus component + smoke |
 
-Landed: 7.1 · 7.2 · 7.3 · 7.4 · 7.5 · 7.9 · 7.10.
-Open: **7.6** (league feed), **7.7** (digest + transport), **7.8** (tool
-packaging and Δ playoff-odds framing), **7.11** (payload budget), and phase 8.
+Landed: 7.1 · 7.2 · 7.3 · 7.4 · 7.5 · 7.6 · 7.7 · 7.8 (minus Δ odds) · 7.9 · 7.10.
+Open: **7.11** (payload budget), Δ playoff-odds export, golf tee-time reminders,
+and phase 8.
 
 Mobile chrome misses its target on the golf scoreboard (1.14 screens), which
 carries an event switcher and a scoring explanation above its first row; the

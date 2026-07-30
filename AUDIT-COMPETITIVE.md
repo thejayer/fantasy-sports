@@ -472,18 +472,18 @@ competing with push products, in a group that already has a Discord.
 | # | Finding | Severity | Status |
 |---|---|---|---|
 | 1 | Hub does not know which team is yours (franchise link unused outside golf) | **P0 product** | **Fixed** — roadmap 7.1 + 7.2 |
-| 2 | No social layer: no chat, recaps, reactions, power rankings | **P0 product** | Open — roadmap 7.6 / 7.7 |
+| 2 | No social layer: no chat, recaps, reactions, power rankings | **P0 product** | **Fixed** — roadmap 7.6 / 7.7 (feed + digests + Discord) |
 | 3 | No player pages, box scores, manager pages; logos unrendered | P1 | **Fixed** for pages/logos/deep links (7.3); box scores need sync 8.1 |
 | 4 | Team pages drop schedule/scores entirely (`loadTeamSelective`) | P1 | **Fixed** — roadmap 7.4 |
 | 5 | 21–28 identical nav pills; >1 screen of chrome on mobile | P1 | **Fixed** — roadmap 7.5 (28 → 19 pills; 1.13 → 0.87 mobile screens) |
 | 6 | Empty projection columns rendered without coverage disclosure | P1 | **Fixed** — roadmap 7.10 |
-| 7 | Decision tools unnamed, not roster-aware, no verdict/Δ framing | P1 | Partly — roster-aware defaults in 7.1; naming/verdicts open in 7.8 |
+| 7 | Decision tools unnamed, not roster-aware, no verdict/Δ framing | P1 | **Mostly fixed** — 7.8 landing/verdict/Trade Finder; Δ playoff odds still open |
 | 8 | No settings tab for ESPN sports; no "Open in ESPN" deep links | P1 | **Fixed** — roadmap 7.9 + 7.3 |
 | 9 | Baseball missing the projection-free tooling (cats, two-start, caps) | P2 | Open — roadmap 8.2 |
 | 10 | Golf missing reminders, projected leaderboard, segment limits | P2 | Open — roadmap 8.3 |
 | 11 | 239 KB largest page vs a 100 KB target; full row sets to client | P2 | Open — roadmap 7.11 |
 | 12 | No dark mode, no imagery, no live/freshness affordances, no legend | P2 | **Fixed** for theme/legend/freshness/crests (7.10 + 7.3); typographic pass open |
-| 13 | No outbound channel at all — no email, push, or digest | P1 | Open — roadmap 7.7 |
+| 13 | No outbound channel at all — no email, push, or digest | P1 | **Fixed** for digest surface + Discord webhook (7.7); email / tee-time reminders open |
 
 **Nine of thirteen findings were blocked on nothing.** They were display,
 ordering, emphasis, and naming over data that is already synced, already
@@ -500,6 +500,7 @@ The two-sentence version, as written at audit time:
 >
 > Fix the second sentence and the first one starts to matter.
 
-Two of those three are now fixed: the hub opens on a member dashboard and marks
-your team on every screen it appears on. **The social layer is what remains**, and
-it is the single largest gap left against Sleeper — see roadmap 7.6 and 7.7.
+Those three are now fixed: the hub opens on a member dashboard, marks your team
+on every screen it appears on, and has a league feed with digests and Discord
+delivery. What remains against the competitive set is mostly sport depth
+(phase 8), HTML payload budget (7.11), and Δ playoff-odds pricing.

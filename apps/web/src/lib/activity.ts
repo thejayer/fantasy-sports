@@ -6,7 +6,14 @@
 import type { LeagueSnapshot, Team, Transaction } from "@/lib/data";
 import { teamNameById } from "@/lib/draft-results";
 
-export type ActivityView = "all" | "trades" | "waivers";
+/** Feed filter chips (roadmap 7.6). Legacy activity views stay valid. */
+export type ActivityView =
+  | "all"
+  | "trades"
+  | "waivers"
+  | "results"
+  | "draft"
+  | "talk";
 
 export type ActivityActionRow = {
   key: string;
@@ -126,9 +133,11 @@ export function filterActivityRows(
   rows: ActivityActionRow[],
   view: ActivityView,
 ): ActivityActionRow[] {
-  if (view === "all") return rows;
   if (view === "trades") return rows.filter((row) => row.kind === "trade");
-  return rows.filter((row) => row.kind === "waiver");
+  if (view === "waivers") return rows.filter((row) => row.kind === "waiver");
+  // results / draft / talk are feed-level filters over system events, not
+  // transaction rows — leave the flat ledger unfiltered for those callers.
+  return rows;
 }
 
 export function activityRowsForLeague(
