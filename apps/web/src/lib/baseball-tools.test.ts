@@ -224,6 +224,9 @@ describe("baseball-tools (roadmap 8.2)", () => {
       teams: [team(1, "Dogs", [], [{ IP: 10, OUTS: 30, GS: 1 }])],
     } as unknown as LeagueSnapshot;
     const weekBox = {
+      schema_version: 1,
+      league_id: "b",
+      season: 2026,
       sport: "baseball",
       week: 1,
       pitcher_ip: [{ player_id: 1, name: "A", team_id: 1, ip: 5 }],
