@@ -190,12 +190,16 @@ or admin; finalize is admin-only.
 | Env | Path (prod) | Mount | Owns |
 |---|---|---|---|
 | `SJ_DATA_DIR` | `/app/data/sj` | GCS **RW** (`…-sj-data`) | ESPN football/baseball from `sj sync` |
-| `SJ_HUB_DIR` | `/app/data/sj` | same mount | Golf leagues, auction rooms, `hub_members.json` |
+| `SJ_HUB_DIR` | `/app/data/sj` | same mount | Golf leagues, auction rooms, league feeds (`feed.json`), `hub_members.json` |
 
 Prod uses **one** RW mount. A second FUSE volume (`…-sj-hub`) failed Cloud Run
 PORT probes. `getLeagueIndex` still merges roots when they differ (local sibling
 `data/hub`). Sync/backfill skip `platform: hub` and refuse to overwrite
 `sport=golf`. Deploy hub with **bucket** only (`hub_bucket` is ignored).
+
+Optional outbound digest: set `SJ_DISCORD_WEBHOOK_URL` on the hub service.
+Admins can send the latest weekly digest from the Feed tab; delivery is
+idempotent per league-season-period. Digests still render in-app when unset.
 
 ### Create / populate (Cloud Shell)
 
