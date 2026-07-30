@@ -337,10 +337,134 @@ button,
   text-transform: uppercase;
 }
 
+.league-link-body {
+  display: grid;
+  gap: 0.3rem;
+  min-width: 0;
+}
+
+.league-link-team {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  margin-top: 0.15rem;
+}
+
 .league-meta,
 .muted {
   opacity: 0.72;
   font-size: 0.92rem;
+}
+
+/* Member dashboard (roadmap 7.2) */
+.home-dashboard {
+  display: block;
+}
+
+.home-todo {
+  padding: 0.85rem 1rem 1rem;
+  margin-bottom: 1.25rem;
+}
+
+.home-todo .roster-group-title {
+  margin: 0 0 0.5rem;
+}
+
+.home-grid {
+  display: grid;
+  gap: 0.9rem;
+  grid-template-columns: repeat(auto-fit, minmax(20rem, 1fr));
+  align-items: start;
+}
+
+.home-card {
+  display: grid;
+  gap: 0.55rem;
+  padding: 1.15rem 1.25rem;
+  border-radius: var(--radius);
+  background: rgba(255, 255, 255, 0.62);
+  box-shadow: inset 0 0 0 1px var(--line);
+}
+
+.home-card-head {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 0.75rem;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.home-card-title {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 1.3rem;
+  letter-spacing: 0.01em;
+  text-transform: uppercase;
+}
+
+.home-team {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+}
+
+.home-team-name {
+  font-weight: 700;
+}
+
+.home-matchup {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  align-items: center;
+  margin: 0;
+  padding: 0.6rem 0.75rem;
+  border-radius: calc(var(--radius) - 8px);
+  background: rgba(255, 255, 255, 0.55);
+  box-shadow: inset 0 0 0 1px var(--line);
+}
+
+.home-score {
+  font-family: var(--font-display);
+  font-size: 1.15rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.home-live-pill {
+  background: color-mix(in srgb, var(--field) 20%, transparent);
+  font-size: 0.65rem;
+}
+
+.home-next,
+.home-unlinked {
+  margin: 0;
+}
+
+.home-actions {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.35rem;
+}
+
+.home-action {
+  padding-left: 0.7rem;
+  border-left: 3px solid var(--line);
+  font-size: 0.92rem;
+  line-height: 1.35;
+}
+
+.home-action.tone-urgent {
+  border-left-color: var(--ember);
+}
+
+.home-action.tone-attention {
+  border-left-color: #d4a017;
+}
+
+.home-action.tone-info {
+  opacity: 0.72;
 }
 
 .pill {
