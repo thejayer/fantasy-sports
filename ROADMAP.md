@@ -1083,7 +1083,7 @@ Concrete targets, baselined against [AUDIT.md](AUDIT.md) (phase 0) and
 | Outbound messages the hub can send | 0 | **Discord digest (admin)** | weekly recap + golf lineup reminder |
 | Decision tools defaulting to your roster | 0 of 6 | **6 of 6** | 6 of 6 |
 | Decision tools stating a verdict | 0 of 6 | **Trade Desk** | trade, start/sit, waivers |
-| Largest page payload | 239 KB | **< 100 KB, CI-gated** | < 100 KB, CI-gated |
+| Largest page payload | 239 KB | **75 KB** (football players; CI-gated) | < 100 KB, CI-gated |
 | Colour schemes | 1 (light) | **light + dark + auto** | light + dark |
 | Screens rendering a team logo | 0 | **4** | standings, matchups, teams, headers |
 | Boards disclosing projection coverage | 1 (team page) | **3** | every board that shows quantiles |

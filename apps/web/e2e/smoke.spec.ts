@@ -49,6 +49,8 @@ test.describe("hub smoke", () => {
   });
 
   test("live golf auction room nominate and sell", async ({ page }) => {
+    // Lobby → nominate → bid → pass is chatty against 1s polling; give CI room.
+    test.setTimeout(60_000);
     const slug = `golf-live-${Date.now().toString(36).slice(-6)}`;
     await page.goto("/leagues/new");
     await page.locator('input[name="league_id"]').fill(slug);
@@ -59,25 +61,54 @@ test.describe("hub smoke", () => {
     await page.locator('input[name="bench"]').fill("2");
     await page.getByRole("button", { name: /Create golf league/i }).click();
     await page.waitForURL(new RegExp(`/leagues/${slug}.*tab=auction`));
-    const openRoom = page.getByRole("button", { name: /Open auction room/i });
-    if (await openRoom.isVisible().catch(() => false)) {
-      await openRoom.click();
-    }
-    await expect(page.getByText(/Live OWGR auction/i)).toBeVisible({
-      timeout: 15_000,
-    });
+
+    // Create already POSTs auction_room.json before navigation. The panel
+    // briefly renders "Open auction room" while the initial GET is in flight —
+    // do not race a click on that button (it detaches when the room arrives).
+    const live = page.getByText(/Live OWGR auction/i);
+    await expect(async () => {
+      if (await live.isVisible()) return;
+      const openRoom = page.getByRole("button", { name: /Open auction room/i });
+      if (await openRoom.isVisible()) {
+        await Promise.race([
+          openRoom.click({ timeout: 2_000 }),
+          live.waitFor({ state: "visible", timeout: 2_000 }),
+        ]).catch(() => undefined);
+      }
+      await expect(live).toBeVisible({ timeout: 2_000 });
+    }).toPass({ timeout: 20_000 });
+
     await page.getByRole("button", { name: /Start auction/i }).click();
-    await expect(page.getByText(/Nominate/i).first()).toBeVisible();
-    await page.locator("select").filter({ hasText: /Scheffler|Select/ }).last().selectOption({ index: 1 });
-    await page.getByRole("button", { name: /^Nominate$/i }).click();
-    await expect(page.getByText(/Bidding/i).first()).toBeVisible();
+    await expect(
+      page.getByRole("heading", { name: /Nominate/i }),
+    ).toBeVisible({ timeout: 10_000 });
+
+    // Act as the nominating franchise (first team after start).
+    const acting = page.getByLabel(/Acting team/i);
+    if (
+      await acting
+        .evaluate((el) => el.tagName === "SELECT")
+        .catch(() => false)
+    ) {
+      await acting.selectOption({ index: 0 });
+    }
+    const player = page.getByLabel(/^Player$/i);
+    await expect(player).toBeVisible({ timeout: 10_000 });
+    await player.selectOption({ index: 1 });
+    const nominateBtn = page.getByRole("button", { name: /^Nominate$/i });
+    await expect(nominateBtn).toBeEnabled();
+    await nominateBtn.click();
+    await expect(
+      page.getByRole("heading", { name: /^Bidding/i }),
+    ).toBeVisible({ timeout: 15_000 });
+
     // Switch acting team to team 2 and bid, then pass others via timer/pass.
-    await page.getByLabel(/Acting team/i).selectOption({ index: 1 });
+    await acting.selectOption({ index: 1 });
     await page.getByRole("button", { name: /\+\$1/i }).click();
     await expect(page.getByText(/high bid/i)).toBeVisible();
-    // Remaining teams pass until sold.
+    // Remaining teams pass until sold (skip high bidder — cannot pass).
     for (const idx of [0, 2, 3, 4, 5]) {
-      await page.getByLabel(/Acting team/i).selectOption({ index: idx });
+      await acting.selectOption({ index: idx });
       const pass = page.getByRole("button", { name: /^Pass$/i });
       if (await pass.isVisible().catch(() => false)) {
         await pass.click();

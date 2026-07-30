@@ -299,6 +299,7 @@ export function AuctionRoomPanel({
               <label>
                 Player
                 <select
+                  aria-label="Player"
                   value={nominee}
                   onChange={(e) =>
                     setNominee(e.target.value ? Number(e.target.value) : "")
