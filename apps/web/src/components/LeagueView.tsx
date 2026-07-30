@@ -15,7 +15,9 @@ import { PlayersBoard } from "@/components/PlayersBoard";
 import { ProjectionsBoard } from "@/components/ProjectionsBoard";
 import { SeasonSwitcher } from "@/components/SeasonSwitcher";
 import { SettingsPanel } from "@/components/SettingsPanel";
+import { BaseballToolsPanel } from "@/components/BaseballToolsPanel";
 import { ToolsPanel, type ToolsView } from "@/components/ToolsPanel";
+import type { BaseballToolsView } from "@/lib/baseball-tools";
 import { TeamIdentity } from "@/components/TeamAvatar";
 import { ViewerBadge } from "@/components/ViewerBadge";
 import type {
@@ -309,6 +311,7 @@ export function LeagueView({
   playerMap = null,
   projectionScoring = null,
   toolsView = "home",
+  baseballToolsView = "home",
   toolsTeamA,
   toolsTeamB,
   toolsTeamId,
@@ -349,6 +352,8 @@ export function LeagueView({
   playerMap?: PlayerMapSnapshot | null;
   projectionScoring?: string | null;
   toolsView?: ToolsView;
+  /** Baseball tools view (`?tab=tools&view=` — roadmap 8.2). */
+  baseballToolsView?: BaseballToolsView;
   /** Trade side A (`?a=`). */
   toolsTeamA?: number;
   /** Trade side B (`?b=`). */
@@ -382,6 +387,7 @@ export function LeagueView({
   const historyPair =
     h2hA != null && h2hB != null ? `&a=${h2hA}&b=${h2hB}` : "";
   const toolsPair = (() => {
+    if (isBaseball) return `&view=${baseballToolsView}`;
     if (toolsView === "draft") return `&view=draft&slot=${draftSlot}`;
     if (toolsView === "start-sit") {
       return (
@@ -690,12 +696,7 @@ export function LeagueView({
 
       {active === "tools" ? (
         isBaseball ? (
-          <EmptyState title="Decision tools are football-only by design">
-            Trade, strength, draft-sim, start/sit, and playoff boards join NFL
-            projection snapshots. Baseball free agents live under the Waivers
-            tab; draft results and activity are shared ESPN tabs — same
-            deliberate scope as the projections tab (roadmap 4.6).
-          </EmptyState>
+          <BaseballToolsPanel league={league} view={baseballToolsView} />
         ) : (
           <ToolsPanel
             league={league}

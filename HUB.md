@@ -24,14 +24,17 @@ Yahoo, Sleeper, and FantasyPros), and [ROADMAP.md](ROADMAP.md) (phases 0–9).
 
 Registry: [`configs/leagues.yaml`](configs/leagues.yaml)
 
-### Baseball scope (roadmap 4.6)
+### Baseball scope (roadmap 4.6 + 8.2)
 
 **Projection-free by design.** `sj` syncs ESPN baseball snapshots (standings,
 rosters with batter/pitcher boards, matchups, draft results, activity, free
 agents, history). The `ffa` analytics engine is NFL-only — no MLB ingest, no
-baseball projection snapshots, no trade/sim tools on category leagues. Baseball
-`projections` / `tools` tabs explain that boundary; FA browsing is the Waivers
-tab. Do not stub a half engine. Revisit only with a dedicated MLB modeling plan.
+baseball projection snapshots. The `projections` tab keeps that EmptyState.
+Roadmap **8.2** fills `tools` with snapshot arithmetic (Category Board, Usage
+Caps); trailing windows / week forecaster / daily locks stay EmptyStates until
+split sync + MLB schedule feeds land. FA browsing remains the Waivers tab. Do
+not stub a half engine. Revisit projections only with a dedicated MLB modeling
+plan.
 
 ### Golf scope (roadmap 6.4a–e + 6.5 + auction/keepers + live room)
 

@@ -54,11 +54,12 @@ describe("LeagueView unification", () => {
     expect(viewSource).toMatch(/"activity"/);
     expect(viewSource).toMatch(/FreeAgentsBoard/);
     expect(viewSource).toMatch(/"waivers"/);
-    // Roadmap 4.6: baseball exposes projections/tools tabs with by-design EmptyStates.
+    // Roadmap 4.6: baseball stays projection-free; 8.2 fills tools with arithmetic.
     expect(viewSource).toMatch(/BASEBALL_TABS/);
     expect(viewSource).toMatch(/projection-free by design/);
     expect(viewSource).toMatch(/Baseball stays projection-free by design/);
-    expect(viewSource).toMatch(/Decision tools are football-only by design/);
+    expect(viewSource).toMatch(/BaseballToolsPanel/);
+    expect(viewSource).not.toMatch(/Decision tools are football-only by design/);
     expect(viewSource).not.toMatch(/until roadmap 4\.6/);
     // Roadmap 6.4a–c: golf lane — settings, draft, lineup panel.
     expect(viewSource).toMatch(/GOLF_TABS/);

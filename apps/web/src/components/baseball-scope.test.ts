@@ -12,10 +12,12 @@ describe("baseball scope (roadmap 4.6)", () => {
       path.resolve(__dirname, "../../../../ROADMAP.md"),
       "utf8",
     );
-    expect(hub).toMatch(/Baseball scope \(roadmap 4\.6\)/);
+    expect(hub).toMatch(/Baseball scope \(roadmap 4\.6/);
     expect(hub).toMatch(/Projection-free by design/);
+    expect(hub).toMatch(/8\.2/);
     expect(roadmap).toMatch(/4\.6 Baseball — LANDED/);
     expect(roadmap).toMatch(/keep baseball data-rich but projection-free/);
+    expect(roadmap).toMatch(/8\.2 Baseball: the projection-free toolkit — LANDED/);
   });
 
   it("keeps projection bundle load football-gated", () => {

@@ -922,24 +922,25 @@ renders ESPN league-applied `points`. Player pages list on-disk weeks via
 (`PlayerWeekLogPanel`) with links back to the matchup box score. Fixtures:
 `football-main/2026/weeks/{13,14}.json`.
 
-### 8.2 Baseball: the projection-free toolkit
+### 8.2 Baseball: the projection-free toolkit — LANDED (hub MVP)
 4.6's boundary (no MLB model in `src/ffa`) stands. But most useful baseball
 tooling needs no model — it is scheduling and roster arithmetic:
 
-- **Category standings**: projected category wins and margin, the summary unit
-  FantasyPros uses for roto/H2H-cat.
-- **Games-per-team per period** and **two-start pitchers** — ESPN's Weekly
-  Forecaster pattern, derivable from the schedule.
-- **Trailing-window rater** (7 / 15 / 30 day), ESPN's `PR7/PR15/PR30`. Pure
-  arithmetic over synced stats, and the fastest waiver-scouting affordance in
-  any competing product.
-- **Usage caps**: minimum weekly IP (Yahoo forfeits *every* pitching category
-  when unmet) and season maximums. The mechanic home-built baseball hubs miss
-  most often, and it is arithmetic.
-- **Daily lineup locks** — baseball is a daily game and the hub treats it weekly.
+- ~~**Category standings**~~ — **LANDED** as season-to-date Category Board from
+  roster `season_stats` (standard 5×5, roto points + per-cat ranks/margins).
+  Disclose: not ESPN period boxes, not a projection model. Official league cat
+  lists + period H2H cat matrices still need baseball box-score sync.
+- **Games-per-team per period** and **two-start pitchers** — EmptyState in Tools
+  (needs MLB schedule + probable-starter feed — the only 8.2 feed).
+- **Trailing-window rater** (7 / 15 / 30 day) — EmptyState until `sj` persists
+  ESPN `PR7/PR15/PR30` splits (season bucket only today; FA rows lack stats).
+- ~~**Usage caps**~~ — **LANDED** season team/pitcher IP vs disclosed ceiling
+  (default 1400 or `settings.season_ip_max`). Min weekly IP forfeits need period
+  IP from box scores.
+- **Daily lineup locks** — EmptyState until game start times land (golf
+  `lineupClock` is the UX analogue only).
 
-Only the probable-starter grid needs a feed. Do not read this as permission to
-half-port football projections onto category leagues.
+Hub: `BaseballToolsPanel` + `lib/baseball-tools.ts`. Keep projections EmptyState.
 
 ### 8.3 Golf: close the week-to-week loop
 Golf is the one sport where the hub *is* the system of record, so every gap is
@@ -1126,8 +1127,10 @@ Concrete targets, baselined against [AUDIT.md](AUDIT.md) (phase 0) and
 | `apps/web` tests | 138 | **272+** | plus component + smoke |
 
 Landed: 7.1–7.11 (including Δ playoff odds + golf tee-time reminders); 8.1
-football box scores + player week game logs.
-Open: 8.2 baseball toolkit, 8.3 golf depth.
+football box scores + player week game logs; 8.2 baseball tools MVP (category
+board + IP usage; feed-dependent cards still EmptyStates).
+Open: 8.3 golf depth; 8.2 follow-ups (trailing splits sync, MLB schedule,
+period cat boxes, daily locks).
 Postponed: 7.7 scheduled Discord auto-send / email fallback.
 
 Mobile chrome misses its target on the golf scoreboard (1.14 screens), which
