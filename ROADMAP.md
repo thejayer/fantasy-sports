@@ -456,9 +456,9 @@ Fold in continuously rather than saving for the end.
   Sign-in allowlist = `ALLOWED_EMAILS` ∪ members file. Next: enforce links on
   golf auction/lineup mutations.
 - **Hub-native store isolation.** Golf / members / auction rooms write under
-  `SJ_HUB_DIR` (prod: separate RW GCS `…-sj-hub`); ESPN sync stays on
-  `SJ_DATA_DIR` (RO `…-sj-data`). Indexes merged at read time; sync refuses to
-  overwrite `sport=golf`.
+  `SJ_HUB_DIR`. Prod shares the ESPN GCS bucket RW at `/app/data/sj` (dual FUSE
+  failed Cloud Run PORT probes); sync skips `platform: hub` and refuses
+  `sport=golf` overwrite. Local default is still a sibling `data/hub`.
 - **Live ESPN vs fixtures.** Committed `fixtures/sj` and accidental `data/sj`
   copies are dummy team names. Restore with `source .env.espn && rm -rf data/sj
   && sj sync --current-only` (+ `sj backfill` for history) and mount the GCS

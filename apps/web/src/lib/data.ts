@@ -474,8 +474,8 @@ type LineupsFile = GolfLineupsSnapshot;
 type ScoreboardFile = GolfScoreboardSnapshot;
 
 /**
- * Snapshots live on a read-only Cloud Storage mount refreshed by the sj-sync
- * job. Hub-native golf lives under `SJ_HUB_DIR` (see `lib/hub-paths.ts`).
+ * Snapshots live on a Cloud Storage mount refreshed by the sj-sync job.
+ * Hub-native golf uses `SJ_HUB_DIR` (prod: same path as `SJ_DATA_DIR`).
  * Reads go through Next's Data Cache (`unstable_cache`) with TTL from
  * `SJ_CACHE_TTL_MS` (default 60s) and tag `sj-snapshots` for explicit
  * revalidation via `POST /api/revalidate` after sync.

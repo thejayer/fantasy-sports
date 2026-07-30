@@ -1,17 +1,18 @@
 #!/bin/sh
 # Cloud Run entrypoint for the Strictly Jayers hub.
 #
-# In production SJ_DATA_DIR is a read-only GCS mount (ESPN sync store) and
-# SJ_HUB_DIR is a separate read-write GCS mount (golf / members). Startup sync
-# stays available (SJ_SYNC_ON_START=1) for local runs without a bucket.
+# In production both SJ_DATA_DIR and SJ_HUB_DIR point at the same RW GCS mount
+# (/app/data/sj). Dual FUSE mounts failed Cloud Run PORT probes; sync guards
+# keep ESPN jobs from overwriting hub-native golf. Startup sync stays available
+# (SJ_SYNC_ON_START=1) for local runs without a bucket.
 set -eu
 
 DATA_DIR="${SJ_DATA_DIR:-/app/data/sj}"
-HUB_DIR="${SJ_HUB_DIR:-/app/data/hub}"
+HUB_DIR="${SJ_HUB_DIR:-$DATA_DIR}"
 
 # Production (SJ_SYNC_ON_START=0): do not mkdir/stat/test GCS FUSE mounts before
 # listen. A slow/broken mount hangs the entrypoint and Cloud Run kills the
-# revision for never binding PORT. Next reads both stores on request.
+# revision for never binding PORT. Next reads the store on request.
 if [ "${SJ_SYNC_ON_START:-0}" != "1" ]; then
   echo "Starting hub (SJ_SYNC_ON_START=0); ESPN=$DATA_DIR hub=$HUB_DIR"
 else

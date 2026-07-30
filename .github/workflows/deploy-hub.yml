@@ -40,11 +40,11 @@ on:
         required: true
         default: "sj-hub"
       bucket:
-        description: "GCS ESPN snapshot bucket to mount RO (blank = baked fixtures)"
+        description: "GCS bucket to mount RW at /app/data/sj (ESPN + hub golf/members). Blank = leave existing mounts unchanged"
         required: false
         default: ""
       hub_bucket:
-        description: "GCS hub-native bucket (golf/members) mounted RW at /app/data/hub — create via setup-sync-infra.sh"
+        description: "(Deprecated) Ignored — dual GCS FUSE mounts failed Cloud Run PORT probes; hub shares the ESPN bucket"
         required: false
         default: ""
       min_instances:
@@ -158,6 +158,9 @@ jobs:
           fi
           echo "Using AUTH_URL=$AUTH_URL"
 
+          # Hub-native golf/members share the ESPN store path. Dual GCS FUSE
+          # mounts (RO ESPN + RW hub bucket) failed Cloud Run PORT probes.
+          # Sync skips platform:hub and refuses sport=golf overwrite.
           ARGS=(
             --project "$PROJECT_ID"
             --region "$REGION"
@@ -169,37 +172,26 @@ jobs:
             --min-instances "$MIN_INSTANCES"
             --max-instances 5
             --cpu-boost
-            --set-env-vars "SJ_SYNC_ON_START=0,AUTH_TRUST_HOST=true,SJ_DATA_DIR=/app/data/sj,SJ_HUB_DIR=/app/data/hub,AUTH_URL=$AUTH_URL"
+            --set-env-vars "SJ_SYNC_ON_START=0,AUTH_TRUST_HOST=true,SJ_DATA_DIR=/app/data/sj,SJ_HUB_DIR=/app/data/sj,AUTH_URL=$AUTH_URL"
             --set-secrets "AUTH_SECRET=sj-auth-secret:latest,AUTH_GOOGLE_ID=sj-auth-google-id:latest,AUTH_GOOGLE_SECRET=sj-auth-google-secret:latest,ALLOWED_EMAILS=sj-allowed-emails:latest"
           )
-          # Always clear then re-add volumes so a prior revision cannot leave a
-          # dangling mount when inputs change.
-          VOLUME_ARGS=(--clear-volumes --clear-volume-mounts)
+          if [ -n "$HUB_BUCKET" ]; then
+            echo "Note: hub_bucket=$HUB_BUCKET is ignored (dual FUSE disabled; hub shares ESPN bucket)"
+          fi
           if [ -n "$BUCKET" ]; then
-            echo "Mounting gs://$BUCKET RO at /app/data/sj (ESPN sync store)"
-            # Sync job owns writes; hub mounts read-only. uid/gid must match the
-            # non-root sjhub user (1001). gcloud mount-options use semicolons
-            # (commas would be parsed as separate volume keys → "unexpected gid").
-            VOLUME_ARGS+=(
-              --add-volume "name=sjdata,type=cloud-storage,bucket=$BUCKET,readonly=true,mount-options=uid=1001;gid=1001"
+            echo "Mounting gs://$BUCKET RW at /app/data/sj (ESPN + hub golf/members)"
+            # uid/gid must match non-root sjhub (1001). gcloud mount-options use
+            # semicolons (commas are parsed as separate volume keys).
+            ARGS+=(
+              --clear-volumes
+              --clear-volume-mounts
+              --add-volume "name=sjdata,type=cloud-storage,bucket=$BUCKET,readonly=false,mount-options=uid=1001;gid=1001"
               --add-volume-mount "volume=sjdata,mount-path=/app/data/sj"
             )
           else
-            echo "No ESPN bucket — hub will fall back to baked fixtures for SJ_DATA_DIR"
+            # Push CD and blank dispatch must NOT wipe an existing live mount.
+            echo "No bucket input — leaving Cloud Run volumes unchanged"
           fi
-          if [ -n "$HUB_BUCKET" ]; then
-            echo "Mounting gs://$HUB_BUCKET RW at /app/data/hub (golf / members)"
-            VOLUME_ARGS+=(
-              --add-volume "name=sjhub,type=cloud-storage,bucket=$HUB_BUCKET,readonly=false,mount-options=uid=1001;gid=1001"
-              --add-volume-mount "volume=sjhub,mount-path=/app/data/hub"
-            )
-          else
-            echo "No hub_bucket — SJ_HUB_DIR=/app/data/hub is container-local (ephemeral)"
-          fi
-          if [ -z "$BUCKET" ] && [ -z "$HUB_BUCKET" ]; then
-            echo "No buckets set — clearing volumes + mounts"
-          fi
-          ARGS+=("${VOLUME_ARGS[@]}")
           gcloud run deploy "$SERVICE" "${ARGS[@]}"
 
           LIVE_URL="$(gcloud run services describe "$SERVICE" \

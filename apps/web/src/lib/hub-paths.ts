@@ -1,9 +1,10 @@
 /**
  * Snapshot vs hub-native store roots.
  *
- * ESPN sync owns `SJ_DATA_DIR` (often a read-only GCS mount in prod).
- * Hub-native golf / members / auction rooms write under `SJ_HUB_DIR` so
- * sync/backfill never share an index or season directory with them.
+ * Prod Cloud Run uses one RW GCS mount and sets both `SJ_DATA_DIR` and
+ * `SJ_HUB_DIR` to `/app/data/sj` (dual FUSE failed PORT probes). Sync skips
+ * `platform: hub` and refuses `sport=golf` overwrite. Locally, unset
+ * `SJ_HUB_DIR` still defaults to a sibling `data/hub` next to `SJ_DATA_DIR`.
  */
 
 import path from "path";
