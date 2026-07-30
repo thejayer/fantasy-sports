@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { BaseballRosterView } from "@/components/BaseballRosterView";
 import { EmptyState } from "@/components/EmptyState";
+import { GameLogPanel } from "@/components/GameLogPanel";
 import { GolfRosterView } from "@/components/GolfRosterView";
 import { SeasonSwitcher } from "@/components/SeasonSwitcher";
 import {
@@ -121,6 +122,11 @@ export default async function TeamPage({ params, searchParams }: Props) {
         hrefFor={seasonHref}
       />
 
+      <GameLogPanel league={league} team={team} />
+
+      <h3 className="roster-group-title" style={{ marginTop: "1.5rem" }}>
+        Roster
+      </h3>
       {!team.roster.length ? (
         <EmptyState title="No roster players in this snapshot">
           Rosters appear after sync when ESPN returns lineup data for this

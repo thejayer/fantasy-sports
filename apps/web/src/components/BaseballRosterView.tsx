@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { EmptyState } from "@/components/EmptyState";
+import { GameLogPanel } from "@/components/GameLogPanel";
 import { SeasonSwitcher } from "@/components/SeasonSwitcher";
 import { ViewerBadge } from "@/components/ViewerBadge";
 import type { LeagueSnapshot, Player } from "@/lib/data";
@@ -59,6 +60,8 @@ export function BaseballRosterView({
           `/leagues/${league.league_id}/teams/${team.team_id}?season=${year}`
         }
       />
+
+      <GameLogPanel league={league} team={team} />
 
       {!team.roster.length ? (
         <EmptyState title="No roster players in this snapshot">
