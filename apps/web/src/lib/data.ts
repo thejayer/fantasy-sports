@@ -204,6 +204,47 @@ export type PlayoffOddsSnapshot = {
   teams: PlayoffOddsTeam[];
 };
 
+/** One player line in a football week box score (roadmap 8.1). */
+export type BoxScorePlayer = {
+  id: number | string | null;
+  name: string | null;
+  position: string | null;
+  slot: string | null;
+  pro_team?: string | null;
+  pro_opponent?: string | null;
+  on_bye_week?: boolean;
+  /** League-applied fantasy points (ESPN appliedTotal) — display this. */
+  points: number | null;
+  projected_points?: number | null;
+  injury_status?: string | null;
+  game_played?: number | null;
+};
+
+export type BoxScoreMatchup = {
+  home_team_id: number | null;
+  away_team_id: number | null;
+  home_score: number | null;
+  away_score: number | null;
+  home_projected?: number | null;
+  away_projected?: number | null;
+  is_playoff?: boolean;
+  matchup_type?: string | null;
+  home_lineup: BoxScorePlayer[];
+  away_lineup: BoxScorePlayer[];
+};
+
+/** Side concern ``weeks/{N}.json`` — never loaded by getLeagueSnapshot. */
+export type WeekBoxScoreSnapshot = {
+  schema_version: number;
+  league_id: string;
+  season: number;
+  week: number;
+  sport: string;
+  period_label?: string;
+  synced_at?: string;
+  matchups: BoxScoreMatchup[];
+};
+
 /** Compact FP draws for hub trade Δ (`ffa export-playoff-odds --write-samples`). */
 export type PlayoffOddsSamples = {
   schema_version: number;
@@ -889,6 +930,62 @@ export const getPlayoffOddsSnapshot = cache(
     for (const root of dataRoots()) {
       const doc = await readJson<PlayoffOddsSnapshot>(path.join(root, relative));
       if (doc?.teams?.length && doc.season === season) {
+        return doc;
+      }
+    }
+    return null;
+  },
+);
+
+/**
+ * Resolve the on-disk directory that holds ``weeks/`` for a league-season.
+ * v2: ``{league}/{season}/`` beside manifest; v1 fixtures: ``{league}/{season}/``
+ * beside the monolith ``{league}/{season}.json``.
+ */
+function weekBoxScoreDir(indexPath: string): string {
+  if (
+    indexPath.endsWith("/manifest.json") ||
+    indexPath.endsWith("manifest.json")
+  ) {
+    return path.dirname(indexPath);
+  }
+  if (indexPath.endsWith(".json")) {
+    // football-main/2026.json → football-main/2026/
+    return indexPath.slice(0, -".json".length);
+  }
+  return indexPath;
+}
+
+/**
+ * Football week box scores under ``{league}/{season}/weeks/{N}.json``.
+ * Session-gated; never called from standings/roster/history paths.
+ */
+export const getWeekBoxScore = cache(
+  async (
+    leagueId: string,
+    season: number,
+    week: number,
+  ): Promise<WeekBoxScoreSnapshot | null> => {
+    await requireSession();
+    if (!Number.isInteger(week) || week < 1) return null;
+    const index = await getLeagueIndex();
+    const match = index.find(
+      (item) => item.league_id === leagueId && item.season === season,
+    );
+    if (!match) return null;
+
+    for (const root of dataRoots()) {
+      const dir = weekBoxScoreDir(match.path);
+      const relative = path.join(dir, "weeks", `${week}.json`);
+      const doc = await readJson<WeekBoxScoreSnapshot>(
+        path.join(root, relative),
+      );
+      if (
+        doc?.matchups &&
+        doc.week === week &&
+        doc.season === season &&
+        doc.sport === "football"
+      ) {
         return doc;
       }
     }

@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from datetime import datetime, timezone
 from typing import Any
 
 # Core counting stats we surface for baseball dynasty views.
@@ -76,6 +77,76 @@ def _player_role(position: str | None, slot: str | None) -> str:
     if sl in {"BE", "IL", "BENCH"} and pos in _PITCHER_POSITIONS:
         return "pitcher"
     return "batter"
+
+
+def serialize_box_player(player: Any) -> dict[str, Any]:
+    """Serialize one espn-api ``BoxPlayer`` (league-applied fantasy points).
+
+    Roadmap 8.1: persist ESPN ``appliedTotal`` as ``points`` — never treat raw
+    yards/TDs as the primary score column (Sleeper lesson / golf ``sg.score``).
+    """
+    return {
+        "id": _player_id(player),
+        "name": getattr(player, "name", None),
+        "position": getattr(player, "position", None),
+        "slot": getattr(player, "slot_position", None)
+        or getattr(player, "lineupSlot", None),
+        "pro_team": getattr(player, "proTeam", None)
+        or getattr(player, "pro_team", None),
+        "pro_opponent": getattr(player, "pro_opponent", None),
+        "on_bye_week": bool(getattr(player, "on_bye_week", False)),
+        "points": _num(getattr(player, "points", None)),
+        "projected_points": _num(getattr(player, "projected_points", None)),
+        "injury_status": getattr(player, "injuryStatus", None)
+        or getattr(player, "injury_status", None),
+        "game_played": _num(getattr(player, "game_played", None)),
+    }
+
+
+def serialize_box_score(box: Any, *, week: int) -> dict[str, Any]:
+    """Serialize one espn-api football ``BoxScore`` into a JSON-friendly dict."""
+    home_lineup = [
+        serialize_box_player(p) for p in (getattr(box, "home_lineup", None) or [])
+    ]
+    away_lineup = [
+        serialize_box_player(p) for p in (getattr(box, "away_lineup", None) or [])
+    ]
+    return {
+        "home_team_id": _team_id(getattr(box, "home_team", None)),
+        "away_team_id": _team_id(getattr(box, "away_team", None)),
+        "home_score": _num(getattr(box, "home_score", None)),
+        "away_score": _num(getattr(box, "away_score", None)),
+        "home_projected": _num(getattr(box, "home_projected", None)),
+        "away_projected": _num(getattr(box, "away_projected", None)),
+        "is_playoff": bool(getattr(box, "is_playoff", False)),
+        "matchup_type": getattr(box, "matchup_type", None) or "NONE",
+        "week": int(week),
+        "home_lineup": home_lineup,
+        "away_lineup": away_lineup,
+    }
+
+
+def build_week_box_scores_document(
+    *,
+    league_id: str,
+    season: int,
+    week: int,
+    box_scores: list[Any],
+    synced_at: str | None = None,
+    period_label: str = "week",
+) -> dict[str, Any]:
+    """Assemble ``weeks/{N}.json`` payload (side concern — not in manifest.files)."""
+    when = synced_at or datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
+    return {
+        "schema_version": 1,
+        "league_id": league_id,
+        "season": int(season),
+        "week": int(week),
+        "sport": "football",
+        "period_label": period_label,
+        "synced_at": when,
+        "matchups": [serialize_box_score(box, week=week) for box in box_scores],
+    }
 
 
 def serialize_player(player: Any, *, sport: str | None = None) -> dict[str, Any]:

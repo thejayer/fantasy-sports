@@ -11,8 +11,8 @@ from pathlib import Path
 from typing import Any, Literal, TypeVar
 
 from sj.registry import LeagueSpec, load_registry
-from sj.serialize import serialize_league
-from sj.store import write_snapshot
+from sj.serialize import build_week_box_scores_document, serialize_league
+from sj.store import write_snapshot, write_week_box_scores
 
 FailureKind = Literal[
     "credentials",
@@ -30,12 +30,17 @@ TOLERATED_BACKFILL_KINDS: frozenset[FailureKind] = frozenset({"invalid_league"})
 # ESPN activity / free-agent endpoints are unavailable before 2019 in espn-api.
 ACTIVITY_MIN_SEASON = 2019
 FREE_AGENT_MIN_SEASON = 2019
+# Football box_scores() uses the same floor (espn-api raises below 2019).
+BOX_SCORE_MIN_SEASON = 2019
 DEFAULT_ESPN_TIMEOUT_SECONDS = 30.0
 DEFAULT_ESPN_MAX_ATTEMPTS = 4
 DEFAULT_ACTIVITY_PAGE_SIZE = 25
 DEFAULT_ACTIVITY_MAX_PAGES = 40
 DEFAULT_FREE_AGENT_SIZE = 50
 MAX_FREE_AGENT_SIZE = 150
+# Cap HTTP cost on deep historical syncs (~3 ESPN round-trips per week).
+DEFAULT_BOX_SCORE_MAX_WEEKS = 18
+MAX_BOX_SCORE_MAX_WEEKS = 22
 
 T = TypeVar("T")
 
@@ -348,6 +353,100 @@ def fetch_recent_activity(
     return items
 
 
+def box_score_max_weeks() -> int:
+    """Max scoring periods to pull box scores for (default 18)."""
+    raw = os.environ.get("SJ_BOX_SCORE_MAX_WEEKS", "").strip()
+    if not raw:
+        return DEFAULT_BOX_SCORE_MAX_WEEKS
+    try:
+        value = int(raw)
+    except ValueError:
+        return DEFAULT_BOX_SCORE_MAX_WEEKS
+    return max(1, min(value, MAX_BOX_SCORE_MAX_WEEKS))
+
+
+def _box_scores_unsupported(exc: BaseException) -> bool:
+    msg = str(exc).lower()
+    return (
+        "before 2019" in msg
+        or "cant retrieve" in msg
+        or "can't retrieve" in msg
+        or "does not exist" in msg
+    )
+
+
+def fetch_box_scores(
+    league: Any,
+    week: int,
+    *,
+    player_team_cache: dict[int, int] | None = None,
+) -> list[Any]:
+    """Fetch football ``BoxScore`` objects for one scoring period.
+
+    espn-api ``box_scores`` is football-only and refuses seasons before 2019.
+    ``player_team_cache`` should be shared across weeks in one sync.
+    """
+    season = int(getattr(league, "year", 0) or 0)
+    if season and season < BOX_SCORE_MIN_SEASON:
+        return []
+    if not callable(getattr(league, "box_scores", None)):
+        return []
+    try:
+        # espn-api accepts player_team_cache on recent versions; fall back if not.
+        def _call() -> Any:
+            try:
+                return league.box_scores(
+                    week=week, player_team_cache=player_team_cache
+                )
+            except TypeError:
+                return league.box_scores(week=week)
+
+        return list(espn_call(_call, label=f"box_scores:w{week}") or [])
+    except Exception as exc:
+        if _box_scores_unsupported(exc):
+            return []
+        raise
+
+
+def sync_football_box_scores(
+    league: Any,
+    spec: LeagueSpec,
+    season: int,
+    snapshot: dict[str, Any],
+    store_dir: Path | str | None = None,
+) -> int:
+    """Write ``weeks/{N}.json`` for weeks 1..current (football only).
+
+    Side concern — does not upsert ``index.json``. Returns weeks written.
+    """
+    if spec.sport != "football":
+        return 0
+    if season < BOX_SCORE_MIN_SEASON:
+        return 0
+    current = int(snapshot.get("current_week") or 0)
+    if current < 1:
+        return 0
+    last = min(current, box_score_max_weeks())
+    cache: dict[int, int] = {}
+    written = 0
+    synced_at = snapshot.get("synced_at")
+    for week in range(1, last + 1):
+        boxes = fetch_box_scores(league, week, player_team_cache=cache)
+        if not boxes:
+            continue
+        doc = build_week_box_scores_document(
+            league_id=spec.id,
+            season=season,
+            week=week,
+            box_scores=boxes,
+            synced_at=synced_at if isinstance(synced_at, str) else None,
+            period_label=str(snapshot.get("period_label") or "week"),
+        )
+        write_week_box_scores(doc, store_dir=store_dir)
+        written += 1
+    return written
+
+
 def build_snapshot(league: Any, spec: LeagueSpec, season: int) -> dict[str, Any]:
     """Serialize an espn-api league object into a store-ready snapshot.
 
@@ -383,6 +482,9 @@ def sync_league_season(
     league = open_espn_league(spec, season)
     snapshot = build_snapshot(league, spec, season)
     location = write_snapshot(snapshot, store_dir=store_dir)
+    # Football box scores are a side concern (roadmap 8.1) — after the season
+    # write so a failed week pull never leaves a half-written manifest.
+    sync_football_box_scores(league, spec, season, snapshot, store_dir=store_dir)
     return SyncResult(
         league_id=spec.id,
         season=season,

@@ -42,6 +42,7 @@ from sj.snapshot_layout import (
     monolith_rel,
     season_dir_rel,
     split_snapshot,
+    week_box_score_rel,
 )
 
 DEFAULT_STORE_DIR = Path(__file__).resolve().parents[2] / "data" / "sj"
@@ -147,6 +148,12 @@ class SnapshotStore(Protocol):
 
     def list(self) -> list[dict[str, Any]]: ...
 
+    def write_week_box_scores(self, document: dict[str, Any]) -> str: ...
+
+    def read_week_box_scores(
+        self, league_id: str, season: int, week: int
+    ) -> dict[str, Any] | None: ...
+
 
 class FileStore:
     """Snapshots as JSON files under ``root``."""
@@ -179,6 +186,25 @@ class FileStore:
         entry = _index_entry(parts[MANIFEST_NAME], manifest_rel(league_id, season))
         self._upsert_index(entry)
         return str(manifest_path)
+
+    def write_week_box_scores(self, document: dict[str, Any]) -> str:
+        """Write ``weeks/{N}.json`` without touching ``index.json`` (roadmap 8.1)."""
+        league_id = str(document["league_id"])
+        season = int(document["season"])
+        week = int(document["week"])
+        rel = week_box_score_rel(league_id, season, week)
+        path = self.root / rel
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(_dump(document), encoding="utf-8")
+        return str(path)
+
+    def read_week_box_scores(
+        self, league_id: str, season: int, week: int
+    ) -> dict[str, Any] | None:
+        path = self.root / week_box_score_rel(league_id, season, week)
+        if not path.exists():
+            return None
+        return json.loads(path.read_text(encoding="utf-8"))
 
     def read(self, league_id: str, season: int) -> dict[str, Any] | None:
         assembled = self._read_v2(league_id, season)
@@ -300,6 +326,27 @@ class GcsStore:
         self._upsert_index(entry)
         return f"gs://{self.bucket_name}/{manifest_key}"
 
+    def write_week_box_scores(self, document: dict[str, Any]) -> str:
+        """Write ``weeks/{N}.json`` without touching ``index.json`` (roadmap 8.1)."""
+        league_id = str(document["league_id"])
+        season = int(document["season"])
+        week = int(document["week"])
+        key = self._key(week_box_score_rel(league_id, season, week))
+        blob = self._get_bucket().blob(key)
+        blob.cache_control = "no-cache"
+        blob.upload_from_string(_dump(document), content_type="application/json")
+        return f"gs://{self.bucket_name}/{key}"
+
+    def read_week_box_scores(
+        self, league_id: str, season: int, week: int
+    ) -> dict[str, Any] | None:
+        blob = self._get_bucket().blob(
+            self._key(week_box_score_rel(league_id, season, week))
+        )
+        if not blob.exists():
+            return None
+        return json.loads(blob.download_as_text())
+
     def read(self, league_id: str, season: int) -> dict[str, Any] | None:
         assembled = self._read_v2(league_id, season)
         if assembled is not None:
@@ -407,6 +454,24 @@ def write_snapshot(
 ) -> str:
     """Persist one league-season snapshot; returns the location written."""
     return resolve_store(store_dir).write(snapshot)
+
+
+def write_week_box_scores(
+    document: dict[str, Any],
+    store_dir: Path | str | None = None,
+) -> str:
+    """Persist one football week box-score file (no index upsert)."""
+    return resolve_store(store_dir).write_week_box_scores(document)
+
+
+def read_week_box_scores(
+    league_id: str,
+    season: int,
+    week: int,
+    store_dir: Path | str | None = None,
+) -> dict[str, Any] | None:
+    """Read ``weeks/{N}.json`` from the active store (no fixture fallback)."""
+    return resolve_store(store_dir).read_week_box_scores(league_id, season, week)
 
 
 def read_snapshot(

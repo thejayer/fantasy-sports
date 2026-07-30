@@ -1,5 +1,8 @@
 import Link from "next/link";
-import type { LeagueSnapshot } from "@/lib/data";
+import { BoxScorePanel } from "@/components/BoxScorePanel";
+import { ViewerBadge } from "@/components/ViewerBadge";
+import type { LeagueSnapshot, WeekBoxScoreSnapshot } from "@/lib/data";
+import { boxPairKey } from "@/lib/box-score";
 import {
   formatMatchupScore,
   gamesForPeriod,
@@ -16,7 +19,6 @@ import {
   type MatchupSide,
   type PeriodBundle,
 } from "@/lib/matchups";
-import { ViewerBadge } from "@/components/ViewerBadge";
 
 export type MatchupsView = "week" | "schedule" | "playoffs";
 
@@ -61,13 +63,19 @@ function MatchupCard({
   leagueId,
   season,
   viewerTeamId,
+  showBoxLink = false,
 }: {
   game: MatchupGame;
   leagueId: string;
   season: number;
   viewerTeamId?: number;
+  showBoxLink?: boolean;
 }) {
   const mine = isViewerGame(game, viewerTeamId);
+  const boxHref =
+    showBoxLink && !game.projected
+      ? `/leagues/${leagueId}?season=${season}&tab=matchups&view=week&week=${game.period}&box=${boxPairKey(game.left.teamId, game.right.teamId)}`
+      : null;
   return (
     <article
       className={
@@ -93,6 +101,11 @@ function MatchupCard({
         align="right"
         isViewer={game.right.teamId === viewerTeamId}
       />
+      {boxHref ? (
+        <p className="league-meta" style={{ margin: "0.5rem 0 0" }}>
+          <Link href={boxHref}>Box score</Link>
+        </p>
+      ) : null}
     </article>
   );
 }
@@ -182,6 +195,7 @@ function PeriodSection({
   periodLabel,
   heading,
   viewerTeamId,
+  showBoxLink = false,
 }: {
   bundle: PeriodBundle;
   leagueId: string;
@@ -189,6 +203,7 @@ function PeriodSection({
   periodLabel: string;
   heading?: string;
   viewerTeamId?: number;
+  showBoxLink?: boolean;
 }) {
   const games = promoteViewerGame(bundle.games, viewerTeamId);
   return (
@@ -207,6 +222,7 @@ function PeriodSection({
               leagueId={leagueId}
               season={season}
               viewerTeamId={viewerTeamId}
+              showBoxLink={showBoxLink}
             />
           ))}
         </div>
@@ -221,12 +237,17 @@ export function MatchupsPanel({
   week,
   view = "week",
   viewerTeamId,
+  boxPair = null,
+  weekBoxScore = null,
 }: {
   league: LeagueSnapshot;
   week?: number;
   view?: MatchupsView;
   /** Signed-in member's franchise in this league (roadmap 7.1). */
   viewerTeamId?: number;
+  /** ``?box=1-2`` — open football box score for that pair. */
+  boxPair?: { a: number; b: number } | null;
+  weekBoxScore?: WeekBoxScoreSnapshot | null;
 }) {
   const leagueId = league.league_id;
   const periodLabel = league.period_label || (league.sport === "baseball" ? "period" : "week");
@@ -237,6 +258,22 @@ export function MatchupsPanel({
     : "week";
   const regSeasonCount = league.settings?.reg_season_count;
   const playoffTeamCount = league.settings?.playoff_team_count;
+  const footballBox =
+    league.sport === "football" && boxPair != null && activeView === "week";
+
+  if (footballBox && boxPair) {
+    return (
+      <div className="matchups-panel">
+        <BoxScorePanel
+          league={league}
+          week={activeWeek}
+          teamA={boxPair.a}
+          teamB={boxPair.b}
+          snapshot={weekBoxScore}
+        />
+      </div>
+    );
+  }
 
   return (
     <div className="matchups-panel">
@@ -270,6 +307,7 @@ export function MatchupsPanel({
               season={league.season}
               periodLabel={periodLabel}
               viewerTeamId={viewerTeamId}
+              showBoxLink={league.sport === "football"}
             />
           )}
         </>
@@ -341,7 +379,9 @@ function PlayoffsView({
           {league.settings?.playoff_matchup_period_length
             ? ` · ${league.settings.playoff_matchup_period_length}-${periodLabel} rounds`
             : ""}
-          . Box scores are not synced yet.
+          {league.sport === "football"
+            ? ". Open a week matchup for the box score when synced."
+            : "."}
         </p>
       </div>
 
