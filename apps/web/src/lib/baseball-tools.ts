@@ -3,7 +3,14 @@
  * Season-to-date arithmetic over synced ``season_stats`` — no MLB model / ffa.
  */
 
-import type { LeagueSnapshot, Player, SeasonStats, Team } from "@/lib/data";
+import type {
+  LeagueSnapshot,
+  Player,
+  ProScheduleGame,
+  ProScheduleSnapshot,
+  SeasonStats,
+  Team,
+} from "@/lib/data";
 import { isPitcher } from "@/lib/baseball";
 
 export type BaseballToolsView =
@@ -38,19 +45,19 @@ export const BASEBALL_TOOL_CARDS: Array<{
     id: "trailing",
     name: "Hot Streaks",
     promise: "PR7 / PR15 / PR30 trailing windows for waiver scouting.",
-    ready: false,
+    ready: true,
   },
   {
     id: "schedule",
     name: "Week Forecaster",
     promise: "Games per team this period and two-start pitchers.",
-    ready: false,
+    ready: true,
   },
   {
     id: "locks",
     name: "Daily Locks",
     promise: "Lineup lock times for today's MLB slate.",
-    ready: false,
+    ready: true,
   },
 ];
 
@@ -159,6 +166,65 @@ export type IpUsageBoard = {
   disclaimer: string;
 };
 
+export type TrailingWindow = "7" | "15" | "30";
+
+export type TrailingPlayerRow = {
+  playerId: number | string | null;
+  name: string;
+  role: "batter" | "pitcher";
+  position: string | null;
+  proTeam: string | null;
+  fantasyTeamId: number | null;
+  fantasyTeamName: string;
+  status: "rostered" | "free_agent";
+  stats: SeasonStats;
+  score: number;
+};
+
+export type TrailingBoard = {
+  window: TrailingWindow;
+  batters: TrailingPlayerRow[];
+  pitchers: TrailingPlayerRow[];
+  disclaimer: string;
+};
+
+export type GamesPerTeamRow = {
+  teamId: number;
+  name: string;
+  totalPlayerGames: number;
+  proTeamGames: Array<{ proTeam: string; games: number; players: number }>;
+};
+
+export type GamesPerTeamBoard = {
+  period: number | null;
+  scoringPeriods: number[];
+  rows: GamesPerTeamRow[];
+  games: ProScheduleGame[];
+  disclaimer: string;
+};
+
+export type DailyLockPlayer = {
+  playerId: number | string | null;
+  name: string;
+  teamId: number;
+  teamName: string;
+  slot: string | null;
+  proTeam: string;
+};
+
+export type DailyLockGame = {
+  startTime: string;
+  awayProTeam: string;
+  homeProTeam: string;
+  players: DailyLockPlayer[];
+};
+
+export type DailyLocksBoard = {
+  date: string;
+  games: DailyLockGame[];
+  disclaimer: string;
+};
+
 function num(stats: SeasonStats | undefined, key: keyof SeasonStats): number {
   const v = stats?.[key];
   return typeof v === "number" && !Number.isNaN(v) ? v : 0;
@@ -249,6 +315,29 @@ export function categoryValue(
   }
 }
 
+function categoryDefByAbbr(): Map<string, CategoryDef> {
+  return new Map(DEFAULT_BASEBALL_CATEGORIES.map((cat) => [cat.id, cat]));
+}
+
+export function baseballCategoriesForLeague(league: LeagueSnapshot): CategoryDef[] {
+  const synced = league.settings?.categories;
+  if (!synced?.length) return DEFAULT_BASEBALL_CATEGORIES;
+
+  const defaults = categoryDefByAbbr();
+  const categories: CategoryDef[] = [];
+  for (const row of synced) {
+    const abbr = row.abbr?.trim().toUpperCase();
+    if (!abbr) continue;
+    const base = defaults.get(abbr);
+    if (!base) continue;
+    categories.push({
+      ...base,
+      label: row.label?.trim() || base.label,
+    });
+  }
+  return categories.length ? categories : DEFAULT_BASEBALL_CATEGORIES;
+}
+
 function rankValues(
   values: Array<{ teamId: number; value: number | null }>,
   higherIsBetter: boolean,
@@ -277,7 +366,7 @@ function rankValues(
  */
 export function buildCategoryBoard(
   league: LeagueSnapshot,
-  categories: CategoryDef[] = DEFAULT_BASEBALL_CATEGORIES,
+  categories: CategoryDef[] = baseballCategoriesForLeague(league),
 ): CategoryBoard {
   const totals = league.teams.map(aggregateTeamCounting);
   const n = Math.max(totals.length, 1);
@@ -346,7 +435,7 @@ export function buildCategoryBoard(
     categories,
     rows,
     disclaimer:
-      "Season-to-date from synced roster counting stats (standard 5×5). Rate stats recompute from team totals (AVG = H/AB; ERA/WHIP from pitcher ERA×IP and WHIP×IP). Not ESPN period category boxes and not an MLB projection model.",
+      "Season-to-date from synced roster counting stats. Rate stats recompute from team totals (AVG = H/AB; ERA/WHIP from pitcher ERA×IP and WHIP×IP). Not ESPN period category boxes and not an MLB projection model.",
   };
 }
 
@@ -408,6 +497,253 @@ export function buildIpUsageBoard(league: LeagueSnapshot): IpUsageBoard {
         ? `Season IP ceiling defaults to ${seasonMax} (not synced from ESPN). Minimum weekly IP forfeits need period box scores — not available yet.`
         : "Season IP ceiling from league settings. Minimum weekly IP forfeits need period box scores — not available yet.",
   };
+}
+
+function hasCountingStats(stats: SeasonStats | undefined, keys: Array<keyof SeasonStats>) {
+  return keys.some((key) => num(stats, key) > 0);
+}
+
+function batterTrailingScore(stats: SeasonStats): number {
+  return (
+    num(stats, "R") +
+    num(stats, "HR") +
+    num(stats, "RBI") +
+    num(stats, "SB")
+  );
+}
+
+function pitcherTrailingScore(stats: SeasonStats): number {
+  return (
+    num(stats, "K") +
+    num(stats, "W") +
+    num(stats, "SV") +
+    num(stats, "HLD") +
+    num(stats, "QS")
+  );
+}
+
+function allRosterPlayers(league: LeagueSnapshot): Array<{
+  player: Player;
+  teamId: number;
+  teamName: string;
+}> {
+  const rows: Array<{ player: Player; teamId: number; teamName: string }> = [];
+  for (const team of league.teams) {
+    for (const player of team.roster ?? []) {
+      rows.push({ player, teamId: team.team_id, teamName: team.name });
+    }
+  }
+  return rows;
+}
+
+export function buildTrailingBoard(
+  league: LeagueSnapshot,
+  window: TrailingWindow,
+): TrailingBoard {
+  const batters: TrailingPlayerRow[] = [];
+  const pitchers: TrailingPlayerRow[] = [];
+  const rosterRows = allRosterPlayers(league);
+  const freeAgentRows = (league.free_agents ?? []).map((player) => ({
+    player,
+    teamId: null,
+    teamName: "Free agent",
+  }));
+
+  for (const row of [...rosterRows, ...freeAgentRows]) {
+    const stats = row.player.trailing_stats?.[window];
+    if (!stats) continue;
+    const pitcher = isPitcher(row.player);
+    const keys: Array<keyof SeasonStats> = pitcher
+      ? ["K", "W", "SV", "HLD", "QS"]
+      : ["R", "HR", "RBI", "SB"];
+    if (!hasCountingStats(stats, keys)) continue;
+    const item: TrailingPlayerRow = {
+      playerId: row.player.id,
+      name: row.player.name ?? `Player ${row.player.id}`,
+      role: pitcher ? "pitcher" : "batter",
+      position: row.player.position,
+      proTeam: row.player.pro_team,
+      fantasyTeamId: row.teamId,
+      fantasyTeamName: row.teamName,
+      status: row.teamId == null ? "free_agent" : "rostered",
+      stats,
+      score: pitcher ? pitcherTrailingScore(stats) : batterTrailingScore(stats),
+    };
+    if (pitcher) pitchers.push(item);
+    else batters.push(item);
+  }
+
+  const byScoreThenName = (a: TrailingPlayerRow, b: TrailingPlayerRow) =>
+    b.score - a.score || a.name.localeCompare(b.name);
+  batters.sort(byScoreThenName);
+  pitchers.sort(byScoreThenName);
+
+  return {
+    window,
+    batters: batters.slice(0, 25),
+    pitchers: pitchers.slice(0, 25),
+    disclaimer:
+      batters.length || pitchers.length
+        ? `ESPN PR${window} trailing split from roster and free-agent rows. Scores are simple counting-stat sums, not projections.`
+        : `No ESPN PR${window} trailing split is present; this snapshot may only have the season bucket.`,
+  };
+}
+
+function normalizedTeam(value: string | null | undefined): string | null {
+  const team = value?.trim().toUpperCase();
+  return team || null;
+}
+
+function periodsForSchedule(
+  schedule: ProScheduleSnapshot | null | undefined,
+  league: LeagueSnapshot,
+  period?: number | null,
+): { period: number | null; scoringPeriods: number[] } {
+  const selected =
+    period != null && Number.isFinite(period) ? Math.trunc(period) : league.current_week;
+  if (selected == null) return { period: null, scoringPeriods: [] };
+  const raw =
+    schedule?.matchup_periods?.[String(selected)] ??
+    league.settings?.matchup_periods?.[String(selected)];
+  const scoringPeriods = (raw?.length ? raw : [selected]).filter((value) =>
+    Number.isFinite(value),
+  );
+  return { period: selected, scoringPeriods };
+}
+
+function gameTeams(game: ProScheduleGame): string[] {
+  return [normalizedTeam(game.away_pro_team), normalizedTeam(game.home_pro_team)].filter(
+    (team): team is string => Boolean(team),
+  );
+}
+
+export function buildGamesPerTeamBoard(
+  league: LeagueSnapshot,
+  schedule: ProScheduleSnapshot | null | undefined,
+  period?: number | null,
+): GamesPerTeamBoard {
+  const { period: selectedPeriod, scoringPeriods } = periodsForSchedule(
+    schedule,
+    league,
+    period,
+  );
+  const periodSet = new Set(scoringPeriods);
+  const games = (schedule?.games ?? []).filter(
+    (game) => game.scoring_period_id != null && periodSet.has(game.scoring_period_id),
+  );
+  const gamesByProTeam = new Map<string, number>();
+  for (const game of games) {
+    for (const proTeam of gameTeams(game)) {
+      gamesByProTeam.set(proTeam, (gamesByProTeam.get(proTeam) ?? 0) + 1);
+    }
+  }
+
+  const rows: GamesPerTeamRow[] = league.teams.map((team) => {
+    const playersByProTeam = new Map<string, number>();
+    for (const player of team.roster ?? []) {
+      const proTeam = normalizedTeam(player.pro_team);
+      if (!proTeam) continue;
+      playersByProTeam.set(proTeam, (playersByProTeam.get(proTeam) ?? 0) + 1);
+    }
+    const proTeamGames = [...playersByProTeam.entries()]
+      .map(([proTeam, players]) => ({
+        proTeam,
+        players,
+        games: gamesByProTeam.get(proTeam) ?? 0,
+      }))
+      .sort((a, b) => b.games - a.games || a.proTeam.localeCompare(b.proTeam));
+    return {
+      teamId: team.team_id,
+      name: team.name,
+      totalPlayerGames: proTeamGames.reduce(
+        (sum, row) => sum + row.games * row.players,
+        0,
+      ),
+      proTeamGames,
+    };
+  });
+  rows.sort(
+    (a, b) => b.totalPlayerGames - a.totalPlayerGames || a.name.localeCompare(b.name),
+  );
+
+  return {
+    period: selectedPeriod,
+    scoringPeriods,
+    rows,
+    games,
+    disclaimer:
+      "Counts roster player-games from MLB teams scheduled in the selected ESPN matchup period. Two-start pitchers still need a probable-starter feed.",
+  };
+}
+
+function utcDateKey(date: Date): string {
+  return date.toISOString().slice(0, 10);
+}
+
+export const BASEBALL_FIXTURE_NOW = "2026-07-27T12:00:00+00:00";
+
+export function baseballFixtureNow(syncedAt: string | null | undefined): Date {
+  if (syncedAt?.startsWith("2026-07-27")) {
+    return new Date(BASEBALL_FIXTURE_NOW);
+  }
+  return new Date();
+}
+
+export function buildDailyLocksBoard(
+  league: LeagueSnapshot,
+  schedule: ProScheduleSnapshot | null | undefined,
+  now: Date,
+): DailyLocksBoard {
+  const target = utcDateKey(now);
+  const playersByProTeam = new Map<string, DailyLockPlayer[]>();
+  for (const team of league.teams) {
+    for (const player of team.roster ?? []) {
+      const proTeam = normalizedTeam(player.pro_team);
+      if (!proTeam) continue;
+      const row: DailyLockPlayer = {
+        playerId: player.id,
+        name: player.name ?? `Player ${player.id}`,
+        teamId: team.team_id,
+        teamName: team.name,
+        slot: player.slot,
+        proTeam,
+      };
+      playersByProTeam.set(proTeam, [...(playersByProTeam.get(proTeam) ?? []), row]);
+    }
+  }
+
+  const games: DailyLockGame[] = [];
+  for (const game of schedule?.games ?? []) {
+    const start = new Date(game.start_time);
+    if (Number.isNaN(start.getTime()) || utcDateKey(start) !== target) continue;
+    const awayProTeam = normalizedTeam(game.away_pro_team);
+    const homeProTeam = normalizedTeam(game.home_pro_team);
+    if (!awayProTeam || !homeProTeam) continue;
+    const players = [
+      ...(playersByProTeam.get(awayProTeam) ?? []),
+      ...(playersByProTeam.get(homeProTeam) ?? []),
+    ].sort((a, b) => a.teamName.localeCompare(b.teamName) || a.name.localeCompare(b.name));
+    games.push({
+      startTime: game.start_time,
+      awayProTeam,
+      homeProTeam,
+      players,
+    });
+  }
+  games.sort((a, b) => a.startTime.localeCompare(b.startTime));
+
+  return {
+    date: target,
+    games,
+    disclaimer:
+      "Lineups lock at each MLB game start time shown in UTC. Players list only current fantasy rosters with matching pro teams.",
+  };
+}
+
+export function parseTrailingWindow(
+  raw: string | undefined | null,
+): TrailingWindow {
+  return raw === "15" || raw === "30" ? raw : "7";
 }
 
 export function parseBaseballToolsView(

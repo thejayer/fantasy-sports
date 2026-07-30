@@ -57,6 +57,7 @@ export type Player = {
   avg_points: number | null;
   fantasy_team?: string | null;
   season_stats?: SeasonStats;
+  trailing_stats?: Record<string, SeasonStats>;
   role?: "batter" | "pitcher" | string;
 };
 
@@ -75,6 +76,13 @@ export type ScoringFormatRow = {
   id?: number | string | null;
   abbr?: string | null;
   label?: string | null;
+  points?: number | null;
+};
+
+export type LeagueCategoryRow = {
+  id: number | string | null;
+  abbr: string | null;
+  label: string | null;
   points?: number | null;
 };
 
@@ -125,6 +133,8 @@ export type LeagueSettings = {
   division_map?: Record<string, string>;
   position_slot_counts?: Record<string, number | null>;
   scoring_format?: ScoringFormatRow[];
+  categories?: LeagueCategoryRow[];
+  matchup_periods?: Record<string, number[]>;
   /** Present on hub-native golf leagues (roadmap 6.4a). */
   golf?: GolfLeagueSettings;
 };
@@ -243,6 +253,26 @@ export type WeekBoxScoreSnapshot = {
   period_label?: string;
   synced_at?: string;
   matchups: BoxScoreMatchup[];
+};
+
+export type ProScheduleGame = {
+  away_pro_team: string | null;
+  away_pro_team_id?: number | string | null;
+  home_pro_team: string | null;
+  home_pro_team_id?: number | string | null;
+  scoring_period_id: number | null;
+  start_time: string;
+};
+
+/** Side concern ``pro_schedule.json`` for baseball tools (roadmap 8.2). */
+export type ProScheduleSnapshot = {
+  schema_version?: number;
+  league_id: string;
+  season: number;
+  sport: "baseball" | string;
+  synced_at?: string;
+  matchup_periods?: Record<string, number[]>;
+  games: ProScheduleGame[];
 };
 
 /** Compact FP draws for hub trade Δ (`ffa export-playoff-odds --write-samples`). */
@@ -957,7 +987,7 @@ function weekBoxScoreDir(indexPath: string): string {
 }
 
 /**
- * Football week box scores under ``{league}/{season}/weeks/{N}.json``.
+ * Football/baseball week box scores under ``{league}/{season}/weeks/{N}.json``.
  * Session-gated; never called from standings/roster/history paths.
  */
 export const getWeekBoxScore = cache(
@@ -981,10 +1011,43 @@ export const getWeekBoxScore = cache(
         path.join(root, relative),
       );
       if (
-        doc?.matchups &&
+        Array.isArray(doc?.matchups) &&
         doc.week === week &&
         doc.season === season &&
-        doc.sport === "football"
+        (doc.sport === "football" || doc.sport === "baseball")
+      ) {
+        return doc;
+      }
+    }
+    return null;
+  },
+);
+
+/**
+ * Baseball pro schedule sidecar under ``{league}/{season}/pro_schedule.json``.
+ * Session-gated like week box scores; only loaded by baseball tools.
+ */
+export const getProSchedule = cache(
+  async (
+    leagueId: string,
+    season: number,
+  ): Promise<ProScheduleSnapshot | null> => {
+    await requireSession();
+    const index = await getLeagueIndex();
+    const match = index.find(
+      (item) => item.league_id === leagueId && item.season === season,
+    );
+    if (!match) return null;
+
+    for (const root of dataRoots()) {
+      const dir = weekBoxScoreDir(match.path);
+      const relative = path.join(dir, "pro_schedule.json");
+      const doc = await readJson<ProScheduleSnapshot>(path.join(root, relative));
+      if (
+        doc?.league_id === leagueId &&
+        doc.season === season &&
+        doc.sport === "baseball" &&
+        Array.isArray(doc.games)
       ) {
         return doc;
       }

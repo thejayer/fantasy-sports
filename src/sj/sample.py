@@ -27,6 +27,7 @@ from pathlib import Path
 from typing import Any
 
 from sj.registry import LeagueSpec, load_registry
+from sj.serialize import build_pro_schedule_document
 from sj.store import DEFAULT_STORE_DIR, INDEX_NAME, FileStore
 from sj.sync import build_snapshot
 
@@ -268,7 +269,29 @@ def _baseball_player(rng: random.Random, player_id: int, slot: str) -> _Stub:
         projected_total_points=round(total * rng.uniform(0.8, 1.25), 1),
         avg_points=round(total / 26.0, 1),
         stats={0: {"breakdown": breakdown}},
+        trailing_stats=_trailing_from_season(rng, breakdown, pitcher=pitcher),
     )
+
+
+def _trailing_from_season(
+    rng: random.Random, breakdown: dict[str, float], *, pitcher: bool
+) -> dict[str, dict[str, float]]:
+    """Synthetic PR7/PR15/PR30 windows scaled from season totals (fixtures)."""
+    out: dict[str, dict[str, float]] = {}
+    for key, frac in (("7", 0.08), ("15", 0.16), ("30", 0.30)):
+        window: dict[str, float] = {}
+        jitter = rng.uniform(0.75, 1.25)
+        for stat, value in breakdown.items():
+            if stat in {"ERA", "WHIP", "AVG", "OBP", "OPS"}:
+                # Rate stats wander near season line.
+                window[stat] = round(float(value) * rng.uniform(0.85, 1.15), 3)
+            else:
+                window[stat] = round(max(0.0, float(value) * frac * jitter), 1)
+        if pitcher and "OUTS" in window:
+            # Keep OUTS integer-ish for IP derive.
+            window["OUTS"] = float(max(3, int(window["OUTS"])))
+        out[key] = window
+    return out
 
 
 def _roster_slots(spec: LeagueSpec) -> tuple[str, ...]:
@@ -443,7 +466,45 @@ def _build_settings(spec: LeagueSpec, *, teams: int, games: int) -> _Stub:
                 {"id": 24, "abbr": "RTD", "label": "Rushing TD", "points": 6.0},
             ]
             if spec.sport == "football"
+            else [
+                {"id": 20, "abbr": "R", "label": "Runs", "points": None},
+                {"id": 5, "abbr": "HR", "label": "Home Runs", "points": None},
+                {"id": 21, "abbr": "RBI", "label": "RBIs", "points": None},
+                {"id": 23, "abbr": "SB", "label": "Stolen Bases", "points": None},
+                {"id": 2, "abbr": "AVG", "label": "Batting Average", "points": None},
+                {"id": 53, "abbr": "W", "label": "Wins", "points": None},
+                {"id": 57, "abbr": "SV", "label": "Saves", "points": None},
+                {"id": 48, "abbr": "K", "label": "Strikeouts", "points": None},
+                {"id": 47, "abbr": "ERA", "label": "ERA", "points": None},
+                {"id": 41, "abbr": "WHIP", "label": "WHIP", "points": None},
+            ]
+            if spec.sport == "baseball"
             else None
+        ),
+        # Map matchup period → scoring-period ids (ESPN scheduleSettings).
+        matchup_periods=(
+            {str(i): [i] for i in range(1, games + 1)}
+            if spec.sport == "baseball"
+            else None
+        ),
+        _raw_scoring_settings=(
+            {
+                "scoringType": "H2H_CATEGORY",
+                "scoringItems": [
+                    {"statId": 20, "statName": "Runs"},
+                    {"statId": 5, "statName": "Home Runs"},
+                    {"statId": 21, "statName": "RBIs"},
+                    {"statId": 23, "statName": "Stolen Bases"},
+                    {"statId": 2, "statName": "Batting Average"},
+                    {"statId": 53, "statName": "Wins"},
+                    {"statId": 57, "statName": "Saves"},
+                    {"statId": 48, "statName": "Strikeouts"},
+                    {"statId": 47, "statName": "ERA"},
+                    {"statId": 41, "statName": "WHIP"},
+                ],
+            }
+            if spec.sport == "baseball"
+            else {}
         ),
     )
 
@@ -629,6 +690,66 @@ def sample_snapshot(
     return build_snapshot(sample_league(spec, season, teams=teams), spec, season)
 
 
+def sample_pro_schedule_for_snapshot(snapshot: dict[str, Any]) -> dict[str, Any]:
+    """Deterministic MLB slate for fixtures/seeds (roadmap 8.2).
+
+    Uses roster ``pro_team`` abbreviations and ``synced_at`` as the fixture day
+    so Daily Locks + games-per-period work offline without a live ESPN pull.
+    """
+    from datetime import datetime, timedelta, timezone
+
+    synced = snapshot.get("synced_at") or "2026-07-27T00:00:00+00:00"
+    try:
+        day = datetime.fromisoformat(str(synced).replace("Z", "+00:00"))
+    except ValueError:
+        day = datetime(2026, 7, 27, tzinfo=timezone.utc)
+    if day.tzinfo is None:
+        day = day.replace(tzinfo=timezone.utc)
+
+    period = int(snapshot.get("current_week") or 1)
+    settings = snapshot.get("settings") or {}
+    matchup_periods = settings.get("matchup_periods") or {str(period): [period]}
+
+    teams: list[str] = []
+    seen: set[str] = set()
+    for team in snapshot.get("teams") or []:
+        for player in team.get("roster") or []:
+            abbr = (player.get("pro_team") or "").strip()
+            if abbr and abbr not in seen and abbr != "FA":
+                seen.add(abbr)
+                teams.append(abbr)
+    if len(teams) < 2:
+        teams = list(_MLB_TEAMS[:8])
+
+    games: list[dict[str, Any]] = []
+    # Three scoring periods around "today": yesterday / today / tomorrow.
+    for offset, period_id in ((-1, max(1, period - 1)), (0, period), (1, period + 1)):
+        start_day = day + timedelta(days=offset)
+        for i in range(0, len(teams) - 1, 2):
+            home = teams[i]
+            away = teams[i + 1]
+            start = start_day.replace(hour=17 + (i % 3), minute=5, second=0, microsecond=0)
+            games.append(
+                {
+                    "scoring_period_id": period_id,
+                    "home_pro_team": home,
+                    "away_pro_team": away,
+                    "home_pro_team_id": None,
+                    "away_pro_team_id": None,
+                    "start_time": start.isoformat(),
+                }
+            )
+
+    return build_pro_schedule_document(
+        league_id=str(snapshot["league_id"]),
+        season=int(snapshot["season"]),
+        sport="baseball",
+        games=games,
+        matchup_periods=matchup_periods if isinstance(matchup_periods, dict) else {},
+        synced_at=str(synced),
+    )
+
+
 def seed_store(
     *,
     league_ids: list[str] | None = None,
@@ -680,6 +801,8 @@ def seed_store(
             season_teams = int(spec.team_count) if spec.sport == "golf" and spec.team_count else teams
             snapshot = sample_snapshot(spec, season, teams=season_teams)
             location = store.write(snapshot)
+            if spec.sport == "baseball":
+                store.write_pro_schedule(sample_pro_schedule_for_snapshot(snapshot))
             written.append((spec.id, season, location))
             emit(
                 f"seeded {spec.id} {season} "

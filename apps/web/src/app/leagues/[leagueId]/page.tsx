@@ -3,7 +3,7 @@ import type { HistoryView } from "@/components/HistoryPanel";
 import { LeagueView } from "@/components/LeagueView";
 import type { MatchupsView } from "@/components/MatchupsPanel";
 import type { ToolsView } from "@/components/ToolsPanel";
-import { parseBaseballToolsView } from "@/lib/baseball-tools";
+import { parseBaseballToolsView, parseTrailingWindow } from "@/lib/baseball-tools";
 import type { ActivityView } from "@/lib/activity";
 import {
   getDraftSimSnapshot,
@@ -13,6 +13,7 @@ import {
   getPlayerMap,
   getPlayoffOddsSamples,
   getPlayoffOddsSnapshot,
+  getProSchedule,
   getProjectionSnapshot,
   getWeekBoxScore,
   getWeeklyProjectionSnapshot,
@@ -21,6 +22,7 @@ import {
   type PlayerMapSnapshot,
   type PlayoffOddsSamples,
   type PlayoffOddsSnapshot,
+  type ProScheduleSnapshot,
   type ProjectionSnapshot,
   type WeekBoxScoreSnapshot,
   type WeeklyProjectionSnapshot,
@@ -59,6 +61,7 @@ type Props = {
     p?: string;
     dp?: string;
     box?: string;
+    window?: string;
   }>;
 };
 
@@ -103,6 +106,7 @@ export default async function LeagueDetailPage({ params, searchParams }: Props) 
     p: pageParam,
     dp: draftPageParam,
     box: boxParam,
+    window: windowParam,
   } = await searchParams;
   const seasons = await getLeagueSeasons(leagueId);
   const season = seasonParam ? Number(seasonParam) : undefined;
@@ -151,9 +155,15 @@ export default async function LeagueDetailPage({ params, searchParams }: Props) 
       : "home"
   ) as ToolsView;
   const baseballToolsView = parseBaseballToolsView(viewParam);
+  const baseballTrailingWindow = parseTrailingWindow(windowParam);
 
   const historyArchive =
     tab === "history" ? await getLeagueHistoryArchive(leagueId) : null;
+
+  const proSchedule: ProScheduleSnapshot | null =
+    league.sport === "baseball" && tab === "tools"
+      ? await getProSchedule(league.league_id, league.season)
+      : null;
 
   const wantsProjections =
     league.sport === "football" &&
@@ -345,6 +355,8 @@ export default async function LeagueDetailPage({ params, searchParams }: Props) 
       projectionScoring={projectionBundle.scoring}
       toolsView={toolsView}
       baseballToolsView={baseballToolsView}
+      baseballTrailingWindow={baseballTrailingWindow}
+      proSchedule={proSchedule}
       toolsTeamA={a != null && !Number.isNaN(a) ? a : undefined}
       toolsTeamB={b != null && !Number.isNaN(b) ? b : undefined}
       toolsTeamId={

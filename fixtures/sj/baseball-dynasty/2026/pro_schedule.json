@@ -1,0 +1,419 @@
+{
+  "games": [
+    {
+      "away_pro_team": "BAL",
+      "away_pro_team_id": null,
+      "home_pro_team": "SF",
+      "home_pro_team_id": null,
+      "scoring_period_id": 23,
+      "start_time": "2026-07-26T17:05:00+00:00"
+    },
+    {
+      "away_pro_team": "NYY",
+      "away_pro_team_id": null,
+      "home_pro_team": "COL",
+      "home_pro_team_id": null,
+      "scoring_period_id": 23,
+      "start_time": "2026-07-26T19:05:00+00:00"
+    },
+    {
+      "away_pro_team": "PHI",
+      "away_pro_team_id": null,
+      "home_pro_team": "LAA",
+      "home_pro_team_id": null,
+      "scoring_period_id": 23,
+      "start_time": "2026-07-26T18:05:00+00:00"
+    },
+    {
+      "away_pro_team": "STL",
+      "away_pro_team_id": null,
+      "home_pro_team": "CWS",
+      "home_pro_team_id": null,
+      "scoring_period_id": 23,
+      "start_time": "2026-07-26T17:05:00+00:00"
+    },
+    {
+      "away_pro_team": "TB",
+      "away_pro_team_id": null,
+      "home_pro_team": "LAD",
+      "home_pro_team_id": null,
+      "scoring_period_id": 23,
+      "start_time": "2026-07-26T19:05:00+00:00"
+    },
+    {
+      "away_pro_team": "HOU",
+      "away_pro_team_id": null,
+      "home_pro_team": "OAK",
+      "home_pro_team_id": null,
+      "scoring_period_id": 23,
+      "start_time": "2026-07-26T18:05:00+00:00"
+    },
+    {
+      "away_pro_team": "ARI",
+      "away_pro_team_id": null,
+      "home_pro_team": "NYM",
+      "home_pro_team_id": null,
+      "scoring_period_id": 23,
+      "start_time": "2026-07-26T17:05:00+00:00"
+    },
+    {
+      "away_pro_team": "ATL",
+      "away_pro_team_id": null,
+      "home_pro_team": "SD",
+      "home_pro_team_id": null,
+      "scoring_period_id": 23,
+      "start_time": "2026-07-26T19:05:00+00:00"
+    },
+    {
+      "away_pro_team": "PIT",
+      "away_pro_team_id": null,
+      "home_pro_team": "CIN",
+      "home_pro_team_id": null,
+      "scoring_period_id": 23,
+      "start_time": "2026-07-26T18:05:00+00:00"
+    },
+    {
+      "away_pro_team": "TOR",
+      "away_pro_team_id": null,
+      "home_pro_team": "CHC",
+      "home_pro_team_id": null,
+      "scoring_period_id": 23,
+      "start_time": "2026-07-26T17:05:00+00:00"
+    },
+    {
+      "away_pro_team": "MIN",
+      "away_pro_team_id": null,
+      "home_pro_team": "MIL",
+      "home_pro_team_id": null,
+      "scoring_period_id": 23,
+      "start_time": "2026-07-26T19:05:00+00:00"
+    },
+    {
+      "away_pro_team": "TEX",
+      "away_pro_team_id": null,
+      "home_pro_team": "CLE",
+      "home_pro_team_id": null,
+      "scoring_period_id": 23,
+      "start_time": "2026-07-26T18:05:00+00:00"
+    },
+    {
+      "away_pro_team": "WSH",
+      "away_pro_team_id": null,
+      "home_pro_team": "KC",
+      "home_pro_team_id": null,
+      "scoring_period_id": 23,
+      "start_time": "2026-07-26T17:05:00+00:00"
+    },
+    {
+      "away_pro_team": "SEA",
+      "away_pro_team_id": null,
+      "home_pro_team": "DET",
+      "home_pro_team_id": null,
+      "scoring_period_id": 23,
+      "start_time": "2026-07-26T19:05:00+00:00"
+    },
+    {
+      "away_pro_team": "BAL",
+      "away_pro_team_id": null,
+      "home_pro_team": "SF",
+      "home_pro_team_id": null,
+      "scoring_period_id": 24,
+      "start_time": "2026-07-27T17:05:00+00:00"
+    },
+    {
+      "away_pro_team": "NYY",
+      "away_pro_team_id": null,
+      "home_pro_team": "COL",
+      "home_pro_team_id": null,
+      "scoring_period_id": 24,
+      "start_time": "2026-07-27T19:05:00+00:00"
+    },
+    {
+      "away_pro_team": "PHI",
+      "away_pro_team_id": null,
+      "home_pro_team": "LAA",
+      "home_pro_team_id": null,
+      "scoring_period_id": 24,
+      "start_time": "2026-07-27T18:05:00+00:00"
+    },
+    {
+      "away_pro_team": "STL",
+      "away_pro_team_id": null,
+      "home_pro_team": "CWS",
+      "home_pro_team_id": null,
+      "scoring_period_id": 24,
+      "start_time": "2026-07-27T17:05:00+00:00"
+    },
+    {
+      "away_pro_team": "TB",
+      "away_pro_team_id": null,
+      "home_pro_team": "LAD",
+      "home_pro_team_id": null,
+      "scoring_period_id": 24,
+      "start_time": "2026-07-27T19:05:00+00:00"
+    },
+    {
+      "away_pro_team": "HOU",
+      "away_pro_team_id": null,
+      "home_pro_team": "OAK",
+      "home_pro_team_id": null,
+      "scoring_period_id": 24,
+      "start_time": "2026-07-27T18:05:00+00:00"
+    },
+    {
+      "away_pro_team": "ARI",
+      "away_pro_team_id": null,
+      "home_pro_team": "NYM",
+      "home_pro_team_id": null,
+      "scoring_period_id": 24,
+      "start_time": "2026-07-27T17:05:00+00:00"
+    },
+    {
+      "away_pro_team": "ATL",
+      "away_pro_team_id": null,
+      "home_pro_team": "SD",
+      "home_pro_team_id": null,
+      "scoring_period_id": 24,
+      "start_time": "2026-07-27T19:05:00+00:00"
+    },
+    {
+      "away_pro_team": "PIT",
+      "away_pro_team_id": null,
+      "home_pro_team": "CIN",
+      "home_pro_team_id": null,
+      "scoring_period_id": 24,
+      "start_time": "2026-07-27T18:05:00+00:00"
+    },
+    {
+      "away_pro_team": "TOR",
+      "away_pro_team_id": null,
+      "home_pro_team": "CHC",
+      "home_pro_team_id": null,
+      "scoring_period_id": 24,
+      "start_time": "2026-07-27T17:05:00+00:00"
+    },
+    {
+      "away_pro_team": "MIN",
+      "away_pro_team_id": null,
+      "home_pro_team": "MIL",
+      "home_pro_team_id": null,
+      "scoring_period_id": 24,
+      "start_time": "2026-07-27T19:05:00+00:00"
+    },
+    {
+      "away_pro_team": "TEX",
+      "away_pro_team_id": null,
+      "home_pro_team": "CLE",
+      "home_pro_team_id": null,
+      "scoring_period_id": 24,
+      "start_time": "2026-07-27T18:05:00+00:00"
+    },
+    {
+      "away_pro_team": "WSH",
+      "away_pro_team_id": null,
+      "home_pro_team": "KC",
+      "home_pro_team_id": null,
+      "scoring_period_id": 24,
+      "start_time": "2026-07-27T17:05:00+00:00"
+    },
+    {
+      "away_pro_team": "SEA",
+      "away_pro_team_id": null,
+      "home_pro_team": "DET",
+      "home_pro_team_id": null,
+      "scoring_period_id": 24,
+      "start_time": "2026-07-27T19:05:00+00:00"
+    },
+    {
+      "away_pro_team": "BAL",
+      "away_pro_team_id": null,
+      "home_pro_team": "SF",
+      "home_pro_team_id": null,
+      "scoring_period_id": 25,
+      "start_time": "2026-07-28T17:05:00+00:00"
+    },
+    {
+      "away_pro_team": "NYY",
+      "away_pro_team_id": null,
+      "home_pro_team": "COL",
+      "home_pro_team_id": null,
+      "scoring_period_id": 25,
+      "start_time": "2026-07-28T19:05:00+00:00"
+    },
+    {
+      "away_pro_team": "PHI",
+      "away_pro_team_id": null,
+      "home_pro_team": "LAA",
+      "home_pro_team_id": null,
+      "scoring_period_id": 25,
+      "start_time": "2026-07-28T18:05:00+00:00"
+    },
+    {
+      "away_pro_team": "STL",
+      "away_pro_team_id": null,
+      "home_pro_team": "CWS",
+      "home_pro_team_id": null,
+      "scoring_period_id": 25,
+      "start_time": "2026-07-28T17:05:00+00:00"
+    },
+    {
+      "away_pro_team": "TB",
+      "away_pro_team_id": null,
+      "home_pro_team": "LAD",
+      "home_pro_team_id": null,
+      "scoring_period_id": 25,
+      "start_time": "2026-07-28T19:05:00+00:00"
+    },
+    {
+      "away_pro_team": "HOU",
+      "away_pro_team_id": null,
+      "home_pro_team": "OAK",
+      "home_pro_team_id": null,
+      "scoring_period_id": 25,
+      "start_time": "2026-07-28T18:05:00+00:00"
+    },
+    {
+      "away_pro_team": "ARI",
+      "away_pro_team_id": null,
+      "home_pro_team": "NYM",
+      "home_pro_team_id": null,
+      "scoring_period_id": 25,
+      "start_time": "2026-07-28T17:05:00+00:00"
+    },
+    {
+      "away_pro_team": "ATL",
+      "away_pro_team_id": null,
+      "home_pro_team": "SD",
+      "home_pro_team_id": null,
+      "scoring_period_id": 25,
+      "start_time": "2026-07-28T19:05:00+00:00"
+    },
+    {
+      "away_pro_team": "PIT",
+      "away_pro_team_id": null,
+      "home_pro_team": "CIN",
+      "home_pro_team_id": null,
+      "scoring_period_id": 25,
+      "start_time": "2026-07-28T18:05:00+00:00"
+    },
+    {
+      "away_pro_team": "TOR",
+      "away_pro_team_id": null,
+      "home_pro_team": "CHC",
+      "home_pro_team_id": null,
+      "scoring_period_id": 25,
+      "start_time": "2026-07-28T17:05:00+00:00"
+    },
+    {
+      "away_pro_team": "MIN",
+      "away_pro_team_id": null,
+      "home_pro_team": "MIL",
+      "home_pro_team_id": null,
+      "scoring_period_id": 25,
+      "start_time": "2026-07-28T19:05:00+00:00"
+    },
+    {
+      "away_pro_team": "TEX",
+      "away_pro_team_id": null,
+      "home_pro_team": "CLE",
+      "home_pro_team_id": null,
+      "scoring_period_id": 25,
+      "start_time": "2026-07-28T18:05:00+00:00"
+    },
+    {
+      "away_pro_team": "WSH",
+      "away_pro_team_id": null,
+      "home_pro_team": "KC",
+      "home_pro_team_id": null,
+      "scoring_period_id": 25,
+      "start_time": "2026-07-28T17:05:00+00:00"
+    },
+    {
+      "away_pro_team": "SEA",
+      "away_pro_team_id": null,
+      "home_pro_team": "DET",
+      "home_pro_team_id": null,
+      "scoring_period_id": 25,
+      "start_time": "2026-07-28T19:05:00+00:00"
+    }
+  ],
+  "league_id": "baseball-dynasty",
+  "matchup_periods": {
+    "1": [
+      1
+    ],
+    "10": [
+      10
+    ],
+    "11": [
+      11
+    ],
+    "12": [
+      12
+    ],
+    "13": [
+      13
+    ],
+    "14": [
+      14
+    ],
+    "15": [
+      15
+    ],
+    "16": [
+      16
+    ],
+    "17": [
+      17
+    ],
+    "18": [
+      18
+    ],
+    "19": [
+      19
+    ],
+    "2": [
+      2
+    ],
+    "20": [
+      20
+    ],
+    "21": [
+      21
+    ],
+    "22": [
+      22
+    ],
+    "23": [
+      23
+    ],
+    "24": [
+      24
+    ],
+    "3": [
+      3
+    ],
+    "4": [
+      4
+    ],
+    "5": [
+      5
+    ],
+    "6": [
+      6
+    ],
+    "7": [
+      7
+    ],
+    "8": [
+      8
+    ],
+    "9": [
+      9
+    ]
+  },
+  "schema_version": 1,
+  "season": 2026,
+  "sport": "baseball",
+  "synced_at": "2026-07-27T00:00:00+00:00"
+}

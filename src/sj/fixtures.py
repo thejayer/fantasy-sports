@@ -14,8 +14,8 @@ from pathlib import Path
 from typing import Any
 
 from sj.registry import LeagueSpec, load_registry
-from sj.sample import sample_snapshot
-from sj.store import FIXTURES_DIR, INDEX_NAME, monolith_rel
+from sj.sample import sample_pro_schedule_for_snapshot, sample_snapshot
+from sj.store import FIXTURES_DIR, INDEX_NAME, FileStore, monolith_rel
 
 # Stable stamp so regenerating fixtures is a pure function of the serializer +
 # registry — no wall-clock noise in git diffs.
@@ -98,6 +98,42 @@ def regenerate_fixtures(
         rel = monolith_rel(spec.id, season)
         path = root / rel
         path.write_text(_dump(snapshot), encoding="utf-8")
+        if spec.sport == "baseball":
+            # Side concerns (not validated against monolith equality).
+            store = FileStore(root)
+            store.write_pro_schedule(sample_pro_schedule_for_snapshot(snapshot))
+            emit(f"wrote {spec.id}/{season}/pro_schedule.json")
+            week = int(snapshot.get("current_week") or 1)
+            teams = snapshot.get("teams") or []
+            if len(teams) >= 2:
+                from sj.serialize import build_week_category_document
+
+                class _CatBox:
+                    def __init__(self, home: dict, away: dict):
+                        self.home_team = home["team_id"]
+                        self.away_team = away["team_id"]
+                        self.home_wins, self.home_losses, self.home_ties = 6, 3, 1
+                        self.away_wins, self.away_losses, self.away_ties = 3, 6, 1
+                        cats = ["R", "HR", "RBI", "SB", "AVG", "W", "SV", "K", "ERA", "WHIP"]
+                        self.home_stats = {
+                            c: {"value": 10.0 + i, "result": "WIN" if i % 2 == 0 else "LOSS"}
+                            for i, c in enumerate(cats)
+                        }
+                        self.away_stats = {
+                            c: {"value": 9.0 + i, "result": "LOSS" if i % 2 == 0 else "WIN"}
+                            for i, c in enumerate(cats)
+                        }
+
+                doc = build_week_category_document(
+                    league_id=spec.id,
+                    season=season,
+                    week=week,
+                    box_scores=[_CatBox(teams[0], teams[1])],
+                    synced_at=FIXED_TIMESTAMP,
+                    period_label="period",
+                )
+                store.write_week_box_scores(doc)
+                emit(f"wrote {spec.id}/{season}/weeks/{week}.json")
         written.append((spec.id, season, str(path)))
         index_leagues.append(
             {
