@@ -273,9 +273,10 @@ test.describe("hub smoke", () => {
   });
 
   test("player names link to a player page (roadmap 7.3)", async ({ page }) => {
-    await page.goto("/leagues/football-main?tab=players");
-    // The board pages at 25 rows, so search rather than assuming page one.
-    await page.getByPlaceholder(/Search players/i).fill("Juan Phillips");
+    // Server-side search (roadmap 7.11) — q= filters before render.
+    await page.goto(
+      "/leagues/football-main?tab=players&q=Juan%20Phillips",
+    );
     const link = page.getByRole("link", { name: "Juan Phillips" });
     await expect(link).toBeVisible();
     await link.click();

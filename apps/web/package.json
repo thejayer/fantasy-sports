@@ -12,7 +12,8 @@
     "test:e2e": "playwright test e2e/smoke.spec.ts",
     "test:e2e:auth": "AUTH_DEV_BYPASS=0 PORT=3001 PLAYWRIGHT_BASE_URL=http://127.0.0.1:3001 playwright test e2e/auth-redirect.spec.ts",
     "verify:prerender": "node scripts/assert-no-stale-prerender.mjs",
-    "verify:bundle-budget": "node scripts/check-bundle-budget.mjs"
+    "verify:bundle-budget": "node scripts/check-bundle-budget.mjs",
+    "verify:html-budget": "node scripts/check-html-budget.mjs"
   },
   "dependencies": {
     "next": "^16.2.12",

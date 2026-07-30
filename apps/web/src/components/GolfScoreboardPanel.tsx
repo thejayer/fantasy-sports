@@ -1,8 +1,15 @@
+/**
+ * Golf week scoreboard (roadmap 6.4d / 7.11).
+ *
+ * Per-player round slots used to expand inline for every team — that alone was
+ * ~160 table rows and pushed the document over 160 KB. Week totals stay here;
+ * slot detail lives on the team page.
+ */
+
 import Link from "next/link";
 import { EmptyState } from "@/components/EmptyState";
 import type {
   GolfScoreboardEvent,
-  GolfScoreboardTeamWeek,
   LeagueSnapshot,
 } from "@/lib/data";
 
@@ -24,68 +31,6 @@ function resolveEvent(
   const current = league.scoreboard?.current_event_id;
   return (
     events.find((e) => e.event_id === current) ?? events[0] ?? null
-  );
-}
-
-function playerLabel(
-  league: LeagueSnapshot,
-  playerId: number,
-): string {
-  return (
-    league.players.find((p) => p.id === playerId)?.name ?? `#${playerId}`
-  );
-}
-
-function RoundSlots({
-  league,
-  week,
-}: {
-  league: LeagueSnapshot;
-  week: GolfScoreboardTeamWeek;
-}) {
-  const rounds = (["1", "2", "3", "4"] as const)
-    .map((key) => week.by_round[key])
-    .filter(Boolean);
-  if (!rounds.length) return null;
-  return (
-    <div style={{ marginTop: "0.5rem" }}>
-      {rounds.map((rnd) => (
-        <details key={rnd!.round} style={{ marginBottom: "0.35rem" }}>
-          <summary>
-            {rnd!.label} · {formatPoints(rnd!.points)} pts ·{" "}
-            {rnd!.slots.length} slots
-          </summary>
-          <div className="table-wrap" style={{ marginTop: "0.35rem" }}>
-            <table className="table-cards">
-              <thead>
-                <tr>
-                  <th>Player</th>
-                  <th>Source</th>
-                  <th>Status</th>
-                  <th>To par</th>
-                  <th>Pts</th>
-                </tr>
-              </thead>
-              <tbody>
-                {rnd!.slots.map((slot) => (
-                  <tr key={`${rnd!.round}-${slot.starter_id}-${slot.player_id}`}>
-                    <td data-label="Player">
-                      {playerLabel(league, slot.player_id)}
-                    </td>
-                    <td data-label="Source">{slot.source}</td>
-                    <td data-label="Status">{slot.status}</td>
-                    <td data-label="To par">
-                      {slot.to_par == null ? "—" : formatPoints(slot.to_par)}
-                    </td>
-                    <td data-label="Pts">{formatPoints(slot.points)}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </details>
-      ))}
-    </div>
   );
 }
 
@@ -127,8 +72,8 @@ export function GolfScoreboardPanel({
     <div className="golf-scoreboard-panel" style={{ marginTop: "0.75rem" }}>
       <p className="lede">
         Counting scoreboard — best 4 of 5 Thu/Fri, all 5 Sat/Sun, missed-cut
-        alts on the weekend, then event multiplier. Expand a team for
-        per-player daily slots. Fixture rounds only (no live tour feed).
+        alts on the weekend, then event multiplier. Open a team for per-player
+        round slots. Fixture rounds only (no live tour feed).
       </p>
 
       <div className="tabs" style={{ marginTop: "0.5rem" }}>
@@ -203,12 +148,11 @@ export function GolfScoreboardPanel({
               {ranked.map((row) => (
                 <tr key={row.teamId}>
                   <td data-label="Team">
-                    <details>
-                      <summary>
-                        <strong>{row.name}</strong>
-                      </summary>
-                      <RoundSlots league={league} week={row.week} />
-                    </details>
+                    <Link
+                      href={`/leagues/${league.league_id}/teams/${row.teamId}?season=${league.season}`}
+                    >
+                      <strong>{row.name}</strong>
+                    </Link>
                   </td>
                   <td data-label="Raw">{formatPoints(row.week.week_raw)}</td>
                   <td data-label="Total">
