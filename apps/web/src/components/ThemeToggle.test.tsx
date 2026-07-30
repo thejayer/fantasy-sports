@@ -26,20 +26,17 @@ describe("nextTheme (roadmap 7.10)", () => {
 describe("THEME_INIT_SCRIPT", () => {
   it("applies a stored override before paint", () => {
     window.localStorage.setItem(THEME_STORAGE_KEY, "dark");
-    // eslint-disable-next-line no-eval -- exercises the exact string we inline
     eval(THEME_INIT_SCRIPT);
     expect(document.documentElement.getAttribute("data-theme")).toBe("dark");
   });
 
   it("ignores a junk value rather than setting an invalid theme", () => {
     window.localStorage.setItem(THEME_STORAGE_KEY, "neon");
-    // eslint-disable-next-line no-eval -- exercises the exact string we inline
     eval(THEME_INIT_SCRIPT);
     expect(document.documentElement.hasAttribute("data-theme")).toBe(false);
   });
 
   it("does nothing when nothing is stored, leaving the OS preference in charge", () => {
-    // eslint-disable-next-line no-eval -- exercises the exact string we inline
     eval(THEME_INIT_SCRIPT);
     expect(document.documentElement.hasAttribute("data-theme")).toBe(false);
   });
