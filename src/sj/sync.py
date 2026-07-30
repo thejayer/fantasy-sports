@@ -481,10 +481,28 @@ def sync_league_season(
 ) -> SyncResult:
     league = open_espn_league(spec, season)
     snapshot = build_snapshot(league, spec, season)
+    if spec.sport == "baseball":
+        # Attach PR7/15/30 before the season write so monolith + v2 rosters
+        # include trailing_stats without a second rewrite.
+        from sj.baseball_enrich import enrich_baseball_trailing_stats
+
+        enrich_baseball_trailing_stats(league, snapshot)
     location = write_snapshot(snapshot, store_dir=store_dir)
     # Football box scores are a side concern (roadmap 8.1) — after the season
     # write so a failed week pull never leaves a half-written manifest.
     sync_football_box_scores(league, spec, season, snapshot, store_dir=store_dir)
+    if spec.sport == "baseball":
+        from sj.baseball_enrich import (
+            sync_baseball_category_boxes,
+            sync_baseball_pro_schedule,
+        )
+
+        sync_baseball_pro_schedule(
+            league, spec, season, snapshot, store_dir=store_dir
+        )
+        sync_baseball_category_boxes(
+            league, spec, season, snapshot, store_dir=store_dir
+        )
     return SyncResult(
         league_id=spec.id,
         season=season,

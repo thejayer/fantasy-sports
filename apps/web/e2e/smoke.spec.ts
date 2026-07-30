@@ -479,7 +479,7 @@ test.describe("hub smoke", () => {
   test("baseball waivers tab lists free agents", async ({ page }) => {
     await page.goto("/leagues/baseball-dynasty?tab=waivers");
     await expect(page.getByText(/ESPN free agents/i)).toBeVisible();
-    await expect(page.getByText("Wayne Morales")).toBeVisible();
+    await expect(page.getByText("Stephen Price")).toBeVisible();
   });
 
   test("baseball tools category board ranks teams (roadmap 8.2)", async ({
@@ -491,8 +491,10 @@ test.describe("hub smoke", () => {
     )).toBeVisible();
     await expect(page.getByText(/Season-to-date from synced/i)).toBeVisible();
     await expect(page.getByText("Diamond Dogs")).toBeVisible();
-    await expect(page.getByRole("columnheader", { name: "HR" })).toBeVisible();
-    await expect(page.getByRole("columnheader", { name: "ERA" })).toBeVisible();
+    await expect(page.getByRole("columnheader", { name: "Home Runs" })).toBeVisible();
+    await expect(
+      page.getByRole("columnheader", { name: "ERA", exact: true }),
+    ).toBeVisible();
   });
 
   test("baseball tools usage caps show team IP (roadmap 8.2)", async ({
@@ -504,5 +506,33 @@ test.describe("hub smoke", () => {
     await expect(
       page.getByRole("link", { name: "Curveball Crew" }),
     ).toBeVisible();
+  });
+
+  test("baseball tools trailing windows show PR splits (roadmap 8.2)", async ({
+    page,
+  }) => {
+    await page.goto("/leagues/baseball-dynasty?tab=tools&view=trailing&window=15");
+    await expect(page.getByText(/Hot streaks from ESPN PR15/i)).toBeVisible();
+    await expect(page.getByRole("link", { name: "30 days" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Batters" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Pitchers" })).toBeVisible();
+  });
+
+  test("baseball tools schedule counts matchup-period games (roadmap 8.2)", async ({
+    page,
+  }) => {
+    await page.goto("/leagues/baseball-dynasty?tab=tools&view=schedule");
+    await expect(page.getByText(/Games per fantasy team in matchup period 24/i)).toBeVisible();
+    await expect(page.getByRole("columnheader", { name: "Player games" })).toBeVisible();
+    await expect(page.getByText(/Two-start pitchers remain unavailable/i)).toBeVisible();
+  });
+
+  test("baseball tools daily locks show today's slate (roadmap 8.2)", async ({
+    page,
+  }) => {
+    await page.goto("/leagues/baseball-dynasty?tab=tools&view=locks");
+    await expect(page.getByText(/Today's lineup locks for 2026-07-27/i)).toBeVisible();
+    await expect(page.getByText("BAL @ SF")).toBeVisible();
+    await expect(page.getByRole("cell", { name: "17:05 UTC" }).first()).toBeVisible();
   });
 });

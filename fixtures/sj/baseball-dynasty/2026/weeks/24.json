@@ -1,0 +1,105 @@
+{
+  "league_id": "baseball-dynasty",
+  "matchups": [
+    {
+      "away_losses": 6,
+      "away_stats": {
+        "AVG": {
+          "result": "LOSS",
+          "value": 13.0
+        },
+        "ERA": {
+          "result": "LOSS",
+          "value": 17.0
+        },
+        "HR": {
+          "result": "WIN",
+          "value": 10.0
+        },
+        "K": {
+          "result": "WIN",
+          "value": 16.0
+        },
+        "R": {
+          "result": "LOSS",
+          "value": 9.0
+        },
+        "RBI": {
+          "result": "LOSS",
+          "value": 11.0
+        },
+        "SB": {
+          "result": "WIN",
+          "value": 12.0
+        },
+        "SV": {
+          "result": "LOSS",
+          "value": 15.0
+        },
+        "W": {
+          "result": "WIN",
+          "value": 14.0
+        },
+        "WHIP": {
+          "result": "WIN",
+          "value": 18.0
+        }
+      },
+      "away_team_id": 3,
+      "away_ties": 1,
+      "away_wins": 3,
+      "home_losses": 3,
+      "home_stats": {
+        "AVG": {
+          "result": "WIN",
+          "value": 14.0
+        },
+        "ERA": {
+          "result": "WIN",
+          "value": 18.0
+        },
+        "HR": {
+          "result": "LOSS",
+          "value": 11.0
+        },
+        "K": {
+          "result": "LOSS",
+          "value": 17.0
+        },
+        "R": {
+          "result": "WIN",
+          "value": 10.0
+        },
+        "RBI": {
+          "result": "WIN",
+          "value": 12.0
+        },
+        "SB": {
+          "result": "LOSS",
+          "value": 13.0
+        },
+        "SV": {
+          "result": "WIN",
+          "value": 16.0
+        },
+        "W": {
+          "result": "LOSS",
+          "value": 15.0
+        },
+        "WHIP": {
+          "result": "LOSS",
+          "value": 19.0
+        }
+      },
+      "home_team_id": 1,
+      "home_ties": 1,
+      "home_wins": 6
+    }
+  ],
+  "period_label": "period",
+  "schema_version": 1,
+  "season": 2026,
+  "sport": "baseball",
+  "synced_at": "2026-07-27T00:00:00+00:00",
+  "week": 24
+}

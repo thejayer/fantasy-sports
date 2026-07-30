@@ -927,18 +927,20 @@ renders ESPN league-applied `points`. Player pages list on-disk weeks via
 tooling needs no model — it is scheduling and roster arithmetic:
 
 - ~~**Category standings**~~ — **LANDED** as season-to-date Category Board from
-  roster `season_stats` (standard 5×5, roto points + per-cat ranks/margins).
-  Disclose: not ESPN period boxes, not a projection model. Official league cat
-  lists + period H2H cat matrices still need baseball box-score sync.
-- **Games-per-team per period** and **two-start pitchers** — EmptyState in Tools
-  (needs MLB schedule + probable-starter feed — the only 8.2 feed).
-- **Trailing-window rater** (7 / 15 / 30 day) — EmptyState until `sj` persists
-  ESPN `PR7/PR15/PR30` splits (season bucket only today; FA rows lack stats).
+  roster `season_stats` (official category labels when synced; roto points +
+  per-cat ranks/margins). Disclose: not ESPN period boxes, not a projection
+  model.
+- ~~**Games-per-team per period**~~ — **LANDED** from baseball
+  `pro_schedule.json` sidecars plus roster `pro_team`; two-start pitchers still
+  need a probable-starter feed.
+- ~~**Trailing-window rater**~~ — **LANDED** for 7 / 15 / 30 day ESPN split
+  buckets on roster and free-agent rows, with season-bucket disclosure when
+  absent.
 - ~~**Usage caps**~~ — **LANDED** season team/pitcher IP vs disclosed ceiling
   (default 1400 or `settings.season_ip_max`). Min weekly IP forfeits need period
   IP from box scores.
-- **Daily lineup locks** — EmptyState until game start times land (golf
-  `lineupClock` is the UX analogue only).
+- ~~**Daily lineup locks**~~ — **LANDED** from same `pro_schedule.json` game
+  start times, with a deterministic fixture clock for the committed 2026 sample.
 
 Hub: `BaseballToolsPanel` + `lib/baseball-tools.ts`. Keep projections EmptyState.
 

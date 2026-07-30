@@ -1,29 +1,41 @@
 import Link from "next/link";
-import type { ReactNode } from "react";
 
 import { EmptyState } from "@/components/EmptyState";
 import { formatStat } from "@/lib/baseball";
 import {
   BASEBALL_TOOL_CARDS,
+  baseballFixtureNow,
   buildCategoryBoard,
+  buildDailyLocksBoard,
+  buildGamesPerTeamBoard,
   buildIpUsageBoard,
+  buildTrailingBoard,
   type BaseballToolsView,
   type CategoryBoard,
   type CategoryId,
+  type DailyLocksBoard,
+  type GamesPerTeamBoard,
   type IpUsageBoard,
+  type TrailingBoard,
+  type TrailingPlayerRow,
+  type TrailingWindow,
 } from "@/lib/baseball-tools";
-import type { LeagueSnapshot } from "@/lib/data";
+import type { LeagueSnapshot, ProScheduleSnapshot } from "@/lib/data";
 
 function toolsHref(
   leagueId: string,
   season: number,
   view: BaseballToolsView,
+  window?: TrailingWindow,
 ): string {
   const query = new URLSearchParams({
     season: String(season),
     tab: "tools",
     view,
   });
+  if (view === "trailing" && window) {
+    query.set("window", window);
+  }
   return `/leagues/${leagueId}?${query.toString()}`;
 }
 
@@ -106,17 +118,204 @@ function CategoryBoardView({ board }: { board: CategoryBoard }) {
   );
 }
 
-function PendingTool({
+function timeLabel(value: string): string {
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return value;
+  const hh = String(date.getUTCHours()).padStart(2, "0");
+  const mm = String(date.getUTCMinutes()).padStart(2, "0");
+  return `${hh}:${mm} UTC`;
+}
+
+function TrailingRowsTable({
   title,
-  children,
+  rows,
+  role,
 }: {
   title: string;
-  children: ReactNode;
+  rows: TrailingPlayerRow[];
+  role: "batter" | "pitcher";
+}) {
+  const columns =
+    role === "batter"
+      ? (["R", "HR", "RBI", "SB"] as const)
+      : (["K", "W", "SV", "HLD", "QS"] as const);
+  return (
+    <>
+      <h3 className="roster-group-title">{title}</h3>
+      {!rows.length ? (
+        <EmptyState title={`No ${title.toLowerCase()} in this window`}>
+          ESPN trailing splits will appear here after sync provides PR7 / PR15 /
+          PR30 player buckets.
+        </EmptyState>
+      ) : (
+        <div className="panel table-scroll">
+          <table className="table-cards">
+            <thead>
+              <tr>
+                <th>Player</th>
+                <th>Roster</th>
+                <th>MLB</th>
+                {columns.map((key) => (
+                  <th key={key} className="numeric">
+                    {key}
+                  </th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {rows.map((row) => (
+                <tr key={`${row.status}-${row.playerId}`}>
+                  <td data-label="Player">{row.name}</td>
+                  <td data-label="Roster">{row.fantasyTeamName}</td>
+                  <td data-label="MLB">{row.proTeam ?? "—"}</td>
+                  {columns.map((key) => (
+                    <td key={key} data-label={key} className="numeric">
+                      {formatStat(row.stats[key], 0)}
+                    </td>
+                  ))}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+    </>
+  );
+}
+
+function TrailingBoardView({
+  league,
+  board,
+}: {
+  league: LeagueSnapshot;
+  board: TrailingBoard;
 }) {
   return (
-    <div style={{ marginTop: "0.75rem" }}>
-      <EmptyState title={title}>{children}</EmptyState>
-    </div>
+    <section style={{ marginTop: "0.75rem" }}>
+      <p className="lede" style={{ marginTop: 0 }}>
+        Hot streaks from ESPN PR{board.window} splits for rostered players and
+        free agents.
+      </p>
+      <div className="tabs" style={{ marginTop: "0.5rem" }}>
+        {(["7", "15", "30"] as const).map((window) => (
+          <Link
+            key={window}
+            href={toolsHref(league.league_id, league.season, "trailing", window)}
+            className={`tab${board.window === window ? " active" : ""}`}
+          >
+            {window} days
+          </Link>
+        ))}
+      </div>
+      <p className="league-meta">{board.disclaimer}</p>
+      <TrailingRowsTable title="Batters" rows={board.batters} role="batter" />
+      <TrailingRowsTable title="Pitchers" rows={board.pitchers} role="pitcher" />
+    </section>
+  );
+}
+
+function ScheduleBoardView({ board }: { board: GamesPerTeamBoard }) {
+  return (
+    <section style={{ marginTop: "0.75rem" }}>
+      <p className="lede" style={{ marginTop: 0 }}>
+        Games per fantasy team in matchup period {board.period ?? "—"}.
+      </p>
+      <p className="league-meta">
+        {board.disclaimer} Scoring periods:{" "}
+        {board.scoringPeriods.length ? board.scoringPeriods.join(", ") : "—"}.
+      </p>
+      {!board.games.length ? (
+        <EmptyState title="No pro schedule for this period">
+          Sync needs a baseball <code>pro_schedule.json</code> sidecar before the
+          forecaster can count roster games.
+        </EmptyState>
+      ) : (
+        <div className="panel table-scroll">
+          <table className="table-cards">
+            <thead>
+              <tr>
+                <th>Team</th>
+                <th className="numeric">Player games</th>
+                <th>By MLB team</th>
+              </tr>
+            </thead>
+            <tbody>
+              {board.rows.map((row) => (
+                <tr key={row.teamId}>
+                  <td data-label="Team">{row.name}</td>
+                  <td data-label="Player games" className="numeric">
+                    {formatStat(row.totalPlayerGames, 0)}
+                  </td>
+                  <td data-label="By MLB team">
+                    {row.proTeamGames
+                      .filter((item) => item.games > 0)
+                      .slice(0, 8)
+                      .map(
+                        (item) =>
+                          `${item.proTeam}: ${item.games}g × ${item.players}`,
+                      )
+                      .join(", ") || "—"}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+      <p className="league-meta">
+        Two-start pitchers remain unavailable until sync adds probable starters.
+      </p>
+    </section>
+  );
+}
+
+function DailyLocksBoardView({ board }: { board: DailyLocksBoard }) {
+  return (
+    <section style={{ marginTop: "0.75rem" }}>
+      <p className="lede" style={{ marginTop: 0 }}>
+        Today&apos;s lineup locks for {board.date}.
+      </p>
+      <p className="league-meta">{board.disclaimer}</p>
+      {!board.games.length ? (
+        <EmptyState title="No MLB games today">
+          Daily locks appear when <code>pro_schedule.json</code> has games whose
+          UTC date matches the snapshot clock.
+        </EmptyState>
+      ) : (
+        <div className="panel table-scroll">
+          <table className="table-cards">
+            <thead>
+              <tr>
+                <th>Game</th>
+                <th>Lock</th>
+                <th>Rostered players</th>
+              </tr>
+            </thead>
+            <tbody>
+              {board.games.map((game) => (
+                <tr key={`${game.awayProTeam}-${game.homeProTeam}-${game.startTime}`}>
+                  <td data-label="Game">
+                    {game.awayProTeam} @ {game.homeProTeam}
+                  </td>
+                  <td data-label="Lock">{timeLabel(game.startTime)}</td>
+                  <td data-label="Rostered players">
+                    {game.players.length
+                      ? game.players
+                          .slice(0, 12)
+                          .map(
+                            (player) =>
+                              `${player.name} (${player.teamName}, ${player.slot ?? "—"})`,
+                          )
+                          .join(", ")
+                      : "No rostered players"}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+    </section>
   );
 }
 
@@ -127,9 +326,13 @@ function PendingTool({
 export function BaseballToolsPanel({
   league,
   view = "home",
+  proSchedule = null,
+  trailingWindow = "7",
 }: {
   league: LeagueSnapshot;
   view?: BaseballToolsView;
+  proSchedule?: ProScheduleSnapshot | null;
+  trailingWindow?: TrailingWindow;
 }) {
   const leagueId = league.league_id;
   const season = league.season;
@@ -141,6 +344,20 @@ export function BaseballToolsPanel({
   const categoryBoard =
     active === "categories" ? buildCategoryBoard(league) : null;
   const ipBoard = active === "usage" ? buildIpUsageBoard(league) : null;
+  const trailingBoard =
+    active === "trailing" ? buildTrailingBoard(league, trailingWindow) : null;
+  const scheduleBoard =
+    active === "schedule"
+      ? buildGamesPerTeamBoard(league, proSchedule, league.current_week)
+      : null;
+  const locksBoard =
+    active === "locks"
+      ? buildDailyLocksBoard(
+          league,
+          proSchedule,
+          baseballFixtureNow(proSchedule?.synced_at ?? league.synced_at),
+        )
+      : null;
 
   return (
     <div className="baseball-tools-panel">
@@ -194,27 +411,15 @@ export function BaseballToolsPanel({
       ) : null}
 
       {active === "trailing" ? (
-        <PendingTool title="Trailing windows need split sync">
-          ESPN <code>PR7</code> / <code>PR15</code> / <code>PR30</code> splits are
-          not in the season snapshot yet (player parse keeps the season bucket
-          only). Season counting stats power the Category Board today.
-        </PendingTool>
+        trailingBoard ? <TrailingBoardView league={league} board={trailingBoard} /> : null
       ) : null}
 
       {active === "schedule" ? (
-        <PendingTool title="Week Forecaster needs an MLB schedule feed">
-          Games-per-team and two-start pitchers need pro schedule + probable
-          starters — the only 8.2 item that requires a feed. Roster{" "}
-          <code>pro_team</code> alone is not enough.
-        </PendingTool>
+        scheduleBoard ? <ScheduleBoardView board={scheduleBoard} /> : null
       ) : null}
 
       {active === "locks" ? (
-        <PendingTool title="Daily locks need game start times">
-          Baseball lineups lock per game, not per matchup period. The hub still
-          treats baseball weeks as ESPN periods until a schedule clock lands
-          (golf <code>lineupClock</code> is the UX analogue, not the data).
-        </PendingTool>
+        locksBoard ? <DailyLocksBoardView board={locksBoard} /> : null
       ) : null}
     </div>
   );

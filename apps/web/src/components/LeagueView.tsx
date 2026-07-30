@@ -17,7 +17,7 @@ import { SeasonSwitcher } from "@/components/SeasonSwitcher";
 import { SettingsPanel } from "@/components/SettingsPanel";
 import { BaseballToolsPanel } from "@/components/BaseballToolsPanel";
 import { ToolsPanel, type ToolsView } from "@/components/ToolsPanel";
-import type { BaseballToolsView } from "@/lib/baseball-tools";
+import type { BaseballToolsView, TrailingWindow } from "@/lib/baseball-tools";
 import { TeamIdentity } from "@/components/TeamAvatar";
 import { ViewerBadge } from "@/components/ViewerBadge";
 import type {
@@ -27,6 +27,7 @@ import type {
   PlayerMapSnapshot,
   PlayoffOddsSamples,
   PlayoffOddsSnapshot,
+  ProScheduleSnapshot,
   ProjectionSnapshot,
   Team,
   WeekBoxScoreSnapshot,
@@ -312,6 +313,8 @@ export function LeagueView({
   projectionScoring = null,
   toolsView = "home",
   baseballToolsView = "home",
+  baseballTrailingWindow = "7",
+  proSchedule = null,
   toolsTeamA,
   toolsTeamB,
   toolsTeamId,
@@ -354,6 +357,10 @@ export function LeagueView({
   toolsView?: ToolsView;
   /** Baseball tools view (`?tab=tools&view=` — roadmap 8.2). */
   baseballToolsView?: BaseballToolsView;
+  /** Baseball trailing split (`?tab=tools&view=trailing&window=7|15|30`). */
+  baseballTrailingWindow?: TrailingWindow;
+  /** Baseball pro schedule sidecar (`pro_schedule.json`). */
+  proSchedule?: ProScheduleSnapshot | null;
   /** Trade side A (`?a=`). */
   toolsTeamA?: number;
   /** Trade side B (`?b=`). */
@@ -387,7 +394,14 @@ export function LeagueView({
   const historyPair =
     h2hA != null && h2hB != null ? `&a=${h2hA}&b=${h2hB}` : "";
   const toolsPair = (() => {
-    if (isBaseball) return `&view=${baseballToolsView}`;
+    if (isBaseball) {
+      return (
+        `&view=${baseballToolsView}` +
+        (baseballToolsView === "trailing"
+          ? `&window=${baseballTrailingWindow}`
+          : "")
+      );
+    }
     if (toolsView === "draft") return `&view=draft&slot=${draftSlot}`;
     if (toolsView === "start-sit") {
       return (
@@ -696,7 +710,12 @@ export function LeagueView({
 
       {active === "tools" ? (
         isBaseball ? (
-          <BaseballToolsPanel league={league} view={baseballToolsView} />
+          <BaseballToolsPanel
+            league={league}
+            view={baseballToolsView}
+            proSchedule={proSchedule}
+            trailingWindow={baseballTrailingWindow}
+          />
         ) : (
           <ToolsPanel
             league={league}
