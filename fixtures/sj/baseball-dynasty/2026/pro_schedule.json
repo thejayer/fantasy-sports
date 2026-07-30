@@ -5,6 +5,8 @@
       "away_pro_team_id": null,
       "home_pro_team": "SF",
       "home_pro_team_id": null,
+      "probable_away": null,
+      "probable_home": null,
       "scoring_period_id": 23,
       "start_time": "2026-07-26T17:05:00+00:00"
     },
@@ -13,6 +15,14 @@
       "away_pro_team_id": null,
       "home_pro_team": "COL",
       "home_pro_team_id": null,
+      "probable_away": {
+        "id": 202600111,
+        "name": "Jack Long"
+      },
+      "probable_home": {
+        "id": 202600114,
+        "name": "Ethan Jackson"
+      },
       "scoring_period_id": 23,
       "start_time": "2026-07-26T19:05:00+00:00"
     },
@@ -21,6 +31,11 @@
       "away_pro_team_id": null,
       "home_pro_team": "LAA",
       "home_pro_team_id": null,
+      "probable_away": null,
+      "probable_home": {
+        "id": 202600214,
+        "name": "Adam Allen"
+      },
       "scoring_period_id": 23,
       "start_time": "2026-07-26T18:05:00+00:00"
     },
@@ -29,6 +44,11 @@
       "away_pro_team_id": null,
       "home_pro_team": "CWS",
       "home_pro_team_id": null,
+      "probable_away": null,
+      "probable_home": {
+        "id": 202600011,
+        "name": "Bradley Thompson"
+      },
       "scoring_period_id": 23,
       "start_time": "2026-07-26T17:05:00+00:00"
     },
@@ -37,78 +57,125 @@
       "away_pro_team_id": null,
       "home_pro_team": "LAD",
       "home_pro_team_id": null,
+      "probable_away": {
+        "id": 202600012,
+        "name": "Benjamin Morales"
+      },
+      "probable_home": {
+        "id": 202600212,
+        "name": "Christian Scott"
+      },
       "scoring_period_id": 23,
       "start_time": "2026-07-26T19:05:00+00:00"
     },
     {
-      "away_pro_team": "HOU",
+      "away_pro_team": "OAK",
       "away_pro_team_id": null,
-      "home_pro_team": "OAK",
+      "home_pro_team": "HOU",
       "home_pro_team_id": null,
+      "probable_away": null,
+      "probable_home": {
+        "id": 202600014,
+        "name": "Douglas Price"
+      },
       "scoring_period_id": 23,
       "start_time": "2026-07-26T18:05:00+00:00"
     },
     {
-      "away_pro_team": "ARI",
+      "away_pro_team": "CHC",
       "away_pro_team_id": null,
-      "home_pro_team": "NYM",
+      "home_pro_team": "WSH",
       "home_pro_team_id": null,
+      "probable_away": null,
+      "probable_home": {
+        "id": 202600211,
+        "name": "Arthur Robinson"
+      },
       "scoring_period_id": 23,
       "start_time": "2026-07-26T17:05:00+00:00"
     },
     {
+      "away_pro_team": "ARI",
+      "away_pro_team_id": null,
+      "home_pro_team": "DET",
+      "home_pro_team_id": null,
+      "probable_away": null,
+      "probable_home": null,
+      "scoring_period_id": 23,
+      "start_time": "2026-07-26T19:05:00+00:00"
+    },
+    {
+      "away_pro_team": "CLE",
+      "away_pro_team_id": null,
+      "home_pro_team": "TEX",
+      "home_pro_team_id": null,
+      "probable_away": null,
+      "probable_home": {
+        "id": 202600025,
+        "name": "Samuel Baker"
+      },
+      "scoring_period_id": 23,
+      "start_time": "2026-07-26T18:05:00+00:00"
+    },
+    {
       "away_pro_team": "ATL",
       "away_pro_team_id": null,
-      "home_pro_team": "SD",
+      "home_pro_team": "NYM",
       "home_pro_team_id": null,
+      "probable_away": null,
+      "probable_home": null,
+      "scoring_period_id": 23,
+      "start_time": "2026-07-26T17:05:00+00:00"
+    },
+    {
+      "away_pro_team": "KC",
+      "away_pro_team_id": null,
+      "home_pro_team": "MIL",
+      "home_pro_team_id": null,
+      "probable_away": {
+        "id": 202600112,
+        "name": "Philip Cook"
+      },
+      "probable_home": {
+        "id": 202600120,
+        "name": "Samuel Sanchez"
+      },
       "scoring_period_id": 23,
       "start_time": "2026-07-26T19:05:00+00:00"
     },
     {
       "away_pro_team": "PIT",
       "away_pro_team_id": null,
-      "home_pro_team": "CIN",
+      "home_pro_team": "SD",
       "home_pro_team_id": null,
+      "probable_away": null,
+      "probable_home": {
+        "id": 202600113,
+        "name": "James Hughes"
+      },
       "scoring_period_id": 23,
       "start_time": "2026-07-26T18:05:00+00:00"
-    },
-    {
-      "away_pro_team": "TOR",
-      "away_pro_team_id": null,
-      "home_pro_team": "CHC",
-      "home_pro_team_id": null,
-      "scoring_period_id": 23,
-      "start_time": "2026-07-26T17:05:00+00:00"
-    },
-    {
-      "away_pro_team": "MIN",
-      "away_pro_team_id": null,
-      "home_pro_team": "MIL",
-      "home_pro_team_id": null,
-      "scoring_period_id": 23,
-      "start_time": "2026-07-26T19:05:00+00:00"
-    },
-    {
-      "away_pro_team": "TEX",
-      "away_pro_team_id": null,
-      "home_pro_team": "CLE",
-      "home_pro_team_id": null,
-      "scoring_period_id": 23,
-      "start_time": "2026-07-26T18:05:00+00:00"
-    },
-    {
-      "away_pro_team": "WSH",
-      "away_pro_team_id": null,
-      "home_pro_team": "KC",
-      "home_pro_team_id": null,
-      "scoring_period_id": 23,
-      "start_time": "2026-07-26T17:05:00+00:00"
     },
     {
       "away_pro_team": "SEA",
       "away_pro_team_id": null,
-      "home_pro_team": "DET",
+      "home_pro_team": "TOR",
       "home_pro_team_id": null,
+      "probable_away": null,
+      "probable_home": {
+        "id": 202600213,
+        "name": "Juan Rodriguez"
+      },
+      "scoring_period_id": 23,
+      "start_time": "2026-07-26T17:05:00+00:00"
+    },
+    {
+      "away_pro_team": "BOS",
+      "away_pro_team_id": null,
+      "home_pro_team": "CIN",
+      "home_pro_team_id": null,
+      "probable_away": null,
+      "probable_home": null,
       "scoring_period_id": 23,
       "start_time": "2026-07-26T19:05:00+00:00"
     },
@@ -117,6 +184,11 @@
       "away_pro_team_id": null,
       "home_pro_team": "SF",
       "home_pro_team_id": null,
+      "probable_away": null,
+      "probable_home": {
+        "id": 202600114,
+        "name": "Ethan Jackson"
+      },
       "scoring_period_id": 24,
       "start_time": "2026-07-27T17:05:00+00:00"
     },
@@ -125,6 +197,14 @@
       "away_pro_team_id": null,
       "home_pro_team": "COL",
       "home_pro_team_id": null,
+      "probable_away": {
+        "id": 202600111,
+        "name": "Jack Long"
+      },
+      "probable_home": {
+        "id": 202600114,
+        "name": "Ethan Jackson"
+      },
       "scoring_period_id": 24,
       "start_time": "2026-07-27T19:05:00+00:00"
     },
@@ -133,6 +213,11 @@
       "away_pro_team_id": null,
       "home_pro_team": "LAA",
       "home_pro_team_id": null,
+      "probable_away": null,
+      "probable_home": {
+        "id": 202600214,
+        "name": "Adam Allen"
+      },
       "scoring_period_id": 24,
       "start_time": "2026-07-27T18:05:00+00:00"
     },
@@ -141,6 +226,11 @@
       "away_pro_team_id": null,
       "home_pro_team": "CWS",
       "home_pro_team_id": null,
+      "probable_away": null,
+      "probable_home": {
+        "id": 202600011,
+        "name": "Bradley Thompson"
+      },
       "scoring_period_id": 24,
       "start_time": "2026-07-27T17:05:00+00:00"
     },
@@ -149,78 +239,125 @@
       "away_pro_team_id": null,
       "home_pro_team": "LAD",
       "home_pro_team_id": null,
+      "probable_away": {
+        "id": 202600013,
+        "name": "Jeffrey Cox"
+      },
+      "probable_home": {
+        "id": 202600212,
+        "name": "Christian Scott"
+      },
       "scoring_period_id": 24,
       "start_time": "2026-07-27T19:05:00+00:00"
     },
     {
-      "away_pro_team": "HOU",
+      "away_pro_team": "OAK",
       "away_pro_team_id": null,
-      "home_pro_team": "OAK",
+      "home_pro_team": "HOU",
       "home_pro_team_id": null,
+      "probable_away": null,
+      "probable_home": {
+        "id": 202600014,
+        "name": "Douglas Price"
+      },
       "scoring_period_id": 24,
       "start_time": "2026-07-27T18:05:00+00:00"
     },
     {
-      "away_pro_team": "ARI",
+      "away_pro_team": "CHC",
       "away_pro_team_id": null,
-      "home_pro_team": "NYM",
+      "home_pro_team": "WSH",
       "home_pro_team_id": null,
+      "probable_away": null,
+      "probable_home": {
+        "id": 202600211,
+        "name": "Arthur Robinson"
+      },
       "scoring_period_id": 24,
       "start_time": "2026-07-27T17:05:00+00:00"
     },
     {
+      "away_pro_team": "ARI",
+      "away_pro_team_id": null,
+      "home_pro_team": "DET",
+      "home_pro_team_id": null,
+      "probable_away": null,
+      "probable_home": null,
+      "scoring_period_id": 24,
+      "start_time": "2026-07-27T19:05:00+00:00"
+    },
+    {
+      "away_pro_team": "CLE",
+      "away_pro_team_id": null,
+      "home_pro_team": "TEX",
+      "home_pro_team_id": null,
+      "probable_away": null,
+      "probable_home": {
+        "id": 202600128,
+        "name": "Keith Cox"
+      },
+      "scoring_period_id": 24,
+      "start_time": "2026-07-27T18:05:00+00:00"
+    },
+    {
       "away_pro_team": "ATL",
       "away_pro_team_id": null,
-      "home_pro_team": "SD",
+      "home_pro_team": "NYM",
       "home_pro_team_id": null,
+      "probable_away": null,
+      "probable_home": null,
+      "scoring_period_id": 24,
+      "start_time": "2026-07-27T17:05:00+00:00"
+    },
+    {
+      "away_pro_team": "KC",
+      "away_pro_team_id": null,
+      "home_pro_team": "MIL",
+      "home_pro_team_id": null,
+      "probable_away": {
+        "id": 202600129,
+        "name": "Douglas Morris"
+      },
+      "probable_home": {
+        "id": 202600120,
+        "name": "Samuel Sanchez"
+      },
       "scoring_period_id": 24,
       "start_time": "2026-07-27T19:05:00+00:00"
     },
     {
       "away_pro_team": "PIT",
       "away_pro_team_id": null,
-      "home_pro_team": "CIN",
+      "home_pro_team": "SD",
       "home_pro_team_id": null,
+      "probable_away": null,
+      "probable_home": {
+        "id": 202600113,
+        "name": "James Hughes"
+      },
       "scoring_period_id": 24,
       "start_time": "2026-07-27T18:05:00+00:00"
-    },
-    {
-      "away_pro_team": "TOR",
-      "away_pro_team_id": null,
-      "home_pro_team": "CHC",
-      "home_pro_team_id": null,
-      "scoring_period_id": 24,
-      "start_time": "2026-07-27T17:05:00+00:00"
-    },
-    {
-      "away_pro_team": "MIN",
-      "away_pro_team_id": null,
-      "home_pro_team": "MIL",
-      "home_pro_team_id": null,
-      "scoring_period_id": 24,
-      "start_time": "2026-07-27T19:05:00+00:00"
-    },
-    {
-      "away_pro_team": "TEX",
-      "away_pro_team_id": null,
-      "home_pro_team": "CLE",
-      "home_pro_team_id": null,
-      "scoring_period_id": 24,
-      "start_time": "2026-07-27T18:05:00+00:00"
-    },
-    {
-      "away_pro_team": "WSH",
-      "away_pro_team_id": null,
-      "home_pro_team": "KC",
-      "home_pro_team_id": null,
-      "scoring_period_id": 24,
-      "start_time": "2026-07-27T17:05:00+00:00"
     },
     {
       "away_pro_team": "SEA",
       "away_pro_team_id": null,
-      "home_pro_team": "DET",
+      "home_pro_team": "TOR",
       "home_pro_team_id": null,
+      "probable_away": null,
+      "probable_home": {
+        "id": 202600213,
+        "name": "Juan Rodriguez"
+      },
+      "scoring_period_id": 24,
+      "start_time": "2026-07-27T17:05:00+00:00"
+    },
+    {
+      "away_pro_team": "BOS",
+      "away_pro_team_id": null,
+      "home_pro_team": "CIN",
+      "home_pro_team_id": null,
+      "probable_away": null,
+      "probable_home": null,
       "scoring_period_id": 24,
       "start_time": "2026-07-27T19:05:00+00:00"
     },
@@ -229,6 +366,8 @@
       "away_pro_team_id": null,
       "home_pro_team": "SF",
       "home_pro_team_id": null,
+      "probable_away": null,
+      "probable_home": null,
       "scoring_period_id": 25,
       "start_time": "2026-07-28T17:05:00+00:00"
     },
@@ -237,6 +376,14 @@
       "away_pro_team_id": null,
       "home_pro_team": "COL",
       "home_pro_team_id": null,
+      "probable_away": {
+        "id": 202600111,
+        "name": "Jack Long"
+      },
+      "probable_home": {
+        "id": 202600114,
+        "name": "Ethan Jackson"
+      },
       "scoring_period_id": 25,
       "start_time": "2026-07-28T19:05:00+00:00"
     },
@@ -245,6 +392,11 @@
       "away_pro_team_id": null,
       "home_pro_team": "LAA",
       "home_pro_team_id": null,
+      "probable_away": null,
+      "probable_home": {
+        "id": 202600214,
+        "name": "Adam Allen"
+      },
       "scoring_period_id": 25,
       "start_time": "2026-07-28T18:05:00+00:00"
     },
@@ -253,6 +405,11 @@
       "away_pro_team_id": null,
       "home_pro_team": "CWS",
       "home_pro_team_id": null,
+      "probable_away": null,
+      "probable_home": {
+        "id": 202600011,
+        "name": "Bradley Thompson"
+      },
       "scoring_period_id": 25,
       "start_time": "2026-07-28T17:05:00+00:00"
     },
@@ -261,78 +418,125 @@
       "away_pro_team_id": null,
       "home_pro_team": "LAD",
       "home_pro_team_id": null,
+      "probable_away": {
+        "id": 202600012,
+        "name": "Benjamin Morales"
+      },
+      "probable_home": {
+        "id": 202600212,
+        "name": "Christian Scott"
+      },
       "scoring_period_id": 25,
       "start_time": "2026-07-28T19:05:00+00:00"
     },
     {
-      "away_pro_team": "HOU",
+      "away_pro_team": "OAK",
       "away_pro_team_id": null,
-      "home_pro_team": "OAK",
+      "home_pro_team": "HOU",
       "home_pro_team_id": null,
+      "probable_away": null,
+      "probable_home": {
+        "id": 202600014,
+        "name": "Douglas Price"
+      },
       "scoring_period_id": 25,
       "start_time": "2026-07-28T18:05:00+00:00"
     },
     {
-      "away_pro_team": "ARI",
+      "away_pro_team": "CHC",
       "away_pro_team_id": null,
-      "home_pro_team": "NYM",
+      "home_pro_team": "WSH",
       "home_pro_team_id": null,
+      "probable_away": null,
+      "probable_home": {
+        "id": 202600211,
+        "name": "Arthur Robinson"
+      },
       "scoring_period_id": 25,
       "start_time": "2026-07-28T17:05:00+00:00"
     },
     {
+      "away_pro_team": "ARI",
+      "away_pro_team_id": null,
+      "home_pro_team": "DET",
+      "home_pro_team_id": null,
+      "probable_away": null,
+      "probable_home": null,
+      "scoring_period_id": 25,
+      "start_time": "2026-07-28T19:05:00+00:00"
+    },
+    {
+      "away_pro_team": "CLE",
+      "away_pro_team_id": null,
+      "home_pro_team": "TEX",
+      "home_pro_team_id": null,
+      "probable_away": null,
+      "probable_home": {
+        "id": 202600025,
+        "name": "Samuel Baker"
+      },
+      "scoring_period_id": 25,
+      "start_time": "2026-07-28T18:05:00+00:00"
+    },
+    {
       "away_pro_team": "ATL",
       "away_pro_team_id": null,
-      "home_pro_team": "SD",
+      "home_pro_team": "NYM",
       "home_pro_team_id": null,
+      "probable_away": null,
+      "probable_home": null,
+      "scoring_period_id": 25,
+      "start_time": "2026-07-28T17:05:00+00:00"
+    },
+    {
+      "away_pro_team": "KC",
+      "away_pro_team_id": null,
+      "home_pro_team": "MIL",
+      "home_pro_team_id": null,
+      "probable_away": {
+        "id": 202600112,
+        "name": "Philip Cook"
+      },
+      "probable_home": {
+        "id": 202600120,
+        "name": "Samuel Sanchez"
+      },
       "scoring_period_id": 25,
       "start_time": "2026-07-28T19:05:00+00:00"
     },
     {
       "away_pro_team": "PIT",
       "away_pro_team_id": null,
-      "home_pro_team": "CIN",
+      "home_pro_team": "SD",
       "home_pro_team_id": null,
+      "probable_away": null,
+      "probable_home": {
+        "id": 202600113,
+        "name": "James Hughes"
+      },
       "scoring_period_id": 25,
       "start_time": "2026-07-28T18:05:00+00:00"
-    },
-    {
-      "away_pro_team": "TOR",
-      "away_pro_team_id": null,
-      "home_pro_team": "CHC",
-      "home_pro_team_id": null,
-      "scoring_period_id": 25,
-      "start_time": "2026-07-28T17:05:00+00:00"
-    },
-    {
-      "away_pro_team": "MIN",
-      "away_pro_team_id": null,
-      "home_pro_team": "MIL",
-      "home_pro_team_id": null,
-      "scoring_period_id": 25,
-      "start_time": "2026-07-28T19:05:00+00:00"
-    },
-    {
-      "away_pro_team": "TEX",
-      "away_pro_team_id": null,
-      "home_pro_team": "CLE",
-      "home_pro_team_id": null,
-      "scoring_period_id": 25,
-      "start_time": "2026-07-28T18:05:00+00:00"
-    },
-    {
-      "away_pro_team": "WSH",
-      "away_pro_team_id": null,
-      "home_pro_team": "KC",
-      "home_pro_team_id": null,
-      "scoring_period_id": 25,
-      "start_time": "2026-07-28T17:05:00+00:00"
     },
     {
       "away_pro_team": "SEA",
       "away_pro_team_id": null,
-      "home_pro_team": "DET",
+      "home_pro_team": "TOR",
       "home_pro_team_id": null,
+      "probable_away": null,
+      "probable_home": {
+        "id": 202600213,
+        "name": "Juan Rodriguez"
+      },
+      "scoring_period_id": 25,
+      "start_time": "2026-07-28T17:05:00+00:00"
+    },
+    {
+      "away_pro_team": "BOS",
+      "away_pro_team_id": null,
+      "home_pro_team": "CIN",
+      "home_pro_team_id": null,
+      "probable_away": null,
+      "probable_home": null,
       "scoring_period_id": 25,
       "start_time": "2026-07-28T19:05:00+00:00"
     }

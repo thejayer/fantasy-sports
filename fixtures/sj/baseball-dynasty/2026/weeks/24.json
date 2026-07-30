@@ -45,7 +45,7 @@
           "value": 18.0
         }
       },
-      "away_team_id": 3,
+      "away_team_id": 2,
       "away_ties": 1,
       "away_wins": 3,
       "home_losses": 3,
@@ -97,6 +97,64 @@
     }
   ],
   "period_label": "period",
+  "pitcher_ip": [
+    {
+      "ip": 2.6,
+      "name": "Bradley Thompson",
+      "outs": 7.7,
+      "player_id": 202600011,
+      "team_id": 1
+    },
+    {
+      "ip": 1.2,
+      "name": "Benjamin Morales",
+      "outs": 3.6,
+      "player_id": 202600012,
+      "team_id": 1
+    },
+    {
+      "ip": 2.9,
+      "name": "Jeffrey Cox",
+      "outs": 8.7,
+      "player_id": 202600013,
+      "team_id": 1
+    },
+    {
+      "ip": 5.6,
+      "name": "Douglas Price",
+      "outs": 16.7,
+      "player_id": 202600014,
+      "team_id": 1
+    },
+    {
+      "ip": 1.0,
+      "name": "Gary Cox",
+      "outs": 3.0,
+      "player_id": 202600015,
+      "team_id": 1
+    },
+    {
+      "ip": 7.6,
+      "name": "Albert Turner",
+      "outs": 22.9,
+      "player_id": 202600016,
+      "team_id": 1
+    },
+    {
+      "ip": 3.0,
+      "name": "Jordan Myers",
+      "outs": 9.0,
+      "player_id": 202600017,
+      "team_id": 1
+    },
+    {
+      "ip": 3.9,
+      "name": "Sean Martin",
+      "outs": 11.8,
+      "player_id": 202600020,
+      "team_id": 1
+    }
+  ],
   "schema_version": 1,
   "season": 2026,
   "sport": "baseball",

@@ -931,14 +931,18 @@ tooling needs no model — it is scheduling and roster arithmetic:
   per-cat ranks/margins). Disclose: not ESPN period boxes, not a projection
   model.
 - ~~**Games-per-team per period**~~ — **LANDED** from baseball
-  `pro_schedule.json` sidecars plus roster `pro_team`; two-start pitchers still
-  need a probable-starter feed.
+  `pro_schedule.json` sidecars plus roster `pro_team`.
+- ~~**Two-start pitchers**~~ — **LANDED** from ESPN site scoreboard
+  `probables` enriched onto `pro_schedule` games (`probable_home` /
+  `probable_away`); hub lists pitchers with 2+ starts in the matchup period.
 - ~~**Trailing-window rater**~~ — **LANDED** for 7 / 15 / 30 day ESPN split
   buckets on roster and free-agent rows, with season-bucket disclosure when
   absent.
 - ~~**Usage caps**~~ — **LANDED** season team/pitcher IP vs disclosed ceiling
-  (default 1400 or `settings.season_ip_max`). Min weekly IP forfeits need period
-  IP from box scores.
+  (default 1400 or `settings.season_ip_max`), season GS vs ESPN
+  `lineupSlotStatLimits`, and period IP vs min weekly floor when
+  `weeks/{N}.json` carries `pitcher_ip` (default 20 / `settings.min_weekly_ip`;
+  Yahoo-style floor disclosed when not an ESPN setting).
 - ~~**Daily lineup locks**~~ — **LANDED** from same `pro_schedule.json` game
   start times, with a deterministic fixture clock for the committed 2026 sample.
 

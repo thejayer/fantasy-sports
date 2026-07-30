@@ -36,6 +36,8 @@ export type SeasonStats = {
   WHIP?: number;
   OUTS?: number;
   IP?: number;
+  /** Games started (pitchers) — season GS caps / usage (roadmap 8.2). */
+  GS?: number;
   /** Synthetic OWGR rank on golf roster rows (roadmap 6.4b). */
   OWGR?: number;
 };
@@ -138,6 +140,17 @@ export type LeagueSettings = {
   scoring_format?: ScoringFormatRow[];
   categories?: LeagueCategoryRow[];
   matchup_periods?: Record<string, number[]>;
+  /** Optional season team IP ceiling (baseball usage caps). */
+  season_ip_max?: number;
+  /** Yahoo-style minimum weekly IP when period lines exist. */
+  min_weekly_ip?: number;
+  /** Season GS ceiling from ESPN lineupSlotStatLimits (P/SP/RP). */
+  season_gs_max?: number;
+  lineup_slot_stat_limits?: Array<{
+    slot: string;
+    stat: string;
+    limit: number;
+  }>;
   /** Present on hub-native golf leagues (roadmap 6.4a). */
   golf?: GolfLeagueSettings;
 };
@@ -246,6 +259,15 @@ export type BoxScoreMatchup = {
   away_lineup: BoxScorePlayer[];
 };
 
+/** Period pitcher IP line on baseball ``weeks/{N}.json`` (roadmap 8.2 leftovers). */
+export type PitcherPeriodIp = {
+  player_id: number | string | null;
+  name: string | null;
+  team_id: number | null;
+  outs?: number | null;
+  ip?: number | null;
+};
+
 /** Side concern ``weeks/{N}.json`` — never loaded by getLeagueSnapshot. */
 export type WeekBoxScoreSnapshot = {
   schema_version: number;
@@ -256,6 +278,13 @@ export type WeekBoxScoreSnapshot = {
   period_label?: string;
   synced_at?: string;
   matchups: BoxScoreMatchup[];
+  /** Baseball only — period pitcher outs/IP when ESPN roster lines exist. */
+  pitcher_ip?: PitcherPeriodIp[];
+};
+
+export type ProbableStarter = {
+  id: number | string | null;
+  name: string | null;
 };
 
 export type ProScheduleGame = {
@@ -265,6 +294,8 @@ export type ProScheduleGame = {
   home_pro_team_id?: number | string | null;
   scoring_period_id: number | null;
   start_time: string;
+  probable_away?: ProbableStarter | null;
+  probable_home?: ProbableStarter | null;
 };
 
 /** Side concern ``pro_schedule.json`` for baseball tools (roadmap 8.2). */

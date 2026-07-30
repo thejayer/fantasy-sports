@@ -10,6 +10,7 @@ import type {
   ProScheduleSnapshot,
   SeasonStats,
   Team,
+  WeekBoxScoreSnapshot,
 } from "@/lib/data";
 import { isPitcher } from "@/lib/baseball";
 
@@ -38,7 +39,7 @@ export const BASEBALL_TOOL_CARDS: Array<{
   {
     id: "usage",
     name: "Usage Caps",
-    promise: "Team and pitcher IP vs a disclosed season ceiling.",
+    promise: "Season IP / GS caps plus period IP vs a weekly floor when synced.",
     ready: true,
   },
   {
@@ -99,6 +100,9 @@ export const DEFAULT_BASEBALL_CATEGORIES: CategoryDef[] = [
 /** Default season team IP ceiling when settings omit one (disclosed in UI). */
 export const DEFAULT_SEASON_IP_MAX = 1400;
 
+/** Default Yahoo-style weekly IP floor when period lines exist but settings omit one. */
+export const DEFAULT_MIN_WEEKLY_IP = 20;
+
 export type TeamCountingTotals = {
   teamId: number;
   name: string;
@@ -158,11 +162,57 @@ export type TeamIpRow = {
   pct: number;
 };
 
+export type TeamGsRow = {
+  teamId: number;
+  name: string;
+  gs: number;
+  seasonMax: number;
+  remaining: number;
+  pct: number;
+};
+
+export type PeriodTeamIpRow = {
+  teamId: number;
+  name: string;
+  ip: number;
+  minWeeklyIp: number;
+  remaining: number;
+  met: boolean;
+};
+
 export type IpUsageBoard = {
   seasonMax: number;
   seasonMaxSource: "settings" | "default";
   teams: TeamIpRow[];
   pitchers: PitcherIpRow[];
+  seasonGsMax: number | null;
+  seasonGsSource: "settings" | null;
+  gsTeams: TeamGsRow[];
+  period: number | null;
+  minWeeklyIp: number | null;
+  minWeeklyIpSource: "settings" | "default" | null;
+  periodTeams: PeriodTeamIpRow[];
+  disclaimer: string;
+};
+
+export type TwoStartPitcherRow = {
+  playerId: number | string | null;
+  name: string;
+  starts: number;
+  fantasyTeamId: number | null;
+  fantasyTeamName: string;
+  games: Array<{
+    startTime: string;
+    awayProTeam: string;
+    homeProTeam: string;
+    side: "home" | "away";
+  }>;
+};
+
+export type TwoStartBoard = {
+  period: number | null;
+  scoringPeriods: number[];
+  rows: TwoStartPitcherRow[];
   disclaimer: string;
 };
 
@@ -443,16 +493,54 @@ export function resolveSeasonIpMax(league: LeagueSnapshot): {
   max: number;
   source: "settings" | "default";
 } {
-  const raw = (league.settings as { season_ip_max?: number } | null)
-    ?.season_ip_max;
+  const raw = league.settings?.season_ip_max;
   if (typeof raw === "number" && Number.isFinite(raw) && raw > 0) {
     return { max: raw, source: "settings" };
   }
   return { max: DEFAULT_SEASON_IP_MAX, source: "default" };
 }
 
-export function buildIpUsageBoard(league: LeagueSnapshot): IpUsageBoard {
+export function resolveSeasonGsMax(league: LeagueSnapshot): {
+  max: number | null;
+  source: "settings" | null;
+} {
+  const raw = league.settings?.season_gs_max;
+  if (typeof raw === "number" && Number.isFinite(raw) && raw > 0) {
+    return { max: raw, source: "settings" };
+  }
+  const limits = league.settings?.lineup_slot_stat_limits ?? [];
+  const gs = limits.filter((row) => row.stat === "GS" && row.limit > 0);
+  const p = gs.find((row) => row.slot === "P");
+  if (p) return { max: p.limit, source: "settings" };
+  const alt = gs
+    .filter((row) => row.slot === "SP" || row.slot === "RP")
+    .map((row) => row.limit);
+  if (alt.length) return { max: Math.max(...alt), source: "settings" };
+  return { max: null, source: null };
+}
+
+export function resolveMinWeeklyIp(
+  league: LeagueSnapshot,
+  hasPeriodIp: boolean,
+): { max: number | null; source: "settings" | "default" | null } {
+  if (!hasPeriodIp) return { max: null, source: null };
+  const raw = league.settings?.min_weekly_ip;
+  if (typeof raw === "number" && Number.isFinite(raw) && raw > 0) {
+    return { max: raw, source: "settings" };
+  }
+  return { max: DEFAULT_MIN_WEEKLY_IP, source: "default" };
+}
+
+function playerGs(stats: SeasonStats | undefined): number {
+  return num(stats, "GS");
+}
+
+export function buildIpUsageBoard(
+  league: LeagueSnapshot,
+  weekBox: WeekBoxScoreSnapshot | null | undefined = null,
+): IpUsageBoard {
   const { max: seasonMax, source } = resolveSeasonIpMax(league);
+  const { max: seasonGsMax, source: gsSource } = resolveSeasonGsMax(league);
   const teams: TeamIpRow[] = league.teams.map((team) => {
     const ip = (team.roster ?? []).reduce((sum, p) => {
       if (!isPitcher(p)) return sum;
@@ -487,15 +575,101 @@ export function buildIpUsageBoard(league: LeagueSnapshot): IpUsageBoard {
   }
   pitchers.sort((a, b) => b.ip - a.ip || a.name.localeCompare(b.name));
 
+  const gsTeams: TeamGsRow[] = [];
+  if (seasonGsMax != null) {
+    for (const team of league.teams) {
+      const gs = (team.roster ?? []).reduce((sum, p) => {
+        if (!isPitcher(p)) return sum;
+        return sum + playerGs(p.season_stats);
+      }, 0);
+      gsTeams.push({
+        teamId: team.team_id,
+        name: team.name,
+        gs,
+        seasonMax: seasonGsMax,
+        remaining: seasonGsMax - gs,
+        pct: seasonGsMax > 0 ? gs / seasonGsMax : 0,
+      });
+    }
+    gsTeams.sort((a, b) => b.gs - a.gs || a.name.localeCompare(b.name));
+  }
+
+  const periodIpRows =
+    weekBox?.sport === "baseball" && Array.isArray(weekBox.pitcher_ip)
+      ? weekBox.pitcher_ip
+      : [];
+  const { max: minWeeklyIp, source: minSource } = resolveMinWeeklyIp(
+    league,
+    periodIpRows.length > 0,
+  );
+  const teamNameById = new Map(
+    league.teams.map((team) => [team.team_id, team.name]),
+  );
+  const periodByTeam = new Map<number, number>();
+  for (const row of periodIpRows) {
+    if (row.team_id == null) continue;
+    const ip =
+      typeof row.ip === "number" && Number.isFinite(row.ip)
+        ? row.ip
+        : typeof row.outs === "number"
+          ? row.outs / 3
+          : 0;
+    periodByTeam.set(row.team_id, (periodByTeam.get(row.team_id) ?? 0) + ip);
+  }
+  const periodTeams: PeriodTeamIpRow[] = [];
+  if (minWeeklyIp != null) {
+    for (const team of league.teams) {
+      const ip = periodByTeam.get(team.team_id) ?? 0;
+      periodTeams.push({
+        teamId: team.team_id,
+        name: teamNameById.get(team.team_id) ?? team.name,
+        ip,
+        minWeeklyIp,
+        remaining: minWeeklyIp - ip,
+        met: ip + 1e-9 >= minWeeklyIp,
+      });
+    }
+    periodTeams.sort((a, b) => a.ip - b.ip || a.name.localeCompare(b.name));
+  }
+
+  const bits: string[] = [];
+  bits.push(
+    source === "default"
+      ? `Season IP ceiling defaults to ${seasonMax} (not synced from ESPN).`
+      : "Season IP ceiling from league settings.",
+  );
+  if (seasonGsMax != null) {
+    bits.push(
+      `Season GS ceiling ${seasonGsMax} from ESPN lineup slot stat limits.`,
+    );
+  } else {
+    bits.push("No season GS cap synced from ESPN roster settings.");
+  }
+  if (periodIpRows.length && minWeeklyIp != null) {
+    bits.push(
+      minSource === "default"
+        ? `Period pitcher IP from weeks/${weekBox?.week}.json; weekly floor defaults to ${minWeeklyIp} (Yahoo-style — not an ESPN setting).`
+        : `Period pitcher IP from weeks/${weekBox?.week}.json vs settings min weekly IP ${minWeeklyIp}.`,
+    );
+  } else {
+    bits.push(
+      "Minimum weekly IP forfeits need period pitcher lines on weeks/{N}.json — absent for this snapshot.",
+    );
+  }
+
   return {
     seasonMax,
     seasonMaxSource: source,
     teams,
     pitchers: pitchers.slice(0, 25),
-    disclaimer:
-      source === "default"
-        ? `Season IP ceiling defaults to ${seasonMax} (not synced from ESPN). Minimum weekly IP forfeits need period box scores — not available yet.`
-        : "Season IP ceiling from league settings. Minimum weekly IP forfeits need period box scores — not available yet.",
+    seasonGsMax,
+    seasonGsSource: gsSource,
+    gsTeams,
+    period: weekBox?.week ?? league.current_week ?? null,
+    minWeeklyIp,
+    minWeeklyIpSource: minSource,
+    periodTeams,
+    disclaimer: bits.join(" "),
   };
 }
 
@@ -672,7 +846,121 @@ export function buildGamesPerTeamBoard(
     rows,
     games,
     disclaimer:
-      "Counts roster player-games from MLB teams scheduled in the selected ESPN matchup period. Two-start pitchers still need a probable-starter feed.",
+      "Counts roster player-games from MLB teams scheduled in the selected ESPN matchup period. Two-start pitchers use probable starters on the same slate.",
+  };
+}
+
+function playerIdKey(id: number | string | null | undefined): string | null {
+  if (id == null || id === "") return null;
+  return String(id);
+}
+
+/**
+ * Pitchers listed as probable starter in 2+ period games (roadmap 8.2 leftover).
+ */
+export function buildTwoStartBoard(
+  league: LeagueSnapshot,
+  schedule: ProScheduleSnapshot | null | undefined,
+  period?: number | null,
+): TwoStartBoard {
+  const { period: selectedPeriod, scoringPeriods } = periodsForSchedule(
+    schedule,
+    league,
+    period,
+  );
+  const periodSet = new Set(scoringPeriods);
+  const games = (schedule?.games ?? []).filter(
+    (game) => game.scoring_period_id != null && periodSet.has(game.scoring_period_id),
+  );
+
+  const rosterById = new Map<
+    string,
+    { name: string; teamId: number; teamName: string }
+  >();
+  for (const team of league.teams) {
+    for (const player of team.roster ?? []) {
+      const key = playerIdKey(player.id);
+      if (!key) continue;
+      rosterById.set(key, {
+        name: player.name ?? `Player ${player.id}`,
+        teamId: team.team_id,
+        teamName: team.name,
+      });
+    }
+  }
+
+  type Acc = {
+    playerId: number | string | null;
+    name: string;
+    fantasyTeamId: number | null;
+    fantasyTeamName: string;
+    games: TwoStartPitcherRow["games"];
+  };
+  const byPitcher = new Map<string, Acc>();
+
+  const touch = (
+    probable: ProScheduleGame["probable_home"],
+    game: ProScheduleGame,
+    side: "home" | "away",
+  ) => {
+    if (!probable?.name && probable?.id == null) return;
+    const key = playerIdKey(probable.id) ?? `name:${probable.name}`;
+    const roster = probable.id != null ? rosterById.get(String(probable.id)) : undefined;
+    const existing = byPitcher.get(key);
+    const gameRow = {
+      startTime: game.start_time,
+      awayProTeam: normalizedTeam(game.away_pro_team) ?? "?",
+      homeProTeam: normalizedTeam(game.home_pro_team) ?? "?",
+      side,
+    };
+    if (existing) {
+      existing.games.push(gameRow);
+      return;
+    }
+    byPitcher.set(key, {
+      playerId: probable.id ?? null,
+      name: roster?.name ?? probable.name ?? `Player ${probable.id}`,
+      fantasyTeamId: roster?.teamId ?? null,
+      fantasyTeamName: roster?.teamName ?? "Free agent / unrostered",
+      games: [gameRow],
+    });
+  };
+
+  for (const game of games) {
+    touch(game.probable_home, game, "home");
+    touch(game.probable_away, game, "away");
+  }
+
+  const rows: TwoStartPitcherRow[] = [...byPitcher.values()]
+    .filter((row) => row.games.length >= 2)
+    .map((row) => ({
+      playerId: row.playerId,
+      name: row.name,
+      starts: row.games.length,
+      fantasyTeamId: row.fantasyTeamId,
+      fantasyTeamName: row.fantasyTeamName,
+      games: row.games.sort((a, b) => a.startTime.localeCompare(b.startTime)),
+    }))
+    .sort(
+      (a, b) =>
+        b.starts - a.starts ||
+        a.fantasyTeamName.localeCompare(b.fantasyTeamName) ||
+        a.name.localeCompare(b.name),
+    );
+
+  const hasProbables = games.some(
+    (game) => game.probable_home?.name || game.probable_away?.name,
+  );
+
+  return {
+    period: selectedPeriod,
+    scoringPeriods,
+    rows,
+    disclaimer: hasProbables
+      ? rows.length
+        ? "Two-start pitchers from ESPN site probable starters matched to this period's pro_schedule games. Fantasy team is the current roster owner when the ESPN player id resolves."
+        : "Probable starters are present on the slate, but no pitcher is listed for two or more starts in this period."
+      : "No probable starters on pro_schedule.json yet — sync enriches from the ESPN MLB site scoreboard.",
   };
 }
 

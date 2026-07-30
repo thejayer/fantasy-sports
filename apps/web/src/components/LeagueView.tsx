@@ -714,6 +714,7 @@ export function LeagueView({
             league={league}
             view={baseballToolsView}
             proSchedule={proSchedule}
+            weekBoxScore={weekBoxScore}
             trailingWindow={baseballTrailingWindow}
           />
         ) : (

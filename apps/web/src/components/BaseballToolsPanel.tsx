@@ -10,6 +10,7 @@ import {
   buildGamesPerTeamBoard,
   buildIpUsageBoard,
   buildTrailingBoard,
+  buildTwoStartBoard,
   type BaseballToolsView,
   type CategoryBoard,
   type CategoryId,
@@ -19,8 +20,13 @@ import {
   type TrailingBoard,
   type TrailingPlayerRow,
   type TrailingWindow,
+  type TwoStartBoard,
 } from "@/lib/baseball-tools";
-import type { LeagueSnapshot, ProScheduleSnapshot } from "@/lib/data";
+import type {
+  LeagueSnapshot,
+  ProScheduleSnapshot,
+  WeekBoxScoreSnapshot,
+} from "@/lib/data";
 
 function toolsHref(
   leagueId: string,
@@ -214,7 +220,13 @@ function TrailingBoardView({
   );
 }
 
-function ScheduleBoardView({ board }: { board: GamesPerTeamBoard }) {
+function ScheduleBoardView({
+  board,
+  twoStarts,
+}: {
+  board: GamesPerTeamBoard;
+  twoStarts: TwoStartBoard;
+}) {
   return (
     <section style={{ marginTop: "0.75rem" }}>
       <p className="lede" style={{ marginTop: 0 }}>
@@ -262,9 +274,47 @@ function ScheduleBoardView({ board }: { board: GamesPerTeamBoard }) {
           </table>
         </div>
       )}
-      <p className="league-meta">
-        Two-start pitchers remain unavailable until sync adds probable starters.
-      </p>
+
+      <h3 className="roster-group-title">Two-start pitchers</h3>
+      <p className="league-meta">{twoStarts.disclaimer}</p>
+      {!twoStarts.rows.length ? (
+        <EmptyState title="No two-start pitchers this period">
+          Pitchers need probable-starter tags on two or more games in the
+          selected matchup period.
+        </EmptyState>
+      ) : (
+        <div className="panel table-scroll">
+          <table className="table-cards">
+            <thead>
+              <tr>
+                <th>Pitcher</th>
+                <th>Roster</th>
+                <th className="numeric">Starts</th>
+                <th>Games</th>
+              </tr>
+            </thead>
+            <tbody>
+              {twoStarts.rows.map((row) => (
+                <tr key={`${row.playerId}-${row.name}`}>
+                  <td data-label="Pitcher">{row.name}</td>
+                  <td data-label="Roster">{row.fantasyTeamName}</td>
+                  <td data-label="Starts" className="numeric">
+                    {formatStat(row.starts, 0)}
+                  </td>
+                  <td data-label="Games">
+                    {row.games
+                      .map(
+                        (game) =>
+                          `${game.awayProTeam}@${game.homeProTeam} (${timeLabel(game.startTime)})`,
+                      )
+                      .join("; ")}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
     </section>
   );
 }
@@ -327,11 +377,13 @@ export function BaseballToolsPanel({
   league,
   view = "home",
   proSchedule = null,
+  weekBoxScore = null,
   trailingWindow = "7",
 }: {
   league: LeagueSnapshot;
   view?: BaseballToolsView;
   proSchedule?: ProScheduleSnapshot | null;
+  weekBoxScore?: WeekBoxScoreSnapshot | null;
   trailingWindow?: TrailingWindow;
 }) {
   const leagueId = league.league_id;
@@ -343,12 +395,17 @@ export function BaseballToolsPanel({
 
   const categoryBoard =
     active === "categories" ? buildCategoryBoard(league) : null;
-  const ipBoard = active === "usage" ? buildIpUsageBoard(league) : null;
+  const ipBoard =
+    active === "usage" ? buildIpUsageBoard(league, weekBoxScore) : null;
   const trailingBoard =
     active === "trailing" ? buildTrailingBoard(league, trailingWindow) : null;
   const scheduleBoard =
     active === "schedule"
       ? buildGamesPerTeamBoard(league, proSchedule, league.current_week)
+      : null;
+  const twoStartBoard =
+    active === "schedule"
+      ? buildTwoStartBoard(league, proSchedule, league.current_week)
       : null;
   const locksBoard =
     active === "locks"
@@ -415,7 +472,9 @@ export function BaseballToolsPanel({
       ) : null}
 
       {active === "schedule" ? (
-        scheduleBoard ? <ScheduleBoardView board={scheduleBoard} /> : null
+        scheduleBoard && twoStartBoard ? (
+          <ScheduleBoardView board={scheduleBoard} twoStarts={twoStartBoard} />
+        ) : null
       ) : null}
 
       {active === "locks" ? (
@@ -474,6 +533,78 @@ function UsageBoardViewLinked({
           </tbody>
         </table>
       </div>
+
+      {board.seasonGsMax != null ? (
+        <>
+          <h3 className="roster-group-title">
+            Team GS vs {formatStat(board.seasonGsMax, 0)}
+          </h3>
+          <div className="panel table-scroll">
+            <table className="table-cards">
+              <thead>
+                <tr>
+                  <th>Team</th>
+                  <th className="numeric">GS</th>
+                  <th className="numeric">Remaining</th>
+                  <th className="numeric">Used</th>
+                </tr>
+              </thead>
+              <tbody>
+                {board.gsTeams.map((row) => (
+                  <tr key={`gs-${row.teamId}`}>
+                    <td data-label="Team">{row.name}</td>
+                    <td data-label="GS" className="numeric">
+                      {formatStat(row.gs, 0)}
+                    </td>
+                    <td data-label="Remaining" className="numeric">
+                      {formatStat(row.remaining, 0)}
+                    </td>
+                    <td data-label="Used" className="numeric">
+                      {formatStat(row.pct * 100, 0)}%
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </>
+      ) : null}
+
+      {board.minWeeklyIp != null ? (
+        <>
+          <h3 className="roster-group-title">
+            Period {board.period ?? "—"} IP vs {formatStat(board.minWeeklyIp, 0)}{" "}
+            floor
+          </h3>
+          <div className="panel table-scroll">
+            <table className="table-cards">
+              <thead>
+                <tr>
+                  <th>Team</th>
+                  <th className="numeric">Period IP</th>
+                  <th className="numeric">Short</th>
+                  <th>Floor</th>
+                </tr>
+              </thead>
+              <tbody>
+                {board.periodTeams.map((row) => (
+                  <tr key={`period-${row.teamId}`}>
+                    <td data-label="Team">{row.name}</td>
+                    <td data-label="Period IP" className="numeric">
+                      {formatStat(row.ip, 1)}
+                    </td>
+                    <td data-label="Short" className="numeric">
+                      {row.met ? "—" : formatStat(Math.max(0, row.remaining), 1)}
+                    </td>
+                    <td data-label="Floor">{row.met ? "Met" : "Short"}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </>
+      ) : null}
+
       <h3 className="roster-group-title">Pitcher IP leaders</h3>
       {!board.pitchers.length ? (
         <EmptyState title="No pitcher IP in this snapshot">

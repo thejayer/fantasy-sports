@@ -9,13 +9,21 @@ import {
   buildGamesPerTeamBoard,
   buildIpUsageBoard,
   buildTrailingBoard,
+  buildTwoStartBoard,
   categoryValue,
   DEFAULT_BASEBALL_CATEGORIES,
+  DEFAULT_MIN_WEEKLY_IP,
   DEFAULT_SEASON_IP_MAX,
   parseBaseballToolsView,
   parseTrailingWindow,
 } from "@/lib/baseball-tools";
-import type { LeagueSnapshot, Player, ProScheduleSnapshot, Team } from "@/lib/data";
+import type {
+  LeagueSnapshot,
+  Player,
+  ProScheduleSnapshot,
+  Team,
+  WeekBoxScoreSnapshot,
+} from "@/lib/data";
 
 function team(
   id: number,
@@ -166,6 +174,117 @@ describe("baseball-tools (roadmap 8.2)", () => {
     expect(board.teams[0]?.ip).toBeCloseTo(150, 5);
     expect(board.teams[0]?.remaining).toBeCloseTo(DEFAULT_SEASON_IP_MAX - 150, 5);
     expect(board.pitchers).toHaveLength(2);
+    expect(board.disclaimer).toMatch(/period pitcher lines/i);
+  });
+
+  it("surfaces season GS caps and period IP floors when present", () => {
+    const dogs = team(1, "Dogs", [], [
+      { IP: 100, OUTS: 300, GS: 20, ERA: 4, WHIP: 1.3, W: 1, SV: 0, K: 10 },
+    ]);
+    const cats = team(2, "Cats", [], [
+      { IP: 80, OUTS: 240, GS: 12, ERA: 3, WHIP: 1.1, W: 1, SV: 0, K: 10 },
+    ]);
+    const league = {
+      league_id: "b",
+      sport: "baseball",
+      season: 2026,
+      current_week: 24,
+      settings: {
+        season_ip_max: 1400,
+        season_gs_max: 200,
+        min_weekly_ip: 20,
+      },
+      teams: [dogs, cats],
+    } as unknown as LeagueSnapshot;
+    const weekBox = {
+      schema_version: 1,
+      league_id: "b",
+      season: 2026,
+      week: 24,
+      sport: "baseball",
+      matchups: [],
+      pitcher_ip: [
+        { player_id: 150, name: "P0", team_id: 1, outs: 45, ip: 15 },
+        { player_id: 250, name: "P0", team_id: 2, outs: 66, ip: 22 },
+      ],
+    } as WeekBoxScoreSnapshot;
+
+    const board = buildIpUsageBoard(league, weekBox);
+    expect(board.seasonGsMax).toBe(200);
+    expect(board.gsTeams[0]?.gs).toBe(20);
+    expect(board.minWeeklyIp).toBe(20);
+    expect(board.periodTeams.find((row) => row.teamId === 1)?.met).toBe(false);
+    expect(board.periodTeams.find((row) => row.teamId === 2)?.met).toBe(true);
+    expect(board.disclaimer).toMatch(/Period pitcher IP/);
+  });
+
+  it("defaults weekly IP floor when period lines exist without settings", () => {
+    const league = {
+      settings: {},
+      teams: [team(1, "Dogs", [], [{ IP: 10, OUTS: 30, GS: 1 }])],
+    } as unknown as LeagueSnapshot;
+    const weekBox = {
+      sport: "baseball",
+      week: 1,
+      pitcher_ip: [{ player_id: 1, name: "A", team_id: 1, ip: 5 }],
+      matchups: [],
+    } as WeekBoxScoreSnapshot;
+    const board = buildIpUsageBoard(league, weekBox);
+    expect(board.minWeeklyIp).toBe(DEFAULT_MIN_WEEKLY_IP);
+    expect(board.minWeeklyIpSource).toBe("default");
+  });
+
+  it("lists two-start pitchers from probable starters", () => {
+    const dogs = team(1, "Dogs", [], [{ IP: 10, OUTS: 30 }]);
+    dogs.roster[0] = {
+      ...dogs.roster[0]!,
+      id: 99,
+      name: "Ace TwoStart",
+      position: "SP",
+      slot: "SP",
+      role: "pitcher",
+      pro_team: "BAL",
+    };
+    const league = {
+      current_week: 24,
+      settings: { matchup_periods: { "24": [24] } },
+      teams: [dogs],
+    } as unknown as LeagueSnapshot;
+    const schedule = {
+      league_id: "b",
+      season: 2026,
+      sport: "baseball",
+      games: [
+        {
+          away_pro_team: "NYY",
+          home_pro_team: "BAL",
+          scoring_period_id: 24,
+          start_time: "2026-07-27T17:05:00+00:00",
+          probable_home: { id: 99, name: "Ace TwoStart" },
+        },
+        {
+          away_pro_team: "BAL",
+          home_pro_team: "BOS",
+          scoring_period_id: 24,
+          start_time: "2026-07-28T17:05:00+00:00",
+          probable_away: { id: 99, name: "Ace TwoStart" },
+        },
+        {
+          away_pro_team: "TB",
+          home_pro_team: "TOR",
+          scoring_period_id: 24,
+          start_time: "2026-07-27T18:05:00+00:00",
+          probable_home: { id: 7, name: "One Start" },
+        },
+      ],
+    } as ProScheduleSnapshot;
+
+    const board = buildTwoStartBoard(league, schedule);
+    expect(board.rows).toHaveLength(1);
+    expect(board.rows[0]?.name).toBe("Ace TwoStart");
+    expect(board.rows[0]?.starts).toBe(2);
+    expect(board.rows[0]?.fantasyTeamName).toBe("Dogs");
+    expect(board.disclaimer).toMatch(/probable starters/i);
   });
 
   it("builds trailing boards from roster and free-agent split buckets", () => {

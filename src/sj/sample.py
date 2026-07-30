@@ -230,6 +230,7 @@ def _baseball_player(rng: random.Random, player_id: int, slot: str) -> _Stub:
             "SV": float(rng.randint(0, 38)),
             "HLD": float(rng.randint(0, 30)),
             "QS": float(rng.randint(0, 24)),
+            "GS": float(rng.randint(0, 32)),
             "K": float(rng.randint(20, 250)),
             "ERA": round(rng.uniform(2.05, 5.85), 2),
             "WHIP": round(rng.uniform(0.92, 1.62), 2),
@@ -506,6 +507,14 @@ def _build_settings(spec: LeagueSpec, *, teams: int, games: int) -> _Stub:
             if spec.sport == "baseball"
             else {}
         ),
+        # Season GS cap (ESPN dynasty shape) + Yahoo-style weekly IP floor for demos.
+        lineup_slot_stat_limits=(
+            [{"slot": "P", "stat": "GS", "limit": 200.0}]
+            if spec.sport == "baseball"
+            else None
+        ),
+        min_weekly_ip=20.0 if spec.sport == "baseball" else None,
+        season_ip_max=1400.0 if spec.sport == "baseball" else None,
     )
 
 
@@ -695,6 +704,8 @@ def sample_pro_schedule_for_snapshot(snapshot: dict[str, Any]) -> dict[str, Any]
 
     Uses roster ``pro_team`` abbreviations and ``synced_at`` as the fixture day
     so Daily Locks + games-per-period work offline without a live ESPN pull.
+    Assigns roster SPs as ``probable_*`` (incl. one true two-start) for the
+    Week Forecaster board.
     """
     from datetime import datetime, timedelta, timezone
 
@@ -710,16 +721,40 @@ def sample_pro_schedule_for_snapshot(snapshot: dict[str, Any]) -> dict[str, Any]
     settings = snapshot.get("settings") or {}
     matchup_periods = settings.get("matchup_periods") or {str(period): [period]}
 
+    # Prefer SP/P roster rows as probable starters, keyed by pro team.
+    starters_by_team: dict[str, list[dict[str, Any]]] = {}
     teams: list[str] = []
     seen: set[str] = set()
     for team in snapshot.get("teams") or []:
         for player in team.get("roster") or []:
-            abbr = (player.get("pro_team") or "").strip()
-            if abbr and abbr not in seen and abbr != "FA":
+            abbr = (player.get("pro_team") or "").strip().upper()
+            if not abbr or abbr == "FA":
+                continue
+            if abbr not in seen:
                 seen.add(abbr)
                 teams.append(abbr)
+            pos = str(player.get("position") or player.get("slot") or "").upper()
+            role = str(player.get("role") or "").lower()
+            if role == "pitcher" or pos in {"P", "SP", "RP"}:
+                if pos == "RP":
+                    continue
+                starters_by_team.setdefault(abbr, []).append(
+                    {
+                        "id": player.get("id"),
+                        "name": player.get("name") or f"Player {player.get('id')}",
+                    }
+                )
     if len(teams) < 2:
         teams = list(_MLB_TEAMS[:8])
+
+    def _pop_probable(abbr: str) -> dict[str, Any] | None:
+        pool = starters_by_team.get(abbr) or []
+        if not pool:
+            return None
+        # Rotate so the same SP can be reused for a two-start later.
+        athlete = pool[0]
+        starters_by_team[abbr] = pool[1:] + pool[:1]
+        return {"id": athlete["id"], "name": athlete["name"]}
 
     games: list[dict[str, Any]] = []
     # Three scoring periods around "today": yesterday / today / tomorrow.
@@ -737,8 +772,40 @@ def sample_pro_schedule_for_snapshot(snapshot: dict[str, Any]) -> dict[str, Any]
                     "home_pro_team_id": None,
                     "away_pro_team_id": None,
                     "start_time": start.isoformat(),
+                    "probable_home": _pop_probable(home),
+                    "probable_away": _pop_probable(away),
                 }
             )
+
+    # Guarantee one two-start in the current matchup period for fixtures/e2e.
+    period_idxs = [
+        i
+        for i, game in enumerate(games)
+        if game.get("scoring_period_id") == period
+    ]
+    anchor: dict[str, Any] | None = None
+    anchor_game_i: int | None = None
+    for i in period_idxs:
+        game = games[i]
+        for side in ("probable_home", "probable_away"):
+            probable = game.get(side)
+            if isinstance(probable, dict) and probable.get("id") is not None:
+                anchor = {"id": probable["id"], "name": probable["name"]}
+                anchor_game_i = i
+                break
+        if anchor is not None:
+            break
+    if anchor is not None and anchor_game_i is not None:
+        for i in period_idxs:
+            if i == anchor_game_i:
+                continue
+            game = games[i]
+            # Prefer an empty home probable slot; otherwise overwrite home.
+            if game.get("probable_home") is None:
+                game["probable_home"] = dict(anchor)
+            else:
+                game["probable_home"] = dict(anchor)
+            break
 
     return build_pro_schedule_document(
         league_id=str(snapshot["league_id"]),

@@ -517,6 +517,8 @@ test.describe("hub smoke", () => {
     await page.goto("/leagues/baseball-dynasty?tab=tools&view=usage");
     await expect(page.getByText(/Season IP vs/i)).toBeVisible();
     await expect(page.getByRole("heading", { name: /Team IP/i })).toBeVisible();
+    await expect(page.getByRole("heading", { name: /Team GS vs/i })).toBeVisible();
+    await expect(page.getByText(/Period 24 IP vs/i)).toBeVisible();
     await expect(
       page.getByRole("link", { name: "Curveball Crew" }),
     ).toBeVisible();
@@ -538,7 +540,8 @@ test.describe("hub smoke", () => {
     await page.goto("/leagues/baseball-dynasty?tab=tools&view=schedule");
     await expect(page.getByText(/Games per fantasy team in matchup period 24/i)).toBeVisible();
     await expect(page.getByRole("columnheader", { name: "Player games" })).toBeVisible();
-    await expect(page.getByText(/Two-start pitchers remain unavailable/i)).toBeVisible();
+    await expect(page.getByRole("heading", { name: /Two-start pitchers/i })).toBeVisible();
+    await expect(page.getByText("Ethan Jackson")).toBeVisible();
   });
 
   test("baseball tools daily locks show today's slate (roadmap 8.2)", async ({

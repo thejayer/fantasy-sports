@@ -480,6 +480,11 @@ def sync_league_season(
     store_dir: Path | str | None = None,
 ) -> SyncResult:
     league = open_espn_league(spec, season)
+    if spec.sport == "baseball":
+        # Stash rosterSettings (GS caps) before serialize_settings runs.
+        from sj.baseball_enrich import attach_baseball_roster_limits
+
+        attach_baseball_roster_limits(league)
     snapshot = build_snapshot(league, spec, season)
     if spec.sport == "baseball":
         # Attach PR7/15/30 before the season write so monolith + v2 rosters
