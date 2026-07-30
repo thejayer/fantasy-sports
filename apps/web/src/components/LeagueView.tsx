@@ -27,6 +27,7 @@ import type {
   PlayoffOddsSnapshot,
   ProjectionSnapshot,
   Team,
+  WeekBoxScoreSnapshot,
   WeeklyProjectionSnapshot,
 } from "@/lib/data";
 import type { ActivityView } from "@/lib/activity";
@@ -317,6 +318,8 @@ export function LeagueView({
   weeklyProjectionSnapshot = null,
   playoffOddsSnapshot = null,
   playoffOddsSamples = null,
+  boxPair = null,
+  weekBoxScore = null,
   viewerTeamId,
 }: {
   league: LeagueSnapshot;
@@ -358,6 +361,9 @@ export function LeagueView({
   weeklyProjectionSnapshot?: WeeklyProjectionSnapshot | null;
   playoffOddsSnapshot?: PlayoffOddsSnapshot | null;
   playoffOddsSamples?: PlayoffOddsSamples | null;
+  /** Football box score pair from ``?box=1-2``. */
+  boxPair?: { a: number; b: number } | null;
+  weekBoxScore?: WeekBoxScoreSnapshot | null;
   /** Signed-in member's franchise in this league (roadmap 7.1). */
   viewerTeamId?: number;
 }) {
@@ -607,6 +613,8 @@ export function LeagueView({
           week={week}
           view={matchupsView}
           viewerTeamId={viewerTeamId}
+          boxPair={boxPair}
+          weekBoxScore={weekBoxScore}
         />
       ) : null}
 

@@ -369,6 +369,18 @@ test.describe("hub smoke", () => {
     await expect(page.getByRole("link", { name: "Standings" })).toBeVisible();
   });
 
+  test("football matchup box score shows league points (roadmap 8.1)", async ({
+    page,
+  }) => {
+    await page.goto(
+      "/leagues/football-main?tab=matchups&view=week&week=14&box=1-2",
+    );
+    await expect(page.getByText(/Week 14 box score/i)).toBeVisible();
+    await expect(page.getByText("Juan Phillips").first()).toBeVisible();
+    await expect(page.getByRole("columnheader", { name: "Pts" }).first()).toBeVisible();
+    await expect(page.getByRole("link", { name: /Week 14 matchups/i })).toBeVisible();
+  });
+
   test("team roster page lists players", async ({ page }) => {
     await page.goto("/leagues/football-main/teams/1");
     await expect(page.getByRole("heading", { name: "Gridiron Goons" })).toBeVisible();

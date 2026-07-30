@@ -48,6 +48,14 @@ def season_dir_rel(league_id: str, season: int) -> str:
     return f"{league_id}/{season}"
 
 
+def week_box_score_rel(league_id: str, season: int, week: int) -> str:
+    """Side-concern path for football box scores (roadmap 8.1).
+
+    Not listed in ``manifest.files`` — season assemble must never load these.
+    """
+    return f"{season_dir_rel(league_id, season)}/weeks/{int(week)}.json"
+
+
 def manifest_rel(league_id: str, season: int) -> str:
     return f"{season_dir_rel(league_id, season)}/{MANIFEST_NAME}"
 

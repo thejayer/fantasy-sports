@@ -13,6 +13,7 @@ import {
   getPlayoffOddsSamples,
   getPlayoffOddsSnapshot,
   getProjectionSnapshot,
+  getWeekBoxScore,
   getWeeklyProjectionSnapshot,
   listDraftSimSlots,
   type DraftSimSnapshot,
@@ -20,8 +21,10 @@ import {
   type PlayoffOddsSamples,
   type PlayoffOddsSnapshot,
   type ProjectionSnapshot,
+  type WeekBoxScoreSnapshot,
   type WeeklyProjectionSnapshot,
 } from "@/lib/data";
+import { parseBoxPair } from "@/lib/box-score";
 import {
   projectionSeasonCandidates,
   scoringSlugFromLeague,
@@ -54,6 +57,7 @@ type Props = {
     dir?: string;
     p?: string;
     dp?: string;
+    box?: string;
   }>;
 };
 
@@ -97,6 +101,7 @@ export default async function LeagueDetailPage({ params, searchParams }: Props) 
     dir: dirParam,
     p: pageParam,
     dp: draftPageParam,
+    box: boxParam,
   } = await searchParams;
   const seasons = await getLeagueSeasons(leagueId);
   const season = seasonParam ? Number(seasonParam) : undefined;
@@ -252,6 +257,23 @@ export default async function LeagueDetailPage({ params, searchParams }: Props) 
     }
   }
 
+  const boxPair =
+    league.sport === "football" && tab === "matchups"
+      ? parseBoxPair(boxParam)
+      : null;
+  let weekBoxScore: WeekBoxScoreSnapshot | null = null;
+  if (boxPair) {
+    const boxWeek =
+      week != null && !Number.isNaN(week)
+        ? week
+        : (league.current_week ?? 1);
+    weekBoxScore = await getWeekBoxScore(
+      league.league_id,
+      league.season,
+      boxWeek,
+    );
+  }
+
   const golfActingScope =
     league.sport === "golf" && (tab === "lineup" || tab === "auction")
       ? await resolveGolfActingScope(
@@ -333,6 +355,8 @@ export default async function LeagueDetailPage({ params, searchParams }: Props) 
       weeklyProjectionSnapshot={weeklyProjectionSnapshot}
       playoffOddsSnapshot={playoffOddsSnapshot}
       playoffOddsSamples={playoffOddsSamples}
+      boxPair={boxPair}
+      weekBoxScore={weekBoxScore}
       viewerTeamId={viewerTeamId}
     />
   );
