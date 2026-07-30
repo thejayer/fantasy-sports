@@ -87,12 +87,13 @@ protection is the CI gate). Manual rollback / first-time:
 ### Custom domain — `fantasy.strictlyjayers.com`
 
 The hub is **not** the apex site. Broader Strictly Jayers (Discord home, Palworld,
-etc.) will live on `strictlyjayers.com`; fantasy stays on a subdomain:
+etc.) lives on `strictlyjayers.com` (`apps/www`); fantasy stays on a subdomain.
+See [PORTAL.md](PORTAL.md) for the community front door and how it deep-links here.
 
 | Host | Role |
 |---|---|
-| `strictlyjayers.com` | Future community portal (untouched for now) |
-| `fantasy.strictlyjayers.com` | This Cloud Run hub (`sj-hub`) |
+| `strictlyjayers.com` | Community portal (`sj-www` / `apps/www`) |
+| `fantasy.strictlyjayers.com` | This Cloud Run hub (`sj-hub` / `apps/web`) |
 
 One-time (Cloud Shell, after the hub already deploys on `*.run.app`):
 

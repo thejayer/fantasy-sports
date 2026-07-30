@@ -116,6 +116,41 @@ jobs:
       - name: Audit dependencies
         run: npm audit --audit-level=high
 
+  # Community portal (apex) — apps/www. Not a branch-protection gate yet.
+  www:
+    name: www
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    defaults:
+      run:
+        working-directory: apps/www
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: "npm"
+          cache-dependency-path: apps/www/package-lock.json
+
+      - name: Install from the lockfile
+        run: npm ci
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Build
+        run: npm run build
+        env:
+          SITE_URL: https://strictlyjayers.com
+          FANTASY_HUB_URL: https://fantasy.strictlyjayers.com
+
+      - name: Audit dependencies
+        run: npm audit --audit-level=high
+
   # Roadmap 1.2 — Playwright smoke against next start + fixtures.
   # Separate from `web` so Chromium install does not inflate the unit/build job.
   # Not required by branch protection yet; enable once stable on main.
@@ -187,13 +222,16 @@ jobs:
       - name: Build hub image
         run: docker build -f apps/web/Dockerfile -t sj-hub:ci .
 
+      - name: Build portal image
+        run: docker build -f apps/www/Dockerfile -t sj-www:ci .
+
       - name: Build sync image
         run: docker build -f Dockerfile.sync -t sj-sync:ci .
 
       - name: Assert images do not run as root
         run: |
           status=0
-          for image in sj-hub:ci sj-sync:ci; do
+          for image in sj-hub:ci sj-www:ci sj-sync:ci; do
             uid="$(docker run --rm --entrypoint id "$image" -u)"
             if [ "$uid" = "0" ]; then
               echo "::error::$image runs as root (uid 0)"
@@ -245,5 +283,28 @@ jobs:
             sleep 1
           done
           echo "::error::hub did not respond on :8080 with Cloud Run-like HOSTNAME"
+          docker logs "$cid" || true
+          exit 1
+
+      - name: Smoke portal listens with Cloud Run-like HOSTNAME
+        run: |
+          cid="$(docker run -d \
+            -e PORT=8080 \
+            -e HOSTNAME=sj-www-ci-fake-instance \
+            -e SITE_URL=https://strictlyjayers.com \
+            -e FANTASY_HUB_URL=https://fantasy.strictlyjayers.com \
+            -p 18081:8080 \
+            sj-www:ci)"
+          cleanup() { docker rm -f "$cid" >/dev/null 2>&1 || true; }
+          trap cleanup EXIT
+          for i in $(seq 1 30); do
+            code="$(curl -sS -o /dev/null -w '%{http_code}' http://127.0.0.1:18081/api/health || true)"
+            if [ "$code" = "200" ]; then
+              echo "portal health responded HTTP $code"
+              exit 0
+            fi
+            sleep 1
+          done
+          echo "::error::portal did not respond on :8080 with Cloud Run-like HOSTNAME"
           docker logs "$cid" || true
           exit 1
