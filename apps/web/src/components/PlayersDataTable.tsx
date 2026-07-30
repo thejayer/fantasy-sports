@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { DataTable, type DataTableColumn } from "@/components/DataTable";
 import type { Player } from "@/lib/data";
 import { formatStat, isPitcher, stat } from "@/lib/baseball";
@@ -22,8 +23,23 @@ function dashWhen(
   return hide ? "—" : value;
 }
 
+/**
+ * Player names link to the player page (roadmap 7.3) when the snapshot carries
+ * an id. Rows without one — a hand-built fixture, say — stay plain text rather
+ * than rendering a link to a 404.
+ */
+function playerNameCell(
+  player: Player,
+  href: ((playerId: string) => string) | undefined,
+) {
+  const label = player.name ?? "—";
+  if (!href || player.id == null) return label;
+  return <Link href={href(String(player.id))}>{label}</Link>;
+}
+
 function footballColumns(
   showProjections: boolean,
+  playerHref?: (playerId: string) => string,
 ): DataTableColumn<PlayerWithProjection>[] {
   const columns: DataTableColumn<PlayerWithProjection>[] = [
     {
@@ -38,7 +54,7 @@ function footballColumns(
       sortable: true,
       defaultSortDirection: "asc",
       sortValue: (player) => player.name,
-      cell: (player) => player.name,
+      cell: (player) => playerNameCell(player, playerHref),
     },
     {
       id: "position",
@@ -119,7 +135,10 @@ function footballColumns(
   return columns;
 }
 
-function baseballColumns(role: string): DataTableColumn<Player>[] {
+function baseballColumns(
+  role: string,
+  playerHref?: (playerId: string) => string,
+): DataTableColumn<Player>[] {
   const columns: DataTableColumn<Player>[] = [
     {
       id: "status",
@@ -133,7 +152,7 @@ function baseballColumns(role: string): DataTableColumn<Player>[] {
       sortable: true,
       defaultSortDirection: "asc",
       sortValue: (player) => player.name,
-      cell: (player) => player.name,
+      cell: (player) => playerNameCell(player, playerHref),
     },
     {
       id: "position",
@@ -347,18 +366,29 @@ export function PlayersDataTable({
   sport,
   role = "all",
   showProjections = false,
+  leagueId,
+  season,
 }: {
   players: Player[] | PlayerWithProjection[];
   sport: string;
   role?: string;
   /** Season floor/med/ceil/VOR from ffa snapshots (roadmap 4.4). */
   showProjections?: boolean;
+  /** Set both to link player names to their detail page (roadmap 7.3). */
+  leagueId?: string;
+  season?: number;
 }) {
+  const playerHref =
+    leagueId && season != null
+      ? (playerId: string) =>
+          `/leagues/${leagueId}/players/${encodeURIComponent(playerId)}?season=${season}`
+      : undefined;
+
   if (sport === "baseball") {
     return (
       <DataTable
         rows={players}
-        columns={baseballColumns(role)}
+        columns={baseballColumns(role, playerHref)}
         getRowKey={(player) => `${player.id}-${player.name}`}
         searchPlaceholder="Search players…"
         searchText={(player) =>
@@ -381,7 +411,7 @@ export function PlayersDataTable({
   return (
     <DataTable
       rows={rows}
-      columns={footballColumns(showProjections)}
+      columns={footballColumns(showProjections, playerHref)}
       getRowKey={(player) => `${player.id}-${player.name}`}
       searchPlaceholder="Search players…"
       searchText={(player) =>

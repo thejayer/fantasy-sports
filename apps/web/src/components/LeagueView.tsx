@@ -14,6 +14,7 @@ import { PlayersDataTable } from "@/components/PlayersDataTable";
 import { ProjectionsBoard } from "@/components/ProjectionsBoard";
 import { SeasonSwitcher } from "@/components/SeasonSwitcher";
 import { ToolsPanel, type ToolsView } from "@/components/ToolsPanel";
+import { TeamIdentity } from "@/components/TeamAvatar";
 import { ViewerBadge } from "@/components/ViewerBadge";
 import type {
   DraftSimSnapshot,
@@ -135,14 +136,24 @@ function StandingsTable({
             >
               <td data-label="#">{team.standing ?? "—"}</td>
               <td data-label="Team">
-                <Link
-                  href={`/leagues/${leagueId}/teams/${team.team_id}?season=${league.season}`}
-                >
-                  {team.name}
-                </Link>
-                {team.team_id === viewerTeamId ? <ViewerBadge /> : null}
+                <TeamIdentity name={team.name} logoUrl={team.logo_url}>
+                  <Link
+                    href={`/leagues/${leagueId}/teams/${team.team_id}?season=${league.season}`}
+                  >
+                    {team.name}
+                  </Link>
+                  {team.team_id === viewerTeamId ? <ViewerBadge /> : null}
+                </TeamIdentity>
               </td>
-              <td data-label="Owner">{team.owners.join(", ") || "—"}</td>
+              <td data-label="Owner">
+                {team.owners.length ? (
+                  <Link href={`/leagues/${leagueId}/franchises/${team.team_id}`}>
+                    {team.owners.join(", ")}
+                  </Link>
+                ) : (
+                  "—"
+                )}
+              </td>
               {showRecord ? (
                 <td data-label="Record">{recordLabel(team)}</td>
               ) : null}
@@ -206,7 +217,7 @@ function TeamsList({
             }
             href={`/leagues/${leagueId}/teams/${team.team_id}?season=${league.season}`}
           >
-            <div>
+            <TeamIdentity name={team.name} logoUrl={team.logo_url} size="md">
               <strong>
                 {team.name}
                 {team.team_id === viewerTeamId ? <ViewerBadge /> : null}
@@ -215,7 +226,7 @@ function TeamsList({
                 {team.owners.join(", ") || "No owner listed"} ·{" "}
                 {recordLabel(team)} ({winPctLabel(team)})
               </div>
-            </div>
+            </TeamIdentity>
             <span className="pill">
               {isGolf
                 ? `${gs} GS · ${be} BE`
@@ -548,6 +559,8 @@ export function LeagueView({
             sport={league.sport}
             role={role}
             showProjections={isFootball && Boolean(projectionSnapshot)}
+            leagueId={leagueId}
+            season={league.season}
           />
         </>
       ) : null}

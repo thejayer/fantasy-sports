@@ -7,6 +7,7 @@ import {
   championsBySeason,
   defaultH2HPair,
   formatWinPct,
+  franchiseCareer,
   headToHead,
   seasonCountLabel,
 } from "@/lib/history";
@@ -133,5 +134,50 @@ describe("history aggregators", () => {
     expect(h2h.losses).toBe(1);
     expect(h2h.games).toHaveLength(3);
     expect(defaultH2HPair(archive())).toEqual({ a: 1, b: 2 });
+  });
+});
+
+describe("franchiseCareer (roadmap 7.3)", () => {
+  it("lists every season newest first with per-season high and low", () => {
+    const career = franchiseCareer(archive(), 1)!;
+    expect(career.seasons.map((s) => s.season)).toEqual([2025, 2024]);
+    expect(career.seasons[0].name).toBe("Alpha FC");
+    expect(career.seasons[0].high).toBe(150);
+    expect(career.seasons[1].high).toBe(120);
+    expect(career.seasons[1].low).toBe(90);
+  });
+
+  it("carries the latest identity, not the oldest", () => {
+    const career = franchiseCareer(archive(), 1)!;
+    expect(career.name).toBe("Alpha FC");
+    expect(career.owners).toEqual(["Ann2"]);
+  });
+
+  it("reuses the all-time totals row", () => {
+    const career = franchiseCareer(archive(), 1)!;
+    expect(career.totals?.wins).toBe(18);
+    expect(career.totals?.championships).toBe(1);
+  });
+
+  it("ranks rivals by games played", () => {
+    const career = franchiseCareer(archive(), 1)!;
+    expect(career.rivals).toHaveLength(1);
+    expect(career.rivals[0].opponentId).toBe(2);
+    expect(career.rivals[0].name).toBe("Bravo");
+    expect(career.rivals[0].wins).toBe(2);
+    expect(career.rivals[0].games).toHaveLength(3);
+  });
+
+  it("returns null for a franchise that never appears", () => {
+    expect(franchiseCareer(archive(), 99)).toBeNull();
+  });
+
+  it("skips bye placeholders when finding a season high and low", () => {
+    const withBye = archive();
+    withBye.seasons[0].teams[0].schedule = [1, 2];
+    withBye.seasons[0].teams[0].scores = [0, 90];
+    const career = franchiseCareer(withBye, 1)!;
+    const season2024 = career.seasons.find((s) => s.season === 2024)!;
+    expect(season2024.low).toBe(90);
   });
 });
