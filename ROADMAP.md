@@ -1056,6 +1056,28 @@ building if members ask.
 
 ---
 
+## Track P — Community portal (`strictlyjayers.com`)
+
+Separate from the fantasy hub product track. The apex site is the group home;
+fantasy stays on `fantasy.strictlyjayers.com`. Docs: [PORTAL.md](PORTAL.md).
+
+### P.1 Front door + fantasy handoff — LANDED (scaffold)
+- `apps/www` Next.js portal (Syne + Figtree, slate/cyan — distinct from hub greens).
+- Absolute `FANTASY_HUB_URL` CTAs (no same-origin rewrite / proxy).
+- Optional `DISCORD_INVITE_URL` / `PALWORLD_INFO_URL` destination tiles.
+- Cloud Run `sj-www` deploy workflow + `./scripts/setup-portal-domain.sh`.
+
+### P.2 Content and destinations (open)
+- Real Discord invite + Palworld server details (env on `sj-www`).
+- Additional community surfaces only when the group asks (events, servers, etc.).
+- Optional reciprocal “Community” link from the hub chrome back to the apex.
+
+### P.3 Apex DNS cutover (ops)
+- Map `strictlyjayers.com` (+ `www`) → `sj-www`, set `SITE_URL`, leave hub
+  `AUTH_URL` on the fantasy host alone.
+
+---
+
 ## What "done" looks like
 
 Concrete targets, baselined against [AUDIT.md](AUDIT.md) (phase 0) and

@@ -5,7 +5,7 @@
 #   ./scripts/setup-hub-domain.sh
 #   ./scripts/setup-hub-domain.sh --cutover   # after DNS/TLS are Ready: set AUTH_URL
 #
-# Apex strictlyjayers.com stays free for the future community portal.
+# Apex strictlyjayers.com is the community portal (see setup-portal-domain.sh).
 
 set -euo pipefail
 
@@ -170,5 +170,5 @@ else
 fi
 
 echo
-echo "Apex ${BASE_DOMAIN} is intentionally untouched (future community portal)."
+echo "Apex ${BASE_DOMAIN} is the community portal — ./scripts/setup-portal-domain.sh"
 echo "Done."

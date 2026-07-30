@@ -1,0 +1,184 @@
+name: deploy portal
+
+# Deploy the Strictly Jayers community portal (apex) to Cloud Run.
+#
+# Auth: Workload Identity Federation (same deployer SA as the hub).
+# No Secret Manager / GCS — public site with absolute links to the fantasy hub.
+#
+# Deploys on merge to main when apps/www changes, and on workflow_dispatch.
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "apps/www/**"
+      - "apps/www/Dockerfile"
+      - ".github/workflows/deploy-portal.yml"
+  workflow_dispatch:
+    inputs:
+      project_id:
+        description: "GCP project ID"
+        required: true
+        default: "fantasy-sports-analytics"
+      region:
+        description: "Cloud Run region"
+        required: true
+        default: "us-central1"
+      service:
+        description: "Cloud Run service name"
+        required: true
+        default: "sj-www"
+      site_url:
+        description: "Canonical SITE_URL (blank = keep existing custom host, else Cloud Run URL)"
+        required: false
+        default: ""
+      fantasy_hub_url:
+        description: "Absolute FANTASY_HUB_URL"
+        required: true
+        default: "https://fantasy.strictlyjayers.com"
+      min_instances:
+        description: "Cloud Run min instances (0=scale-to-zero)"
+        required: true
+        default: "0"
+
+permissions:
+  contents: read
+  id-token: write
+
+env:
+  GCP_WORKLOAD_IDENTITY_PROVIDER: projects/1047753647109/locations/global/workloadIdentityPools/github/providers/github
+  GCP_SERVICE_ACCOUNT: ffa-deployer@fantasy-sports-analytics.iam.gserviceaccount.com
+  GCP_PROJECT_NUMBER: "1047753647109"
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      PROJECT_ID: ${{ github.event.inputs.project_id || 'fantasy-sports-analytics' }}
+      REGION: ${{ github.event.inputs.region || 'us-central1' }}
+      SERVICE: ${{ github.event.inputs.service || 'sj-www' }}
+      MIN_INSTANCES: ${{ github.event.inputs.min_instances || '0' }}
+      SITE_URL_INPUT: ${{ github.event.inputs.site_url || '' }}
+      FANTASY_HUB_URL: ${{ github.event.inputs.fantasy_hub_url || 'https://fantasy.strictlyjayers.com' }}
+      PREFERRED_SITE_HOST: strictlyjayers.com
+    steps:
+      - name: Validate inputs
+        run: |
+          for pair in "project_id=$PROJECT_ID" "region=$REGION" "service=$SERVICE"; do
+            name=${pair%%=*}
+            value=${pair#*=}
+            case "$value" in
+              ""|*[!A-Za-z0-9_-]*)
+                echo "Invalid $name: only letters, digits, '-' and '_' are allowed." >&2
+                exit 1 ;;
+            esac
+          done
+          case "$MIN_INSTANCES" in
+            ""|*[!0-9]*)
+              echo "Invalid min_instances: must be a non-negative integer." >&2
+              exit 1 ;;
+          esac
+          case "$FANTASY_HUB_URL" in
+            https://*) ;;
+            *)
+              echo "Invalid fantasy_hub_url: must be https://..." >&2
+              exit 1 ;;
+          esac
+
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - id: auth
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ env.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ env.GCP_SERVICE_ACCOUNT }}
+
+      - uses: google-github-actions/setup-gcloud@v2
+
+      - name: Enable required APIs
+        run: |
+          gcloud services enable \
+            run.googleapis.com \
+            artifactregistry.googleapis.com \
+            iamcredentials.googleapis.com \
+            --project "$PROJECT_ID"
+
+      - name: Ensure Artifact Registry repo
+        run: |
+          gcloud artifacts repositories describe sj \
+            --location "$REGION" --project "$PROJECT_ID" 2>/dev/null \
+          || gcloud artifacts repositories create sj \
+            --repository-format=docker --location "$REGION" \
+            --project "$PROJECT_ID" --description "Strictly Jayers hub images"
+
+      - name: Build and push image
+        run: |
+          IMAGE="$REGION-docker.pkg.dev/$PROJECT_ID/sj/www:${{ github.sha }}"
+          echo "IMAGE=$IMAGE" >> "$GITHUB_ENV"
+          gcloud auth configure-docker "$REGION-docker.pkg.dev" --quiet
+          docker build -f apps/www/Dockerfile -t "$IMAGE" .
+          docker push "$IMAGE"
+
+      - name: Resolve SITE_URL and deploy
+        run: |
+          RUN_URL="$(gcloud run services describe "$SERVICE" \
+            --project "$PROJECT_ID" --region "$REGION" \
+            --format='value(status.url)' 2>/dev/null || true)"
+          if [ -z "$RUN_URL" ]; then
+            RUN_URL="https://${SERVICE}-${GCP_PROJECT_NUMBER}.${REGION}.run.app"
+          fi
+          CURRENT_SITE="$(gcloud run services describe "$SERVICE" \
+            --project "$PROJECT_ID" --region "$REGION" \
+            --format='yaml(spec.template.spec.containers[0].env)' 2>/dev/null \
+            | awk '/name: SITE_URL/{getline; if ($1=="value:") {print $2; exit}}' \
+            || true)"
+          if [ -n "$SITE_URL_INPUT" ]; then
+            SITE_URL="$SITE_URL_INPUT"
+            echo "Using SITE_URL from workflow input"
+          elif [ -n "$CURRENT_SITE" ] && [[ "$CURRENT_SITE" != *".run.app"* ]]; then
+            SITE_URL="$CURRENT_SITE"
+            echo "Keeping existing custom SITE_URL"
+          else
+            SITE_URL="$RUN_URL"
+          fi
+          echo "Using SITE_URL=$SITE_URL (Cloud Run URL: $RUN_URL)"
+
+          gcloud run deploy "$SERVICE" \
+            --project "$PROJECT_ID" \
+            --region "$REGION" \
+            --image "$IMAGE" \
+            --platform managed \
+            --allow-unauthenticated \
+            --memory 512Mi --cpu 1 --port 8080 \
+            --timeout 60 \
+            --min-instances "$MIN_INSTANCES" \
+            --max-instances 3 \
+            --cpu-boost \
+            --set-env-vars "SITE_URL=$SITE_URL,FANTASY_HUB_URL=$FANTASY_HUB_URL"
+
+          LIVE_URL="$(gcloud run services describe "$SERVICE" \
+            --project "$PROJECT_ID" --region "$REGION" \
+            --format='value(status.url)')"
+          if [[ "$SITE_URL" == *".run.app"* ]] && [ -n "$LIVE_URL" ] && [ "$LIVE_URL" != "$SITE_URL" ]; then
+            echo "Reconciling SITE_URL: $SITE_URL → $LIVE_URL"
+            gcloud run services update "$SERVICE" \
+              --project "$PROJECT_ID" \
+              --region "$REGION" \
+              --update-env-vars "SITE_URL=$LIVE_URL"
+            SITE_URL="$LIVE_URL"
+          fi
+          echo "SITE_URL=$SITE_URL" >> "$GITHUB_ENV"
+          echo "SERVICE_URL=$SITE_URL" >> "$GITHUB_ENV"
+          echo "RUN_URL=$LIVE_URL" >> "$GITHUB_ENV"
+
+      - name: Print the live URL
+        run: |
+          echo "Deployed portal to: $SERVICE_URL"
+          echo "Cloud Run URL: $RUN_URL"
+          echo "Fantasy handoff: $FANTASY_HUB_URL"
+          echo
+          echo "Custom domain (Spaceship): ./scripts/setup-portal-domain.sh"
+          echo "  Preferred host: https://$PREFERRED_SITE_HOST"

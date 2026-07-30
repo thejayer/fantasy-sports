@@ -2,12 +2,13 @@
 
 ## Cursor Cloud specific instructions
 
-This is a dual-product monorepo. See `README.md` (ffa engine) and `HUB.md` (member hub) for standard commands; only non-obvious startup/run caveats are captured here.
+This is a multi-product monorepo. See `README.md` (ffa engine), `HUB.md` (member hub), and `PORTAL.md` (apex community site) for standard commands; only non-obvious startup/run caveats are captured here.
 
-- **Planning docs:** `AUDIT.md` (security/correctness baseline, phases 0–6 — largely closed), `AUDIT-COMPETITIVE.md` (feature + UI/UX gaps vs ESPN / Yahoo / Sleeper / FantasyPros, drives phase 7), `ROADMAP.md` (phases 0–9). Before proposing hub product work, check whether it is already a numbered roadmap item and use that number in the branch/PR.
+- **Planning docs:** `AUDIT.md` (security/correctness baseline, phases 0–6 — largely closed), `AUDIT-COMPETITIVE.md` (feature + UI/UX gaps vs ESPN / Yahoo / Sleeper / FantasyPros, drives phase 7), `ROADMAP.md` (phases 0–9 + portal track P). Before proposing hub product work, check whether it is already a numbered roadmap item and use that number in the branch/PR.
 
 - **ffa** — Python NFL analytics engine + Streamlit dashboard (`src/ffa`, CLI `ffa`).
 - **Strictly Jayers hub** — Next.js member hub (`apps/web`) plus the ESPN sync CLI `sj` (`src/sj`).
+- **Community portal** — Next.js apex site (`apps/www`) at `strictlyjayers.com`; deep-links to `fantasy.strictlyjayers.com` (no Auth.js / no snapshot store).
 
 ### Python env (venv)
 - Dependencies install into a virtualenv at `/workspace/.venv`. The update script creates it and installs from `requirements-lock.txt` then `pip install -e . --no-deps` (CI parity). `/workspace/.venv/bin` is prepended to `PATH` via `~/.bashrc`, so `ffa`, `sj`, `pytest`, and `ruff` work directly in a login shell; otherwise call them as `.venv/bin/<cmd>`.
@@ -54,7 +55,7 @@ This is a dual-product monorepo. See `README.md` (ffa engine) and `HUB.md` (memb
 - Hub Docker image (Phase 5 / AUDIT #17): runtime is **sj-only** — do not reintroduce `pip install -e .` into `apps/web/Dockerfile` (that pulls the ffa analytics stack). Optional startup sync is `python -m sj.cli` with `PYTHONPATH=/app/src`. `images` CI asserts analytics imports are absent.
 - Deploy (roadmap 1.3): hub/sync/dashboard workflows use Workload Identity Federation (`permissions.id-token: write` + `google-github-actions/auth` with the `github` pool/provider). Do not reintroduce `credentials_json` / `GCP_SA_KEY`. Hub CD is push-to-`main` (path-filtered); `workflow_dispatch` remains for rollback.
 - Hub entrypoint must `export HOSTNAME=0.0.0.0` (not `${HOSTNAME:-…}`). Cloud Run sets `HOSTNAME` to the instance id; Next standalone binds on that var and dies with `getaddrinfo EAI_AGAIN` if left alone. Public URL is `AUTH_URL` only.
-- Custom domain: production hub is **https://fantasy.strictlyjayers.com** (`AUTH_URL` cut over; Auth.js callback cookies must match this host). Apex `strictlyjayers.com` is reserved for a future community portal. Remap/DNS: `./scripts/setup-hub-domain.sh`. Deploy CD must not overwrite a non-`*.run.app` `AUTH_URL` with the Cloud Run URL.
+- Custom domain: production hub is **https://fantasy.strictlyjayers.com** (`AUTH_URL` cut over; Auth.js callback cookies must match this host). Apex **https://strictlyjayers.com** is the community portal (`apps/www` → Cloud Run `sj-www`); it deep-links to the hub via absolute `FANTASY_HUB_URL` — never same-origin rewrites. Docs: `PORTAL.md`. Hub DNS: `./scripts/setup-hub-domain.sh`; portal DNS: `./scripts/setup-portal-domain.sh`. Deploy CD must not overwrite a non-`*.run.app` `AUTH_URL` / `SITE_URL` with the Cloud Run URL.
 - Production hub (`SJ_SYNC_ON_START=0`) must not `mkdir`/`stat`/`test` GCS FUSE mounts (`SJ_DATA_DIR` or `SJ_HUB_DIR`) before listen — a slow mount hangs the entrypoint and Cloud Run fails the port probe. GCS volume `mount-options` for gcloud must use **semicolons** (`uid=1001;gid=1001`); commas are parsed as separate volume keys.
 - Hub CD on push remounts `fantasy-sports-analytics-sj-data` RW (clears stale dual-FUSE templates that fail PORT probes). Manual **deploy hub** with blank **bucket** is image-only (volumes unchanged). Deprecated **hub_bucket** is ignored.
 - Snapshot cache (Phase 5): `readJson` uses `unstable_cache` + tag `sj-snapshots` (not a process `Map`). Purge with `POST /api/revalidate` + `SJ_REVALIDATE_SECRET`; sync notifies when `SJ_REVALIDATE_URL` is set. Do not reintroduce an untagged in-process Map as the primary cache.
