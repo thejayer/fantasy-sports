@@ -11,6 +11,7 @@ import {
   type GolfWeekLineup,
 } from "@/lib/golf-lineup";
 import { saveGolfTeamLineup } from "@/lib/golf-lineup-store";
+import { enforceTeamAction } from "@/lib/franchise-acl";
 import { requireSession } from "@/lib/session";
 
 export const dynamic = "force-dynamic";
@@ -45,6 +46,9 @@ export async function POST(request: Request, { params }: Props) {
       { status: 400 },
     );
   }
+
+  const denied = await enforceTeamAction(leagueId, teamId);
+  if (denied) return denied;
 
   const league = await getLeagueSnapshot(leagueId, season);
   if (!league || league.sport !== "golf") {

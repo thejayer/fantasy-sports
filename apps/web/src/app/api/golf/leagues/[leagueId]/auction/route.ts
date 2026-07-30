@@ -6,6 +6,7 @@ import {
   roomFromLeagueSnapshot,
   writeAuctionRoom,
 } from "@/lib/golf-auction-store";
+import { enforceAuctionControl } from "@/lib/franchise-acl";
 import { requireSession } from "@/lib/session";
 
 export const dynamic = "force-dynamic";
@@ -42,6 +43,8 @@ export async function GET(request: Request, { params }: Props) {
 export async function POST(request: Request, { params }: Props) {
   await requireSession();
   const { leagueId } = await params;
+  const denied = await enforceAuctionControl(leagueId);
+  if (denied) return denied;
   let body: {
     season?: number;
     bid_window_ms?: number;

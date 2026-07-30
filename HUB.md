@@ -137,6 +137,10 @@ Hub UI **`/admin`** manages `{SJ_HUB_DIR}/hub_members.json`:
 
 Sign-in allowlist = `ALLOWED_EMAILS` ∪ member emails in that file.
 
+Golf auction nominate/bid/pass and lineup saves require a matching franchise
+link (or admin / `AUTH_DEV_BYPASS`). Opening/starting an auction needs a link
+or admin; finalize is admin-only.
+
 ### Hub-native store (golf) vs ESPN sync store
 
 | Env | Path (prod) | Mount | Owns |

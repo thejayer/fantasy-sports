@@ -37,6 +37,7 @@ import {
   indexProjections,
   usesHalfPprScoringFallback,
 } from "@/lib/projection-join";
+import type { GolfActingScope } from "@/lib/hub-members";
 
 function RoleSwitcher({
   leagueId,
@@ -266,6 +267,7 @@ export function LeagueView({
   draftTeamId,
   golfEventId,
   golfLineupTeamId,
+  golfActingScope,
   projectionSnapshot = null,
   playerMap = null,
   projectionScoring = null,
@@ -296,6 +298,8 @@ export function LeagueView({
   golfEventId?: string;
   /** Golf lineup / auction team filter (`?tab=lineup|auction&team=`). */
   golfLineupTeamId?: number;
+  /** Email↔franchise ACL scope for golf auction/lineup UI. */
+  golfActingScope?: GolfActingScope;
   projectionSnapshot?: ProjectionSnapshot | null;
   playerMap?: PlayerMapSnapshot | null;
   projectionScoring?: string | null;
@@ -494,6 +498,7 @@ export function LeagueView({
           league={league}
           eventId={golfEventId}
           teamId={golfLineupTeamId}
+          actingScope={golfActingScope}
         />
       ) : null}
 
@@ -529,7 +534,11 @@ export function LeagueView({
       ) : null}
 
       {active === "auction" && isGolf ? (
-        <AuctionRoomPanel league={league} teamId={golfLineupTeamId} />
+        <AuctionRoomPanel
+          league={league}
+          teamId={golfLineupTeamId}
+          actingScope={golfActingScope}
+        />
       ) : null}
 
       {active === "activity" ? (

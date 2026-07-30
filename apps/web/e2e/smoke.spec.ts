@@ -59,7 +59,13 @@ test.describe("hub smoke", () => {
     await page.locator('input[name="bench"]').fill("2");
     await page.getByRole("button", { name: /Create golf league/i }).click();
     await page.waitForURL(new RegExp(`/leagues/${slug}.*tab=auction`));
-    await expect(page.getByText(/Live OWGR auction/i)).toBeVisible();
+    const openRoom = page.getByRole("button", { name: /Open auction room/i });
+    if (await openRoom.isVisible().catch(() => false)) {
+      await openRoom.click();
+    }
+    await expect(page.getByText(/Live OWGR auction/i)).toBeVisible({
+      timeout: 15_000,
+    });
     await page.getByRole("button", { name: /Start auction/i }).click();
     await expect(page.getByText(/Nominate/i).first()).toBeVisible();
     await page.locator("select").filter({ hasText: /Scheffler|Select/ }).last().selectOption({ index: 1 });
@@ -213,8 +219,20 @@ test.describe("hub smoke", () => {
       const footballSelect = page.getByLabel(
         /Strictly Jayers Football(?! Dynasty)/i,
       );
+      // Team labels come from the mounted snapshot store (fixtures or live ESPN).
+      const linkedLabel = (
+        await footballSelect.locator("option").nth(1).textContent()
+      )?.split("·")[0]?.trim();
+      expect(linkedLabel).toBeTruthy();
       await footballSelect.selectOption({ index: 1 });
-      await expect(page.getByRole("cell", { name: /Hail Mary|End Zone|Turf|Gridiron/i })).toBeVisible();
+      await expect(
+        page.getByRole("cell", {
+          name: new RegExp(
+            linkedLabel!.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"),
+            "i",
+          ),
+        }),
+      ).toBeVisible();
 
       page.once("dialog", (dialog) => dialog.accept());
       await page.getByRole("button", { name: /^Remove$/i }).click();

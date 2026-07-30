@@ -14,6 +14,7 @@ import {
   type GolfEventMeta,
   type GolfWeekLineup,
 } from "@/lib/golf-lineup";
+import type { GolfActingScope } from "@/lib/hub-members";
 
 /** Deterministic UTC label — avoids SSR/client `toLocaleString` mismatch. */
 function formatUtc(iso: string): string {
@@ -45,6 +46,7 @@ function LineupForm({
   showAlt1,
   showAlt2,
   now,
+  canEdit,
   onSaved,
   onError,
 }: {
@@ -55,6 +57,7 @@ function LineupForm({
   showAlt1: boolean;
   showAlt2: boolean;
   now: Date;
+  canEdit: boolean;
   onSaved: (savedAt: string) => void;
   onError: (message: string | null) => void;
 }) {
@@ -89,7 +92,7 @@ function LineupForm({
   }
 
   async function onSave() {
-    if (pending) return;
+    if (pending || !canEdit) return;
     onError(null);
     setPending(true);
     try {
@@ -137,7 +140,11 @@ function LineupForm({
                 <input
                   type="checkbox"
                   checked={selected}
-                  disabled={locked || (!selected && starters.length >= 5)}
+                  disabled={
+                    !canEdit ||
+                    locked ||
+                    (!selected && starters.length >= 5)
+                  }
                   onChange={() => toggleStarter(id)}
                 />
                 <span>
@@ -160,6 +167,7 @@ function LineupForm({
           Captain
           <select
             value={captain}
+            disabled={!canEdit}
             onChange={(e) =>
               setCaptain(e.target.value ? Number(e.target.value) : "")
             }
@@ -227,12 +235,19 @@ function LineupForm({
       <button
         className="button"
         type="button"
-        disabled={pending || starters.length !== 5 || captain === ""}
+        disabled={
+          !canEdit || pending || starters.length !== 5 || captain === ""
+        }
         onClick={onSave}
         style={{ marginTop: "1rem" }}
       >
         {pending ? "Saving…" : "Save lineup"}
       </button>
+      {!canEdit ? (
+        <p className="league-meta" role="status">
+          Read-only — this is not your linked franchise.
+        </p>
+      ) : null}
     </div>
   );
 }
@@ -245,6 +260,7 @@ function LineupEditor({
   showAlt1,
   showAlt2,
   now,
+  canEdit,
 }: {
   league: LeagueSnapshot;
   event: GolfEventMeta;
@@ -253,6 +269,7 @@ function LineupEditor({
   showAlt1: boolean;
   showAlt2: boolean;
   now: Date;
+  canEdit: boolean;
 }) {
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -288,6 +305,7 @@ function LineupEditor({
         showAlt1={showAlt1}
         showAlt2={showAlt2}
         now={now}
+        canEdit={canEdit}
         onSaved={(nextSavedAt) => {
           setError(null);
           setMessage("Lineup saved.");
@@ -306,16 +324,26 @@ export function GolfLineupPanel({
   league,
   eventId,
   teamId,
+  actingScope,
 }: {
   league: LeagueSnapshot;
   eventId?: string;
   teamId?: number;
+  actingScope?: GolfActingScope;
 }) {
   const events = league.lineups?.events ?? [];
   const activeEventId = resolveEventId(league, eventId);
   const activeEvent = events.find((e) => e.event_id === activeEventId) ?? null;
-  const activeTeamId = teamId ?? league.teams[0]?.team_id;
+  const allowedTeamIds =
+    actingScope?.allowedTeamIds ?? league.teams.map((t) => t.team_id);
+  const preferredTeamId =
+    teamId != null && allowedTeamIds.includes(teamId)
+      ? teamId
+      : allowedTeamIds[0];
+  const activeTeamId = preferredTeamId ?? league.teams[0]?.team_id;
   const team = league.teams.find((t) => t.team_id === activeTeamId) ?? null;
+  const canEdit =
+    activeTeamId != null && allowedTeamIds.includes(activeTeamId);
   const golf = parseGolfSettings(league.settings) ?? DEFAULT_GOLF_SETTINGS;
   const showAlt1 =
     golf.missed_cut.mode === "alt1" || golf.missed_cut.mode === "alt1_2";
@@ -343,6 +371,9 @@ export function GolfLineupPanel({
         Set five starters, a captain (tiebreaker only), and missed-cut alts.
         Players lock at their fixture R1 tee time (UTC) — fail closed.
       </p>
+      {actingScope?.hint ? (
+        <p className="league-meta">{actingScope.hint}</p>
+      ) : null}
 
       <div className="tabs" style={{ marginTop: "0.5rem" }}>
         {events.map((event) => (
@@ -378,6 +409,7 @@ export function GolfLineupPanel({
         showAlt1={showAlt1}
         showAlt2={showAlt2}
         now={now}
+        canEdit={canEdit}
       />
     </div>
   );

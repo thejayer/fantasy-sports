@@ -24,6 +24,7 @@ import {
   projectionSeasonCandidates,
   scoringSlugFromLeague,
 } from "@/lib/projection-join";
+import { resolveGolfActingScope } from "@/lib/franchise-acl";
 
 // See app/page.tsx. Already dynamic today, but declared so adding
 // generateStaticParams later cannot silently freeze snapshot data.
@@ -214,6 +215,14 @@ export default async function LeagueDetailPage({ params, searchParams }: Props) 
     }
   }
 
+  const golfActingScope =
+    league.sport === "golf" && (tab === "lineup" || tab === "auction")
+      ? await resolveGolfActingScope(
+          league.league_id,
+          league.teams.map((t) => t.team_id),
+        )
+      : undefined;
+
   return (
     <LeagueView
       league={league}
@@ -244,6 +253,7 @@ export default async function LeagueDetailPage({ params, searchParams }: Props) 
           ? team
           : undefined
       }
+      golfActingScope={golfActingScope}
       projectionSnapshot={projectionBundle.snapshot}
       playerMap={projectionBundle.playerMap}
       projectionScoring={projectionBundle.scoring}

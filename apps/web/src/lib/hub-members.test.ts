@@ -1,13 +1,17 @@
 import { describe, expect, it } from "vitest";
 
 import {
+  assertCanActAsTeam,
+  assertCanControlAuction,
+  assertCanFinalizeAuction,
   canAccessAdmin,
   effectiveAllowlist,
+  emptyMembersFile,
+  golfActingScope,
   normalizeEmail,
   removeMember,
   setMemberTeams,
   upsertMember,
-  emptyMembersFile,
 } from "@/lib/hub-members";
 
 describe("hub-members", () => {
@@ -73,5 +77,61 @@ describe("hub-members", () => {
 
     file = removeMember(file, "A@B.com");
     expect(file.members).toHaveLength(0);
+  });
+
+  it("enforces franchise ACL for team actions", () => {
+    let file = upsertMember(emptyMembersFile(), {
+      email: "owner@example.com",
+      role: "member",
+    });
+    file = setMemberTeams(file, "owner@example.com", [
+      { league_id: "golf-main", team_id: 2, team_name: "Birdies" },
+    ]);
+    const ctx = {
+      email: "owner@example.com",
+      file,
+      leagueId: "golf-main",
+    };
+    expect(assertCanActAsTeam({ ...ctx, teamId: 2 })).toEqual({
+      ok: true,
+      mode: "linked",
+    });
+    expect(assertCanActAsTeam({ ...ctx, teamId: 1 }).ok).toBe(false);
+    expect(assertCanControlAuction(ctx).ok).toBe(true);
+    expect(assertCanFinalizeAuction(ctx).ok).toBe(false);
+
+    const adminFile = upsertMember(file, {
+      email: "boss@example.com",
+      role: "admin",
+    });
+    expect(
+      assertCanActAsTeam({
+        email: "boss@example.com",
+        file: adminFile,
+        leagueId: "golf-main",
+        teamId: 99,
+      }),
+    ).toEqual({ ok: true, mode: "bypass" });
+    expect(
+      assertCanFinalizeAuction({
+        email: "boss@example.com",
+        file: adminFile,
+        leagueId: "golf-main",
+      }).ok,
+    ).toBe(true);
+
+    const bypassed = assertCanActAsTeam({
+      email: "owner@example.com",
+      file,
+      leagueId: "golf-main",
+      teamId: 1,
+      devBypass: true,
+    });
+    expect(bypassed.ok).toBe(true);
+    if (bypassed.ok) expect(bypassed.mode).toBe("bypass");
+
+    const scope = golfActingScope(ctx, [1, 2, 3]);
+    expect(scope.allowedTeamIds).toEqual([2]);
+    expect(scope.canFinalizeAuction).toBe(false);
   });
 });
