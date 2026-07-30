@@ -213,8 +213,20 @@ test.describe("hub smoke", () => {
       const footballSelect = page.getByLabel(
         /Strictly Jayers Football(?! Dynasty)/i,
       );
+      // Team labels come from the mounted snapshot store (fixtures or live ESPN).
+      const linkedLabel = (
+        await footballSelect.locator("option").nth(1).textContent()
+      )?.split("·")[0]?.trim();
+      expect(linkedLabel).toBeTruthy();
       await footballSelect.selectOption({ index: 1 });
-      await expect(page.getByRole("cell", { name: /Hail Mary|End Zone|Turf|Gridiron/i })).toBeVisible();
+      await expect(
+        page.getByRole("cell", {
+          name: new RegExp(
+            linkedLabel!.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"),
+            "i",
+          ),
+        }),
+      ).toBeVisible();
 
       page.once("dialog", (dialog) => dialog.accept());
       await page.getByRole("button", { name: /^Remove$/i }).click();
