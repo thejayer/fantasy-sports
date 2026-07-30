@@ -1,4 +1,5 @@
 import { EmptyState } from "@/components/EmptyState";
+import { ViewerBadge } from "@/components/ViewerBadge";
 import type { PlayoffOddsSnapshot } from "@/lib/data";
 
 function pct(value: number | null | undefined, digits = 0): string {
@@ -8,8 +9,10 @@ function pct(value: number | null | undefined, digits = 0): string {
 
 export function PlayoffOddsBoard({
   snapshot,
+  viewerTeamId,
 }: {
   snapshot: PlayoffOddsSnapshot | null;
+  viewerTeamId?: number;
 }) {
   if (!snapshot?.teams?.length) {
     return (
@@ -67,10 +70,14 @@ export function PlayoffOddsBoard({
           </thead>
           <tbody>
             {snapshot.teams.map((row) => (
-              <tr key={row.team_id}>
+              <tr
+                key={row.team_id}
+                className={row.team_id === viewerTeamId ? "is-viewer" : undefined}
+              >
                 <td data-label="#">{row.standing_now ?? "—"}</td>
                 <td data-label="Team">
                   {row.name ?? row.team_id}
+                  {row.team_id === viewerTeamId ? <ViewerBadge /> : null}
                   <div className="league-meta">
                     {row.wins_now ?? 0}-{row.losses_now ?? 0}
                     {row.ties_now ? `-${row.ties_now}` : ""}

@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { BaseballRosterView } from "@/components/BaseballRosterView";
 import { EmptyState } from "@/components/EmptyState";
+import { GameLogPanel } from "@/components/GameLogPanel";
 import { GolfRosterView } from "@/components/GolfRosterView";
 import { SeasonSwitcher } from "@/components/SeasonSwitcher";
 import {
@@ -10,7 +11,9 @@ import {
   getProjectionSnapshot,
   getTeam,
 } from "@/lib/data";
+import { ViewerBadge } from "@/components/ViewerBadge";
 import { injuryTone, recordLabel, winPctLabel } from "@/lib/league";
+import { getViewerTeamId } from "@/lib/viewer";
 import {
   attachPlayerProjections,
   formatProjectionPoints,
@@ -51,6 +54,7 @@ export default async function TeamPage({ params, searchParams }: Props) {
   const { league, team } = result;
   const seasonHref = (year: number) =>
     `/leagues/${leagueId}/teams/${team.team_id}?season=${year}`;
+  const isViewerTeam = (await getViewerTeamId(leagueId)) === team.team_id;
 
   if (league.sport === "baseball") {
     return (
@@ -58,6 +62,7 @@ export default async function TeamPage({ params, searchParams }: Props) {
         league={league}
         team={team}
         seasons={seasons}
+        isViewerTeam={isViewerTeam}
       />
     );
   }
@@ -99,7 +104,10 @@ export default async function TeamPage({ params, searchParams }: Props) {
         </Link>
         <span className="league-meta">season {league.season}</span>
       </div>
-      <h2>{team.name}</h2>
+      <h2>
+        {team.name}
+        {isViewerTeam ? <ViewerBadge label="Your team" /> : null}
+      </h2>
       <p className="lede">
         {team.owners.join(", ") || "Owner TBD"} · {recordLabel(team)} (
         {winPctLabel(team)}) · {team.roster.length} rostered
@@ -114,6 +122,11 @@ export default async function TeamPage({ params, searchParams }: Props) {
         hrefFor={seasonHref}
       />
 
+      <GameLogPanel league={league} team={team} />
+
+      <h3 className="roster-group-title" style={{ marginTop: "1.5rem" }}>
+        Roster
+      </h3>
       {!team.roster.length ? (
         <EmptyState title="No roster players in this snapshot">
           Rosters appear after sync when ESPN returns lineup data for this

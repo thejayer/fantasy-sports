@@ -4,6 +4,8 @@
 
 This is a dual-product monorepo. See `README.md` (ffa engine) and `HUB.md` (member hub) for standard commands; only non-obvious startup/run caveats are captured here.
 
+- **Planning docs:** `AUDIT.md` (security/correctness baseline, phases 0–6 — largely closed), `AUDIT-COMPETITIVE.md` (feature + UI/UX gaps vs ESPN / Yahoo / Sleeper / FantasyPros, drives phase 7), `ROADMAP.md` (phases 0–9). Before proposing hub product work, check whether it is already a numbered roadmap item and use that number in the branch/PR.
+
 - **ffa** — Python NFL analytics engine + Streamlit dashboard (`src/ffa`, CLI `ffa`).
 - **Strictly Jayers hub** — Next.js member hub (`apps/web`) plus the ESPN sync CLI `sj` (`src/sj`).
 

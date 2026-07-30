@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { EmptyState } from "@/components/EmptyState";
+import { GameLogPanel } from "@/components/GameLogPanel";
 import { SeasonSwitcher } from "@/components/SeasonSwitcher";
+import { ViewerBadge } from "@/components/ViewerBadge";
 import type { LeagueSnapshot, Player } from "@/lib/data";
 import {
   formatStat,
@@ -22,10 +24,13 @@ export function BaseballRosterView({
   league,
   team,
   seasons,
+  isViewerTeam = false,
 }: {
   league: LeagueSnapshot;
   team: LeagueSnapshot["teams"][number];
   seasons: number[];
+  /** Signed-in member's own franchise (roadmap 7.1). */
+  isViewerTeam?: boolean;
 }) {
   const roster = sortRoster(team.roster);
   const batters = roster.filter((player) => !isPitcher(player));
@@ -39,7 +44,10 @@ export function BaseballRosterView({
         </Link>
         <span className="league-meta">season {league.season}</span>
       </div>
-      <h2>{team.name}</h2>
+      <h2>
+        {team.name}
+        {isViewerTeam ? <ViewerBadge label="Your team" /> : null}
+      </h2>
       <p className="lede">
         {team.owners.join(", ") || "Owner TBD"} · {recordLabel(team)} (
         {winPctLabel(team)}) · {team.roster.length} rostered
@@ -52,6 +60,8 @@ export function BaseballRosterView({
           `/leagues/${league.league_id}/teams/${team.team_id}?season=${year}`
         }
       />
+
+      <GameLogPanel league={league} team={team} />
 
       {!team.roster.length ? (
         <EmptyState title="No roster players in this snapshot">

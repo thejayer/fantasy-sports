@@ -1,16 +1,85 @@
+/*
+  Palette (roadmap 7.10).
+  One source of truth for both themes via `light-dark()`, which resolves against
+  the used `color-scheme`. Each token declares its light value first as a
+  fallback: a browser without `light-dark()` drops the second declaration and
+  gets a fully working light theme rather than unset colours.
+  The header toggle sets `data-theme`, which pins `color-scheme` and therefore
+  flips every token at once — no second block to keep in sync.
+*/
 :root {
+  color-scheme: light dark;
+
   --ink: #13231c;
+  --ink: light-dark(#13231c, #e7efe6);
   --field: #1f4d3a;
+  --field: light-dark(#1f4d3a, #6fbf92);
   --field-deep: #0f2a20;
+  --field-deep: light-dark(#0f2a20, #8fd6ac);
   --chalk: #eef3ec;
+  --chalk: light-dark(#eef3ec, #16211c);
   --mist: #d5e0d4;
+  --mist: light-dark(#d5e0d4, #24312a);
   --signal: #d2f15b;
+  --signal: light-dark(#d2f15b, #b6e356);
   --ember: #d85a2a;
+  --ember: light-dark(#d85a2a, #ff8757);
+  --good: #3d8f5a;
+  --good: light-dark(#3d8f5a, #63c88a);
+  --caution: #d4a017;
+  --caution: light-dark(#d4a017, #e8bf4d);
   --line: rgba(19, 35, 28, 0.14);
+  --line: light-dark(rgba(19, 35, 28, 0.14), rgba(231, 239, 230, 0.16));
   --shadow: 0 24px 60px rgba(15, 42, 32, 0.18);
+  --shadow: light-dark(
+    0 24px 60px rgba(15, 42, 32, 0.18),
+    0 24px 60px rgba(0, 0, 0, 0.5)
+  );
+  --surface: rgba(255, 255, 255, 0.62);
+  --surface: light-dark(rgba(255, 255, 255, 0.62), rgba(231, 239, 230, 0.06));
+  --surface-strong: rgba(255, 255, 255, 0.82);
+  --surface-strong: light-dark(
+    rgba(255, 255, 255, 0.82),
+    rgba(231, 239, 230, 0.11)
+  );
+  /* The direction "up" from the page surface, for inputs and raised cards. */
+  --raise: #ffffff;
+  --raise: light-dark(#ffffff, #33453c);
+  /* --signal and the sport pill stay light in both themes, so text on them
+     needs a fixed dark ink rather than --ink, which flips. */
+  --on-accent: #13231c;
+  /* Two accent glows over a vertical wash; each layer flips with the theme. */
+  --glow-a: rgba(210, 241, 91, 0.28);
+  --glow-a: light-dark(rgba(210, 241, 91, 0.28), rgba(111, 191, 146, 0.16));
+  --glow-b: rgba(31, 77, 58, 0.18);
+  --glow-b: light-dark(rgba(31, 77, 58, 0.18), rgba(182, 227, 86, 0.08));
+  --wash-top: #f5f8f3;
+  --wash-top: light-dark(#f5f8f3, #0d1613);
+  --wash-mid: #e7efe4;
+  --wash-mid: light-dark(#e7efe4, #111d18);
+  --wash-bottom: #dce7d8;
+  --wash-bottom: light-dark(#dce7d8, #16211c);
+  --page-bg:
+    radial-gradient(1200px 600px at 10% -10%, var(--glow-a), transparent 55%),
+    radial-gradient(900px 500px at 100% 0%, var(--glow-b), transparent 50%),
+    linear-gradient(
+      180deg,
+      var(--wash-top) 0%,
+      var(--wash-mid) 45%,
+      var(--wash-bottom) 100%
+    );
+
   --radius: 18px;
   --font-display: var(--font-display-face), "Arial Narrow", sans-serif;
   --font-body: var(--font-body-face), "Helvetica Neue", sans-serif;
+}
+
+:root[data-theme="light"] {
+  color-scheme: only light;
+}
+
+:root[data-theme="dark"] {
+  color-scheme: only dark;
 }
 
 * {
@@ -22,10 +91,7 @@ body {
   margin: 0;
   min-height: 100%;
   color: var(--ink);
-  background:
-    radial-gradient(1200px 600px at 10% -10%, rgba(210, 241, 91, 0.28), transparent 55%),
-    radial-gradient(900px 500px at 100% 0%, rgba(31, 77, 58, 0.18), transparent 50%),
-    linear-gradient(180deg, #f5f8f3 0%, #e7efe4 45%, #dce7d8 100%);
+  background: var(--page-bg);
   font-family: var(--font-body);
 }
 
@@ -173,6 +239,12 @@ button,
   opacity: 0.8;
 }
 
+/* League header stays one line so data is not pushed off a phone (7.5). */
+.section .lede.league-lede {
+  margin-bottom: 0.9rem;
+  max-width: none;
+}
+
 .section-head {
   display: flex;
   flex-wrap: wrap;
@@ -189,6 +261,23 @@ button,
 .settings-form,
 .settings-grid {
   margin-top: 0.5rem;
+}
+
+/* ESPN settings tab (roadmap 7.9) */
+.settings-panel {
+  display: grid;
+  gap: 0.85rem;
+}
+
+.settings-groups {
+  display: grid;
+  gap: 0.85rem;
+  grid-template-columns: repeat(auto-fit, minmax(19rem, 1fr));
+  align-items: start;
+}
+
+.settings-groups .settings-row:last-child {
+  border-bottom: 0;
 }
 
 .form-grid {
@@ -212,7 +301,7 @@ button,
   border: 0;
   border-radius: 0.65rem;
   box-shadow: inset 0 0 0 1px var(--line);
-  background: color-mix(in srgb, var(--chalk) 88%, white);
+  background: color-mix(in srgb, var(--chalk) 88%, var(--raise));
   color: var(--ink);
   font: inherit;
   text-transform: none;
@@ -301,14 +390,14 @@ button,
   align-items: center;
   padding: 1.15rem 1.25rem;
   border-radius: var(--radius);
-  background: rgba(255, 255, 255, 0.55);
+  background: var(--surface);
   box-shadow: inset 0 0 0 1px var(--line);
   transition: transform 180ms ease, background 180ms ease, box-shadow 180ms ease;
 }
 
 .league-link:hover {
   transform: translateY(-2px);
-  background: rgba(255, 255, 255, 0.82);
+  background: var(--surface-strong);
   box-shadow: var(--shadow);
 }
 
@@ -320,10 +409,134 @@ button,
   text-transform: uppercase;
 }
 
+.league-link-body {
+  display: grid;
+  gap: 0.3rem;
+  min-width: 0;
+}
+
+.league-link-team {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  margin-top: 0.15rem;
+}
+
 .league-meta,
 .muted {
   opacity: 0.72;
   font-size: 0.92rem;
+}
+
+/* Member dashboard (roadmap 7.2) */
+.home-dashboard {
+  display: block;
+}
+
+.home-todo {
+  padding: 0.85rem 1rem 1rem;
+  margin-bottom: 1.25rem;
+}
+
+.home-todo .roster-group-title {
+  margin: 0 0 0.5rem;
+}
+
+.home-grid {
+  display: grid;
+  gap: 0.9rem;
+  grid-template-columns: repeat(auto-fit, minmax(20rem, 1fr));
+  align-items: start;
+}
+
+.home-card {
+  display: grid;
+  gap: 0.55rem;
+  padding: 1.15rem 1.25rem;
+  border-radius: var(--radius);
+  background: var(--surface);
+  box-shadow: inset 0 0 0 1px var(--line);
+}
+
+.home-card-head {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 0.75rem;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.home-card-title {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 1.3rem;
+  letter-spacing: 0.01em;
+  text-transform: uppercase;
+}
+
+.home-team {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+}
+
+.home-team-name {
+  font-weight: 700;
+}
+
+.home-matchup {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  align-items: center;
+  margin: 0;
+  padding: 0.6rem 0.75rem;
+  border-radius: calc(var(--radius) - 8px);
+  background: var(--surface);
+  box-shadow: inset 0 0 0 1px var(--line);
+}
+
+.home-score {
+  font-family: var(--font-display);
+  font-size: 1.15rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.home-live-pill {
+  background: color-mix(in srgb, var(--field) 20%, transparent);
+  font-size: 0.65rem;
+}
+
+.home-next,
+.home-unlinked {
+  margin: 0;
+}
+
+.home-actions {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.35rem;
+}
+
+.home-action {
+  padding-left: 0.7rem;
+  border-left: 3px solid var(--line);
+  font-size: 0.92rem;
+  line-height: 1.35;
+}
+
+.home-action.tone-urgent {
+  border-left-color: var(--ember);
+}
+
+.home-action.tone-attention {
+  border-left-color: var(--caution);
+}
+
+.home-action.tone-info {
+  opacity: 0.72;
 }
 
 .pill {
@@ -332,7 +545,7 @@ button,
   padding: 0.35rem 0.7rem;
   border-radius: 999px;
   background: var(--signal);
-  color: var(--ink);
+  color: var(--on-accent);
   font-size: 0.78rem;
   font-weight: 700;
   letter-spacing: 0.04em;
@@ -342,7 +555,7 @@ button,
 .panel {
   overflow: auto;
   border-radius: var(--radius);
-  background: rgba(255, 255, 255, 0.62);
+  background: var(--surface);
   box-shadow: inset 0 0 0 1px var(--line);
 }
 
@@ -392,6 +605,106 @@ tr:last-child td {
   box-shadow: none;
 }
 
+/* Overflow disclosure for tabs and season chips (roadmap 7.5) */
+.chip-overflow {
+  position: relative;
+}
+
+.chip-overflow > summary {
+  cursor: pointer;
+  list-style: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+.chip-overflow > summary::-webkit-details-marker {
+  display: none;
+}
+
+.chip-overflow > summary::after {
+  content: "▾";
+  font-size: 0.7em;
+  opacity: 0.7;
+}
+
+.chip-overflow[open] > summary::after {
+  content: "▴";
+}
+
+.chip-overflow-menu {
+  position: absolute;
+  z-index: 20;
+  top: calc(100% + 0.35rem);
+  left: 0;
+  display: grid;
+  gap: 0.3rem;
+  min-width: 9rem;
+  padding: 0.55rem;
+  border-radius: calc(var(--radius) - 6px);
+  background: color-mix(in srgb, var(--chalk) 92%, var(--raise));
+  box-shadow: var(--shadow), inset 0 0 0 1px var(--line);
+}
+
+.chip-overflow-menu .tab,
+.chip-overflow-menu .season-chip {
+  box-shadow: none;
+  text-align: left;
+  opacity: 0.9;
+}
+
+.chip-overflow-menu .tab:hover,
+.chip-overflow-menu .season-chip:hover {
+  background: var(--surface-strong);
+  opacity: 1;
+}
+
+/*
+  The tab strip is deliberately NOT sticky. A sticky strip covered the auction
+  room's buttons once the page scrolled — a sticky element over interactive
+  content is a real hazard, not just a test failure. The overflow disclosure
+  already solved the row-of-ten-pills problem on its own.
+*/
+
+/* Wide tables keep their header visible inside their own scroll container. */
+.panel.table-scroll thead th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  background: color-mix(in srgb, var(--chalk) 88%, var(--raise));
+}
+
+/* Mobile bottom bar (roadmap 7.5) */
+.mobile-nav {
+  display: none;
+}
+
+@media (max-width: 720px) {
+  .mobile-nav {
+    position: fixed;
+    inset: auto 0 0 0;
+    z-index: 40;
+    display: flex;
+    justify-content: space-around;
+    gap: 0.25rem;
+    padding: 0.55rem 0.75rem;
+    padding-bottom: max(0.55rem, env(safe-area-inset-bottom));
+    background: color-mix(in srgb, var(--chalk) 94%, var(--raise));
+    box-shadow: 0 -8px 24px rgba(15, 42, 32, 0.12);
+    font-size: 0.92rem;
+  }
+
+  .mobile-nav a {
+    padding: 0.4rem 0.9rem;
+    border-radius: 999px;
+  }
+
+  /* Leave room so the bar never covers the last row of a table. */
+  body {
+    padding-bottom: 3.75rem;
+  }
+}
+
 .login-page {
   min-height: 100vh;
   display: grid;
@@ -405,7 +718,7 @@ tr:last-child td {
   gap: 1rem;
   padding: 2rem;
   border-radius: calc(var(--radius) + 4px);
-  background: rgba(255, 255, 255, 0.72);
+  background: var(--surface-strong);
   box-shadow: var(--shadow);
   animation: rise 600ms ease both;
 }
@@ -423,8 +736,8 @@ tr:last-child td {
   inset: 0;
   pointer-events: none;
   background-image:
-    linear-gradient(rgba(19, 35, 28, 0.03) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(19, 35, 28, 0.03) 1px, transparent 1px);
+    linear-gradient(color-mix(in srgb, var(--ink) 3%, transparent) 1px, transparent 1px),
+    linear-gradient(90deg, color-mix(in srgb, var(--ink) 3%, transparent) 1px, transparent 1px);
   background-size: 48px 48px;
   mask-image: radial-gradient(circle at 30% 20%, black 20%, transparent 70%);
   z-index: -1;
@@ -467,7 +780,7 @@ tr:last-child td {
 
 .sport-pill {
   background: linear-gradient(120deg, #f0d7a8, #e8b86d);
-  color: var(--ink);
+  color: var(--on-accent);
 }
 
 .league-view.sport-football .sport-pill {
@@ -506,16 +819,108 @@ tr:last-child td {
   overflow-x: auto;
 }
 
+/* Viewer's own franchise (roadmap 7.1) */
+.viewer-badge {
+  display: inline-flex;
+  align-items: center;
+  margin-left: 0.4rem;
+  padding: 0.05rem 0.4rem;
+  border-radius: 999px;
+  background: var(--ink);
+  color: var(--chalk);
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  vertical-align: middle;
+}
+
+tr.is-viewer {
+  background: color-mix(in srgb, var(--signal) 26%, transparent);
+}
+
+tr.is-viewer td {
+  font-weight: 600;
+}
+
+.league-link.is-viewer {
+  background: color-mix(in srgb, var(--signal) 22%, var(--surface));
+  box-shadow: inset 0 0 0 1.5px color-mix(in srgb, var(--ink) 45%, transparent);
+}
+
+.matchup-card.is-viewer {
+  background: color-mix(in srgb, var(--signal) 18%, var(--surface-strong));
+  box-shadow: inset 0 0 0 1.5px color-mix(in srgb, var(--ink) 45%, transparent);
+}
+
+.matchup-card-flag {
+  grid-column: 1 / -1;
+  margin: 0;
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  opacity: 0.7;
+}
+
 .status-dot {
   display: inline-block;
   width: 0.55rem;
   height: 0.55rem;
   border-radius: 50%;
-  background: #3d8f5a;
+  background: var(--good);
+}
+
+/* Status key (roadmap 7.10) — colour alone is not a signal. */
+.status-legend {
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem 1.1rem;
+  margin: 0.85rem 0 0;
+  padding: 0;
+  font-size: 0.85rem;
+  opacity: 0.72;
+}
+
+.status-legend li {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.projection-coverage {
+  margin: 0 0 0.75rem;
+}
+
+/* Theme switch (roadmap 7.10) */
+.theme-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.3rem 0.7rem;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  box-shadow: inset 0 0 0 1px var(--line);
+  color: inherit;
+  font-size: 0.85rem;
+  opacity: 0.8;
+}
+
+.theme-toggle:hover {
+  opacity: 1;
+  background: var(--surface);
+}
+
+@media (max-width: 480px) {
+  .theme-toggle-label {
+    display: none;
+  }
 }
 
 .status-dot.warn {
-  background: #d4a017;
+  background: var(--caution);
 }
 
 .status-dot.bad {
@@ -567,7 +972,7 @@ tr:last-child td {
   border: 0;
   border-radius: 0.65rem;
   box-shadow: inset 0 0 0 1px var(--line);
-  background: color-mix(in srgb, var(--chalk) 88%, white);
+  background: color-mix(in srgb, var(--chalk) 88%, var(--raise));
   color: var(--ink);
   font: inherit;
 }
@@ -670,6 +1075,155 @@ tr:last-child td {
   cursor: not-allowed;
 }
 
+/* Team crests + detail pages (roadmap 7.3) */
+.team-avatar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  overflow: hidden;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--field) 16%, var(--chalk));
+  box-shadow: inset 0 0 0 1px var(--line);
+  font-family: var(--font-display);
+  line-height: 1;
+  vertical-align: middle;
+}
+
+.team-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.team-avatar-sm {
+  width: 1.5rem;
+  height: 1.5rem;
+  font-size: 0.6rem;
+}
+
+.team-avatar-md {
+  width: 2.15rem;
+  height: 2.15rem;
+  font-size: 0.8rem;
+}
+
+.team-avatar-lg {
+  width: 2.75rem;
+  height: 2.75rem;
+  font-size: 1rem;
+  margin-right: 0.6rem;
+}
+
+.team-avatar-monogram {
+  opacity: 0.75;
+  letter-spacing: 0.02em;
+}
+
+.team-identity {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  min-width: 0;
+}
+
+.team-identity-body {
+  min-width: 0;
+}
+
+.player-section {
+  display: grid;
+  gap: 0.75rem;
+  margin-top: 1.75rem;
+}
+
+.stat-chips {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(7.5rem, 1fr));
+  gap: 0.6rem;
+  margin: 0 0 1.25rem;
+}
+
+.stat-chip {
+  padding: 0.6rem 0.75rem;
+  border-radius: calc(var(--radius) - 6px);
+  background: var(--surface);
+  box-shadow: inset 0 0 0 1px var(--line);
+}
+
+.stat-chip dt {
+  margin: 0 0 0.15rem;
+  font-size: 0.66rem;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  opacity: 0.62;
+}
+
+.stat-chip dd {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 1.2rem;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Team season results (roadmap 7.4) */
+.game-log {
+  display: grid;
+  gap: 0.75rem;
+  margin-top: 1rem;
+}
+
+.game-log-head {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem 1rem;
+  align-items: baseline;
+  justify-content: space-between;
+}
+
+.game-log-head .roster-group-title {
+  margin: 0;
+}
+
+.game-log-next {
+  margin: 0;
+}
+
+.sparkline {
+  display: flex;
+  align-items: flex-end;
+  gap: 0.2rem;
+  height: 3.5rem;
+  padding: 0.5rem 0.75rem;
+  border-radius: var(--radius);
+  background: var(--surface);
+  box-shadow: inset 0 0 0 1px var(--line);
+}
+
+.sparkline-bar {
+  flex: 1 1 0;
+  min-width: 0.35rem;
+  min-height: 2px;
+  border-radius: 2px 2px 0 0;
+  background: color-mix(in srgb, var(--field) 45%, transparent);
+}
+
+.sparkline-bar.tone-win {
+  background: color-mix(in srgb, var(--good) 75%, transparent);
+}
+
+.sparkline-bar.tone-loss {
+  background: color-mix(in srgb, var(--ember) 65%, transparent);
+}
+
+.sparkline-bar.tone-tie {
+  background: color-mix(in srgb, var(--caution) 70%, transparent);
+}
+
+tr.is-upcoming td {
+  opacity: 0.6;
+}
+
 /* Matchups / schedule / playoffs (roadmap 3.4) */
 .matchups-panel {
   display: grid;
@@ -729,13 +1283,13 @@ tr:last-child td {
   align-items: center;
   padding: 0.85rem 1rem;
   border-radius: var(--radius);
-  background: rgba(255, 255, 255, 0.62);
+  background: var(--surface);
   box-shadow: inset 0 0 0 1px var(--line);
 }
 
 .matchup-card.projected {
   opacity: 0.92;
-  background: color-mix(in srgb, var(--field) 8%, rgba(255, 255, 255, 0.62));
+  background: color-mix(in srgb, var(--field) 8%, var(--surface));
 }
 
 .matchup-team {
@@ -797,8 +1351,8 @@ tr:last-child td {
 }
 
 .outcome-pill.outcome-win {
-  background: color-mix(in srgb, #3d8f5a 22%, transparent);
-  color: #1f5c34;
+  background: color-mix(in srgb, var(--good) 22%, transparent);
+  color: color-mix(in srgb, var(--good) 80%, var(--ink));
 }
 
 .outcome-pill.outcome-loss {
@@ -807,8 +1361,8 @@ tr:last-child td {
 }
 
 .outcome-pill.outcome-tie {
-  background: color-mix(in srgb, #d4a017 22%, transparent);
-  color: #8a6a00;
+  background: color-mix(in srgb, var(--caution) 22%, transparent);
+  color: color-mix(in srgb, var(--caution) 70%, var(--ink));
 }
 
 .matchup-schedule {
@@ -858,7 +1412,7 @@ tr:last-child td {
 .record-card {
   padding: 0.95rem 1rem;
   border-radius: var(--radius);
-  background: rgba(255, 255, 255, 0.62);
+  background: var(--surface);
   box-shadow: inset 0 0 0 1px var(--line);
 }
 
@@ -908,7 +1462,7 @@ tr:last-child td {
   margin: 3rem auto;
   padding: 2rem;
   border-radius: calc(var(--radius) + 4px);
-  background: rgba(255, 255, 255, 0.72);
+  background: var(--surface-strong);
   box-shadow: var(--shadow);
   animation: rise 600ms ease both;
 }
@@ -946,9 +1500,9 @@ tr:last-child td {
   border-radius: 0.75rem;
   background: linear-gradient(
     90deg,
-    rgba(19, 35, 28, 0.06) 0%,
-    rgba(19, 35, 28, 0.12) 45%,
-    rgba(19, 35, 28, 0.06) 100%
+    color-mix(in srgb, var(--ink) 6%, transparent) 0%,
+    color-mix(in srgb, var(--ink) 12%, transparent) 45%,
+    color-mix(in srgb, var(--ink) 6%, transparent) 100%
   );
   background-size: 200% 100%;
   animation: skeleton-shine 1.2s ease-in-out infinite;
@@ -1005,6 +1559,44 @@ tr:last-child td {
 }
 
 @media (max-width: 720px) {
+  /*
+    Wrapping chip rows are the main reason a phone shows more chrome than data
+    (roadmap 7.5). Scroll them sideways on one line instead: 14 week chips or 9
+    position filters cost a single row rather than three.
+  */
+  .table-filters,
+  .week-switch,
+  .season-switch,
+  .league-tabs,
+  .matchups-subtabs {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .table-filters::-webkit-scrollbar,
+  .week-switch::-webkit-scrollbar,
+  .season-switch::-webkit-scrollbar,
+  .league-tabs::-webkit-scrollbar,
+  .matchups-subtabs::-webkit-scrollbar {
+    display: none;
+  }
+
+  .table-filters > *,
+  .week-switch > *,
+  .season-switch > *,
+  .league-tabs > * {
+    flex: 0 0 auto;
+  }
+
+  /* An absolutely-positioned menu inside an overflow container gets clipped. */
+  .league-tabs,
+  .season-switch {
+    overflow-x: visible;
+    flex-wrap: wrap;
+  }
+
   .table-cards thead {
     display: none;
   }
@@ -1020,8 +1612,14 @@ tr:last-child td {
     gap: 0.4rem 0.75rem;
     padding: 0.85rem 0.95rem;
     border-radius: calc(var(--radius) - 4px);
-    background: color-mix(in srgb, var(--chalk) 70%, white);
+    background: color-mix(in srgb, var(--chalk) 70%, var(--raise));
     box-shadow: inset 0 0 0 1px var(--line);
+  }
+
+  /* Stacked cards set their own background, so the viewer tint has to win. */
+  .table-cards tr.is-viewer {
+    background: color-mix(in srgb, var(--signal) 30%, var(--chalk));
+    box-shadow: inset 0 0 0 1.5px color-mix(in srgb, var(--ink) 45%, transparent);
   }
 
   .table-cards td {

@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { DataTable, type DataTableColumn } from "@/components/DataTable";
 import type { Player } from "@/lib/data";
 import { formatStat, isPitcher, stat } from "@/lib/baseball";
@@ -7,6 +8,7 @@ import { injuryTone } from "@/lib/league";
 import {
   formatProjectionPoints,
   type PlayerWithProjection,
+  type ProjectionCoverage,
 } from "@/lib/projection-join";
 
 function StatusDot({ player }: { player: Player }) {
@@ -22,8 +24,23 @@ function dashWhen(
   return hide ? "—" : value;
 }
 
+/**
+ * Player names link to the player page (roadmap 7.3) when the snapshot carries
+ * an id. Rows without one — a hand-built fixture, say — stay plain text rather
+ * than rendering a link to a 404.
+ */
+function playerNameCell(
+  player: Player,
+  href: ((playerId: string) => string) | undefined,
+) {
+  const label = player.name ?? "—";
+  if (!href || player.id == null) return label;
+  return <Link href={href(String(player.id))}>{label}</Link>;
+}
+
 function footballColumns(
   showProjections: boolean,
+  playerHref?: (playerId: string) => string,
 ): DataTableColumn<PlayerWithProjection>[] {
   const columns: DataTableColumn<PlayerWithProjection>[] = [
     {
@@ -38,7 +55,7 @@ function footballColumns(
       sortable: true,
       defaultSortDirection: "asc",
       sortValue: (player) => player.name,
-      cell: (player) => player.name,
+      cell: (player) => playerNameCell(player, playerHref),
     },
     {
       id: "position",
@@ -119,7 +136,10 @@ function footballColumns(
   return columns;
 }
 
-function baseballColumns(role: string): DataTableColumn<Player>[] {
+function baseballColumns(
+  role: string,
+  playerHref?: (playerId: string) => string,
+): DataTableColumn<Player>[] {
   const columns: DataTableColumn<Player>[] = [
     {
       id: "status",
@@ -133,7 +153,7 @@ function baseballColumns(role: string): DataTableColumn<Player>[] {
       sortable: true,
       defaultSortDirection: "asc",
       sortValue: (player) => player.name,
-      cell: (player) => player.name,
+      cell: (player) => playerNameCell(player, playerHref),
     },
     {
       id: "position",
@@ -347,18 +367,32 @@ export function PlayersDataTable({
   sport,
   role = "all",
   showProjections = false,
+  leagueId,
+  season,
+  projectionCoverage = null,
 }: {
   players: Player[] | PlayerWithProjection[];
   sport: string;
   role?: string;
   /** Season floor/med/ceil/VOR from ffa snapshots (roadmap 4.4). */
   showProjections?: boolean;
+  /** Set both to link player names to their detail page (roadmap 7.3). */
+  leagueId?: string;
+  season?: number;
+  /** Disclose how many rows joined a projection (roadmap 7.10). */
+  projectionCoverage?: ProjectionCoverage | null;
 }) {
+  const playerHref =
+    leagueId && season != null
+      ? (playerId: string) =>
+          `/leagues/${leagueId}/players/${encodeURIComponent(playerId)}?season=${season}`
+      : undefined;
+
   if (sport === "baseball") {
     return (
       <DataTable
         rows={players}
-        columns={baseballColumns(role)}
+        columns={baseballColumns(role, playerHref)}
         getRowKey={(player) => `${player.id}-${player.name}`}
         searchPlaceholder="Search players…"
         searchText={(player) =>
@@ -378,23 +412,42 @@ export function PlayersDataTable({
     projection: "projection" in player ? (player.projection ?? null) : null,
   }));
 
+  // A wall of dashes with no explanation reads as broken (roadmap 7.10). Say
+  // what the join rate is, and drop the columns entirely when nothing resolved.
+  const coverage = projectionCoverage;
+  const noCoverage = Boolean(coverage && coverage.mapped === 0);
+  const partialCoverage = Boolean(
+    coverage && coverage.mapped > 0 && coverage.mapped < coverage.total,
+  );
+
   return (
-    <DataTable
-      rows={rows}
-      columns={footballColumns(showProjections)}
-      getRowKey={(player) => `${player.id}-${player.name}`}
-      searchPlaceholder="Search players…"
-      searchText={(player) =>
-        [player.name, player.position, player.pro_team, player.fantasy_team]
-          .filter(Boolean)
-          .join(" ")
-      }
-      pageSize={25}
-      emptyMessage="No players match this search or filter."
-      initialSort={{
-        columnId: showProjections ? "vor" : "fpts",
-        direction: "desc",
-      }}
-    />
+    <>
+      {coverage ? (
+        <p className="muted projection-coverage">
+          {noCoverage
+            ? "No engine projections joined for this league — the ESPN↔nflverse player map has no entry for these roster ids, so floor/median/ceiling columns are hidden."
+            : partialCoverage
+              ? `Floor / Med / Ceil / VOR resolved for ${coverage.mapped} of ${coverage.total} players (${Math.round(coverage.rate * 100)}%) through the player map.`
+              : `Floor / Med / Ceil / VOR resolved for all ${coverage.total} players.`}
+        </p>
+      ) : null}
+      <DataTable
+        rows={rows}
+        columns={footballColumns(showProjections && !noCoverage, playerHref)}
+        getRowKey={(player) => `${player.id}-${player.name}`}
+        searchPlaceholder="Search players…"
+        searchText={(player) =>
+          [player.name, player.position, player.pro_team, player.fantasy_team]
+            .filter(Boolean)
+            .join(" ")
+        }
+        pageSize={25}
+        emptyMessage="No players match this search or filter."
+        initialSort={{
+          columnId: showProjections && !noCoverage ? "vor" : "fpts",
+          direction: "desc",
+        }}
+      />
+    </>
   );
 }

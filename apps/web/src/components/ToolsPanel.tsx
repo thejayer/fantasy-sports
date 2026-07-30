@@ -16,10 +16,12 @@ import type {
 } from "@/lib/data";
 import {
   defaultToolsPair,
+  defaultToolsTeam,
   projectionIndexes,
   teamStrengthRows,
   waiverBoardRows,
 } from "@/lib/decision-tools";
+import { ViewerBadge } from "@/components/ViewerBadge";
 import {
   formatProjectionPoints,
   indexPlayerMap,
@@ -100,10 +102,12 @@ function StrengthTable({
   league,
   playerMap,
   snapshot,
+  viewerTeamId,
 }: {
   league: LeagueSnapshot;
   playerMap: PlayerMapSnapshot | null;
   snapshot: ProjectionSnapshot | null;
+  viewerTeamId?: number;
 }) {
   const { espnToGsis, byGsis } = projectionIndexes(playerMap, snapshot);
   const rows = teamStrengthRows(league, espnToGsis, byGsis);
@@ -134,7 +138,10 @@ function StrengthTable({
         </thead>
         <tbody>
           {rows.map((row, index) => (
-            <tr key={row.teamId}>
+            <tr
+              key={row.teamId}
+              className={row.teamId === viewerTeamId ? "is-viewer" : undefined}
+            >
               <td data-label="#">{index + 1}</td>
               <td data-label="Team">
                 <Link
@@ -142,6 +149,7 @@ function StrengthTable({
                 >
                   {row.name}
                 </Link>
+                {row.teamId === viewerTeamId ? <ViewerBadge /> : null}
                 {row.owners.length ? (
                   <div className="league-meta">{row.owners.join(", ")}</div>
                 ) : null}
@@ -183,6 +191,7 @@ export function ToolsPanel({
   weeklyProjectionSnapshot,
   playoffOddsSnapshot,
   halfPprFallback = false,
+  viewerTeamId,
 }: {
   league: LeagueSnapshot;
   view: ToolsView;
@@ -197,15 +206,17 @@ export function ToolsPanel({
   weeklyProjectionSnapshot?: WeeklyProjectionSnapshot | null;
   playoffOddsSnapshot?: PlayoffOddsSnapshot | null;
   halfPprFallback?: boolean;
+  /** Signed-in member's franchise — every tool opens on it (roadmap 7.1). */
+  viewerTeamId?: number;
 }) {
-  const pair = defaultToolsPair(league);
+  const pair = defaultToolsPair(league, viewerTeamId);
   const teamA = a ?? pair?.a;
   const teamB = b ?? pair?.b;
   const { espnToGsis, byGsis } = projectionIndexes(playerMap, projectionSnapshot);
   const weeklyByGsis = indexProjections(weeklyProjectionSnapshot ?? null);
   const espnMap = indexPlayerMap(playerMap);
   const startSitTeamId =
-    team ?? league.teams[0]?.team_id ?? 1;
+    team ?? defaultToolsTeam(league, viewerTeamId) ?? 1;
   const seasonFallback =
     projectionSnapshot != null &&
     projectionSnapshot.season !== league.season;
@@ -275,6 +286,7 @@ export function ToolsPanel({
           league={league}
           playerMap={playerMap}
           snapshot={projectionSnapshot}
+          viewerTeamId={viewerTeamId}
         />
       ) : null}
 
@@ -310,7 +322,10 @@ export function ToolsPanel({
       ) : null}
 
       {view === "playoff-odds" ? (
-        <PlayoffOddsBoard snapshot={playoffOddsSnapshot ?? null} />
+        <PlayoffOddsBoard
+          snapshot={playoffOddsSnapshot ?? null}
+          viewerTeamId={viewerTeamId}
+        />
       ) : null}
     </div>
   );

@@ -9,11 +9,15 @@ import { GolfSchedulePanel } from "@/components/GolfSchedulePanel";
 import { GolfScoreboardPanel } from "@/components/GolfScoreboardPanel";
 import { GolfSettingsPanel } from "@/components/GolfSettingsPanel";
 import { HistoryPanel, type HistoryView } from "@/components/HistoryPanel";
+import { LeagueTabs, tabLabel } from "@/components/LeagueTabs";
 import { MatchupsPanel, type MatchupsView } from "@/components/MatchupsPanel";
 import { PlayersDataTable } from "@/components/PlayersDataTable";
 import { ProjectionsBoard } from "@/components/ProjectionsBoard";
 import { SeasonSwitcher } from "@/components/SeasonSwitcher";
+import { SettingsPanel } from "@/components/SettingsPanel";
 import { ToolsPanel, type ToolsView } from "@/components/ToolsPanel";
+import { TeamIdentity } from "@/components/TeamAvatar";
+import { ViewerBadge } from "@/components/ViewerBadge";
 import type {
   DraftSimSnapshot,
   LeagueHistoryArchive,
@@ -31,12 +35,15 @@ import {
   sportFormatLabel,
   winPctLabel,
 } from "@/lib/league";
+import { syncedLabel } from "@/lib/member-home";
 import {
   attachPlayerProjections,
   indexPlayerMap,
   indexProjections,
+  projectionCoverage,
   usesHalfPprScoringFallback,
 } from "@/lib/projection-join";
+import { StatusLegend } from "@/components/StatusLegend";
 import type { GolfActingScope } from "@/lib/hub-members";
 
 function RoleSwitcher({
@@ -73,9 +80,11 @@ function RoleSwitcher({
 function StandingsTable({
   league,
   leagueId,
+  viewerTeamId,
 }: {
   league: LeagueSnapshot;
   leagueId: string;
+  viewerTeamId?: number;
 }) {
   const isFootball = league.sport === "football";
   const isGolf = league.sport === "golf";
@@ -126,16 +135,30 @@ function StandingsTable({
         </thead>
         <tbody>
           {rows.map((team) => (
-            <tr key={team.team_id}>
+            <tr
+              key={team.team_id}
+              className={team.team_id === viewerTeamId ? "is-viewer" : undefined}
+            >
               <td data-label="#">{team.standing ?? "—"}</td>
               <td data-label="Team">
-                <Link
-                  href={`/leagues/${leagueId}/teams/${team.team_id}?season=${league.season}`}
-                >
-                  {team.name}
-                </Link>
+                <TeamIdentity name={team.name} logoUrl={team.logo_url}>
+                  <Link
+                    href={`/leagues/${leagueId}/teams/${team.team_id}?season=${league.season}`}
+                  >
+                    {team.name}
+                  </Link>
+                  {team.team_id === viewerTeamId ? <ViewerBadge /> : null}
+                </TeamIdentity>
               </td>
-              <td data-label="Owner">{team.owners.join(", ") || "—"}</td>
+              <td data-label="Owner">
+                {team.owners.length ? (
+                  <Link href={`/leagues/${leagueId}/franchises/${team.team_id}`}>
+                    {team.owners.join(", ")}
+                  </Link>
+                ) : (
+                  "—"
+                )}
+              </td>
               {showRecord ? (
                 <td data-label="Record">{recordLabel(team)}</td>
               ) : null}
@@ -161,9 +184,11 @@ function StandingsTable({
 function TeamsList({
   league,
   leagueId,
+  viewerTeamId,
 }: {
   league: LeagueSnapshot;
   leagueId: string;
+  viewerTeamId?: number;
 }) {
   const isGolf = league.sport === "golf";
   if (!league.teams.length) {
@@ -192,16 +217,21 @@ function TeamsList({
         return (
           <Link
             key={team.team_id}
-            className="league-link"
+            className={
+              "league-link" + (team.team_id === viewerTeamId ? " is-viewer" : "")
+            }
             href={`/leagues/${leagueId}/teams/${team.team_id}?season=${league.season}`}
           >
-            <div>
-              <strong>{team.name}</strong>
+            <TeamIdentity name={team.name} logoUrl={team.logo_url} size="md">
+              <strong>
+                {team.name}
+                {team.team_id === viewerTeamId ? <ViewerBadge /> : null}
+              </strong>
               <div className="league-meta">
                 {team.owners.join(", ") || "No owner listed"} ·{" "}
                 {recordLabel(team)} ({winPctLabel(team)})
               </div>
-            </div>
+            </TeamIdentity>
             <span className="pill">
               {isGolf
                 ? `${gs} GS · ${be} BE`
@@ -224,6 +254,7 @@ const FOOTBALL_TABS = [
   "history",
   "projections",
   "tools",
+  "settings",
 ] as const;
 
 const BASEBALL_TABS = [
@@ -237,6 +268,7 @@ const BASEBALL_TABS = [
   "history",
   "projections",
   "tools",
+  "settings",
 ] as const;
 
 /** Golf lane (roadmap 6.4a–e + 6.5 + live auction). */
@@ -280,6 +312,7 @@ export function LeagueView({
   draftSimSnapshot = null,
   weeklyProjectionSnapshot = null,
   playoffOddsSnapshot = null,
+  viewerTeamId,
 }: {
   league: LeagueSnapshot;
   seasons: number[];
@@ -315,6 +348,8 @@ export function LeagueView({
   draftSimSnapshot?: DraftSimSnapshot | null;
   weeklyProjectionSnapshot?: WeeklyProjectionSnapshot | null;
   playoffOddsSnapshot?: PlayoffOddsSnapshot | null;
+  /** Signed-in member's franchise in this league (roadmap 7.1). */
+  viewerTeamId?: number;
 }) {
   const leagueId = league.league_id;
   const isBaseball = league.sport === "baseball";
@@ -408,10 +443,14 @@ export function LeagueView({
 
   const espnToGsis = indexPlayerMap(playerMap);
   const byGsis = indexProjections(projectionSnapshot);
-  const playersWithProjections =
+  const joinedPlayers =
     isFootball && projectionSnapshot
       ? attachPlayerProjections(players, espnToGsis, byGsis)
-      : players;
+      : null;
+  const playersWithProjections = joinedPlayers ?? players;
+  const playersCoverage = joinedPlayers
+    ? projectionCoverage(joinedPlayers)
+    : null;
 
   return (
     <main className={`section league-view sport-${league.sport}`}>
@@ -428,16 +467,19 @@ export function LeagueView({
         </span>
       </div>
       <h2>{league.name}</h2>
-      <p className="lede">
+      {/*
+        The lede used to enumerate the tabs, which the tab strip right below
+        already does, and it cost three lines of a phone viewport before any
+        data (roadmap 7.5). Keep only what the tabs cannot say.
+      */}
+      <p className="lede league-lede">
         {league.team_count} teams
-        {league.synced_at
-          ? ` · synced ${new Date(league.synced_at).toLocaleString()}`
-          : ""}
+        {syncedLabel(league.synced_at) ? ` · synced ${syncedLabel(league.synced_at)}` : ""}
         {isGolf
-          ? ". PGA Tour counting league — settings, draft, lineups, scoreboard, and standings from scored weeks (roadmap 6.4a–e)."
+          ? " · hub-native PGA Tour counting league"
           : isBaseball
-            ? ". Standings, matchups, draft, activity, waivers, history, and batter/pitcher boards from ESPN — projection-free by design (roadmap 4.6)."
-            : ". Standings, matchups, draft, activity, history, rosters, projections, and decision tools."}
+            ? " · projection-free by design"
+            : ""}
       </p>
 
       <SeasonSwitcher
@@ -448,45 +490,55 @@ export function LeagueView({
         }
       />
 
-      <div className="tabs">
-        {tabs.map((name) => (
-          <Link
-            key={name}
-            href={
-              `/leagues/${leagueId}?season=${league.season}&tab=${name}` +
-              (name === "players" && activeRole ? `&role=${activeRole}` : "") +
-              (name === "matchups"
-                ? `&view=${matchupsView}${week != null ? `&week=${week}` : ""}`
-                : "") +
-              (name === "draft" && draftTeamId != null
-                ? `&team=${draftTeamId}`
-                : "") +
-              (name === "lineup"
-                ? (golfEventId ? `&event=${golfEventId}` : "") +
-                  (golfLineupTeamId != null ? `&team=${golfLineupTeamId}` : "")
-                : "") +
-              (name === "activity" ? `&view=${activityView}` : "") +
-              (name === "history" ? `&view=${historyView}${historyPair}` : "") +
-              (name === "projections" && projectionScoring
-                ? `&scoring=${projectionScoring}`
-                : "") +
-              (name === "tools" ? toolsPair : "")
-            }
-            className={`tab${active === name ? " active" : ""}`}
-          >
-            {name}
-          </Link>
-        ))}
-      </div>
+      <LeagueTabs
+        active={active}
+        tabs={tabs.map((name) => ({
+          id: name,
+          label: tabLabel(name),
+          href:
+            `/leagues/${leagueId}?season=${league.season}&tab=${name}` +
+            (name === "players" && activeRole ? `&role=${activeRole}` : "") +
+            (name === "matchups"
+              ? `&view=${matchupsView}${week != null ? `&week=${week}` : ""}`
+              : "") +
+            (name === "draft" && draftTeamId != null
+              ? `&team=${draftTeamId}`
+              : "") +
+            (name === "lineup"
+              ? (golfEventId ? `&event=${golfEventId}` : "") +
+                (golfLineupTeamId != null ? `&team=${golfLineupTeamId}` : "")
+              : "") +
+            (name === "activity" ? `&view=${activityView}` : "") +
+            (name === "history" ? `&view=${historyView}${historyPair}` : "") +
+            (name === "projections" && projectionScoring
+              ? `&scoring=${projectionScoring}`
+              : "") +
+            (name === "tools" ? toolsPair : ""),
+        }))}
+      />
 
       {active === "standings" ? (
-        <StandingsTable league={league} leagueId={leagueId} />
+        <StandingsTable
+          league={league}
+          leagueId={leagueId}
+          viewerTeamId={viewerTeamId}
+        />
       ) : null}
 
-      {active === "teams" ? <TeamsList league={league} leagueId={leagueId} /> : null}
+      {active === "teams" ? (
+        <TeamsList
+          league={league}
+          leagueId={leagueId}
+          viewerTeamId={viewerTeamId}
+        />
+      ) : null}
 
-      {active === "settings" && isGolf ? (
-        <GolfSettingsPanel league={league} />
+      {active === "settings" ? (
+        isGolf ? (
+          <GolfSettingsPanel league={league} />
+        ) : (
+          <SettingsPanel league={league} />
+        )
       ) : null}
 
       {active === "schedule" && isGolf ? (
@@ -521,12 +573,21 @@ export function LeagueView({
             sport={league.sport}
             role={role}
             showProjections={isFootball && Boolean(projectionSnapshot)}
+            leagueId={leagueId}
+            season={league.season}
+            projectionCoverage={playersCoverage}
           />
+          <StatusLegend sport={league.sport} />
         </>
       ) : null}
 
       {active === "matchups" ? (
-        <MatchupsPanel league={league} week={week} view={matchupsView} />
+        <MatchupsPanel
+          league={league}
+          week={week}
+          view={matchupsView}
+          viewerTeamId={viewerTeamId}
+        />
       ) : null}
 
       {active === "draft" ? (
@@ -618,6 +679,7 @@ export function LeagueView({
             weeklyProjectionSnapshot={weeklyProjectionSnapshot}
             playoffOddsSnapshot={playoffOddsSnapshot}
             halfPprFallback={halfPprFallback}
+            viewerTeamId={viewerTeamId}
           />
         )
       ) : null}

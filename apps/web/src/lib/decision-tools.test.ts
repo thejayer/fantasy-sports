@@ -10,6 +10,8 @@ import type {
 } from "@/lib/data";
 import {
   applyTradeRosters,
+  defaultToolsPair,
+  defaultToolsTeam,
   evaluateTrade,
   sumRosterProjections,
   teamStrengthRows,
@@ -202,5 +204,44 @@ describe("decision-tools (roadmap 4.5)", () => {
     const rows = teamStrengthRows(league, espnToGsis, byGsis);
     expect(rows[0].name).toBe("Strong");
     expect(rows[0].totals.mapped).toBe(2);
+  });
+
+  describe("viewer-aware defaults (roadmap 7.1)", () => {
+    const league = {
+      league_id: "demo",
+      espn_league_id: 1,
+      sport: "football",
+      format: "redraft",
+      season: 2026,
+      name: "Demo",
+      team_count: 3,
+      current_week: 1,
+      teams: [team(1, "One", []), team(2, "Two", []), team(3, "Three", [])],
+      players: [],
+    } as LeagueSnapshot;
+
+    it("opens the trade tool on the viewer's franchise", () => {
+      expect(defaultToolsPair(league, 3)).toEqual({ a: 3, b: 1 });
+      expect(defaultToolsPair(league, 1)).toEqual({ a: 1, b: 2 });
+    });
+
+    it("falls back to the first two teams when unlinked or not in this season", () => {
+      expect(defaultToolsPair(league, undefined)).toEqual({ a: 1, b: 2 });
+      expect(defaultToolsPair(league, 99)).toEqual({ a: 1, b: 2 });
+    });
+
+    it("needs two teams for a pair", () => {
+      const solo = { ...league, teams: [team(1, "One", [])] } as LeagueSnapshot;
+      expect(defaultToolsPair(solo, 1)).toBeNull();
+    });
+
+    it("opens single-team tools on the viewer's franchise", () => {
+      expect(defaultToolsTeam(league, 3)).toBe(3);
+      expect(defaultToolsTeam(league, undefined)).toBe(1);
+      expect(defaultToolsTeam(league, 99)).toBe(1);
+      expect(
+        defaultToolsTeam({ ...league, teams: [] } as LeagueSnapshot, 1),
+      ).toBeNull();
+    });
   });
 });

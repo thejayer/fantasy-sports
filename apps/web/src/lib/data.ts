@@ -1054,14 +1054,35 @@ async function loadTeamSelective(
   if (!standing) {
     return null;
   }
+  // A team page with no results on it is the one thing a team page is for
+  // (roadmap 7.4). matchups.json is the smallest concern in the split — no
+  // rosters, no draft, no transactions — so read it here rather than leaving
+  // schedule/scores/outcomes empty as the original 2.2 fast path did.
+  const matchups = manifest.files.matchups
+    ? await readJson<MatchupsFile>(path.join(directory, manifest.files.matchups))
+    : null;
+  const mine = matchups?.teams?.[key] ?? {};
   const team: Team = {
     ...standing,
-    schedule: [],
-    scores: [],
-    outcomes: [],
+    schedule: mine.schedule ?? [],
+    scores: mine.scores ?? [],
+    outcomes: mine.outcomes ?? [],
     roster: rosters.teams?.[key] ?? [],
   };
-  // Minimal league façade for the team page header — no matchups/draft loaded.
+  // Opponent names for the game log come from standings, which is already
+  // loaded; their rosters are not, so they carry schedule/score arrays only.
+  const opponents: Team[] = (standings.teams ?? [])
+    .filter((item) => item.team_id !== teamId)
+    .map((item) => {
+      const other = matchups?.teams?.[String(item.team_id)] ?? {};
+      return {
+        ...item,
+        schedule: other.schedule ?? [],
+        scores: other.scores ?? [],
+        outcomes: other.outcomes ?? [],
+        roster: [],
+      };
+    });
   const league: LeagueSnapshot = {
     league_id: manifest.league_id,
     short_name: manifest.short_name,
@@ -1073,11 +1094,11 @@ async function loadTeamSelective(
     scoring_type: standings.scoring_type,
     team_count: manifest.team_count,
     current_week: standings.current_week,
-    period_label: standings.period_label,
+    period_label: standings.period_label ?? matchups?.period_label,
     synced_at: manifest.synced_at,
     schema_version: manifest.schema_version,
     draft: [],
-    teams: [team],
+    teams: [team, ...opponents],
     players: [],
   };
   return { league, team };

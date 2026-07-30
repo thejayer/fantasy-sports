@@ -7,6 +7,13 @@ reading code alone. The plan that follows from it is in [ROADMAP.md](ROADMAP.md)
 
 Audited at commit `fde0613` (merge of #22).
 
+> **This audit asked "is it correct and safe?" and its findings are now largely
+> closed.** The follow-up audit —
+> [AUDIT-COMPETITIVE.md](AUDIT-COMPETITIVE.md) — asks "is it *good*?", measured
+> against ESPN / Yahoo / Sleeper / FantasyPros, and drives ROADMAP phase 7. Read
+> that one for the current product gaps; read this one for the security,
+> correctness, and engineering-practice baseline they sit on.
+
 > **Status: findings 1–5 (all P0) are fixed** as of #26, and finding 11 as of
 > #28 — see the summary table at the end for the current state of each finding.
 > They are kept here in full, with their reproductions, because the evidence is

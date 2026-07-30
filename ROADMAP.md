@@ -1,21 +1,30 @@
 # Strictly Jayers hub — development game plan
 
-The plan that follows from [AUDIT.md](AUDIT.md). Ordered so that each phase makes
-the next one cheaper, and structured so independent tracks can run in parallel.
+The plan that follows from [AUDIT.md](AUDIT.md) (phases 0–6) and
+[AUDIT-COMPETITIVE.md](AUDIT-COMPETITIVE.md) (phases 7–9). Ordered so that each
+phase makes the next one cheaper, and structured so independent tracks can run in
+parallel.
 
 No calendar estimates — each item is scoped by *what has to change* and *what
 could go wrong*, which is the part that actually determines difficulty.
 
-**The strategic goal:** the hub today shows members less than ESPN's own site
-does. It should show them things ESPN can't — a decade of league history, all-time
-records, rivalry pages, and projections from the 4,712-line engine already sitting
-in this repo unused. Phases 0–2 make the foundation trustworthy; phases 3–5 are
-where the product becomes something worth logging into.
+**The strategic goal, restated after phase 6.** The first audit found a hub that
+showed members less than ESPN's own site did. Phases 0–6 fixed that: the hub now
+ships things no competitor offers free — calibrated floor/median/ceiling per
+player, a playoff-odds Monte Carlo, and a decade of league history keyed to
+franchises rather than owner names.
+
+The second audit found the next problem, and it is not a data problem. The hub is
+an excellent reference library that does nothing when you open it: it cannot tell
+you which of the twelve teams is yours, almost nothing on any screen links
+anywhere, and no member can say a word to another. Phases 0–2 made the foundation
+trustworthy; 3–6 built the surfaces and the sports; **phase 7 is where it becomes
+somewhere members go without being asked.**
 
 **Tooling already in place:**
 
 - `sj seed` (see [HUB.md](HUB.md)) fills the local store with realistic-scale
-  synthetic snapshots — 24 league-seasons, deterministic, schema-guaranteed. Every
+  synthetic snapshots — 25 league-seasons, deterministic, schema-guaranteed. Every
   phase below that touches the UI or the data layer can be developed and tested
   without ESPN credentials.
 - In `apps/web`: `npm run typecheck`, `npm test` (vitest), `npm run build`, and
@@ -637,6 +646,350 @@ lane** with its own sync/score package.
 
 ---
 
+## Phase 7 — Make it a place members open without being asked
+
+Follows from [AUDIT-COMPETITIVE.md](AUDIT-COMPETITIVE.md), which measured the hub
+against ESPN, Yahoo, Sleeper, and FantasyPros. That audit's finding: phases 0–6
+built a very good reference library. Opening it does nothing.
+
+**Status: 7.1–7.5, 7.9, and 7.10 have landed.** Open: 7.6 (league feed), 7.7
+(digest + outbound transport), 7.8 (tool packaging), 7.11 (payload budget).
+Measured results are in "What done looks like" at the end.
+
+**Nine of its thirteen findings are blocked on nothing** — they are ordering,
+emphasis, naming, and display over data already synced and already modelled. So
+this phase is mostly `apps/web`, and it front-loads the cheap items because they
+are also the ones members feel first.
+
+The organizing principle: **every screen should answer "what about me?" before
+it answers "what about the league?"**
+
+### 7.1 Identity — teach the hub which team is yours — LANDED
+`lib/viewer.ts` resolves `session → member → franchise` per league for **all**
+sports, cached per request. `memberFranchises()` is the pure rule and dedupes per
+league so a hand-edited file cannot flip the highlighted team between renders.
+
+Standings, teams list, playoff seeds, roster strength, and playoff odds mark the
+viewer's row with `.is-viewer` plus a visible `ViewerBadge` (colour alone is not
+an accessible signal). `promoteViewerGame()` moves the viewer's matchup to the
+front of the grid and puts them on the left, carrying scores with the team rather
+than the slot. Trade opens on your roster vs one opponent and start/sit on your
+team (`defaultToolsPair` / `defaultToolsTeam`) instead of teams 1 and 2. Team
+pages get a "Your team" badge.
+
+Fail-soft as required: signed out, unlinked, or a missing members file all
+resolve to `null` and every consumer keeps the non-personalised layout. A member
+linked to a team that did not exist in an older season highlights nothing rather
+than tinting whichever team now holds that id.
+
+`AUTH_DEV_BYPASS` has no session to link, so `SJ_DEV_VIEWER_EMAIL` opts local dev
+and the e2e smoke into the personalised layout; without it bypass stays
+anonymous.
+
+### 7.2 A member home worth landing on — LANDED
+`/` assembles a cross-sport dashboard from data already on disk (`lib/member-home.ts`
++ `MemberDashboard`): your record, your rank, your current-period matchup with
+both scores and result, your next opponent, and a "needs attention" list. Linked
+leagues sort first.
+
+Action items follow ESPN's day-of-week idea — all derivable, no model:
+unhealthy players in your **starting** lineup (bench and IR excluded, urgency
+scaling with the count); golf lineup unset for the current event (urgent) or
+locked because tee times passed, using the same fail-closed `lineupClock` as the
+Lineup UI and POST route rather than a fresh wall clock; unlinked franchise; and
+a stale snapshot so a six-hour-old score does not look live.
+
+`/leagues` gained the member's team, record, rank, and relative sync age per
+card (one extra cached snapshot read per league).
+
+Signed-out or fully unlinked members keep the hero as the front door — a
+dashboard with nothing personal to say is worse than a landing page.
+
+Deferred: playoff-odds delta since last week (needs a stored prior snapshot) and
+the cross-league activity strip (folds into 7.6).
+
+### 7.3 Kill the dead ends — LANDED
+No new sync data; everything was already keyed by player id or team id.
+
+- **Player pages** — `/leagues/{id}/players/{playerId}`: status, slot and
+  eligibility, fantasy owner, season line (baseball counting stats included), the
+  draft pick they went at, every transaction naming them, and season +
+  typical-week projection quantiles joined through the player map. Every player
+  name in the players tables links here (`lib/player-profile.ts`).
+- **Franchise pages** — `/leagues/{id}/franchises/{teamId}`: career totals,
+  season-by-season with each year's high and low, and a rivalry table ranked by
+  games played (`franchiseCareer` in `lib/history.ts`). Keyed by `team_id`, so a
+  rename or a new owner keeps the history. Owner names in standings link here.
+- **Team crests** — `TeamAvatar` renders `logo_url` with a monogram fallback in
+  standings and the teams list. Plain `img`, not `next/image`: these are
+  arbitrary ESPN uploads and whitelisting remote hosts for user art is worse.
+- **"Open in ESPN" deep links** — `lib/espn-links.ts`. Returns `null` for golf
+  (hub-native, no `espn_league_id`) and for non-numeric player ids.
+
+The player page states its projection coverage inline instead of rendering a wall
+of dashes — the disclosure the team page already had.
+
+Box scores and play-by-play stay out — they need the weekly player stats
+deferred in 2.4 (see 8.1).
+
+### 7.4 Put the season back on the team page — LANDED
+`loadTeamSelective()` now reads `matchups.json` — the smallest concern in the 2.2
+split (no rosters, no draft, no transactions) — and carries opponents from the
+already-loaded standings so the log can name them. Opponent rosters and
+`league.players` stay empty, which is what the split was for (AUDIT #16).
+
+`GameLogPanel` renders per-period opponent, both scores, W/L/T, byes, upcoming
+periods, a next-opponent line, and a score sparkline normalised against the
+team's own range so a flat season does not draw a flat line at zero. Football and
+baseball team pages both get it.
+
+Guarded with a real `schema_version` 2 layout on disk (`data-team.test.ts`): the
+committed fixtures are v1 monoliths and could never have caught this, and the
+symptom was silent, so the test asserts non-empty `scores` rather than a 200.
+
+### 7.5 Navigation and information architecture — LANDED
+- `LeagueTabs` keeps the everyday tabs visible and files Draft / Activity /
+  Waivers / History / Settings behind a **More** disclosure, with written labels
+  instead of route slugs. The active tab is always promoted out of the overflow.
+- `SeasonSwitcher` shows four recent seasons plus "N more"; a viewed older season
+  stays visible rather than hiding.
+- Both use `<details>`, so `LeagueView` stays a server component and it works
+  with no JavaScript.
+- The league lede used to enumerate the tabs sitting directly beneath it; cut to
+  team count, sync age, and the sport caveat.
+- Chip rows scroll sideways on one line at phone widths instead of wrapping to
+  three (14 week chips, 9 position filters).
+- `MobileNav` fixed bottom bar — the header nav sat above ~500 px of league
+  chrome and scrolled out of reach on a phone immediately.
+
+Measured: visible pills 28 → 19 on the densest screen and 12 on standings;
+mobile chrome 1.13 → 0.87 screens on baseball players, 1.07 → 0.84 on football.
+`.table-cards` horizontal overflow stays 0 px at 390 px on every route.
+
+**The tab strip is deliberately not sticky.** A sticky strip covered the golf
+auction room's bid buttons once the page scrolled (the e2e caught it) — a sticky
+element over interactive content is a real hazard, and the disclosure had already
+solved the row-of-ten-pills problem. Sticky headers stay scoped to
+`.panel.table-scroll`, where they cannot overlay a control.
+
+Still open: a global league/team switcher in the header (Yahoo makes it reachable
+from every screen; the hub still routes back through `/leagues`).
+
+### 7.6 A league feed — the social layer
+
+The largest single gap against Sleeper, and the one that decides whether a
+friend league uses the hub or its Discord. Sleeper credits chat as the reason
+its leagues are the most active, and reports trade volume **tripling** after it
+relaxed roster validation.
+
+Scope deliberately, in order:
+
+1. **System event stream** — one chronological feed per league, generated from
+   data already synced: transactions, waiver claims, trades, draft picks, weekly
+   results, golf auction lots, scoring finalizations. This replaces the
+   four-row `activity` table and needs no new writes.
+2. **Member comments + reactions** on any feed item. New writable concern
+   (`{SJ_HUB_DIR}/{leagueId}/feed.json` or per-period shards) following the
+   `auction_room.json` pattern — file-backed, uncached, optimistic-concurrency
+   `revision`, HTTP polling. No websockets, no Redis.
+3. **Polls** (ESPN's LM Polls / Sleeper's chat polls) — the coordination tool a
+   friend league actually uses, for draft times and rule votes.
+
+Risks: this is the first user-generated content in the repo, so it needs input
+validation, length caps, per-member rate limiting, an admin delete path, and
+ACL via `lib/franchise-acl.ts`. Ordering by `synced_at` across ESPN and hub
+sources will need care. Do not start here before 7.1 — a feed with no identity
+is a wall of text.
+
+### 7.7 Weekly digest and an outbound channel
+
+Findings 1, 2, and 12 roll up into one: **the hub has no way to reach a member
+who is not already looking at it.** Every competitor manufactures a recurring
+appointment.
+
+- **Recap generator** (`src/sj` or a new `src/sjr`): per league-period, from
+  standings + matchups + transactions. Highest score, biggest blowout, closest
+  game, best/worst start-sit call, luckiest win (win with the week's lowest
+  winning score), transaction of the week, current power rankings.
+- **Power rankings** — nobody in the comparison ships them free (Yahoo gates
+  them behind Plus). All-play win %, PF adjusted for schedule strength, and
+  roster projection strength are all computable from the snapshot.
+- **Awards** — Sleeper's Weekly Report pattern. Cheap, and it is the thing that
+  gets disengaged managers reading.
+- **Recap surface first, transport second**: render digests in the hub (and post
+  them into 7.6's feed) before wiring email. Then one transport — a Discord
+  webhook is the highest-value target for this specific group, with email as the
+  fallback. Golf **tee-time lineup reminders** are the highest-value single
+  notification: golf locks fail-closed with no prior warning, and the Tour
+  removed its own opening-round deadline in 2026 precisely because missed
+  lineups are the main churn cause.
+
+Risks: any transport means secrets, retries, unsubscribe handling, and a
+scheduled job that must not double-send. Keep generation pure and idempotent
+(keyed by league-season-period) so delivery can be retried safely.
+
+### 7.8 Package the decision tools
+
+The tools are better modelled than every free competitor's and worse packaged
+than all of them. FantasyPros' equivalents each have a proper noun, a one-line
+promise, and a roster-aware default; the hub's are `?view=` values.
+
+- Name them, give each a one-line promise and a landing card on the tools tab.
+- Default every tool to the viewer's roster (needs 7.1).
+- **State a verdict.** Trade currently shows two Σ columns and leaves the
+  subtraction to the member. Say which side gains and by how much, with the
+  uncertainty the posterior already provides.
+- **Price decisions in Δ playoff odds.** Yahoo's Assistant GM frames advice as
+  "+2.4 points and +6% win probability" — the most copyable idea in the
+  comparison. The hub already runs a playoff-odds Monte Carlo; re-running it
+  with a swapped lineup or a completed trade converts every tool's output into
+  the unit members actually care about. No competitor ships this free.
+- **Trade Finder** — enumerate two-for-one packages across rosters ranked by
+  joint improvement. Bounded search, offline-friendly, no new data.
+- **Coverage disclosure** — the players board renders four columns of `—` per
+  row when the projection join misses, with no explanation. State the coverage
+  rate on the surface that displays it and collapse columns with zero coverage
+  on the current page. The team page already does this right.
+
+### 7.9 Settings, and make `dynasty` mean something — LANDED
+Football and baseball gained a `settings` tab over data already on disk, grouped
+into League / Roster / Playoffs / Transactions / Scoring. Groups with no readable
+rows are dropped rather than rendered as dashes, zero-point scoring rules are
+filtered out, and roster slots sort the way managers read them (QB, RB, WR, …)
+rather than alphabetically.
+
+`hasEspnSettings()` exists because the League group is derived from the snapshot
+manifest, so a non-empty group list is not evidence that ESPN reported any
+settings — without it the empty state for pre-2.4 seasons was unreachable and the
+tab would have looked populated while carrying nothing.
+
+AUDIT #9's last loose end is closed: keeper behaviour comes from
+`settings.keeper_count`, not the `configs/leagues.yaml` declaration, and the UI
+says so when the two disagree. The panel links out to ESPN's settings editor
+rather than implying the hub can change anything.
+
+Still open: keeper status on rosters and the draft board.
+
+### 7.10 Visual system — LANDED
+- **Dark mode.** One source of truth via `light-dark()`, so there is no second
+  block to keep in sync. Every token declares its light value first as a
+  fallback: a browser without `light-dark()` drops the second declaration and
+  gets a working light theme rather than unset colours. `ThemeToggle` sets
+  `data-theme`, which pins `color-scheme` and flips every token at once, and an
+  inline head script applies a saved override before first paint so it never
+  flashes the OS palette. The toggle reads the attribute through
+  `useSyncExternalStore` — the DOM is the source of truth, not mirrored state.
+- Getting there required the hardcoded colours out of components: white-alpha
+  panels became `--surface` / `--surface-strong`, `#3d8f5a` / `#d4a017` became
+  `--good` / `--caution`, and `color-mix(…, white)` became `--raise` (white in
+  light, a lift in dark) since mixing toward white inverts intent on a dark
+  surface. `--on-accent` is a fixed dark ink for `--signal` and the sport pill,
+  which stay light in both themes.
+- **Imagery.** Team crests landed with 7.3; member avatars and golf event art
+  are still open.
+- **Freshness.** Relative "synced 2 hours ago" on league headers, `/leagues`
+  cards, and the dashboard, plus a stale-snapshot action item (7.2). An explicit
+  final/pending marker on individual scores is still open.
+- **Status legend.** `StatusLegend` explains the dots in words, since colour
+  alone is not a signal and a `title` attribute is invisible on touch.
+- **Coverage disclosure.** `projectionCoverage()` states the join rate above the
+  players board and hides the quantile columns entirely when nothing resolved.
+  A member could not previously tell "no projection for this player" from "this
+  feature is broken" (AUDIT-COMPETITIVE #6).
+- **Hierarchy.** The viewer's row and matchup are promoted (7.1); a general
+  typographic pass is still open.
+
+### 7.11 Hold the payload budget — OPEN
+
+`verify:bundle-budget` guards JS. Nothing guards HTML, and the largest route is
+**244 KB** against ROADMAP's own < 100 KB target.
+
+Cause: `DataTable` is a client component and `PlayersDataTable` passes it every
+row (348 for baseball) so 25 can render. That trade buys instant client-side
+search, so it is a real decision, not a bug — but pick one deliberately: move
+search/sort/page to `searchParams` on the server, or trim client rows to the
+displayed fields. Add an HTML-size assertion to the `web` CI job either way, and
+include the 204-row golf scoreboard.
+
+Phase 7 left this alone on purpose rather than half-doing it: the fix changes how
+every board is filtered, so it wants its own change and its own CI gate. It did
+not get worse — the new detail pages are the smallest routes in the app (38 KB
+player, 68 KB franchise, 46 KB settings).
+
+---
+
+## Phase 8 — Sport-specific depth
+
+Runs after 7.1–7.5; each track is independent.
+
+### 8.1 Football: box scores and weekly player stats
+The data gap behind three separate audit findings (box scores, live-ish matchup
+detail, player game logs). Deferred in 2.4 on size grounds; the 2.2 per-concern
+layout plus 2.3's incremental index are what make it affordable now. Write
+weekly player lines as their own concern (`weeks/{N}.json`) so a season's team
+pages and league pages never load them, and confirm the index-upsert path does
+not go quadratic as file count multiplies.
+
+Sleeper's lesson here: **never render a raw stat line.** Show points as *this
+league* computes them. The hub already does that for golf via `sg.score`.
+
+### 8.2 Baseball: the projection-free toolkit
+4.6's boundary (no MLB model in `src/ffa`) stands. But most useful baseball
+tooling needs no model — it is scheduling and roster arithmetic:
+
+- **Category standings**: projected category wins and margin, the summary unit
+  FantasyPros uses for roto/H2H-cat.
+- **Games-per-team per period** and **two-start pitchers** — ESPN's Weekly
+  Forecaster pattern, derivable from the schedule.
+- **Trailing-window rater** (7 / 15 / 30 day), ESPN's `PR7/PR15/PR30`. Pure
+  arithmetic over synced stats, and the fastest waiver-scouting affordance in
+  any competing product.
+- **Usage caps**: minimum weekly IP (Yahoo forfeits *every* pitching category
+  when unmet) and season maximums. The mechanic home-built baseball hubs miss
+  most often, and it is arithmetic.
+- **Daily lineup locks** — baseball is a daily game and the hub treats it weekly.
+
+Only the probable-starter grid needs a feed. Do not read this as permission to
+half-port football projections onto category leagues.
+
+### 8.3 Golf: close the week-to-week loop
+Golf is the one sport where the hub *is* the system of record, so every gap is
+ours:
+
+- **Lineup reminder before first tee** (7.7 transport). Highest-value item in
+  this phase — locks currently fail closed with no warning.
+- **Projected leaderboard / projected week total** as rounds land, the golf
+  analogue of live in-game projections; Pro Tour Fantasy Golf projects earnings
+  after each round.
+- **Golfer detail pages**: usage, results history, ownership % across the league.
+- **Per-segment start limits** (the official game's core strategic constraint at
+  3 starts per segment) as a settings knob plus a usage board.
+- **Auto-pick / alternate on a missed deadline**, and optionally Splash's "drop
+  your worst golfer" as a variance dampener for casual managers.
+
+Live in-round scoring stays out — it needs a durable PGAT feed (risk 6.6).
+
+---
+
+## Phase 9 — Optional, and only if members ask
+
+Named so they are not accidentally treated as roadmap:
+
+- **Live scoring.** Requires a real-time feed and a push channel; the 30-minute
+  batch sync is a deliberate architecture. Tighten sync cadence on game days
+  before considering it.
+- **Side games.** Survivor/knockout (ESPN shipped Knockout for 2026, Yahoo
+  Death Leagues), toilet-bowl bracket with a last-place trophy, season-long
+  pick'em. Cheap to run over existing data and the kind of thing that keeps an
+  eliminated manager engaged.
+- **Dues tracking** (Sleeper shipped SleeperSafe; Yahoo has a dues field).
+  Ledger only — do not touch payments.
+- **Multi-league portfolio** view across all four leagues.
+- **Native/PWA install.** `manifest.ts` already exists; a real app shell is a
+  separate project.
+
+---
+
 ## Sequencing
 
 **Phase 5 ops closeout is in** (cache, promote, cold-start knobs, a11y/perf
@@ -674,12 +1027,55 @@ scoring into `src/ffa`.
 (tables become usable). 2.1 is done — draft and matchup data persist for zero
 extra API calls. 0.2 is done — production was wrong and no longer is.
 
+### Phase 7–9 sequencing
+
+**7.1 is strictly first.** Identity is the prerequisite for 7.2 (a dashboard
+about you), 7.6 (a feed with names on it), and 7.8 (tools that default to your
+roster). Building any of those before it means building them twice — the same
+argument that put 3.1 ahead of the rest of phase 3.
+
+**Strictly ordered:** ~~7.1~~ → ~~7.2~~ → { ~~7.5~~, 7.6 } → 7.7 → 7.8.
+
+Everything else in phase 7 is independent and can land in any order: ~~7.3~~
+(dead ends), ~~7.4~~ (team game log), ~~7.9~~ (settings), ~~7.10~~ (visual),
+7.11 (payload budget).
+
+**Remaining in phase 7:** 7.6 (league feed — the first user-generated content in
+the repo, so it carries the validation / rate-limit / moderation work), 7.7
+(digest generator, then one transport), 7.8 (tool naming, verdicts, Δ playoff
+odds, Trade Finder), 7.11 (payload budget + an HTML-size CI gate).
+
+| Track | Contents | Touches |
+|---|---|---|
+| G — Identity & IA | ~~7.1~~ → ~~7.2~~ → ~~7.5~~ | `apps/web` (`lib/viewer.ts`, `LeagueView`, layout) |
+| H — Depth surfaces | ~~7.3~~, ~~7.4~~, ~~7.9~~ | `apps/web` routes + `lib/data.ts` |
+| I — Social | 7.6 → 7.7 | new writable hub concern + a transport |
+| J — Tools packaging | 7.8 | `apps/web` + `ffa` playoff-odds re-run |
+| K — Craft | ~~7.10~~, 7.11 | `globals.css`, CI |
+| L — Sport depth | 8.1 · 8.2 · 8.3 | `src/sj` · `apps/web` · `src/sg` |
+
+G, H, and K barely overlap. I is the only track that introduces user-generated
+content, so it carries the validation/rate-limit/moderation risk and should not
+start before 7.1. L is three independent sports and can run beside any of them;
+8.1 is the only item in phases 7–8 gated on new sync data.
+
+**Fastest visible wins in phase 7** — all three landed: 7.1 (twelve identical
+rows become *your* league), 7.4 (team pages stop hiding the season), 7.3's logos
+and player links (the app stops being text-only and stops dead-ending).
+
+**Explicitly not roadmap:** phase 9. Live scoring needs a real-time feed the
+architecture deliberately does not have, and side games/dues are only worth
+building if members ask.
+
 ---
 
 ## What "done" looks like
 
-Concrete targets, baselined against [AUDIT.md](AUDIT.md) and re-measured on
-`main` after phase 0.
+Concrete targets, baselined against [AUDIT.md](AUDIT.md) (phase 0) and
+[AUDIT-COMPETITIVE.md](AUDIT-COMPETITIVE.md) (phase 7). "Now" is measured on
+`main` at `b6ea87e` against `sj seed` data.
+
+### Platform and correctness (phases 0–6)
 
 | Metric | At audit | Now | Target |
 |---|---|---|---|
@@ -688,17 +1084,45 @@ Concrete targets, baselined against [AUDIT.md](AUDIT.md) and re-measured on
 | Authorization layers | 1 (middleware) | **2** | 2 |
 | Pages serving stale build-time data | 2 | **0** | 0 |
 | Containers running as root | 3 | **0** | 0 |
-| `apps/web` tests | 0 | **35** | plus component + smoke |
-| `apps/web` checks running in CI | 0 | **6** | typecheck + lint + build + tests + prerender + audit |
+| `apps/web` tests | 0 | **138** + Playwright smoke | plus component + smoke |
+| Python tests | 197 | **360** | — |
+| `apps/web` checks running in CI | 0 | **8** | typecheck + lint + build + tests + prerender + audit + bundle + e2e |
 | CI checks that block a merge | 0 | **3** | all of them (branch protection) |
 | `src/sj/sync.py` coverage | 0% | **100%** | matches `serialize.py` (~94%) |
-| Repo coverage | 67% | **74%** | 85%+ |
-| Seasons reachable in the UI | 3 of 24 | 3 of 24 | 24 of 24 |
-| Largest page payload | 448 KB | 448 KB | < 100 KB |
-| Deploys requiring a human | all | all | rollback only |
-| Hub pages calling `ffa` | 0 | 0 | projections on roster + player + rankings |
+| Repo coverage | 67% | **82%** | 85%+ |
+| Seasons reachable in the UI | 3 of 24 | **25 of 25** | all of them |
+| Deploys requiring a human | all | **rollback only** | rollback only |
+| Hub pages calling `ffa` snapshots | 0 | **projections + 6 tools** | projections on roster + player + rankings |
 
-Branch protection is on; environment alignment is in (1.5). Draft/matchup
-persistence is in (2.1); schema split is in (2.2); incremental index upsert is
-in (2.3). The remaining platform gap is continuous deploy (1.3). Observability
-baseline is in (1.6).
+### Product (phase 7)
+
+"At audit" is `AUDIT-COMPETITIVE.md`; "now" is measured on this branch with
+`sj seed` data and a linked member.
+
+| Metric | At audit | Now | Target |
+|---|---|---|---|
+| Screens that identify the viewer's team | 0 | **8** | standings, matchups, home, tools |
+| Clicks from a player name to that player's detail | ∞ (no page) | **1** | 1 |
+| Team pages showing the team's own results | 0 | **all** | all |
+| Nav pills on the densest screen | 28 | **19** (12 on standings) | ≤ 12 |
+| Mobile chrome above the first data row | 1.07–1.23 screens | **0.70–0.87** on league tables | < 0.5 screens |
+| Ways one member can address another in-app | 0 | 0 | feed comments + reactions + polls |
+| Outbound messages the hub can send | 0 | 0 | weekly recap + golf lineup reminder |
+| Decision tools defaulting to your roster | 0 of 6 | **6 of 6** | 6 of 6 |
+| Decision tools stating a verdict | 0 of 6 | 0 of 6 | trade, start/sit, waivers |
+| Largest page payload | 239 KB | 244 KB | < 100 KB, CI-gated |
+| Colour schemes | 1 (light) | **light + dark + auto** | light + dark |
+| Screens rendering a team logo | 0 | **4** | standings, matchups, teams, headers |
+| Boards disclosing projection coverage | 1 (team page) | **3** | every board that shows quantiles |
+| `apps/web` tests | 138 | **255** | plus component + smoke |
+
+Landed: 7.1 · 7.2 · 7.3 · 7.4 · 7.5 · 7.9 · 7.10.
+Open: **7.6** (league feed), **7.7** (digest + transport), **7.8** (tool
+packaging and Δ playoff-odds framing), **7.11** (payload budget), and phase 8.
+
+Mobile chrome misses its target on the golf scoreboard (1.14 screens), which
+carries an event switcher and a scoring explanation above its first row; the
+league tables are all under one screen now.
+
+The phase 0–6 table is the one that says the hub is trustworthy. The phase 7
+table is the one that says anyone wants to use it.

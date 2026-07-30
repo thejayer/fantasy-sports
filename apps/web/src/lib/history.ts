@@ -372,6 +372,115 @@ export function recordLabelFromCounts(
   return formatRecord(wins, losses, ties);
 }
 
+export type FranchiseSeasonRow = {
+  season: number;
+  name: string;
+  owners: string[];
+  wins: number;
+  losses: number;
+  ties: number;
+  winPct: number;
+  pointsFor: number | null;
+  pointsAgainst: number | null;
+  standing: number | null;
+  /** Best and worst scored period that season. */
+  high: number | null;
+  low: number | null;
+};
+
+export type FranchiseCareer = {
+  teamId: number;
+  name: string;
+  abbrev: string | null;
+  owners: string[];
+  seasons: FranchiseSeasonRow[];
+  totals: AllTimeStanding | null;
+  /** Every other franchise this one has played, by series record. */
+  rivals: Array<HeadToHeadSummary & { name: string; winPct: number }>;
+};
+
+/**
+ * One franchise's career across every season on disk (roadmap 7.3).
+ * Keyed by `team_id` like the rest of phase 3.5 — owner names change.
+ */
+export function franchiseCareer(
+  archive: LeagueHistoryArchive,
+  teamId: number,
+): FranchiseCareer | null {
+  const appearances = archive.seasons.filter((slice) =>
+    slice.teams.some((team) => team.team_id === teamId),
+  );
+  if (!appearances.length) return null;
+
+  const seasons: FranchiseSeasonRow[] = appearances.map((slice) => {
+    const team = slice.teams.find((t) => t.team_id === teamId)!;
+    let high: number | null = null;
+    let low: number | null = null;
+    for (let i = 0; i < team.scores.length; i += 1) {
+      const score = team.scores[i];
+      if (score == null || Number.isNaN(score)) continue;
+      // Skip bye placeholders, same rule as the record book.
+      if (team.schedule[i] === team.team_id && score === 0) continue;
+      if (high == null || score > high) high = score;
+      if (low == null || score < low) low = score;
+    }
+    return {
+      season: slice.season,
+      name: team.name,
+      owners: team.owners,
+      wins: team.wins,
+      losses: team.losses,
+      ties: team.ties,
+      winPct: winPct(team.wins, team.losses, team.ties),
+      pointsFor: team.points_for,
+      pointsAgainst: team.points_against,
+      standing: team.standing,
+      high,
+      low,
+    };
+  });
+  seasons.sort((a, b) => b.season - a.season);
+
+  const identity = latestIdentity(archive, teamId);
+  const totals =
+    allTimeStandings(archive).find((row) => row.teamId === teamId) ?? null;
+
+  const opponentIds = new Set<number>();
+  for (const slice of archive.seasons) {
+    const team = slice.teams.find((t) => t.team_id === teamId);
+    if (!team) continue;
+    for (const opponentId of team.schedule) {
+      if (opponentId != null && opponentId !== teamId) {
+        opponentIds.add(opponentId);
+      }
+    }
+  }
+
+  const rivals = [...opponentIds]
+    .map((opponentId) => {
+      const summary = headToHead(archive, teamId, opponentId);
+      return {
+        ...summary,
+        name: latestIdentity(archive, opponentId).name,
+        winPct: winPct(summary.wins, summary.losses, summary.ties),
+      };
+    })
+    .filter((row) => row.games.length > 0)
+    .sort(
+      (a, b) => b.games.length - a.games.length || a.name.localeCompare(b.name),
+    );
+
+  return {
+    teamId,
+    name: identity.name,
+    abbrev: identity.abbrev,
+    owners: identity.owners,
+    seasons,
+    totals,
+    rivals,
+  };
+}
+
 export function seasonCountLabel(archive: LeagueHistoryArchive): string {
   const n = archive.seasons.length;
   if (!n) return "No seasons";
