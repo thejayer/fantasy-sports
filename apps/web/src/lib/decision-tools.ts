@@ -284,13 +284,45 @@ export function waiverBoardRows(
   return { rows: proxy, source: "proxy" };
 }
 
-export function defaultToolsPair(league: LeagueSnapshot): {
+/**
+ * Opening pair for the trade tool. Leads with the viewer's franchise when it is
+ * linked (roadmap 7.1) — a trade tool that opens on two other people's teams is
+ * the shape FantasyPros explicitly avoids by syncing your league first.
+ */
+export function defaultToolsPair(
+  league: LeagueSnapshot,
+  viewerTeamId?: number | null,
+): {
   a: number;
   b: number;
 } | null {
   const teams = league.teams ?? [];
   if (teams.length < 2) return null;
+  const mine =
+    viewerTeamId != null
+      ? teams.find((team) => team.team_id === viewerTeamId)
+      : undefined;
+  if (mine) {
+    const other = teams.find((team) => team.team_id !== mine.team_id);
+    if (other) return { a: mine.team_id, b: other.team_id };
+  }
   return { a: teams[0].team_id, b: teams[1].team_id };
+}
+
+/** Single-team tools (start/sit): the viewer's franchise, else the first team. */
+export function defaultToolsTeam(
+  league: LeagueSnapshot,
+  viewerTeamId?: number | null,
+): number | null {
+  const teams = league.teams ?? [];
+  if (!teams.length) return null;
+  if (
+    viewerTeamId != null &&
+    teams.some((team) => team.team_id === viewerTeamId)
+  ) {
+    return viewerTeamId;
+  }
+  return teams[0].team_id;
 }
 
 export function findTeam(

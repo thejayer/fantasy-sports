@@ -25,6 +25,7 @@ import {
   scoringSlugFromLeague,
 } from "@/lib/projection-join";
 import { resolveGolfActingScope } from "@/lib/franchise-acl";
+import { getViewerTeamId } from "@/lib/viewer";
 
 // See app/page.tsx. Already dynamic today, but declared so adding
 // generateStaticParams later cannot silently freeze snapshot data.
@@ -223,6 +224,13 @@ export default async function LeagueDetailPage({ params, searchParams }: Props) 
         )
       : undefined;
 
+  // Only meaningful when the franchise is in this season's snapshot — a member
+  // linked to a team that did not exist in 2016 must not highlight team_id 4.
+  const linkedTeamId = await getViewerTeamId(leagueId);
+  const viewerTeamId = league.teams.some((t) => t.team_id === linkedTeamId)
+    ? linkedTeamId
+    : undefined;
+
   return (
     <LeagueView
       league={league}
@@ -270,6 +278,7 @@ export default async function LeagueDetailPage({ params, searchParams }: Props) 
       draftSimSnapshot={draftSimSnapshot}
       weeklyProjectionSnapshot={weeklyProjectionSnapshot}
       playoffOddsSnapshot={playoffOddsSnapshot}
+      viewerTeamId={viewerTeamId}
     />
   );
 }

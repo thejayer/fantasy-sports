@@ -3,17 +3,20 @@ import type { LeagueSnapshot } from "@/lib/data";
 import {
   formatMatchupScore,
   gamesForPeriod,
+  isViewerGame,
   outcomeTone,
   periodCount,
   playoffPeriods,
   playoffSeeds,
   projectedFirstRound,
+  promoteViewerGame,
   resolvePeriod,
   seasonSchedule,
   type MatchupGame,
   type MatchupSide,
   type PeriodBundle,
 } from "@/lib/matchups";
+import { ViewerBadge } from "@/components/ViewerBadge";
 
 export type MatchupsView = "week" | "schedule" | "playoffs";
 
@@ -28,11 +31,13 @@ function TeamLine({
   leagueId,
   season,
   align = "left",
+  isViewer = false,
 }: {
   side: MatchupSide;
   leagueId: string;
   season: number;
   align?: "left" | "right";
+  isViewer?: boolean;
 }) {
   return (
     <div className={`matchup-team matchup-team-${align}`}>
@@ -43,6 +48,7 @@ function TeamLine({
         <Link href={`/leagues/${leagueId}/teams/${side.teamId}?season=${season}`}>
           {side.name}
         </Link>
+        {isViewer ? <ViewerBadge /> : null}
         <OutcomePill outcome={side.outcome} />
       </div>
       <div className="matchup-score">{formatMatchupScore(side.score)}</div>
@@ -54,18 +60,39 @@ function MatchupCard({
   game,
   leagueId,
   season,
+  viewerTeamId,
 }: {
   game: MatchupGame;
   leagueId: string;
   season: number;
+  viewerTeamId?: number;
 }) {
+  const mine = isViewerGame(game, viewerTeamId);
   return (
-    <article className={`matchup-card${game.projected ? " projected" : ""}`}>
-      <TeamLine side={game.left} leagueId={leagueId} season={season} align="left" />
+    <article
+      className={
+        `matchup-card${game.projected ? " projected" : ""}` +
+        (mine ? " is-viewer" : "")
+      }
+    >
+      {mine ? <p className="matchup-card-flag">Your matchup</p> : null}
+      <TeamLine
+        side={game.left}
+        leagueId={leagueId}
+        season={season}
+        align="left"
+        isViewer={game.left.teamId === viewerTeamId}
+      />
       <div className="matchup-vs" aria-hidden>
         vs
       </div>
-      <TeamLine side={game.right} leagueId={leagueId} season={season} align="right" />
+      <TeamLine
+        side={game.right}
+        leagueId={leagueId}
+        season={season}
+        align="right"
+        isViewer={game.right.teamId === viewerTeamId}
+      />
     </article>
   );
 }
@@ -154,28 +181,32 @@ function PeriodSection({
   season,
   periodLabel,
   heading,
+  viewerTeamId,
 }: {
   bundle: PeriodBundle;
   leagueId: string;
   season: number;
   periodLabel: string;
   heading?: string;
+  viewerTeamId?: number;
 }) {
+  const games = promoteViewerGame(bundle.games, viewerTeamId);
   return (
     <section className="matchup-period">
       <h3 className="matchup-period-title">
         {heading ?? `${periodLabel} ${bundle.period}`}
       </h3>
-      {bundle.games.length === 0 && bundle.byes.length === 0 ? (
+      {games.length === 0 && bundle.byes.length === 0 ? (
         <p className="league-meta">No matchups for this {periodLabel}.</p>
       ) : (
         <div className="matchup-grid">
-          {bundle.games.map((game) => (
+          {games.map((game) => (
             <MatchupCard
               key={`${game.period}-${game.left.teamId}-${game.right.teamId}`}
               game={game}
               leagueId={leagueId}
               season={season}
+              viewerTeamId={viewerTeamId}
             />
           ))}
         </div>
@@ -189,10 +220,13 @@ export function MatchupsPanel({
   league,
   week,
   view = "week",
+  viewerTeamId,
 }: {
   league: LeagueSnapshot;
   week?: number;
   view?: MatchupsView;
+  /** Signed-in member's franchise in this league (roadmap 7.1). */
+  viewerTeamId?: number;
 }) {
   const leagueId = league.league_id;
   const periodLabel = league.period_label || (league.sport === "baseball" ? "period" : "week");
@@ -235,6 +269,7 @@ export function MatchupsPanel({
               leagueId={leagueId}
               season={league.season}
               periodLabel={periodLabel}
+              viewerTeamId={viewerTeamId}
             />
           )}
         </>
@@ -252,6 +287,7 @@ export function MatchupsPanel({
                 leagueId={leagueId}
                 season={league.season}
                 periodLabel={periodLabel}
+                viewerTeamId={viewerTeamId}
                 heading={
                   regSeasonCount != null && bundle.period > regSeasonCount
                     ? `Playoffs · ${periodLabel} ${bundle.period}`
@@ -270,6 +306,7 @@ export function MatchupsPanel({
           regSeasonCount={regSeasonCount}
           playoffTeamCount={playoffTeamCount}
           max={max}
+          viewerTeamId={viewerTeamId}
         />
       ) : null}
     </div>
@@ -282,12 +319,14 @@ function PlayoffsView({
   regSeasonCount,
   playoffTeamCount,
   max,
+  viewerTeamId,
 }: {
   league: LeagueSnapshot;
   periodLabel: string;
   regSeasonCount: number | null | undefined;
   playoffTeamCount: number | null | undefined;
   max: number;
+  viewerTeamId?: number;
 }) {
   const seeds = playoffSeeds(league.teams, playoffTeamCount);
   const poPeriods = playoffPeriods(regSeasonCount, max);
@@ -320,7 +359,10 @@ function PlayoffsView({
               </thead>
               <tbody>
                 {seeds.map((team) => (
-                  <tr key={team.team_id}>
+                  <tr
+                    key={team.team_id}
+                    className={team.team_id === viewerTeamId ? "is-viewer" : undefined}
+                  >
                     <td>{team.standing ?? "—"}</td>
                     <td>
                       <Link
@@ -328,6 +370,7 @@ function PlayoffsView({
                       >
                         {team.name}
                       </Link>
+                      {team.team_id === viewerTeamId ? <ViewerBadge /> : null}
                     </td>
                     <td>
                       {team.ties
@@ -355,6 +398,7 @@ function PlayoffsView({
               leagueId={league.league_id}
               season={league.season}
               periodLabel={periodLabel}
+              viewerTeamId={viewerTeamId}
               heading={`Playoffs · ${periodLabel} ${period}`}
             />
           ))}
@@ -367,12 +411,13 @@ function PlayoffsView({
             1 vs {seeds.length}, 2 vs {seeds.length - 1}, …
           </p>
           <div className="matchup-grid">
-            {projected.map((game) => (
+            {promoteViewerGame(projected, viewerTeamId).map((game) => (
               <MatchupCard
                 key={`proj-${game.left.teamId}-${game.right.teamId}`}
                 game={game}
                 leagueId={league.league_id}
                 season={league.season}
+                viewerTeamId={viewerTeamId}
               />
             ))}
           </div>

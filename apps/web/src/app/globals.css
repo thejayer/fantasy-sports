@@ -506,6 +506,50 @@ tr:last-child td {
   overflow-x: auto;
 }
 
+/* Viewer's own franchise (roadmap 7.1) */
+.viewer-badge {
+  display: inline-flex;
+  align-items: center;
+  margin-left: 0.4rem;
+  padding: 0.05rem 0.4rem;
+  border-radius: 999px;
+  background: var(--ink);
+  color: var(--chalk);
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  vertical-align: middle;
+}
+
+tr.is-viewer {
+  background: color-mix(in srgb, var(--signal) 26%, transparent);
+}
+
+tr.is-viewer td {
+  font-weight: 600;
+}
+
+.league-link.is-viewer {
+  background: color-mix(in srgb, var(--signal) 22%, rgba(255, 255, 255, 0.55));
+  box-shadow: inset 0 0 0 1.5px color-mix(in srgb, var(--ink) 45%, transparent);
+}
+
+.matchup-card.is-viewer {
+  background: color-mix(in srgb, var(--signal) 18%, rgba(255, 255, 255, 0.72));
+  box-shadow: inset 0 0 0 1.5px color-mix(in srgb, var(--ink) 45%, transparent);
+}
+
+.matchup-card-flag {
+  grid-column: 1 / -1;
+  margin: 0;
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  opacity: 0.7;
+}
+
 .status-dot {
   display: inline-block;
   width: 0.55rem;
@@ -1022,6 +1066,12 @@ tr:last-child td {
     border-radius: calc(var(--radius) - 4px);
     background: color-mix(in srgb, var(--chalk) 70%, white);
     box-shadow: inset 0 0 0 1px var(--line);
+  }
+
+  /* Stacked cards set their own background, so the viewer tint has to win. */
+  .table-cards tr.is-viewer {
+    background: color-mix(in srgb, var(--signal) 30%, white);
+    box-shadow: inset 0 0 0 1.5px color-mix(in srgb, var(--ink) 45%, transparent);
   }
 
   .table-cards td {

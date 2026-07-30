@@ -184,6 +184,29 @@ export function teamLinkForLeague(
   return member?.teams.find((t) => t.league_id === leagueId);
 }
 
+/**
+ * Every franchise a member is linked to, keyed by league (roadmap 7.1).
+ * Golf ACL asks "may this email act as team N?"; the hub UI asks the broader
+ * "which team is this member's, in each league?" so standings, matchups, and
+ * the decision tools can lead with it.
+ */
+export function memberFranchises(
+  file: HubMembersFile | null,
+  email: string | null | undefined,
+): HubMemberTeamLink[] {
+  if (!email) return [];
+  const member = findMember(file ?? emptyMembersFile(), email);
+  if (!member) return [];
+  // One franchise per league is enforced on write; dedupe defensively so a
+  // hand-edited file cannot make the UI pick a different team per render.
+  const byLeague = new Map<string, HubMemberTeamLink>();
+  for (const link of member.teams) {
+    if (!link?.league_id || !Number.isInteger(link.team_id)) continue;
+    if (!byLeague.has(link.league_id)) byLeague.set(link.league_id, link);
+  }
+  return [...byLeague.values()];
+}
+
 export type FranchiseAclOk = { ok: true; mode: "bypass" | "linked" };
 export type FranchiseAclDeny = { ok: false; error: string };
 export type FranchiseAclResult = FranchiseAclOk | FranchiseAclDeny;
