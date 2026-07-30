@@ -120,15 +120,15 @@ describe("hub-members", () => {
       }).ok,
     ).toBe(true);
 
-    expect(
-      assertCanActAsTeam({
-        email: "owner@example.com",
-        file,
-        leagueId: "golf-main",
-        teamId: 1,
-        devBypass: true,
-      }).mode,
-    ).toBe("bypass");
+    const bypassed = assertCanActAsTeam({
+      email: "owner@example.com",
+      file,
+      leagueId: "golf-main",
+      teamId: 1,
+      devBypass: true,
+    });
+    expect(bypassed.ok).toBe(true);
+    if (bypassed.ok) expect(bypassed.mode).toBe("bypass");
 
     const scope = golfActingScope(ctx, [1, 2, 3]);
     expect(scope.allowedTeamIds).toEqual([2]);
