@@ -337,6 +337,8 @@ export type GolfActingScope = {
   allowedTeamIds: number[];
   canControlAuction: boolean;
   canFinalizeAuction: boolean;
+  /** Admin-only Discord tee-time lineup reminders (roadmap 7.7). */
+  canSendReminders: boolean;
   hint?: string;
 };
 
@@ -349,6 +351,7 @@ export function golfActingScope(
       allowedTeamIds: [...leagueTeamIds],
       canControlAuction: true,
       canFinalizeAuction: true,
+      canSendReminders: true,
     };
   }
   if (!ctx.email) {
@@ -356,6 +359,7 @@ export function golfActingScope(
       allowedTeamIds: [],
       canControlAuction: false,
       canFinalizeAuction: false,
+      canSendReminders: false,
       hint: "Sign in to act in this league.",
     };
   }
@@ -366,6 +370,7 @@ export function golfActingScope(
       allowedTeamIds: [],
       canControlAuction: false,
       canFinalizeAuction: false,
+      canSendReminders: false,
       hint: "Ask an admin to link your franchise for this league in /admin.",
     };
   }
@@ -373,6 +378,7 @@ export function golfActingScope(
     allowedTeamIds: [link.team_id],
     canControlAuction: true,
     canFinalizeAuction: false,
+    canSendReminders: false,
     hint: link.team_name
       ? `Acting as ${link.team_name}.`
       : `Acting as team ${link.team_id}.`,

@@ -31,7 +31,7 @@ describe("decision tools UI (roadmap 4.5)", () => {
     );
     expect(source).toMatch(/"use client"/);
     expect(source).toMatch(/evaluateTrade/);
-    expect(source).toMatch(/independent/);
+    expect(source).toMatch(/playoffOddsSamples|make-playoffs/);
     expect(source).toMatch(/params\.set\("a"/);
     expect(source).toMatch(/params\.set\("b"/);
     expect(source).not.toMatch(/child_process|ffa draft-sim|spawn\(/);

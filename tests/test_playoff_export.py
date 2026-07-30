@@ -9,13 +9,18 @@ import pytest
 
 from ffa.playoff_export import (
     SCHEMA_VERSION,
+    apply_roster_trade,
+    attach_prior_make_playoffs,
     build_playoff_odds_document,
+    build_playoff_samples_document,
     greedy_lineup_points,
     load_playoff_odds_snapshot,
     playoff_odds_path,
+    playoff_samples_path,
     simulate_playoff_odds,
     undecided_matchups,
     write_playoff_odds_snapshot,
+    write_playoff_samples_snapshot,
 )
 
 
@@ -174,6 +179,68 @@ def test_write_load_roundtrip(tmp_path):
     loaded = load_playoff_odds_snapshot(path)
     assert loaded["league_id"] == "mini"
     assert len(loaded["teams"]) == 3
+
+
+def test_attach_prior_make_playoffs():
+    doc = {
+        "teams": [
+            {"team_id": 1, "make_playoffs": 0.8},
+            {"team_id": 2, "make_playoffs": 0.4},
+        ]
+    }
+    prior = {
+        "generated_at": "2026-01-01T00:00:00Z",
+        "teams": [
+            {"team_id": 1, "make_playoffs": 0.7},
+            {"team_id": 2, "make_playoffs": 0.5},
+        ],
+    }
+    out = attach_prior_make_playoffs(doc, prior)
+    assert out["prior_generated_at"] == "2026-01-01T00:00:00Z"
+    by_id = {t["team_id"]: t for t in out["teams"]}
+    assert by_id[1]["make_playoffs_prior"] == pytest.approx(0.7)
+    assert by_id[1]["delta_make"] == pytest.approx(0.1)
+    assert by_id[2]["delta_make"] == pytest.approx(-0.1)
+
+
+def test_build_playoff_samples_and_trade(tmp_path):
+    league = _mini_league()
+    points = {
+        "g1": np.array([30.0, 28.0, 32.0, 29.0]),
+        "g2": np.array([20.0, 18.0, 22.0, 19.0]),
+        "g3": np.array([15.0, 14.0, 16.0, 15.0]),
+        "g4": np.array([5.0, 6.0, 4.0, 5.0]),
+        "g5": np.array([5.0, 5.0, 5.0, 5.0]),
+        "g6": np.array([5.0, 5.0, 5.0, 5.0]),
+    }
+    espn = {
+        "e1": "g1",
+        "e2": "g2",
+        "e3": "g3",
+        "e4": "g4",
+        "e5": "g5",
+        "e6": "g6",
+    }
+    samples = build_playoff_samples_document(
+        league,
+        points,
+        espn,
+        scoring="ppr",
+        n_sims=50,
+        seed=0,
+        hub_samples=4,
+        source={"engine": "ffa"},
+    )
+    assert set(samples["points_by_espn"]) == {"e1", "e2", "e3", "e4", "e5", "e6"}
+    assert samples["n_samples"] == 4
+    path = write_playoff_samples_snapshot(samples, tmp_path)
+    assert path == playoff_samples_path(tmp_path, "mini", 2026)
+
+    swapped = apply_roster_trade(league, 1, 2, ["e1"], ["e4"])
+    a_ids = {str(p["id"]) for p in swapped["teams"][0]["roster"]}
+    b_ids = {str(p["id"]) for p in swapped["teams"][1]["roster"]}
+    assert "e1" not in a_ids and "e4" in a_ids
+    assert "e4" not in b_ids and "e1" in b_ids
 
 
 def test_export_playoff_odds_cli(tmp_path):

@@ -23,6 +23,7 @@ import type {
   LeagueHistoryArchive,
   LeagueSnapshot,
   PlayerMapSnapshot,
+  PlayoffOddsSamples,
   PlayoffOddsSnapshot,
   ProjectionSnapshot,
   Team,
@@ -315,6 +316,7 @@ export function LeagueView({
   draftSimSnapshot = null,
   weeklyProjectionSnapshot = null,
   playoffOddsSnapshot = null,
+  playoffOddsSamples = null,
   viewerTeamId,
 }: {
   league: LeagueSnapshot;
@@ -355,6 +357,7 @@ export function LeagueView({
   draftSimSnapshot?: DraftSimSnapshot | null;
   weeklyProjectionSnapshot?: WeeklyProjectionSnapshot | null;
   playoffOddsSnapshot?: PlayoffOddsSnapshot | null;
+  playoffOddsSamples?: PlayoffOddsSamples | null;
   /** Signed-in member's franchise in this league (roadmap 7.1). */
   viewerTeamId?: number;
 }) {
@@ -699,6 +702,7 @@ export function LeagueView({
             draftSimSnapshot={draftSimSnapshot}
             weeklyProjectionSnapshot={weeklyProjectionSnapshot}
             playoffOddsSnapshot={playoffOddsSnapshot}
+            playoffOddsSamples={playoffOddsSamples}
             halfPprFallback={halfPprFallback}
             viewerTeamId={viewerTeamId}
           />

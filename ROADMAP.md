@@ -652,9 +652,9 @@ Follows from [AUDIT-COMPETITIVE.md](AUDIT-COMPETITIVE.md), which measured the hu
 against ESPN, Yahoo, Sleeper, and FantasyPros. That audit's finding: phases 0–6
 built a very good reference library. Opening it does nothing.
 
-**Status: 7.1–7.11 have landed** (7.8 without Δ playoff-odds re-sim). Open:
-the deferred 7.8 Δ playoff-odds / golf tee-time reminder bits of 7.7, then
-phase 8. Measured results are in "What done looks like" at the end.
+**Status: 7.1–7.11 have landed**, including the deferred Δ playoff-odds pricing
+(7.8) and golf tee-time reminders (7.7). Phase 8 is next. Measured results are
+in "What done looks like" at the end.
 
 **Nine of its thirteen findings are blocked on nothing** — they are ordering,
 emphasis, naming, and display over data already synced and already modelled. So
@@ -705,8 +705,8 @@ card (one extra cached snapshot read per league).
 Signed-out or fully unlinked members keep the hero as the front door — a
 dashboard with nothing personal to say is worse than a landing page.
 
-Deferred: playoff-odds delta since last week (needs a stored prior snapshot) and
-the cross-league activity strip (folds into 7.6).
+Week-over-week playoff-odds Δ lands with the 7.8 samples/prior export path.
+Cross-league activity strip folded into 7.6.
 
 ### 7.3 Kill the dead ends — LANDED
 No new sync data; everything was already keyed by player id or team id.
@@ -803,11 +803,16 @@ live surface is the auction room); football and baseball share the tab.
   the feed. Idempotent via `delivered_digests` on the feed document so retries
   do not double-post. Generation works with the env unset (UI still renders).
 
-Still open from the original 7.7 scope: scheduled auto-send (today is
-admin-triggered), email fallback, and golf **tee-time lineup reminders** (the
-highest-value single notification — locks fail-closed with no prior warning).
+Golf **tee-time lineup reminders** landed: pure `lib/golf-lineup-reminder.ts`
+(2h / 24h windows), Discord delivery via the digest transport, idempotent
+`lineup_reminders.json` under `SJ_HUB_DIR`, admin "Send lineup reminders" on
+the Lineup tab, and a timed member-home action when a tee is approaching.
+Locks stay fail-closed.
 
-### 7.8 Package the decision tools — LANDED (minus Δ playoff odds)
+Still open from the original 7.7 scope: scheduled auto-send (today is
+admin-triggered) and email fallback.
+
+### 7.8 Package the decision tools — LANDED
 
 - Tools tab opens on a **landing grid** (`view=home`) with proper nouns and
   one-line promises: Trade Desk, Wire Watch, Roster Power, Draft Board,
@@ -818,12 +823,12 @@ highest-value single notification — locks fail-closed with no prior warning).
 - **Trade Finder** — bounded 2-for-one search (`findTwoForOneTrades`) ranked by
   joint median improvement, Apply loads the package into the desk.
 - Coverage disclosure closed under 7.10.
-
-Still open: **Δ playoff-odds pricing**. The hub must not call `ffa` from Next
-handlers, playoff snapshots have no sample matrix for counterfactuals, and
-fixture leagues are often standings-locked. Needs an offline `ffa` export of
-swapped-roster artifacts (or exported weekly samples) before the UI can show
-"+6% make-playoffs" on a trade.
+- **Δ playoff-odds pricing** — `ffa export-playoff-odds --write-samples`
+  (default on) writes `{season}.samples.json` (ESPN-keyed FP draws). Trade Desk
+  re-runs the make-playoffs MC in the hub (`lib/playoff-odds-sim.ts`) over those
+  draws after applying the package — never calls `ffa` from Next. Standings-locked
+  fixtures disclose that Δ is unavailable. Nightly rewrite also attaches
+  week-over-week `delta_make` on the odds board when a prior export exists.
 
 ### 7.9 Settings, and make `dynasty` mean something — LANDED
 Football and baseball gained a `settings` tab over data already on disk, grouped
@@ -931,8 +936,8 @@ half-port football projections onto category leagues.
 Golf is the one sport where the hub *is* the system of record, so every gap is
 ours:
 
-- **Lineup reminder before first tee** (7.7 transport). Highest-value item in
-  this phase — locks currently fail closed with no warning.
+- ~~**Lineup reminder before first tee** (7.7 transport)~~ — **LANDED** (Discord
+  + admin poke + member-home timed action).
 - **Projected leaderboard / projected week total** as rounds land, the golf
   analogue of live in-game projections; Pro Tour Fantasy Golf projects earnings
   after each round.
@@ -1015,15 +1020,15 @@ Everything else in phase 7 is independent and can land in any order: ~~7.3~~
 (dead ends), ~~7.4~~ (team game log), ~~7.9~~ (settings), ~~7.10~~ (visual),
 ~~7.11 (payload budget)~~.
 
-**Remaining in phase 7:** deferred pieces under 7.7 (scheduled Discord / golf
-tee-time reminders) and 7.8 (Δ playoff-odds counterfactual export).
+**Remaining in phase 7:** scheduled Discord auto-send and email fallback under
+7.7 (tee-time reminders + Δ playoff odds have landed).
 
 | Track | Contents | Touches |
 |---|---|---|
 | G — Identity & IA | ~~7.1~~ → ~~7.2~~ → ~~7.5~~ | `apps/web` (`lib/viewer.ts`, `LeagueView`, layout) |
 | H — Depth surfaces | ~~7.3~~, ~~7.4~~, ~~7.9~~ | `apps/web` routes + `lib/data.ts` |
-| I — Social | ~~7.6 → 7.7~~ | feed.json + digest + Discord webhook |
-| J — Tools packaging | ~~7.8~~ (Δ odds open) | `apps/web`; ffa re-run still needed for Δ |
+| I — Social | ~~7.6 → 7.7~~ | feed.json + digest + Discord + tee reminders |
+| J — Tools packaging | ~~7.8~~ | Trade Desk Δ make-% via samples sidecar |
 | K — Craft | ~~7.10~~, ~~7.11~~ | `globals.css`, HTML + JS CI budgets |
 | L — Sport depth | 8.1 · 8.2 · 8.3 | `src/sj` · `apps/web` · `src/sg` |
 
@@ -1080,7 +1085,7 @@ Concrete targets, baselined against [AUDIT.md](AUDIT.md) (phase 0) and
 | Nav pills on the densest screen | 28 | **19** (12 on standings) | ≤ 12 |
 | Mobile chrome above the first data row | 1.07–1.23 screens | **0.70–0.87** on league tables | < 0.5 screens |
 | Ways one member can address another in-app | 0 | **comments + reactions + polls** | feed comments + reactions + polls |
-| Outbound messages the hub can send | 0 | **Discord digest (admin)** | weekly recap + golf lineup reminder |
+| Outbound messages the hub can send | 0 | **Discord digest + golf lineup reminder (admin)** | weekly recap + golf lineup reminder |
 | Decision tools defaulting to your roster | 0 of 6 | **6 of 6** | 6 of 6 |
 | Decision tools stating a verdict | 0 of 6 | **Trade Desk** | trade, start/sit, waivers |
 | Largest page payload | 239 KB | **75 KB** (football players; CI-gated) | < 100 KB, CI-gated |
@@ -1089,8 +1094,8 @@ Concrete targets, baselined against [AUDIT.md](AUDIT.md) (phase 0) and
 | Boards disclosing projection coverage | 1 (team page) | **3** | every board that shows quantiles |
 | `apps/web` tests | 138 | **272+** | plus component + smoke |
 
-Landed: 7.1–7.11 (7.8 minus Δ odds).
-Open: Δ playoff-odds export, golf tee-time reminders, and phase 8.
+Landed: 7.1–7.11 (including Δ playoff odds + golf tee-time reminders).
+Open: phase 8 (and 7.7 scheduled auto-send / email fallback).
 
 Mobile chrome misses its target on the golf scoreboard (1.14 screens), which
 carries an event switcher and a scoring explanation above its first row; the
