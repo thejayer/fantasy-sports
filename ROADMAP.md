@@ -903,7 +903,7 @@ full set was the reason every row serialized into the RSC payload.
 Runs after 7.1–7.5; each track is independent. Discord scheduled auto-send and
 email fallback (remaining 7.7 bits) are **postponed**.
 
-### 8.1 Football: box scores and weekly player stats — IN PROGRESS (MVP)
+### 8.1 Football: box scores and weekly player stats — LANDED
 The data gap behind three separate audit findings (box scores, live-ish matchup
 detail, player game logs). Deferred in 2.4 on size grounds; the 2.2 per-concern
 layout plus 2.3's incremental index are what make it affordable now. Write
@@ -914,11 +914,13 @@ not go quadratic as file count multiplies.
 Sleeper's lesson here: **never render a raw stat line.** Show points as *this
 league* computes them. The hub already does that for golf via `sg.score`.
 
-**MVP landed:** `sj sync` pulls football `box_scores` (2019+) into
+**Landed:** `sj sync` pulls football `box_scores` (2019+) into
 `{league}/{season}/weeks/{N}.json` as a side concern (not in `manifest.files`,
 no index upsert per week). Hub `getWeekBoxScore` + Matchups → Box score detail
-renders ESPN league-applied `points`. Fixture: `football-main/2026/weeks/14.json`.
-Still open: player multi-week game logs from week files.
+renders ESPN league-applied `points`. Player pages list on-disk weeks via
+`listWeekBoxScoreWeeks`, aggregate lineup lines into a multi-week game log
+(`PlayerWeekLogPanel`) with links back to the matchup box score. Fixtures:
+`football-main/2026/weeks/{13,14}.json`.
 
 ### 8.2 Baseball: the projection-free toolkit
 4.6's boundary (no MLB model in `src/ffa`) stands. But most useful baseball
@@ -1101,8 +1103,9 @@ Concrete targets, baselined against [AUDIT.md](AUDIT.md) (phase 0) and
 | Boards disclosing projection coverage | 1 (team page) | **3** | every board that shows quantiles |
 | `apps/web` tests | 138 | **272+** | plus component + smoke |
 
-Landed: 7.1–7.11 (including Δ playoff odds + golf tee-time reminders).
-Open: phase 8.1 player game logs, 8.2 baseball toolkit, 8.3 golf depth.
+Landed: 7.1–7.11 (including Δ playoff odds + golf tee-time reminders); 8.1
+football box scores + player week game logs.
+Open: 8.2 baseball toolkit, 8.3 golf depth.
 Postponed: 7.7 scheduled Discord auto-send / email fallback.
 
 Mobile chrome misses its target on the golf scoreboard (1.14 screens), which

@@ -2,10 +2,12 @@ import { describe, expect, it } from "vitest";
 
 import {
   boxPairKey,
+  buildPlayerWeekGameLog,
   findBoxMatchup,
   formatBoxPoints,
   isStarterSlot,
   parseBoxPair,
+  playerLinesInWeek,
   sortLineup,
 } from "@/lib/box-score";
 import type { WeekBoxScoreSnapshot } from "@/lib/data";
@@ -64,5 +66,67 @@ describe("box-score helpers (roadmap 8.1)", () => {
     } as WeekBoxScoreSnapshot;
     expect(findBoxMatchup(snap, 1, 2)?.home_team_id).toBe(2);
     expect(findBoxMatchup(snap, 3, 4)).toBeNull();
+  });
+
+  it("builds a multi-week player log from week snapshots", () => {
+    const w13 = {
+      schema_version: 1,
+      league_id: "x",
+      season: 2026,
+      week: 13,
+      sport: "football",
+      matchups: [
+        {
+          home_team_id: 1,
+          away_team_id: 4,
+          home_score: 90,
+          away_score: 158,
+          home_lineup: [
+            {
+              id: 202600001,
+              name: "Juan Phillips",
+              position: "QB",
+              slot: "QB",
+              points: 18.7,
+              projected_points: 16.2,
+            },
+          ],
+          away_lineup: [],
+        },
+      ],
+    } as WeekBoxScoreSnapshot;
+    const w14 = {
+      ...w13,
+      week: 14,
+      matchups: [
+        {
+          home_team_id: 2,
+          away_team_id: 1,
+          home_score: 127.9,
+          away_score: 103.2,
+          home_lineup: [],
+          away_lineup: [
+            {
+              id: "202600001",
+              name: "Juan Phillips",
+              position: "QB",
+              slot: "QB",
+              points: 12.3,
+              projected_points: 11.1,
+              pro_opponent: "FA",
+            },
+          ],
+        },
+      ],
+    } as WeekBoxScoreSnapshot;
+
+    expect(playerLinesInWeek(w14, 202600001)).toHaveLength(1);
+    const log = buildPlayerWeekGameLog([w14, w13], 202600001);
+    expect(log.rows.map((r) => r.week)).toEqual([13, 14]);
+    expect(log.rows[0]?.points).toBe(18.7);
+    expect(log.rows[1]?.opponentTeamId).toBe(2);
+    expect(log.totalPoints).toBeCloseTo(31.0, 5);
+    expect(log.avgPoints).toBeCloseTo(15.5, 5);
+    expect(buildPlayerWeekGameLog([w13], 999).rows).toEqual([]);
   });
 });

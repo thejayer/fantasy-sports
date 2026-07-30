@@ -1,0 +1,65 @@
+{
+  "schema_version": 1,
+  "league_id": "football-main",
+  "season": 2026,
+  "week": 13,
+  "sport": "football",
+  "period_label": "week",
+  "synced_at": "2026-07-27T00:00:00+00:00",
+  "matchups": [
+    {
+      "home_team_id": 1,
+      "away_team_id": 4,
+      "home_score": 90.0,
+      "away_score": 158.0,
+      "home_projected": 105.0,
+      "away_projected": 140.0,
+      "is_playoff": false,
+      "matchup_type": "NONE",
+      "week": 13,
+      "home_lineup": [
+        {
+          "id": 202600001,
+          "name": "Juan Phillips",
+          "position": "QB",
+          "slot": "QB",
+          "pro_team": "FA",
+          "pro_opponent": "FA",
+          "on_bye_week": false,
+          "points": 18.7,
+          "projected_points": 16.2,
+          "injury_status": "ACTIVE",
+          "game_played": 100
+        },
+        {
+          "id": 202600002,
+          "name": "Scott Roberts",
+          "position": "RB",
+          "slot": "RB",
+          "pro_team": "FA",
+          "pro_opponent": "FA",
+          "on_bye_week": false,
+          "points": 11.4,
+          "projected_points": 14.0,
+          "injury_status": "ACTIVE",
+          "game_played": 100
+        }
+      ],
+      "away_lineup": [
+        {
+          "id": 202600301,
+          "name": "Fixture Opp QB",
+          "position": "QB",
+          "slot": "QB",
+          "pro_team": "FA",
+          "pro_opponent": "FA",
+          "on_bye_week": false,
+          "points": 28.5,
+          "projected_points": 22.0,
+          "injury_status": "ACTIVE",
+          "game_played": 100
+        }
+      ]
+    }
+  ]
+}
