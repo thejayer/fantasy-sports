@@ -403,8 +403,7 @@ a.destination:focus-visible {
   }
 
   .hero {
-    min-height: min(92vh, 680px);
-    align-content: center;
+    align-content: end;
   }
 
   .cta-row {
