@@ -82,6 +82,43 @@ protection is the CI gate). Manual rollback / first-time:
    unchanged (image-only rollback). Ignore deprecated **hub_bucket**.
 4. When it finishes, copy the printed URL
 
+### Custom domain — `fantasy.strictlyjayers.com`
+
+The hub is **not** the apex site. Broader Strictly Jayers (Discord home, Palworld,
+etc.) will live on `strictlyjayers.com`; fantasy stays on a subdomain:
+
+| Host | Role |
+|---|---|
+| `strictlyjayers.com` | Future community portal (untouched for now) |
+| `fantasy.strictlyjayers.com` | This Cloud Run hub (`sj-hub`) |
+
+One-time (Cloud Shell, after the hub already deploys on `*.run.app`):
+
+```bash
+./scripts/setup-hub-domain.sh
+```
+
+That creates the Cloud Run domain mapping and prints DNS records. At
+**Spaceship → Domains → strictlyjayers.com → DNS**, add what the script shows
+(usually):
+
+| Type | Name | Value |
+|---|---|---|
+| `CNAME` | `fantasy` | `ghs.googlehosted.com` |
+
+Use DNS-only / no proxy if Spaceship offers a CDN toggle (proxies can block
+Google’s managed cert). Wait until the mapping is Ready, then open
+`https://fantasy.strictlyjayers.com`.
+
+Cut Auth.js over (so login redirects use the custom host):
+
+```bash
+./scripts/setup-hub-domain.sh --cutover
+```
+
+Deploy CD **keeps** a non-`*.run.app` `AUTH_URL` once set. Override anytime with
+deploy-hub workflow input **auth_url**.
+
 ### Google OAuth redirect (required after first deploy)
 
 In GCP → **APIs & Services** → **Credentials** → your OAuth client, add:
@@ -89,11 +126,16 @@ In GCP → **APIs & Services** → **Credentials** → your OAuth client, add:
 - **Authorized JavaScript origin:** `https://sj-hub-….run.app`
 - **Authorized redirect URI:** `https://sj-hub-….run.app/api/auth/callback/google`
 
-(Use the exact URL the workflow prints.)
+After the custom domain is Ready, **also** add:
 
-Then open that URL and sign in with an allowlisted Google account.
+- **Authorized JavaScript origin:** `https://fantasy.strictlyjayers.com`
+- **Authorized redirect URI:** `https://fantasy.strictlyjayers.com/api/auth/callback/google`
 
-The deploy workflow sets `AUTH_URL` to the public Cloud Run URL. Without that,
+Keep the `*.run.app` entries until you stop using that URL.
+
+Then open the public URL and sign in with an allowlisted Google account.
+
+The deploy workflow sets `AUTH_URL` to the public site URL. Without that,
 Auth.js can redirect to `https://0.0.0.0:8080` (the container bind address).
 
 If you need to set it manually:
@@ -102,7 +144,7 @@ If you need to set it manually:
 gcloud run services update sj-hub \
   --project=fantasy-sports-analytics \
   --region=us-central1 \
-  --update-env-vars="AUTH_URL=https://sj-hub-w6arul2i6a-uc.a.run.app,AUTH_TRUST_HOST=true"
+  --update-env-vars="AUTH_URL=https://fantasy.strictlyjayers.com,AUTH_TRUST_HOST=true"
 ```
 
 The container syncs current ESPN seasons on startup using `sj-espn-s2` /
