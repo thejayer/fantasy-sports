@@ -76,8 +76,8 @@ export default function HomePage() {
         <div className="section-head">
           <h2>Where to go</h2>
           <p>
-            Fantasy lives on its own host so Auth.js cookies and league data stay
-            isolated. Everything else starts here.
+            Pick a destination. Fantasy opens on its own site when you are ready
+            to manage a league — everything else starts here.
           </p>
         </div>
         <div className="destinations">
