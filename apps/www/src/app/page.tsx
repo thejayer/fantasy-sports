@@ -1,3 +1,6 @@
+import Image from "next/image";
+
+import { portalCopy } from "@/lib/content";
 import { getSiteConfig } from "@/lib/site";
 
 type Destination = {
@@ -7,123 +10,130 @@ type Destination = {
   body: string;
   href: string | null;
   action: string;
-  external?: boolean;
 };
 
 export default function HomePage() {
   const { fantasyHubUrl, discordInviteUrl, palworldInfoUrl } = getSiteConfig();
+  const copy = portalCopy;
+  const items = copy.destinations.items;
 
   const destinations: Destination[] = [
     {
       id: "fantasy",
-      kicker: "Fantasy sports",
-      title: "Member hub",
-      body: "Football, baseball, and golf leagues — standings, tools, drafts, and the seasons that built the group.",
+      kicker: items.fantasy.kicker,
+      title: items.fantasy.title,
+      body: items.fantasy.body,
       href: fantasyHubUrl,
-      action: "Open fantasy.strictlyjayers.com",
-      external: true,
+      action: items.fantasy.action,
     },
     {
       id: "discord",
-      kicker: "Chat",
-      title: "Discord",
-      body: "The always-on clubhouse for pick talk, server nights, and everything that is not a league page.",
+      kicker: items.discord.kicker,
+      title: items.discord.title,
+      body: items.discord.body,
       href: discordInviteUrl,
-      action: discordInviteUrl ? "Join the server" : "Invite link coming soon",
-      external: true,
+      action: discordInviteUrl
+        ? items.discord.action
+        : items.discord.actionPending,
     },
     {
       id: "palworld",
-      kicker: "Games",
-      title: "Palworld",
-      body: "Co-op sessions and server details when the group is online — a destination, not a dashboard.",
+      kicker: items.palworld.kicker,
+      title: items.palworld.title,
+      body: items.palworld.body,
       href: palworldInfoUrl,
-      action: palworldInfoUrl ? "Server info" : "Details coming soon",
-      external: true,
+      action: palworldInfoUrl
+        ? items.palworld.action
+        : items.palworld.actionPending,
     },
   ];
 
   return (
     <main>
       <section className="hero" aria-label="Strictly Jayers home">
-        <div className="hero-brand">Strictly Jayers</div>
-        <h1>The community home base.</h1>
-        <p>
-          One front door for the group — chat, games, and a clear path into the
-          fantasy hub when you are ready to manage a league.
-        </p>
-        <div className="cta-row">
-          <a className="cta cta-primary" href={fantasyHubUrl} rel="noopener noreferrer">
-            Enter fantasy hub
-          </a>
-          {discordInviteUrl ? (
+        <div className="hero-media" aria-hidden>
+          <Image
+            className="hero-scene"
+            src="/hero-scene.svg"
+            alt=""
+            width={1200}
+            height={900}
+            priority
+          />
+        </div>
+        <div className="hero-copy">
+          <div className="hero-brand">Strictly Jayers</div>
+          <h1>{copy.hero.headline}</h1>
+          <p>{copy.hero.support}</p>
+          <div className="cta-row">
             <a
-              className="cta cta-secondary"
-              href={discordInviteUrl}
+              className="cta cta-primary"
+              href={fantasyHubUrl}
               rel="noopener noreferrer"
             >
-              Join Discord
+              {copy.hero.ctaFantasy}
             </a>
-          ) : (
-            <a className="cta cta-secondary" href="#destinations">
-              See destinations
-            </a>
-          )}
+            {discordInviteUrl ? (
+              <a
+                className="cta cta-secondary"
+                href={discordInviteUrl}
+                rel="noopener noreferrer"
+              >
+                {copy.hero.ctaDiscord}
+              </a>
+            ) : (
+              <a className="cta cta-secondary" href="#destinations">
+                {copy.hero.ctaExplore}
+              </a>
+            )}
+          </div>
         </div>
       </section>
 
       <section id="destinations" className="section">
         <div className="section-head">
-          <h2>Where to go</h2>
-          <p>
-            Pick a destination. Fantasy opens on its own site when you are ready
-            to manage a league — everything else starts here.
-          </p>
+          <h2>{copy.destinations.heading}</h2>
+          <p>{copy.destinations.support}</p>
         </div>
-        <div className="destinations">
+        <ul className="destinations">
           {destinations.map((item) => {
             const interactive = Boolean(item.href);
             const className = interactive
               ? "destination"
               : "destination is-muted";
-            const action = (
-              <div className="destination-action">
-                <span>{item.action}</span>
-              </div>
-            );
             const inner = (
               <>
-                <div className="destination-kicker">{item.kicker}</div>
-                <h3>{item.title}</h3>
-                <p>{item.body}</p>
-                {action}
+                <div className="destination-index">{item.kicker}</div>
+                <div className="destination-main">
+                  <h3>{item.title}</h3>
+                  <p>{item.body}</p>
+                </div>
+                <div className="destination-action">{item.action}</div>
               </>
             );
-            if (!item.href) {
-              return (
-                <div key={item.id} className={className}>
-                  {inner}
-                </div>
-              );
-            }
             return (
-              <a
-                key={item.id}
-                className={className}
-                href={item.href}
-                rel={item.external ? "noopener noreferrer" : undefined}
-              >
-                {inner}
-              </a>
+              <li key={item.id}>
+                {item.href ? (
+                  <a
+                    className={className}
+                    href={item.href}
+                    rel="noopener noreferrer"
+                  >
+                    {inner}
+                  </a>
+                ) : (
+                  <div className={className}>{inner}</div>
+                )}
+              </li>
             );
           })}
-        </div>
+        </ul>
       </section>
 
       <footer className="site-footer">
-        <span>strictlyjayers.com</span>
+        <span>{copy.footer.left}</span>
         <a href={fantasyHubUrl} rel="noopener noreferrer">
-          fantasy.strictlyjayers.com →
+          {copy.footer.fantasyLabel} →
         </a>
       </footer>
     </main>

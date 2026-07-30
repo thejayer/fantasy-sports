@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Figtree, Syne } from "next/font/google";
 import Link from "next/link";
 
+import { portalCopy } from "@/lib/content";
 import { getSiteConfig } from "@/lib/site";
 import "./globals.css";
 
@@ -17,11 +18,9 @@ const body = Figtree({
   weight: ["400", "600", "700"],
 });
 
-const siteDescription =
-  "Home for the Strictly Jayers community — Discord, games, and the fantasy hub.";
-
 export function generateMetadata(): Metadata {
   const { siteUrl } = getSiteConfig();
+  const siteDescription = portalCopy.metaDescription;
   return {
     metadataBase: new URL(siteUrl),
     title: {
