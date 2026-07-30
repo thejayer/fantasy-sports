@@ -148,8 +148,7 @@ export function BoxScorePanel({
         <Link href={backHref}>← Week {week} matchups</Link>
       </p>
       <p className="lede">
-        Week {week} box score — fantasy points are this league&apos;s ESPN
-        scoring (not raw yards/TDs).
+        {`Week ${week} box score — fantasy points are this league's ESPN scoring (not raw yards/TDs).`}
         {matchup.is_playoff ? " Playoff matchup." : ""}
       </p>
       <div
