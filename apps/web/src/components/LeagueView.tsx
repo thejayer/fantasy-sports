@@ -13,6 +13,7 @@ import { MatchupsPanel, type MatchupsView } from "@/components/MatchupsPanel";
 import { PlayersDataTable } from "@/components/PlayersDataTable";
 import { ProjectionsBoard } from "@/components/ProjectionsBoard";
 import { SeasonSwitcher } from "@/components/SeasonSwitcher";
+import { SettingsPanel } from "@/components/SettingsPanel";
 import { ToolsPanel, type ToolsView } from "@/components/ToolsPanel";
 import { TeamIdentity } from "@/components/TeamAvatar";
 import { ViewerBadge } from "@/components/ViewerBadge";
@@ -249,6 +250,7 @@ const FOOTBALL_TABS = [
   "history",
   "projections",
   "tools",
+  "settings",
 ] as const;
 
 const BASEBALL_TABS = [
@@ -262,6 +264,7 @@ const BASEBALL_TABS = [
   "history",
   "projections",
   "tools",
+  "settings",
 ] as const;
 
 /** Golf lane (roadmap 6.4a–e + 6.5 + live auction). */
@@ -523,8 +526,12 @@ export function LeagueView({
         />
       ) : null}
 
-      {active === "settings" && isGolf ? (
-        <GolfSettingsPanel league={league} />
+      {active === "settings" ? (
+        isGolf ? (
+          <GolfSettingsPanel league={league} />
+        ) : (
+          <SettingsPanel league={league} />
+        )
       ) : null}
 
       {active === "schedule" && isGolf ? (
