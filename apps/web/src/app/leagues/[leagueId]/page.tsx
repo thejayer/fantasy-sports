@@ -3,6 +3,7 @@ import type { HistoryView } from "@/components/HistoryPanel";
 import { LeagueView } from "@/components/LeagueView";
 import type { MatchupsView } from "@/components/MatchupsPanel";
 import type { ToolsView } from "@/components/ToolsPanel";
+import { parseBaseballToolsView } from "@/lib/baseball-tools";
 import type { ActivityView } from "@/lib/activity";
 import {
   getDraftSimSnapshot,
@@ -128,6 +129,14 @@ export default async function LeagueDetailPage({ params, searchParams }: Props) 
       ? viewParam
       : "all"
   ) as ActivityView;
+  const league = await getLeagueSnapshot(
+    leagueId,
+    season && !Number.isNaN(season) ? season : undefined,
+  );
+  if (!league) {
+    notFound();
+  }
+
   const toolsView = (
     [
       "home",
@@ -141,14 +150,7 @@ export default async function LeagueDetailPage({ params, searchParams }: Props) 
       ? viewParam
       : "home"
   ) as ToolsView;
-
-  const league = await getLeagueSnapshot(
-    leagueId,
-    season && !Number.isNaN(season) ? season : undefined,
-  );
-  if (!league) {
-    notFound();
-  }
+  const baseballToolsView = parseBaseballToolsView(viewParam);
 
   const historyArchive =
     tab === "history" ? await getLeagueHistoryArchive(leagueId) : null;
@@ -342,6 +344,7 @@ export default async function LeagueDetailPage({ params, searchParams }: Props) 
       playerMap={projectionBundle.playerMap}
       projectionScoring={projectionBundle.scoring}
       toolsView={toolsView}
+      baseballToolsView={baseballToolsView}
       toolsTeamA={a != null && !Number.isNaN(a) ? a : undefined}
       toolsTeamB={b != null && !Number.isNaN(b) ? b : undefined}
       toolsTeamId={

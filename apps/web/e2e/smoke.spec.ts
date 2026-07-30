@@ -481,4 +481,28 @@ test.describe("hub smoke", () => {
     await expect(page.getByText(/ESPN free agents/i)).toBeVisible();
     await expect(page.getByText("Wayne Morales")).toBeVisible();
   });
+
+  test("baseball tools category board ranks teams (roadmap 8.2)", async ({
+    page,
+  }) => {
+    await page.goto("/leagues/baseball-dynasty?tab=tools&view=categories");
+    await expect(page.getByRole("heading", { name: "Category Board" }).or(
+      page.getByText(/Category ranks from roster/i),
+    )).toBeVisible();
+    await expect(page.getByText(/Season-to-date from synced/i)).toBeVisible();
+    await expect(page.getByText("Diamond Dogs")).toBeVisible();
+    await expect(page.getByRole("columnheader", { name: "HR" })).toBeVisible();
+    await expect(page.getByRole("columnheader", { name: "ERA" })).toBeVisible();
+  });
+
+  test("baseball tools usage caps show team IP (roadmap 8.2)", async ({
+    page,
+  }) => {
+    await page.goto("/leagues/baseball-dynasty?tab=tools&view=usage");
+    await expect(page.getByText(/Season IP vs/i)).toBeVisible();
+    await expect(page.getByRole("heading", { name: /Team IP/i })).toBeVisible();
+    await expect(
+      page.getByRole("link", { name: "Curveball Crew" }),
+    ).toBeVisible();
+  });
 });
