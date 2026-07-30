@@ -42,7 +42,7 @@ export default function OpenGraphImage() {
             maxWidth: 720,
           }}
         >
-          Community home — Discord, games, fantasy hub.
+          Same crew. Different rooms.
         </div>
         <div
           style={{

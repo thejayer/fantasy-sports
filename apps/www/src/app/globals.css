@@ -1,30 +1,22 @@
 /*
   Apex portal — community home for Strictly Jayers.
-  Visual direction: cool slate + cyan signal (distinct from the fantasy hub's
-  field-green sports palette). Light-first; no purple wash, no cream paper,
-  no broadsheet rules.
+  Direction: cool slate + cyan signal over a clubhouse scene (distinct from
+  the fantasy hub's field greens). Light below the fold; full-bleed hero
+  media above. No purple wash, cream paper, broadsheet rules, or pill chrome.
 */
 :root {
   --ink: #141a22;
   --ink-soft: #3a4554;
-  --paper: #eef2f6;
-  --paper-deep: #dce4ee;
   --slate: #243041;
   --signal: #1aa6b7;
   --signal-deep: #0e7f8c;
   --ember: #e06b3a;
-  --line: rgba(20, 26, 34, 0.12);
-  --surface: rgba(255, 255, 255, 0.72);
-  --shadow: 0 28px 70px rgba(20, 26, 34, 0.12);
-  --radius: 16px;
+  --line: rgba(20, 26, 34, 0.14);
   --font-display: var(--font-display-face), "Arial Narrow", sans-serif;
   --font-body: var(--font-body-face), "Helvetica Neue", sans-serif;
-  --page-bg:
-    radial-gradient(900px 520px at 8% -8%, rgba(26, 166, 183, 0.22), transparent 58%),
-    radial-gradient(780px 480px at 96% 4%, rgba(224, 107, 58, 0.14), transparent 52%),
-    linear-gradient(165deg, #f5f7fa 0%, #e8eef5 42%, #dfe8f2 100%);
-  --hero-mesh:
-    linear-gradient(120deg, rgba(20, 26, 34, 0.88) 0%, rgba(36, 48, 65, 0.78) 55%, rgba(14, 127, 140, 0.55) 100%);
+  --page-bg: #eef2f6;
+  --hero-ink: #f4f7fb;
+  --radius: 10px;
 }
 
 * {
@@ -51,7 +43,6 @@ a {
 }
 
 button,
-.button,
 .cta {
   font: inherit;
   cursor: pointer;
@@ -63,9 +54,9 @@ button,
   z-index: -1;
   pointer-events: none;
   background:
-    radial-gradient(circle at 20% 30%, rgba(26, 166, 183, 0.12), transparent 40%),
-    radial-gradient(circle at 80% 70%, rgba(224, 107, 58, 0.08), transparent 35%);
-  animation: drift 18s ease-in-out infinite alternate;
+    radial-gradient(800px 420px at 12% 0%, rgba(26, 166, 183, 0.1), transparent 55%),
+    radial-gradient(700px 380px at 100% 20%, rgba(224, 107, 58, 0.07), transparent 50%);
+  animation: drift 20s ease-in-out infinite alternate;
 }
 
 @keyframes drift {
@@ -73,14 +64,14 @@ button,
     transform: translate3d(0, 0, 0) scale(1);
   }
   to {
-    transform: translate3d(-1.5%, 1.2%, 0) scale(1.04);
+    transform: translate3d(-1%, 1%, 0) scale(1.03);
   }
 }
 
 @keyframes rise {
   from {
     opacity: 0;
-    transform: translateY(18px);
+    transform: translateY(16px);
   }
   to {
     opacity: 1;
@@ -88,12 +79,14 @@ button,
   }
 }
 
-@keyframes bar-in {
+@keyframes scene-in {
   from {
-    transform: scaleX(0);
+    opacity: 0;
+    transform: scale(1.04);
   }
   to {
-    transform: scaleX(1);
+    opacity: 1;
+    transform: scale(1);
   }
 }
 
@@ -106,7 +99,7 @@ button,
   position: absolute;
   top: 0;
   left: 50%;
-  z-index: 2;
+  z-index: 3;
   width: min(1100px, calc(100% - 2rem));
   transform: translateX(-50%);
   display: flex;
@@ -123,7 +116,7 @@ button,
   font-size: 1.05rem;
   letter-spacing: 0.04em;
   text-transform: uppercase;
-  color: #f4f7fb;
+  color: var(--hero-ink);
 }
 
 .nav-links {
@@ -167,21 +160,26 @@ button,
   padding:
     clamp(5.5rem, 12vh, 7rem)
     max(1rem, calc((100vw - 1100px) / 2))
-    clamp(3rem, 8vw, 5.5rem);
-  color: #f4f7fb;
+    clamp(2.75rem, 7vw, 4.5rem);
+  color: var(--hero-ink);
   overflow: hidden;
   isolation: isolate;
 }
 
-.hero::before {
-  content: "";
+.hero-media {
   position: absolute;
   inset: 0;
   z-index: -2;
-  background:
-    radial-gradient(1200px 600px at 70% 20%, rgba(26, 166, 183, 0.35), transparent 60%),
-    radial-gradient(900px 500px at 10% 80%, rgba(224, 107, 58, 0.22), transparent 55%),
-    linear-gradient(160deg, #1a2433 0%, #243041 48%, #0f3d45 100%);
+  overflow: hidden;
+}
+
+.hero-scene {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: 58% 42%;
+  animation: scene-in 1.1s ease both;
 }
 
 .hero::after {
@@ -190,32 +188,34 @@ button,
   inset: 0;
   z-index: -1;
   background:
-    repeating-linear-gradient(
-      -18deg,
-      transparent,
-      transparent 46px,
-      rgba(244, 247, 251, 0.03) 46px,
-      rgba(244, 247, 251, 0.03) 47px
-    );
-  animation: drift 22s ease-in-out infinite alternate-reverse;
+    linear-gradient(
+      105deg,
+      rgba(10, 16, 22, 0.82) 0%,
+      rgba(10, 16, 22, 0.55) 42%,
+      rgba(10, 16, 22, 0.28) 100%
+    ),
+    linear-gradient(180deg, rgba(10, 16, 22, 0.2) 0%, rgba(10, 16, 22, 0.55) 100%);
+}
+
+.hero-copy {
+  max-width: 34rem;
 }
 
 .hero-brand {
   font-family: var(--font-display);
   font-weight: 800;
-  font-size: clamp(3.4rem, 11vw, 7.5rem);
+  font-size: clamp(2.8rem, 8.5vw, 5.8rem);
   line-height: 0.9;
   letter-spacing: -0.03em;
   text-transform: uppercase;
-  max-width: 12ch;
   animation: rise 700ms ease both;
 }
 
 .hero h1 {
-  margin: 1.4rem 0 0;
-  max-width: 18ch;
+  margin: 1rem 0 0;
+  max-width: 16ch;
   font-family: var(--font-display);
-  font-size: clamp(1.45rem, 3.4vw, 2.15rem);
+  font-size: clamp(1.35rem, 3vw, 1.9rem);
   font-weight: 700;
   line-height: 1.15;
   letter-spacing: -0.02em;
@@ -223,19 +223,19 @@ button,
 }
 
 .hero p {
-  margin: 1rem 0 0;
-  max-width: 36ch;
-  font-size: 1.1rem;
-  line-height: 1.5;
-  color: rgba(244, 247, 251, 0.82);
+  margin: 0.8rem 0 0;
+  max-width: 34ch;
+  font-size: 1.05rem;
+  line-height: 1.45;
+  color: rgba(244, 247, 251, 0.84);
   animation: rise 700ms ease 220ms both;
 }
 
 .cta-row {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.85rem;
-  margin-top: 1.75rem;
+  gap: 0.75rem;
+  margin-top: 1.35rem;
   animation: rise 700ms ease 320ms both;
 }
 
@@ -243,9 +243,9 @@ button,
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-height: 2.85rem;
-  padding: 0.7rem 1.25rem;
-  border-radius: 999px;
+  min-height: 2.75rem;
+  padding: 0.65rem 1.15rem;
+  border-radius: var(--radius);
   border: 1px solid transparent;
   font-weight: 700;
   transition:
@@ -271,72 +271,65 @@ button,
 
 .cta-secondary {
   background: transparent;
-  color: #f4f7fb;
-  border-color: rgba(244, 247, 251, 0.35);
+  color: var(--hero-ink);
+  border-color: rgba(244, 247, 251, 0.4);
 }
 
 .cta-secondary:hover,
 .cta-secondary:focus-visible {
-  border-color: rgba(244, 247, 251, 0.7);
+  border-color: rgba(244, 247, 251, 0.75);
   background: rgba(244, 247, 251, 0.06);
 }
 
 .section {
-  padding: clamp(3.5rem, 8vw, 5.5rem) 0;
+  padding: clamp(3.25rem, 7vw, 5rem) 0;
 }
 
 .section-head {
-  max-width: 36rem;
-  margin-bottom: 2rem;
+  max-width: 32rem;
+  margin-bottom: 1.75rem;
 }
 
 .section-head h2 {
   margin: 0;
   font-family: var(--font-display);
-  font-size: clamp(1.8rem, 3.5vw, 2.4rem);
+  font-size: clamp(1.75rem, 3.2vw, 2.25rem);
   letter-spacing: -0.02em;
 }
 
 .section-head p {
-  margin: 0.75rem 0 0;
+  margin: 0.65rem 0 0;
   color: var(--ink-soft);
   font-size: 1.05rem;
-  line-height: 1.55;
+  line-height: 1.5;
 }
 
 .destinations {
-  display: grid;
-  gap: 1rem;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  border-top: 1px solid var(--line);
 }
 
-@media (min-width: 760px) {
-  .destinations {
-    grid-template-columns: repeat(3, 1fr);
-  }
+.destinations > li {
+  border-bottom: 1px solid var(--line);
 }
 
 .destination {
-  display: flex;
-  flex-direction: column;
-  gap: 0.65rem;
-  min-height: 100%;
-  padding: 1.35rem 1.3rem 1.4rem;
-  border: 1px solid var(--line);
-  border-radius: var(--radius);
-  background: var(--surface);
-  box-shadow: var(--shadow);
-  transition:
-    transform 180ms ease,
-    border-color 180ms ease;
+  display: grid;
+  grid-template-columns: 6.5rem 1fr auto;
+  gap: 1rem 1.5rem;
+  align-items: center;
+  padding: 1.35rem 0.15rem;
+  transition: background 160ms ease;
 }
 
 a.destination:hover,
 a.destination:focus-visible {
-  transform: translateY(-3px);
-  border-color: rgba(26, 166, 183, 0.45);
+  background: rgba(26, 166, 183, 0.06);
 }
 
-.destination-kicker {
+.destination-index {
   font-size: 0.78rem;
   font-weight: 700;
   letter-spacing: 0.08em;
@@ -344,35 +337,33 @@ a.destination:focus-visible {
   color: var(--signal-deep);
 }
 
-.destination h3 {
+.destination-main h3 {
   margin: 0;
   font-family: var(--font-display);
-  font-size: 1.35rem;
+  font-size: 1.3rem;
   letter-spacing: -0.01em;
 }
 
-.destination p {
-  margin: 0;
-  flex: 1;
+.destination-main p {
+  margin: 0.35rem 0 0;
   color: var(--ink-soft);
-  line-height: 1.5;
+  line-height: 1.45;
+  max-width: 42ch;
 }
 
 .destination-action {
-  margin-top: 0.5rem;
   font-weight: 700;
   color: var(--slate);
+  white-space: nowrap;
 }
 
-.destination-action span {
-  display: inline-block;
+a.destination .destination-action {
   border-bottom: 2px solid var(--signal);
-  transform-origin: left;
-  animation: bar-in 500ms ease both;
+  padding-bottom: 0.1rem;
 }
 
 .destination.is-muted {
-  opacity: 0.85;
+  opacity: 0.72;
 }
 
 .site-footer {
@@ -380,7 +371,7 @@ a.destination:focus-visible {
   flex-wrap: wrap;
   justify-content: space-between;
   gap: 1rem;
-  padding: 2rem 0 2.75rem;
+  padding: 1.75rem 0 2.5rem;
   border-top: 1px solid var(--line);
   color: var(--ink-soft);
   font-size: 0.92rem;
@@ -396,18 +387,31 @@ a.destination:focus-visible {
   color: var(--signal-deep);
 }
 
+@media (max-width: 760px) {
+  .destination {
+    grid-template-columns: 1fr;
+    gap: 0.35rem;
+    padding: 1.2rem 0;
+  }
+
+  .destination-action {
+    margin-top: 0.35rem;
+    white-space: normal;
+  }
+}
+
 @media (max-width: 640px) {
   .nav-links {
     gap: 0.85rem;
     font-size: 0.88rem;
   }
 
-  .hero {
-    align-content: end;
-  }
-
   .cta-row {
     flex-direction: column;
     align-items: stretch;
+  }
+
+  .hero-scene {
+    object-position: 70% 40%;
   }
 }
