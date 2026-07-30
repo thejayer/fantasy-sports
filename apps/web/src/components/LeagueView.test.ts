@@ -19,9 +19,11 @@ describe("LeagueView unification", () => {
   it("league page renders LeagueView for every sport", () => {
     expect(pageSource).toMatch(/import \{ LeagueView \} from "@\/components\/LeagueView"/);
     expect(pageSource).toMatch(/<LeagueView/);
-    expect(pageSource).not.toMatch(/sport === "baseball"/);
+    // Sport-specific *data* loads are fine (football projections, baseball
+    // pro_schedule for 8.2 tools) — parallel BaseballLeagueView is not.
     expect(pageSource).not.toMatch(/BaseballLeagueView/);
     expect(pageSource).not.toMatch(/function record\(/);
+    expect(pageSource).toMatch(/getProSchedule/);
   });
 
   it("shared view includes season chips, win%, and sport-gated standings", () => {
