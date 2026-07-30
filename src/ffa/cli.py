@@ -7,6 +7,7 @@ Examples:
 
 from __future__ import annotations
 
+import json
 from pathlib import Path
 
 import typer
@@ -912,6 +913,16 @@ def export_playoff_odds(
         "--as-of-week",
         help="Treat periods >= this week as undecided (midseason what-if).",
     ),
+    write_samples: bool = typer.Option(
+        True,
+        "--write-samples/--no-write-samples",
+        help="Also write {season}.samples.json (ESPN-keyed FP draws for hub trade Δ).",
+    ),
+    hub_samples: int = typer.Option(
+        300,
+        "--hub-samples",
+        help="Columns kept in the samples sidecar (subsample of --samples).",
+    ),
     level_sd: float = typer.Option(0.0, "--level-sd"),
     level_mean: float = typer.Option(1.0, "--level-mean"),
     conditioned_level: bool = typer.Option(
@@ -932,14 +943,21 @@ def export_playoff_odds(
     Offline Monte Carlo over remaining regular-season H2H games using
     independent typical-week bootstrap draws + greedy skill lineups. Does not
     invent odds from season/weekly quantile boards. Hub reads the JSON only.
+    With --write-samples (default), also writes a compact samples sidecar so
+    the Trade Desk can price packages in Δ make-playoffs without calling ffa.
     """
     import numpy as np
 
     from ffa.player_map import load_player_map
     from ffa.playoff_export import (
+        attach_prior_make_playoffs,
         build_playoff_odds_document,
+        build_playoff_samples_document,
+        load_playoff_odds_snapshot,
+        playoff_odds_path,
         simulate_playoff_odds,
         write_playoff_odds_snapshot,
+        write_playoff_samples_snapshot,
     )
     from ffa.projections import scoring_slug
     from ffa.scoring import score_player_weeks
@@ -1052,6 +1070,18 @@ def export_playoff_odds(
             seed=seed,
             as_of_week=as_of_week,
         )
+        source = {
+            "engine": "ffa",
+            "sj_root": str(sj_root),
+            "generator": "playoff_mc_v1",
+            "league_config": str(league),
+            "conditioned_level": conditioned_level,
+            "lookback": lookback,
+            "decay": decay,
+            "samples": samples,
+            "seed": seed,
+            "as_of_week": as_of_week,
+        }
         document = build_playoff_odds_document(
             snap,
             sim,
@@ -1065,26 +1095,40 @@ def export_playoff_odds(
                 "schedule_adjusted": False,
                 "median_scoring": False,
                 "metric": "make_playoffs_regular_season_only",
+                "trade_delta": "hub_samples_sidecar" if write_samples else "unavailable",
             },
-            source={
-                "engine": "ffa",
-                "sj_root": str(sj_root),
-                "generator": "playoff_mc_v1",
-                "league_config": str(league),
-                "conditioned_level": conditioned_level,
-                "lookback": lookback,
-                "decay": decay,
-                "samples": samples,
-                "seed": seed,
-                "as_of_week": as_of_week,
-            },
+            source=source,
         )
+        prior_path = playoff_odds_path(out_dir, lid, season)
+        prior_doc = None
+        if prior_path.is_file():
+            try:
+                prior_doc = load_playoff_odds_snapshot(prior_path)
+            except (OSError, json.JSONDecodeError, ValueError, TypeError):
+                prior_doc = None
+        document = attach_prior_make_playoffs(document, prior_doc)
         path = write_playoff_odds_snapshot(document, out_dir)
         written += 1
         typer.echo(
             f"Wrote {lid} ({sim['n_matchups']} matchups, "
             f"{len(sim['periods_simulated'])} periods) -> {path}"
         )
+        if write_samples:
+            samples_doc = build_playoff_samples_document(
+                snap,
+                points_by_key,
+                espn_to_gsis,
+                scoring=slug,
+                n_sims=n_sims,
+                seed=seed,
+                hub_samples=hub_samples,
+                source=source,
+            )
+            samples_path = write_playoff_samples_snapshot(samples_doc, out_dir)
+            typer.echo(
+                f"Wrote samples ({len(samples_doc['points_by_espn'])} players × "
+                f"{samples_doc['n_samples']}) -> {samples_path}"
+            )
 
     if written == 0:
         typer.echo("No playoff-odds files written.")

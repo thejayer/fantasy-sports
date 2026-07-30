@@ -29,6 +29,161 @@ def playoff_odds_path(out_dir: Path, league_id: str, season: int) -> Path:
     return out_dir / str(league_id) / f"{int(season)}.json"
 
 
+def playoff_samples_path(out_dir: Path, league_id: str, season: int) -> Path:
+    """Return ``out_dir/{league_id}/{season}.samples.json`` (trade Δ draws)."""
+    return out_dir / str(league_id) / f"{int(season)}.samples.json"
+
+
+SAMPLES_SCHEMA_VERSION: Final[int] = 1
+
+
+def roster_espn_ids(league: dict[str, Any]) -> set[str]:
+    """ESPN player ids on any football roster in ``league``."""
+    out: set[str] = set()
+    for team in league.get("teams") or []:
+        for player in team.get("roster") or []:
+            espn = str(player.get("id") or "").strip()
+            if espn and espn != "None":
+                out.add(espn)
+    return out
+
+
+def build_playoff_samples_document(
+    league: dict[str, Any],
+    points_by_key: dict[str, np.ndarray],
+    espn_to_key: dict[str, str],
+    *,
+    scoring: str,
+    n_sims: int,
+    seed: int,
+    hub_samples: int,
+    source: dict[str, Any],
+    generated_at: datetime | None = None,
+) -> dict[str, Any]:
+    """Compact FP sample matrix keyed by ESPN id for hub trade Δ re-sims.
+
+    Only rostered, mapped skill players are included. Columns are a prefix
+    (or subsample) of the exporter's typical-week draws so the hub can re-run
+    the same MC without calling ``ffa``.
+    """
+    when = generated_at or datetime.now(timezone.utc)
+    want = roster_espn_ids(league)
+    n_keep = max(1, int(hub_samples))
+    points_by_espn: dict[str, list[float]] = {}
+    for espn in sorted(want):
+        key = espn_to_key.get(espn)
+        if not key:
+            continue
+        arr = points_by_key.get(key)
+        if arr is None or len(arr) == 0:
+            continue
+        # Evenly subsample when the draw matrix is wider than hub_samples.
+        if len(arr) <= n_keep:
+            cols = [float(x) for x in arr]
+        else:
+            idx = np.linspace(0, len(arr) - 1, n_keep, dtype=int)
+            cols = [float(arr[i]) for i in idx]
+        points_by_espn[espn] = cols
+
+    n_samples = 0
+    for cols in points_by_espn.values():
+        n_samples = max(n_samples, len(cols))
+
+    return {
+        "schema_version": SAMPLES_SCHEMA_VERSION,
+        "generated_at": when.isoformat().replace("+00:00", "Z"),
+        "league_id": league.get("league_id"),
+        "season": int(league.get("season")),
+        "scoring": scoring,
+        "n_sims_default": int(n_sims),
+        "n_samples": int(n_samples),
+        "seed": int(seed),
+        "source": {**source, "generator": "playoff_samples_v1"},
+        "points_by_espn": points_by_espn,
+    }
+
+
+def write_playoff_samples_snapshot(document: dict[str, Any], out_dir: Path) -> Path:
+    """Write playoff samples JSON; returns path written."""
+    league_id = str(document["league_id"])
+    season = int(document["season"])
+    path = playoff_samples_path(out_dir, league_id, season)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(
+        json.dumps(document, indent=2, sort_keys=False) + "\n", encoding="utf-8"
+    )
+    return path
+
+
+def attach_prior_make_playoffs(
+    document: dict[str, Any],
+    prior: dict[str, Any] | None,
+) -> dict[str, Any]:
+    """Copy prior make% onto each team as week-over-week Δ (roadmap 7.2/7.8)."""
+    if not prior or not isinstance(prior.get("teams"), list):
+        return document
+    prior_by_id = {
+        int(row["team_id"]): row
+        for row in prior["teams"]
+        if row.get("team_id") is not None
+    }
+    teams: list[dict[str, Any]] = []
+    for row in document.get("teams") or []:
+        tid = int(row["team_id"])
+        prev = prior_by_id.get(tid)
+        next_row = dict(row)
+        if prev is not None and prev.get("make_playoffs") is not None:
+            prior_make = float(prev["make_playoffs"])
+            next_row["make_playoffs_prior"] = prior_make
+            if next_row.get("make_playoffs") is not None:
+                next_row["delta_make"] = float(next_row["make_playoffs"]) - prior_make
+        teams.append(next_row)
+    out = dict(document)
+    out["teams"] = teams
+    if prior.get("generated_at"):
+        out["prior_generated_at"] = prior["generated_at"]
+    return out
+
+
+def apply_roster_trade(
+    league: dict[str, Any],
+    team_a: int,
+    team_b: int,
+    give_espn_ids: list[str],
+    get_espn_ids: list[str],
+) -> dict[str, Any]:
+    """Return a deep-ish copy of ``league`` with the ESPN-id roster swap applied."""
+    give = {str(x) for x in give_espn_ids}
+    get = {str(x) for x in get_espn_ids}
+    teams_out: list[dict[str, Any]] = []
+    for team in league.get("teams") or []:
+        tid = int(team["team_id"])
+        roster = list(team.get("roster") or [])
+        if tid == int(team_a):
+            keep = [p for p in roster if str(p.get("id") or "") not in give]
+            add = [
+                p
+                for other in league.get("teams") or []
+                if int(other["team_id"]) == int(team_b)
+                for p in (other.get("roster") or [])
+                if str(p.get("id") or "") in get
+            ]
+            teams_out.append({**team, "roster": keep + add})
+        elif tid == int(team_b):
+            keep = [p for p in roster if str(p.get("id") or "") not in get]
+            add = [
+                p
+                for other in league.get("teams") or []
+                if int(other["team_id"]) == int(team_a)
+                for p in (other.get("roster") or [])
+                if str(p.get("id") or "") in give
+            ]
+            teams_out.append({**team, "roster": keep + add})
+        else:
+            teams_out.append(team)
+    return {**league, "teams": teams_out}
+
+
 def roster_slots_from_settings(settings: dict[str, Any] | None) -> dict[str, int]:
     """Map ESPN ``position_slot_counts`` to skill-slot counts (K/DST ignored)."""
     raw = (settings or {}).get("position_slot_counts") or {}

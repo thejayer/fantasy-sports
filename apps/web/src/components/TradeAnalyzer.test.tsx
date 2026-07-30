@@ -3,7 +3,7 @@ import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
 
-import type { ProjectionPlayer, Team } from "@/lib/data";
+import type { LeagueSnapshot, ProjectionPlayer, Team } from "@/lib/data";
 
 import { TradeAnalyzer } from "./TradeAnalyzer";
 
@@ -96,12 +96,30 @@ const teams: Team[] = [
   },
 ];
 
+const league: LeagueSnapshot = {
+  schema_version: 1,
+  league_id: "test",
+  name: "Test",
+  season: 2025,
+  sport: "football",
+  format: "redraft",
+  scoring: "ppr",
+  teams,
+  settings: {
+    reg_season_count: 14,
+    playoff_team_count: 2,
+    position_slot_counts: { QB: 1, RB: 2, WR: 2, TE: 1, FLEX: 1 },
+  },
+  synced_at: "2025-01-01T00:00:00Z",
+} as unknown as LeagueSnapshot;
+
 describe("TradeAnalyzer", () => {
   it("shows roster strength and evaluates a two-sided package", async () => {
     const user = userEvent.setup();
     render(
       <TradeAnalyzer
         teams={teams}
+        league={league}
         espnToGsisEntries={[
           ["101", "00-0033873"],
           ["201", "00-0033280"],
@@ -118,7 +136,7 @@ describe("TradeAnalyzer", () => {
     );
 
     expect(
-      screen.getByText(/Compare season projection totals/i),
+      screen.getByText(/Trade Desk/i),
     ).toBeTruthy();
     expect(screen.getByText(/Alpha roster strength/i)).toBeTruthy();
     expect(screen.getByText(/Bravo roster strength/i)).toBeTruthy();

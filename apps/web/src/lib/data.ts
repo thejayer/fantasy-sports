@@ -176,6 +176,10 @@ export type PlayoffOddsTeam = {
   losses_now: number | null;
   ties_now?: number | null;
   make_playoffs: number | null;
+  /** Prior export make% when nightly rewrite attached week-over-week Δ. */
+  make_playoffs_prior?: number | null;
+  /** make_playoffs − make_playoffs_prior. */
+  delta_make?: number | null;
   seed_probs: Record<string, number | null>;
   avg_wins: number | null;
   mapped_roster: number | null;
@@ -194,9 +198,23 @@ export type PlayoffOddsSnapshot = {
   reg_season_count?: number | null;
   playoff_team_count?: number | null;
   periods_simulated?: number[];
+  prior_generated_at?: string | null;
   assumptions?: Record<string, unknown>;
   source?: Record<string, unknown>;
   teams: PlayoffOddsTeam[];
+};
+
+/** Compact FP draws for hub trade Δ (`ffa export-playoff-odds --write-samples`). */
+export type PlayoffOddsSamples = {
+  schema_version: number;
+  generated_at: string;
+  league_id: string;
+  season: number;
+  scoring: string;
+  n_sims_default: number;
+  n_samples: number;
+  seed: number;
+  points_by_espn: Record<string, number[]>;
 };
 
 /** One row from `ffa export-draft-sim` pick_rates (roadmap 4.5). */
@@ -871,6 +889,35 @@ export const getPlayoffOddsSnapshot = cache(
     for (const root of dataRoots()) {
       const doc = await readJson<PlayoffOddsSnapshot>(path.join(root, relative));
       if (doc?.teams?.length && doc.season === season) {
+        return doc;
+      }
+    }
+    return null;
+  },
+);
+
+/**
+ * Read playoff FP samples under ``playoff_odds/{league_id}/{season}.samples.json``
+ * for Trade Desk Δ make-playoffs (roadmap 7.8).
+ */
+export const getPlayoffOddsSamples = cache(
+  async (
+    leagueId: string,
+    season: number,
+  ): Promise<PlayoffOddsSamples | null> => {
+    await requireSession();
+    const relative = path.join(
+      "playoff_odds",
+      leagueId,
+      `${season}.samples.json`,
+    );
+    for (const root of dataRoots()) {
+      const doc = await readJson<PlayoffOddsSamples>(path.join(root, relative));
+      if (
+        doc?.points_by_espn &&
+        doc.season === season &&
+        Object.keys(doc.points_by_espn).length > 0
+      ) {
         return doc;
       }
     }

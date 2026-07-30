@@ -133,5 +133,6 @@ describe("hub-members", () => {
     const scope = golfActingScope(ctx, [1, 2, 3]);
     expect(scope.allowedTeamIds).toEqual([2]);
     expect(scope.canFinalizeAuction).toBe(false);
+    expect(scope.canSendReminders).toBe(false);
   });
 });

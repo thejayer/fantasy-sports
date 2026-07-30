@@ -320,6 +320,81 @@ function LineupEditor({
   );
 }
 
+function ReminderControls({
+  leagueId,
+  season,
+}: {
+  leagueId: string;
+  season: number;
+}) {
+  const [busy, setBusy] = useState(false);
+  const [message, setMessage] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  async function send() {
+    setBusy(true);
+    setError(null);
+    setMessage(null);
+    try {
+      const res = await fetch(`/api/golf/leagues/${leagueId}/reminders`, {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ season, force: true }),
+      });
+      const payload = (await res.json()) as {
+        error?: string;
+        delivery?: { skipped?: boolean };
+        batch?: { reminders?: unknown[] };
+      };
+      if (!res.ok) {
+        setError(payload.error || `Reminder send failed (${res.status})`);
+        return;
+      }
+      if (payload.delivery?.skipped) {
+        setMessage("Reminders already sent for these franchises.");
+      } else {
+        const n = payload.batch?.reminders?.length ?? 0;
+        setMessage(
+          n
+            ? `Sent lineup reminder for ${n} franchise${n === 1 ? "" : "s"}.`
+            : "Reminders sent.",
+        );
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "reminder send failed");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <div className="panel" style={{ padding: "0.75rem 1rem", marginTop: "0.75rem" }}>
+      <p className="league-meta" style={{ marginTop: 0 }}>
+        Tee-time lineup reminders (Discord) — warn franchises with no lineup
+        before locks close. Requires <code>SJ_DISCORD_WEBHOOK_URL</code>.
+      </p>
+      <button
+        type="button"
+        className="button secondary"
+        disabled={busy}
+        onClick={() => void send()}
+      >
+        {busy ? "Sending…" : "Send lineup reminders"}
+      </button>
+      {error ? (
+        <p className="form-error" role="alert">
+          {error}
+        </p>
+      ) : null}
+      {message ? (
+        <p className="league-meta" role="status">
+          {message}
+        </p>
+      ) : null}
+    </div>
+  );
+}
+
 export function GolfLineupPanel({
   league,
   eventId,
@@ -344,6 +419,7 @@ export function GolfLineupPanel({
   const team = league.teams.find((t) => t.team_id === activeTeamId) ?? null;
   const canEdit =
     activeTeamId != null && allowedTeamIds.includes(activeTeamId);
+  const canSendReminders = actingScope?.canSendReminders ?? false;
   const golf = parseGolfSettings(league.settings) ?? DEFAULT_GOLF_SETTINGS;
   const showAlt1 =
     golf.missed_cut.mode === "alt1" || golf.missed_cut.mode === "alt1_2";
@@ -373,6 +449,12 @@ export function GolfLineupPanel({
       </p>
       {actingScope?.hint ? (
         <p className="league-meta">{actingScope.hint}</p>
+      ) : null}
+      {canSendReminders ? (
+        <ReminderControls
+          leagueId={league.league_id}
+          season={league.season}
+        />
       ) : null}
 
       <div className="tabs" style={{ marginTop: "0.5rem" }}>

@@ -10,12 +10,14 @@ import {
   getLeagueSeasons,
   getLeagueSnapshot,
   getPlayerMap,
+  getPlayoffOddsSamples,
   getPlayoffOddsSnapshot,
   getProjectionSnapshot,
   getWeeklyProjectionSnapshot,
   listDraftSimSlots,
   type DraftSimSnapshot,
   type PlayerMapSnapshot,
+  type PlayoffOddsSamples,
   type PlayoffOddsSnapshot,
   type ProjectionSnapshot,
   type WeeklyProjectionSnapshot,
@@ -211,24 +213,42 @@ export default async function LeagueDetailPage({ params, searchParams }: Props) 
   }
 
   let playoffOddsSnapshot: PlayoffOddsSnapshot | null = null;
+  let playoffOddsSamples: PlayoffOddsSamples | null = null;
   if (
     league.sport === "football" &&
     tab === "tools" &&
-    toolsView === "playoff-odds"
+    (toolsView === "playoff-odds" || toolsView === "trade")
   ) {
-    for (const year of projectionSeasonCandidates(league.season)) {
-      const snap = await getPlayoffOddsSnapshot(league.league_id, year);
-      if (snap) {
-        playoffOddsSnapshot = snap;
-        break;
+    if (toolsView === "playoff-odds") {
+      for (const year of projectionSeasonCandidates(league.season)) {
+        const snap = await getPlayoffOddsSnapshot(league.league_id, year);
+        if (snap) {
+          playoffOddsSnapshot = snap;
+          break;
+        }
+      }
+      // League season file is keyed by hub season; also try exact league.season.
+      if (!playoffOddsSnapshot) {
+        playoffOddsSnapshot = await getPlayoffOddsSnapshot(
+          league.league_id,
+          league.season,
+        );
       }
     }
-    // League season file is keyed by hub season; also try exact league.season.
-    if (!playoffOddsSnapshot) {
-      playoffOddsSnapshot = await getPlayoffOddsSnapshot(
-        league.league_id,
-        league.season,
-      );
+    if (toolsView === "trade") {
+      for (const year of projectionSeasonCandidates(league.season)) {
+        const samples = await getPlayoffOddsSamples(league.league_id, year);
+        if (samples) {
+          playoffOddsSamples = samples;
+          break;
+        }
+      }
+      if (!playoffOddsSamples) {
+        playoffOddsSamples = await getPlayoffOddsSamples(
+          league.league_id,
+          league.season,
+        );
+      }
     }
   }
 
@@ -312,6 +332,7 @@ export default async function LeagueDetailPage({ params, searchParams }: Props) 
       draftSimSnapshot={draftSimSnapshot}
       weeklyProjectionSnapshot={weeklyProjectionSnapshot}
       playoffOddsSnapshot={playoffOddsSnapshot}
+      playoffOddsSamples={playoffOddsSamples}
       viewerTeamId={viewerTeamId}
     />
   );

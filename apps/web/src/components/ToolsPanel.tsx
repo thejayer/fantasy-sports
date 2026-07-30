@@ -10,6 +10,7 @@ import type {
   DraftSimSnapshot,
   LeagueSnapshot,
   PlayerMapSnapshot,
+  PlayoffOddsSamples,
   PlayoffOddsSnapshot,
   ProjectionSnapshot,
   WeeklyProjectionSnapshot,
@@ -152,8 +153,8 @@ function ToolsLanding({
     <div style={{ marginTop: "0.75rem" }}>
       <p className="lede">
         Decision tools over calibrated projections — each one defaults to your
-        roster when you are linked. Δ playoff-odds pricing needs an offline
-        counterfactual export and is still open.
+        roster when you are linked. Trade Desk prices packages in Δ
+        make-playoffs when a playoff samples sidecar is present.
       </p>
       <div
         className="tools-landing"
@@ -276,6 +277,7 @@ export function ToolsPanel({
   draftSimSnapshot,
   weeklyProjectionSnapshot,
   playoffOddsSnapshot,
+  playoffOddsSamples = null,
   halfPprFallback = false,
   viewerTeamId,
 }: {
@@ -291,6 +293,7 @@ export function ToolsPanel({
   draftSimSnapshot?: DraftSimSnapshot | null;
   weeklyProjectionSnapshot?: WeeklyProjectionSnapshot | null;
   playoffOddsSnapshot?: PlayoffOddsSnapshot | null;
+  playoffOddsSamples?: PlayoffOddsSamples | null;
   halfPprFallback?: boolean;
   /** Signed-in member's franchise — every tool opens on it (roadmap 7.1). */
   viewerTeamId?: number;
@@ -361,8 +364,10 @@ export function ToolsPanel({
           <Suspense fallback={<p className="muted">Loading trade tool…</p>}>
             <TradeAnalyzer
               teams={league.teams}
+              league={league}
               espnToGsisEntries={[...espnToGsis.entries()]}
               projectionEntries={[...byGsis.entries()]}
+              playoffOddsSamples={playoffOddsSamples}
               initialA={teamA}
               initialB={teamB}
               leagueId={league.league_id}

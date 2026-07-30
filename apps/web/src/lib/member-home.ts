@@ -15,6 +15,7 @@ import { buildGameLog, type GameLogRow } from "@/lib/game-log";
 import { gamesForPeriod, isViewerGame, resolvePeriod, periodCount } from "@/lib/matchups";
 import { recordLabel, winPctLabel, injuryTone } from "@/lib/league";
 import { lineupClock, playerIsLocked } from "@/lib/golf-lineup";
+import { golfReminderActionItem } from "@/lib/golf-lineup-reminder";
 
 export type ActionTone = "urgent" | "attention" | "info";
 
@@ -209,8 +210,16 @@ export function buildLeagueCard(
     next = buildGameLog(team, league.teams).next;
 
     if (league.sport === "golf") {
-      const golf = golfLineupAction(league, team);
-      if (golf) actions.push(golf);
+      // Prefer a timed tee-window reminder over the generic "set lineup" item.
+      const timed = golfReminderActionItem(league, team.team_id, {
+        now: options.now ?? lineupClock(league.synced_at),
+      });
+      if (timed) {
+        actions.push(timed);
+      } else {
+        const golf = golfLineupAction(league, team);
+        if (golf) actions.push(golf);
+      }
     }
 
     const shaky = shakyStarters(team);

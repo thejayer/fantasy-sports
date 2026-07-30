@@ -2,7 +2,7 @@
 
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
-import type { Team } from "@/lib/data";
+import type { LeagueSnapshot, PlayoffOddsSamples, Team } from "@/lib/data";
 import {
   evaluateTrade,
   findTwoForOneTrades,
@@ -10,6 +10,10 @@ import {
   sumRosterProjections,
   type RosterProjectionTotals,
 } from "@/lib/decision-tools";
+import {
+  formatMakeDelta,
+  tradePlayoffDelta,
+} from "@/lib/playoff-odds-sim";
 import { tradeVerdict } from "@/lib/trade-verdict";
 import {
   formatProjectionPoints,
@@ -147,17 +151,22 @@ function RosterPicker({
 
 export function TradeAnalyzer({
   teams,
+  league,
   espnToGsisEntries,
   projectionEntries,
+  playoffOddsSamples = null,
   initialA,
   initialB,
   leagueId,
   season,
 }: {
   teams: Team[];
+  /** Full league snapshot for playoff Δ re-sim (schedule + settings). */
+  league: LeagueSnapshot;
   /** Serializable Map entries from the server. */
   espnToGsisEntries: Array<[string, string]>;
   projectionEntries: Array<[string, ProjectionPlayer]>;
+  playoffOddsSamples?: PlayoffOddsSamples | null;
   initialA: number;
   initialB: number;
   leagueId: string;
@@ -226,6 +235,19 @@ export function TradeAnalyzer({
     return tradeVerdict(result.sideA, result.sideB, teamA.name, teamB.name);
   }, [result, teamA, teamB, give, get]);
 
+  const playoffDelta = useMemo(() => {
+    if (!teamA || !teamB) return null;
+    if (give.size === 0 && get.size === 0) return null;
+    return tradePlayoffDelta(
+      league,
+      playoffOddsSamples,
+      teamA.team_id,
+      teamB.team_id,
+      [...give],
+      [...get],
+    );
+  }, [league, playoffOddsSamples, teamA, teamB, give, get]);
+
   const finderHits = useMemo(() => {
     if (!teamA || !teamB) return [];
     return findTwoForOneTrades(teamA, teamB, espnToGsis, byGsis, {
@@ -264,9 +286,9 @@ export function TradeAnalyzer({
     <div className="trade-analyzer">
       <p className="lede" style={{ marginTop: "0.75rem" }}>
         Trade Desk — compare season projection totals before and after a
-        package, then read a verdict. Quantiles are summed independently (store
-        has no joint sample matrix) — direction, not a full Monte Carlo trade
-        net.
+        package, then read a verdict. When a playoff samples sidecar is
+        present, packages are also priced in Δ make-playoffs (same MC as the
+        Playoff Odds board, re-run in the hub over exported draws).
       </p>
 
       <div
@@ -346,6 +368,24 @@ export function TradeAnalyzer({
                 Verdict
               </h3>
               <p style={{ margin: "0 0 0.35rem" }}>{verdict.headline}</p>
+              {playoffDelta?.available ? (
+                <p style={{ margin: "0 0 0.35rem" }} data-testid="trade-playoff-delta">
+                  Make-playoffs: {teamA.name}{" "}
+                  <strong>{formatMakeDelta(playoffDelta.deltaA)}</strong>
+                  {" · "}
+                  {teamB.name}{" "}
+                  <strong>{formatMakeDelta(playoffDelta.deltaB)}</strong>
+                  <span className="league-meta">
+                    {" "}
+                    ({playoffDelta.nSims} sims · periods{" "}
+                    {playoffDelta.periodsSimulated.join(", ")})
+                  </span>
+                </p>
+              ) : playoffDelta?.reason ? (
+                <p className="league-meta" style={{ margin: "0 0 0.35rem" }}>
+                  Δ make-playoffs unavailable — {playoffDelta.reason}
+                </p>
+              ) : null}
               <p className="league-meta" style={{ margin: 0 }}>
                 {verdict.uncertainty}
               </p>

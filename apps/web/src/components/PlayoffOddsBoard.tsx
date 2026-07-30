@@ -35,6 +35,9 @@ export function PlayoffOddsBoard({
   const allUnmapped =
     snapshot.teams.length > 0 &&
     snapshot.teams.every((row) => (row.mapped_roster ?? 0) === 0);
+  const showWeekDelta = snapshot.teams.some(
+    (row) => row.delta_make != null || row.make_playoffs_prior != null,
+  );
 
   return (
     <div className="playoff-odds-board" style={{ marginTop: "0.75rem" }}>
@@ -50,6 +53,11 @@ export function PlayoffOddsBoard({
         {allUnmapped
           ? " No roster players mapped through the player map — undecided weeks (if any) score as 0–0 ties."
           : ""}
+        {showWeekDelta && snapshot.prior_generated_at
+          ? ` Δ vs prior export (${snapshot.prior_generated_at}).`
+          : showWeekDelta
+            ? " Δ vs prior export."
+            : ""}
       </p>
 
       <div className="panel table-scroll">
@@ -59,6 +67,9 @@ export function PlayoffOddsBoard({
               <th>#</th>
               <th>Team</th>
               <th className="numeric">Make</th>
+              {showWeekDelta ? (
+                <th className="numeric">Δ</th>
+              ) : null}
               <th className="numeric">Avg W</th>
               {seedCols.map((seed) => (
                 <th key={seed} className="numeric">
@@ -86,6 +97,13 @@ export function PlayoffOddsBoard({
                 <td data-label="Make" className="numeric">
                   {pct(row.make_playoffs, 0)}
                 </td>
+                {showWeekDelta ? (
+                  <td data-label="Δ" className="numeric">
+                    {row.delta_make == null
+                      ? "—"
+                      : `${row.delta_make >= 0 ? "+" : ""}${(row.delta_make * 100).toFixed(0)}%`}
+                  </td>
+                ) : null}
                 <td data-label="Avg W" className="numeric">
                   {row.avg_wins == null ? "—" : row.avg_wins.toFixed(1)}
                 </td>

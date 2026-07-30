@@ -477,13 +477,13 @@ competing with push products, in a group that already has a Discord.
 | 4 | Team pages drop schedule/scores entirely (`loadTeamSelective`) | P1 | **Fixed** — roadmap 7.4 |
 | 5 | 21–28 identical nav pills; >1 screen of chrome on mobile | P1 | **Fixed** — roadmap 7.5 (28 → 19 pills; 1.13 → 0.87 mobile screens) |
 | 6 | Empty projection columns rendered without coverage disclosure | P1 | **Fixed** — roadmap 7.10 |
-| 7 | Decision tools unnamed, not roster-aware, no verdict/Δ framing | P1 | **Mostly fixed** — 7.8 landing/verdict/Trade Finder; Δ playoff odds still open |
+| 7 | Decision tools unnamed, not roster-aware, no verdict/Δ framing | P1 | **Fixed** — 7.8 landing/verdict/Trade Finder + Δ make-playoffs via samples sidecar |
 | 8 | No settings tab for ESPN sports; no "Open in ESPN" deep links | P1 | **Fixed** — roadmap 7.9 + 7.3 |
 | 9 | Baseball missing the projection-free tooling (cats, two-start, caps) | P2 | Open — roadmap 8.2 |
-| 10 | Golf missing reminders, projected leaderboard, segment limits | P2 | Open — roadmap 8.3 |
+| 10 | Golf missing reminders, projected leaderboard, segment limits | P2 | Reminders landed (7.7); projected leaderboard / segment limits still 8.3 |
 | 11 | 239 KB largest page vs a 100 KB target; full row sets to client | P2 | **Fixed** — roadmap 7.11 (server players board + slim scoreboard/draft + CI gate) |
 | 12 | No dark mode, no imagery, no live/freshness affordances, no legend | P2 | **Fixed** for theme/legend/freshness/crests (7.10 + 7.3); typographic pass open |
-| 13 | No outbound channel at all — no email, push, or digest | P1 | **Fixed** for digest surface + Discord webhook (7.7); email / tee-time reminders open |
+| 13 | No outbound channel at all — no email, push, or digest | P1 | **Fixed** for digest + Discord + golf tee-time reminders (7.7); email fallback open |
 
 **Nine of thirteen findings were blocked on nothing.** They were display,
 ordering, emphasis, and naming over data that is already synced, already
