@@ -490,10 +490,13 @@ test.describe("hub smoke", () => {
   });
 
   test("tools start/sit uses typical-week posteriors", async ({ page }) => {
-    await page.goto("/leagues/football-main?tab=tools&view=start-sit");
+    // Pin ?team=1 so this does not depend on SJ_DEV_VIEWER_EMAIL / admin links
+    // (those default Start/Sit onto standing #1, currently Hail Mary Heroes).
+    await page.goto(
+      "/leagues/football-main?tab=tools&view=start-sit&team=1",
+    );
     await expect(page.getByText(/Typical-week posteriors/i)).toBeVisible();
     // Fixture overlay maps roster ESPN id → weekly Mahomes GSIS; UI keeps roster name.
-    // Default team is 1 (Gridiron Goons); QB id 202600001 is mapped.
     await expect(page.getByText("Juan Phillips")).toBeVisible();
   });
 
