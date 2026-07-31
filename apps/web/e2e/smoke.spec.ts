@@ -509,8 +509,8 @@ test.describe("hub smoke", () => {
     await expect(page.getByRole("link", { name: "Feed" })).toBeVisible();
     await expect(page.getByRole("link", { name: "Newest first" })).toBeVisible();
     await expect(page.getByRole("link", { name: "Oldest first" })).toBeVisible();
-    await expect(page.getByLabel("From")).toBeVisible();
-    await expect(page.getByLabel("To")).toBeVisible();
+    await expect(page.getByLabel("Feed from date")).toBeVisible();
+    await expect(page.getByLabel("Feed to date")).toBeVisible();
   });
 
   test("tools landing cards name each decision tool", async ({ page }) => {

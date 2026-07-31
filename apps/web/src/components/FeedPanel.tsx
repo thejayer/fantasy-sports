@@ -263,11 +263,21 @@ export function FeedPanel({
         </div>
         <label className="feed-date-field">
           <span className="league-meta">From</span>
-          <input type="date" name="from" defaultValue={fromParam ?? ""} />
+          <input
+            type="date"
+            name="from"
+            aria-label="Feed from date"
+            defaultValue={fromParam ?? ""}
+          />
         </label>
         <label className="feed-date-field">
           <span className="league-meta">To</span>
-          <input type="date" name="to" defaultValue={toParam ?? ""} />
+          <input
+            type="date"
+            name="to"
+            aria-label="Feed to date"
+            defaultValue={toParam ?? ""}
+          />
         </label>
         <button type="submit" className="button secondary">
           Apply dates
