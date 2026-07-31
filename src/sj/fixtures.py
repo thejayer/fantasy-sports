@@ -124,6 +124,32 @@ def regenerate_fixtures(
                             for i, c in enumerate(cats)
                         }
 
+                pitcher_ip: list[dict] = []
+                for team in teams[:4]:
+                    team_id = team.get("team_id")
+                    for player in team.get("roster") or []:
+                        if player.get("role") != "pitcher" and str(
+                            player.get("position") or ""
+                        ).upper() not in {"P", "SP", "RP"}:
+                            continue
+                        outs = float(
+                            (player.get("season_stats") or {}).get("OUTS") or 0
+                        )
+                        # Scale season outs down to a plausible weekly line.
+                        week_outs = round(max(3.0, outs / 26.0), 1)
+                        pitcher_ip.append(
+                            {
+                                "player_id": player.get("id"),
+                                "name": player.get("name"),
+                                "team_id": team_id,
+                                "outs": week_outs,
+                                "ip": round(week_outs / 3.0, 1),
+                            }
+                        )
+                        if len(pitcher_ip) >= 8:
+                            break
+                    if len(pitcher_ip) >= 8:
+                        break
                 doc = build_week_category_document(
                     league_id=spec.id,
                     season=season,
@@ -131,6 +157,7 @@ def regenerate_fixtures(
                     box_scores=[_CatBox(teams[0], teams[1])],
                     synced_at=FIXED_TIMESTAMP,
                     period_label="period",
+                    pitcher_ip=pitcher_ip or None,
                 )
                 store.write_week_box_scores(doc)
                 emit(f"wrote {spec.id}/{season}/weeks/{week}.json")

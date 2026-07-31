@@ -21,6 +21,7 @@ _BASEBALL_STAT_KEYS = (
     "SV",
     "HLD",
     "QS",
+    "GS",
     "K",
     "ERA",
     "WHIP",
@@ -341,7 +342,95 @@ def serialize_settings(league: Any) -> dict[str, Any]:
             str(k): list(v) if isinstance(v, (list, tuple)) else v
             for k, v in matchup_periods.items()
         }
+    limits = extract_lineup_slot_stat_limits(settings)
+    if limits:
+        payload["lineup_slot_stat_limits"] = limits
+        gs_max = season_gs_max_from_limits(limits)
+        if gs_max is not None:
+            payload["season_gs_max"] = gs_max
+    season_ip_max = _num(getattr(settings, "season_ip_max", None))
+    if season_ip_max is not None and season_ip_max > 0:
+        payload["season_ip_max"] = season_ip_max
+    min_weekly_ip = _num(getattr(settings, "min_weekly_ip", None))
+    if min_weekly_ip is not None and min_weekly_ip > 0:
+        payload["min_weekly_ip"] = min_weekly_ip
     return payload
+
+
+def extract_lineup_slot_stat_limits(settings: Any) -> list[dict[str, Any]]:
+    """ESPN ``rosterSettings.lineupSlotStatLimits`` → hub rows (roadmap 8.2).
+
+    Typical baseball dynasty: slot ``P`` (13) capped on ``GS`` (stat 33).
+    Accepts pre-normalized lists on sample stubs or raw ESPN maps via
+    ``_raw_roster_settings`` / ``lineup_slot_stat_limits``.
+    """
+    if settings is None:
+        return []
+    attached = getattr(settings, "lineup_slot_stat_limits", None)
+    if isinstance(attached, list) and attached:
+        rows: list[dict[str, Any]] = []
+        for item in attached:
+            if not isinstance(item, dict):
+                continue
+            slot = item.get("slot") or item.get("lineup_slot")
+            stat = item.get("stat") or item.get("stat_abbr")
+            limit = _num(item.get("limit") or item.get("max"))
+            if slot and stat and limit is not None and limit > 0:
+                rows.append(
+                    {
+                        "slot": str(slot),
+                        "stat": str(stat),
+                        "limit": limit,
+                    }
+                )
+        if rows:
+            return rows
+    raw = getattr(settings, "_raw_roster_settings", None) or {}
+    if not isinstance(raw, dict):
+        return []
+    limits = raw.get("lineupSlotStatLimits") or {}
+    if not isinstance(limits, dict):
+        return []
+    try:
+        from espn_api.baseball.constant import POSITION_MAP, STATS_MAP
+    except ImportError:
+        POSITION_MAP, STATS_MAP = {}, {}
+    rows = []
+    for slot_key, stat_map in limits.items():
+        if not isinstance(stat_map, dict):
+            continue
+        try:
+            slot_id = int(slot_key)
+        except (TypeError, ValueError):
+            slot_name = str(slot_key)
+        else:
+            slot_name = str(POSITION_MAP.get(slot_id, slot_id))
+        for stat_key, limit_raw in stat_map.items():
+            limit = _num(limit_raw)
+            if limit is None or limit <= 0:
+                continue
+            try:
+                sid = int(stat_key)
+            except (TypeError, ValueError):
+                stat_name = str(stat_key)
+            else:
+                stat_name = str(STATS_MAP.get(sid, sid))
+            rows.append({"slot": slot_name, "stat": stat_name, "limit": limit})
+    rows.sort(key=lambda r: (r["slot"], r["stat"]))
+    return rows
+
+
+def season_gs_max_from_limits(limits: list[dict[str, Any]]) -> float | None:
+    """Prefer combined ``P`` GS cap; else max of SP/RP GS caps."""
+    by_slot = {
+        str(row.get("slot")): float(row["limit"])
+        for row in limits
+        if str(row.get("stat")) == "GS" and row.get("limit") is not None
+    }
+    if "P" in by_slot:
+        return by_slot["P"]
+    values = [by_slot[s] for s in ("SP", "RP") if s in by_slot]
+    return max(values) if values else None
 
 
 def extract_baseball_scoring_categories(settings: Any) -> list[dict[str, Any]]:
@@ -546,9 +635,10 @@ def build_week_category_document(
     box_scores: list[Any],
     synced_at: str | None = None,
     period_label: str = "period",
+    pitcher_ip: list[dict[str, Any]] | None = None,
 ) -> dict[str, Any]:
     """Baseball period category boxes under ``weeks/{N}.json`` (sport=baseball)."""
-    return {
+    doc: dict[str, Any] = {
         "schema_version": 1,
         "league_id": league_id,
         "season": season,
@@ -558,6 +648,9 @@ def build_week_category_document(
         "synced_at": synced_at,
         "matchups": [serialize_category_box_score(box) for box in box_scores],
     }
+    if pitcher_ip:
+        doc["pitcher_ip"] = pitcher_ip
+    return doc
 
 
 def _team_id(value: Any) -> int | None:

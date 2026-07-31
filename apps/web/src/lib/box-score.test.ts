@@ -3,14 +3,19 @@ import { describe, expect, it } from "vitest";
 import {
   boxPairKey,
   buildPlayerWeekGameLog,
+  categoryBoxRows,
+  categoryLabel,
+  categoryResultTone,
   findBoxMatchup,
   formatBoxPoints,
+  formatCatRecord,
+  hasCategoryStats,
   isStarterSlot,
   parseBoxPair,
   playerLinesInWeek,
   sortLineup,
 } from "@/lib/box-score";
-import type { WeekBoxScoreSnapshot } from "@/lib/data";
+import type { LeagueSnapshot, WeekBoxScoreSnapshot } from "@/lib/data";
 
 describe("box-score helpers (roadmap 8.1)", () => {
   it("parses and keys unordered team pairs", () => {
@@ -128,5 +133,47 @@ describe("box-score helpers (roadmap 8.1)", () => {
     expect(log.totalPoints).toBeCloseTo(31.0, 5);
     expect(log.avgPoints).toBeCloseTo(15.5, 5);
     expect(buildPlayerWeekGameLog([w13], 999).rows).toEqual([]);
+  });
+
+  it("builds baseball category box rows from home/away stats", () => {
+    const league = {
+      league_id: "bb",
+      season: 2026,
+      sport: "baseball",
+      teams: [],
+      settings: {
+        categories: [
+          { id: 5, abbr: "HR", label: "Home Runs" },
+          { id: 47, abbr: "ERA", label: "ERA" },
+        ],
+      },
+    } as unknown as LeagueSnapshot;
+    const matchup = {
+      home_team_id: 1,
+      away_team_id: 2,
+      home_wins: 6,
+      home_losses: 3,
+      home_ties: 1,
+      away_wins: 3,
+      away_losses: 6,
+      away_ties: 1,
+      home_stats: {
+        HR: { value: 11, result: "LOSS" },
+        ERA: { value: 3.2, result: "WIN" },
+      },
+      away_stats: {
+        HR: { value: 12, result: "WIN" },
+        ERA: { value: 4.1, result: "LOSS" },
+      },
+    };
+    expect(hasCategoryStats(matchup)).toBe(true);
+    expect(formatCatRecord(6, 3, 1)).toBe("6-3-1");
+    expect(categoryResultTone("WIN")).toBe("win");
+    expect(categoryLabel(league, "HR")).toBe("Home Runs");
+    const rows = categoryBoxRows(league, matchup);
+    expect(rows.map((r) => r.id)).toEqual(["HR", "ERA"]);
+    expect(rows[0]?.label).toBe("Home Runs");
+    expect(rows[0]?.homeResult).toBe("LOSS");
+    expect(rows[1]?.awayValue).toBe(4.1);
   });
 });

@@ -36,6 +36,8 @@ export type SeasonStats = {
   WHIP?: number;
   OUTS?: number;
   IP?: number;
+  /** Games started (pitchers) — season GS caps / usage (roadmap 8.2). */
+  GS?: number;
   /** Synthetic OWGR rank on golf roster rows (roadmap 6.4b). */
   OWGR?: number;
 };
@@ -138,6 +140,17 @@ export type LeagueSettings = {
   scoring_format?: ScoringFormatRow[];
   categories?: LeagueCategoryRow[];
   matchup_periods?: Record<string, number[]>;
+  /** Optional season team IP ceiling (baseball usage caps). */
+  season_ip_max?: number;
+  /** Yahoo-style minimum weekly IP when period lines exist. */
+  min_weekly_ip?: number;
+  /** Season GS ceiling from ESPN lineupSlotStatLimits (P/SP/RP). */
+  season_gs_max?: number;
+  lineup_slot_stat_limits?: Array<{
+    slot: string;
+    stat: string;
+    limit: number;
+  }>;
   /** Present on hub-native golf leagues (roadmap 6.4a). */
   golf?: GolfLeagueSettings;
 };
@@ -233,17 +246,42 @@ export type BoxScorePlayer = {
   game_played?: number | null;
 };
 
+/** One category cell on a baseball H2H category box (roadmap 8.2). */
+export type CategoryStatCell = {
+  value: number | null;
+  result?: string | null;
+};
+
 export type BoxScoreMatchup = {
   home_team_id: number | null;
   away_team_id: number | null;
-  home_score: number | null;
-  away_score: number | null;
+  home_score?: number | null;
+  away_score?: number | null;
   home_projected?: number | null;
   away_projected?: number | null;
   is_playoff?: boolean;
   matchup_type?: string | null;
-  home_lineup: BoxScorePlayer[];
-  away_lineup: BoxScorePlayer[];
+  /** Football player lines — absent on baseball category boxes. */
+  home_lineup?: BoxScorePlayer[];
+  away_lineup?: BoxScorePlayer[];
+  /** Baseball H2H category matrix (ESPN period box). */
+  home_stats?: Record<string, CategoryStatCell>;
+  away_stats?: Record<string, CategoryStatCell>;
+  home_wins?: number | null;
+  home_losses?: number | null;
+  home_ties?: number | null;
+  away_wins?: number | null;
+  away_losses?: number | null;
+  away_ties?: number | null;
+};
+
+/** Period pitcher IP line on baseball ``weeks/{N}.json`` (roadmap 8.2 leftovers). */
+export type PitcherPeriodIp = {
+  player_id: number | string | null;
+  name: string | null;
+  team_id: number | null;
+  outs?: number | null;
+  ip?: number | null;
 };
 
 /** Side concern ``weeks/{N}.json`` — never loaded by getLeagueSnapshot. */
@@ -256,6 +294,13 @@ export type WeekBoxScoreSnapshot = {
   period_label?: string;
   synced_at?: string;
   matchups: BoxScoreMatchup[];
+  /** Baseball only — period pitcher outs/IP when ESPN roster lines exist. */
+  pitcher_ip?: PitcherPeriodIp[];
+};
+
+export type ProbableStarter = {
+  id: number | string | null;
+  name: string | null;
 };
 
 export type ProScheduleGame = {
@@ -265,6 +310,8 @@ export type ProScheduleGame = {
   home_pro_team_id?: number | string | null;
   scoring_period_id: number | null;
   start_time: string;
+  probable_away?: ProbableStarter | null;
+  probable_home?: ProbableStarter | null;
 };
 
 /** Side concern ``pro_schedule.json`` for baseball tools (roadmap 8.2). */

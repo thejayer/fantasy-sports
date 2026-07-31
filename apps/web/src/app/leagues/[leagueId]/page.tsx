@@ -270,15 +270,24 @@ export default async function LeagueDetailPage({ params, searchParams }: Props) 
   }
 
   const boxPair =
-    league.sport === "football" && tab === "matchups"
+    (league.sport === "football" || league.sport === "baseball") &&
+    tab === "matchups"
       ? parseBoxPair(boxParam)
       : null;
   let weekBoxScore: WeekBoxScoreSnapshot | null = null;
-  if (boxPair) {
+  const baseballUsageWeek =
+    league.sport === "baseball" &&
+    tab === "tools" &&
+    baseballToolsView === "usage"
+      ? (league.current_week ?? 1)
+      : null;
+  if (boxPair || baseballUsageWeek != null) {
     const boxWeek =
-      week != null && !Number.isNaN(week)
-        ? week
-        : (league.current_week ?? 1);
+      baseballUsageWeek != null
+        ? baseballUsageWeek
+        : week != null && !Number.isNaN(week)
+          ? week
+          : (league.current_week ?? 1);
     weekBoxScore = await getWeekBoxScore(
       league.league_id,
       league.season,

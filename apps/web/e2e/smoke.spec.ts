@@ -493,7 +493,7 @@ test.describe("hub smoke", () => {
   test("baseball waivers tab lists free agents", async ({ page }) => {
     await page.goto("/leagues/baseball-dynasty?tab=waivers");
     await expect(page.getByText(/ESPN free agents/i)).toBeVisible();
-    await expect(page.getByText("Stephen Price")).toBeVisible();
+    await expect(page.getByText("Randy Harris")).toBeVisible();
   });
 
   test("baseball tools category board ranks teams (roadmap 8.2)", async ({
@@ -517,6 +517,8 @@ test.describe("hub smoke", () => {
     await page.goto("/leagues/baseball-dynasty?tab=tools&view=usage");
     await expect(page.getByText(/Season IP vs/i)).toBeVisible();
     await expect(page.getByRole("heading", { name: /Team IP/i })).toBeVisible();
+    await expect(page.getByRole("heading", { name: /Team GS vs/i })).toBeVisible();
+    await expect(page.getByText(/Period 24 IP vs/i)).toBeVisible();
     await expect(
       page.getByRole("link", { name: "Curveball Crew" }),
     ).toBeVisible();
@@ -538,7 +540,8 @@ test.describe("hub smoke", () => {
     await page.goto("/leagues/baseball-dynasty?tab=tools&view=schedule");
     await expect(page.getByText(/Games per fantasy team in matchup period 24/i)).toBeVisible();
     await expect(page.getByRole("columnheader", { name: "Player games" })).toBeVisible();
-    await expect(page.getByText(/Two-start pitchers remain unavailable/i)).toBeVisible();
+    await expect(page.getByRole("heading", { name: /Two-start pitchers/i })).toBeVisible();
+    await expect(page.getByText("Ethan Jackson")).toBeVisible();
   });
 
   test("baseball tools daily locks show today's slate (roadmap 8.2)", async ({
@@ -548,5 +551,21 @@ test.describe("hub smoke", () => {
     await expect(page.getByText(/Today's lineup locks for 2026-07-27/i)).toBeVisible();
     await expect(page.getByText("BAL @ SF")).toBeVisible();
     await expect(page.getByRole("cell", { name: "17:05 UTC" }).first()).toBeVisible();
+  });
+
+  test("baseball matchups open period category box (roadmap 8.2)", async ({
+    page,
+  }) => {
+    await page.goto(
+      "/leagues/baseball-dynasty?tab=matchups&view=week&week=24",
+    );
+    await expect(page.getByRole("link", { name: "Category box" }).first()).toBeVisible();
+    await page.goto(
+      "/leagues/baseball-dynasty?tab=matchups&view=week&week=24&box=1-2",
+    );
+    await expect(page.getByText(/Period 24 category box/i)).toBeVisible();
+    await expect(page.getByText("Diamond Dogs").first()).toBeVisible();
+    await expect(page.getByText("Home Runs").first()).toBeVisible();
+    await expect(page.getByText("6-3-1").first()).toBeVisible();
   });
 });
