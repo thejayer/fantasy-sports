@@ -106,7 +106,10 @@ def regenerate_fixtures(
             week = int(snapshot.get("current_week") or 1)
             teams = snapshot.get("teams") or []
             if len(teams) >= 2:
-                from sj.serialize import build_week_category_document
+                from sj.serialize import (
+                    build_week_category_document,
+                    is_season_points_scoring,
+                )
 
                 class _CatBox:
                     def __init__(self, home: dict, away: dict):
@@ -150,17 +153,29 @@ def regenerate_fixtures(
                             break
                     if len(pitcher_ip) >= 8:
                         break
-                doc = build_week_category_document(
-                    league_id=spec.id,
-                    season=season,
-                    week=week,
-                    box_scores=[_CatBox(teams[0], teams[1])],
-                    synced_at=FIXED_TIMESTAMP,
-                    period_label="period",
-                    pitcher_ip=pitcher_ip or None,
+                season_points = is_season_points_scoring(
+                    snapshot.get("scoring_type")
+                    if isinstance(snapshot.get("scoring_type"), str)
+                    else None
                 )
-                store.write_week_box_scores(doc)
-                emit(f"wrote {spec.id}/{season}/weeks/{week}.json")
+                # Season Points: period IP for Usage Caps only (no H2H category matrix).
+                boxes = (
+                    []
+                    if season_points
+                    else [_CatBox(teams[0], teams[1])]
+                )
+                if boxes or pitcher_ip:
+                    doc = build_week_category_document(
+                        league_id=spec.id,
+                        season=season,
+                        week=week,
+                        box_scores=boxes,
+                        synced_at=FIXED_TIMESTAMP,
+                        period_label="period",
+                        pitcher_ip=pitcher_ip or None,
+                    )
+                    store.write_week_box_scores(doc)
+                    emit(f"wrote {spec.id}/{season}/weeks/{week}.json")
         written.append((spec.id, season, str(path)))
         index_leagues.append(
             {

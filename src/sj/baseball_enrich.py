@@ -188,29 +188,68 @@ def enrich_baseball_trailing_stats(league: Any, snapshot: dict[str, Any]) -> int
     return apply_trailing_stats_to_snapshot(snapshot, trailing)
 
 
+def _attach_team_season_points(league: Any, teams_payload: list[Any]) -> int:
+    """Map ESPN ``teams[].points`` → ``team.points_for`` (Season Points standings).
+
+    espn-api baseball ``Team`` never sets ``points_for``; ``record.overall.pointsFor``
+    is 0 for ``TOTAL_SEASON_POINTS``. Official standings use top-level ``points``.
+    """
+    by_id: dict[int, dict[str, Any]] = {}
+    for row in teams_payload:
+        if not isinstance(row, dict):
+            continue
+        try:
+            tid = int(row["id"])
+        except (KeyError, TypeError, ValueError):
+            continue
+        by_id[tid] = row
+    attached = 0
+    for team in getattr(league, "teams", None) or []:
+        tid = getattr(team, "team_id", None)
+        raw = by_id.get(int(tid)) if tid is not None else None
+        if not raw:
+            continue
+        pts = raw.get("points")
+        if pts is None:
+            pts = raw.get("pointsLive")
+        try:
+            value = float(pts) if pts is not None else None
+        except (TypeError, ValueError):
+            value = None
+        if value is None:
+            continue
+        team.points_for = value
+        team.points = value
+        attached += 1
+    return attached
+
+
 def attach_baseball_roster_limits(league: Any) -> bool:
-    """Stash ``_raw_roster_settings`` on league.settings for GS / slot caps."""
+    """Stash roster GS caps and Season Points team totals from raw ESPN payload."""
     settings = getattr(league, "settings", None)
     if settings is None:
         return False
-    if getattr(settings, "_raw_roster_settings", None):
-        return True
+    already = bool(getattr(settings, "_raw_roster_settings", None))
     request = getattr(league, "espn_request", None)
     if request is None or not callable(getattr(request, "get_league", None)):
-        return False
+        return already
     try:
         from sj.sync import espn_call
 
         data = espn_call(lambda: request.get_league(), label="roster_settings")
     except Exception:  # noqa: BLE001 — optional caps
-        return False
+        return already
     if not isinstance(data, dict):
-        return False
-    roster = (data.get("settings") or {}).get("rosterSettings") or {}
-    if not isinstance(roster, dict):
-        return False
-    settings._raw_roster_settings = roster
-    return True
+        return already
+    if not already:
+        roster = (data.get("settings") or {}).get("rosterSettings") or {}
+        if isinstance(roster, dict) and roster:
+            settings._raw_roster_settings = roster
+            already = True
+    teams_payload = data.get("teams")
+    if isinstance(teams_payload, list):
+        _attach_team_season_points(league, teams_payload)
+    return already
 
 
 def build_pro_schedule_from_league(
@@ -542,6 +581,18 @@ def sync_baseball_category_boxes(
     if getattr(spec, "sport", None) != "baseball":
         return 0
     if season < _BOX_SCORE_MIN_SEASON:
+        return 0
+    from sj.serialize import is_season_points_scoring
+
+    # TOTAL_SEASON_POINTS has no H2H category boxes; espn-api falls through to
+    # abstract BoxScore and raises. Period IP still belongs under usage tools
+    # when we add a dedicated pull — skip the broken box_scores path for now.
+    scoring_type = snapshot.get("scoring_type") or (
+        (snapshot.get("settings") or {}).get("scoring_type")
+    )
+    if is_season_points_scoring(
+        scoring_type if isinstance(scoring_type, str) else None
+    ):
         return 0
     if not callable(getattr(league, "box_scores", None)):
         return 0

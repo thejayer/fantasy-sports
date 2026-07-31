@@ -5,11 +5,13 @@ from __future__ import annotations
 from types import SimpleNamespace
 
 from sj.baseball_enrich import (
+    _attach_team_season_points,
     apply_trailing_stats_to_snapshot,
     enrich_pro_schedule_with_probables,
     parse_pitcher_ip_from_raw_schedule,
     parse_site_scoreboard_probables,
     parse_trailing_from_player_card,
+    sync_baseball_category_boxes,
 )
 from sj.registry import load_registry
 from sj.sample import sample_pro_schedule_for_snapshot, sample_snapshot
@@ -55,8 +57,11 @@ def test_sample_baseball_player_serializes_trailing_windows():
     snap = sample_snapshot(spec, spec.current_season, teams=3)
     player = snap["teams"][0]["roster"][0]
     assert set(player.get("trailing_stats", {})) >= {"7", "15", "30"}
+    assert snap["scoring_type"] == "TOTAL_SEASON_POINTS"
     assert snap["settings"].get("categories")
-    assert len(snap["settings"]["categories"]) == 10
+    # Season Points weights (HR/RBI/OUTS/…) — more than classic 5×5 cats.
+    assert len(snap["settings"]["categories"]) >= 10
+    assert any(c.get("points") == 5.0 for c in snap["settings"]["categories"])
     assert snap["settings"].get("season_gs_max") == 200.0
     assert snap["settings"].get("min_weekly_ip") == 20.0
     # Pitchers carry GS for usage caps.
@@ -311,3 +316,26 @@ def test_extract_trailing_from_stub_player():
     row = serialize_player(stub, sport="baseball")
     assert "trailing_stats" in row
     assert row["trailing_stats"]["7"]["HR"] == 1.0
+
+
+def test_attach_team_season_points_from_espn_payload():
+    team = SimpleNamespace(team_id=4, points_for=None)
+    league = SimpleNamespace(teams=[team])
+    n = _attach_team_season_points(
+        league, [{"id": 4, "points": 6040.0, "pointsLive": 6040.0}]
+    )
+    assert n == 1
+    assert team.points_for == 6040.0
+    assert team.points == 6040.0
+
+
+def test_sync_category_boxes_skips_season_points():
+    league = SimpleNamespace(box_scores=lambda **_: (_ for _ in ()).throw(AssertionError()))
+    spec = SimpleNamespace(sport="baseball", id="baseball-dynasty")
+    written = sync_baseball_category_boxes(
+        league,
+        spec,
+        2026,
+        {"scoring_type": "TOTAL_SEASON_POINTS", "current_week": 24},
+    )
+    assert written == 0

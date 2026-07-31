@@ -490,10 +490,14 @@ test.describe("hub smoke", () => {
   });
 
   test("tools start/sit uses typical-week posteriors", async ({ page }) => {
-    await page.goto("/leagues/football-main?tab=tools&view=start-sit");
+    // Pin ?team=1 so this does not depend on SJ_DEV_VIEWER_EMAIL / admin links
+    // (those default Start/Sit onto standing #1, currently Hail Mary Heroes).
+    await page.goto(
+      "/leagues/football-main?tab=tools&view=start-sit&team=1",
+    );
     await expect(page.getByText(/Typical-week posteriors/i)).toBeVisible();
     // Fixture overlay maps roster ESPN id → weekly Mahomes GSIS; UI keeps roster name.
-    await expect(page.getByText("Roy Thompson")).toBeVisible();
+    await expect(page.getByText("Juan Phillips")).toBeVisible();
   });
 
   test("draft results tab shows ESPN picks", async ({ page }) => {
@@ -522,22 +526,35 @@ test.describe("hub smoke", () => {
   test("baseball waivers tab lists free agents", async ({ page }) => {
     await page.goto("/leagues/baseball-dynasty?tab=waivers");
     await expect(page.getByText(/ESPN free agents/i)).toBeVisible();
-    await expect(page.getByText("Randy Harris")).toBeVisible();
+    await expect(page.getByText("Jonathan Ward")).toBeVisible();
   });
 
-  test("baseball tools category board ranks teams (roadmap 8.2)", async ({
+  test("baseball Season Points hides category board (roadmap 8.2)", async ({
     page,
   }) => {
-    await page.goto("/leagues/baseball-dynasty?tab=tools&view=categories");
-    await expect(page.getByRole("heading", { name: "Category Board" }).or(
-      page.getByText(/Category ranks from roster/i),
-    )).toBeVisible();
-    await expect(page.getByText(/Season-to-date from synced/i)).toBeVisible();
-    await expect(page.getByText("Diamond Dogs")).toBeVisible();
-    await expect(page.getByRole("columnheader", { name: "Home Runs" })).toBeVisible();
+    await page.goto("/leagues/baseball-dynasty?tab=tools");
+    await expect(page.getByRole("heading", { name: "Usage Caps" })).toBeVisible();
     await expect(
-      page.getByRole("columnheader", { name: "ERA", exact: true }),
+      page.getByRole("heading", { name: "Category Board" }),
+    ).toHaveCount(0);
+    await page.goto("/leagues/baseball-dynasty?tab=tools&view=categories");
+    await expect(
+      page.getByText(/Category Board is for H2H \/ roto leagues/i),
     ).toBeVisible();
+  });
+
+  test("baseball Season Points standings show points without H2H record", async ({
+    page,
+  }) => {
+    await page.goto("/leagues/baseball-dynasty");
+    await expect(page.getByText(/Season Points/i).first()).toBeVisible();
+    await expect(
+      page.getByText(/standings by cumulative fantasy points/i),
+    ).toBeVisible();
+    await expect(page.getByRole("columnheader", { name: "Points" })).toBeVisible();
+    await expect(page.getByRole("columnheader", { name: "Record" })).toHaveCount(
+      0,
+    );
   });
 
   test("baseball tools usage caps show team IP (roadmap 8.2)", async ({
@@ -570,7 +587,7 @@ test.describe("hub smoke", () => {
     await expect(page.getByText(/Games per fantasy team in matchup period 24/i)).toBeVisible();
     await expect(page.getByRole("columnheader", { name: "Player games" })).toBeVisible();
     await expect(page.getByRole("heading", { name: /Two-start pitchers/i })).toBeVisible();
-    await expect(page.getByText("Ethan Jackson")).toBeVisible();
+    await expect(page.getByText("Douglas Price")).toBeVisible();
   });
 
   test("baseball tools daily locks show today's slate (roadmap 8.2)", async ({
@@ -578,23 +595,18 @@ test.describe("hub smoke", () => {
   }) => {
     await page.goto("/leagues/baseball-dynasty?tab=tools&view=locks");
     await expect(page.getByText(/Today's lineup locks for 2026-07-27/i)).toBeVisible();
-    await expect(page.getByText("BAL @ SF")).toBeVisible();
+    await expect(page.getByText("HOU @ ARI")).toBeVisible();
     await expect(page.getByRole("cell", { name: "17:05 UTC" }).first()).toBeVisible();
   });
 
-  test("baseball matchups open period category box (roadmap 8.2)", async ({
+  test("baseball Season Points matchups explain no H2H (roadmap 8.2)", async ({
     page,
   }) => {
-    await page.goto(
-      "/leagues/baseball-dynasty?tab=matchups&view=week&week=24",
+    await page.goto("/leagues/baseball-dynasty?tab=matchups");
+    await expect(page.getByText(/No head-to-head matchups/i)).toBeVisible();
+    await expect(page.getByText(/Season Points/i).first()).toBeVisible();
+    await expect(page.getByRole("link", { name: "Category box" })).toHaveCount(
+      0,
     );
-    await expect(page.getByRole("link", { name: "Category box" }).first()).toBeVisible();
-    await page.goto(
-      "/leagues/baseball-dynasty?tab=matchups&view=week&week=24&box=1-2",
-    );
-    await expect(page.getByText(/Period 24 category box/i)).toBeVisible();
-    await expect(page.getByText("Diamond Dogs").first()).toBeVisible();
-    await expect(page.getByText("Home Runs").first()).toBeVisible();
-    await expect(page.getByText("6-3-1").first()).toBeVisible();
   });
 });

@@ -371,3 +371,123 @@ def test_baseball_player_season_stats_and_role():
     assert snapshot["teams"][0]["points_for"] == 400.0  # 220 + 180 roster fallback
     assert snapshot["players"][0]["name"] == "Slugger"
     assert snapshot["players"][0]["season_stats"]["HR"] == 30
+
+
+def test_serialize_season_points_prefers_team_points_not_roster_sum():
+    """TOTAL_SEASON_POINTS must not invent PF from roster player totals."""
+    from sj.serialize import serialize_league
+
+    hitter = SimpleNamespace(
+        playerId=1,
+        name="Slugger",
+        position="OF",
+        lineupSlot="OF",
+        proTeam="NYY",
+        injuryStatus="ACTIVE",
+        status="ONTEAM",
+        injured=False,
+        eligibleSlots=["OF"],
+        acquisitionType=None,
+        percent_owned=99.0,
+        total_points=900.0,
+        projected_total_points=900.0,
+        avg_points=9.0,
+        stats={0: {"breakdown": {"HR": 30, "AB": 400, "H": 120, "AVG": 0.3}}},
+    )
+    team = SimpleNamespace(
+        team_id=1,
+        team_name="Okiro",
+        team_abbrev="OKI",
+        owners=["Pat"],
+        logo_url="",
+        wins=0,
+        losses=0,
+        ties=0,
+        points_for=None,
+        points=6040.0,
+        points_against=None,
+        standing=1,
+        final_standing=0,
+        division_name="",
+        roster=[hitter],
+    )
+    settings = SimpleNamespace(
+        name="SJ - Baseball",
+        scoring_type="TOTAL_SEASON_POINTS",
+        _raw_scoring_settings={
+            "scoringType": "TOTAL_SEASON_POINTS",
+            "scoringItems": [
+                {"statId": 5, "statName": "Home Runs", "points": 5.0},
+                {"statId": 20, "statName": "Runs", "points": 1.0},
+            ],
+        },
+    )
+    league = SimpleNamespace(
+        settings=settings,
+        teams=[team],
+        current_week=129,
+        scoring_type="TOTAL_SEASON_POINTS",
+    )
+    snapshot = serialize_league(
+        league,
+        league_id="baseball-dynasty",
+        sport="baseball",
+        format="dynasty",
+        season=2026,
+        espn_league_id=2499137,
+    )
+    assert snapshot["scoring_type"] == "TOTAL_SEASON_POINTS"
+    assert snapshot["teams"][0]["points_for"] == 6040.0
+    assert snapshot["settings"]["scoring_format"][0]["points"] == 5.0
+    assert snapshot["settings"]["categories"][0]["abbr"] == "HR"
+
+
+def test_serialize_season_points_without_team_points_leaves_pf_none():
+    from sj.serialize import serialize_league
+
+    player = SimpleNamespace(
+        playerId=1,
+        name="X",
+        position="OF",
+        lineupSlot="OF",
+        proTeam="NYY",
+        injuryStatus="ACTIVE",
+        status="ONTEAM",
+        injured=False,
+        eligibleSlots=["OF"],
+        acquisitionType=None,
+        percent_owned=1.0,
+        total_points=500.0,
+        projected_total_points=500.0,
+        avg_points=5.0,
+        stats={0: {"breakdown": {}}},
+    )
+    team = SimpleNamespace(
+        team_id=1,
+        team_name="Unset",
+        team_abbrev="UN",
+        owners=[],
+        logo_url="",
+        wins=0,
+        losses=0,
+        ties=0,
+        points_for=None,
+        points_against=None,
+        standing=1,
+        roster=[player],
+    )
+    league = SimpleNamespace(
+        settings=SimpleNamespace(name="BB", scoring_type="TOTAL_SEASON_POINTS"),
+        teams=[team],
+        current_week=1,
+        scoring_type="TOTAL_SEASON_POINTS",
+    )
+    snapshot = serialize_league(
+        league,
+        league_id="baseball-dynasty",
+        sport="baseball",
+        format="dynasty",
+        season=2026,
+        espn_league_id=1,
+    )
+    assert snapshot["teams"][0]["points_for"] is None

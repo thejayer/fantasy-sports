@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { BoxScorePanel } from "@/components/BoxScorePanel";
 import { CategoryBoxPanel } from "@/components/CategoryBoxPanel";
+import { EmptyState } from "@/components/EmptyState";
 import { ViewerBadge } from "@/components/ViewerBadge";
 import type { LeagueSnapshot, WeekBoxScoreSnapshot } from "@/lib/data";
 import { boxPairKey } from "@/lib/box-score";
@@ -20,6 +21,7 @@ import {
   type MatchupSide,
   type PeriodBundle,
 } from "@/lib/matchups";
+import { isCategoryScoring, isSeasonPointsScoring } from "@/lib/scoring-type";
 
 export type MatchupsView = "week" | "schedule" | "playoffs";
 
@@ -264,10 +266,26 @@ export function MatchupsPanel({
     : "week";
   const regSeasonCount = league.settings?.reg_season_count;
   const playoffTeamCount = league.settings?.playoff_team_count;
+  const baseballSeasonPoints =
+    league.sport === "baseball" && isSeasonPointsScoring(league.scoring_type);
+  const baseballCategory =
+    league.sport === "baseball" && isCategoryScoring(league.scoring_type);
   const showWeekBox =
-    (league.sport === "football" || league.sport === "baseball") &&
+    (league.sport === "football" || baseballCategory) &&
     boxPair != null &&
     activeView === "week";
+
+  if (baseballSeasonPoints) {
+    return (
+      <div className="matchups-panel">
+        <EmptyState title="No head-to-head matchups">
+          This league uses ESPN Season Points — standings are cumulative fantasy
+          points for the season, not weekly H2H results. Open Standings for the
+          points race and Settings for scoring weights.
+        </EmptyState>
+      </div>
+    );
+  }
 
   if (showWeekBox && boxPair) {
     return (
@@ -326,10 +344,10 @@ export function MatchupsPanel({
               periodLabel={periodLabel}
               viewerTeamId={viewerTeamId}
               showBoxLink={
-                league.sport === "football" || league.sport === "baseball"
+                league.sport === "football" || baseballCategory
               }
               boxLinkLabel={
-                league.sport === "baseball" ? "Category box" : "Box score"
+                baseballCategory ? "Category box" : "Box score"
               }
             />
           )}
@@ -404,7 +422,7 @@ function PlayoffsView({
             : ""}
           {league.sport === "football"
             ? ". Open a week matchup for the box score when synced."
-            : league.sport === "baseball"
+            : league.sport === "baseball" && isCategoryScoring(league.scoring_type)
               ? ". Open a period matchup for the category box when synced."
               : "."}
         </p>

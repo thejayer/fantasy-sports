@@ -1,158 +1,63 @@
 {
   "league_id": "baseball-dynasty",
-  "matchups": [
-    {
-      "away_losses": 6,
-      "away_stats": {
-        "AVG": {
-          "result": "LOSS",
-          "value": 13.0
-        },
-        "ERA": {
-          "result": "LOSS",
-          "value": 17.0
-        },
-        "HR": {
-          "result": "WIN",
-          "value": 10.0
-        },
-        "K": {
-          "result": "WIN",
-          "value": 16.0
-        },
-        "R": {
-          "result": "LOSS",
-          "value": 9.0
-        },
-        "RBI": {
-          "result": "LOSS",
-          "value": 11.0
-        },
-        "SB": {
-          "result": "WIN",
-          "value": 12.0
-        },
-        "SV": {
-          "result": "LOSS",
-          "value": 15.0
-        },
-        "W": {
-          "result": "WIN",
-          "value": 14.0
-        },
-        "WHIP": {
-          "result": "WIN",
-          "value": 18.0
-        }
-      },
-      "away_team_id": 2,
-      "away_ties": 1,
-      "away_wins": 3,
-      "home_losses": 3,
-      "home_stats": {
-        "AVG": {
-          "result": "WIN",
-          "value": 14.0
-        },
-        "ERA": {
-          "result": "WIN",
-          "value": 18.0
-        },
-        "HR": {
-          "result": "LOSS",
-          "value": 11.0
-        },
-        "K": {
-          "result": "LOSS",
-          "value": 17.0
-        },
-        "R": {
-          "result": "WIN",
-          "value": 10.0
-        },
-        "RBI": {
-          "result": "WIN",
-          "value": 12.0
-        },
-        "SB": {
-          "result": "LOSS",
-          "value": 13.0
-        },
-        "SV": {
-          "result": "WIN",
-          "value": 16.0
-        },
-        "W": {
-          "result": "LOSS",
-          "value": 15.0
-        },
-        "WHIP": {
-          "result": "LOSS",
-          "value": 19.0
-        }
-      },
-      "home_team_id": 1,
-      "home_ties": 1,
-      "home_wins": 6
-    }
-  ],
+  "matchups": [],
   "period_label": "period",
   "pitcher_ip": [
     {
+      "ip": 5.4,
+      "name": "Jack Long",
+      "outs": 16.2,
+      "player_id": 202600111,
+      "team_id": 2
+    },
+    {
+      "ip": 1.6,
+      "name": "Philip Cook",
+      "outs": 4.9,
+      "player_id": 202600112,
+      "team_id": 2
+    },
+    {
+      "ip": 4.3,
+      "name": "James Hughes",
+      "outs": 12.8,
+      "player_id": 202600113,
+      "team_id": 2
+    },
+    {
       "ip": 2.6,
-      "name": "Bradley Thompson",
-      "outs": 7.7,
-      "player_id": 202600011,
-      "team_id": 1
+      "name": "Ethan Jackson",
+      "outs": 7.9,
+      "player_id": 202600114,
+      "team_id": 2
     },
     {
-      "ip": 1.2,
-      "name": "Benjamin Morales",
-      "outs": 3.6,
-      "player_id": 202600012,
-      "team_id": 1
+      "ip": 5.0,
+      "name": "Brandon Watson",
+      "outs": 15.0,
+      "player_id": 202600115,
+      "team_id": 2
     },
     {
-      "ip": 2.9,
-      "name": "Jeffrey Cox",
-      "outs": 8.7,
-      "player_id": 202600013,
-      "team_id": 1
+      "ip": 5.4,
+      "name": "Sean James",
+      "outs": 16.2,
+      "player_id": 202600116,
+      "team_id": 2
     },
     {
-      "ip": 5.6,
-      "name": "Douglas Price",
-      "outs": 16.7,
-      "player_id": 202600014,
-      "team_id": 1
+      "ip": 2.3,
+      "name": "Scott Parker",
+      "outs": 7.0,
+      "player_id": 202600117,
+      "team_id": 2
     },
     {
-      "ip": 1.0,
-      "name": "Gary Cox",
-      "outs": 3.0,
-      "player_id": 202600015,
-      "team_id": 1
-    },
-    {
-      "ip": 7.6,
-      "name": "Albert Turner",
-      "outs": 22.9,
-      "player_id": 202600016,
-      "team_id": 1
-    },
-    {
-      "ip": 3.0,
-      "name": "Jordan Myers",
-      "outs": 9.0,
-      "player_id": 202600017,
-      "team_id": 1
-    },
-    {
-      "ip": 3.9,
-      "name": "Sean Martin",
-      "outs": 11.8,
-      "player_id": 202600020,
-      "team_id": 1
+      "ip": 1.6,
+      "name": "Ryan Walker",
+      "outs": 4.8,
+      "player_id": 202600119,
+      "team_id": 2
     }
   ],
   "schema_version": 1,
