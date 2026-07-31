@@ -22,9 +22,13 @@ function playerName(
 function RosterSection({
   title,
   players,
+  leagueId,
+  season,
 }: {
   title: string;
   players: Player[];
+  leagueId: string;
+  season: number;
 }) {
   if (!players.length) return null;
   return (
@@ -44,7 +48,17 @@ function RosterSection({
           {players.map((player) => (
             <tr key={`${player.id}-${player.slot}`}>
               <td data-label="Slot">{player.slot ?? "—"}</td>
-              <td data-label="Player">{player.name ?? "—"}</td>
+              <td data-label="Player">
+                {player.id != null ? (
+                  <Link
+                    href={`/leagues/${leagueId}/players/${player.id}?season=${season}`}
+                  >
+                    {player.name ?? "—"}
+                  </Link>
+                ) : (
+                  (player.name ?? "—")
+                )}
+              </td>
               <td data-label="OWGR">
                 {player.season_stats?.OWGR != null
                   ? String(player.season_stats.OWGR)
@@ -142,9 +156,24 @@ export function GolfRosterView({
               </p>
             </div>
           ) : null}
-          <RosterSection title="Starters (GS)" players={starters} />
-          <RosterSection title="Bench (BE)" players={bench} />
-          <RosterSection title="Other" players={other} />
+          <RosterSection
+            title="Starters (GS)"
+            players={starters}
+            leagueId={league.league_id}
+            season={league.season}
+          />
+          <RosterSection
+            title="Bench (BE)"
+            players={bench}
+            leagueId={league.league_id}
+            season={league.season}
+          />
+          <RosterSection
+            title="Other"
+            players={other}
+            leagueId={league.league_id}
+            season={league.season}
+          />
         </>
       )}
     </main>

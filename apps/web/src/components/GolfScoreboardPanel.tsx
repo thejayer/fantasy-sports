@@ -1,9 +1,8 @@
 /**
- * Golf week scoreboard (roadmap 6.4d / 7.11).
+ * Golf week scoreboard (roadmap 6.4d / 7.11 / 8.3).
  *
- * Per-player round slots used to expand inline for every team — that alone was
- * ~160 table rows and pushed the document over 160 KB. Week totals stay here;
- * slot detail lives on the team page.
+ * Per-player round slots stay off this tab (HTML budget). Week totals +
+ * projected totals when ``through_round`` < 4.
  */
 
 import Link from "next/link";
@@ -17,6 +16,13 @@ function formatPoints(value: number): string {
   const rounded = Math.round(value * 10) / 10;
   return Number.isInteger(rounded) ? String(rounded) : rounded.toFixed(1);
 }
+
+const ROUND_LABELS: Record<number, string> = {
+  1: "Thu",
+  2: "Fri",
+  3: "Sat",
+  4: "Sun",
+};
 
 function resolveEvent(
   league: LeagueSnapshot,
@@ -53,6 +59,8 @@ export function GolfScoreboardPanel({
     );
   }
 
+  const through = active.through_round ?? 4;
+  const inProgress = (active.status ?? "final") === "in_progress" || through < 4;
   const nameById = new Map(
     league.teams.map((t) => [t.team_id, t.name] as const),
   );
@@ -61,10 +69,13 @@ export function GolfScoreboardPanel({
       teamId: Number(teamId),
       name: nameById.get(Number(teamId)) ?? `Team ${teamId}`,
       week,
+      sortKey: inProgress
+        ? (week.week_projected ?? week.week_total)
+        : week.week_total,
     }))
     .sort(
       (a, b) =>
-        b.week.week_total - a.week.week_total ||
+        b.sortKey - a.sortKey ||
         b.week.captain_week - a.week.captain_week,
     );
 
@@ -90,7 +101,11 @@ export function GolfScoreboardPanel({
 
       <p className="league-meta" style={{ marginTop: "0.75rem" }}>
         {active.name} · {active.multiplier_tier} ×
-        {formatPoints(active.multiplier)} · scored{" "}
+        {formatPoints(active.multiplier)} ·{" "}
+        {inProgress
+          ? `Through ${ROUND_LABELS[through] ?? through} · projected week`
+          : "Final"}{" "}
+        · scored{" "}
         {active.scored_at
           .replace("T", " ")
           .replace(/\.\d{3}Z$/, " UTC")
@@ -99,7 +114,9 @@ export function GolfScoreboardPanel({
 
       {active.pairings.length ? (
         <div className="panel" style={{ padding: "1rem", marginTop: "0.75rem" }}>
-          <h3 style={{ marginTop: 0 }}>Head-to-head</h3>
+          <h3 style={{ marginTop: 0 }}>
+            Head-to-head{inProgress ? " (projected)" : ""}
+          </h3>
           <div className="table-wrap">
             <table className="table-cards">
               <thead>
@@ -129,14 +146,16 @@ export function GolfScoreboardPanel({
       ) : null}
 
       <div className="panel" style={{ padding: "1rem", marginTop: "0.75rem" }}>
-        <h3 style={{ marginTop: 0 }}>Week totals</h3>
+        <h3 style={{ marginTop: 0 }}>
+          {inProgress ? "Projected week totals" : "Week totals"}
+        </h3>
         <div className="table-wrap">
           <table className="table-cards">
             <thead>
               <tr>
                 <th>Team</th>
-                <th>Raw</th>
-                <th>Total</th>
+                <th>Through</th>
+                {inProgress ? <th>Projected</th> : <th>Total</th>}
                 <th>Captain</th>
                 <th>Thu</th>
                 <th>Fri</th>
@@ -154,9 +173,17 @@ export function GolfScoreboardPanel({
                       <strong>{row.name}</strong>
                     </Link>
                   </td>
-                  <td data-label="Raw">{formatPoints(row.week.week_raw)}</td>
-                  <td data-label="Total">
-                    <strong>{formatPoints(row.week.week_total)}</strong>
+                  <td data-label="Through">
+                    {formatPoints(row.week.week_total)}
+                  </td>
+                  <td data-label={inProgress ? "Projected" : "Total"}>
+                    <strong>
+                      {formatPoints(
+                        inProgress
+                          ? (row.week.week_projected ?? row.week.week_total)
+                          : row.week.week_total,
+                      )}
+                    </strong>
                   </td>
                   <td data-label="Captain">
                     {formatPoints(row.week.captain_week)}
@@ -166,7 +193,9 @@ export function GolfScoreboardPanel({
                       key={rnd}
                       data-label={row.week.by_round[rnd]?.label ?? rnd}
                     >
-                      {formatPoints(row.week.by_round[rnd]?.points ?? 0)}
+                      {Number(rnd) <= through
+                        ? formatPoints(row.week.by_round[rnd]?.points ?? 0)
+                        : "—"}
                     </td>
                   ))}
                 </tr>
@@ -174,6 +203,12 @@ export function GolfScoreboardPanel({
             </tbody>
           </table>
         </div>
+        {inProgress ? (
+          <p className="league-meta" style={{ marginBottom: 0 }}>
+            Projected fills remaining rounds with the average of completed
+            counted rounds — a disclosed heuristic, not a tour model.
+          </p>
+        ) : null}
       </div>
     </div>
   );

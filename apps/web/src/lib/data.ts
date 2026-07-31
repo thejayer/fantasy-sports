@@ -86,7 +86,7 @@ export type LeagueCategoryRow = {
   points?: number | null;
 };
 
-/** Nested golf knobs under ``settings.golf`` (roadmap 6.1). */
+/** Nested golf knobs under ``settings.golf`` (roadmap 6.1 / 8.3). */
 export type GolfLeagueSettings = {
   draft?: {
     style?: string;
@@ -97,6 +97,8 @@ export type GolfLeagueSettings = {
   roster?: { starters?: number; bench?: number };
   captain_tiebreaker?: boolean;
   missed_cut?: { mode?: string };
+  starts?: { max_per_segment?: number | null };
+  missed_deadline?: { auto_pick?: boolean };
   schedule?: {
     source?: string;
     include?: string[];
@@ -112,6 +114,7 @@ export type GolfLeagueSettings = {
     player_points?: string;
     thu_fri_count?: number;
     sat_sun_count?: number;
+    drop_worst_golfer?: boolean;
   };
 };
 
@@ -357,6 +360,8 @@ export type GolfLineupsSnapshot = {
     week: number;
     starts_at: string;
     multiplier_tier: string;
+    segment_id?: string | null;
+    through_round?: number | null;
     tee_times?: Record<string, string>;
   }>;
   teams: Record<
@@ -371,6 +376,7 @@ export type GolfLineupsSnapshot = {
         saved_at: string;
         locked_at?: string | null;
         locks?: Record<string, string>;
+        source?: "manual" | "auto_pick" | "seed" | string;
       }
     >
   >;
@@ -400,8 +406,13 @@ export type GolfScoreboardTeamWeek = {
   alt2?: number | null;
   week_raw: number;
   week_total: number;
+  /** Through-round + remaining-round average heuristic (roadmap 8.3). */
+  week_projected?: number;
   captain_week: number;
   multiplier: number;
+  through_round?: number;
+  status?: "final" | "in_progress" | string;
+  dropped_worst_player_id?: number | null;
   by_round: Record<string, GolfScoreboardRound>;
 };
 
@@ -409,8 +420,11 @@ export type GolfScoreboardEvent = {
   event_id: string;
   name?: string | null;
   week?: number | null;
+  segment_id?: string | null;
   multiplier_tier: string;
   multiplier: number;
+  through_round?: number;
+  status?: "final" | "in_progress" | string;
   scored_at: string;
   teams: Record<string, GolfScoreboardTeamWeek>;
   pairings: Array<{

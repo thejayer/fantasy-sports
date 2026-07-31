@@ -18,6 +18,7 @@ import {
 } from "@/lib/data";
 import { espnPlayerUrl } from "@/lib/espn-links";
 import { injuryTone } from "@/lib/league";
+import { buildGolferProfileBoard } from "@/lib/golf-player";
 import {
   findPlayerInLeague,
   playerRosterLabel,
@@ -57,6 +58,10 @@ export default async function PlayerPage({ params, searchParams }: Props) {
 
   const { player, team, draftPick, transactions } = profile;
   const isFootball = league.sport === "football";
+  const isGolf = league.sport === "golf";
+  const golfBoard = isGolf
+    ? buildGolferProfileBoard(league, player, team)
+    : null;
 
   let seasonProjection = null;
   let weeklyProjection = null;
@@ -115,7 +120,11 @@ export default async function PlayerPage({ params, searchParams }: Props) {
       <div className="league-kicker">
         <Link
           className="league-meta"
-          href={`/leagues/${leagueId}?season=${league.season}&tab=players`}
+          href={
+            isGolf
+              ? `/leagues/${leagueId}?season=${league.season}&tab=teams`
+              : `/leagues/${leagueId}?season=${league.season}&tab=players`
+          }
         >
           {league.name}
         </Link>
@@ -161,6 +170,107 @@ export default async function PlayerPage({ params, searchParams }: Props) {
 
       {isFootball && weekLog ? (
         <PlayerWeekLogPanel league={league} log={weekLog} />
+      ) : null}
+
+      {golfBoard ? (
+        <section className="player-section">
+          <h3 className="roster-group-title">Golfer card</h3>
+          <p className="league-meta">{golfBoard.disclaimer}</p>
+          <div className="panel">
+            <dl className="settings-grid">
+              <div className="settings-row">
+                <dt>Ownership</dt>
+                <dd>{golfBoard.ownershipPct.toFixed(0)}%</dd>
+              </div>
+              <div className="settings-row">
+                <dt>Starts</dt>
+                <dd>
+                  {golfBoard.startsUsedBySegment.length
+                    ? golfBoard.startsUsedBySegment
+                        .map(
+                          (row) =>
+                            `${row.segmentId}: ${row.used}${
+                              row.max != null ? `/${row.max}` : ""
+                            }`,
+                        )
+                        .join(" · ")
+                    : "None yet"}
+                </dd>
+              </div>
+            </dl>
+          </div>
+          <h3 className="roster-group-title">Lineup usage</h3>
+          {!golfBoard.starts.length ? (
+            <EmptyState title="No lineup starts yet">
+              Starts and alts appear after weekly lineups include this golfer.
+            </EmptyState>
+          ) : (
+            <div className="panel table-scroll">
+              <table className="table-cards">
+                <thead>
+                  <tr>
+                    <th>Event</th>
+                    <th>Segment</th>
+                    <th>Slot</th>
+                    <th>Team</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {golfBoard.starts.map((row) => (
+                    <tr key={`${row.eventId}-${row.slot}-${row.teamId}`}>
+                      <td data-label="Event">{row.eventName}</td>
+                      <td data-label="Segment">{row.segmentId ?? "—"}</td>
+                      <td data-label="Slot">{row.slot}</td>
+                      <td data-label="Team">{row.teamName}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+          <h3 className="roster-group-title">Round results</h3>
+          {!golfBoard.results.length ? (
+            <EmptyState title="No scored rounds yet">
+              EOD scoreboard slots for this golfer show up after an event is
+              scored.
+            </EmptyState>
+          ) : (
+            <div className="panel table-scroll">
+              <table className="table-cards">
+                <thead>
+                  <tr>
+                    <th>Event</th>
+                    <th>Round</th>
+                    <th>Status</th>
+                    <th className="numeric">To-par</th>
+                    <th className="numeric">Pts</th>
+                    <th>Source</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {golfBoard.results.map((row) => (
+                    <tr key={`${row.eventId}-${row.round}-${row.source}`}>
+                      <td data-label="Event">{row.eventName}</td>
+                      <td data-label="Round">{row.label}</td>
+                      <td data-label="Status">{row.status}</td>
+                      <td data-label="To-par" className="numeric">
+                        {row.toPar == null
+                          ? "—"
+                          : row.toPar > 0
+                            ? `+${row.toPar}`
+                            : String(row.toPar)}
+                      </td>
+                      <td data-label="Pts" className="numeric">
+                        {row.points}
+                      </td>
+                      <td data-label="Source">{row.source}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </section>
       ) : null}
 
       <section className="player-section">

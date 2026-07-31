@@ -8,6 +8,7 @@ from __future__ import annotations
 
 from typing import Any
 
+from sg.lineup import default_lineup_from_roster
 from sg.rounds import (
     MIDWEEK_ROUNDS,
     ROUND_LABELS,
@@ -123,8 +124,15 @@ def score_team_week(
     settings: GolfSettings | dict[str, Any] | None,
     *,
     multiplier: float = 1.0,
+    through_round: int = 4,
 ) -> dict[str, Any]:
-    """Score one team's locked lineup for one event."""
+    """Score one team's locked lineup for one event.
+
+    ``through_round`` (1–4) limits which EOD rounds count — provisional boards
+    as rounds land (roadmap 8.3). Remaining rounds are projected from the
+    per-round average of completed counted points (disclosed heuristic, not a
+    tour model).
+    """
     golf = validate_golf_settings(settings)
     by_player = index_rounds(round_file)
     starters = [int(x) for x in (lineup.get("starters") or [])]
@@ -133,11 +141,13 @@ def score_team_week(
     alt2 = lineup.get("alt2")
     alt1_id = int(alt1) if alt1 is not None else None
     alt2_id = int(alt2) if alt2 is not None else None
+    last_round = max(1, min(4, int(through_round or 4)))
 
     by_round: dict[str, Any] = {}
     week_raw = 0.0
     captain_week = 0.0
-    for rnd in (1, 2, 3, 4):
+    golfer_week: dict[int, float] = {pid: 0.0 for pid in starters}
+    for rnd in range(1, last_round + 1):
         result = score_round_slots(
             starters=starters,
             alt1=alt1_id,
@@ -148,6 +158,12 @@ def score_team_week(
         )
         by_round[str(rnd)] = result
         week_raw += float(result["points"])
+        # Attribute counted slot points back to the original starter slot.
+        counted = {int(x) for x in result["counted_player_ids"]}
+        for slot in result["slots"]:
+            if int(slot["player_id"]) in counted:
+                sid = int(slot["starter_id"])
+                golfer_week[sid] = golfer_week.get(sid, 0.0) + float(slot["points"])
         # Captain TB: points from rounds where the captain's score counted.
         if captain in result["counted_player_ids"]:
             for slot in result["slots"]:
@@ -158,7 +174,24 @@ def score_team_week(
                     captain_week += float(slot["points"])
                     break
 
+    dropped_worst_id: int | None = None
+    if golf.scoring.drop_worst_golfer and golfer_week:
+        dropped_worst_id = min(
+            golfer_week.items(), key=lambda item: (item[1], item[0])
+        )[0]
+        week_raw -= float(golfer_week[dropped_worst_id])
+
+    # Forward fill remaining rounds from completed per-round average.
+    remaining = 4 - last_round
+    if remaining > 0 and last_round > 0:
+        avg = week_raw / float(last_round)
+        projected_raw = week_raw + avg * remaining
+    else:
+        projected_raw = week_raw
+
+    status = "final" if last_round >= 4 else "in_progress"
     week_total = week_raw * float(multiplier)
+    week_projected = projected_raw * float(multiplier)
     return {
         "starters": starters,
         "captain": captain,
@@ -166,8 +199,12 @@ def score_team_week(
         "alt2": alt2_id,
         "week_raw": float(week_raw),
         "week_total": float(week_total),
+        "week_projected": float(week_projected),
         "captain_week": float(captain_week),
         "multiplier": float(multiplier),
+        "through_round": last_round,
+        "status": status,
+        "dropped_worst_player_id": dropped_worst_id,
         "by_round": by_round,
     }
 
@@ -244,25 +281,56 @@ def build_scoreboard_payload(
         rounds = (round_files or {}).get(event_id) or fixture_event_rounds(
             event_id, sorted(field_ids)
         )
+        try:
+            through = int(event.get("through_round") or 4)
+        except (TypeError, ValueError):
+            through = 4
+        through = max(1, min(4, through))
         team_scores: dict[str, Any] = {}
-        for team_id, by_event in team_lineups.items():
-            lineup = (by_event or {}).get(event_id)
+        for team_id_key, team_meta in teams_meta.items():
+            by_event = team_lineups.get(str(team_id_key)) or {}
+            lineup = by_event.get(event_id) if isinstance(by_event, dict) else None
             if not isinstance(lineup, dict):
-                continue
-            team_scores[str(team_id)] = score_team_week(
-                lineup, rounds, golf, multiplier=mult
+                if not golf.missed_deadline.auto_pick:
+                    continue
+                roster = list(team_meta.get("roster") or [])
+                if len(roster) < golf.roster.starters:
+                    continue
+                lineup = default_lineup_from_roster(
+                    roster, golf, saved_at=scored_at
+                )
+                lineup["source"] = "auto_pick"
+            team_scores[str(team_id_key)] = score_team_week(
+                lineup,
+                rounds,
+                golf,
+                multiplier=mult,
+                through_round=through,
             )
 
         # Pair 1–2, 3–4, … for fixture H2H cards.
+        # In-progress events compare projected week totals; finals use week_total.
         ordered = sorted((int(tid) for tid in team_scores), key=lambda x: x)
         pairings: list[dict[str, Any]] = []
         for i in range(0, len(ordered) - 1, 2):
             home_id, away_id = ordered[i], ordered[i + 1]
             home = team_scores[str(home_id)]
             away = team_scores[str(away_id)]
+            home_cmp = {
+                **home,
+                "week_total": home.get("week_projected", home["week_total"])
+                if through < 4
+                else home["week_total"],
+            }
+            away_cmp = {
+                **away,
+                "week_total": away.get("week_projected", away["week_total"])
+                if through < 4
+                else away["week_total"],
+            }
             outcome = compare_h2h(
-                home,
-                away,
+                home_cmp,
+                away_cmp,
                 captain_tiebreaker=golf.captain_tiebreaker,
             )
             pairings.append(
@@ -271,8 +339,8 @@ def build_scoreboard_payload(
                     "away_team_id": away_id,
                     "home_name": (teams_meta.get(home_id) or {}).get("name"),
                     "away_name": (teams_meta.get(away_id) or {}).get("name"),
-                    "home_total": home["week_total"],
-                    "away_total": away["week_total"],
+                    "home_total": home_cmp["week_total"],
+                    "away_total": away_cmp["week_total"],
                     "home_captain_week": home["captain_week"],
                     "away_captain_week": away["captain_week"],
                     "outcome": outcome,
@@ -284,8 +352,11 @@ def build_scoreboard_payload(
                 "event_id": event_id,
                 "name": event.get("name"),
                 "week": event.get("week"),
+                "segment_id": event.get("segment_id"),
                 "multiplier_tier": tier,
                 "multiplier": mult,
+                "through_round": through,
+                "status": "final" if through >= 4 else "in_progress",
                 "scored_at": scored_at,
                 "teams": team_scores,
                 "pairings": pairings,

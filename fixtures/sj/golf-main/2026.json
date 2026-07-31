@@ -1694,6 +1694,7 @@
         "event_id": "2026-players",
         "multiplier_tier": "signature",
         "name": "THE PLAYERS Championship",
+        "segment_id": "early",
         "starts_at": "2026-03-12T12:00:00+00:00",
         "tee_times": {
           "1": "2026-03-12T12:00:00+00:00",
@@ -1817,12 +1818,14 @@
           "98": "2026-03-13T01:30:00+00:00",
           "99": "2026-03-13T09:00:00+00:00"
         },
+        "through_round": 4,
         "week": 1
       },
       {
         "event_id": "2026-masters",
         "multiplier_tier": "major",
         "name": "Masters Tournament",
+        "segment_id": "early",
         "starts_at": "2026-04-09T12:00:00+00:00",
         "tee_times": {
           "1": "2026-04-09T12:00:00+00:00",
@@ -1946,6 +1949,7 @@
           "98": "2026-04-10T01:30:00+00:00",
           "99": "2026-04-10T09:00:00+00:00"
         },
+        "through_round": 4,
         "week": 2
       }
     ],
@@ -1959,6 +1963,7 @@
           "locked_at": null,
           "locks": {},
           "saved_at": "2026-07-27T00:00:00+00:00",
+          "source": "seed",
           "starters": [
             1,
             16,
@@ -1980,6 +1985,7 @@
             "33": "2026-03-12T14:00:00+00:00"
           },
           "saved_at": "2026-07-27T00:00:00+00:00",
+          "source": "seed",
           "starters": [
             1,
             16,
@@ -1997,6 +2003,7 @@
           "locked_at": null,
           "locks": {},
           "saved_at": "2026-07-27T00:00:00+00:00",
+          "source": "seed",
           "starters": [
             2,
             15,
@@ -2012,6 +2019,7 @@
           "locked_at": null,
           "locks": {},
           "saved_at": "2026-07-27T00:00:00+00:00",
+          "source": "seed",
           "starters": [
             2,
             15,
@@ -2029,6 +2037,7 @@
           "locked_at": null,
           "locks": {},
           "saved_at": "2026-07-27T00:00:00+00:00",
+          "source": "seed",
           "starters": [
             3,
             14,
@@ -2044,6 +2053,7 @@
           "locked_at": null,
           "locks": {},
           "saved_at": "2026-07-27T00:00:00+00:00",
+          "source": "seed",
           "starters": [
             3,
             14,
@@ -2061,6 +2071,7 @@
           "locked_at": null,
           "locks": {},
           "saved_at": "2026-07-27T00:00:00+00:00",
+          "source": "seed",
           "starters": [
             4,
             13,
@@ -2076,6 +2087,7 @@
           "locked_at": null,
           "locks": {},
           "saved_at": "2026-07-27T00:00:00+00:00",
+          "source": "seed",
           "starters": [
             4,
             13,
@@ -2093,6 +2105,7 @@
           "locked_at": null,
           "locks": {},
           "saved_at": "2026-07-27T00:00:00+00:00",
+          "source": "seed",
           "starters": [
             5,
             12,
@@ -2108,6 +2121,7 @@
           "locked_at": null,
           "locks": {},
           "saved_at": "2026-07-27T00:00:00+00:00",
+          "source": "seed",
           "starters": [
             5,
             12,
@@ -2125,6 +2139,7 @@
           "locked_at": null,
           "locks": {},
           "saved_at": "2026-07-27T00:00:00+00:00",
+          "source": "seed",
           "starters": [
             6,
             11,
@@ -2140,6 +2155,7 @@
           "locked_at": null,
           "locks": {},
           "saved_at": "2026-07-27T00:00:00+00:00",
+          "source": "seed",
           "starters": [
             6,
             11,
@@ -2157,6 +2173,7 @@
           "locked_at": null,
           "locks": {},
           "saved_at": "2026-07-27T00:00:00+00:00",
+          "source": "seed",
           "starters": [
             7,
             10,
@@ -2172,6 +2189,7 @@
           "locked_at": null,
           "locks": {},
           "saved_at": "2026-07-27T00:00:00+00:00",
+          "source": "seed",
           "starters": [
             7,
             10,
@@ -2189,6 +2207,7 @@
           "locked_at": null,
           "locks": {},
           "saved_at": "2026-07-27T00:00:00+00:00",
+          "source": "seed",
           "starters": [
             8,
             9,
@@ -2204,6 +2223,7 @@
           "locked_at": null,
           "locks": {},
           "saved_at": "2026-07-27T00:00:00+00:00",
+          "source": "seed",
           "starters": [
             8,
             9,
@@ -5275,6 +5295,8 @@
           }
         ],
         "scored_at": "2026-07-27T00:00:00+00:00",
+        "segment_id": "early",
+        "status": "final",
         "teams": {
           "1": {
             "alt1": 48,
@@ -5505,6 +5527,7 @@
             },
             "captain": 1,
             "captain_week": -7.0,
+            "dropped_worst_player_id": null,
             "multiplier": 1.5,
             "starters": [
               1,
@@ -5513,6 +5536,9 @@
               32,
               33
             ],
+            "status": "final",
+            "through_round": 4,
+            "week_projected": 25.5,
             "week_raw": 17.0,
             "week_total": 25.5
           },
@@ -5745,6 +5771,7 @@
             },
             "captain": 2,
             "captain_week": -8.0,
+            "dropped_worst_player_id": null,
             "multiplier": 1.5,
             "starters": [
               2,
@@ -5753,6 +5780,9 @@
               31,
               34
             ],
+            "status": "final",
+            "through_round": 4,
+            "week_projected": 28.5,
             "week_raw": 19.0,
             "week_total": 28.5
           },
@@ -5985,6 +6015,7 @@
             },
             "captain": 3,
             "captain_week": -3.0,
+            "dropped_worst_player_id": null,
             "multiplier": 1.5,
             "starters": [
               3,
@@ -5993,6 +6024,9 @@
               30,
               35
             ],
+            "status": "final",
+            "through_round": 4,
+            "week_projected": -33.0,
             "week_raw": -22.0,
             "week_total": -33.0
           },
@@ -6225,6 +6259,7 @@
             },
             "captain": 4,
             "captain_week": -2.0,
+            "dropped_worst_player_id": null,
             "multiplier": 1.5,
             "starters": [
               4,
@@ -6233,6 +6268,9 @@
               29,
               36
             ],
+            "status": "final",
+            "through_round": 4,
+            "week_projected": -10.5,
             "week_raw": -7.0,
             "week_total": -10.5
           },
@@ -6465,6 +6503,7 @@
             },
             "captain": 5,
             "captain_week": -2.0,
+            "dropped_worst_player_id": null,
             "multiplier": 1.5,
             "starters": [
               5,
@@ -6473,6 +6512,9 @@
               28,
               37
             ],
+            "status": "final",
+            "through_round": 4,
+            "week_projected": -37.5,
             "week_raw": -25.0,
             "week_total": -37.5
           },
@@ -6705,6 +6747,7 @@
             },
             "captain": 6,
             "captain_week": 3.0,
+            "dropped_worst_player_id": null,
             "multiplier": 1.5,
             "starters": [
               6,
@@ -6713,6 +6756,9 @@
               27,
               38
             ],
+            "status": "final",
+            "through_round": 4,
+            "week_projected": 1.5,
             "week_raw": 1.0,
             "week_total": 1.5
           },
@@ -6945,6 +6991,7 @@
             },
             "captain": 7,
             "captain_week": 5.0,
+            "dropped_worst_player_id": null,
             "multiplier": 1.5,
             "starters": [
               7,
@@ -6953,6 +7000,9 @@
               26,
               39
             ],
+            "status": "final",
+            "through_round": 4,
+            "week_projected": 1.5,
             "week_raw": 1.0,
             "week_total": 1.5
           },
@@ -7185,6 +7235,7 @@
             },
             "captain": 8,
             "captain_week": 13.0,
+            "dropped_worst_player_id": null,
             "multiplier": 1.5,
             "starters": [
               8,
@@ -7193,10 +7244,14 @@
               25,
               40
             ],
+            "status": "final",
+            "through_round": 4,
+            "week_projected": 58.5,
             "week_raw": 39.0,
             "week_total": 58.5
           }
         },
+        "through_round": 4,
         "week": 1
       },
       {
@@ -7251,6 +7306,8 @@
           }
         ],
         "scored_at": "2026-07-27T00:00:00+00:00",
+        "segment_id": "early",
+        "status": "final",
         "teams": {
           "1": {
             "alt1": 48,
@@ -7481,6 +7538,7 @@
             },
             "captain": 1,
             "captain_week": -7.0,
+            "dropped_worst_player_id": null,
             "multiplier": 2.0,
             "starters": [
               1,
@@ -7489,6 +7547,9 @@
               32,
               33
             ],
+            "status": "final",
+            "through_round": 4,
+            "week_projected": 34.0,
             "week_raw": 17.0,
             "week_total": 34.0
           },
@@ -7721,6 +7782,7 @@
             },
             "captain": 2,
             "captain_week": -8.0,
+            "dropped_worst_player_id": null,
             "multiplier": 2.0,
             "starters": [
               2,
@@ -7729,6 +7791,9 @@
               31,
               34
             ],
+            "status": "final",
+            "through_round": 4,
+            "week_projected": 38.0,
             "week_raw": 19.0,
             "week_total": 38.0
           },
@@ -7961,6 +8026,7 @@
             },
             "captain": 3,
             "captain_week": -3.0,
+            "dropped_worst_player_id": null,
             "multiplier": 2.0,
             "starters": [
               3,
@@ -7969,6 +8035,9 @@
               30,
               35
             ],
+            "status": "final",
+            "through_round": 4,
+            "week_projected": -44.0,
             "week_raw": -22.0,
             "week_total": -44.0
           },
@@ -8201,6 +8270,7 @@
             },
             "captain": 4,
             "captain_week": -2.0,
+            "dropped_worst_player_id": null,
             "multiplier": 2.0,
             "starters": [
               4,
@@ -8209,6 +8279,9 @@
               29,
               36
             ],
+            "status": "final",
+            "through_round": 4,
+            "week_projected": -14.0,
             "week_raw": -7.0,
             "week_total": -14.0
           },
@@ -8441,6 +8514,7 @@
             },
             "captain": 5,
             "captain_week": -2.0,
+            "dropped_worst_player_id": null,
             "multiplier": 2.0,
             "starters": [
               5,
@@ -8449,6 +8523,9 @@
               28,
               37
             ],
+            "status": "final",
+            "through_round": 4,
+            "week_projected": -50.0,
             "week_raw": -25.0,
             "week_total": -50.0
           },
@@ -8681,6 +8758,7 @@
             },
             "captain": 6,
             "captain_week": 3.0,
+            "dropped_worst_player_id": null,
             "multiplier": 2.0,
             "starters": [
               6,
@@ -8689,6 +8767,9 @@
               27,
               38
             ],
+            "status": "final",
+            "through_round": 4,
+            "week_projected": 2.0,
             "week_raw": 1.0,
             "week_total": 2.0
           },
@@ -8921,6 +9002,7 @@
             },
             "captain": 7,
             "captain_week": 5.0,
+            "dropped_worst_player_id": null,
             "multiplier": 2.0,
             "starters": [
               7,
@@ -8929,6 +9011,9 @@
               26,
               39
             ],
+            "status": "final",
+            "through_round": 4,
+            "week_projected": 2.0,
             "week_raw": 1.0,
             "week_total": 2.0
           },
@@ -9161,6 +9246,7 @@
             },
             "captain": 8,
             "captain_week": 13.0,
+            "dropped_worst_player_id": null,
             "multiplier": 2.0,
             "starters": [
               8,
@@ -9169,10 +9255,14 @@
               25,
               40
             ],
+            "status": "final",
+            "through_round": 4,
+            "week_projected": 78.0,
             "week_raw": 39.0,
             "week_total": 78.0
           }
         },
+        "through_round": 4,
         "week": 2
       }
     ],
@@ -9192,6 +9282,9 @@
       "missed_cut": {
         "mode": "alt1"
       },
+      "missed_deadline": {
+        "auto_pick": true
+      },
       "multipliers": {
         "major": 2.0,
         "regular": 1.0,
@@ -9207,10 +9300,14 @@
         "source": "fedex_cup"
       },
       "scoring": {
+        "drop_worst_golfer": false,
         "grain": "end_of_day",
         "player_points": "neg_to_par",
         "sat_sun_count": 5,
         "thu_fri_count": 4
+      },
+      "starts": {
+        "max_per_segment": 3
       }
     },
     "scoring_type": "GOLF_COUNTING",

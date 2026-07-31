@@ -65,6 +65,35 @@ def default_lineup_from_roster(
     }
 
 
+def segment_start_counts(
+    *,
+    team_lineups: dict[str, Any] | None,
+    events: list[dict[str, Any]],
+    segment_id: str | None,
+    exclude_event_id: str | None = None,
+) -> dict[int, int]:
+    """Count prior starter appearances for one team inside a segment."""
+    if not segment_id or not team_lineups:
+        return {}
+    counts: dict[int, int] = {}
+    for event in events:
+        if event.get("segment_id") != segment_id:
+            continue
+        eid = str(event.get("event_id") or "")
+        if exclude_event_id and eid == exclude_event_id:
+            continue
+        lined = team_lineups.get(eid)
+        if not isinstance(lined, dict):
+            continue
+        for raw in lined.get("starters") or []:
+            try:
+                pid = int(raw)
+            except (TypeError, ValueError):
+                continue
+            counts[pid] = counts.get(pid, 0) + 1
+    return counts
+
+
 def validate_week_lineup(
     lineup: dict[str, Any],
     *,
@@ -73,6 +102,9 @@ def validate_week_lineup(
     tee_times: dict[str, str] | None = None,
     previous: dict[str, Any] | None = None,
     now: datetime | None = None,
+    events: list[dict[str, Any]] | None = None,
+    team_lineups: dict[str, Any] | None = None,
+    event_id: str | None = None,
 ) -> list[str]:
     """Return human-readable validation errors (empty = ok)."""
     golf = validate_golf_settings(settings)
@@ -169,6 +201,35 @@ def validate_week_lineup(
                     f"player {pid} is locked (tee time passed); cannot change"
                 )
 
+    # Per-segment start caps (roadmap 8.3).
+    max_starts = golf.starts.max_per_segment
+    if (
+        max_starts
+        and max_starts > 0
+        and events
+        and event_id
+        and team_lineups is not None
+    ):
+        active = next(
+            (e for e in events if str(e.get("event_id")) == str(event_id)),
+            None,
+        )
+        segment = (active or {}).get("segment_id")
+        if segment:
+            prior = segment_start_counts(
+                team_lineups=team_lineups,
+                events=events,
+                segment_id=str(segment),
+                exclude_event_id=str(event_id),
+            )
+            for pid in starter_ids:
+                used = prior.get(pid, 0) + 1
+                if used > max_starts:
+                    errors.append(
+                        f"player {pid} exceeds segment start cap "
+                        f"({used}/{max_starts} in {segment})"
+                    )
+
     return errors
 
 
@@ -236,6 +297,7 @@ def build_lineups_payload(
         if not roster:
             continue
         base = default_lineup_from_roster(roster, settings, saved_at=stamp)
+        base["source"] = "seed"
         team_map[tid] = {}
         for event in events:
             lined = apply_locks(
