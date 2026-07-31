@@ -4,6 +4,8 @@
  * hands a client FeedPanel the live surface.
  */
 
+import { Suspense } from "react";
+
 import { FeedPanel } from "@/components/FeedPanel";
 import type { LeagueSnapshot } from "@/lib/data";
 import {
@@ -69,16 +71,18 @@ export async function ActivityPanel({
   );
 
   return (
-    <FeedPanel
-      leagueId={league.league_id}
-      season={league.season}
-      view={view}
-      events={merged}
-      initialFeed={initialFeed}
-      viewerEmail={viewer.email}
-      canPost={canPost}
-      canModerate={isAdmin}
-      digestPeriod={digestPeriod}
-    />
+    <Suspense fallback={<p className="muted">Loading feed…</p>}>
+      <FeedPanel
+        leagueId={league.league_id}
+        season={league.season}
+        view={view}
+        events={merged}
+        initialFeed={initialFeed}
+        viewerEmail={viewer.email}
+        canPost={canPost}
+        canModerate={isAdmin}
+        digestPeriod={digestPeriod}
+      />
+    </Suspense>
   );
 }

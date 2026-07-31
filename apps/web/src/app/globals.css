@@ -620,6 +620,38 @@ tr:last-child td {
   border-bottom: 0;
 }
 
+.feed-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 0.65rem 0.85rem;
+  margin: 0.25rem 0 1rem;
+  padding: 0.75rem 0;
+  border-top: 2px solid var(--line);
+  border-bottom: 2px solid var(--line);
+}
+
+.feed-sort {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+
+.feed-date-field {
+  display: grid;
+  gap: 0.25rem;
+}
+
+.feed-date-field input[type="date"] {
+  min-height: 36px;
+  padding: 0.35rem 0.5rem;
+  font: inherit;
+  color: var(--ink);
+  background: var(--raise);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+}
+
 .tabs {
   display: flex;
   gap: 0.5rem;
