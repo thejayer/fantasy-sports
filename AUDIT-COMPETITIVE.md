@@ -471,7 +471,7 @@ competing with push products, in a group that already has a Discord.
 
 | # | Finding | Severity | Status |
 |---|---|---|---|
-| 1 | Hub does not know which team is yours (franchise link unused outside golf) | **P0 product** | **Fixed** — roadmap 7.1 + 7.2 |
+| 1 | Hub does not know which team is yours (franchise link unused outside golf) | **P0 product** | **Fixed** — roadmap 7.1 + 7.2 + 9.4 portfolio table |
 | 2 | No social layer: no chat, recaps, reactions, power rankings | **P0 product** | **Fixed** — roadmap 7.6 / 7.7 (feed + digests + Discord) |
 | 3 | No player pages, box scores, manager pages; logos unrendered | P1 | **Fixed** for pages/logos/deep links (7.3); box scores need sync 8.1 |
 | 4 | Team pages drop schedule/scores entirely (`loadTeamSelective`) | P1 | **Fixed** — roadmap 7.4 |

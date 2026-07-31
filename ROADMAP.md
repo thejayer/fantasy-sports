@@ -988,7 +988,10 @@ Named so they are not accidentally treated as roadmap:
   eliminated manager engaged.
 - **Dues tracking** (Sleeper shipped SleeperSafe; Yahoo has a dues field).
   Ledger only — do not touch payments.
-- **Multi-league portfolio** view across all four leagues.
+- ~~**Multi-league portfolio**~~ — **LANDED** as the dense **Your portfolio**
+  table on `/` (roadmap 7.2 member home): sport, league, team, record,
+  standing, this period, next, and football make-playoffs % when
+  `playoff_odds` exists. Cards below keep matchup detail and actions.
 - **Native/PWA install.** `manifest.ts` already exists; a real app shell is a
   separate project.
 
@@ -1145,9 +1148,9 @@ football box scores + player week game logs; 8.2 baseball projection-free
 toolkit (category board + period boxes, trailing, schedule/two-starts/locks,
 IP/GS caps); 8.3 golf depth (projected week totals, golfer pages, segment
 start limits, auto-pick, optional drop-worst — offline / EOD; not live
-hole-by-hole).
-Open: none in phase 8 sport depth (live hole-by-hole / MLB model stay
-out-of-scope).
+hole-by-hole); 9.4 multi-league portfolio table on `/`.
+Open: remaining Phase 9 items only if members ask (live scoring, side games,
+dues, PWA).
 Postponed: 7.7 scheduled Discord auto-send / email fallback.
 
 Mobile chrome misses its target on the golf scoreboard (1.14 screens), which

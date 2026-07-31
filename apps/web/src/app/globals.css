@@ -433,6 +433,30 @@ button,
   display: block;
 }
 
+.portfolio-panel {
+  padding: 0.85rem 1rem 1rem;
+  margin-bottom: 1.25rem;
+}
+
+.portfolio-panel .roster-group-title {
+  margin: 0 0 0.35rem;
+}
+
+.portfolio-lede {
+  margin: 0 0 0.75rem;
+}
+
+.portfolio-table-wrap {
+  margin: 0;
+  box-shadow: none;
+  background: transparent;
+  padding: 0;
+}
+
+.portfolio-table .sport-pill {
+  font-size: 0.7rem;
+}
+
 .home-todo {
   padding: 0.85rem 1rem 1rem;
   margin-bottom: 1.25rem;
