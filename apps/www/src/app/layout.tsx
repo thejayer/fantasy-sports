@@ -62,13 +62,14 @@ export default function RootLayout({
               Strictly Jayers
             </Link>
             <nav className="nav-links" aria-label="Primary">
-              <a href="#destinations">Places</a>
+              <Link href="/#destinations">Places</Link>
+              <Link href="/ai">AI News</Link>
               {discordInviteUrl ? (
                 <a href={discordInviteUrl} rel="noopener noreferrer">
                   Discord
                 </a>
               ) : (
-                <a href="#destinations">Discord</a>
+                <Link href="/#destinations">Discord</Link>
               )}
               <a href={fantasyHubUrl} rel="noopener noreferrer">
                 Fantasy

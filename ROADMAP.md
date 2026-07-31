@@ -1094,6 +1094,13 @@ fantasy stays on `fantasy.strictlyjayers.com`. Docs: [PORTAL.md](PORTAL.md).
 - Map `strictlyjayers.com` (+ `www`) → `sj-www`, set `SITE_URL`, leave hub
   `AUTH_URL` on the fantasy host alone.
 
+### P.4 AI News desk (open → landing)
+- `/ai` on `apps/www`: curated big stories, merged RSS headlines (OpenAI /
+  Anthropic mirror / Cursor mirror / Google AI), and X timeline embeds for
+  `@OpenAI` / `@AnthropicAI` / `@cursor_ai` (no paid X API).
+- Feeds revalidate ~30 minutes; editor picks stay hand-edited in
+  `lib/ai-news.ts`.
+
 ---
 
 ## What "done" looks like
