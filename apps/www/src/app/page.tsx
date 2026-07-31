@@ -29,6 +29,16 @@ export default function HomePage() {
       pending: false,
     },
     {
+      id: "ai",
+      index: items.ai.index,
+      kicker: items.ai.kicker,
+      title: items.ai.title,
+      body: items.ai.body,
+      href: "/ai",
+      action: items.ai.action,
+      pending: false,
+    },
+    {
       id: "discord",
       index: items.discord.index,
       kicker: items.discord.kicker,
@@ -125,13 +135,19 @@ export default function HomePage() {
             return (
               <li key={item.id}>
                 {item.href ? (
-                  <a
-                    className={className}
-                    href={item.href}
-                    rel="noopener noreferrer"
-                  >
-                    {inner}
-                  </a>
+                  item.href.startsWith("/") ? (
+                    <a className={className} href={item.href}>
+                      {inner}
+                    </a>
+                  ) : (
+                    <a
+                      className={className}
+                      href={item.href}
+                      rel="noopener noreferrer"
+                    >
+                      {inner}
+                    </a>
+                  )
                 ) : (
                   <div className={className}>{inner}</div>
                 )}

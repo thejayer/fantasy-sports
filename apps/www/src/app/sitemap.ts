@@ -4,12 +4,19 @@ import { getSiteConfig } from "@/lib/site";
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const { siteUrl } = getSiteConfig();
+  const now = new Date();
   return [
     {
       url: siteUrl,
-      lastModified: new Date(),
+      lastModified: now,
       changeFrequency: "monthly",
       priority: 1,
+    },
+    {
+      url: `${siteUrl}/ai`,
+      lastModified: now,
+      changeFrequency: "hourly",
+      priority: 0.8,
     },
   ];
 }
