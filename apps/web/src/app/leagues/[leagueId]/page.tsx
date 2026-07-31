@@ -270,7 +270,8 @@ export default async function LeagueDetailPage({ params, searchParams }: Props) 
   }
 
   const boxPair =
-    league.sport === "football" && tab === "matchups"
+    (league.sport === "football" || league.sport === "baseball") &&
+    tab === "matchups"
       ? parseBoxPair(boxParam)
       : null;
   let weekBoxScore: WeekBoxScoreSnapshot | null = null;

@@ -479,7 +479,7 @@ competing with push products, in a group that already has a Discord.
 | 6 | Empty projection columns rendered without coverage disclosure | P1 | **Fixed** — roadmap 7.10 |
 | 7 | Decision tools unnamed, not roster-aware, no verdict/Δ framing | P1 | **Fixed** — 7.8 landing/verdict/Trade Finder + Δ make-playoffs via samples sidecar |
 | 8 | No settings tab for ESPN sports; no "Open in ESPN" deep links | P1 | **Fixed** — roadmap 7.9 + 7.3 |
-| 9 | Baseball missing the projection-free tooling (cats, two-start, caps) | P2 | **Fixed** — roadmap 8.2 (cats, trailing, schedule/locks, two-starts, IP/GS caps) |
+| 9 | Baseball missing the projection-free tooling (cats, two-start, caps) | P2 | **Fixed** — roadmap 8.2 (season + period cats, trailing, schedule/locks, two-starts, IP/GS caps) |
 | 10 | Golf missing reminders, projected leaderboard, segment limits | P2 | **Fixed** — reminders (7.7); projected board / golfer pages / segment limits / auto-pick / drop-worst (8.3) |
 | 11 | 239 KB largest page vs a 100 KB target; full row sets to client | P2 | **Fixed** — roadmap 7.11 (server players board + slim scoreboard/draft + CI gate) |
 | 12 | No dark mode, no imagery, no live/freshness affordances, no legend | P2 | **Fixed** for theme/legend/freshness/crests (7.10 + 7.3); typographic pass open |

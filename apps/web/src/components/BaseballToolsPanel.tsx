@@ -76,13 +76,31 @@ function ViewSwitcher({
   );
 }
 
-function CategoryBoardView({ board }: { board: CategoryBoard }) {
+function CategoryBoardView({
+  board,
+  leagueId,
+  season,
+  currentWeek,
+}: {
+  board: CategoryBoard;
+  leagueId: string;
+  season: number;
+  currentWeek: number | null | undefined;
+}) {
+  const periodHref =
+    currentWeek != null
+      ? `/leagues/${leagueId}?season=${season}&tab=matchups&view=week&week=${currentWeek}`
+      : `/leagues/${leagueId}?season=${season}&tab=matchups`;
   return (
     <section style={{ marginTop: "0.75rem" }}>
       <p className="lede" style={{ marginTop: 0 }}>
         Category ranks from roster season stats — not a projection model.
       </p>
       <p className="league-meta">{board.disclaimer}</p>
+      <p className="league-meta">
+        For ESPN period H2H cats, open{" "}
+        <Link href={periodHref}>Matchups → category box</Link>.
+      </p>
       <div className="panel table-scroll">
         <table className="table-cards">
           <thead>
@@ -460,7 +478,12 @@ export function BaseballToolsPanel({
       ) : null}
 
       {active === "categories" && categoryBoard ? (
-        <CategoryBoardView board={categoryBoard} />
+        <CategoryBoardView
+          board={categoryBoard}
+          leagueId={league.league_id}
+          season={league.season}
+          currentWeek={league.current_week}
+        />
       ) : null}
 
       {active === "usage" && ipBoard ? (

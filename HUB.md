@@ -33,9 +33,10 @@ baseball projection snapshots. The `projections` tab keeps that EmptyState.
 Roadmap **8.2** fills `tools` with snapshot arithmetic: Category Board, Usage
 Caps (season IP/GS + period IP floors), PR7/PR15/PR30 trailing windows,
 games-per-team and two-start pitchers from `pro_schedule.json` (site
-`probables`), and daily locks from game start times. FA browsing remains the
-Waivers tab. Do not stub a half engine. Revisit projections only with a
-dedicated MLB modeling plan.
+`probables`), and daily locks from game start times. ESPN period H2H category
+boxes open from Matchups (`CategoryBoxPanel` over `weeks/{N}.json`). FA
+browsing remains the Waivers tab. Do not stub a half engine. Revisit
+projections only with a dedicated MLB modeling plan.
 
 ### Golf scope (roadmap 6.4a–e + 6.5 + auction/keepers + live room + 8.3)
 

@@ -928,8 +928,9 @@ tooling needs no model — it is scheduling and roster arithmetic:
 
 - ~~**Category standings**~~ — **LANDED** as season-to-date Category Board from
   roster `season_stats` (official category labels when synced; roto points +
-  per-cat ranks/margins). Disclose: not ESPN period boxes, not a projection
-  model.
+  per-cat ranks/margins). ESPN **period category boxes** land under Matchups
+  (`?box=a-b` → `CategoryBoxPanel` from `weeks/{N}.json` `home_stats` /
+  `away_stats`). Disclose: Tools board ≠ period boxes; not a projection model.
 - ~~**Games-per-team per period**~~ — **LANDED** from baseball
   `pro_schedule.json` sidecars plus roster `pro_team`.
 - ~~**Two-start pitchers**~~ — **LANDED** from ESPN site scoreboard
@@ -1140,12 +1141,13 @@ Concrete targets, baselined against [AUDIT.md](AUDIT.md) (phase 0) and
 | `apps/web` tests | 138 | **272+** | plus component + smoke |
 
 Landed: 7.1–7.11 (including Δ playoff odds + golf tee-time reminders); 8.1
-football box scores + player week game logs; 8.2 baseball tools MVP (category
-board + IP usage; feed-dependent cards still EmptyStates); 8.3 golf depth
-(projected week totals, golfer pages, segment start limits, auto-pick,
-optional drop-worst — offline / EOD; not live hole-by-hole).
-Open: 8.2 follow-ups (trailing splits sync, MLB schedule, period cat boxes,
-daily locks) where still feed-dependent.
+football box scores + player week game logs; 8.2 baseball projection-free
+toolkit (category board + period boxes, trailing, schedule/two-starts/locks,
+IP/GS caps); 8.3 golf depth (projected week totals, golfer pages, segment
+start limits, auto-pick, optional drop-worst — offline / EOD; not live
+hole-by-hole).
+Open: none in phase 8 sport depth (live hole-by-hole / MLB model stay
+out-of-scope).
 Postponed: 7.7 scheduled Discord auto-send / email fallback.
 
 Mobile chrome misses its target on the golf scoreboard (1.14 screens), which

@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { BoxScorePanel } from "@/components/BoxScorePanel";
+import { CategoryBoxPanel } from "@/components/CategoryBoxPanel";
 import { ViewerBadge } from "@/components/ViewerBadge";
 import type { LeagueSnapshot, WeekBoxScoreSnapshot } from "@/lib/data";
 import { boxPairKey } from "@/lib/box-score";
@@ -64,12 +65,14 @@ function MatchupCard({
   season,
   viewerTeamId,
   showBoxLink = false,
+  boxLinkLabel = "Box score",
 }: {
   game: MatchupGame;
   leagueId: string;
   season: number;
   viewerTeamId?: number;
   showBoxLink?: boolean;
+  boxLinkLabel?: string;
 }) {
   const mine = isViewerGame(game, viewerTeamId);
   const boxHref =
@@ -103,7 +106,7 @@ function MatchupCard({
       />
       {boxHref ? (
         <p className="league-meta" style={{ margin: "0.5rem 0 0" }}>
-          <Link href={boxHref}>Box score</Link>
+          <Link href={boxHref}>{boxLinkLabel}</Link>
         </p>
       ) : null}
     </article>
@@ -196,6 +199,7 @@ function PeriodSection({
   heading,
   viewerTeamId,
   showBoxLink = false,
+  boxLinkLabel = "Box score",
 }: {
   bundle: PeriodBundle;
   leagueId: string;
@@ -204,6 +208,7 @@ function PeriodSection({
   heading?: string;
   viewerTeamId?: number;
   showBoxLink?: boolean;
+  boxLinkLabel?: string;
 }) {
   const games = promoteViewerGame(bundle.games, viewerTeamId);
   return (
@@ -223,6 +228,7 @@ function PeriodSection({
               season={season}
               viewerTeamId={viewerTeamId}
               showBoxLink={showBoxLink}
+              boxLinkLabel={boxLinkLabel}
             />
           ))}
         </div>
@@ -245,7 +251,7 @@ export function MatchupsPanel({
   view?: MatchupsView;
   /** Signed-in member's franchise in this league (roadmap 7.1). */
   viewerTeamId?: number;
-  /** ``?box=1-2`` — open football box score for that pair. */
+  /** ``?box=1-2`` — football lineup box or baseball category box. */
   boxPair?: { a: number; b: number } | null;
   weekBoxScore?: WeekBoxScoreSnapshot | null;
 }) {
@@ -258,19 +264,31 @@ export function MatchupsPanel({
     : "week";
   const regSeasonCount = league.settings?.reg_season_count;
   const playoffTeamCount = league.settings?.playoff_team_count;
-  const footballBox =
-    league.sport === "football" && boxPair != null && activeView === "week";
+  const showWeekBox =
+    (league.sport === "football" || league.sport === "baseball") &&
+    boxPair != null &&
+    activeView === "week";
 
-  if (footballBox && boxPair) {
+  if (showWeekBox && boxPair) {
     return (
       <div className="matchups-panel">
-        <BoxScorePanel
-          league={league}
-          week={activeWeek}
-          teamA={boxPair.a}
-          teamB={boxPair.b}
-          snapshot={weekBoxScore}
-        />
+        {league.sport === "baseball" ? (
+          <CategoryBoxPanel
+            league={league}
+            week={activeWeek}
+            teamA={boxPair.a}
+            teamB={boxPair.b}
+            snapshot={weekBoxScore}
+          />
+        ) : (
+          <BoxScorePanel
+            league={league}
+            week={activeWeek}
+            teamA={boxPair.a}
+            teamB={boxPair.b}
+            snapshot={weekBoxScore}
+          />
+        )}
       </div>
     );
   }
@@ -307,7 +325,12 @@ export function MatchupsPanel({
               season={league.season}
               periodLabel={periodLabel}
               viewerTeamId={viewerTeamId}
-              showBoxLink={league.sport === "football"}
+              showBoxLink={
+                league.sport === "football" || league.sport === "baseball"
+              }
+              boxLinkLabel={
+                league.sport === "baseball" ? "Category box" : "Box score"
+              }
             />
           )}
         </>
@@ -381,7 +404,9 @@ function PlayoffsView({
             : ""}
           {league.sport === "football"
             ? ". Open a week matchup for the box score when synced."
-            : "."}
+            : league.sport === "baseball"
+              ? ". Open a period matchup for the category box when synced."
+              : "."}
         </p>
       </div>
 

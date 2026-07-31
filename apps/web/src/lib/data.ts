@@ -246,17 +246,33 @@ export type BoxScorePlayer = {
   game_played?: number | null;
 };
 
+/** One category cell on a baseball H2H category box (roadmap 8.2). */
+export type CategoryStatCell = {
+  value: number | null;
+  result?: string | null;
+};
+
 export type BoxScoreMatchup = {
   home_team_id: number | null;
   away_team_id: number | null;
-  home_score: number | null;
-  away_score: number | null;
+  home_score?: number | null;
+  away_score?: number | null;
   home_projected?: number | null;
   away_projected?: number | null;
   is_playoff?: boolean;
   matchup_type?: string | null;
-  home_lineup: BoxScorePlayer[];
-  away_lineup: BoxScorePlayer[];
+  /** Football player lines — absent on baseball category boxes. */
+  home_lineup?: BoxScorePlayer[];
+  away_lineup?: BoxScorePlayer[];
+  /** Baseball H2H category matrix (ESPN period box). */
+  home_stats?: Record<string, CategoryStatCell>;
+  away_stats?: Record<string, CategoryStatCell>;
+  home_wins?: number | null;
+  home_losses?: number | null;
+  home_ties?: number | null;
+  away_wins?: number | null;
+  away_losses?: number | null;
+  away_ties?: number | null;
 };
 
 /** Period pitcher IP line on baseball ``weeks/{N}.json`` (roadmap 8.2 leftovers). */

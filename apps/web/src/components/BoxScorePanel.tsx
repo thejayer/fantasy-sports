@@ -160,7 +160,7 @@ export function BoxScorePanel({
       >
         <LineupTable
           title={teamName(league, leftId)}
-          score={matchup.home_score}
+          score={matchup.home_score ?? null}
           projected={matchup.home_projected}
           players={matchup.home_lineup ?? []}
           leagueId={league.league_id}
@@ -168,7 +168,7 @@ export function BoxScorePanel({
         />
         <LineupTable
           title={teamName(league, rightId)}
-          score={matchup.away_score}
+          score={matchup.away_score ?? null}
           projected={matchup.away_projected}
           players={matchup.away_lineup ?? []}
           leagueId={league.league_id}

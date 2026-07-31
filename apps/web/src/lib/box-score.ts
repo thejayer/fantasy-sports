@@ -1,5 +1,5 @@
 /**
- * Football week box-score helpers (roadmap 8.1).
+ * Week box-score helpers (roadmap 8.1 football lineups; 8.2 baseball cats).
  * Pure — display league-applied ``points``, never raw yardage as the score.
  */
 
@@ -10,6 +10,33 @@ import type {
   WeekBoxScoreSnapshot,
 } from "@/lib/data";
 import { samePlayerId } from "@/lib/player-profile";
+
+/** Preferred display order for common 5×5 category abbreviations. */
+const CATEGORY_ORDER = [
+  "R",
+  "HR",
+  "RBI",
+  "SB",
+  "AVG",
+  "OBP",
+  "OPS",
+  "W",
+  "K",
+  "SV",
+  "ERA",
+  "WHIP",
+  "QS",
+  "HLD",
+];
+
+export type CategoryBoxRow = {
+  id: string;
+  label: string;
+  homeValue: number | null;
+  awayValue: number | null;
+  homeResult: string | null;
+  awayResult: string | null;
+};
 
 /** One week row on a football player game log (from ``weeks/{N}.json``). */
 export type PlayerWeekLogRow = {
@@ -100,6 +127,83 @@ export function teamName(
 ): string {
   if (teamId == null) return "TBD";
   return league.teams.find((t) => t.team_id === teamId)?.name ?? `Team ${teamId}`;
+}
+
+export function hasCategoryStats(
+  matchup: BoxScoreMatchup | null | undefined,
+): boolean {
+  if (!matchup) return false;
+  const home = matchup.home_stats ? Object.keys(matchup.home_stats).length : 0;
+  const away = matchup.away_stats ? Object.keys(matchup.away_stats).length : 0;
+  return home > 0 || away > 0;
+}
+
+export function categoryLabel(
+  league: LeagueSnapshot,
+  abbr: string,
+): string {
+  const cats = league.settings?.categories;
+  if (Array.isArray(cats)) {
+    const hit = cats.find(
+      (c) =>
+        (c.abbr && c.abbr.toUpperCase() === abbr.toUpperCase()) ||
+        (c.label && c.label.toUpperCase() === abbr.toUpperCase()),
+    );
+    if (hit?.label) return hit.label;
+  }
+  return abbr;
+}
+
+export function formatCatRecord(
+  wins: number | null | undefined,
+  losses: number | null | undefined,
+  ties: number | null | undefined,
+): string {
+  const w = wins ?? 0;
+  const l = losses ?? 0;
+  const t = ties ?? 0;
+  return t ? `${w}-${l}-${t}` : `${w}-${l}`;
+}
+
+/** Normalize ESPN result strings for outcome pills. */
+export function categoryResultTone(
+  result: string | null | undefined,
+): "win" | "loss" | "tie" | "open" {
+  const r = (result ?? "").toUpperCase();
+  if (r === "WIN" || r === "W") return "win";
+  if (r === "LOSS" || r === "L") return "loss";
+  if (r === "TIE" || r === "T") return "tie";
+  return "open";
+}
+
+export function categoryBoxRows(
+  league: LeagueSnapshot,
+  matchup: BoxScoreMatchup,
+): CategoryBoxRow[] {
+  const keys = new Set<string>([
+    ...Object.keys(matchup.home_stats ?? {}),
+    ...Object.keys(matchup.away_stats ?? {}),
+  ]);
+  const sorted = [...keys].sort((a, b) => {
+    const ia = CATEGORY_ORDER.indexOf(a.toUpperCase());
+    const ib = CATEGORY_ORDER.indexOf(b.toUpperCase());
+    if (ia === -1 && ib === -1) return a.localeCompare(b);
+    if (ia === -1) return 1;
+    if (ib === -1) return -1;
+    return ia - ib;
+  });
+  return sorted.map((id) => {
+    const home = matchup.home_stats?.[id];
+    const away = matchup.away_stats?.[id];
+    return {
+      id,
+      label: categoryLabel(league, id),
+      homeValue: home?.value ?? null,
+      awayValue: away?.value ?? null,
+      homeResult: home?.result != null ? String(home.result) : null,
+      awayResult: away?.result != null ? String(away.result) : null,
+    };
+  });
 }
 
 function slotRank(slot: string | null | undefined): number {

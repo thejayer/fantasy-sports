@@ -552,4 +552,20 @@ test.describe("hub smoke", () => {
     await expect(page.getByText("BAL @ SF")).toBeVisible();
     await expect(page.getByRole("cell", { name: "17:05 UTC" }).first()).toBeVisible();
   });
+
+  test("baseball matchups open period category box (roadmap 8.2)", async ({
+    page,
+  }) => {
+    await page.goto(
+      "/leagues/baseball-dynasty?tab=matchups&view=week&week=24",
+    );
+    await expect(page.getByRole("link", { name: "Category box" }).first()).toBeVisible();
+    await page.goto(
+      "/leagues/baseball-dynasty?tab=matchups&view=week&week=24&box=1-2",
+    );
+    await expect(page.getByText(/Period 24 category box/i)).toBeVisible();
+    await expect(page.getByText("Diamond Dogs").first()).toBeVisible();
+    await expect(page.getByText("Home Runs").first()).toBeVisible();
+    await expect(page.getByText("6-3-1").first()).toBeVisible();
+  });
 });
