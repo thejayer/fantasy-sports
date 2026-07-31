@@ -1,21 +1,19 @@
 import type { Metadata } from "next";
-import { Figtree, Syne } from "next/font/google";
+import { Archivo } from "next/font/google";
 import Link from "next/link";
 
+import {
+  ACCENT_INIT_SCRIPT,
+  AccentPicker,
+} from "@/components/AccentPicker";
 import { portalCopy } from "@/lib/content";
 import { getSiteConfig } from "@/lib/site";
 import "./globals.css";
 
-const display = Syne({
-  variable: "--font-display-face",
+const archivo = Archivo({
   subsets: ["latin"],
-  weight: ["700", "800"],
-});
-
-const body = Figtree({
-  variable: "--font-body-face",
-  subsets: ["latin"],
-  weight: ["400", "600", "700"],
+  weight: ["400", "600", "800"],
+  variable: "--font-archivo",
 });
 
 export function generateMetadata(): Metadata {
@@ -53,9 +51,11 @@ export default function RootLayout({
   const { fantasyHubUrl, discordInviteUrl } = getSiteConfig();
 
   return (
-    <html lang="en">
-      <body className={`${display.variable} ${body.variable}`}>
-        <div className="atmosphere" aria-hidden />
+    <html lang="en" className={archivo.variable}>
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: ACCENT_INIT_SCRIPT }} />
+      </head>
+      <body style={{ fontFamily: "var(--font-archivo), var(--font-body)" }}>
         <div className="shell">
           <header className="site-header">
             <Link href="/" className="brand-mark">
@@ -67,10 +67,13 @@ export default function RootLayout({
                 <a href={discordInviteUrl} rel="noopener noreferrer">
                   Discord
                 </a>
-              ) : null}
+              ) : (
+                <a href="#destinations">Discord</a>
+              )}
               <a href={fantasyHubUrl} rel="noopener noreferrer">
                 Fantasy
               </a>
+              <AccentPicker />
             </nav>
           </header>
           {children}

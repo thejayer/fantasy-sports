@@ -16,19 +16,29 @@ export default function OpenGraphImage() {
           flexDirection: "column",
           justifyContent: "flex-end",
           padding: "72px",
-          background:
-            "linear-gradient(155deg, #1a2433 0%, #243041 48%, #0e7f8c 100%)",
-          color: "#f4f7fb",
+          background: "#ec3013",
+          color: "#f3f2f2",
           fontFamily: "sans-serif",
         }}
       >
         <div
           style={{
-            fontSize: 88,
+            fontSize: 22,
+            letterSpacing: "0.16em",
+            textTransform: "uppercase",
+            opacity: 0.9,
+          }}
+        >
+          The front door
+        </div>
+        <div
+          style={{
+            marginTop: 20,
+            fontSize: 96,
             fontWeight: 800,
             letterSpacing: "-0.03em",
             textTransform: "uppercase",
-            lineHeight: 0.95,
+            lineHeight: 0.9,
             maxWidth: 900,
           }}
         >
@@ -36,22 +46,22 @@ export default function OpenGraphImage() {
         </div>
         <div
           style={{
+            marginTop: 36,
+            width: "100%",
+            height: 2,
+            background: "#f3f2f2",
+          }}
+        />
+        <div
+          style={{
             marginTop: 28,
             fontSize: 34,
-            opacity: 0.85,
+            fontWeight: 700,
             maxWidth: 720,
           }}
         >
           Same crew. Different rooms.
         </div>
-        <div
-          style={{
-            marginTop: 40,
-            width: 160,
-            height: 10,
-            background: "#1aa6b7",
-          }}
-        />
       </div>
     ),
     { ...size },
