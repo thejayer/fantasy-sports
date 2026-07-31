@@ -944,20 +944,27 @@ tooling needs no model — it is scheduling and roster arithmetic:
 
 Hub: `BaseballToolsPanel` + `lib/baseball-tools.ts`. Keep projections EmptyState.
 
-### 8.3 Golf: close the week-to-week loop
+### 8.3 Golf: close the week-to-week loop — LANDED (offline)
 Golf is the one sport where the hub *is* the system of record, so every gap is
 ours:
 
 - ~~**Lineup reminder before first tee** (7.7 transport)~~ — **LANDED** (Discord
   + admin poke + member-home timed action).
-- **Projected leaderboard / projected week total** as rounds land, the golf
-  analogue of live in-game projections; Pro Tour Fantasy Golf projects earnings
-  after each round.
-- **Golfer detail pages**: usage, results history, ownership % across the league.
-- **Per-segment start limits** (the official game's core strategic constraint at
-  3 starts per segment) as a settings knob plus a usage board.
-- **Auto-pick / alternate on a missed deadline**, and optionally Splash's "drop
-  your worst golfer" as a variance dampener for casual managers.
+- ~~**Projected leaderboard / projected week total**~~ — **LANDED** via
+  `through_round` on scoreboard events; in-progress boards sort/compare on
+  `week_projected` (remaining rounds = average of completed counted rounds —
+  disclosed heuristic, not a tour model). Fixtures stay `through_round=4`
+  (Final) so standings stay stable.
+- ~~**Golfer detail pages**~~ — **LANDED** at `/leagues/.../players/{id}` with
+  ownership %, segment start usage, and EOD round results from lineups +
+  scoreboard; roster names deep-link here.
+- ~~**Per-segment start limits**~~ — **LANDED** as `settings.golf.starts.max_per_segment`
+  (default 3) + Schedule → Start usage board; lineup POST validates caps.
+- ~~**Auto-pick on missed deadline**~~ — **LANDED** as
+  `settings.golf.missed_deadline.auto_pick` (default on); scoreboard build seeds
+  `default_lineup_from_roster` when a team has no saved lineup.
+- ~~**Drop worst golfer**~~ — **LANDED** as optional
+  `settings.golf.scoring.drop_worst_golfer` (off by default).
 
 Live in-round scoring stays out — it needs a durable PGAT feed (risk 6.6).
 
@@ -1130,9 +1137,11 @@ Concrete targets, baselined against [AUDIT.md](AUDIT.md) (phase 0) and
 
 Landed: 7.1–7.11 (including Δ playoff odds + golf tee-time reminders); 8.1
 football box scores + player week game logs; 8.2 baseball tools MVP (category
-board + IP usage; feed-dependent cards still EmptyStates).
-Open: 8.3 golf depth; 8.2 follow-ups (trailing splits sync, MLB schedule,
-period cat boxes, daily locks).
+board + IP usage; feed-dependent cards still EmptyStates); 8.3 golf depth
+(projected week totals, golfer pages, segment start limits, auto-pick,
+optional drop-worst — offline / EOD; not live hole-by-hole).
+Open: 8.2 follow-ups (trailing splits sync, MLB schedule, period cat boxes,
+daily locks) where still feed-dependent.
 Postponed: 7.7 scheduled Discord auto-send / email fallback.
 
 Mobile chrome misses its target on the golf scoreboard (1.14 screens), which

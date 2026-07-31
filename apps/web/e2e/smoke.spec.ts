@@ -37,6 +37,8 @@ test.describe("hub smoke", () => {
     await expect(page.getByRole("heading", { name: /Strictly Jayers Golf/i })).toBeVisible();
     await expect(page.getByText(/League settings/i)).toBeVisible();
     await expect(page.getByText(/Missed cut/i)).toBeVisible();
+    await expect(page.getByText(/Starts \/ segment/i)).toBeVisible();
+    await expect(page.getByText(/Auto-pick default lineup/i)).toBeVisible();
     await expect(page.getByText(/Event multipliers/i)).toBeVisible();
     await expect(page.getByText(/no live tour feed/i)).toBeVisible();
   });
@@ -190,6 +192,7 @@ test.describe("hub smoke", () => {
     await page.goto("/leagues/golf-main?tab=scoreboard");
     await expect(page.getByText(/Counting scoreboard/i)).toBeVisible();
     await expect(page.getByText(/THE PLAYERS Championship/i).first()).toBeVisible();
+    await expect(page.getByText(/\bFinal\b/i).first()).toBeVisible();
     await expect(page.getByRole("heading", { name: /Head-to-head/i })).toBeVisible();
     await expect(page.getByRole("heading", { name: /Week totals/i })).toBeVisible();
     await expect(page.getByText("Fairway Phantoms").first()).toBeVisible();
@@ -212,6 +215,17 @@ test.describe("hub smoke", () => {
     await expect(page.getByText(/THE PLAYERS Championship/i).first()).toBeVisible();
     await expect(page.getByRole("link", { name: "Set lineup" }).first()).toBeVisible();
     await expect(page.getByRole("link", { name: "Scoreboard" }).first()).toBeVisible();
+    await expect(page.getByRole("heading", { name: /Start usage/i })).toBeVisible();
+  });
+
+  test("golf golfer detail shows ownership and starts (roadmap 8.3)", async ({
+    page,
+  }) => {
+    await page.goto("/leagues/golf-main/players/1");
+    await expect(page.getByRole("heading", { name: /Golfer card/i })).toBeVisible();
+    await expect(page.getByText(/Ownership/i).first()).toBeVisible();
+    await expect(page.getByRole("heading", { name: /Lineup usage/i })).toBeVisible();
+    await expect(page.getByRole("heading", { name: /Round results/i })).toBeVisible();
   });
 
   test("golf teams tab shows GS/BE roster pills", async ({ page }) => {

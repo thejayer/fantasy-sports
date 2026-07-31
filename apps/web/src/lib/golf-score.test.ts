@@ -135,5 +135,68 @@ describe("golf score", () => {
     expect(
       teams[0]!.outcomes!.every((o) => ["W", "L", "T"].includes(o)),
     ).toBe(true);
+    expect(board.events[0]?.status).toBe("final");
+    expect(board.events[0]?.through_round).toBe(4);
+  });
+
+  it("projects remaining rounds when through_round < 4", () => {
+    const lineup = {
+      starters: [1, 2, 3, 4, 5],
+      captain: 1,
+      alt1: 6,
+      alt2: null,
+    };
+    const rounds = fixtureEventRounds("e", [1, 2, 3, 4, 5, 6]);
+    const partial = scoreTeamWeek(
+      lineup,
+      rounds,
+      DEFAULT_GOLF_SETTINGS,
+      1,
+      2,
+    );
+    expect(partial.status).toBe("in_progress");
+    expect(partial.through_round).toBe(2);
+    expect(partial.week_projected ?? 0).toBeCloseTo(partial.week_total * 2, 5);
+    expect(Object.keys(partial.by_round)).toEqual(["1", "2"]);
+  });
+
+  it("auto-picks missing lineups when scoring", () => {
+    const teams = [
+      {
+        team_id: 1,
+        name: "A",
+        abbrev: "A",
+        owners: [],
+        wins: 0,
+        losses: 0,
+        ties: 0,
+        points_for: 0,
+        points_against: 0,
+        standing: 1,
+        division: null,
+        roster: [1, 2, 3, 4, 5, 6].map((id) => ({
+          id,
+          name: `G${id}`,
+          position: "G",
+          slot: id <= 5 ? "GS" : "BE",
+          pro_team: "USA",
+          injury_status: null,
+          total_points: 0,
+          projected_total_points: null,
+          avg_points: null,
+        })),
+      },
+    ] as unknown as Team[];
+    const lineups = buildLineupsPayload(teams, 2026, DEFAULT_GOLF_SETTINGS, {
+      savedAt: "2026-07-27T00:00:00+00:00",
+    });
+    delete lineups.teams["1"]![lineups.events[0]!.event_id];
+    const board = buildScoreboardPayload(
+      teams,
+      lineups,
+      DEFAULT_GOLF_SETTINGS,
+      "2026-07-27T00:00:00+00:00",
+    );
+    expect(board.events[0]?.teams["1"]).toBeTruthy();
   });
 });

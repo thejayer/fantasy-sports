@@ -19,6 +19,7 @@ export function GolfSettingsPanel({ league }: { league: LeagueSnapshot }) {
       : null,
     golf.draft.style === "auction" ? `$${golf.draft.budget} budget` : null,
   ].filter(Boolean);
+  const maxStarts = golf.starts.max_per_segment;
   const rows: Array<[string, string]> = [
     ["Format", league.format === "season_points" ? "Season points" : "Head-to-head"],
     ["Teams", String(league.team_count)],
@@ -28,8 +29,21 @@ export function GolfSettingsPanel({ league }: { league: LeagueSnapshot }) {
     ["Captain", golf.captain_tiebreaker ? "Tiebreaker only" : "Off"],
     ["Missed cut", modeLabel(golf.missed_cut.mode)],
     [
+      "Starts / segment",
+      maxStarts && maxStarts > 0
+        ? `${maxStarts} (official-game style)`
+        : "Unlimited",
+    ],
+    [
+      "Missed deadline",
+      golf.missed_deadline.auto_pick
+        ? "Auto-pick default lineup"
+        : "No auto-pick",
+    ],
+    [
       "Counting",
-      `Thu/Fri best ${golf.scoring.thu_fri_count} of 5 · Sat/Sun all ${golf.scoring.sat_sun_count}`,
+      `Thu/Fri best ${golf.scoring.thu_fri_count} of 5 · Sat/Sun all ${golf.scoring.sat_sun_count}` +
+        (golf.scoring.drop_worst_golfer ? " · drop worst golfer" : ""),
     ],
     ["Player points", "−(to-par)"],
     ["Scoring cadence", golf.scoring.grain.replaceAll("_", " ")],

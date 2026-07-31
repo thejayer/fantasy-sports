@@ -90,6 +90,9 @@ export async function POST(request: Request, { params }: Props) {
     teeTimes: event.tee_times,
     previous,
     now,
+    events: league.lineups.events,
+    teamLineups: league.lineups.teams[String(teamId)],
+    eventId,
   });
   if (error) {
     return NextResponse.json({ error }, { status: 400 });
@@ -102,6 +105,7 @@ export async function POST(request: Request, { params }: Props) {
       saved_at,
       locked_at: previous?.locked_at ?? null,
       locks: previous?.locks ?? {},
+      source: "manual",
     },
     event.tee_times,
     now,

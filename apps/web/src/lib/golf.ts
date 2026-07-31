@@ -38,6 +38,10 @@ export type GolfSettings = {
   roster: { starters: number; bench: number };
   captain_tiebreaker: boolean;
   missed_cut: { mode: MissedCutMode };
+  /** Per-segment start caps (roadmap 8.3). null/0 = unlimited. */
+  starts: { max_per_segment: number | null };
+  /** Auto-apply default lineup after first tee with no save. */
+  missed_deadline: { auto_pick: boolean };
   schedule: { source: "fedex_cup"; include: string[]; exclude: string[] };
   multipliers: { regular: number; signature: number; major: number };
   scoring: {
@@ -45,6 +49,8 @@ export type GolfSettings = {
     player_points: "neg_to_par";
     thu_fri_count: number;
     sat_sun_count: number;
+    /** Splash-style week dampener (roadmap 8.3). */
+    drop_worst_golfer: boolean;
   };
 };
 
@@ -58,6 +64,8 @@ export const DEFAULT_GOLF_SETTINGS: GolfSettings = {
   roster: { starters: GOLF_STARTERS, bench: GOLF_DEFAULT_BENCH },
   captain_tiebreaker: true,
   missed_cut: { mode: "alt1" },
+  starts: { max_per_segment: 3 },
+  missed_deadline: { auto_pick: true },
   schedule: { source: "fedex_cup", include: [], exclude: [] },
   multipliers: { regular: 1.0, signature: 1.5, major: 2.0 },
   scoring: {
@@ -65,6 +73,7 @@ export const DEFAULT_GOLF_SETTINGS: GolfSettings = {
     player_points: "neg_to_par",
     thu_fri_count: 4,
     sat_sun_count: 5,
+    drop_worst_golfer: false,
   },
 };
 
@@ -107,12 +116,41 @@ export function parseGolfSettings(raw: unknown): GolfSettings | null {
   if (!raw || typeof raw !== "object") return null;
   const golf = (raw as { golf?: unknown }).golf;
   if (!golf || typeof golf !== "object") return null;
-  const merged = {
+  const g = golf as Partial<GolfSettings>;
+  const merged: GolfSettings = {
     ...DEFAULT_GOLF_SETTINGS,
-    ...(golf as GolfSettings),
+    ...g,
     draft: {
       ...DEFAULT_GOLF_SETTINGS.draft,
-      ...((golf as GolfSettings).draft ?? {}),
+      ...(g.draft ?? {}),
+    },
+    roster: {
+      ...DEFAULT_GOLF_SETTINGS.roster,
+      ...(g.roster ?? {}),
+    },
+    missed_cut: {
+      ...DEFAULT_GOLF_SETTINGS.missed_cut,
+      ...(g.missed_cut ?? {}),
+    },
+    starts: {
+      ...DEFAULT_GOLF_SETTINGS.starts,
+      ...(g.starts ?? {}),
+    },
+    missed_deadline: {
+      ...DEFAULT_GOLF_SETTINGS.missed_deadline,
+      ...(g.missed_deadline ?? {}),
+    },
+    schedule: {
+      ...DEFAULT_GOLF_SETTINGS.schedule,
+      ...(g.schedule ?? {}),
+    },
+    multipliers: {
+      ...DEFAULT_GOLF_SETTINGS.multipliers,
+      ...(g.multipliers ?? {}),
+    },
+    scoring: {
+      ...DEFAULT_GOLF_SETTINGS.scoring,
+      ...(g.scoring ?? {}),
     },
   };
   return normalizeDraftSettings(merged);

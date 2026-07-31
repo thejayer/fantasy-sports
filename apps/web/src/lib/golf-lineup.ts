@@ -17,6 +17,8 @@ export type GolfEventMeta = {
   week: number;
   starts_at: string;
   multiplier_tier: "regular" | "signature" | "major" | string;
+  segment_id?: string | null;
+  through_round?: number | null;
   tee_times?: Record<string, string>;
 };
 
@@ -28,6 +30,7 @@ export type GolfWeekLineup = {
   saved_at: string;
   locked_at?: string | null;
   locks?: Record<string, string>;
+  source?: "manual" | "auto_pick" | "seed" | string;
 };
 
 export type GolfLineupsFile = {
@@ -60,6 +63,8 @@ export function fixtureEvents(season: number): GolfEventMeta[] {
       week: 1,
       starts_at: `${season}-03-12T12:00:00+00:00`,
       multiplier_tier: "signature",
+      segment_id: "early",
+      through_round: 4,
     },
     {
       event_id: `${season}-masters`,
@@ -67,6 +72,8 @@ export function fixtureEvents(season: number): GolfEventMeta[] {
       week: 2,
       starts_at: `${season}-04-09T12:00:00+00:00`,
       multiplier_tier: "major",
+      segment_id: "early",
+      through_round: 4,
     },
   ];
 }
@@ -125,6 +132,7 @@ export function defaultLineupFromRoster(
     saved_at: savedAt,
     locked_at: null,
     locks: {},
+    source: "seed",
   };
 }
 
@@ -153,6 +161,41 @@ export function applyLocks(
   return { ...lineup, locks, locked_at };
 }
 
+export function segmentStartCounts(
+  teamLineups: Record<string, GolfWeekLineup> | undefined,
+  events: GolfEventMeta[],
+  segmentId: string | null | undefined,
+  excludeEventId?: string | null,
+): Map<number, number> {
+  const counts = new Map<number, number>();
+  if (!segmentId || !teamLineups) return counts;
+  for (const event of events) {
+    if (event.segment_id !== segmentId) continue;
+    if (excludeEventId && event.event_id === excludeEventId) continue;
+    const lined = teamLineups[event.event_id];
+    if (!lined) continue;
+    for (const raw of lined.starters ?? []) {
+      const pid = Number(raw);
+      if (Number.isNaN(pid)) continue;
+      counts.set(pid, (counts.get(pid) ?? 0) + 1);
+    }
+  }
+  return counts;
+}
+
+/** True when the event's first tee time (or starts_at) has passed. */
+export function eventDeadlinePassed(
+  event: GolfEventMeta,
+  now: Date = new Date(),
+): boolean {
+  const tees = Object.values(event.tee_times ?? {});
+  const firstTee = tees.length
+    ? tees.map((t) => new Date(t).getTime()).sort((a, b) => a - b)[0]
+    : new Date(event.starts_at).getTime();
+  if (firstTee == null || Number.isNaN(firstTee)) return false;
+  return now.getTime() >= firstTee;
+}
+
 export function validateWeekLineup(
   lineup: {
     starters: number[];
@@ -166,9 +209,21 @@ export function validateWeekLineup(
     teeTimes?: Record<string, string>;
     previous?: GolfWeekLineup | null;
     now?: Date;
+    events?: GolfEventMeta[];
+    teamLineups?: Record<string, GolfWeekLineup>;
+    eventId?: string;
   },
 ): string | null {
-  const { rosterIds, golf, teeTimes, previous, now = new Date() } = options;
+  const {
+    rosterIds,
+    golf,
+    teeTimes,
+    previous,
+    now = new Date(),
+    events,
+    teamLineups,
+    eventId,
+  } = options;
   const starters = lineup.starters.map(Number);
   if (starters.length !== (golf.roster.starters || GOLF_STARTERS)) {
     return `need exactly ${golf.roster.starters} starters`;
@@ -229,6 +284,27 @@ export function validateWeekLineup(
       }
     }
   }
+
+  const maxStarts = golf.starts.max_per_segment;
+  if (
+    maxStarts &&
+    maxStarts > 0 &&
+    events?.length &&
+    eventId &&
+    teamLineups
+  ) {
+    const active = events.find((e) => e.event_id === eventId);
+    const segment = active?.segment_id;
+    if (segment) {
+      const prior = segmentStartCounts(teamLineups, events, segment, eventId);
+      for (const pid of starters) {
+        const used = (prior.get(pid) ?? 0) + 1;
+        if (used > maxStarts) {
+          return `player ${pid} exceeds segment start cap (${used}/${maxStarts} in ${segment})`;
+        }
+      }
+    }
+  }
   return null;
 }
 
@@ -259,7 +335,10 @@ export function buildLineupsPayload(
   const teamMap: GolfLineupsFile["teams"] = {};
   for (const team of teams) {
     if (!team.roster?.length) continue;
-    const base = defaultLineupFromRoster(team.roster, golf, savedAt);
+    const base = {
+      ...defaultLineupFromRoster(team.roster, golf, savedAt),
+      source: "seed" as const,
+    };
     teamMap[String(team.team_id)] = {};
     for (const event of events) {
       teamMap[String(team.team_id)][event.event_id] = applyLocks(

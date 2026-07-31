@@ -14,7 +14,12 @@ FIXTURE_NOW = "2026-03-12T14:00:00+00:00"
 
 
 def fixture_events(season: int) -> list[dict[str, Any]]:
-    """Two counting events for offline demos / CI."""
+    """Two counting events for offline demos / CI.
+
+    ``segment_id`` groups events for per-segment start caps (roadmap 8.3).
+    ``through_round`` stamps how many EOD rounds have landed (1–4); fixtures
+    stay final (4) so standings stay stable — unit tests cover in-progress.
+    """
     return [
         {
             "event_id": f"{season}-players",
@@ -22,6 +27,8 @@ def fixture_events(season: int) -> list[dict[str, Any]]:
             "week": 1,
             "starts_at": f"{season}-03-12T12:00:00+00:00",
             "multiplier_tier": "signature",
+            "segment_id": "early",
+            "through_round": 4,
         },
         {
             "event_id": f"{season}-masters",
@@ -29,6 +36,8 @@ def fixture_events(season: int) -> list[dict[str, Any]]:
             "week": 2,
             "starts_at": f"{season}-04-09T12:00:00+00:00",
             "multiplier_tier": "major",
+            "segment_id": "early",
+            "through_round": 4,
         },
     ]
 

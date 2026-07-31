@@ -36,16 +36,18 @@ and daily locks from game start times. Two-start pitchers still need a
 probable-starter feed. FA browsing remains the Waivers tab. Do not stub a half
 engine. Revisit projections only with a dedicated MLB modeling plan.
 
-### Golf scope (roadmap 6.4a–e + 6.5 + auction/keepers + live room)
+### Golf scope (roadmap 6.4a–e + 6.5 + auction/keepers + live room + 8.3)
 
 **Hub-native** PGA Tour counting leagues (LIV real-team model) — not ESPN and
 not `ffa`. Package: `src/sg` (snake **or** offline auction + keepers) plus hub
 live nomination room (`auction_room.json`, polled). Fixture `golf-main` stays
 snake. Create UI can run offline auction or **Live nomination room** (empty
-draft → Auction tab). Hub surfaces: Standings, Teams, Settings, Schedule,
-Lineup, Scoreboard, Draft, **Auction**, History. Scoring stays offline — no
-live tour scrapes. Tee locks fail closed (UTC). Room is file-backed + HTTP
-polling (no websockets/Redis).
+draft → Auction tab). Hub surfaces: Standings, Teams, Settings, Schedule
+(with start-usage board), Lineup, Scoreboard (Final / Through + projected),
+Draft, **Auction**, History, plus golfer detail pages from roster links.
+Scoring stays offline — no live tour scrapes. Tee locks fail closed (UTC).
+Missed-deadline auto-pick and per-segment start caps are settings knobs.
+Room is file-backed + HTTP polling (no websockets/Redis).
 
 ## Production (Cloud Run) — preferred
 

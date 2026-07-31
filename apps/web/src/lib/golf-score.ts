@@ -10,7 +10,10 @@ import type {
   Team,
 } from "@/lib/data";
 import type { GolfSettings } from "@/lib/golf";
-import type { GolfLineupsFile } from "@/lib/golf-lineup";
+import {
+  defaultLineupFromRoster,
+  type GolfLineupsFile,
+} from "@/lib/golf-lineup";
 
 function winPct(wins: number, losses: number, ties: number): number {
   const games = wins + losses + ties;
@@ -259,17 +262,20 @@ export function scoreTeamWeek(
   roundFile: RoundFile,
   golf: GolfSettings,
   multiplier: number,
+  throughRound = 4,
 ): GolfScoreboardTeamWeek {
   const byPlayer = indexRounds(roundFile);
   const starters = lineup.starters.map(Number);
   const captain = Number(lineup.captain);
   const alt1 = lineup.alt1 == null ? null : Number(lineup.alt1);
   const alt2 = lineup.alt2 == null ? null : Number(lineup.alt2);
+  const lastRound = Math.max(1, Math.min(4, Math.trunc(throughRound || 4)));
   const byRound: GolfScoreboardTeamWeek["by_round"] = {};
   let weekRaw = 0;
   let captainWeek = 0;
+  const golferWeek = new Map<number, number>(starters.map((id) => [id, 0]));
 
-  for (const rnd of [1, 2, 3, 4]) {
+  for (const rnd of [1, 2, 3, 4].filter((r) => r <= lastRound)) {
     const mode = golf.missed_cut.mode;
     const weekend = WEEKEND.has(rnd);
     const altQueue: Array<{ source: string; id: number }> = [];
@@ -335,6 +341,14 @@ export function scoreTeamWeek(
       dropped_player_ids: dropped.map((s) => s.player_id),
     };
     weekRaw += points;
+    for (const slot of slots) {
+      if (countedIds.includes(slot.player_id)) {
+        golferWeek.set(
+          slot.starter_id,
+          (golferWeek.get(slot.starter_id) ?? 0) + slot.points,
+        );
+      }
+    }
     if (countedIds.includes(captain)) {
       const capSlot = slots.find(
         (s) => s.player_id === captain && s.source === "starter",
@@ -343,6 +357,20 @@ export function scoreTeamWeek(
     }
   }
 
+  let droppedWorst: number | null = null;
+  if (golf.scoring.drop_worst_golfer && golferWeek.size) {
+    droppedWorst = [...golferWeek.entries()].sort(
+      (a, b) => a[1] - b[1] || a[0] - b[0],
+    )[0]![0];
+    weekRaw -= golferWeek.get(droppedWorst) ?? 0;
+  }
+
+  const remaining = 4 - lastRound;
+  const projectedRaw =
+    remaining > 0 && lastRound > 0
+      ? weekRaw + (weekRaw / lastRound) * remaining
+      : weekRaw;
+
   return {
     starters,
     captain,
@@ -350,8 +378,12 @@ export function scoreTeamWeek(
     alt2,
     week_raw: weekRaw,
     week_total: weekRaw * multiplier,
+    week_projected: projectedRaw * multiplier,
     captain_week: captainWeek,
     multiplier,
+    through_round: lastRound,
+    status: lastRound >= 4 ? "final" : "in_progress",
+    dropped_worst_player_id: droppedWorst,
     by_round: byRound,
   };
 }
@@ -402,11 +434,29 @@ export function buildScoreboardPayload(
   const events: GolfScoreboardEvent[] = lineups.events.map((event) => {
     const mult = eventMultiplier(golf, event.multiplier_tier);
     const rounds = fixtureEventRounds(event.event_id, fieldIds);
+    const through = Math.max(
+      1,
+      Math.min(4, Math.trunc(event.through_round ?? 4)),
+    );
     const teamScores: Record<string, GolfScoreboardTeamWeek> = {};
-    for (const [teamId, byEvent] of Object.entries(lineups.teams)) {
-      const lineup = byEvent[event.event_id];
-      if (!lineup) continue;
-      teamScores[teamId] = scoreTeamWeek(lineup, rounds, golf, mult);
+    for (const team of teams) {
+      const byEvent = lineups.teams[String(team.team_id)] ?? {};
+      let lineup = byEvent[event.event_id];
+      if (!lineup) {
+        if (!golf.missed_deadline.auto_pick) continue;
+        if ((team.roster?.length ?? 0) < (golf.roster.starters || 5)) continue;
+        lineup = {
+          ...defaultLineupFromRoster(team.roster ?? [], golf, scoredAt),
+          source: "auto_pick",
+        };
+      }
+      teamScores[String(team.team_id)] = scoreTeamWeek(
+        lineup,
+        rounds,
+        golf,
+        mult,
+        through,
+      );
     }
     const ordered = Object.keys(teamScores)
       .map(Number)
@@ -417,24 +467,41 @@ export function buildScoreboardPayload(
       const awayId = ordered[i + 1]!;
       const home = teamScores[String(homeId)]!;
       const away = teamScores[String(awayId)]!;
+      const homeCmp = {
+        ...home,
+        week_total:
+          through < 4
+            ? (home.week_projected ?? home.week_total)
+            : home.week_total,
+      };
+      const awayCmp = {
+        ...away,
+        week_total:
+          through < 4
+            ? (away.week_projected ?? away.week_total)
+            : away.week_total,
+      };
       pairings.push({
         home_team_id: homeId,
         away_team_id: awayId,
         home_name: nameById.get(homeId) ?? null,
         away_name: nameById.get(awayId) ?? null,
-        home_total: home.week_total,
-        away_total: away.week_total,
+        home_total: homeCmp.week_total,
+        away_total: awayCmp.week_total,
         home_captain_week: home.captain_week,
         away_captain_week: away.captain_week,
-        outcome: compareH2h(home, away, golf.captain_tiebreaker),
+        outcome: compareH2h(homeCmp, awayCmp, golf.captain_tiebreaker),
       });
     }
     return {
       event_id: event.event_id,
       name: event.name,
       week: event.week,
+      segment_id: event.segment_id ?? null,
       multiplier_tier: event.multiplier_tier,
       multiplier: mult,
+      through_round: through,
+      status: through >= 4 ? "final" : "in_progress",
       scored_at: scoredAt,
       teams: teamScores,
       pairings,

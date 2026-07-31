@@ -82,6 +82,27 @@ class GolfMissedCutSettings(BaseModel):
     mode: MissedCutMode = "alt1"
 
 
+class GolfStartsSettings(BaseModel):
+    """Per-segment start caps (roadmap 8.3) — official-game default is 3."""
+
+    max_per_segment: int | None = 3
+
+    @field_validator("max_per_segment")
+    @classmethod
+    def starts_range(cls, value: int | None) -> int | None:
+        if value is None:
+            return None
+        if value < 0 or value > 20:
+            raise ValueError("max_per_segment must be 0–20 (0/None = unlimited)")
+        return value
+
+
+class GolfMissedDeadlineSettings(BaseModel):
+    """Apply default lineup when the first tee passes with no save (roadmap 8.3)."""
+
+    auto_pick: bool = True
+
+
 class GolfScheduleSettings(BaseModel):
     source: ScheduleSource = "fedex_cup"
     include: list[str] = Field(default_factory=list)
@@ -106,6 +127,8 @@ class GolfScoringSettings(BaseModel):
     player_points: PlayerPointsMode = "neg_to_par"
     thu_fri_count: int = 4
     sat_sun_count: int = 5
+    # Splash-style week dampener: drop lowest starter week total (roadmap 8.3).
+    drop_worst_golfer: bool = False
 
     @model_validator(mode="after")
     def counting_rules(self) -> GolfScoringSettings:
@@ -117,12 +140,16 @@ class GolfScoringSettings(BaseModel):
 
 
 class GolfSettings(BaseModel):
-    """Persisted under snapshot ``settings.golf`` (roadmap 6.1)."""
+    """Persisted under snapshot ``settings.golf`` (roadmap 6.1 / 8.3)."""
 
     draft: GolfDraftSettings = Field(default_factory=GolfDraftSettings)
     roster: GolfRosterSettings = Field(default_factory=GolfRosterSettings)
     captain_tiebreaker: bool = True
     missed_cut: GolfMissedCutSettings = Field(default_factory=GolfMissedCutSettings)
+    starts: GolfStartsSettings = Field(default_factory=GolfStartsSettings)
+    missed_deadline: GolfMissedDeadlineSettings = Field(
+        default_factory=GolfMissedDeadlineSettings
+    )
     schedule: GolfScheduleSettings = Field(default_factory=GolfScheduleSettings)
     multipliers: GolfMultipliers = Field(default_factory=GolfMultipliers)
     scoring: GolfScoringSettings = Field(default_factory=GolfScoringSettings)

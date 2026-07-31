@@ -388,12 +388,12 @@ Fantasy Golf, Clubpicks):
 | Draft (snake / auction / live room) | ● strong | ◐ |
 | Lineup with tee-time locks | ● fail-closed | ● |
 | EOD scoring, best 4/5, alts, multipliers | ● | ● |
-| **Live/projected leaderboard during the event** | ○ | ● "projected earnings after each round" |
-| **Lineup reminder before first tee** | ○ | ● configurable reminder emails |
-| **Golfer detail / usage history** | ○ | ● results history, ownership % |
-| **Per-segment start limits** | ○ | ● 3 starts per segment (the core constraint) |
-| Alternates | ● alt1/alt2 | ● + auto-pick on missed deadline |
-| Variance dampeners | ○ | ● "drop your worst golfer" |
+| **Live/projected leaderboard during the event** | ● through_round + week_projected (EOD; not hole-by-hole) | ● "projected earnings after each round" |
+| **Lineup reminder before first tee** | ● digest + Discord (7.7) | ● configurable reminder emails |
+| **Golfer detail / usage history** | ● `/players/{id}` usage, ownership %, EOD results | ● results history, ownership % |
+| **Per-segment start limits** | ● `starts.max_per_segment` (default 3) + usage board | ● 3 starts per segment (the core constraint) |
+| Alternates | ● alt1/alt2 + auto-pick on missed deadline | ● + auto-pick on missed deadline |
+| Variance dampeners | ● optional `drop_worst_golfer` (off by default) | ● "drop your worst golfer" |
 
 The two that matter for a friend league are the reminder and the projected
 leaderboard. Golf's weekly cadence makes a missed lineup the primary churn
@@ -480,7 +480,7 @@ competing with push products, in a group that already has a Discord.
 | 7 | Decision tools unnamed, not roster-aware, no verdict/Δ framing | P1 | **Fixed** — 7.8 landing/verdict/Trade Finder + Δ make-playoffs via samples sidecar |
 | 8 | No settings tab for ESPN sports; no "Open in ESPN" deep links | P1 | **Fixed** — roadmap 7.9 + 7.3 |
 | 9 | Baseball missing the projection-free tooling (cats, two-start, caps) | P2 | Open — roadmap 8.2 |
-| 10 | Golf missing reminders, projected leaderboard, segment limits | P2 | Reminders landed (7.7); projected leaderboard / segment limits still 8.3 |
+| 10 | Golf missing reminders, projected leaderboard, segment limits | P2 | **Fixed** — reminders (7.7); projected board / golfer pages / segment limits / auto-pick / drop-worst (8.3) |
 | 11 | 239 KB largest page vs a 100 KB target; full row sets to client | P2 | **Fixed** — roadmap 7.11 (server players board + slim scoreboard/draft + CI gate) |
 | 12 | No dark mode, no imagery, no live/freshness affordances, no legend | P2 | **Fixed** for theme/legend/freshness/crests (7.10 + 7.3); typographic pass open |
 | 13 | No outbound channel at all — no email, push, or digest | P1 | **Fixed** for digest + Discord + golf tee-time reminders (7.7); email fallback open |
