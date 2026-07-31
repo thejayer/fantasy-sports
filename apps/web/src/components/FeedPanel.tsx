@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { EmptyState } from "@/components/EmptyState";
 import type { ActivityView } from "@/lib/activity";
@@ -11,6 +12,15 @@ import {
   type LeagueFeed,
 } from "@/lib/feed";
 import type { SystemFeedEvent } from "@/lib/feed-events";
+import {
+  inFeedDateRange,
+  isoCreatedAtMs,
+  parseFeedDayEnd,
+  parseFeedDayStart,
+  parseFeedSortDir,
+  sortByFeedKey,
+  type FeedSortDir,
+} from "@/lib/feed-query";
 
 type FeedPanelProps = {
   leagueId: string;
@@ -49,6 +59,13 @@ export function FeedPanel({
   canModerate,
   digestPeriod,
 }: FeedPanelProps) {
+  const searchParams = useSearchParams();
+  const dir = parseFeedSortDir(searchParams.get("dir"));
+  const fromParam = searchParams.get("from");
+  const toParam = searchParams.get("to");
+  const fromMs = parseFeedDayStart(fromParam);
+  const toMs = parseFeedDayEnd(toParam);
+
   const [feed, setFeed] = useState<LeagueFeed>(initialFeed);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
@@ -57,6 +74,28 @@ export function FeedPanel({
   const [pollQuestion, setPollQuestion] = useState("");
   const [pollOptions, setPollOptions] = useState("Yes\nNo");
   const [showPoll, setShowPoll] = useState(false);
+
+  const feedHref = useCallback(
+    (patch: {
+      view?: ActivityView;
+      dir?: FeedSortDir;
+      from?: string | null;
+      to?: string | null;
+    }) => {
+      const params = new URLSearchParams();
+      params.set("season", String(season));
+      params.set("tab", "activity");
+      params.set("view", patch.view ?? view);
+      const nextDir = patch.dir ?? dir;
+      if (nextDir === "asc") params.set("dir", "asc");
+      const nextFrom = patch.from === undefined ? fromParam : patch.from;
+      const nextTo = patch.to === undefined ? toParam : patch.to;
+      if (nextFrom) params.set("from", nextFrom);
+      if (nextTo) params.set("to", nextTo);
+      return `/leagues/${leagueId}?${params.toString()}`;
+    },
+    [dir, fromParam, leagueId, season, toParam, view],
+  );
 
   const refresh = useCallback(async () => {
     try {
@@ -114,27 +153,62 @@ export function FeedPanel({
     const map = new Map<string, LeagueFeed["comments"]>();
     for (const c of feed.comments) {
       if (c.deleted_at) continue;
+      if (!inFeedDateRange(isoCreatedAtMs(c.created_at), fromMs, toMs)) continue;
       const list = map.get(c.target_id) ?? [];
       list.push(c);
       map.set(c.target_id, list);
     }
+    for (const [key, list] of map) {
+      map.set(
+        key,
+        sortByFeedKey(
+          list,
+          (c) => isoCreatedAtMs(c.created_at),
+          (c) => c.id,
+          dir,
+        ),
+      );
+    }
     return map;
-  }, [feed]);
+  }, [dir, feed, fromMs, toMs]);
 
-  const livePolls = feed.polls.filter((p) => !p.deleted_at);
+  const livePolls = useMemo(
+    () =>
+      sortByFeedKey(
+        feed.polls.filter(
+          (p) =>
+            !p.deleted_at &&
+            inFeedDateRange(isoCreatedAtMs(p.created_at), fromMs, toMs),
+        ),
+        (p) => isoCreatedAtMs(p.created_at),
+        (p) => p.id,
+        dir,
+      ),
+    [dir, feed.polls, fromMs, toMs],
+  );
   const leagueChat = commentsByTarget.get(FEED_LEAGUE_TARGET) ?? [];
 
   const filteredEvents = useMemo(() => {
-    if (view === "talk") return [];
-    if (view === "all") return events;
-    if (view === "trades") return events.filter((e) => e.kind === "trade");
-    if (view === "waivers") return events.filter((e) => e.kind === "waiver");
-    if (view === "results") {
-      return events.filter((e) => e.kind === "result" || e.kind === "digest");
-    }
-    if (view === "draft") return events.filter((e) => e.kind === "draft");
-    return events;
-  }, [events, view]);
+    let list: SystemFeedEvent[] = [];
+    if (view === "talk") list = [];
+    else if (view === "all") list = events;
+    else if (view === "trades") list = events.filter((e) => e.kind === "trade");
+    else if (view === "waivers") {
+      list = events.filter((e) => e.kind === "waiver");
+    } else if (view === "results") {
+      list = events.filter((e) => e.kind === "result" || e.kind === "digest");
+    } else if (view === "draft") {
+      list = events.filter((e) => e.kind === "draft");
+    } else list = events;
+
+    list = list.filter((e) => inFeedDateRange(e.sortKey, fromMs, toMs));
+    return sortByFeedKey(
+      list,
+      (e) => e.sortKey,
+      (e) => e.id,
+      dir,
+    );
+  }, [dir, events, fromMs, toMs, view]);
 
   const views: Array<{ id: ActivityView; label: string }> = [
     { id: "all", label: "All" },
@@ -160,13 +234,53 @@ export function FeedPanel({
         {views.map((item) => (
           <Link
             key={item.id}
-            href={`/leagues/${leagueId}?season=${season}&tab=activity&view=${item.id}`}
+            href={feedHref({ view: item.id })}
             className={`tab${view === item.id ? " active" : ""}`}
           >
             {item.label}
           </Link>
         ))}
       </div>
+
+      <form className="feed-toolbar" method="get" action={`/leagues/${leagueId}`}>
+        <input type="hidden" name="season" value={season} />
+        <input type="hidden" name="tab" value="activity" />
+        <input type="hidden" name="view" value={view} />
+        <input type="hidden" name="dir" value={dir} />
+        <div className="feed-sort" role="group" aria-label="Sort order">
+          <Link
+            href={feedHref({ dir: "desc" })}
+            className={`tab${dir === "desc" ? " active" : ""}`}
+          >
+            Newest first
+          </Link>
+          <Link
+            href={feedHref({ dir: "asc" })}
+            className={`tab${dir === "asc" ? " active" : ""}`}
+          >
+            Oldest first
+          </Link>
+        </div>
+        <label className="feed-date-field">
+          <span className="league-meta">From</span>
+          <input type="date" name="from" defaultValue={fromParam ?? ""} />
+        </label>
+        <label className="feed-date-field">
+          <span className="league-meta">To</span>
+          <input type="date" name="to" defaultValue={toParam ?? ""} />
+        </label>
+        <button type="submit" className="button secondary">
+          Apply dates
+        </button>
+        {fromParam || toParam ? (
+          <Link
+            className="button secondary"
+            href={feedHref({ from: null, to: null })}
+          >
+            Clear dates
+          </Link>
+        ) : null}
+      </form>
 
       {error ? (
         <p className="muted" role="alert" style={{ marginTop: "0.5rem" }}>
