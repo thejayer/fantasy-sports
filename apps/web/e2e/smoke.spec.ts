@@ -493,7 +493,8 @@ test.describe("hub smoke", () => {
     await page.goto("/leagues/football-main?tab=tools&view=start-sit");
     await expect(page.getByText(/Typical-week posteriors/i)).toBeVisible();
     // Fixture overlay maps roster ESPN id → weekly Mahomes GSIS; UI keeps roster name.
-    await expect(page.getByText("Roy Thompson")).toBeVisible();
+    // Default team is 1 (Gridiron Goons); QB id 202600001 is mapped.
+    await expect(page.getByText("Juan Phillips")).toBeVisible();
   });
 
   test("draft results tab shows ESPN picks", async ({ page }) => {
@@ -522,7 +523,7 @@ test.describe("hub smoke", () => {
   test("baseball waivers tab lists free agents", async ({ page }) => {
     await page.goto("/leagues/baseball-dynasty?tab=waivers");
     await expect(page.getByText(/ESPN free agents/i)).toBeVisible();
-    await expect(page.getByText("Randy Harris")).toBeVisible();
+    await expect(page.getByText("Jonathan Ward")).toBeVisible();
   });
 
   test("baseball Season Points hides category board (roadmap 8.2)", async ({
@@ -583,7 +584,7 @@ test.describe("hub smoke", () => {
     await expect(page.getByText(/Games per fantasy team in matchup period 24/i)).toBeVisible();
     await expect(page.getByRole("columnheader", { name: "Player games" })).toBeVisible();
     await expect(page.getByRole("heading", { name: /Two-start pitchers/i })).toBeVisible();
-    await expect(page.getByText("Ethan Jackson")).toBeVisible();
+    await expect(page.getByText("Douglas Price")).toBeVisible();
   });
 
   test("baseball tools daily locks show today's slate (roadmap 8.2)", async ({
@@ -591,7 +592,7 @@ test.describe("hub smoke", () => {
   }) => {
     await page.goto("/leagues/baseball-dynasty?tab=tools&view=locks");
     await expect(page.getByText(/Today's lineup locks for 2026-07-27/i)).toBeVisible();
-    await expect(page.getByText("BAL @ SF")).toBeVisible();
+    await expect(page.getByText("HOU @ ARI")).toBeVisible();
     await expect(page.getByRole("cell", { name: "17:05 UTC" }).first()).toBeVisible();
   });
 

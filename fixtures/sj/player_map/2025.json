@@ -63,21 +63,21 @@
     {
       "espn_id": "202600301",
       "player_id": "00-0033873",
-      "name": "Roy Thompson",
+      "name": "Logan Baker",
       "position": "QB",
       "method": "fixture_overlay"
     },
     {
       "espn_id": "202600302",
       "player_id": "00-0033280",
-      "name": "Scott Sanders",
+      "name": "Zachary Rogers",
       "position": "RB",
       "method": "fixture_overlay"
     },
     {
       "espn_id": "202600304",
       "player_id": "00-0036322",
-      "name": "Sean Ross",
+      "name": "Logan Edwards",
       "position": "WR",
       "method": "fixture_overlay"
     },
@@ -91,28 +91,28 @@
     {
       "espn_id": "202600001",
       "player_id": "00-0033873",
-      "name": "Gregory Rivera",
+      "name": "Juan Phillips",
       "position": "QB",
       "method": "fixture_overlay"
     },
     {
       "espn_id": "202600002",
       "player_id": "00-0033280",
-      "name": "Jacob Smith",
+      "name": "Scott Roberts",
       "position": "RB",
       "method": "fixture_overlay"
     },
     {
       "espn_id": "202600004",
       "player_id": "00-0036322",
-      "name": "Terry Parker",
+      "name": "Steven Garcia",
       "position": "WR",
       "method": "fixture_overlay"
     },
     {
       "espn_id": "202600007",
       "player_id": "00-0030506",
-      "name": "Scott Martin",
+      "name": "Jordan Edwards",
       "position": "TE",
       "method": "fixture_overlay"
     }
