@@ -27,6 +27,10 @@ import type {
   ProScheduleSnapshot,
   WeekBoxScoreSnapshot,
 } from "@/lib/data";
+import {
+  baseballToolsForScoring,
+  isSeasonPointsScoring,
+} from "@/lib/scoring-type";
 
 function toolsHref(
   leagueId: string,
@@ -49,14 +53,17 @@ function ViewSwitcher({
   leagueId,
   season,
   view,
+  scoringType,
 }: {
   leagueId: string;
   season: number;
   view: BaseballToolsView;
+  scoringType?: string | null;
 }) {
+  const allowed = new Set(baseballToolsForScoring(scoringType));
   const views: Array<{ id: BaseballToolsView; label: string }> = [
     { id: "home", label: "Tools" },
-    ...BASEBALL_TOOL_CARDS.map((card) => ({
+    ...BASEBALL_TOOL_CARDS.filter((card) => allowed.has(card.id)).map((card) => ({
       id: card.id as BaseballToolsView,
       label: card.name,
     })),
@@ -81,11 +88,13 @@ function CategoryBoardView({
   leagueId,
   season,
   currentWeek,
+  seasonPoints,
 }: {
   board: CategoryBoard;
   leagueId: string;
   season: number;
   currentWeek: number | null | undefined;
+  seasonPoints?: boolean;
 }) {
   const periodHref =
     currentWeek != null
@@ -97,10 +106,12 @@ function CategoryBoardView({
         Category ranks from roster season stats — not a projection model.
       </p>
       <p className="league-meta">{board.disclaimer}</p>
-      <p className="league-meta">
-        For ESPN period H2H cats, open{" "}
-        <Link href={periodHref}>Matchups → category box</Link>.
-      </p>
+      {seasonPoints ? null : (
+        <p className="league-meta">
+          For ESPN period H2H cats, open{" "}
+          <Link href={periodHref}>Matchups → category box</Link>.
+        </p>
+      )}
       <div className="panel table-scroll">
         <table className="table-cards">
           <thead>
@@ -406,13 +417,17 @@ export function BaseballToolsPanel({
 }) {
   const leagueId = league.league_id;
   const season = league.season;
+  const seasonPoints = isSeasonPointsScoring(league.scoring_type);
+  const allowedTools = new Set(baseballToolsForScoring(league.scoring_type));
   const active: BaseballToolsView =
     view === "home" || BASEBALL_TOOL_CARDS.some((c) => c.id === view)
       ? view
       : "home";
 
   const categoryBoard =
-    active === "categories" ? buildCategoryBoard(league) : null;
+    active === "categories" && !seasonPoints
+      ? buildCategoryBoard(league)
+      : null;
   const ipBoard =
     active === "usage" ? buildIpUsageBoard(league, weekBoxScore) : null;
   const trailingBoard =
@@ -436,13 +451,21 @@ export function BaseballToolsPanel({
 
   return (
     <div className="baseball-tools-panel">
-      <ViewSwitcher leagueId={leagueId} season={season} view={active} />
+      <ViewSwitcher
+        leagueId={leagueId}
+        season={season}
+        view={active}
+        scoringType={league.scoring_type}
+      />
 
       {active === "home" ? (
         <section style={{ marginTop: "0.75rem" }}>
           <p className="lede" style={{ marginTop: 0 }}>
             Scheduling and roster arithmetic — still projection-free (roadmap
             4.6 / 8.2). Free agents stay on the Waivers tab.
+            {seasonPoints
+              ? " Season Points standings live on Standings; scoring weights on Settings."
+              : ""}
           </p>
           <div
             style={{
@@ -452,7 +475,8 @@ export function BaseballToolsPanel({
               marginTop: "0.75rem",
             }}
           >
-            {BASEBALL_TOOL_CARDS.map((card) => (
+            {BASEBALL_TOOL_CARDS.filter((card) => allowedTools.has(card.id)).map(
+              (card) => (
               <Link
                 key={card.id}
                 href={toolsHref(leagueId, season, card.id)}
@@ -472,7 +496,8 @@ export function BaseballToolsPanel({
                   {card.promise}
                 </p>
               </Link>
-            ))}
+            ),
+            )}
           </div>
         </section>
       ) : null}
@@ -483,7 +508,14 @@ export function BaseballToolsPanel({
           leagueId={league.league_id}
           season={league.season}
           currentWeek={league.current_week}
+          seasonPoints={seasonPoints}
         />
+      ) : null}
+      {active === "categories" && seasonPoints ? (
+        <EmptyState title="Category Board is for H2H / roto leagues">
+          This league uses Season Points. Standings are cumulative fantasy points
+          — see Standings and Settings for the race and point weights.
+        </EmptyState>
       ) : null}
 
       {active === "usage" && ipBoard ? (

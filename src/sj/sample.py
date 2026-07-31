@@ -330,12 +330,25 @@ def _build_team(
         for offset, slot in enumerate(_roster_slots(spec))
     ]
 
-    wins = rng.randint(0, games)
     owner = _person(rng).split()
     points_for: float | None = None
+    wins = 0
+    losses = 0
+    points_against: float | None = None
     if spec.sport == "football":
         # Starters drive scoring; bench points never count toward a team total.
+        wins = rng.randint(0, games)
+        losses = games - wins
         points_for = round(sum(p.total_points for p in roster[: len(_FOOTBALL_STARTERS)]), 1)
+        points_against = round(points_for * rng.uniform(0.82, 1.18), 1)
+    elif spec.sport == "baseball":
+        # Season Points (TOTAL_SEASON_POINTS): ESPN standings use team.points,
+        # not a roster sum of player totals (bench/IL inflate the latter).
+        starter_like = roster[:18]
+        points_for = round(
+            sum(float(p.total_points) for p in starter_like) * rng.uniform(0.62, 0.78),
+            1,
+        )
 
     return _Stub(
         team_id=team_index + 1,
@@ -344,14 +357,10 @@ def _build_team(
         owners=[{"firstName": owner[0], "lastName": owner[-1]}],
         logo_url=None,
         wins=wins,
-        losses=games - wins,
+        losses=losses,
         ties=0,
-        # Baseball leaves points_for unset on the ESPN team object; leaving it
-        # None here exercises the serializer's roster-sum fallback.
         points_for=points_for,
-        points_against=(
-            round(points_for * rng.uniform(0.82, 1.18), 1) if points_for is not None else None
-        ),
+        points_against=points_against,
         standing=None,
         division_name=rng.choice(("East", "West")),
         roster=roster,
@@ -388,18 +397,23 @@ def sample_league(
     # Schedule / scores / outcomes mirror what espn-api already attaches after
     # the mMatchup fetch. Draft mirrors league.draft from mDraftDetail. Both are
     # free data the live serializer now persists (roadmap 2.1).
-    _assign_matchups(built, games=games, rng=rng)
-    # Random pre-matchup W/L must not disagree with the schedule tape.
-    _reconcile_records_from_matchups(built)
+    # Baseball Strictly Jayers is Season Points — no H2H schedule tape.
+    if spec.sport != "baseball":
+        _assign_matchups(built, games=games, rng=rng)
+        # Random pre-matchup W/L must not disagree with the schedule tape.
+        _reconcile_records_from_matchups(built)
 
-    # Standings by win pct then points, matching how ESPN orders a league.
-    ranked = sorted(
-        built,
-        key=lambda team: (
-            -(team.wins + 0.5 * getattr(team, "ties", 0)),
-            -(team.points_for or 0.0),
-        ),
-    )
+    # Standings: Season Points by cumulative PF; H2H by win pct then points.
+    if spec.sport == "baseball":
+        ranked = sorted(built, key=lambda team: -(team.points_for or 0.0))
+    else:
+        ranked = sorted(
+            built,
+            key=lambda team: (
+                -(team.wins + 0.5 * getattr(team, "ties", 0)),
+                -(team.points_for or 0.0),
+            ),
+        )
     for place, team in enumerate(ranked, start=1):
         team.standing = place
 
@@ -428,6 +442,7 @@ def sample_league(
 
     return _Stub(
         settings=settings,
+        scoring_type=getattr(settings, "scoring_type", None),
         teams=built,
         current_week=games,
         draft=draft,
@@ -439,12 +454,42 @@ def sample_league(
 
 def _build_settings(spec: LeagueSpec, *, teams: int, games: int) -> _Stub:
     dynasty = spec.format == "dynasty"
+    # Live Strictly Jayers baseball is ESPN Season Points (TOTAL_SEASON_POINTS).
+    baseball_scoring_items = [
+        {"statId": 7, "statName": "Singles", "points": 1.0},
+        {"statId": 3, "statName": "Doubles", "points": 2.0},
+        {"statId": 4, "statName": "Triples", "points": 3.0},
+        {"statId": 5, "statName": "Home Runs", "points": 5.0},
+        {"statId": 20, "statName": "Runs", "points": 1.0},
+        {"statId": 21, "statName": "RBIs", "points": 1.0},
+        {"statId": 23, "statName": "Stolen Bases", "points": 1.0},
+        {"statId": 10, "statName": "Walks", "points": 1.0},
+        {"statId": 12, "statName": "Hit By Pitch", "points": 1.0},
+        {"statId": 27, "statName": "Strikeouts", "points": -1.0},
+        {"statId": 34, "statName": "Outs", "points": 1.0},
+        {"statId": 48, "statName": "Pitcher Strikeouts", "points": 1.0},
+        {"statId": 53, "statName": "Wins", "points": 5.0},
+        {"statId": 54, "statName": "Losses", "points": -5.0},
+        {"statId": 57, "statName": "Saves", "points": 5.0},
+        {"statId": 60, "statName": "Holds", "points": 3.0},
+        {"statId": 63, "statName": "Quality Starts", "points": 3.0},
+        {"statId": 45, "statName": "Earned Runs", "points": -2.0},
+        {"statId": 37, "statName": "Hits Allowed", "points": -1.0},
+        {"statId": 39, "statName": "Walks Allowed", "points": -1.0},
+    ]
     return _Stub(
         name=spec.name,
-        scoring_type="H2H_CATEGORY" if spec.sport == "baseball" else "H2H_POINTS",
-        reg_season_count=games,
-        playoff_team_count=4 if teams >= 6 else max(2, teams // 2),
-        playoff_matchup_period_length=1,
+        scoring_type=(
+            "TOTAL_SEASON_POINTS" if spec.sport == "baseball" else "H2H_POINTS"
+        ),
+        # Season Points has no H2H schedule; keep scoring-period map for tools.
+        reg_season_count=games if spec.sport != "baseball" else None,
+        playoff_team_count=(
+            0
+            if spec.sport == "baseball"
+            else (4 if teams >= 6 else max(2, teams // 2))
+        ),
+        playoff_matchup_period_length=1 if spec.sport != "baseball" else None,
         playoff_seed_tie_rule="TOTAL_POINTS_SCORED",
         playoff_tie_rule="NONE",
         tie_rule="NONE",
@@ -461,28 +506,17 @@ def _build_settings(spec: LeagueSpec, *, teams: int, games: int) -> _Stub:
             if spec.sport == "football"
             else None
         ),
+        # Baseball weights come from ``_raw_scoring_settings`` → categories /
+        # scoring_format in serialize_settings (STATS_MAP abbrs like HR, RBI).
         scoring_format=(
             [
                 {"id": 3, "abbr": "PTD", "label": "Passing TD", "points": 4.0},
                 {"id": 24, "abbr": "RTD", "label": "Rushing TD", "points": 6.0},
             ]
             if spec.sport == "football"
-            else [
-                {"id": 20, "abbr": "R", "label": "Runs", "points": None},
-                {"id": 5, "abbr": "HR", "label": "Home Runs", "points": None},
-                {"id": 21, "abbr": "RBI", "label": "RBIs", "points": None},
-                {"id": 23, "abbr": "SB", "label": "Stolen Bases", "points": None},
-                {"id": 2, "abbr": "AVG", "label": "Batting Average", "points": None},
-                {"id": 53, "abbr": "W", "label": "Wins", "points": None},
-                {"id": 57, "abbr": "SV", "label": "Saves", "points": None},
-                {"id": 48, "abbr": "K", "label": "Strikeouts", "points": None},
-                {"id": 47, "abbr": "ERA", "label": "ERA", "points": None},
-                {"id": 41, "abbr": "WHIP", "label": "WHIP", "points": None},
-            ]
-            if spec.sport == "baseball"
             else None
         ),
-        # Map matchup period → scoring-period ids (ESPN scheduleSettings).
+        # Map scoring-period ids for Week Forecaster / locks (not H2H weeks).
         matchup_periods=(
             {str(i): [i] for i in range(1, games + 1)}
             if spec.sport == "baseball"
@@ -490,19 +524,8 @@ def _build_settings(spec: LeagueSpec, *, teams: int, games: int) -> _Stub:
         ),
         _raw_scoring_settings=(
             {
-                "scoringType": "H2H_CATEGORY",
-                "scoringItems": [
-                    {"statId": 20, "statName": "Runs"},
-                    {"statId": 5, "statName": "Home Runs"},
-                    {"statId": 21, "statName": "RBIs"},
-                    {"statId": 23, "statName": "Stolen Bases"},
-                    {"statId": 2, "statName": "Batting Average"},
-                    {"statId": 53, "statName": "Wins"},
-                    {"statId": 57, "statName": "Saves"},
-                    {"statId": 48, "statName": "Strikeouts"},
-                    {"statId": 47, "statName": "ERA"},
-                    {"statId": 41, "statName": "WHIP"},
-                ],
+                "scoringType": "TOTAL_SEASON_POINTS",
+                "scoringItems": baseball_scoring_items,
             }
             if spec.sport == "baseball"
             else {}

@@ -36,7 +36,7 @@
       "keeper": false,
       "nominating_team_id": null,
       "player_id": 202600301,
-      "player_name": "Roy Thompson",
+      "player_name": "Logan Baker",
       "round": 1,
       "round_pick": 4,
       "team_id": 4
@@ -46,7 +46,7 @@
       "keeper": false,
       "nominating_team_id": null,
       "player_id": 202600302,
-      "player_name": "Scott Sanders",
+      "player_name": "Zachary Rogers",
       "round": 2,
       "round_pick": 1,
       "team_id": 4
@@ -116,7 +116,7 @@
       "keeper": false,
       "nominating_team_id": null,
       "player_id": 202600303,
-      "player_name": "Randy Phillips",
+      "player_name": "Logan Scott",
       "round": 3,
       "round_pick": 4,
       "team_id": 4
@@ -574,6 +574,27 @@
     },
     {
       "acquisition_type": "DRAFT",
+      "avg_points": 19.5,
+      "eligible_slots": [
+        "QB",
+        "BE",
+        "IR"
+      ],
+      "fantasy_team": "Hail Mary Heroes",
+      "id": 202600301,
+      "injured": false,
+      "injury_status": "QUESTIONABLE",
+      "name": "Logan Baker",
+      "percent_owned": 83.6,
+      "position": "QB",
+      "pro_team": "BUF",
+      "projected_total_points": 382.3,
+      "slot": "QB",
+      "status": "ACTIVE",
+      "total_points": 331.8
+    },
+    {
+      "acquisition_type": "DRAFT",
       "avg_points": 17.8,
       "eligible_slots": [
         "RB",
@@ -783,25 +804,25 @@
       "total_points": 224.0
     },
     {
-      "acquisition_type": "DRAFT",
-      "avg_points": 12.9,
+      "acquisition_type": "WAIVER",
+      "avg_points": 13.1,
       "eligible_slots": [
-        "RB",
+        "WR",
         "BE",
         "IR"
       ],
       "fantasy_team": "Hail Mary Heroes",
-      "id": 202600303,
+      "id": 202600304,
       "injured": false,
-      "injury_status": null,
-      "name": "Randy Phillips",
-      "percent_owned": 29.8,
-      "position": "RB",
-      "pro_team": "NO",
-      "projected_total_points": 166.5,
-      "slot": "RB",
+      "injury_status": "OUT",
+      "name": "Logan Edwards",
+      "percent_owned": 36.0,
+      "position": "WR",
+      "pro_team": "NE",
+      "projected_total_points": 234.9,
+      "slot": "WR",
       "status": "ACTIVE",
-      "total_points": 218.9
+      "total_points": 222.6
     },
     {
       "acquisition_type": "WAIVER",
@@ -973,27 +994,6 @@
     },
     {
       "acquisition_type": "WAIVER",
-      "avg_points": 11.1,
-      "eligible_slots": [
-        "WR",
-        "BE",
-        "IR"
-      ],
-      "fantasy_team": "Hail Mary Heroes",
-      "id": 202600304,
-      "injured": false,
-      "injury_status": null,
-      "name": "Sean Ross",
-      "percent_owned": 36.0,
-      "position": "WR",
-      "pro_team": "SF",
-      "projected_total_points": 199.2,
-      "slot": "WR",
-      "status": "ACTIVE",
-      "total_points": 188.7
-    },
-    {
-      "acquisition_type": "WAIVER",
       "avg_points": 11.0,
       "eligible_slots": [
         "WR",
@@ -1117,6 +1117,27 @@
       "slot": "BE",
       "status": "ACTIVE",
       "total_points": 164.4
+    },
+    {
+      "acquisition_type": "DRAFT",
+      "avg_points": 9.5,
+      "eligible_slots": [
+        "RB",
+        "BE",
+        "IR"
+      ],
+      "fantasy_team": "Hail Mary Heroes",
+      "id": 202600303,
+      "injured": false,
+      "injury_status": null,
+      "name": "Logan Scott",
+      "percent_owned": -1.0,
+      "position": "RB",
+      "pro_team": "ATL",
+      "projected_total_points": 166.6,
+      "slot": "RB",
+      "status": "ACTIVE",
+      "total_points": 162.2
     },
     {
       "acquisition_type": "TRADE",
@@ -1266,6 +1287,27 @@
       "total_points": 125.5
     },
     {
+      "acquisition_type": "TRADE",
+      "avg_points": 7.3,
+      "eligible_slots": [
+        "RB",
+        "BE",
+        "IR"
+      ],
+      "fantasy_team": "Hail Mary Heroes",
+      "id": 202600302,
+      "injured": false,
+      "injury_status": "QUESTIONABLE",
+      "name": "Zachary Rogers",
+      "percent_owned": 20.8,
+      "position": "RB",
+      "pro_team": "CIN",
+      "projected_total_points": 121.3,
+      "slot": "RB",
+      "status": "ACTIVE",
+      "total_points": 124.7
+    },
+    {
       "acquisition_type": "WAIVER",
       "avg_points": 7.2,
       "eligible_slots": [
@@ -1392,27 +1434,6 @@
       "total_points": 105.2
     },
     {
-      "acquisition_type": "WAIVER",
-      "avg_points": 5.7,
-      "eligible_slots": [
-        "RB",
-        "BE",
-        "IR"
-      ],
-      "fantasy_team": "Hail Mary Heroes",
-      "id": 202600302,
-      "injured": false,
-      "injury_status": "DOUBTFUL",
-      "name": "Scott Sanders",
-      "percent_owned": 31.0,
-      "position": "RB",
-      "pro_team": "PHI",
-      "projected_total_points": 121.7,
-      "slot": "RB",
-      "status": "ACTIVE",
-      "total_points": 97.1
-    },
-    {
       "acquisition_type": "ADD",
       "avg_points": 5.6,
       "eligible_slots": [
@@ -1516,27 +1537,6 @@
       "slot": "TE",
       "status": "ACTIVE",
       "total_points": 86.6
-    },
-    {
-      "acquisition_type": "WAIVER",
-      "avg_points": 5.1,
-      "eligible_slots": [
-        "QB",
-        "BE",
-        "IR"
-      ],
-      "fantasy_team": "Hail Mary Heroes",
-      "id": 202600301,
-      "injured": false,
-      "injury_status": "OUT",
-      "name": "Roy Thompson",
-      "percent_owned": 12.1,
-      "position": "QB",
-      "pro_team": "LAC",
-      "projected_total_points": 66.9,
-      "slot": "QB",
-      "status": "ACTIVE",
-      "total_points": 86.5
     },
     {
       "acquisition_type": "DRAFT",
@@ -1947,12 +1947,12 @@
       "owners": [
         "Samuel Turner"
       ],
-      "points_against": 1150.6,
+      "points_against": 1139.3,
       "points_for": 1737.3,
       "roster": [
         {
-          "acquisition_type": "WAIVER",
-          "avg_points": 5.1,
+          "acquisition_type": "DRAFT",
+          "avg_points": 19.5,
           "eligible_slots": [
             "QB",
             "BE",
@@ -1960,19 +1960,19 @@
           ],
           "id": 202600301,
           "injured": false,
-          "injury_status": "OUT",
-          "name": "Roy Thompson",
-          "percent_owned": 12.1,
+          "injury_status": "QUESTIONABLE",
+          "name": "Logan Baker",
+          "percent_owned": 83.6,
           "position": "QB",
-          "pro_team": "LAC",
-          "projected_total_points": 66.9,
+          "pro_team": "BUF",
+          "projected_total_points": 382.3,
           "slot": "QB",
           "status": "ACTIVE",
-          "total_points": 86.5
+          "total_points": 331.8
         },
         {
-          "acquisition_type": "WAIVER",
-          "avg_points": 5.7,
+          "acquisition_type": "TRADE",
+          "avg_points": 7.3,
           "eligible_slots": [
             "RB",
             "BE",
@@ -1980,19 +1980,19 @@
           ],
           "id": 202600302,
           "injured": false,
-          "injury_status": "DOUBTFUL",
-          "name": "Scott Sanders",
-          "percent_owned": 31.0,
+          "injury_status": "QUESTIONABLE",
+          "name": "Zachary Rogers",
+          "percent_owned": 20.8,
           "position": "RB",
-          "pro_team": "PHI",
-          "projected_total_points": 121.7,
+          "pro_team": "CIN",
+          "projected_total_points": 121.3,
           "slot": "RB",
           "status": "ACTIVE",
-          "total_points": 97.1
+          "total_points": 124.7
         },
         {
           "acquisition_type": "DRAFT",
-          "avg_points": 12.9,
+          "avg_points": 9.5,
           "eligible_slots": [
             "RB",
             "BE",
@@ -2001,18 +2001,18 @@
           "id": 202600303,
           "injured": false,
           "injury_status": null,
-          "name": "Randy Phillips",
-          "percent_owned": 29.8,
+          "name": "Logan Scott",
+          "percent_owned": -1.0,
           "position": "RB",
-          "pro_team": "NO",
-          "projected_total_points": 166.5,
+          "pro_team": "ATL",
+          "projected_total_points": 166.6,
           "slot": "RB",
           "status": "ACTIVE",
-          "total_points": 218.9
+          "total_points": 162.2
         },
         {
           "acquisition_type": "WAIVER",
-          "avg_points": 11.1,
+          "avg_points": 13.1,
           "eligible_slots": [
             "WR",
             "BE",
@@ -2020,15 +2020,15 @@
           ],
           "id": 202600304,
           "injured": false,
-          "injury_status": null,
-          "name": "Sean Ross",
+          "injury_status": "OUT",
+          "name": "Logan Edwards",
           "percent_owned": 36.0,
           "position": "WR",
-          "pro_team": "SF",
-          "projected_total_points": 199.2,
+          "pro_team": "NE",
+          "projected_total_points": 234.9,
           "slot": "WR",
           "status": "ACTIVE",
-          "total_points": 188.7
+          "total_points": 222.6
         },
         {
           "acquisition_type": "DRAFT",
@@ -2334,7 +2334,7 @@
       "owners": [
         "Henry James"
       ],
-      "points_against": 1657.0,
+      "points_against": 1947.6,
       "points_for": 1649.2,
       "roster": [
         {
@@ -2719,7 +2719,7 @@
         "W"
       ],
       "owners": [
-        "Eric Morgan"
+        "Christopher Allen"
       ],
       "points_against": 1408.2,
       "points_for": 1634.2,
@@ -3106,7 +3106,7 @@
         "L"
       ],
       "owners": [
-        "Nicholas Reed"
+        "James Young"
       ],
       "points_against": 1033.7,
       "points_for": 1546.9,

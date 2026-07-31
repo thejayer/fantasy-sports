@@ -144,6 +144,10 @@ describe("settingsGroups", () => {
       "Transactions",
       "Scoring",
     ]);
+    expect(byTitle.get("League")).toContainEqual({
+      label: "Scoring type",
+      value: "H2H Points",
+    });
     expect(byTitle.get("Roster")).toEqual([
       { label: "Slots", value: "QB 1 · BE 6" },
       { label: "Roster size", value: "7" },
@@ -158,6 +162,28 @@ describe("settingsGroups", () => {
       label: "Keepers",
       value: "None (ESPN reports 0)",
     });
+  });
+
+  it("reads Season Points weights from categories when scoring_format is empty", () => {
+    const groups = settingsGroups(
+      league({
+        sport: "baseball",
+        scoring_type: "TOTAL_SEASON_POINTS",
+        settings: {
+          scoring_type: "TOTAL_SEASON_POINTS",
+          categories: [
+            { id: 5, abbr: "HR", label: "Home Runs", points: 5 },
+            { id: 2, abbr: "AVG", label: "AVG", points: null },
+          ],
+        },
+      }),
+    );
+    const byTitle = new Map(groups.map((g) => [g.title, g.rows]));
+    expect(byTitle.get("League")).toContainEqual({
+      label: "Scoring type",
+      value: "Season Points",
+    });
+    expect(byTitle.get("Scoring")).toEqual([{ label: "HR", value: "5" }]);
   });
 
   it("does not treat golf-only settings as ESPN settings", () => {

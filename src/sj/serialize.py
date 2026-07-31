@@ -5,6 +5,21 @@ from __future__ import annotations
 from datetime import datetime, timezone
 from typing import Any
 
+# ESPN ``scoringSettings.scoringType`` for cumulative points leagues (UI: Season Points).
+SEASON_POINTS_SCORING_TYPES = frozenset({"TOTAL_SEASON_POINTS"})
+CATEGORY_SCORING_TYPES = frozenset(
+    {"H2H_CATEGORY", "H2H_MOST_CATEGORIES", "ROTO"}
+)
+
+
+def is_season_points_scoring(scoring_type: str | None) -> bool:
+    return (scoring_type or "") in SEASON_POINTS_SCORING_TYPES
+
+
+def is_category_scoring(scoring_type: str | None) -> bool:
+    return (scoring_type or "") in CATEGORY_SCORING_TYPES
+
+
 # Core counting stats we surface for baseball dynasty views.
 _BASEBALL_STAT_KEYS = (
     "AB",
@@ -256,17 +271,35 @@ def serialize_draft(league: Any) -> list[dict[str, Any]]:
     return [serialize_draft_pick(pick) for pick in (getattr(league, "draft", None) or [])]
 
 
-def serialize_team(team: Any, *, sport: str | None = None) -> dict[str, Any]:
+def serialize_team(
+    team: Any,
+    *,
+    sport: str | None = None,
+    scoring_type: str | None = None,
+) -> dict[str, Any]:
     roster = [serialize_player(p, sport=sport) for p in (getattr(team, "roster", None) or [])]
     wins = _int(getattr(team, "wins", 0)) or 0
     losses = _int(getattr(team, "losses", 0)) or 0
     ties = _int(getattr(team, "ties", 0)) or 0
     games = wins + losses + ties
     win_pct = round((wins + 0.5 * ties) / games, 3) if games else None
+    # Prefer official season totals. espn-api baseball Team omits points_for;
+    # sync attaches ESPN ``teams[].points`` (Season Points) as points_for / points.
     points_for = _num(getattr(team, "points_for", None))
-    # Baseball H2H often has no points_for on the Team object — fall back to roster totals.
-    if points_for is None and roster:
-        roster_points = [p.get("total_points") for p in roster if p.get("total_points") is not None]
+    if points_for is None:
+        points_for = _num(getattr(team, "points", None))
+    if points_for is None:
+        points_for = _num(getattr(team, "points_live", None))
+    # Roster-sum fallback is wrong for TOTAL_SEASON_POINTS (bench/IL inflate vs
+    # ESPN standings). Keep it only for H2H-shaped baseball where PF is absent.
+    if (
+        points_for is None
+        and roster
+        and not is_season_points_scoring(scoring_type)
+    ):
+        roster_points = [
+            p.get("total_points") for p in roster if p.get("total_points") is not None
+        ]
         if roster_points:
             points_for = round(sum(roster_points), 1)
     schedule, scores, outcomes = _team_matchup_arrays(team)
@@ -336,6 +369,13 @@ def serialize_settings(league: Any) -> dict[str, Any]:
     categories = extract_baseball_scoring_categories(settings)
     if categories:
         payload["categories"] = categories
+        # Season Points / H2H Points weight lists land in ``categories`` from
+        # raw scoringItems; mirror non-null weights into scoring_format so the
+        # Settings tab (which reads scoring_format) shows HR=5, RBI=1, etc.
+        if not payload.get("scoring_format"):
+            weighted = [row for row in categories if row.get("points") is not None]
+            if weighted:
+                payload["scoring_format"] = weighted
     matchup_periods = getattr(settings, "matchup_periods", None)
     if isinstance(matchup_periods, dict) and matchup_periods:
         payload["matchup_periods"] = {
@@ -469,7 +509,10 @@ def extract_baseball_scoring_categories(settings: Any) -> list[dict[str, Any]]:
         return rows
     # Sample / football-shaped stubs may already set scoring_format categories.
     scoring_format = getattr(settings, "scoring_format", None)
-    if scoring_format and getattr(settings, "scoring_type", None) == "H2H_CATEGORY":
+    scoring_type = getattr(settings, "scoring_type", None)
+    if scoring_format and (
+        is_category_scoring(scoring_type) or is_season_points_scoring(scoring_type)
+    ):
         return _serialize_scoring_format(scoring_format)
     return []
 
@@ -543,7 +586,13 @@ def serialize_league(
     free_agents: list[Any] | None = None,
 ) -> dict[str, Any]:
     settings = getattr(league, "settings", None)
-    teams = [serialize_team(t, sport=sport) for t in (getattr(league, "teams", None) or [])]
+    scoring_type = getattr(settings, "scoring_type", None) or getattr(
+        league, "scoring_type", None
+    )
+    teams = [
+        serialize_team(t, sport=sport, scoring_type=scoring_type)
+        for t in (getattr(league, "teams", None) or [])
+    ]
     teams.sort(
         key=lambda t: (
             t["standing"] is None,
@@ -551,9 +600,6 @@ def serialize_league(
             -(t["win_pct"] or 0),
             -(t["points_for"] or 0),
         )
-    )
-    scoring_type = getattr(settings, "scoring_type", None) or getattr(
-        league, "scoring_type", None
     )
     return {
         "league_id": league_id,

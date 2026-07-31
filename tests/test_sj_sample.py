@@ -209,13 +209,22 @@ def test_baseball_carries_season_stats_and_roles(registry):
     assert {"AVG", "HR", "RBI"} <= set(batter["season_stats"])
 
 
-def test_baseball_points_for_falls_back_to_roster_sum(registry):
-    """ESPN omits points_for on baseball teams; the serializer must fill it."""
+def test_baseball_season_points_uses_official_points_for(registry):
+    """Season Points standings use team PF, not a roster sum of player totals."""
     snapshot = sample_snapshot(spec_for(registry, "baseball-dynasty"), 2026, teams=4)
+    assert snapshot["scoring_type"] == "TOTAL_SEASON_POINTS"
     team = snapshot["teams"][0]
-    expected = round(sum(p["total_points"] for p in team["roster"]), 1)
-    assert team["points_for"] == pytest.approx(expected)
+    assert team["points_for"] is not None
+    roster_sum = round(sum(p["total_points"] for p in team["roster"]), 1)
+    assert team["points_for"] != pytest.approx(roster_sum)
     assert team["points_against"] is None
+    assert team["wins"] == 0 and team["losses"] == 0
+    # Standings ordered by PF.
+    points = [t["points_for"] for t in snapshot["teams"]]
+    assert points == sorted(points, reverse=True)
+    weights = snapshot["settings"]["scoring_format"]
+    assert any(row.get("abbr") == "HR" or row.get("id") == 5 for row in weights)
+    assert any(row.get("points") == 5.0 for row in weights)
 
 
 def test_win_pct_is_consistent_with_record(registry):

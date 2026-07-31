@@ -14,6 +14,10 @@ import { MatchupsPanel, type MatchupsView } from "@/components/MatchupsPanel";
 import { PlayersBoard } from "@/components/PlayersBoard";
 import { ProjectionsBoard } from "@/components/ProjectionsBoard";
 import { SeasonSwitcher } from "@/components/SeasonSwitcher";
+import {
+  isSeasonPointsScoring,
+  scoringTypeLabel,
+} from "@/lib/scoring-type";
 import { SettingsPanel } from "@/components/SettingsPanel";
 import { BaseballToolsPanel } from "@/components/BaseballToolsPanel";
 import { ToolsPanel, type ToolsView } from "@/components/ToolsPanel";
@@ -94,14 +98,19 @@ function StandingsTable({
 }) {
   const isFootball = league.sport === "football";
   const isGolf = league.sport === "golf";
-  const seasonPoints = isGolf && league.format === "season_points";
+  const isBaseball = league.sport === "baseball";
+  const golfSeasonPoints = isGolf && league.format === "season_points";
+  const baseballSeasonPoints = isBaseball && isSeasonPointsScoring(league.scoring_type);
+  const seasonPoints = golfSeasonPoints || baseballSeasonPoints;
   const showRecord = !seasonPoints;
   const showPoints =
     isFootball ||
     isGolf ||
+    baseballSeasonPoints ||
     league.teams.some((team) => team.points_for != null);
-  const showAgainst = isFootball || (isGolf && !seasonPoints);
-  const pointsLabel = isFootball || (isGolf && !seasonPoints) ? "PF" : "Points";
+  const showAgainst = isFootball || (isGolf && !golfSeasonPoints);
+  const pointsLabel =
+    isFootball || (isGolf && !golfSeasonPoints) ? "PF" : "Points";
 
   if (!league.teams.length) {
     return (
@@ -111,20 +120,29 @@ function StandingsTable({
     );
   }
 
-  const rows = isGolf
-    ? [...league.teams].sort(
-        (a, b) =>
-          (a.standing ?? 999) - (b.standing ?? 999) || a.team_id - b.team_id,
-      )
-    : league.teams;
+  const rows =
+    isGolf || baseballSeasonPoints
+      ? [...league.teams].sort(
+          (a, b) =>
+            (a.standing ?? 999) - (b.standing ?? 999) ||
+            (b.points_for ?? 0) - (a.points_for ?? 0) ||
+            a.team_id - b.team_id,
+        )
+      : league.teams;
 
   return (
     <div className="panel table-scroll">
       {isGolf ? (
         <p className="league-meta" style={{ margin: "0.75rem 1rem 0" }}>
-          {seasonPoints
+          {golfSeasonPoints
             ? "Season points from scored event weeks (roadmap 6.4e)."
             : "H2H record from scored event weeks (roadmap 6.4e)."}
+        </p>
+      ) : null}
+      {baseballSeasonPoints ? (
+        <p className="league-meta" style={{ margin: "0.75rem 1rem 0" }}>
+          Season Points — standings by cumulative fantasy points (ESPN applied
+          totals). Point weights are on the Settings tab.
         </p>
       ) : null}
       <table className="table-cards">
@@ -497,7 +515,9 @@ export function LeagueView({
         <span className="league-meta">
           season {league.season}
           {league.current_week ? ` · ${period} ${league.current_week}` : ""}
-          {league.scoring_type ? ` · ${league.scoring_type}` : ""}
+          {league.scoring_type
+            ? ` · ${scoringTypeLabel(league.scoring_type) ?? league.scoring_type}`
+            : ""}
           {isBaseball ? " · ESPN data · no engine projections" : ""}
           {isGolf ? " · hub golf · no tour feed yet" : ""}
         </span>

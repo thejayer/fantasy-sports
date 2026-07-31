@@ -9,6 +9,7 @@
  */
 
 import type { LeagueSettings, LeagueSnapshot } from "@/lib/data";
+import { scoringTypeLabel } from "@/lib/scoring-type";
 
 export type SettingsRow = { label: string; value: string };
 export type SettingsGroup = { title: string; rows: SettingsRow[] };
@@ -124,13 +125,17 @@ export function hasEspnSettings(league: LeagueSnapshot): boolean {
 }
 
 function scoringRows(settings: LeagueSettings): SettingsRow[] {
-  const rows = (settings.scoring_format ?? [])
+  const format = settings.scoring_format ?? [];
+  const categories = settings.categories ?? [];
+  const source = format.length
+    ? format
+    : categories.filter((row) => row.points != null && row.points !== 0);
+  return source
     .filter((row) => row.points != null && row.points !== 0)
     .map((row) => ({
       label: row.abbr || row.label || String(row.id ?? "?"),
       value: String(row.points),
     }));
-  return rows;
 }
 
 /**
@@ -158,7 +163,7 @@ export function settingsGroups(league: LeagueSnapshot): SettingsGroup[] {
   push(
     basics,
     "Scoring type",
-    settings.scoring_type ? titleCase(settings.scoring_type) : league.scoring_type,
+    scoringTypeLabel(settings.scoring_type ?? league.scoring_type),
   );
   push(
     basics,
