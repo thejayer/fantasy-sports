@@ -493,7 +493,7 @@ test.describe("hub smoke", () => {
   test("baseball waivers tab lists free agents", async ({ page }) => {
     await page.goto("/leagues/baseball-dynasty?tab=waivers");
     await expect(page.getByText(/ESPN free agents/i)).toBeVisible();
-    await expect(page.getByText("Stephen Price")).toBeVisible();
+    await expect(page.getByText("Randy Harris")).toBeVisible();
   });
 
   test("baseball tools category board ranks teams (roadmap 8.2)", async ({
