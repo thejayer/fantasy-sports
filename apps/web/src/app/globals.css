@@ -1,77 +1,56 @@
 /*
-  Palette (roadmap 7.10).
-  One source of truth for both themes via `light-dark()`, which resolves against
-  the used `color-scheme`. Each token declares its light value first as a
-  fallback: a browser without `light-dark()` drops the second declaration and
-  gets a fully working light theme rather than unset colours.
-  The header toggle sets `data-theme`, which pins `color-scheme` and therefore
-  flips every token at once — no second block to keep in sync.
+  Modernist hub skin (design/modernist). Existing component classnames keep
+  working via this bridge: --ink/--signal/--radius map onto Modernist tokens.
+  Light is the product default; dark remains a selectable override.
 */
+@import "../styles/modernist.css";
+
 :root {
   color-scheme: light dark;
 
-  --ink: #13231c;
-  --ink: light-dark(#13231c, #e7efe6);
-  --field: #1f4d3a;
-  --field: light-dark(#1f4d3a, #6fbf92);
-  --field-deep: #0f2a20;
-  --field-deep: light-dark(#0f2a20, #8fd6ac);
-  --chalk: #eef3ec;
-  --chalk: light-dark(#eef3ec, #16211c);
-  --mist: #d5e0d4;
-  --mist: light-dark(#d5e0d4, #24312a);
-  --signal: #d2f15b;
-  --signal: light-dark(#d2f15b, #b6e356);
-  --ember: #d85a2a;
-  --ember: light-dark(#d85a2a, #ff8757);
+  --font-heading: var(--font-archivo), "Archivo", system-ui, sans-serif;
+  --font-body: var(--font-archivo), "Archivo", system-ui, sans-serif;
+  --font-display: var(--font-heading);
+  --font-display-face: var(--font-archivo);
+  --font-body-face: var(--font-archivo);
+
+  --ink: var(--color-text);
+  --ink: light-dark(var(--color-text), #f3f2f2);
+  --field: var(--color-accent);
+  --field: light-dark(var(--color-accent), var(--color-accent-400));
+  --field-deep: var(--accent-deep);
+  --field-deep: light-dark(var(--accent-deep), var(--color-accent-300));
+  --chalk: var(--color-bg);
+  --chalk: light-dark(var(--color-bg), #201e1d);
+  --mist: var(--color-surface);
+  --mist: light-dark(var(--color-surface), #2d2b2b);
+  --signal: var(--color-accent);
+  --signal: light-dark(var(--color-accent), var(--color-accent-400));
+  --ember: var(--color-accent-600);
+  --ember: light-dark(var(--color-accent-600), var(--color-accent-400));
   --good: #3d8f5a;
   --good: light-dark(#3d8f5a, #63c88a);
   --caution: #d4a017;
   --caution: light-dark(#d4a017, #e8bf4d);
-  --line: rgba(19, 35, 28, 0.14);
-  --line: light-dark(rgba(19, 35, 28, 0.14), rgba(231, 239, 230, 0.16));
-  --shadow: 0 24px 60px rgba(15, 42, 32, 0.18);
-  --shadow: light-dark(
-    0 24px 60px rgba(15, 42, 32, 0.18),
-    0 24px 60px rgba(0, 0, 0, 0.5)
-  );
-  --surface: rgba(255, 255, 255, 0.62);
-  --surface: light-dark(rgba(255, 255, 255, 0.62), rgba(231, 239, 230, 0.06));
-  --surface-strong: rgba(255, 255, 255, 0.82);
-  --surface-strong: light-dark(
-    rgba(255, 255, 255, 0.82),
-    rgba(231, 239, 230, 0.11)
-  );
-  /* The direction "up" from the page surface, for inputs and raised cards. */
+  --line: var(--color-divider);
+  --line: light-dark(var(--color-divider), color-mix(in srgb, #f3f2f2 28%, transparent));
+  --shadow: var(--shadow-md);
+  --surface: var(--color-surface);
+  --surface: light-dark(var(--color-surface), color-mix(in srgb, #f3f2f2 8%, transparent));
+  --surface-strong: #ffffff;
+  --surface-strong: light-dark(#ffffff, color-mix(in srgb, #f3f2f2 12%, transparent));
   --raise: #ffffff;
-  --raise: light-dark(#ffffff, #33453c);
-  /* --signal and the sport pill stay light in both themes, so text on them
-     needs a fixed dark ink rather than --ink, which flips. */
-  --on-accent: #13231c;
-  /* Two accent glows over a vertical wash; each layer flips with the theme. */
-  --glow-a: rgba(210, 241, 91, 0.28);
-  --glow-a: light-dark(rgba(210, 241, 91, 0.28), rgba(111, 191, 146, 0.16));
-  --glow-b: rgba(31, 77, 58, 0.18);
-  --glow-b: light-dark(rgba(31, 77, 58, 0.18), rgba(182, 227, 86, 0.08));
-  --wash-top: #f5f8f3;
-  --wash-top: light-dark(#f5f8f3, #0d1613);
-  --wash-mid: #e7efe4;
-  --wash-mid: light-dark(#e7efe4, #111d18);
-  --wash-bottom: #dce7d8;
-  --wash-bottom: light-dark(#dce7d8, #16211c);
-  --page-bg:
-    radial-gradient(1200px 600px at 10% -10%, var(--glow-a), transparent 55%),
-    radial-gradient(900px 500px at 100% 0%, var(--glow-b), transparent 50%),
-    linear-gradient(
-      180deg,
-      var(--wash-top) 0%,
-      var(--wash-mid) 45%,
-      var(--wash-bottom) 100%
-    );
+  --raise: light-dark(#ffffff, #2d2b2b);
+  --on-accent: var(--color-bg);
+  --glow-a: transparent;
+  --glow-b: transparent;
+  --wash-top: var(--color-bg);
+  --wash-mid: var(--color-bg);
+  --wash-bottom: var(--color-bg);
+  --page-bg: var(--color-bg);
+  --page-bg: light-dark(var(--color-bg), #201e1d);
 
-  --radius: 18px;
-  --font-display: var(--font-display-face), "Arial Narrow", sans-serif;
-  --font-body: var(--font-body-face), "Helvetica Neue", sans-serif;
+  --radius: 0px;
 }
 
 :root[data-theme="light"] {
@@ -80,6 +59,12 @@
 
 :root[data-theme="dark"] {
   color-scheme: only dark;
+  --color-bg: #201e1d;
+  --color-surface: #2d2b2b;
+  --color-text: #f3f2f2;
+  --color-divider: color-mix(in srgb, #f3f2f2 28%, transparent);
+  --accent-deep: color-mix(in srgb, var(--color-accent) 70%, #fff);
+  --accent-tint: color-mix(in srgb, var(--color-accent) 16%, var(--color-bg));
 }
 
 * {
@@ -120,14 +105,17 @@ button,
   align-items: center;
   justify-content: space-between;
   gap: 1rem;
-  padding: 1.25rem 0 0.5rem;
+  padding: var(--space-3) 0;
+  border-bottom: 2px solid var(--line);
 }
 
 .brand-mark {
   font-family: var(--font-display);
-  font-size: clamp(1.4rem, 2vw, 1.8rem);
+  font-weight: var(--font-heading-weight);
+  font-size: 19px;
   letter-spacing: 0.02em;
   text-transform: uppercase;
+  color: var(--signal);
 }
 
 .nav-links {
@@ -138,12 +126,34 @@ button,
 }
 
 .nav-links a {
-  opacity: 0.8;
-  transition: opacity 160ms ease;
+  opacity: 1;
+  transition: color 160ms ease;
 }
 
-.nav-links a:hover {
-  opacity: 1;
+.nav-links a:hover,
+.nav-links a[aria-current="page"] {
+  color: var(--signal);
+}
+
+.accent-picker {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.accent-swatch {
+  width: 14px;
+  height: 14px;
+  padding: 0;
+  border: 1px solid color-mix(in srgb, var(--ink) 35%, transparent);
+  border-radius: var(--radius);
+  cursor: pointer;
+  background: none;
+}
+
+.accent-swatch.is-active {
+  outline: 2px solid var(--ink);
+  outline-offset: 1px;
 }
 
 .nav-user {
@@ -199,18 +209,20 @@ button,
 .button {
   display: inline-flex;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-start;
   border: 0;
-  border-radius: 999px;
-  padding: 0.85rem 1.35rem;
-  background: var(--ink);
-  color: var(--chalk);
-  transition: transform 180ms ease, background 180ms ease;
+  border-radius: var(--radius);
+  padding: 0.7rem 1.1rem;
+  font-family: var(--font-display);
+  font-weight: var(--font-heading-weight);
+  font-size: 14px;
+  background: var(--signal);
+  color: var(--on-accent);
+  transition: background 160ms ease;
 }
 
 .button:hover {
-  transform: translateY(-1px);
-  background: var(--field-deep);
+  background: var(--color-accent-600);
 }
 
 .button.secondary {
@@ -567,9 +579,9 @@ button,
   display: inline-flex;
   align-items: center;
   padding: 0.35rem 0.7rem;
-  border-radius: 999px;
-  background: var(--signal);
-  color: var(--on-accent);
+  border-radius: var(--radius);
+  background: var(--color-accent-100);
+  color: var(--color-accent-800);
   font-size: 0.78rem;
   font-weight: 700;
   letter-spacing: 0.04em;
@@ -598,9 +610,10 @@ td {
 
 th {
   font-size: 0.78rem;
-  letter-spacing: 0.06em;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
   opacity: 0.7;
+  border-bottom: 2px solid var(--line);
 }
 
 tr:last-child td {
@@ -756,15 +769,7 @@ tr:last-child td {
 }
 
 .atmosphere {
-  position: fixed;
-  inset: 0;
-  pointer-events: none;
-  background-image:
-    linear-gradient(color-mix(in srgb, var(--ink) 3%, transparent) 1px, transparent 1px),
-    linear-gradient(90deg, color-mix(in srgb, var(--ink) 3%, transparent) 1px, transparent 1px);
-  background-size: 48px 48px;
-  mask-image: radial-gradient(circle at 30% 20%, black 20%, transparent 70%);
-  z-index: -1;
+  display: none;
 }
 
 @keyframes rise {

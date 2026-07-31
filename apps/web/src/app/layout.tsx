@@ -1,7 +1,11 @@
 import type { Metadata } from "next";
-import { Syne, Source_Sans_3 } from "next/font/google";
+import { Archivo } from "next/font/google";
 import Link from "next/link";
 import { auth, signOut } from "@/auth";
+import {
+  ACCENT_INIT_SCRIPT,
+  AccentPicker,
+} from "@/components/AccentPicker";
 import { MobileNav } from "@/components/MobileNav";
 import { THEME_INIT_SCRIPT, ThemeToggle } from "@/components/ThemeToggle";
 import {
@@ -12,16 +16,10 @@ import { readHubMembers } from "@/lib/hub-members-store";
 import { devBypassEnabled } from "@/lib/session";
 import "./globals.css";
 
-const display = Syne({
-  variable: "--font-display-face",
+const archivo = Archivo({
+  variable: "--font-archivo",
   subsets: ["latin"],
-  weight: ["600", "700", "800"],
-});
-
-const body = Source_Sans_3({
-  variable: "--font-body-face",
-  subsets: ["latin"],
-  weight: ["400", "600", "700"],
+  weight: ["400", "600", "800"],
 });
 
 const siteDescription = "Fantasy leagues and member hub for Strictly Jayers.";
@@ -71,12 +69,13 @@ export default async function RootLayout({
   }
 
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="en" className={archivo.variable} suppressHydrationWarning>
       <head>
         {/* Applies a saved theme override before first paint (roadmap 7.10). */}
         <script dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }} />
+        <script dangerouslySetInnerHTML={{ __html: ACCENT_INIT_SCRIPT }} />
       </head>
-      <body className={`${display.variable} ${body.variable}`}>
+      <body>
         <div className="atmosphere" aria-hidden />
         <div className="shell">
           <header className="site-header">
@@ -84,8 +83,10 @@ export default async function RootLayout({
               Strictly Jayers
             </Link>
             <nav className="nav-links">
+              <Link href="/">Home</Link>
               <Link href="/leagues">Leagues</Link>
               {showAdmin ? <Link href="/admin">Admin</Link> : null}
+              <AccentPicker />
               <ThemeToggle />
               {session?.user ? (
                 <>

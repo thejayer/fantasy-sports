@@ -2,6 +2,10 @@
 
 The apex site is the **community home**. Fantasy stays on a subdomain.
 
+Visual language is the shared **Modernist** system (`design/modernist/`) —
+Archivo, Signal Red accent (`--color-accent`), 0 radius, 2px rules. Both
+`apps/www` and `apps/web` vendor a copy under `src/styles/modernist.css`.
+
 | Host | App | Cloud Run | Role |
 |---|---|---|---|
 | `strictlyjayers.com` (and `www`) | `apps/www` | `sj-www` | Public community front door |
