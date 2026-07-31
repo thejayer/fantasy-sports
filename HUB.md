@@ -193,6 +193,11 @@ Golf auction nominate/bid/pass and lineup saves require a matching franchise
 link (or admin / `AUTH_DEV_BYPASS`). Opening/starting an auction needs a link
 or admin; finalize is admin-only.
 
+Linked members land on `/` with a **Your portfolio** strip (roadmap 9.4) —
+sport, team, record, standing, current/next matchup across football, baseball,
+and golf — plus the existing per-league cards. Local bypass: set
+`SJ_DEV_VIEWER_EMAIL` to the email you linked in admin.
+
 ### Hub-native store (golf) vs ESPN sync store
 
 | Env | Path (prod) | Mount | Owns |

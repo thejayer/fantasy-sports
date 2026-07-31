@@ -1,5 +1,6 @@
 import Link from "next/link";
 
+import { PortfolioTable } from "@/components/PortfolioTable";
 import { TeamAvatar } from "@/components/TeamAvatar";
 import {
   dashboardActions,
@@ -153,6 +154,8 @@ export function MemberDashboard({
           All leagues
         </Link>
       </div>
+
+      <PortfolioTable cards={cards} />
 
       {todo.length ? (
         <section className="panel home-todo">

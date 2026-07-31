@@ -279,14 +279,39 @@ test.describe("hub smoke", () => {
         }),
       ).toBeVisible();
 
-      // Roadmap 7.1/7.2: the same link now drives the member dashboard and the
-      // "You" marker. Asserted here rather than in its own spec because this
+      // Link a franchise in each remaining league so the portfolio strip
+      // covers the four-sport set (roadmap 9.4).
+      for (const label of [
+        /Team for Strictly Jayers Football Dynasty/i,
+        /Team for Strictly Jayers Baseball/i,
+        /Team for Strictly Jayers Golf/i,
+      ]) {
+        const select = page.getByLabel(label);
+        await expect(select).toBeEnabled();
+        await select.selectOption({ index: 1 });
+        await expect(select).not.toHaveValue("");
+      }
+
+      // Roadmap 7.1/7.2/9.4: franchise links drive the member dashboard,
+      // portfolio table, and the "You" marker. Asserted here because this
       // test owns hub_members.json and the specs run in parallel locally.
       await page.goto("/");
       await expect(
         page.getByRole("heading", { name: /Welcome back/i }),
       ).toBeVisible();
       await expect(page.getByText(/leagues linked to your franchise/i)).toBeVisible();
+      await expect(
+        page.getByRole("heading", { name: /Your portfolio/i }),
+      ).toBeVisible();
+      await expect(
+        page.getByRole("columnheader", { name: "Standing" }),
+      ).toBeVisible();
+      await expect(
+        page.getByRole("link", { name: /Strictly Jayers Football(?! Dynasty)/i }).first(),
+      ).toBeVisible();
+      await expect(
+        page.getByRole("link", { name: /Strictly Jayers Baseball/i }).first(),
+      ).toBeVisible();
       await expect(
         page.getByRole("link", { name: new RegExp(linkedLabel!.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "i") }).first(),
       ).toBeVisible();

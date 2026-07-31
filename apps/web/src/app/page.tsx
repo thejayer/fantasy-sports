@@ -1,8 +1,13 @@
 import Link from "next/link";
 
 import { MemberDashboard } from "@/components/MemberDashboard";
-import { getLatestLeagues, getLeagueSnapshot } from "@/lib/data";
+import {
+  getLatestLeagues,
+  getLeagueSnapshot,
+  getPlayoffOddsSnapshot,
+} from "@/lib/data";
 import { buildLeagueCard, type HomeLeagueCard } from "@/lib/member-home";
+import { withPlayoffOdds } from "@/lib/portfolio";
 import { getViewer } from "@/lib/viewer";
 
 /**
@@ -60,7 +65,12 @@ export default async function HomePage() {
     const teamId = league.teams.some((team) => team.team_id === link?.team_id)
       ? link!.team_id
       : undefined;
-    cards.push(buildLeagueCard(league, teamId));
+    let card = buildLeagueCard(league, teamId);
+    if (league.sport === "football" && teamId != null) {
+      const odds = await getPlayoffOddsSnapshot(league.league_id, league.season);
+      card = withPlayoffOdds(card, odds);
+    }
+    cards.push(card);
   }
 
   if (!cards.length) {

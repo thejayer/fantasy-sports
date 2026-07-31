@@ -62,6 +62,9 @@ export type HomeLeagueCard = {
   next: GameLogRow | null;
   actions: ActionItem[];
   href: string;
+  /** Football make-playoffs % when a playoff_odds snapshot exists (roadmap 9.4). */
+  makePlayoffs?: number | null;
+  makePlayoffsDelta?: number | null;
 };
 
 const ORDER: Record<ActionTone, number> = { urgent: 0, attention: 1, info: 2 };
