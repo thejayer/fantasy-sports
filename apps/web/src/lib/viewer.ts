@@ -15,8 +15,10 @@ import { cache } from "react";
 
 import {
   canAccessAdmin,
+  findMember,
   memberFranchises,
   parseAllowedEmailsEnv,
+  resolveMemberDisplayName,
   type HubMemberTeamLink,
 } from "@/lib/hub-members";
 import { readHubMembers } from "@/lib/hub-members-store";
@@ -25,7 +27,10 @@ import { devBypassEnabled } from "@/lib/session";
 
 export type Viewer = {
   email: string | null;
+  /** Public display name — custom username, else Google name / email. */
   name: string | null;
+  /** Custom hub username when set (empty string means unset). */
+  displayName: string | null;
   isAdmin: boolean;
   /** One linked franchise per league. Empty when unlinked. */
   franchises: HubMemberTeamLink[];
@@ -39,6 +44,7 @@ export type Viewer = {
 const ANONYMOUS: Viewer = {
   email: null,
   name: null,
+  displayName: null,
   isAdmin: false,
   franchises: [],
   source: "anonymous",
@@ -65,9 +71,12 @@ export const getViewer = cache(async (): Promise<Viewer> => {
     const email = devViewerEmail();
     if (!email) return ANONYMOUS;
     const file = await readHubMembers().catch(() => null);
+    const member = file ? findMember(file, email) : undefined;
+    const custom = member?.display_name?.trim() || null;
     return {
       email,
-      name: email,
+      name: resolveMemberDisplayName(member, email),
+      displayName: custom,
       isAdmin: true,
       franchises: memberFranchises(file, email),
       source: "dev",
@@ -79,9 +88,13 @@ export const getViewer = cache(async (): Promise<Viewer> => {
   if (!email) return ANONYMOUS;
 
   const file = await readHubMembers().catch(() => null);
+  const member = file ? findMember(file, email) : undefined;
+  const custom = member?.display_name?.trim() || null;
+  const fallback = session?.user?.name ?? email;
   return {
     email,
-    name: session?.user?.name ?? email,
+    name: resolveMemberDisplayName(member, fallback),
+    displayName: custom,
     isAdmin: canAccessAdmin(email, file, adminOpts),
     franchises: memberFranchises(file, email),
     source: "session",

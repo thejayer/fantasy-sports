@@ -17,7 +17,11 @@ import { systemFeedEvents, type FeedEventFilter } from "@/lib/feed-events";
 import { readFeed } from "@/lib/feed-store";
 import type { ActivityView } from "@/lib/activity";
 import { getViewer, getViewerFranchise } from "@/lib/viewer";
-import { canAccessAdmin, parseAllowedEmailsEnv } from "@/lib/hub-members";
+import {
+  canAccessAdmin,
+  memberDisplayNameMap,
+  parseAllowedEmailsEnv,
+} from "@/lib/hub-members";
 import { readHubMembers } from "@/lib/hub-members-store";
 import { devBypassEnabled } from "@/lib/session";
 
@@ -69,6 +73,7 @@ export async function ActivityPanel({
   const canPost = Boolean(
     devBypassEnabled() || isAdmin || franchise != null,
   );
+  const nameByEmail = memberDisplayNameMap(members);
 
   return (
     <Suspense fallback={<p className="muted">Loading feed…</p>}>
@@ -79,6 +84,7 @@ export async function ActivityPanel({
         events={merged}
         initialFeed={initialFeed}
         viewerEmail={viewer.email}
+        nameByEmail={nameByEmail}
         canPost={canPost}
         canModerate={isAdmin}
         digestPeriod={digestPeriod}

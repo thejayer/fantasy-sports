@@ -8,10 +8,14 @@ import {
   effectiveAllowlist,
   emptyMembersFile,
   golfActingScope,
+  memberDisplayNameMap,
   normalizeEmail,
   removeMember,
+  resolveMemberDisplayName,
+  setMemberDisplayName,
   setMemberTeams,
   upsertMember,
+  validateDisplayName,
 } from "@/lib/hub-members";
 
 describe("hub-members", () => {
@@ -134,5 +138,31 @@ describe("hub-members", () => {
     expect(scope.allowedTeamIds).toEqual([2]);
     expect(scope.canFinalizeAuction).toBe(false);
     expect(scope.canSendReminders).toBe(false);
+  });
+
+  it("validates and stores custom usernames", () => {
+    expect(validateDisplayName("  Jay R. ")).toBe("Jay R.");
+    expect(validateDisplayName("")).toBe("");
+    expect(() => validateDisplayName("x")).toThrow(/2–24/);
+    expect(() => validateDisplayName("no@email")).toThrow(/letters/);
+
+    let file = setMemberDisplayName(
+      emptyMembersFile(),
+      "jay@example.com",
+      "The Cap",
+    );
+    expect(file.members[0]?.display_name).toBe("The Cap");
+    expect(resolveMemberDisplayName(file.members[0], "Google Jay")).toBe(
+      "The Cap",
+    );
+    expect(memberDisplayNameMap(file)).toEqual({
+      "jay@example.com": "The Cap",
+    });
+
+    file = setMemberDisplayName(file, "jay@example.com", "");
+    expect(file.members[0]?.display_name).toBeUndefined();
+    expect(resolveMemberDisplayName(file.members[0], "Google Jay")).toBe(
+      "Google Jay",
+    );
   });
 });

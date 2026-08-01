@@ -21,8 +21,9 @@ describe("profile settings route (appearance home)", () => {
     expect(layout).toMatch(/ACCENT_INIT_SCRIPT/);
   });
 
-  it("settings page hosts AppearanceSettings", () => {
+  it("settings page hosts AppearanceSettings and username form", () => {
     expect(settings).toMatch(/AppearanceSettings/);
+    expect(settings).toMatch(/ProfileUsernameForm/);
     expect(settings).toMatch(/title: "Profile"/);
   });
 });

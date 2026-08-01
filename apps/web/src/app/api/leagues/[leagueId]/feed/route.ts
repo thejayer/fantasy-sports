@@ -140,6 +140,7 @@ export async function POST(request: Request, { params }: Props) {
           target_id: String(body.target_id ?? ""),
           emoji: String(body.emoji ?? ""),
           author_email: author.email,
+          author_name: author.name,
         });
         break;
       }

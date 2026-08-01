@@ -106,7 +106,11 @@ export default async function HomePage({ searchParams }: Props) {
       cards={cards}
       seasons={seasons}
       currentSeason={season ?? cards[0]!.season}
-      memberName={viewer.name?.split("@")[0] ?? null}
+      memberName={
+        viewer.displayName ??
+        viewer.name?.split("@")[0] ??
+        null
+      }
     />
   );
 }

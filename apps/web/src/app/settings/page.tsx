@@ -2,7 +2,8 @@ import type { Metadata } from "next";
 import Link from "next/link";
 
 import { AppearanceSettings } from "@/components/AppearanceSettings";
-import { signOut } from "@/auth";
+import { ProfileUsernameForm } from "@/components/ProfileUsernameForm";
+import { auth, signOut } from "@/auth";
 import { getViewer } from "@/lib/viewer";
 import { requireSession, devBypassEnabled } from "@/lib/session";
 
@@ -18,7 +19,8 @@ export default async function SettingsPage() {
   if (!bypass) await requireSession();
 
   const viewer = await getViewer();
-  const displayName = viewer.name ?? viewer.email ?? "Member";
+  const session = bypass ? null : await auth();
+  const googleName = session?.user?.name ?? null;
   const email = viewer.email;
 
   return (
@@ -27,7 +29,8 @@ export default async function SettingsPage() {
         <div>
           <h2>Profile</h2>
           <p className="lede">
-            Account details and how the hub looks on this device.
+            Your public username, account details, and how the hub looks on this
+            device.
           </p>
         </div>
         <Link className="button secondary" href="/">
@@ -39,11 +42,15 @@ export default async function SettingsPage() {
         <h3 id="account-heading" className="roster-group-title">
           Account
         </h3>
+        {email || bypass ? (
+          <ProfileUsernameForm
+            initialUsername={viewer.displayName}
+            googleName={googleName || (bypass ? email : null)}
+          />
+        ) : (
+          <p className="league-meta">Sign in to set a username.</p>
+        )}
         <dl className="profile-identity">
-          <div>
-            <dt>Name</dt>
-            <dd>{displayName}</dd>
-          </div>
           {email ? (
             <div>
               <dt>Email</dt>
@@ -53,10 +60,16 @@ export default async function SettingsPage() {
             <div>
               <dt>Email</dt>
               <dd className="muted">
-                {bypass ? "Dev bypass (no Google session)" : "—"}
+                {bypass ? "Dev bypass (set SJ_DEV_VIEWER_EMAIL to edit)" : "—"}
               </dd>
             </div>
           )}
+          {googleName ? (
+            <div>
+              <dt>Google name</dt>
+              <dd>{googleName}</dd>
+            </div>
+          ) : null}
         </dl>
         {viewer.franchises.length ? (
           <>

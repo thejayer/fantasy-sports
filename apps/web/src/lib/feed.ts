@@ -45,6 +45,8 @@ export type FeedReaction = {
   target_id: string;
   emoji: FeedReactionEmoji;
   author_email: string;
+  /** Stamped at write; older rows may omit — UI joins hub display names. */
+  author_name?: string;
   created_at: string;
 };
 
@@ -233,6 +235,7 @@ export function toggleReaction(
     target_id: string;
     emoji: string;
     author_email: string;
+    author_name?: string;
   },
   now = new Date(),
 ): LeagueFeed {
@@ -245,6 +248,7 @@ export function toggleReaction(
   if (!email || !email.includes("@")) {
     throw new Error("author email is required");
   }
+  const author_name = (input.author_name || email).trim().slice(0, 80);
 
   const existingIdx = feed.reactions.findIndex(
     (r) =>
@@ -260,6 +264,7 @@ export function toggleReaction(
         target_id: target,
         emoji: input.emoji,
         author_email: email,
+        author_name,
         created_at: now.toISOString(),
       };
     }
@@ -269,6 +274,7 @@ export function toggleReaction(
         target_id: target,
         emoji: input.emoji,
         author_email: email,
+        author_name,
         created_at: now.toISOString(),
       },
       ...reactions,
@@ -385,38 +391,56 @@ export function deletePoll(
   return bump({ ...feed, polls }, now);
 }
 
+export type ReactionSummaryRow = {
+  emoji: FeedReactionEmoji;
+  count: number;
+  mine: boolean;
+  /** Display names of who reacted (newest first). */
+  names: string[];
+};
+
+function reactionDisplayName(
+  reaction: FeedReaction,
+  nameByEmail?: Record<string, string> | null,
+): string {
+  const email = normalizeEmail(reaction.author_email);
+  const live = nameByEmail?.[email]?.trim();
+  if (live) return live;
+  const stamped = reaction.author_name?.trim();
+  if (stamped) return stamped;
+  return email.includes("@") ? email.split("@")[0]! : email || "Member";
+}
+
 export function reactionSummary(
   reactions: FeedReaction[],
   targetId: string,
-): Array<{ emoji: FeedReactionEmoji; count: number; mine: boolean }> {
-  const counts = new Map<FeedReactionEmoji, number>();
-  for (const r of reactions) {
-    if (r.target_id !== targetId) continue;
-    counts.set(r.emoji, (counts.get(r.emoji) ?? 0) + 1);
-  }
-  return FEED_REACTIONS.filter((emoji) => counts.has(emoji)).map((emoji) => ({
-    emoji,
-    count: counts.get(emoji) ?? 0,
-    mine: false,
-  }));
+  nameByEmail?: Record<string, string> | null,
+): ReactionSummaryRow[] {
+  return reactionSummaryForViewer(reactions, targetId, null, nameByEmail);
 }
 
 export function reactionSummaryForViewer(
   reactions: FeedReaction[],
   targetId: string,
   viewerEmail: string | null | undefined,
-): Array<{ emoji: FeedReactionEmoji; count: number; mine: boolean }> {
+  nameByEmail?: Record<string, string> | null,
+): ReactionSummaryRow[] {
   const key = viewerEmail ? normalizeEmail(viewerEmail) : null;
   const counts = new Map<FeedReactionEmoji, number>();
   const mine = new Set<FeedReactionEmoji>();
+  const names = new Map<FeedReactionEmoji, string[]>();
   for (const r of reactions) {
     if (r.target_id !== targetId) continue;
     counts.set(r.emoji, (counts.get(r.emoji) ?? 0) + 1);
     if (key && normalizeEmail(r.author_email) === key) mine.add(r.emoji);
+    const list = names.get(r.emoji) ?? [];
+    list.push(reactionDisplayName(r, nameByEmail));
+    names.set(r.emoji, list);
   }
   return FEED_REACTIONS.filter((emoji) => counts.has(emoji)).map((emoji) => ({
     emoji,
     count: counts.get(emoji) ?? 0,
     mine: mine.has(emoji),
+    names: names.get(emoji) ?? [],
   }));
 }
