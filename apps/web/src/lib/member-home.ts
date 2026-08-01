@@ -10,12 +10,45 @@
  * page stays a server component and this stays unit-testable.
  */
 
-import type { LeagueSnapshot, Team } from "@/lib/data";
+import type { LeagueIndexItem, LeagueSnapshot, Team } from "@/lib/data";
 import { buildGameLog, type GameLogRow } from "@/lib/game-log";
 import { gamesForPeriod, isViewerGame, resolvePeriod, periodCount } from "@/lib/matchups";
 import { recordLabel, winPctLabel, injuryTone } from "@/lib/league";
 import { lineupClock, playerIsLocked } from "@/lib/golf-lineup";
 import { golfReminderActionItem } from "@/lib/golf-lineup-reminder";
+
+/** Unique seasons across the league index, newest first (home year filter). */
+export function homeAvailableSeasons(index: LeagueIndexItem[]): number[] {
+  return [...new Set(index.map((item) => item.season))].sort((a, b) => b - a);
+}
+
+/**
+ * Resolve `?season=` for the member home.
+ * Invalid / missing → newest year that exists on disk.
+ */
+export function resolveHomeSeason(
+  seasons: number[],
+  requested: number | undefined,
+): number | null {
+  if (!seasons.length) return null;
+  if (requested != null && Number.isFinite(requested) && seasons.includes(requested)) {
+    return requested;
+  }
+  return seasons[0] ?? null;
+}
+
+/** One index row per league that has a snapshot for `season`. */
+export function leaguesAtSeason(
+  index: LeagueIndexItem[],
+  season: number,
+): LeagueIndexItem[] {
+  return index
+    .filter((item) => item.season === season)
+    .sort(
+      (a, b) =>
+        a.sport.localeCompare(b.sport) || a.name.localeCompare(b.name),
+    );
+}
 
 export type ActionTone = "urgent" | "attention" | "info";
 

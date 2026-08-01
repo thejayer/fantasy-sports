@@ -2,11 +2,17 @@ import Link from "next/link";
 
 import { MemberDashboard } from "@/components/MemberDashboard";
 import {
-  getLatestLeagues,
+  getLeagueIndex,
   getLeagueSnapshot,
   getPlayoffOddsSnapshot,
 } from "@/lib/data";
-import { buildLeagueCard, type HomeLeagueCard } from "@/lib/member-home";
+import {
+  buildLeagueCard,
+  homeAvailableSeasons,
+  leaguesAtSeason,
+  resolveHomeSeason,
+  type HomeLeagueCard,
+} from "@/lib/member-home";
 import { withPlayoffOdds } from "@/lib/portfolio";
 import { getViewer } from "@/lib/viewer";
 
@@ -45,8 +51,20 @@ function Hero({ firstLeagueId }: { firstLeagueId?: string }) {
   );
 }
 
-export default async function HomePage() {
-  const leagues = await getLatestLeagues();
+type Props = {
+  searchParams: Promise<{ season?: string }>;
+};
+
+export default async function HomePage({ searchParams }: Props) {
+  const { season: seasonParam } = await searchParams;
+  const requested = seasonParam ? Number(seasonParam) : undefined;
+  const index = await getLeagueIndex();
+  const seasons = homeAvailableSeasons(index);
+  const season = resolveHomeSeason(
+    seasons,
+    requested != null && Number.isFinite(requested) ? requested : undefined,
+  );
+  const leagues = season != null ? leaguesAtSeason(index, season) : [];
   const viewer = await getViewer();
 
   // Without a linked franchise the dashboard has nothing personal to say, so
@@ -86,6 +104,8 @@ export default async function HomePage() {
   return (
     <MemberDashboard
       cards={cards}
+      seasons={seasons}
+      currentSeason={season ?? cards[0]!.season}
       memberName={viewer.name?.split("@")[0] ?? null}
     />
   );

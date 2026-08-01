@@ -445,6 +445,14 @@ button,
   display: block;
 }
 
+.home-head-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem 1rem;
+  align-items: center;
+  justify-content: flex-end;
+}
+
 .portfolio-panel {
   padding: 0.85rem 1rem 1rem;
   margin-bottom: 1.25rem;

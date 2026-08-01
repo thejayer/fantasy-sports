@@ -1,16 +1,33 @@
 import { describe, expect, it } from "vitest";
 
 import type { LeagueSnapshot, Player, Team } from "@/lib/data";
+import type { LeagueIndexItem } from "@/lib/data";
 import {
   buildLeagueCard,
   dashboardActions,
   golfLineupAction,
+  homeAvailableSeasons,
+  leaguesAtSeason,
   relativeAge,
+  resolveHomeSeason,
   shakyStarters,
   sortActions,
   syncedLabel,
 } from "@/lib/member-home";
 import { GOLF_FIXTURE_NOW } from "@/lib/golf-lineup";
+
+function indexRow(
+  partial: Partial<LeagueIndexItem> &
+    Pick<LeagueIndexItem, "league_id" | "season" | "sport" | "name">,
+): LeagueIndexItem {
+  return {
+    espn_league_id: null,
+    format: "h2h",
+    team_count: 10,
+    path: `${partial.league_id}/${partial.season}.json`,
+    ...partial,
+  };
+}
 
 function player(partial: Partial<Player> & Pick<Player, "id" | "name">): Player {
   return {
@@ -378,5 +395,49 @@ describe("dashboardActions", () => {
     // The link prompt is actionable; the stale-sync note is informational.
     expect(todo.map((a) => a.id)).toEqual(["link-football-main"]);
     expect(todo[0].leagueName).toBe("Main");
+  });
+});
+
+describe("home season filter", () => {
+  const index = [
+    indexRow({
+      league_id: "football-main",
+      name: "Football",
+      sport: "football",
+      season: 2026,
+    }),
+    indexRow({
+      league_id: "football-main",
+      name: "Football",
+      sport: "football",
+      season: 2024,
+    }),
+    indexRow({
+      league_id: "baseball-dynasty",
+      name: "Baseball",
+      sport: "baseball",
+      season: 2026,
+    }),
+  ];
+
+  it("lists unique seasons newest first", () => {
+    expect(homeAvailableSeasons(index)).toEqual([2026, 2024]);
+  });
+
+  it("resolves requested season or falls back to newest", () => {
+    expect(resolveHomeSeason([2026, 2024], 2024)).toBe(2024);
+    expect(resolveHomeSeason([2026, 2024], 2019)).toBe(2026);
+    expect(resolveHomeSeason([2026, 2024], undefined)).toBe(2026);
+    expect(resolveHomeSeason([], 2024)).toBeNull();
+  });
+
+  it("keeps only leagues that have that season", () => {
+    const at2024 = leaguesAtSeason(index, 2024);
+    expect(at2024.map((r) => r.league_id)).toEqual(["football-main"]);
+    const at2026 = leaguesAtSeason(index, 2026);
+    expect(at2026.map((r) => r.league_id)).toEqual([
+      "baseball-dynasty",
+      "football-main",
+    ]);
   });
 });
