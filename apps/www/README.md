@@ -23,3 +23,4 @@ npm run dev                  # http://localhost:3002
 | `FANTASY_HUB_URL` | Absolute link to the hub (default production host) |
 | `DISCORD_INVITE_URL` | Optional Discord CTA |
 | `PALWORLD_INFO_URL` | Optional Palworld / games CTA |
+| `YOUTUBE_PLAYLIST_ID` | Optional override for `/watch` (default baked in) |

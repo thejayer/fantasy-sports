@@ -146,6 +146,8 @@ jobs:
           fi
           echo "Using SITE_URL=$SITE_URL (Cloud Run URL: $RUN_URL)"
 
+          # --update-env-vars merges; --set-env-vars would wipe Discord /
+          # Palworld / YOUTUBE_PLAYLIST_ID and any other ops-set keys.
           gcloud run deploy "$SERVICE" \
             --project "$PROJECT_ID" \
             --region "$REGION" \
@@ -157,7 +159,7 @@ jobs:
             --min-instances "$MIN_INSTANCES" \
             --max-instances 3 \
             --cpu-boost \
-            --set-env-vars "SITE_URL=$SITE_URL,FANTASY_HUB_URL=$FANTASY_HUB_URL"
+            --update-env-vars "SITE_URL=$SITE_URL,FANTASY_HUB_URL=$FANTASY_HUB_URL"
 
           LIVE_URL="$(gcloud run services describe "$SERVICE" \
             --project "$PROJECT_ID" --region "$REGION" \

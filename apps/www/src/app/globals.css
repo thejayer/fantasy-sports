@@ -510,6 +510,46 @@ a.headline-row:focus-visible {
   }
 }
 
+/* —— Watch (/watch) —— */
+.watch-player-section {
+  padding-top: var(--space-6);
+}
+
+.watch-player {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  border: 2px solid var(--color-divider);
+  background: color-mix(in srgb, var(--color-text) 6%, var(--color-bg));
+  overflow: hidden;
+}
+
+.watch-player iframe {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border: 0;
+}
+
+.watch-hint {
+  margin: var(--space-4) 0 0;
+  max-width: 56ch;
+  font-size: 14px;
+  line-height: 1.5;
+  color: color-mix(in srgb, var(--color-text) 55%, transparent);
+}
+
+.page-hero-meta a {
+  border-bottom: 2px solid var(--color-accent);
+  padding-bottom: 1px;
+}
+
+.page-hero-meta a:hover,
+.page-hero-meta a:focus-visible {
+  color: var(--color-accent);
+}
+
 @media (max-width: 640px) {
   .nav-links {
     gap: var(--space-3);

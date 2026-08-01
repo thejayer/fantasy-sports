@@ -64,6 +64,7 @@ export default function RootLayout({
             <nav className="nav-links" aria-label="Primary">
               <Link href="/#destinations">Places</Link>
               <Link href="/ai">AI News</Link>
+              <Link href="/watch">Watch</Link>
               {discordInviteUrl ? (
                 <a href={discordInviteUrl} rel="noopener noreferrer">
                   Discord

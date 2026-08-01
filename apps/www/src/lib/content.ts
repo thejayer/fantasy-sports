@@ -4,20 +4,20 @@
  */
 export const portalCopy = {
   metaDescription:
-    "Strictly Jayers — the crew's front door for Discord, games, AI news, and fantasy leagues.",
+    "Strictly Jayers — the crew's front door for Discord, games, watch party, AI news, and fantasy leagues.",
   hero: {
     kicker: "The front door",
     headline: "Same crew. Different rooms.",
     support:
-      "This is the front door — chat, co-op nights, AI headlines, and a straight path into the fantasy hub when draft season hits.",
+      "This is the front door — chat, co-op nights, a shared watch queue, AI headlines, and a straight path into the fantasy hub when draft season hits.",
     ctaFantasy: "Open fantasy hub",
     ctaDiscord: "Join Discord",
     ctaExplore: "See where to go",
   },
   destinations: {
     heading: "Where to go",
-    support: "Four rooms. Pick the one you need.",
-    marker: "01 — 04",
+    support: "Five rooms. Pick the one you need.",
+    marker: "01 — 05",
     items: {
       fantasy: {
         index: "01",
@@ -35,8 +35,16 @@ export const portalCopy = {
         action: "Read AI News",
         actionPending: "Read AI News",
       },
-      discord: {
+      watch: {
         index: "03",
+        kicker: "Queue",
+        title: "Watch",
+        body: "The shared YouTube playlist — click through clips on the site, or open YouTube to add the next one.",
+        action: "Open the playlist",
+        actionPending: "Open the playlist",
+      },
+      discord: {
+        index: "04",
         kicker: "Chat",
         title: "Discord",
         body: "Pick talk, server nights, and the chatter that never belongs on a league page.",
@@ -44,7 +52,7 @@ export const portalCopy = {
         actionPending: "Invite soon",
       },
       palworld: {
-        index: "04",
+        index: "05",
         kicker: "Games",
         title: "Palworld",
         body: "Co-op when the server's up — join info lives here so it isn't buried in chat history.",
