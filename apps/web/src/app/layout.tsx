@@ -2,12 +2,9 @@ import type { Metadata } from "next";
 import { Archivo } from "next/font/google";
 import Link from "next/link";
 import { auth, signOut } from "@/auth";
-import {
-  ACCENT_INIT_SCRIPT,
-  AccentPicker,
-} from "@/components/AccentPicker";
+import { ACCENT_INIT_SCRIPT } from "@/components/AccentPicker";
 import { MobileNav } from "@/components/MobileNav";
-import { THEME_INIT_SCRIPT, ThemeToggle } from "@/components/ThemeToggle";
+import { THEME_INIT_SCRIPT } from "@/components/ThemeToggle";
 import {
   canAccessAdmin,
   parseAllowedEmailsEnv,
@@ -68,6 +65,12 @@ export default async function RootLayout({
     }
   }
 
+  const profileLabel = session?.user
+    ? (session.user.name ?? session.user.email ?? "Profile")
+    : bypass
+      ? "Profile"
+      : null;
+
   return (
     <html lang="en" className={archivo.variable} suppressHydrationWarning>
       <head>
@@ -86,30 +89,34 @@ export default async function RootLayout({
               <Link href="/">Home</Link>
               <Link href="/leagues">Leagues</Link>
               {showAdmin ? <Link href="/admin">Admin</Link> : null}
-              <AccentPicker />
-              <ThemeToggle />
-              {session?.user ? (
+              {profileLabel ? (
                 <>
-                  <span className="nav-user" title={session.user.email ?? undefined}>
-                    {session.user.name ?? session.user.email}
-                  </span>
-                  <form
-                    action={async () => {
-                      "use server";
-                      await signOut({ redirectTo: "/login" });
-                    }}
+                  <Link
+                    href="/settings"
+                    className="nav-user"
+                    title={session?.user?.email ?? "Profile & appearance"}
                   >
-                    <button className="button secondary" type="submit">
-                      Sign out
-                    </button>
-                  </form>
+                    {profileLabel}
+                  </Link>
+                  {session?.user ? (
+                    <form
+                      action={async () => {
+                        "use server";
+                        await signOut({ redirectTo: "/login" });
+                      }}
+                    >
+                      <button className="button secondary" type="submit">
+                        Sign out
+                      </button>
+                    </form>
+                  ) : null}
                 </>
               ) : null}
             </nav>
           </header>
           {children}
         </div>
-        <MobileNav showAdmin={showAdmin} />
+        <MobileNav showAdmin={showAdmin} showProfile={Boolean(profileLabel)} />
       </body>
     </html>
   );

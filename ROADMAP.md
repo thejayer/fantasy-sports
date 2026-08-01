@@ -853,11 +853,13 @@ Still open: keeper status on rosters and the draft board.
 - **Dark mode.** One source of truth via `light-dark()`, so there is no second
   block to keep in sync. Every token declares its light value first as a
   fallback: a browser without `light-dark()` drops the second declaration and
-  gets a working light theme rather than unset colours. `ThemeToggle` sets
+  gets a working light theme rather than unset colours. Theme controls set
   `data-theme`, which pins `color-scheme` and flips every token at once, and an
   inline head script applies a saved override before first paint so it never
-  flashes the OS palette. The toggle reads the attribute through
+  flashes the OS palette. Pickers read the attribute through
   `useSyncExternalStore` — the DOM is the source of truth, not mirrored state.
+  Accent + theme live on **`/settings` (Profile)**; the header name links there
+  (mobile nav **Profile** too). Prefs stay device-local (`localStorage`).
 - Getting there required the hardcoded colours out of components: white-alpha
   panels became `--surface` / `--surface-strong`, `#3d8f5a` / `#d4a017` became
   `--good` / `--caution`, and `color-mix(…, white)` became `--raise` (white in

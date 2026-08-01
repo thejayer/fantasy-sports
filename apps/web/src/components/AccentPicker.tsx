@@ -40,7 +40,12 @@ function applyAccent(hex: string) {
 
 export const ACCENT_INIT_SCRIPT = `try{var a=localStorage.getItem(${JSON.stringify(STORAGE_KEY)});if(a&&/^#[0-9a-fA-F]{6}$/.test(a)){document.documentElement.style.setProperty("--color-accent",a)}}catch(e){}`;
 
-export function AccentPicker() {
+export function AccentPicker({
+  layout = "compact",
+}: {
+  /** `labeled` shows swatch + name for the profile settings page. */
+  layout?: "compact" | "labeled";
+}) {
   const accent = useSyncExternalStore(subscribe, readAccent, () => DEFAULT);
 
   function choose(hex: string) {
@@ -54,20 +59,47 @@ export function AccentPicker() {
   }
 
   return (
-    <div className="accent-picker" role="group" aria-label="Accent color">
+    <div
+      className={
+        layout === "labeled" ? "accent-picker is-labeled" : "accent-picker"
+      }
+      role="group"
+      aria-label="Accent color"
+    >
       {ACCENTS.map((item) => (
         <button
           key={item.hex}
           type="button"
           className={
-            item.hex === accent ? "accent-swatch is-active" : "accent-swatch"
+            item.hex === accent
+              ? layout === "labeled"
+                ? "accent-choice is-active"
+                : "accent-swatch is-active"
+              : layout === "labeled"
+                ? "accent-choice"
+                : "accent-swatch"
           }
-          style={{ background: item.hex }}
+          style={
+            layout === "labeled"
+              ? undefined
+              : { background: item.hex }
+          }
           title={item.name}
           aria-label={item.name}
           aria-pressed={item.hex === accent}
           onClick={() => choose(item.hex)}
-        />
+        >
+          {layout === "labeled" ? (
+            <>
+              <span
+                className="accent-swatch"
+                style={{ background: item.hex }}
+                aria-hidden
+              />
+              <span className="accent-choice-name">{item.name}</span>
+            </>
+          ) : null}
+        </button>
       ))}
     </div>
   );

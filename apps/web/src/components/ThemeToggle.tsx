@@ -14,6 +14,9 @@ import { useSyncExternalStore } from "react";
  * wrong palette. This component reads it through `useSyncExternalStore`, which
  * is the supported way to render browser state without assigning state from an
  * effect.
+ *
+ * The cycle button remains for tests/reuse; the profile page uses the same
+ * {@link setTheme} helpers via AppearanceSettings.
  */
 
 export type Theme = "system" | "light" | "dark";
@@ -31,22 +34,24 @@ export const THEME_INIT_SCRIPT = `try{var t=localStorage.getItem(${JSON.stringif
 
 const listeners = new Set<() => void>();
 
-function subscribe(listener: () => void): () => void {
+export function subscribeTheme(listener: () => void): () => void {
   listeners.add(listener);
-  return () => listeners.delete(listener);
+  return () => {
+    listeners.delete(listener);
+  };
 }
 
-function getSnapshot(): Theme {
+export function readTheme(): Theme {
   const value = document.documentElement.getAttribute("data-theme");
   return value === "light" || value === "dark" ? value : "system";
 }
 
 /** Server render and hydration both start from the un-overridden palette. */
-function getServerSnapshot(): Theme {
+export function readThemeServer(): Theme {
   return "system";
 }
 
-function setTheme(next: Theme): void {
+export function setTheme(next: Theme): void {
   const root = document.documentElement;
   if (next === "system") root.removeAttribute("data-theme");
   else root.setAttribute("data-theme", next);
@@ -78,7 +83,11 @@ export function nextTheme(current: Theme): Theme {
 }
 
 export function ThemeToggle() {
-  const theme = useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
+  const theme = useSyncExternalStore(
+    subscribeTheme,
+    readTheme,
+    readThemeServer,
+  );
   const next = nextTheme(theme);
 
   return (

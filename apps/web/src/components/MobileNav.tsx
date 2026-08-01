@@ -7,12 +7,19 @@ import Link from "next/link";
  * out of reach immediately. This is a phone-first audience on a desktop layout
  * that reflows; a fixed bar is the minimum fix. Hidden at desktop widths by CSS.
  */
-export function MobileNav({ showAdmin }: { showAdmin: boolean }) {
+export function MobileNav({
+  showAdmin,
+  showProfile = false,
+}: {
+  showAdmin: boolean;
+  showProfile?: boolean;
+}) {
   return (
     <nav className="mobile-nav" aria-label="Primary">
       <Link href="/">Home</Link>
       <Link href="/leagues">Leagues</Link>
       {showAdmin ? <Link href="/admin">Admin</Link> : null}
+      {showProfile ? <Link href="/settings">Profile</Link> : null}
     </nav>
   );
 }

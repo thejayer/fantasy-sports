@@ -141,6 +141,14 @@ button,
   gap: 6px;
 }
 
+.accent-picker.is-labeled {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(9.5rem, 1fr));
+  gap: 0.5rem;
+  width: 100%;
+  max-width: 36rem;
+}
+
 .accent-swatch {
   width: 14px;
   height: 14px;
@@ -149,6 +157,7 @@ button,
   border-radius: var(--radius);
   cursor: pointer;
   background: none;
+  flex-shrink: 0;
 }
 
 .accent-swatch.is-active {
@@ -156,9 +165,39 @@ button,
   outline-offset: 1px;
 }
 
+.accent-choice {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  padding: 0.55rem 0.75rem;
+  border: 0;
+  border-radius: var(--radius);
+  background: var(--surface);
+  box-shadow: inset 0 0 0 1px var(--line);
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.accent-choice.is-active {
+  box-shadow: inset 0 0 0 2px var(--signal);
+}
+
+.accent-choice-name {
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
 .nav-user {
   opacity: 0.72;
   font-size: 0.9rem;
+}
+
+a.nav-user:hover,
+a.nav-user:focus-visible {
+  opacity: 1;
+  color: var(--signal);
 }
 
 .hero {
@@ -962,7 +1001,7 @@ tr.is-viewer td {
   margin: 0 0 0.75rem;
 }
 
-/* Theme switch (roadmap 7.10) */
+/* Theme switch (roadmap 7.10) — cycle control kept for tests / reuse */
 .theme-toggle {
   display: inline-flex;
   align-items: center;
@@ -985,6 +1024,101 @@ tr.is-viewer td {
 @media (max-width: 480px) {
   .theme-toggle-label {
     display: none;
+  }
+}
+
+/* Profile / appearance (moved off the header into /settings) */
+.profile-settings {
+  display: grid;
+  gap: 1.25rem;
+}
+
+.profile-section {
+  padding: 1rem 1.1rem 1.15rem;
+}
+
+.profile-identity {
+  display: grid;
+  gap: 0.75rem;
+  margin: 0 0 1rem;
+}
+
+.profile-identity dt {
+  margin: 0;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  opacity: 0.65;
+}
+
+.profile-identity dd {
+  margin: 0.15rem 0 0;
+  font-size: 1.05rem;
+  font-weight: 600;
+}
+
+.profile-franchise-lede {
+  margin: 0 0 0.4rem;
+}
+
+.profile-franchises {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.35rem;
+}
+
+.appearance-settings {
+  display: grid;
+  gap: 1.35rem;
+  margin-top: 0.85rem;
+}
+
+.appearance-block .roster-group-title {
+  margin-bottom: 0.25rem;
+}
+
+.theme-chooser {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.5rem;
+  max-width: 28rem;
+  margin-top: 0.55rem;
+}
+
+.theme-choice {
+  display: grid;
+  gap: 0.2rem;
+  padding: 0.65rem 0.7rem;
+  border: 0;
+  border-radius: var(--radius);
+  background: var(--surface);
+  box-shadow: inset 0 0 0 1px var(--line);
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.theme-choice.is-active {
+  box-shadow: inset 0 0 0 2px var(--signal);
+}
+
+.theme-choice-label {
+  font-weight: 700;
+  font-size: 0.95rem;
+}
+
+.theme-choice-hint {
+  font-size: 0.78rem;
+  opacity: 0.65;
+}
+
+@media (max-width: 520px) {
+  .theme-chooser {
+    grid-template-columns: 1fr;
   }
 }
 
