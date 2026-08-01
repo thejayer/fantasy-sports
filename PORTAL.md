@@ -39,6 +39,10 @@ the Discord / Palworld destination tiles into live links.
 server-side from RSS (see `apps/www/src/lib/ai-news.ts`); X timelines use
 official embed widgets. Edit `AI_EDITOR_PICKS` for the big-story wall.
 
+**Watch** lives at `/watch` — embeds the shared YouTube playlist
+(`lib/watch.ts` default, override with `YOUTUBE_PLAYLIST_ID` on `sj-www`).
+Anyone with YouTube edit access can add/remove videos; the page stays in sync.
+
 ## Local
 
 ```bash

@@ -1101,6 +1101,11 @@ fantasy stays on `fantasy.strictlyjayers.com`. Docs: [PORTAL.md](PORTAL.md).
 - Feeds revalidate ~30 minutes; editor picks stay hand-edited in
   `lib/ai-news.ts`.
 
+### P.5 Shared Watch playlist (open → landing)
+- `/watch` on `apps/www`: embed the crew YouTube playlist (default id in
+  `lib/watch.ts`; optional `YOUTUBE_PLAYLIST_ID` on `sj-www`).
+- Nav + homepage destination; no YouTube Data API required for v1.
+
 ---
 
 ## What "done" looks like

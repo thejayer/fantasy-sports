@@ -39,6 +39,16 @@ export default function HomePage() {
       pending: false,
     },
     {
+      id: "watch",
+      index: items.watch.index,
+      kicker: items.watch.kicker,
+      title: items.watch.title,
+      body: items.watch.body,
+      href: "/watch",
+      action: items.watch.action,
+      pending: false,
+    },
+    {
       id: "discord",
       index: items.discord.index,
       kicker: items.discord.kicker,
