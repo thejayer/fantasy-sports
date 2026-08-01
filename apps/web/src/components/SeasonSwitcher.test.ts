@@ -30,6 +30,17 @@ describe("season navigation everywhere", () => {
     expect(switcherSource).toMatch(/seasons\.length <= 1/);
   });
 
+  it("member home uses the shared switcher for a global year filter", () => {
+    const home = readFileSync(
+      path.join(process.cwd(), "src/components/MemberDashboard.tsx"),
+      "utf8",
+    );
+    expect(home).toMatch(
+      /import \{ SeasonSwitcher \} from "@\/components\/SeasonSwitcher"/,
+    );
+    expect(home).toMatch(/hrefFor=\{\(year\) => `\/\?season=\$\{year\}`\}/);
+  });
+
   it("league view reuses the shared switcher", () => {
     expect(leagueViewSource).toMatch(
       /import \{ SeasonSwitcher \} from "@\/components\/SeasonSwitcher"/,

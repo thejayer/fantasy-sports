@@ -992,6 +992,8 @@ Named so they are not accidentally treated as roadmap:
   table on `/` (roadmap 7.2 member home): sport, league, team, record,
   standing, this period, next, and football make-playoffs % when
   `playoff_odds` exists. Cards below keep matchup detail and actions.
+  Shared year filter (`?season=` + `SeasonSwitcher`) switches all league
+  cards/portfolio rows at once; leagues without that season are omitted.
 - **Native/PWA install.** `manifest.ts` already exists; a real app shell is a
   separate project.
 

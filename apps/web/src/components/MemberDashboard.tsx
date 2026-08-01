@@ -1,6 +1,7 @@
 import Link from "next/link";
 
 import { PortfolioTable } from "@/components/PortfolioTable";
+import { SeasonSwitcher } from "@/components/SeasonSwitcher";
 import { TeamAvatar } from "@/components/TeamAvatar";
 import {
   dashboardActions,
@@ -128,12 +129,17 @@ function LeagueCard({ card }: { card: HomeLeagueCard }) {
   );
 }
 
-/** The signed-in landing surface (roadmap 7.2). */
+/** The signed-in landing surface (roadmap 7.2 / 9.4). */
 export function MemberDashboard({
   cards,
+  seasons,
+  currentSeason,
   memberName,
 }: {
   cards: HomeLeagueCard[];
+  /** Union of on-disk seasons for the home year filter; chips hide when ≤1. */
+  seasons: number[];
+  currentSeason: number;
   memberName?: string | null;
 }) {
   const todo = dashboardActions(cards);
@@ -150,12 +156,19 @@ export function MemberDashboard({
               : "No franchises linked yet — the admin center connects your email to a team in each league."}
           </p>
         </div>
-        <Link className="button secondary" href="/leagues">
-          All leagues
-        </Link>
+        <div className="home-head-actions">
+          <SeasonSwitcher
+            seasons={seasons}
+            current={currentSeason}
+            hrefFor={(year) => `/?season=${year}`}
+          />
+          <Link className="button secondary" href="/leagues">
+            All leagues
+          </Link>
+        </div>
       </div>
 
-      <PortfolioTable cards={cards} />
+      <PortfolioTable cards={cards} season={currentSeason} />
 
       {todo.length ? (
         <section className="panel home-todo">

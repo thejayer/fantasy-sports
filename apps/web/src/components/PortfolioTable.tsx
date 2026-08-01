@@ -5,7 +5,14 @@ import type { HomeLeagueCard } from "@/lib/member-home";
 import { sportFormatLabel } from "@/lib/league";
 
 /** Dense cross-league portfolio strip (roadmap 9.4) over member home cards. */
-export function PortfolioTable({ cards }: { cards: HomeLeagueCard[] }) {
+export function PortfolioTable({
+  cards,
+  season,
+}: {
+  cards: HomeLeagueCard[];
+  /** Active home year filter — leagues without that season are omitted upstream. */
+  season?: number;
+}) {
   const rows = buildPortfolioRows(cards);
   if (!rows.length) return null;
 
@@ -15,10 +22,15 @@ export function PortfolioTable({ cards }: { cards: HomeLeagueCard[] }) {
     <section className="panel portfolio-panel" aria-labelledby="portfolio-heading">
       <h3 id="portfolio-heading" className="roster-group-title">
         Your portfolio
+        {season != null ? (
+          <span className="league-meta"> · {season}</span>
+        ) : null}
       </h3>
       <p className="league-meta portfolio-lede">
-        Record and standing across every league — open a row for the full card
-        below.
+        Record and standing across every league
+        {season != null ? ` for ${season}` : ""}
+        {" — "}
+        open a row for the full card below.
       </p>
       <div className="panel table-scroll portfolio-table-wrap">
         <table className="table-cards portfolio-table">
