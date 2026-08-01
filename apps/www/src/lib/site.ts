@@ -9,6 +9,9 @@ export type SiteConfig = {
   palworldInfoUrl: string | null;
 };
 
+/** Crew Discord invite — override with DISCORD_INVITE_URL on sj-www if rotated. */
+export const DEFAULT_DISCORD_INVITE_URL = "https://discord.gg/6BH4CfB";
+
 function trimTrailingSlash(value: string): string {
   return value.replace(/\/+$/, "");
 }
@@ -28,7 +31,8 @@ export function getSiteConfig(): SiteConfig {
       process.env.FANTASY_HUB_URL?.trim() ||
         "https://fantasy.strictlyjayers.com",
     ),
-    discordInviteUrl: optionalUrl(process.env.DISCORD_INVITE_URL),
+    discordInviteUrl:
+      optionalUrl(process.env.DISCORD_INVITE_URL) || DEFAULT_DISCORD_INVITE_URL,
     palworldInfoUrl: optionalUrl(process.env.PALWORLD_INFO_URL),
   };
 }
