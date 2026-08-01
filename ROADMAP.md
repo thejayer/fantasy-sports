@@ -1085,8 +1085,9 @@ fantasy stays on `fantasy.strictlyjayers.com`. Docs: [PORTAL.md](PORTAL.md).
 - Optional `DISCORD_INVITE_URL` / `PALWORLD_INFO_URL` destination tiles.
 - Cloud Run `sj-www` deploy workflow + `./scripts/setup-portal-domain.sh`.
 
-### P.2 Content and destinations (open)
-- Real Discord invite + Palworld server details (env on `sj-www`).
+### P.2 Content and destinations (partial)
+- Discord invite live (default in `lib/site.ts`; optional `DISCORD_INVITE_URL`).
+- Palworld server details still open (`PALWORLD_INFO_URL` on `sj-www`).
 - Additional community surfaces only when the group asks (events, servers, etc.).
 - Optional reciprocal “Community” link from the hub chrome back to the apex.
 

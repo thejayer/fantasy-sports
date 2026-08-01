@@ -32,8 +32,9 @@ Configured via `FANTASY_HUB_URL` (default production host). There is no Next.js
 rewrite, reverse proxy, or same-origin `/leagues` path on the apex — that would
 break Auth.js and couple deploys.
 
-Optional: set `DISCORD_INVITE_URL` and `PALWORLD_INFO_URL` on `sj-www` to turn
-the Discord / Palworld destination tiles into live links.
+Discord CTA defaults to the crew invite (`lib/site.ts`); override with
+`DISCORD_INVITE_URL` on `sj-www` if the code rotates. Set `PALWORLD_INFO_URL`
+to turn the Palworld destination tile into a live link.
 
 **AI News** lives at `/ai` (nav + homepage destination). Headlines are fetched
 server-side from RSS (see `apps/www/src/lib/ai-news.ts`); X timelines use
