@@ -25,6 +25,7 @@ describe("profile settings route (appearance home)", () => {
     expect(settings).toMatch(/AppearanceSettings/);
     expect(settings).toMatch(/ProfileUsernameForm/);
     expect(settings).toMatch(/MemberAvatar/);
+    expect(settings).toMatch(/\/u\/\$\{viewer\.handle\}/);
     expect(settings).toMatch(/title: "Profile"/);
   });
 

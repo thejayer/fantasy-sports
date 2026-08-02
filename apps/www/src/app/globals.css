@@ -540,6 +540,54 @@ a.headline-row:focus-visible {
   color: color-mix(in srgb, var(--color-text) 55%, transparent);
 }
 
+.watch-cta-row {
+  margin-top: var(--space-4);
+}
+
+/* CTAs on light section backgrounds (hero CTAs use inverted ink). */
+.cta-on-light {
+  background: var(--color-text);
+  color: var(--color-bg);
+  border-color: var(--color-text);
+}
+
+.cta-on-light:hover,
+.cta-on-light:focus-visible {
+  background: color-mix(in srgb, var(--color-text) 88%, transparent);
+}
+
+.cta-ghost {
+  background: transparent;
+  color: var(--color-text);
+  border-color: var(--color-divider);
+}
+
+.cta-ghost:hover,
+.cta-ghost:focus-visible {
+  border-color: var(--color-accent);
+  color: var(--accent-deep);
+}
+
+.watch-queue {
+  margin-top: var(--space-2);
+}
+
+.watch-room-links {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: var(--space-3);
+}
+
+.watch-room-links a {
+  font-family: var(--font-heading);
+  font-weight: var(--font-heading-weight);
+  font-size: 1.15rem;
+  border-bottom: 2px solid var(--color-accent);
+  padding-bottom: 2px;
+}
+
 .page-hero-meta a {
   border-bottom: 2px solid var(--color-accent);
   padding-bottom: 1px;

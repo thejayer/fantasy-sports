@@ -1056,8 +1056,7 @@ Everything else in phase 7 is independent and can land in any order: ~~7.3~~
 ~~7.11 (payload budget)~~.
 
 **Remaining in phase 7:** scheduled Discord auto-send and email fallback under
-7.7; Track Q follow-ons (**7.12** profiles, **7.13** trophy case) after
-**7.10b** / **7.9b**.
+7.7 (Track Q foundation through trophies / Watch has landed).
 
 | Track | Contents | Touches |
 |---|---|---|
@@ -1067,7 +1066,7 @@ Everything else in phase 7 is independent and can land in any order: ~~7.3~~
 | J — Tools packaging | ~~7.8~~ | Trade Desk Δ make-% via samples sidecar |
 | K — Craft | ~~7.10~~, ~~7.11~~ | `globals.css`, HTML + JS CI budgets |
 | L — Sport depth | 8.1 · 8.2 · 8.3 | `src/sj` · `apps/web` · `src/sg` |
-| Q — Shared memory | 7.10b · 7.9b · 7.12 · 7.13 · P.6 | `hub_members`, rosters, `/u`, history, `apps/www` |
+| Q — Shared memory | ~~7.10b~~ · ~~7.9b~~ · ~~7.12~~ · ~~7.13~~ · ~~P.6~~ | `hub_members`, rosters, `/u`, history, `apps/www` |
 
 G, H, and K barely overlap. I is the only track that introduces user-generated
 content, so it carries the validation/rate-limit/moderation risk and should not
@@ -1117,12 +1116,10 @@ fantasy stays on `fantasy.strictlyjayers.com`. Docs: [PORTAL.md](PORTAL.md).
   `lib/watch.ts`; optional `YOUTUBE_PLAYLIST_ID` on `sj-www`).
 - Nav + homepage destination; no YouTube Data API required for v1.
 
-### P.6 Watch as a real surface (open)
-Deeper Watch without a paid YouTube Data API dependency where possible:
-playlist context (title / count when a public oEmbed or RSS is enough),
-“open on YouTube” affordances, and optional hub/portal cross-links so Watch
-feels like a shared room rather than a bare embed. Stay fail-soft when the
-playlist id is unset.
+### P.6 Watch as a real surface — LANDED
+Deeper Watch without a paid YouTube Data API: public playlist Atom/RSS titles
++ count under `/watch`, stronger YouTube / Discord / hub cross-links, and a
+“how we use this” room section. Fail-soft when the feed is down (embed stays).
 
 ---
 
@@ -1135,14 +1132,13 @@ and tools. Builds on ~~7.1~~ / ~~7.6~~ / ~~7.9~~ / ~~7.10~~ and portal Watch
 
 | Item | Status | Notes |
 |---|---|---|
-| **7.10b** Member avatars | landing | Google `user.image` in header / Profile; `image_url` on `hub_members` synced on sign-in so feed authors show a face; monogram fallback. |
-| **7.9b** Keeper status on rosters | landing | Join `draft[].keeper` → roster player ids; dynasty sample fixtures mark round-1 keepers; draft board uses Keeper badge. |
-| **7.12** Member profiles | open | Public `/u/{handle}` (or email-safe slug): username, avatar, linked franchises, recent feed activity. Settings remains the edit surface. |
-| **7.13** Trophy case / hall of fame | open | Multi-season champions + awards from history archive (`getLeagueHistoryArchive`); needs backfilled seasons in the live store for real depth — fixtures stay thin. |
-| **P.6** Watch surface | open | See Track P — richer shared playlist room on the apex. |
+| **7.10b** Member avatars | landed | Google `user.image` in header / Profile; `image_url` on `hub_members` synced on sign-in so feed authors show a face; monogram fallback. |
+| **7.9b** Keeper status on rosters | landed | Join `draft[].keeper` → roster player ids; dynasty sample fixtures mark round-1 keepers; draft board uses Keeper badge. |
+| **7.12** Member profiles | landing | Crew-visible `/u/{handle}` (slug from username, else email local-part); unique usernames; avatar + franchises + career chips; feed authors link here; Settings stays the edit surface. |
+| **7.13** Trophy case / hall of fame | landing | History `?view=trophies` packages champions + record shelf; single-season fixtures disclose backfill; playoff champ still not in snapshot. |
+| **P.6** Watch surface | landed | Playlist RSS queue + room CTAs on `apps/www` `/watch`. |
 
-**Build order:** 7.10b → 7.9b (independent of each other after foundation) →
-7.12 → 7.13 (gated on multi-season data) · P.6 can land anytime on `apps/www`.
+**Build order:** ~~7.10b~~ → ~~7.9b~~ → ~~7.12~~ → ~~7.13~~ · ~~P.6~~.
 
 ---
 

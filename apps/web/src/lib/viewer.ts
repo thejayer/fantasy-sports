@@ -17,6 +17,7 @@ import {
   canAccessAdmin,
   findMember,
   memberFranchises,
+  memberProfileHandle,
   parseAllowedEmailsEnv,
   resolveMemberDisplayName,
   type HubMemberTeamLink,
@@ -33,6 +34,8 @@ export type Viewer = {
   displayName: string | null;
   /** HTTPS avatar (hub_members or Google session); null → monogram. */
   imageUrl: string | null;
+  /** Profile URL slug (`/u/{handle}`) when the viewer has an email. */
+  handle: string | null;
   isAdmin: boolean;
   /** One linked franchise per league. Empty when unlinked. */
   franchises: HubMemberTeamLink[];
@@ -48,6 +51,7 @@ const ANONYMOUS: Viewer = {
   name: null,
   displayName: null,
   imageUrl: null,
+  handle: null,
   isAdmin: false,
   franchises: [],
   source: "anonymous",
@@ -81,11 +85,21 @@ export const getViewer = cache(async (): Promise<Viewer> => {
     const file = await readHubMembers().catch(() => null);
     const member = file ? findMember(file, email) : undefined;
     const custom = member?.display_name?.trim() || null;
+    const handle = member
+      ? memberProfileHandle(member)
+      : memberProfileHandle({
+          email,
+          role: "member",
+          teams: [],
+          created_at: "",
+          updated_at: "",
+        });
     return {
       email,
       name: resolveMemberDisplayName(member, email),
       displayName: custom,
       imageUrl: httpsImage(member?.image_url),
+      handle,
       isAdmin: true,
       franchises: memberFranchises(file, email),
       source: "dev",
@@ -100,11 +114,21 @@ export const getViewer = cache(async (): Promise<Viewer> => {
   const member = file ? findMember(file, email) : undefined;
   const custom = member?.display_name?.trim() || null;
   const fallback = session?.user?.name ?? email;
+  const handle = member
+    ? memberProfileHandle(member)
+    : memberProfileHandle({
+        email,
+        role: "member",
+        teams: [],
+        created_at: "",
+        updated_at: "",
+      });
   return {
     email,
     name: resolveMemberDisplayName(member, fallback),
     displayName: custom,
     imageUrl: httpsImage(member?.image_url) ?? httpsImage(session?.user?.image),
+    handle,
     isAdmin: canAccessAdmin(email, file, adminOpts),
     franchises: memberFranchises(file, email),
     source: "session",

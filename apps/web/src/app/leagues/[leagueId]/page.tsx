@@ -122,7 +122,9 @@ export default async function LeagueDetailPage({ params, searchParams }: Props) 
       : "week"
   ) as MatchupsView;
   const historyView = (
-    ["standings", "champions", "records", "h2h"].includes(viewParam ?? "")
+    ["standings", "trophies", "champions", "records", "h2h"].includes(
+      viewParam ?? "",
+    )
       ? viewParam
       : "standings"
   ) as HistoryView;

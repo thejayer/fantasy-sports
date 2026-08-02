@@ -49,11 +49,22 @@ export default async function SettingsPage() {
             imageUrl={viewer.imageUrl}
             size="lg"
           />
-          <p className="league-meta" style={{ margin: 0 }}>
-            {viewer.imageUrl
-              ? "Photo from your Google account — updates when you sign in."
-              : "Sign in with Google to show your photo here and in the feed."}
-          </p>
+          <div>
+            <p className="league-meta" style={{ margin: 0 }}>
+              {viewer.imageUrl
+                ? "Photo from your Google account — updates when you sign in."
+                : "Sign in with Google to show your photo here and in the feed."}
+            </p>
+            {viewer.handle ? (
+              <p className="league-meta" style={{ margin: "0.35rem 0 0" }}>
+                Public page:{" "}
+                <Link href={`/u/${viewer.handle}`}>/u/{viewer.handle}</Link>
+                {!viewer.displayName ? (
+                  <> — set a username below so the slug is yours, not your email prefix.</>
+                ) : null}
+              </p>
+            ) : null}
+          </div>
         </div>
         {email || bypass ? (
           <ProfileUsernameForm

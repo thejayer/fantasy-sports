@@ -8,14 +8,18 @@ import {
   effectiveAllowlist,
   emptyMembersFile,
   golfActingScope,
+  findMemberByHandle,
   memberDisplayNameMap,
+  memberHandleMap,
   memberImageMap,
+  memberProfileHandle,
   normalizeEmail,
   removeMember,
   resolveMemberDisplayName,
   setMemberDisplayName,
   setMemberImageUrl,
   setMemberTeams,
+  slugifyProfileHandle,
   upsertMember,
   validateDisplayName,
   validateImageUrl,
@@ -166,6 +170,32 @@ describe("hub-members", () => {
     expect(file.members[0]?.display_name).toBeUndefined();
     expect(resolveMemberDisplayName(file.members[0], "Google Jay")).toBe(
       "Google Jay",
+    );
+  });
+
+  it("slugs profile handles and enforces uniqueness", () => {
+    expect(slugifyProfileHandle("The Cap")).toBe("the-cap");
+    expect(slugifyProfileHandle("Jay R.")).toBe("jay-r");
+
+    let file = setMemberDisplayName(
+      emptyMembersFile(),
+      "jay@example.com",
+      "The Cap",
+    );
+    expect(memberProfileHandle(file.members[0]!)).toBe("the-cap");
+    expect(findMemberByHandle(file, "the-cap")?.email).toBe("jay@example.com");
+    expect(memberHandleMap(file)).toEqual({
+      "jay@example.com": "the-cap",
+    });
+
+    file = upsertMember(file, { email: "other@example.com" });
+    expect(() =>
+      setMemberDisplayName(file, "other@example.com", "the cap"),
+    ).toThrow(/already taken/);
+
+    // Email local-part is the fallback handle when username is unset.
+    expect(memberProfileHandle(file.members.find((m) => m.email === "other@example.com")!)).toBe(
+      "other",
     );
   });
 
