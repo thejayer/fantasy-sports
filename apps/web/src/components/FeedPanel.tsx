@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { EmptyState } from "@/components/EmptyState";
+import { MemberAvatar } from "@/components/MemberAvatar";
 import type { ActivityView } from "@/lib/activity";
 import {
   FEED_LEAGUE_TARGET,
@@ -31,6 +32,8 @@ type FeedPanelProps = {
   viewerEmail: string | null;
   /** Live username map from hub_members (email → display_name). */
   nameByEmail?: Record<string, string>;
+  /** Live avatar map from hub_members (email → https image_url). */
+  imageByEmail?: Record<string, string>;
   canPost: boolean;
   canModerate: boolean;
   digestPeriod: number | null;
@@ -48,6 +51,14 @@ function liveName(
     (key.includes("@") ? key.split("@")[0]! : key) ||
     "Member"
   );
+}
+
+function liveImage(
+  email: string,
+  imageByEmail?: Record<string, string>,
+): string | null {
+  const key = email.trim().toLowerCase();
+  return imageByEmail?.[key]?.trim() || null;
 }
 
 async function fetchFeed(
@@ -72,6 +83,7 @@ export function FeedPanel({
   initialFeed,
   viewerEmail,
   nameByEmail,
+  imageByEmail,
   canPost,
   canModerate,
   digestPeriod,
@@ -437,12 +449,22 @@ export function FeedPanel({
           {view === "talk" ? (
             <h3 className="feed-stream-title">League talk</h3>
           ) : null}
-          {livePolls.map((poll) => (
+          {livePolls.map((poll) => {
+            const pollAuthor = liveName(
+              poll.author_email,
+              poll.author_name,
+              nameByEmail,
+            );
+            return (
             <article key={poll.id} className="panel feed-item">
               <header className="feed-item-head">
-                <span className="league-meta">
-                  Poll ·{" "}
-                  {liveName(poll.author_email, poll.author_name, nameByEmail)}
+                <span className="feed-author-row league-meta">
+                  <MemberAvatar
+                    name={pollAuthor}
+                    imageUrl={liveImage(poll.author_email, imageByEmail)}
+                    size="sm"
+                  />
+                  Poll · {pollAuthor}
                 </span>
                 {canModerate ? (
                   <button
@@ -508,7 +530,8 @@ export function FeedPanel({
                 }
               />
             </article>
-          ))}
+            );
+          })}
           {leagueChat.map((c) => (
             <CommentCard
               key={c.id}
@@ -516,6 +539,7 @@ export function FeedPanel({
               feed={feed}
               viewerEmail={viewerEmail}
               nameByEmail={nameByEmail}
+              imageByEmail={imageByEmail}
               canPost={canPost}
               canModerate={canModerate}
               busy={busy}
@@ -595,6 +619,7 @@ export function FeedPanel({
                       feed={feed}
                       viewerEmail={viewerEmail}
                       nameByEmail={nameByEmail}
+                      imageByEmail={imageByEmail}
                       canPost={canPost}
                       canModerate={canModerate}
                       busy={busy}
@@ -694,6 +719,7 @@ function CommentCard({
   feed,
   viewerEmail,
   nameByEmail,
+  imageByEmail,
   canPost,
   canModerate,
   busy,
@@ -704,6 +730,7 @@ function CommentCard({
   feed: LeagueFeed;
   viewerEmail: string | null;
   nameByEmail?: Record<string, string>;
+  imageByEmail?: Record<string, string>;
   canPost: boolean;
   canModerate: boolean;
   busy: boolean;
@@ -718,7 +745,14 @@ function CommentCard({
   return (
     <div className="feed-comment">
       <div className="feed-item-head">
-        <span className="feed-author">{author}</span>
+        <span className="feed-author-row feed-author">
+          <MemberAvatar
+            name={author}
+            imageUrl={liveImage(comment.author_email, imageByEmail)}
+            size="sm"
+          />
+          {author}
+        </span>
         {canModerate ? (
           <button
             type="button"

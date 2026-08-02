@@ -417,7 +417,12 @@ def sample_league(
     for place, team in enumerate(ranked, start=1):
         team.standing = place
 
-    draft = _build_draft(built, rounds=3)
+    draft = _build_draft(
+        built,
+        rounds=3,
+        # One kept player per team is enough for offline roster badges (7.9b).
+        keeper_rounds=1 if spec.format == "dynasty" else 0,
+    )
     # Settings (from mSettings) + recent_activity + free_agents (roadmap 2.4).
     settings = _build_settings(spec, teams=teams, games=games)
     activities = _build_activities(built, season=season, rng=rng)
@@ -674,8 +679,17 @@ def _reconcile_records_from_matchups(teams: list[_Stub]) -> None:
             team.points_for = round(points, 1)
 
 
-def _build_draft(teams: list[_Stub], *, rounds: int = 3) -> list[_Stub]:
-    """Snake-draft the first roster players so seed snapshots carry a draft board."""
+def _build_draft(
+    teams: list[_Stub],
+    *,
+    rounds: int = 3,
+    keeper_rounds: int = 0,
+) -> list[_Stub]:
+    """Snake-draft the first roster players so seed snapshots carry a draft board.
+
+    Dynasty samples mark early rounds as keepers (roadmap 7.9b) so roster/draft
+    UI can exercise badges offline; redraft leaves ``keeper_status`` false.
+    """
     order = [team.team_id for team in teams]
     by_id = {team.team_id: team for team in teams}
     picks: list[_Stub] = []
@@ -692,7 +706,7 @@ def _build_draft(teams: list[_Stub], *, rounds: int = 3) -> list[_Stub]:
                     round_num=rnd,
                     round_pick=pick_num,
                     bid_amount=0,
-                    keeper_status=False,
+                    keeper_status=rnd <= keeper_rounds,
                     nominatingTeam=None,
                 )
             )

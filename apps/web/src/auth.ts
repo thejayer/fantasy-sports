@@ -26,7 +26,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   ...authConfig,
   callbacks: {
     ...authConfig.callbacks,
-    async signIn({ profile }) {
+    async signIn({ profile, user }) {
       if (process.env.AUTH_DEV_BYPASS === "1") {
         return true;
       }
@@ -34,7 +34,29 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       if (!email) {
         return false;
       }
-      return isEmailAllowed(email);
+      const allowed = await isEmailAllowed(email);
+      if (!allowed) return false;
+
+      // Best-effort avatar sync for feed / chrome (roadmap 7.10b).
+      const picture =
+        (typeof user?.image === "string" && user.image.trim()) ||
+        (typeof (profile as { picture?: unknown })?.picture === "string"
+          ? String((profile as { picture: string }).picture).trim()
+          : "");
+      if (picture.startsWith("https://")) {
+        try {
+          const { setMemberImageUrl } = await import("@/lib/hub-members");
+          const { readHubMembers, writeHubMembers } = await import(
+            "@/lib/hub-members-store"
+          );
+          const file = await readHubMembers();
+          const next = setMemberImageUrl(file, email, picture);
+          if (next !== file) await writeHubMembers(next);
+        } catch {
+          // Allowlist already passed; avatar write must not block sign-in.
+        }
+      }
+      return true;
     },
   },
 });

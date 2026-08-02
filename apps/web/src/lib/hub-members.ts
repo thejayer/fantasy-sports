@@ -22,9 +22,16 @@ export type HubMember = {
    * Google name / email local-part when unset.
    */
   display_name?: string;
+  /**
+   * HTTPS avatar URL (usually Google profile photo) synced on sign-in
+   * (roadmap 7.10b). Optional — UI falls back to a monogram.
+   */
+  image_url?: string;
   created_at: string;
   updated_at: string;
 };
+
+const IMAGE_URL_MAX = 512;
 
 export const DISPLAY_NAME_MIN = 2;
 export const DISPLAY_NAME_MAX = 24;
@@ -136,6 +143,19 @@ export function resolveMemberDisplayName(
   return member?.email?.split("@")[0] || "Member";
 }
 
+/** HTTPS-only avatar URLs; empty string clears. */
+export function validateImageUrl(raw: string): string {
+  const url = raw.trim();
+  if (!url) return "";
+  if (url.length > IMAGE_URL_MAX) {
+    throw new Error(`image URL must be ≤ ${IMAGE_URL_MAX} characters`);
+  }
+  if (!/^https:\/\//i.test(url)) {
+    throw new Error("image URL must be https");
+  }
+  return url;
+}
+
 /** email → current display_name for live feed joins. */
 export function memberDisplayNameMap(
   file: HubMembersFile | null | undefined,
@@ -148,6 +168,20 @@ export function memberDisplayNameMap(
   return map;
 }
 
+/** email → avatar URL for feed / chrome (roadmap 7.10b). */
+export function memberImageMap(
+  file: HubMembersFile | null | undefined,
+): Record<string, string> {
+  const map: Record<string, string> = {};
+  for (const member of file?.members ?? []) {
+    const url = member.image_url?.trim();
+    if (url && /^https:\/\//i.test(url)) {
+      map[normalizeEmail(member.email)] = url;
+    }
+  }
+  return map;
+}
+
 export function upsertMember(
   file: HubMembersFile,
   input: {
@@ -156,6 +190,8 @@ export function upsertMember(
     teams?: HubMemberTeamLink[];
     /** Pass `null` to clear; omit to leave unchanged. */
     display_name?: string | null;
+    /** Pass `null` to clear; omit to leave unchanged. */
+    image_url?: string | null;
   },
   now = new Date(),
 ): HubMembersFile {
@@ -170,6 +206,12 @@ export function upsertMember(
   if (input.display_name !== undefined) {
     const validated = validateDisplayName(input.display_name ?? "");
     display_name = validated || undefined;
+  }
+
+  let image_url: string | undefined = existing?.image_url;
+  if (input.image_url !== undefined) {
+    const validated = validateImageUrl(input.image_url ?? "");
+    image_url = validated || undefined;
   }
 
   const next: HubMember = existing
@@ -189,6 +231,9 @@ export function upsertMember(
 
   if (display_name) next.display_name = display_name;
   else delete next.display_name;
+
+  if (image_url) next.image_url = image_url;
+  else delete next.image_url;
 
   const members = existing
     ? file.members.map((m) => (m.email === email ? next : m))
@@ -213,6 +258,23 @@ export function setMemberDisplayName(
     { email, display_name: displayName },
     now,
   );
+}
+
+/**
+ * Persist Google avatar on sign-in (roadmap 7.10b).
+ * No-op (same object) when the URL is unchanged so callers can skip writes.
+ */
+export function setMemberImageUrl(
+  file: HubMembersFile,
+  email: string,
+  imageUrl: string | null | undefined,
+  now = new Date(),
+): HubMembersFile {
+  const url = validateImageUrl(imageUrl ?? "");
+  const existing = findMember(file, email);
+  if ((existing?.image_url ?? "") === url) return file;
+  if (!existing && !url) return file;
+  return upsertMember(file, { email, image_url: url || null }, now);
 }
 
 export function removeMember(

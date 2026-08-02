@@ -179,6 +179,10 @@ def test_seeded_snapshots_persist_settings_and_transactions(registry):
     dynasty = sample_snapshot(spec_for(registry, "football-dynasty"), 2024, teams=4)
     assert redraft["settings"]["keeper_count"] == 0
     assert dynasty["settings"]["keeper_count"] == 5
+    # Dynasty samples mark round-1 picks as keepers for roster badges (7.9b).
+    assert all(not pick["keeper"] for pick in redraft["draft"])
+    assert {pick["round"] for pick in dynasty["draft"] if pick["keeper"]} == {1}
+    assert sum(1 for pick in dynasty["draft"] if pick["keeper"]) == 4
     assert redraft["settings"]["faab"] is True
     assert redraft["settings"]["position_slot_counts"]["QB"] == 1
     assert len(redraft["transactions"]) >= 1

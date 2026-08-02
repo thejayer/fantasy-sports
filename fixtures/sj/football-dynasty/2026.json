@@ -3,7 +3,7 @@
   "draft": [
     {
       "bid_amount": 0.0,
-      "keeper": false,
+      "keeper": true,
       "nominating_team_id": null,
       "player_id": 202600001,
       "player_name": "Gregory Rivera",
@@ -13,7 +13,7 @@
     },
     {
       "bid_amount": 0.0,
-      "keeper": false,
+      "keeper": true,
       "nominating_team_id": null,
       "player_id": 202600101,
       "player_name": "Gabriel Thompson",
@@ -23,7 +23,7 @@
     },
     {
       "bid_amount": 0.0,
-      "keeper": false,
+      "keeper": true,
       "nominating_team_id": null,
       "player_id": 202600201,
       "player_name": "Ronald Martin",

@@ -5,6 +5,8 @@ import {
   draftHasBids,
   draftHasKeepers,
   draftResultRows,
+  isKeeperPlayer,
+  keeperPlayerIds,
   sortDraftPicks,
 } from "@/lib/draft-results";
 
@@ -79,5 +81,17 @@ describe("draft-results helpers", () => {
     expect(draftHasBids(picks)).toBe(true);
     expect(draftHasKeepers(picks)).toBe(true);
     expect(draftHasBids([{ ...picks[1], bid_amount: 0 }])).toBe(false);
+  });
+
+  it("indexes keeper player ids for roster badges", () => {
+    const all = keeperPlayerIds(picks);
+    expect([...all]).toEqual(["10"]);
+    expect(isKeeperPlayer(10, all)).toBe(true);
+    expect(isKeeperPlayer("10", all)).toBe(true);
+    expect(isKeeperPlayer(20, all)).toBe(false);
+
+    const team1 = keeperPlayerIds(picks, 1);
+    expect([...team1]).toEqual(["10"]);
+    expect(keeperPlayerIds(picks, 2).size).toBe(0);
   });
 });

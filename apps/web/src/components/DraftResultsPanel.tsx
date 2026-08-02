@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { EmptyState } from "@/components/EmptyState";
+import { KeeperBadge } from "@/components/KeeperBadge";
 import type { LeagueSnapshot } from "@/lib/data";
 import {
   draftHasBids,
@@ -196,7 +197,9 @@ export function DraftResultsPanel({
                     </td>
                     <td data-label="Player">{row.player_name ?? "—"}</td>
                     {showKeepers ? (
-                      <td data-label="Keeper">{row.keeper ? "Yes" : "—"}</td>
+                      <td data-label="Keeper">
+                        {row.keeper ? <KeeperBadge /> : "—"}
+                      </td>
                     ) : null}
                     {showBids ? (
                       <td data-label="Bid" className="numeric">

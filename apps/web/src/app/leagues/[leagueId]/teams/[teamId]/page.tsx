@@ -4,6 +4,7 @@ import { BaseballRosterView } from "@/components/BaseballRosterView";
 import { EmptyState } from "@/components/EmptyState";
 import { GameLogPanel } from "@/components/GameLogPanel";
 import { GolfRosterView } from "@/components/GolfRosterView";
+import { KeeperBadge } from "@/components/KeeperBadge";
 import { SeasonSwitcher } from "@/components/SeasonSwitcher";
 import {
   getLeagueSeasons,
@@ -12,6 +13,10 @@ import {
   getTeam,
 } from "@/lib/data";
 import { ViewerBadge } from "@/components/ViewerBadge";
+import {
+  isKeeperPlayer,
+  keeperPlayerIds,
+} from "@/lib/draft-results";
 import { injuryTone, recordLabel, winPctLabel } from "@/lib/league";
 import { getViewerTeamId } from "@/lib/viewer";
 import {
@@ -92,6 +97,7 @@ export default async function TeamPage({ params, searchParams }: Props) {
     indexProjections(projectionSnapshot),
   );
   const mapped = roster.filter((p) => p.projection).length;
+  const keepers = keeperPlayerIds(league.draft, team.team_id);
 
   return (
     <main className="section league-view sport-football">
@@ -154,6 +160,7 @@ export default async function TeamPage({ params, searchParams }: Props) {
               {roster.map((player) => {
                 const label = player.injury_status || player.status || "OK";
                 const proj = player.projection;
+                const kept = isKeeperPlayer(player.id, keepers);
                 return (
                   <tr key={`${player.id}-${player.name}`}>
                     <td data-label="Status">
@@ -162,7 +169,10 @@ export default async function TeamPage({ params, searchParams }: Props) {
                         title={label}
                       />
                     </td>
-                    <td data-label="Player">{player.name}</td>
+                    <td data-label="Player">
+                      {player.name}
+                      {kept ? <KeeperBadge /> : null}
+                    </td>
                     <td data-label="Pos">{player.position ?? "—"}</td>
                     <td data-label="Slot">{player.slot ?? "—"}</td>
                     <td data-label="Pro">{player.pro_team ?? "—"}</td>

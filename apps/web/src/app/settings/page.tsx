@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 
 import { AppearanceSettings } from "@/components/AppearanceSettings";
+import { MemberAvatar } from "@/components/MemberAvatar";
 import { ProfileUsernameForm } from "@/components/ProfileUsernameForm";
 import { auth, signOut } from "@/auth";
 import { getViewer } from "@/lib/viewer";
@@ -42,6 +43,18 @@ export default async function SettingsPage() {
         <h3 id="account-heading" className="roster-group-title">
           Account
         </h3>
+        <div className="profile-avatar-row">
+          <MemberAvatar
+            name={viewer.name || googleName || email || "Member"}
+            imageUrl={viewer.imageUrl}
+            size="lg"
+          />
+          <p className="league-meta" style={{ margin: 0 }}>
+            {viewer.imageUrl
+              ? "Photo from your Google account — updates when you sign in."
+              : "Sign in with Google to show your photo here and in the feed."}
+          </p>
+        </div>
         {email || bypass ? (
           <ProfileUsernameForm
             initialUsername={viewer.displayName}

@@ -3,10 +3,12 @@ import { Archivo } from "next/font/google";
 import Link from "next/link";
 import { auth, signOut } from "@/auth";
 import { ACCENT_INIT_SCRIPT } from "@/components/AccentPicker";
+import { MemberAvatar } from "@/components/MemberAvatar";
 import { MobileNav } from "@/components/MobileNav";
 import { THEME_INIT_SCRIPT } from "@/components/ThemeToggle";
 import {
   canAccessAdmin,
+  findMember,
   parseAllowedEmailsEnv,
 } from "@/lib/hub-members";
 import { readHubMembers } from "@/lib/hub-members-store";
@@ -53,10 +55,11 @@ export default async function RootLayout({
   const bypass = devBypassEnabled();
   const session = bypass ? null : await auth();
   let showAdmin = bypass;
+  let membersFile = null as Awaited<ReturnType<typeof readHubMembers>> | null;
   if (!showAdmin && session?.user?.email) {
     try {
-      const file = await readHubMembers();
-      showAdmin = canAccessAdmin(session.user.email, file, {
+      membersFile = await readHubMembers();
+      showAdmin = canAccessAdmin(session.user.email, membersFile, {
         envAllowlist: parseAllowedEmailsEnv(process.env.ALLOWED_EMAILS),
         adminEmailsEnv: parseAllowedEmailsEnv(process.env.ADMIN_EMAILS),
       });
@@ -70,6 +73,14 @@ export default async function RootLayout({
     : bypass
       ? "Profile"
       : null;
+  const memberRow =
+    session?.user?.email && membersFile
+      ? findMember(membersFile, session.user.email)
+      : undefined;
+  const profileImage =
+    memberRow?.image_url?.trim() ||
+    session?.user?.image?.trim() ||
+    null;
 
   return (
     <html lang="en" className={archivo.variable} suppressHydrationWarning>
@@ -96,7 +107,12 @@ export default async function RootLayout({
                     className="nav-user"
                     title={session?.user?.email ?? "Profile & appearance"}
                   >
-                    {profileLabel}
+                    <MemberAvatar
+                      name={profileLabel}
+                      imageUrl={profileImage}
+                      size="sm"
+                    />
+                    <span className="nav-user-label">{profileLabel}</span>
                   </Link>
                   {session?.user ? (
                     <form

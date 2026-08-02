@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { EmptyState } from "@/components/EmptyState";
 import { GameLogPanel } from "@/components/GameLogPanel";
+import { KeeperBadge } from "@/components/KeeperBadge";
 import { SeasonSwitcher } from "@/components/SeasonSwitcher";
 import { ViewerBadge } from "@/components/ViewerBadge";
 import type { LeagueSnapshot, Player } from "@/lib/data";
@@ -12,6 +13,10 @@ import {
   stat,
   winPctLabel,
 } from "@/lib/baseball";
+import {
+  isKeeperPlayer,
+  keeperPlayerIds,
+} from "@/lib/draft-results";
 import { injuryTone } from "@/lib/league";
 
 function StatusDot({ player }: { player: Player }) {
@@ -35,6 +40,7 @@ export function BaseballRosterView({
   const roster = sortRoster(team.roster);
   const batters = roster.filter((player) => !isPitcher(player));
   const pitchers = roster.filter((player) => isPitcher(player));
+  const keepers = keeperPlayerIds(league.draft, team.team_id);
 
   return (
     <main className="section league-view sport-baseball">
@@ -70,8 +76,18 @@ export function BaseballRosterView({
         </EmptyState>
       ) : (
         <>
-          <RosterGroup title="Batters" players={batters} kind="batter" />
-          <RosterGroup title="Pitchers" players={pitchers} kind="pitcher" />
+          <RosterGroup
+            title="Batters"
+            players={batters}
+            kind="batter"
+            keepers={keepers}
+          />
+          <RosterGroup
+            title="Pitchers"
+            players={pitchers}
+            kind="pitcher"
+            keepers={keepers}
+          />
         </>
       )}
     </main>
@@ -82,10 +98,12 @@ function RosterGroup({
   title,
   players,
   kind,
+  keepers,
 }: {
   title: string;
   players: Player[];
   kind: "batter" | "pitcher";
+  keepers: Set<string>;
 }) {
   if (!players.length) {
     return (
@@ -122,7 +140,10 @@ function RosterGroup({
                   <StatusDot player={player} />
                 </td>
                 <td data-label="Slot">{player.slot ?? "—"}</td>
-                <td data-label="Player">{player.name}</td>
+                <td data-label="Player">
+                  {player.name}
+                  {isKeeperPlayer(player.id, keepers) ? <KeeperBadge /> : null}
+                </td>
                 <td data-label="Pos">{player.position ?? "—"}</td>
                 <td data-label="Pro">{player.pro_team ?? "—"}</td>
                 {kind === "batter" ? (

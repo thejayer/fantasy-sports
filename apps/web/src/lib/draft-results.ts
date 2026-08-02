@@ -68,3 +68,34 @@ export function draftHasBids(picks: DraftPick[]): boolean {
 export function draftHasKeepers(picks: DraftPick[]): boolean {
   return picks.some((pick) => Boolean(pick.keeper));
 }
+
+/**
+ * ESPN player ids marked keeper on the draft board (roadmap 7.9b).
+ * Optional `teamId` scopes to one franchise's kept players for roster badges.
+ */
+export function keeperPlayerIds(
+  picks: DraftPick[] | null | undefined,
+  teamId?: number | null,
+): Set<string> {
+  const ids = new Set<string>();
+  for (const pick of picks ?? []) {
+    if (!pick.keeper || pick.player_id == null) continue;
+    if (
+      teamId != null &&
+      Number.isFinite(teamId) &&
+      pick.team_id !== teamId
+    ) {
+      continue;
+    }
+    ids.add(String(pick.player_id));
+  }
+  return ids;
+}
+
+export function isKeeperPlayer(
+  playerId: number | string | null | undefined,
+  keepers: Set<string>,
+): boolean {
+  if (playerId == null || playerId === "") return false;
+  return keepers.has(String(playerId));
+}
