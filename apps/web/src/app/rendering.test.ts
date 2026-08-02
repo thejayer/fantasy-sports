@@ -39,6 +39,8 @@ describe("snapshot-backed pages opt out of prerendering", () => {
       "leagues/[leagueId]/teams/[teamId]/page.tsx",
       "leagues/page.tsx",
       "page.tsx",
+      // Profile pages join league history via getLeagueHistoryArchive (7.12).
+      "u/[handle]/page.tsx",
     ]);
   });
 
