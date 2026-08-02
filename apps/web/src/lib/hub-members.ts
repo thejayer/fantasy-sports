@@ -17,9 +17,19 @@ export type HubMember = {
   email: string;
   role: HubMemberRole;
   teams: HubMemberTeamLink[];
+  /**
+   * Public handle for feed / reactions (roadmap 7.6). Optional — falls back to
+   * Google name / email local-part when unset.
+   */
+  display_name?: string;
   created_at: string;
   updated_at: string;
 };
+
+export const DISPLAY_NAME_MIN = 2;
+export const DISPLAY_NAME_MAX = 24;
+/** Letters, numbers, spaces, and a few punctuation marks. */
+const DISPLAY_NAME_RE = /^[A-Za-z0-9 ._'-]+$/;
 
 export type HubMembersFile = {
   schema_version: 1;
@@ -97,12 +107,55 @@ export function canAccessAdmin(
   return bootstrap.has(key);
 }
 
+/** Normalize / validate a public username. Empty string clears the handle. */
+export function validateDisplayName(raw: string): string {
+  const name = raw.trim().replace(/\s+/g, " ");
+  if (!name) return "";
+  if (name.length < DISPLAY_NAME_MIN || name.length > DISPLAY_NAME_MAX) {
+    throw new Error(
+      `username must be ${DISPLAY_NAME_MIN}–${DISPLAY_NAME_MAX} characters`,
+    );
+  }
+  if (!DISPLAY_NAME_RE.test(name)) {
+    throw new Error(
+      "username can only use letters, numbers, spaces, and . _ ' -",
+    );
+  }
+  return name;
+}
+
+/** Prefer custom handle, then an explicit fallback (Google name / email). */
+export function resolveMemberDisplayName(
+  member: HubMember | null | undefined,
+  fallback: string,
+): string {
+  const custom = member?.display_name?.trim();
+  if (custom) return custom;
+  const fb = fallback.trim();
+  if (fb) return fb;
+  return member?.email?.split("@")[0] || "Member";
+}
+
+/** email → current display_name for live feed joins. */
+export function memberDisplayNameMap(
+  file: HubMembersFile | null | undefined,
+): Record<string, string> {
+  const map: Record<string, string> = {};
+  for (const member of file?.members ?? []) {
+    const name = member.display_name?.trim();
+    if (name) map[normalizeEmail(member.email)] = name;
+  }
+  return map;
+}
+
 export function upsertMember(
   file: HubMembersFile,
   input: {
     email: string;
     role?: HubMemberRole;
     teams?: HubMemberTeamLink[];
+    /** Pass `null` to clear; omit to leave unchanged. */
+    display_name?: string | null;
   },
   now = new Date(),
 ): HubMembersFile {
@@ -112,6 +165,13 @@ export function upsertMember(
   }
   const iso = now.toISOString();
   const existing = findMember(file, email);
+
+  let display_name: string | undefined = existing?.display_name;
+  if (input.display_name !== undefined) {
+    const validated = validateDisplayName(input.display_name ?? "");
+    display_name = validated || undefined;
+  }
+
   const next: HubMember = existing
     ? {
         ...existing,
@@ -127,6 +187,9 @@ export function upsertMember(
         updated_at: iso,
       };
 
+  if (display_name) next.display_name = display_name;
+  else delete next.display_name;
+
   const members = existing
     ? file.members.map((m) => (m.email === email ? next : m))
     : [...file.members, next];
@@ -136,6 +199,20 @@ export function upsertMember(
     updated_at: iso,
     members: members.sort((a, b) => a.email.localeCompare(b.email)),
   };
+}
+
+/** Self-service username write — creates a member row if needed. */
+export function setMemberDisplayName(
+  file: HubMembersFile,
+  email: string,
+  displayName: string,
+  now = new Date(),
+): HubMembersFile {
+  return upsertMember(
+    file,
+    { email, display_name: displayName },
+    now,
+  );
 }
 
 export function removeMember(

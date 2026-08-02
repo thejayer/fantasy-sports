@@ -29,10 +29,26 @@ type FeedPanelProps = {
   events: SystemFeedEvent[];
   initialFeed: LeagueFeed;
   viewerEmail: string | null;
+  /** Live username map from hub_members (email → display_name). */
+  nameByEmail?: Record<string, string>;
   canPost: boolean;
   canModerate: boolean;
   digestPeriod: number | null;
 };
+
+function liveName(
+  email: string,
+  stamped: string | undefined,
+  nameByEmail?: Record<string, string>,
+): string {
+  const key = email.trim().toLowerCase();
+  return (
+    nameByEmail?.[key]?.trim() ||
+    stamped?.trim() ||
+    (key.includes("@") ? key.split("@")[0]! : key) ||
+    "Member"
+  );
+}
 
 async function fetchFeed(
   leagueId: string,
@@ -55,6 +71,7 @@ export function FeedPanel({
   events,
   initialFeed,
   viewerEmail,
+  nameByEmail,
   canPost,
   canModerate,
   digestPeriod,
@@ -223,11 +240,10 @@ export function FeedPanel({
     view !== "talk" && !filteredEvents.length && !livePolls.length;
 
   return (
-    <div className="feed-panel" style={{ marginTop: "0.75rem" }}>
-      <p className="lede">
-        League feed — transactions, results, and weekly digests interleaved with
-        comments, reactions, and polls. System events need no writes; talk is
-        stored under the hub root.
+    <div className="feed-panel">
+      <p className="lede feed-lede">
+        Transactions, results, and digests — plus comments, reactions, and
+        polls from the league.
       </p>
 
       <div className="tabs" style={{ marginTop: "0.5rem" }}>
@@ -299,21 +315,22 @@ export function FeedPanel({
       ) : null}
 
       {canPost ? (
-        <div className="panel" style={{ marginTop: "0.75rem" }}>
-          <label className="league-meta" style={{ display: "block" }}>
-            {replyTo === FEED_LEAGUE_TARGET
-              ? "Post to the league"
-              : "Reply to event"}
+        <div className="panel feed-composer">
+          <label className="feed-field">
+            <span className="league-meta">
+              {replyTo === FEED_LEAGUE_TARGET
+                ? "Post to the league"
+                : "Reply to event"}
+            </span>
             <textarea
               value={composer}
               onChange={(e) => setComposer(e.target.value)}
               rows={3}
               maxLength={500}
               placeholder="Keep it short — this is a friend league, not Twitter."
-              style={{ display: "block", width: "100%", marginTop: "0.35rem" }}
             />
           </label>
-          <div className="cta-row" style={{ marginTop: "0.5rem", gap: "0.5rem" }}>
+          <div className="feed-composer-actions">
             <button
               type="button"
               className="button"
@@ -348,32 +365,26 @@ export function FeedPanel({
             </button>
           </div>
           {showPoll ? (
-            <div style={{ marginTop: "0.75rem" }}>
-              <label className="league-meta" style={{ display: "block" }}>
-                Question
+            <div className="feed-poll-composer">
+              <label className="feed-field">
+                <span className="league-meta">Question</span>
                 <input
                   value={pollQuestion}
                   onChange={(e) => setPollQuestion(e.target.value)}
                   maxLength={200}
-                  style={{ display: "block", width: "100%", marginTop: "0.35rem" }}
                 />
               </label>
-              <label
-                className="league-meta"
-                style={{ display: "block", marginTop: "0.5rem" }}
-              >
-                Options (one per line)
+              <label className="feed-field">
+                <span className="league-meta">Options (one per line)</span>
                 <textarea
                   value={pollOptions}
                   onChange={(e) => setPollOptions(e.target.value)}
                   rows={4}
-                  style={{ display: "block", width: "100%", marginTop: "0.35rem" }}
                 />
               </label>
               <button
                 type="button"
                 className="button"
-                style={{ marginTop: "0.5rem" }}
                 disabled={busy || !pollQuestion.trim()}
                 onClick={() =>
                   void post({
@@ -392,8 +403,9 @@ export function FeedPanel({
           ) : null}
         </div>
       ) : (
-        <p className="muted" style={{ marginTop: "0.75rem" }}>
-          Link a franchise in /admin to post, react, or create polls.
+        <p className="muted feed-gate">
+          Link a franchise in /admin to post, react, or create polls. Set a
+          username under <Link href="/settings">Profile</Link>.
         </p>
       )}
 
@@ -421,17 +433,21 @@ export function FeedPanel({
       ) : null}
 
       {view === "talk" || view === "all" ? (
-        <section style={{ marginTop: "1rem" }}>
-          {view === "talk" ? <h3 style={{ fontSize: "1rem" }}>League talk</h3> : null}
+        <section className="feed-stream">
+          {view === "talk" ? (
+            <h3 className="feed-stream-title">League talk</h3>
+          ) : null}
           {livePolls.map((poll) => (
-            <article key={poll.id} className="panel feed-item" style={{ marginTop: "0.75rem" }}>
-              <header className="league-meta">
-                Poll · {poll.author_name}
+            <article key={poll.id} className="panel feed-item">
+              <header className="feed-item-head">
+                <span className="league-meta">
+                  Poll ·{" "}
+                  {liveName(poll.author_email, poll.author_name, nameByEmail)}
+                </span>
                 {canModerate ? (
                   <button
                     type="button"
                     className="button secondary"
-                    style={{ marginLeft: "0.5rem" }}
                     disabled={busy}
                     onClick={() =>
                       void post({ action: "delete_poll", poll_id: poll.id })
@@ -441,10 +457,8 @@ export function FeedPanel({
                   </button>
                 ) : null}
               </header>
-              <h3 style={{ margin: "0.35rem 0", fontSize: "1.05rem" }}>
-                {poll.question}
-              </h3>
-              <ul style={{ listStyle: "none", padding: 0, margin: 0 }}>
+              <h3 className="feed-item-title">{poll.question}</h3>
+              <ul className="feed-poll-options">
                 {poll.options.map((opt) => {
                   const total = poll.options.reduce(
                     (n, o) => n + o.voter_emails.length,
@@ -456,7 +470,7 @@ export function FeedPanel({
                       (e) => e.toLowerCase() === viewerEmail.toLowerCase(),
                     );
                   return (
-                    <li key={opt.id} style={{ marginTop: "0.35rem" }}>
+                    <li key={opt.id}>
                       <button
                         type="button"
                         className={`button${mine ? "" : " secondary"}`}
@@ -470,7 +484,9 @@ export function FeedPanel({
                         }
                       >
                         {opt.label} · {opt.voter_emails.length}
-                        {total ? ` (${Math.round((opt.voter_emails.length / total) * 100)}%)` : ""}
+                        {total
+                          ? ` (${Math.round((opt.voter_emails.length / total) * 100)}%)`
+                          : ""}
                       </button>
                     </li>
                   );
@@ -480,6 +496,7 @@ export function FeedPanel({
                 targetId={poll.id}
                 feed={feed}
                 viewerEmail={viewerEmail}
+                nameByEmail={nameByEmail}
                 canPost={canPost}
                 busy={busy}
                 onReact={(emoji) =>
@@ -498,6 +515,7 @@ export function FeedPanel({
               comment={c}
               feed={feed}
               viewerEmail={viewerEmail}
+              nameByEmail={nameByEmail}
               canPost={canPost}
               canModerate={canModerate}
               busy={busy}
@@ -522,7 +540,7 @@ export function FeedPanel({
       ) : null}
 
       {view !== "talk" ? (
-        <section style={{ marginTop: "1rem" }}>
+        <section className="feed-stream">
           {emptySystem ? (
             <EmptyState title="Nothing in this filter">
               Try All, or switch to Talk for member posts.
@@ -531,35 +549,25 @@ export function FeedPanel({
             filteredEvents.map((event) => {
               const replies = commentsByTarget.get(event.id) ?? [];
               return (
-                <article
-                  key={event.id}
-                  className="panel feed-item"
-                  style={{ marginTop: "0.75rem" }}
-                >
-                  <header className="league-meta">
-                    {event.dateLabel} · {event.kind}
+                <article key={event.id} className="panel feed-item">
+                  <header className="feed-item-head">
+                    <span className="league-meta">
+                      {event.dateLabel} · {event.kind}
+                    </span>
                   </header>
-                  <h3 style={{ margin: "0.35rem 0", fontSize: "1.05rem" }}>
+                  <h3 className="feed-item-title">
                     {event.href ? (
                       <Link href={event.href}>{event.title}</Link>
                     ) : (
                       event.title
                     )}
                   </h3>
-                  <pre
-                    className="league-meta"
-                    style={{
-                      whiteSpace: "pre-wrap",
-                      fontFamily: "inherit",
-                      margin: 0,
-                    }}
-                  >
-                    {event.body}
-                  </pre>
+                  <pre className="feed-item-body">{event.body}</pre>
                   <ReactionBar
                     targetId={event.id}
                     feed={feed}
                     viewerEmail={viewerEmail}
+                    nameByEmail={nameByEmail}
                     canPost={canPost}
                     busy={busy}
                     onReact={(emoji) =>
@@ -573,8 +581,7 @@ export function FeedPanel({
                   {canPost ? (
                     <button
                       type="button"
-                      className="button secondary"
-                      style={{ marginTop: "0.35rem" }}
+                      className="button secondary feed-reply-btn"
                       disabled={busy}
                       onClick={() => setReplyTo(event.id)}
                     >
@@ -587,6 +594,7 @@ export function FeedPanel({
                       comment={c}
                       feed={feed}
                       viewerEmail={viewerEmail}
+                      nameByEmail={nameByEmail}
                       canPost={canPost}
                       canModerate={canModerate}
                       busy={busy}
@@ -619,6 +627,7 @@ function ReactionBar({
   targetId,
   feed,
   viewerEmail,
+  nameByEmail,
   canPost,
   busy,
   onReact,
@@ -626,6 +635,7 @@ function ReactionBar({
   targetId: string;
   feed: LeagueFeed;
   viewerEmail: string | null;
+  nameByEmail?: Record<string, string>;
   canPost: boolean;
   busy: boolean;
   onReact: (emoji: string) => void;
@@ -634,24 +644,31 @@ function ReactionBar({
     feed.reactions,
     targetId,
     viewerEmail,
+    nameByEmail,
   );
   return (
-    <div
-      className="cta-row"
-      style={{ gap: "0.35rem", marginTop: "0.5rem", flexWrap: "wrap" }}
-    >
-      {summary.map((r) => (
-        <button
-          key={r.emoji}
-          type="button"
-          className={`button${r.mine ? "" : " secondary"}`}
-          disabled={busy || !canPost}
-          onClick={() => onReact(r.emoji)}
-          aria-pressed={r.mine}
-        >
-          {r.emoji} {r.count}
-        </button>
-      ))}
+    <div className="feed-reactions" role="group" aria-label="Reactions">
+      {summary.map((r) => {
+        const who = r.names.join(", ");
+        return (
+          <div key={r.emoji} className="feed-reaction">
+            <button
+              type="button"
+              className={`feed-reaction-btn${r.mine ? " is-mine" : ""}`}
+              disabled={busy || !canPost}
+              onClick={() => onReact(r.emoji)}
+              aria-pressed={r.mine}
+              title={who || undefined}
+            >
+              <span aria-hidden>{r.emoji}</span>
+              <span>{r.count}</span>
+            </button>
+            {who ? (
+              <span className="feed-reaction-names league-meta">{who}</span>
+            ) : null}
+          </div>
+        );
+      })}
       {canPost
         ? FEED_REACTIONS.filter(
             (emoji) => !summary.some((s) => s.emoji === emoji),
@@ -659,9 +676,10 @@ function ReactionBar({
             <button
               key={emoji}
               type="button"
-              className="button secondary"
+              className="feed-reaction-btn"
               disabled={busy}
               onClick={() => onReact(emoji)}
+              aria-label={`React with ${emoji}`}
             >
               {emoji}
             </button>
@@ -675,6 +693,7 @@ function CommentCard({
   comment,
   feed,
   viewerEmail,
+  nameByEmail,
   canPost,
   canModerate,
   busy,
@@ -684,28 +703,26 @@ function CommentCard({
   comment: LeagueFeed["comments"][number];
   feed: LeagueFeed;
   viewerEmail: string | null;
+  nameByEmail?: Record<string, string>;
   canPost: boolean;
   canModerate: boolean;
   busy: boolean;
   onReact: (emoji: string) => void;
   onDelete: () => void;
 }) {
+  const author = liveName(
+    comment.author_email,
+    comment.author_name,
+    nameByEmail,
+  );
   return (
-    <div
-      className="feed-comment"
-      style={{
-        marginTop: "0.65rem",
-        paddingLeft: "0.75rem",
-        borderLeft: "2px solid var(--border, #ccc)",
-      }}
-    >
-      <div className="league-meta">
-        {comment.author_name}
+    <div className="feed-comment">
+      <div className="feed-item-head">
+        <span className="feed-author">{author}</span>
         {canModerate ? (
           <button
             type="button"
             className="button secondary"
-            style={{ marginLeft: "0.5rem" }}
             disabled={busy}
             onClick={onDelete}
           >
@@ -713,11 +730,12 @@ function CommentCard({
           </button>
         ) : null}
       </div>
-      <p style={{ margin: "0.25rem 0" }}>{comment.body}</p>
+      <p className="feed-comment-body">{comment.body}</p>
       <ReactionBar
         targetId={comment.id}
         feed={feed}
         viewerEmail={viewerEmail}
+        nameByEmail={nameByEmail}
         canPost={canPost}
         busy={busy}
         onReact={onReact}

@@ -775,7 +775,10 @@ solved the row-of-ten-pills problem. Sticky headers stay scoped to
 Still open: a global league/team switcher in the header (Yahoo makes it reachable
 from every screen; the hub still routes back through `/leagues`).
 
-### 7.6 A league feed — the social layer — LANDED
+### 7.6 A league feed — the social layer — LANDED (+ usernames)
+- Custom **username** on `/settings` → `hub_members.display_name`; feed
+  comments/reactions stamp + live-join the handle. Reaction chips show who
+  reacted. Feed item panels get proper padding / compact reaction row.
 
 The Activity tab is now the Feed (URL slug stays `activity` for stability).
 

@@ -7,6 +7,7 @@ import {
   deleteComment,
   emptyFeed,
   markDigestDelivered,
+  reactionSummaryForViewer,
   toggleReaction,
   votePoll,
   wasDigestDelivered,
@@ -65,16 +66,63 @@ describe("league feed UGC (roadmap 7.6)", () => {
     const target = feed.comments[0].id;
     feed = toggleReaction(
       feed,
-      { target_id: target, emoji: "🔥", author_email: author.email },
+      {
+        target_id: target,
+        emoji: "🔥",
+        author_email: author.email,
+        author_name: author.name,
+      },
       new Date(t0.getTime() + 2),
     );
     expect(feed.reactions).toHaveLength(1);
+    expect(feed.reactions[0]?.author_name).toBe("Jay");
     feed = toggleReaction(
       feed,
-      { target_id: target, emoji: "🔥", author_email: author.email },
+      {
+        target_id: target,
+        emoji: "🔥",
+        author_email: author.email,
+        author_name: author.name,
+      },
       new Date(t0.getTime() + 3),
     );
     expect(feed.reactions).toHaveLength(0);
+  });
+
+  it("summarizes reactor display names", () => {
+    const t0 = new Date("2026-09-01T12:00:00Z");
+    let feed = emptyFeed("football-main", 2026, t0);
+    feed = toggleReaction(
+      feed,
+      {
+        target_id: "league",
+        emoji: "🐐",
+        author_email: "a@example.com",
+        author_name: "Alpha",
+      },
+      t0,
+    );
+    feed = toggleReaction(
+      feed,
+      {
+        target_id: "league",
+        emoji: "🐐",
+        author_email: "b@example.com",
+        author_name: "Stale",
+      },
+      new Date(t0.getTime() + 1),
+    );
+    const rows = reactionSummaryForViewer(
+      feed.reactions,
+      "league",
+      "a@example.com",
+      { "b@example.com": "Bravo" },
+    );
+    const goat = rows.find((r) => r.emoji === "🐐");
+    expect(goat?.count).toBe(2);
+    expect(goat?.mine).toBe(true);
+    // Newest reaction first (prepended); live map overrides stamped "Stale".
+    expect(goat?.names).toEqual(["Bravo", "Alpha"]);
   });
 
   it("creates polls and records one vote per email", () => {

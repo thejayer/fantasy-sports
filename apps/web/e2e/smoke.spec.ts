@@ -508,7 +508,9 @@ test.describe("hub smoke", () => {
 
   test("feed tab shows system events from transactions", async ({ page }) => {
     await page.goto("/leagues/football-main?tab=activity");
-    await expect(page.getByText(/League feed/i)).toBeVisible();
+    await expect(
+      page.getByText(/Transactions, results, and digests/i),
+    ).toBeVisible();
     await expect(page.getByText(/FA ADDED/i).first()).toBeVisible();
     await expect(page.getByRole("link", { name: "Feed" })).toBeVisible();
     await expect(page.getByRole("link", { name: "Newest first" })).toBeVisible();
