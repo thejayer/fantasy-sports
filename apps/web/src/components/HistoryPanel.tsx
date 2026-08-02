@@ -13,7 +13,12 @@ import {
   seasonCountLabel,
 } from "@/lib/history";
 
-export type HistoryView = "standings" | "champions" | "records" | "h2h";
+export type HistoryView =
+  | "standings"
+  | "trophies"
+  | "champions"
+  | "records"
+  | "h2h";
 
 function ViewSwitcher({
   leagueId,
@@ -30,6 +35,7 @@ function ViewSwitcher({
 }) {
   const views: Array<{ id: HistoryView; label: string }> = [
     { id: "standings", label: "All-time" },
+    { id: "trophies", label: "Trophies" },
     { id: "champions", label: "Champions" },
     { id: "records", label: "Records" },
     { id: "h2h", label: "Head-to-head" },
@@ -177,8 +183,18 @@ function ChampionsTable({
   );
 }
 
-function RecordsList({ archive }: { archive: LeagueHistoryArchive }) {
-  const entries = buildRecordBook(archive);
+function RecordsList({
+  archive,
+  limit,
+}: {
+  archive: LeagueHistoryArchive;
+  /** Cap cards for the trophy case highlight strip. */
+  limit?: number;
+}) {
+  const entries = buildRecordBook(archive).slice(
+    0,
+    limit ?? Number.POSITIVE_INFINITY,
+  );
   if (!entries.length) {
     return <p className="league-meta">No records available yet.</p>;
   }
@@ -191,6 +207,55 @@ function RecordsList({ archive }: { archive: LeagueHistoryArchive }) {
           <div className="league-meta">{entry.detail}</div>
         </article>
       ))}
+    </div>
+  );
+}
+
+/** Hall-of-fame packaging over champions + record highlights (roadmap 7.13). */
+function TrophyCase({
+  archive,
+  leagueId,
+  season,
+}: {
+  archive: LeagueHistoryArchive;
+  leagueId: string;
+  season: number;
+}) {
+  const multi = archive.seasons.length > 1;
+  return (
+    <div className="history-section trophy-case">
+      <h3 className="roster-group-title">Trophy case</h3>
+      <p className="league-meta">
+        Regular-season #1 finishes and league records
+        {multi
+          ? ` across ${seasonCountLabel(archive)}`
+          : ` for ${seasonCountLabel(archive)}`}
+        . Playoff champions are not in the snapshot yet.
+      </p>
+      {!multi ? (
+        <p className="league-meta trophy-case-note">
+          Only one season is on disk. Run Actions → backfill sync (or{" "}
+          <code>sj backfill</code>) so past years fill this case.
+        </p>
+      ) : null}
+      <ChampionsTable archive={archive} leagueId={leagueId} />
+      <h3 className="roster-group-title" style={{ marginTop: "1.5rem" }}>
+        Record shelf
+      </h3>
+      <RecordsList archive={archive} limit={6} />
+      <p className="league-meta" style={{ marginTop: "0.85rem" }}>
+        <Link
+          href={`/leagues/${leagueId}?season=${season}&tab=history&view=records`}
+        >
+          Full record book →
+        </Link>
+        {" · "}
+        <Link
+          href={`/leagues/${leagueId}?season=${season}&tab=history&view=standings`}
+        >
+          All-time standings →
+        </Link>
+      </p>
     </div>
   );
 }
@@ -330,9 +395,13 @@ export function HistoryPanel({
   b?: number;
   sport?: string;
 }) {
-  const active: HistoryView = ["standings", "champions", "records", "h2h"].includes(
-    view,
-  )
+  const active: HistoryView = [
+    "standings",
+    "trophies",
+    "champions",
+    "records",
+    "h2h",
+  ].includes(view)
     ? view
     : "standings";
   const isGolf = sport === "golf";
@@ -376,6 +445,9 @@ export function HistoryPanel({
       />
       {active === "standings" ? (
         <AllTimeTable archive={archive} leagueId={leagueId} season={season} />
+      ) : null}
+      {active === "trophies" ? (
+        <TrophyCase archive={archive} leagueId={leagueId} season={season} />
       ) : null}
       {active === "champions" ? (
         <ChampionsTable archive={archive} leagueId={leagueId} />

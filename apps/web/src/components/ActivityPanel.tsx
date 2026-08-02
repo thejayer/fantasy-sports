@@ -20,6 +20,7 @@ import { getViewer, getViewerFranchise } from "@/lib/viewer";
 import {
   canAccessAdmin,
   memberDisplayNameMap,
+  memberHandleMap,
   memberImageMap,
   parseAllowedEmailsEnv,
 } from "@/lib/hub-members";
@@ -76,6 +77,7 @@ export async function ActivityPanel({
   );
   const nameByEmail = memberDisplayNameMap(members);
   const imageByEmail = memberImageMap(members);
+  const handleByEmail = memberHandleMap(members);
 
   return (
     <Suspense fallback={<p className="muted">Loading feed…</p>}>
@@ -88,6 +90,7 @@ export async function ActivityPanel({
         viewerEmail={viewer.email}
         nameByEmail={nameByEmail}
         imageByEmail={imageByEmail}
+        handleByEmail={handleByEmail}
         canPost={canPost}
         canModerate={isAdmin}
         digestPeriod={digestPeriod}

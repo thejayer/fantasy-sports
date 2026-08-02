@@ -68,8 +68,9 @@ export function ProfileUsernameForm({
         />
       </label>
       <p className="league-meta">
-        Shown on feed comments and reactions. {DISPLAY_NAME_MIN}–
-        {DISPLAY_NAME_MAX} characters. Leave blank to use your Google name
+        Shown on feed comments, reactions, and your public profile URL.{" "}
+        {DISPLAY_NAME_MIN}–{DISPLAY_NAME_MAX} characters; must be unique.
+        Leave blank to use your Google name
         {googleName ? ` (${googleName})` : ""}.
       </p>
       <div className="cta-row profile-username-actions">

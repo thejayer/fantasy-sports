@@ -34,6 +34,8 @@ type FeedPanelProps = {
   nameByEmail?: Record<string, string>;
   /** Live avatar map from hub_members (email → https image_url). */
   imageByEmail?: Record<string, string>;
+  /** Live profile handles (email → /u/{handle} slug). */
+  handleByEmail?: Record<string, string>;
   canPost: boolean;
   canModerate: boolean;
   digestPeriod: number | null;
@@ -61,6 +63,59 @@ function liveImage(
   return imageByEmail?.[key]?.trim() || null;
 }
 
+function liveHandle(
+  email: string,
+  handleByEmail?: Record<string, string>,
+): string | null {
+  const key = email.trim().toLowerCase();
+  return handleByEmail?.[key]?.trim() || null;
+}
+
+function AuthorLabel({
+  email,
+  stamped,
+  nameByEmail,
+  imageByEmail,
+  handleByEmail,
+  prefix,
+}: {
+  email: string;
+  stamped?: string;
+  nameByEmail?: Record<string, string>;
+  imageByEmail?: Record<string, string>;
+  handleByEmail?: Record<string, string>;
+  prefix?: string;
+}) {
+  const author = liveName(email, stamped, nameByEmail);
+  const handle = liveHandle(email, handleByEmail);
+  const nameNode = handle ? (
+    <Link href={`/u/${handle}`} className="feed-author-link">
+      {author}
+    </Link>
+  ) : (
+    author
+  );
+  return (
+    <span
+      className={`feed-author-row${prefix ? " league-meta" : " feed-author"}`}
+    >
+      <MemberAvatar
+        name={author}
+        imageUrl={liveImage(email, imageByEmail)}
+        size="sm"
+      />
+      {prefix ? (
+        <>
+          {prefix}
+          {nameNode}
+        </>
+      ) : (
+        nameNode
+      )}
+    </span>
+  );
+}
+
 async function fetchFeed(
   leagueId: string,
   season: number,
@@ -84,6 +139,7 @@ export function FeedPanel({
   viewerEmail,
   nameByEmail,
   imageByEmail,
+  handleByEmail,
   canPost,
   canModerate,
   digestPeriod,
@@ -449,23 +505,17 @@ export function FeedPanel({
           {view === "talk" ? (
             <h3 className="feed-stream-title">League talk</h3>
           ) : null}
-          {livePolls.map((poll) => {
-            const pollAuthor = liveName(
-              poll.author_email,
-              poll.author_name,
-              nameByEmail,
-            );
-            return (
+          {livePolls.map((poll) => (
             <article key={poll.id} className="panel feed-item">
               <header className="feed-item-head">
-                <span className="feed-author-row league-meta">
-                  <MemberAvatar
-                    name={pollAuthor}
-                    imageUrl={liveImage(poll.author_email, imageByEmail)}
-                    size="sm"
-                  />
-                  Poll · {pollAuthor}
-                </span>
+                <AuthorLabel
+                  email={poll.author_email}
+                  stamped={poll.author_name}
+                  nameByEmail={nameByEmail}
+                  imageByEmail={imageByEmail}
+                  handleByEmail={handleByEmail}
+                  prefix="Poll · "
+                />
                 {canModerate ? (
                   <button
                     type="button"
@@ -530,8 +580,7 @@ export function FeedPanel({
                 }
               />
             </article>
-            );
-          })}
+          ))}
           {leagueChat.map((c) => (
             <CommentCard
               key={c.id}
@@ -540,6 +589,7 @@ export function FeedPanel({
               viewerEmail={viewerEmail}
               nameByEmail={nameByEmail}
               imageByEmail={imageByEmail}
+              handleByEmail={handleByEmail}
               canPost={canPost}
               canModerate={canModerate}
               busy={busy}
@@ -620,6 +670,7 @@ export function FeedPanel({
                       viewerEmail={viewerEmail}
                       nameByEmail={nameByEmail}
                       imageByEmail={imageByEmail}
+                      handleByEmail={handleByEmail}
                       canPost={canPost}
                       canModerate={canModerate}
                       busy={busy}
@@ -720,6 +771,7 @@ function CommentCard({
   viewerEmail,
   nameByEmail,
   imageByEmail,
+  handleByEmail,
   canPost,
   canModerate,
   busy,
@@ -731,28 +783,23 @@ function CommentCard({
   viewerEmail: string | null;
   nameByEmail?: Record<string, string>;
   imageByEmail?: Record<string, string>;
+  handleByEmail?: Record<string, string>;
   canPost: boolean;
   canModerate: boolean;
   busy: boolean;
   onReact: (emoji: string) => void;
   onDelete: () => void;
 }) {
-  const author = liveName(
-    comment.author_email,
-    comment.author_name,
-    nameByEmail,
-  );
   return (
     <div className="feed-comment">
       <div className="feed-item-head">
-        <span className="feed-author-row feed-author">
-          <MemberAvatar
-            name={author}
-            imageUrl={liveImage(comment.author_email, imageByEmail)}
-            size="sm"
-          />
-          {author}
-        </span>
+        <AuthorLabel
+          email={comment.author_email}
+          stamped={comment.author_name}
+          nameByEmail={nameByEmail}
+          imageByEmail={imageByEmail}
+          handleByEmail={handleByEmail}
+        />
         {canModerate ? (
           <button
             type="button"

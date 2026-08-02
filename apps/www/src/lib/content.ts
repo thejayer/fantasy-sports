@@ -39,9 +39,9 @@ export const portalCopy = {
         index: "03",
         kicker: "Queue",
         title: "Watch",
-        body: "The shared YouTube playlist — click through clips on the site, or open YouTube to add the next one.",
-        action: "Open the playlist",
-        actionPending: "Open the playlist",
+        body: "The shared living-room playlist — play in the embed, skim the queue, or open YouTube to add the next clip.",
+        action: "Open Watch",
+        actionPending: "Open Watch",
       },
       discord: {
         index: "04",

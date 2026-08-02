@@ -240,12 +240,64 @@ test.describe("hub smoke", () => {
     await expect(page.getByRole("link", { name: "All-time" })).toBeVisible();
   });
 
+  test("history trophies view shows trophy case (7.13)", async ({ page }) => {
+    await page.goto("/leagues/football-main?tab=history&view=trophies");
+    await expect(page.getByRole("link", { name: "Trophies" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Trophy case" })).toBeVisible();
+    await expect(page.getByText(/Only one season is on disk/i)).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Record shelf" })).toBeVisible();
+  });
+
   test("golf team roster shows starters section and event alts", async ({ page }) => {
     await page.goto("/leagues/golf-main/teams/1");
     await expect(page.getByRole("heading", { name: /Starters \(GS\)/i })).toBeVisible();
     await expect(page.getByRole("heading", { name: /Bench \(BE\)/i })).toBeVisible();
     await expect(page.getByText(/Current event lineup/i)).toBeVisible();
     await expect(page.getByText(/Alt1/i).first()).toBeVisible();
+  });
+
+  test("member profile page resolves unique username (7.12)", async ({ page }) => {
+    const membersPath = path.join(HUB_DIR, "hub_members.json");
+    fs.mkdirSync(HUB_DIR, { recursive: true });
+    fs.writeFileSync(
+      membersPath,
+      `${JSON.stringify(
+        {
+          schema_version: 1,
+          updated_at: new Date().toISOString(),
+          members: [
+            {
+              email: "profile.demo@example.com",
+              role: "member",
+              display_name: "Trophy Case",
+              teams: [
+                {
+                  league_id: "football-main",
+                  team_id: 1,
+                  team_name: "Demo Squad",
+                  league_name: "Strictly Jayers Football",
+                },
+              ],
+              created_at: new Date().toISOString(),
+              updated_at: new Date().toISOString(),
+            },
+          ],
+        },
+        null,
+        2,
+      )}\n`,
+    );
+    try {
+      await page.goto("/u/trophy-case");
+      await expect(page.getByRole("heading", { name: "Trophy Case" })).toBeVisible();
+      await expect(page.getByText("@trophy-case")).toBeVisible();
+      await expect(
+        page.getByRole("link", { name: /Strictly Jayers Football/i }).first(),
+      ).toBeVisible();
+      await expect(page.getByRole("heading", { name: "Franchises" })).toBeVisible();
+    } finally {
+      fs.rmSync(membersPath, { force: true });
+    }
   });
 
   test("admin center adds email and links an ESPN team", async ({ page }) => {

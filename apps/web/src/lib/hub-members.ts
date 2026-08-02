@@ -143,6 +143,77 @@ export function resolveMemberDisplayName(
   return member?.email?.split("@")[0] || "Member";
 }
 
+/**
+ * URL slug for `/u/{handle}` (roadmap 7.12).
+ * Custom username when set; otherwise email local-part. Never the full email.
+ */
+export function slugifyProfileHandle(raw: string): string {
+  const slug = raw
+    .trim()
+    .toLowerCase()
+    .replace(/['.]/g, "")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "")
+    .slice(0, 32);
+  return slug || "member";
+}
+
+export function memberProfileHandle(member: HubMember): string {
+  const custom = member.display_name?.trim();
+  if (custom) return slugifyProfileHandle(custom);
+  const local = member.email.split("@")[0] || "member";
+  return slugifyProfileHandle(local);
+}
+
+export function findMemberByHandle(
+  file: HubMembersFile | null | undefined,
+  handle: string,
+): HubMember | undefined {
+  const key = slugifyProfileHandle(handle);
+  if (!key) return undefined;
+  return (file?.members ?? []).find((m) => memberProfileHandle(m) === key);
+}
+
+/**
+ * Reject username / local-part slugs that collide with another member
+ * (case-insensitive slug match).
+ */
+export function assertUniqueProfileHandle(
+  file: HubMembersFile,
+  email: string,
+  displayName: string,
+): void {
+  const self = normalizeEmail(email);
+  const validated = validateDisplayName(displayName);
+  const next: HubMember = {
+    email: self,
+    role: "member",
+    teams: [],
+    created_at: "",
+    updated_at: "",
+  };
+  if (validated) next.display_name = validated;
+
+  const slug = memberProfileHandle(next);
+  for (const other of file.members) {
+    if (normalizeEmail(other.email) === self) continue;
+    if (memberProfileHandle(other) === slug) {
+      throw new Error("that username is already taken");
+    }
+  }
+}
+
+/** email → profile handle for feed author links. */
+export function memberHandleMap(
+  file: HubMembersFile | null | undefined,
+): Record<string, string> {
+  const map: Record<string, string> = {};
+  for (const member of file?.members ?? []) {
+    map[normalizeEmail(member.email)] = memberProfileHandle(member);
+  }
+  return map;
+}
+
 /** HTTPS-only avatar URLs; empty string clears. */
 export function validateImageUrl(raw: string): string {
   const url = raw.trim();
@@ -253,6 +324,7 @@ export function setMemberDisplayName(
   displayName: string,
   now = new Date(),
 ): HubMembersFile {
+  assertUniqueProfileHandle(file, email, displayName);
   return upsertMember(
     file,
     { email, display_name: displayName },
