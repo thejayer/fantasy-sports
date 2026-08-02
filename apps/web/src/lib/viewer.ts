@@ -31,6 +31,8 @@ export type Viewer = {
   name: string | null;
   /** Custom hub username when set (empty string means unset). */
   displayName: string | null;
+  /** HTTPS avatar (hub_members or Google session); null → monogram. */
+  imageUrl: string | null;
   isAdmin: boolean;
   /** One linked franchise per league. Empty when unlinked. */
   franchises: HubMemberTeamLink[];
@@ -45,10 +47,16 @@ const ANONYMOUS: Viewer = {
   email: null,
   name: null,
   displayName: null,
+  imageUrl: null,
   isAdmin: false,
   franchises: [],
   source: "anonymous",
 };
+
+function httpsImage(url: string | null | undefined): string | null {
+  const trimmed = url?.trim();
+  return trimmed && /^https:\/\//i.test(trimmed) ? trimmed : null;
+}
 
 /**
  * `AUTH_DEV_BYPASS=1` has no session, so there is no email to link a franchise
@@ -77,6 +85,7 @@ export const getViewer = cache(async (): Promise<Viewer> => {
       email,
       name: resolveMemberDisplayName(member, email),
       displayName: custom,
+      imageUrl: httpsImage(member?.image_url),
       isAdmin: true,
       franchises: memberFranchises(file, email),
       source: "dev",
@@ -95,6 +104,7 @@ export const getViewer = cache(async (): Promise<Viewer> => {
     email,
     name: resolveMemberDisplayName(member, fallback),
     displayName: custom,
+    imageUrl: httpsImage(member?.image_url) ?? httpsImage(session?.user?.image),
     isAdmin: canAccessAdmin(email, file, adminOpts),
     franchises: memberFranchises(file, email),
     source: "session",

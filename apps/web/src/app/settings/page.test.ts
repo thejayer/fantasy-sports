@@ -24,6 +24,11 @@ describe("profile settings route (appearance home)", () => {
   it("settings page hosts AppearanceSettings and username form", () => {
     expect(settings).toMatch(/AppearanceSettings/);
     expect(settings).toMatch(/ProfileUsernameForm/);
+    expect(settings).toMatch(/MemberAvatar/);
     expect(settings).toMatch(/title: "Profile"/);
+  });
+
+  it("header profile link includes MemberAvatar", () => {
+    expect(layout).toMatch(/MemberAvatar/);
   });
 });

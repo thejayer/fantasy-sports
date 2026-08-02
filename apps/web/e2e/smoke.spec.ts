@@ -506,6 +506,15 @@ test.describe("hub smoke", () => {
     await expect(page.getByText("Juan Phillips")).toBeVisible();
   });
 
+  test("dynasty roster and draft show keeper badges (7.9b)", async ({ page }) => {
+    await page.goto("/leagues/football-dynasty/teams/1");
+    await expect(page.getByText("Gregory Rivera")).toBeVisible();
+    await expect(page.getByText("Keeper", { exact: true }).first()).toBeVisible();
+    await page.goto("/leagues/football-dynasty?tab=draft");
+    await expect(page.getByRole("columnheader", { name: "Keeper", exact: true })).toBeVisible();
+    await expect(page.getByText("Keeper", { exact: true }).first()).toBeVisible();
+  });
+
   test("feed tab shows system events from transactions", async ({ page }) => {
     await page.goto("/leagues/football-main?tab=activity");
     await expect(

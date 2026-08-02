@@ -9,13 +9,16 @@ import {
   emptyMembersFile,
   golfActingScope,
   memberDisplayNameMap,
+  memberImageMap,
   normalizeEmail,
   removeMember,
   resolveMemberDisplayName,
   setMemberDisplayName,
+  setMemberImageUrl,
   setMemberTeams,
   upsertMember,
   validateDisplayName,
+  validateImageUrl,
 } from "@/lib/hub-members";
 
 describe("hub-members", () => {
@@ -164,5 +167,33 @@ describe("hub-members", () => {
     expect(resolveMemberDisplayName(file.members[0], "Google Jay")).toBe(
       "Google Jay",
     );
+  });
+
+  it("stores https avatars and skips no-op writes", () => {
+    expect(validateImageUrl("https://lh3.googleusercontent.com/a/x")).toMatch(
+      /^https:/,
+    );
+    expect(() => validateImageUrl("http://insecure.example/a.png")).toThrow(
+      /https/,
+    );
+
+    const file = setMemberImageUrl(
+      emptyMembersFile(),
+      "jay@example.com",
+      "https://lh3.googleusercontent.com/a/photo",
+    );
+    expect(file.members[0]?.image_url).toBe(
+      "https://lh3.googleusercontent.com/a/photo",
+    );
+    expect(memberImageMap(file)).toEqual({
+      "jay@example.com": "https://lh3.googleusercontent.com/a/photo",
+    });
+
+    const same = setMemberImageUrl(
+      file,
+      "jay@example.com",
+      "https://lh3.googleusercontent.com/a/photo",
+    );
+    expect(same).toBe(file);
   });
 });

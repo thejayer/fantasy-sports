@@ -850,7 +850,8 @@ AUDIT #9's last loose end is closed: keeper behaviour comes from
 says so when the two disagree. The panel links out to ESPN's settings editor
 rather than implying the hub can change anything.
 
-Still open: keeper status on rosters and the draft board.
+Still open under **7.9b** (Track Q): keeper badges on football/baseball
+rosters joined from `draft[].keeper` (draft board already has a Keeper column).
 
 ### 7.10 Visual system — LANDED
 - **Dark mode.** One source of truth via `light-dark()`, so there is no second
@@ -869,8 +870,8 @@ Still open: keeper status on rosters and the draft board.
   light, a lift in dark) since mixing toward white inverts intent on a dark
   surface. `--on-accent` is a fixed dark ink for `--signal` and the sport pill,
   which stay light in both themes.
-- **Imagery.** Team crests landed with 7.3; member avatars and golf event art
-  are still open.
+- **Imagery.** Team crests landed with 7.3; **member avatars** under **7.10b**
+  (Track Q); golf event art still open.
 - **Freshness.** Relative "synced 2 hours ago" on league headers, `/leagues`
   cards, and the dashboard, plus a stale-snapshot action item (7.2). An explicit
   final/pending marker on individual scores is still open.
@@ -1055,7 +1056,8 @@ Everything else in phase 7 is independent and can land in any order: ~~7.3~~
 ~~7.11 (payload budget)~~.
 
 **Remaining in phase 7:** scheduled Discord auto-send and email fallback under
-7.7 (tee-time reminders + Δ playoff odds have landed).
+7.7; Track Q follow-ons (**7.12** profiles, **7.13** trophy case) after
+**7.10b** / **7.9b**.
 
 | Track | Contents | Touches |
 |---|---|---|
@@ -1065,6 +1067,7 @@ Everything else in phase 7 is independent and can land in any order: ~~7.3~~
 | J — Tools packaging | ~~7.8~~ | Trade Desk Δ make-% via samples sidecar |
 | K — Craft | ~~7.10~~, ~~7.11~~ | `globals.css`, HTML + JS CI budgets |
 | L — Sport depth | 8.1 · 8.2 · 8.3 | `src/sj` · `apps/web` · `src/sg` |
+| Q — Shared memory | 7.10b · 7.9b · 7.12 · 7.13 · P.6 | `hub_members`, rosters, `/u`, history, `apps/www` |
 
 G, H, and K barely overlap. I is the only track that introduces user-generated
 content, so it carries the validation/rate-limit/moderation risk and should not
@@ -1109,10 +1112,37 @@ fantasy stays on `fantasy.strictlyjayers.com`. Docs: [PORTAL.md](PORTAL.md).
 - Feeds revalidate ~30 minutes; editor picks stay hand-edited in
   `lib/ai-news.ts`.
 
-### P.5 Shared Watch playlist (open → landing)
+### P.5 Shared Watch playlist — LANDED (scaffold)
 - `/watch` on `apps/www`: embed the crew YouTube playlist (default id in
   `lib/watch.ts`; optional `YOUTUBE_PLAYLIST_ID` on `sj-www`).
 - Nav + homepage destination; no YouTube Data API required for v1.
+
+### P.6 Watch as a real surface (open)
+Deeper Watch without a paid YouTube Data API dependency where possible:
+playlist context (title / count when a public oEmbed or RSS is enough),
+“open on YouTube” affordances, and optional hub/portal cross-links so Watch
+feels like a shared room rather than a bare embed. Stay fail-soft when the
+playlist id is unset.
+
+---
+
+## Track Q — Shared memory & identity
+
+The crew already has Discord, IRL, and years of league history. The hub should
+carry **who people are** and **what the group remembers** — not only standings
+and tools. Builds on ~~7.1~~ / ~~7.6~~ / ~~7.9~~ / ~~7.10~~ and portal Watch
+(P.5).
+
+| Item | Status | Notes |
+|---|---|---|
+| **7.10b** Member avatars | landing | Google `user.image` in header / Profile; `image_url` on `hub_members` synced on sign-in so feed authors show a face; monogram fallback. |
+| **7.9b** Keeper status on rosters | landing | Join `draft[].keeper` → roster player ids; dynasty sample fixtures mark round-1 keepers; draft board uses Keeper badge. |
+| **7.12** Member profiles | open | Public `/u/{handle}` (or email-safe slug): username, avatar, linked franchises, recent feed activity. Settings remains the edit surface. |
+| **7.13** Trophy case / hall of fame | open | Multi-season champions + awards from history archive (`getLeagueHistoryArchive`); needs backfilled seasons in the live store for real depth — fixtures stay thin. |
+| **P.6** Watch surface | open | See Track P — richer shared playlist room on the apex. |
+
+**Build order:** 7.10b → 7.9b (independent of each other after foundation) →
+7.12 → 7.13 (gated on multi-season data) · P.6 can land anytime on `apps/www`.
 
 ---
 
