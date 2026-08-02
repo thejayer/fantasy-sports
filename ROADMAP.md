@@ -1134,7 +1134,7 @@ and tools. Builds on ~~7.1~~ / ~~7.6~~ / ~~7.9~~ / ~~7.10~~ and portal Watch
 |---|---|---|
 | **7.10b** Member avatars | landed | Google `user.image` in header / Profile; `image_url` on `hub_members` synced on sign-in so feed authors show a face; monogram fallback. |
 | **7.9b** Keeper status on rosters | landed | Join `draft[].keeper` → roster player ids; dynasty sample fixtures mark round-1 keepers; draft board uses Keeper badge. |
-| **7.12** Member profiles | landing | Crew-visible `/u/{handle}` (slug from username, else email local-part); unique usernames; avatar + franchises + career chips; feed authors link here; Settings stays the edit surface. |
+| **7.12** Member profiles | landing | Crew-visible `/u/{handle}` (slug from username, else email local-part); unique usernames; avatar + franchises + career chips; **trophy shelf chips** → History trophies; **recent feed activity**; feed authors link here; Settings stays the edit surface. |
 | **7.13** Trophy case / hall of fame | landing | History `?view=trophies` packages champions + record shelf; single-season fixtures disclose backfill; playoff champ still not in snapshot. |
 | **P.6** Watch surface | landed | Playlist RSS queue + room CTAs on `apps/www` `/watch`. |
 
