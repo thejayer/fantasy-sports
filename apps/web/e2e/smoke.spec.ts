@@ -256,9 +256,14 @@ test.describe("hub smoke", () => {
     await expect(page.getByText(/Alt1/i).first()).toBeVisible();
   });
 
-  test("member profile page resolves unique username (7.12)", async ({ page }) => {
+  test("member profile shows trophy chips and feed activity (7.12)", async ({
+    page,
+  }) => {
     const membersPath = path.join(HUB_DIR, "hub_members.json");
+    const feedDir = path.join(HUB_DIR, "football-main", "2026");
+    const feedPath = path.join(feedDir, "feed.json");
     fs.mkdirSync(HUB_DIR, { recursive: true });
+    fs.mkdirSync(feedDir, { recursive: true });
     fs.writeFileSync(
       membersPath,
       `${JSON.stringify(
@@ -272,9 +277,10 @@ test.describe("hub smoke", () => {
               display_name: "Trophy Case",
               teams: [
                 {
+                  // Standing #1 in football-main fixtures → trophy chip.
                   league_id: "football-main",
-                  team_id: 1,
-                  team_name: "Demo Squad",
+                  team_id: 4,
+                  team_name: "Hail Mary Heroes",
                   league_name: "Strictly Jayers Football",
                 },
               ],
@@ -287,16 +293,46 @@ test.describe("hub smoke", () => {
         2,
       )}\n`,
     );
+    fs.writeFileSync(
+      feedPath,
+      `${JSON.stringify(
+        {
+          schema_version: 1,
+          league_id: "football-main",
+          season: 2026,
+          updated_at: new Date().toISOString(),
+          revision: 1,
+          comments: [
+            {
+              id: "c-profile-demo",
+              target_id: "league",
+              body: "Trophy shelf check.",
+              author_email: "profile.demo@example.com",
+              author_name: "Trophy Case",
+              team_id: 4,
+              created_at: "2026-08-01T12:00:00.000Z",
+              deleted_at: null,
+            },
+          ],
+          reactions: [],
+          polls: [],
+        },
+        null,
+        2,
+      )}\n`,
+    );
     try {
       await page.goto("/u/trophy-case");
       await expect(page.getByRole("heading", { name: "Trophy Case" })).toBeVisible();
       await expect(page.getByText("@trophy-case")).toBeVisible();
-      await expect(
-        page.getByRole("link", { name: /Strictly Jayers Football/i }).first(),
-      ).toBeVisible();
+      await expect(page.getByRole("heading", { name: "Trophy shelf" })).toBeVisible();
+      await expect(page.getByRole("link", { name: /1× #1/i })).toBeVisible();
       await expect(page.getByRole("heading", { name: "Franchises" })).toBeVisible();
+      await expect(page.getByRole("heading", { name: "Recent activity" })).toBeVisible();
+      await expect(page.getByText("Trophy shelf check.")).toBeVisible();
     } finally {
       fs.rmSync(membersPath, { force: true });
+      fs.rmSync(feedPath, { force: true });
     }
   });
 
