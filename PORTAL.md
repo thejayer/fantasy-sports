@@ -71,18 +71,23 @@ cd apps/www && npm test && npm run test:e2e
 # Manual / CD — see .github/workflows/deploy-portal.yml
 ```
 
-Push-path CD watches `apps/www/**`. First deploy can use `workflow_dispatch`
-before the apex DNS cutover. After the mapping is Ready, set:
+Push-path CD watches `apps/www/**`. Apex DNS + `SITE_URL` cutover is **landed**:
+production serves `https://strictlyjayers.com` (and `www`) on `sj-www` with
+`SITE_URL=https://strictlyjayers.com`. Deploy CD keeps a non-`*.run.app`
+`SITE_URL`. Portal middleware 308s `www` → apex.
+
+Re-run mapping / DNS printouts if you need them:
 
 ```
 SITE_URL=https://strictlyjayers.com
 FANTASY_HUB_URL=https://fantasy.strictlyjayers.com
 ```
 
-Redirect `www.strictlyjayers.com` → apex (Cloud Run domain mapping or DNS
-provider redirect) so both hostnames hit `sj-www`.
+```bash
+./scripts/setup-portal-domain.sh --with-www
+./scripts/setup-portal-domain.sh --cutover   # only if SITE_URL was never set
+```
 
-## Relationship to the hub docs
-
-Hub-only domain work stays in [HUB.md](HUB.md) (`fantasy` CNAME). Apex mapping
-is intentionally separate so a portal deploy cannot clobber hub `AUTH_URL`.
+Fantasy hub domain work stays in [HUB.md](HUB.md) (`fantasy` CNAME). Apex
+mapping is intentionally separate so a portal deploy cannot clobber hub
+`AUTH_URL`.
