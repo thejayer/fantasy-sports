@@ -19,10 +19,8 @@ import {
 } from "@/lib/recap-llm";
 import { writeRecap, readRecap } from "@/lib/recap-store";
 import {
-  readRecapUsage,
-  recapBudgetError,
   recapUsageLimitsFromEnv,
-  recordRecapLlmCall,
+  reserveRecapLlmCall,
 } from "@/lib/recap-usage";
 
 export type GenerateRecapResult =
@@ -69,16 +67,15 @@ export async function generateAndStoreRecap(
     if (expensive) {
       return { ok: false, status: 503, error: expensive };
     }
-    const budget = recapBudgetError(
-      await readRecapUsage(),
+    const reserved = await reserveRecapLlmCall(
       league.league_id,
       league.season,
       period,
       now,
       recapUsageLimitsFromEnv(env),
     );
-    if (budget) {
-      return { ok: false, status: 429, error: budget };
+    if (!reserved.ok) {
+      return { ok: false, status: 429, error: reserved.error };
     }
   }
 
@@ -103,9 +100,6 @@ export async function generateAndStoreRecap(
       return { ok: false, status: 502, error: mismatch };
     }
     await writeRecap(withHash);
-    if (llm) {
-      await recordRecapLlmCall(league.league_id, league.season, period, now);
-    }
     return { ok: true, article: withHash };
   } catch (err) {
     const message = err instanceof Error ? err.message : "recap generation failed";

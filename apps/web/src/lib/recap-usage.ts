@@ -3,6 +3,10 @@
  *
  * Hub-native `{SJ_HUB_DIR}/recap_usage.json` — daily UTC call cap plus a
  * per league-season-period rewrite cap. Template / fixture writes do not count.
+ *
+ * Slots are reserved under a process mutex + exclusive lock file *before* the
+ * LLM runs so a double-click cannot bypass the cap, and a later write failure
+ * cannot leave spend uncounted.
  */
 
 import { promises as fs } from "fs";
@@ -13,6 +17,8 @@ import { hubDataRoot } from "@/lib/hub-paths";
 export const DEFAULT_RECAP_DAILY_LIMIT = 12;
 export const DEFAULT_RECAP_PERIOD_LIMIT = 2;
 const KEEP_DAILY_DAYS = 14;
+const LOCK_STALE_MS = 30_000;
+const LOCK_ATTEMPTS = 40;
 
 export type RecapUsageFile = {
   schema_version: 1;
@@ -25,8 +31,16 @@ export type RecapUsageLimits = {
   period: number;
 };
 
+export type RecapReserveResult =
+  | { ok: true; usage: RecapUsageFile }
+  | { ok: false; error: string };
+
 export function recapUsagePath(root = hubDataRoot()): string {
   return path.join(root, "recap_usage.json");
+}
+
+export function recapUsageLockPath(root = hubDataRoot()): string {
+  return path.join(root, "recap_usage.lock");
 }
 
 export function recapPeriodUsageKey(
@@ -131,6 +145,100 @@ export function recapBudgetError(
   return null;
 }
 
+function incrementUsage(
+  usage: RecapUsageFile,
+  leagueId: string,
+  season: number,
+  period: number,
+  now: Date,
+): RecapUsageFile {
+  const day = utcDayKey(now);
+  const daily = pruneDaily(usage.daily, now);
+  daily[day] = { calls: (daily[day]?.calls ?? 0) + 1 };
+  const key = recapPeriodUsageKey(leagueId, season, period);
+  return {
+    schema_version: 1,
+    daily,
+    periods: { ...usage.periods, [key]: (usage.periods[key] ?? 0) + 1 },
+  };
+}
+
+let usageChain: Promise<unknown> = Promise.resolve();
+
+function serializeUsage<T>(fn: () => Promise<T>): Promise<T> {
+  const run = usageChain.then(fn, fn);
+  usageChain = run.then(
+    () => undefined,
+    () => undefined,
+  );
+  return run;
+}
+
+async function sleep(ms: number): Promise<void> {
+  await new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+async function withRecapUsageLock<T>(
+  root: string,
+  fn: () => Promise<T>,
+): Promise<T> {
+  const lockPath = recapUsageLockPath(root);
+  await fs.mkdir(path.dirname(lockPath), { recursive: true });
+  for (let attempt = 0; attempt < LOCK_ATTEMPTS; attempt++) {
+    try {
+      const handle = await fs.open(lockPath, "wx");
+      try {
+        await handle.writeFile(`${process.pid}\n${Date.now()}\n`);
+        return await fn();
+      } finally {
+        await handle.close();
+        await fs.unlink(lockPath).catch(() => undefined);
+      }
+    } catch (err) {
+      const code = (err as NodeJS.ErrnoException).code;
+      if (code !== "EEXIST") throw err;
+      try {
+        const stat = await fs.stat(lockPath);
+        if (Date.now() - stat.mtimeMs > LOCK_STALE_MS) {
+          await fs.unlink(lockPath);
+          continue;
+        }
+      } catch {
+        continue;
+      }
+      await sleep(20 + Math.random() * 40);
+    }
+  }
+  throw new Error("recap usage lock timed out");
+}
+
+async function mutateUsage<T>(
+  root: string,
+  fn: (usage: RecapUsageFile) => Promise<T> | T,
+): Promise<T> {
+  return serializeUsage(() =>
+    withRecapUsageLock(root, async () => fn(await readRecapUsage(root))),
+  );
+}
+
+/** Check the cap and increment in one locked step. Fail-closed: the slot stays spent even if the LLM later errors. */
+export async function reserveRecapLlmCall(
+  leagueId: string,
+  season: number,
+  period: number,
+  now: Date,
+  limits: RecapUsageLimits,
+  root = hubDataRoot(),
+): Promise<RecapReserveResult> {
+  return mutateUsage(root, async (usage) => {
+    const error = recapBudgetError(usage, leagueId, season, period, now, limits);
+    if (error) return { ok: false as const, error };
+    const next = incrementUsage(usage, leagueId, season, period, now);
+    await writeRecapUsage(next, root);
+    return { ok: true as const, usage: next };
+  });
+}
+
 export async function recordRecapLlmCall(
   leagueId: string,
   season: number,
@@ -138,12 +246,9 @@ export async function recordRecapLlmCall(
   now = new Date(),
   root = hubDataRoot(),
 ): Promise<RecapUsageFile> {
-  const usage = await readRecapUsage(root);
-  const day = utcDayKey(now);
-  usage.daily = pruneDaily(usage.daily, now);
-  usage.daily[day] = { calls: (usage.daily[day]?.calls ?? 0) + 1 };
-  const key = recapPeriodUsageKey(leagueId, season, period);
-  usage.periods[key] = (usage.periods[key] ?? 0) + 1;
-  await writeRecapUsage(usage, root);
-  return usage;
+  return mutateUsage(root, async (usage) => {
+    const next = incrementUsage(usage, leagueId, season, period, now);
+    await writeRecapUsage(next, root);
+    return next;
+  });
 }

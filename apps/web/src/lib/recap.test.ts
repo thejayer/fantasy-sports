@@ -28,9 +28,11 @@ import {
 import { listRecapPeriods, readRecap, writeRecap } from "@/lib/recap-store";
 import {
   DEFAULT_RECAP_DAILY_LIMIT,
+  readRecapUsage,
   recapBudgetError,
   recapUsageLimitsFromEnv,
   recordRecapLlmCall,
+  reserveRecapLlmCall,
 } from "@/lib/recap-usage";
 
 function team(
@@ -378,5 +380,66 @@ describe("recap cost guardrails", () => {
     });
     expect(blocked.ok).toBe(false);
     if (!blocked.ok) expect(blocked.status).toBe(429);
+  });
+
+  it("lets only one of two concurrent writes take the last daily slot", async () => {
+    await withHub();
+    const now = new Date("2026-08-12T18:00:00Z");
+    let llmCalls = 0;
+    const env = { OPENAI_API_KEY: "sk-test", SJ_RECAP_DAILY_LIMIT: "1" };
+    const run = () =>
+      generateAndStoreRecap(league, 1, {
+        force: true,
+        now,
+        env,
+        generateWithLlm: async (facts) => {
+          llmCalls += 1;
+          return writeTemplateRecap(facts, now);
+        },
+      });
+    const [first, second] = await Promise.all([run(), run()]);
+    const statuses = [first, second].map((row) =>
+      row.ok ? 200 : row.status,
+    );
+    expect(statuses.sort()).toEqual([200, 429]);
+    expect(llmCalls).toBe(1);
+    const usage = await readRecapUsage();
+    expect(usage.daily["2026-08-12"]?.calls).toBe(1);
+  });
+
+  it("keeps a reserved slot when the model fails so a retry cannot double-bill", async () => {
+    await withHub();
+    const now = new Date("2026-08-12T18:00:00Z");
+    const failed = await generateAndStoreRecap(league, 1, {
+      now,
+      env: { OPENAI_API_KEY: "sk-test", SJ_RECAP_DAILY_LIMIT: "1" },
+      generateWithLlm: async () => {
+        throw new Error("OpenAI 500");
+      },
+    });
+    expect(failed.ok).toBe(false);
+    if (!failed.ok) expect(failed.status).toBe(502);
+    const retry = await generateAndStoreRecap(league, 1, {
+      now,
+      env: { OPENAI_API_KEY: "sk-test", SJ_RECAP_DAILY_LIMIT: "1" },
+      generateWithLlm: async (facts) => writeTemplateRecap(facts, now),
+    });
+    expect(retry.ok).toBe(false);
+    if (!retry.ok) expect(retry.status).toBe(429);
+  });
+
+  it("reserveRecapLlmCall is serialized so two callers cannot both pass a limit of 1", async () => {
+    await withHub();
+    const now = new Date("2026-08-12T18:00:00Z");
+    const limits = recapUsageLimitsFromEnv({ SJ_RECAP_DAILY_LIMIT: "1" });
+    const [a, b] = await Promise.all([
+      reserveRecapLlmCall("recap-test", 2026, 1, now, limits),
+      reserveRecapLlmCall("recap-test", 2026, 1, now, limits),
+    ]);
+    const okCount = [a, b].filter((row) => row.ok).length;
+    expect(okCount).toBe(1);
+    expect([a, b].some((row) => !row.ok && row.error.includes("today's cap"))).toBe(
+      true,
+    );
   });
 });

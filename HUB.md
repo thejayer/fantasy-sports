@@ -224,7 +224,9 @@ is **`gpt-5.6-luna`** (`SJ_RECAP_MODEL`); OpenAI wins when that key is set
 unless `SJ_RECAP_PROVIDER=anthropic`. Cheap-model allowlist (Luna / 4.1-mini /
 Haiku) unless `SJ_RECAP_ALLOW_EXPENSIVE=1`. Cost caps live in
 `{SJ_HUB_DIR}/recap_usage.json`: `SJ_RECAP_DAILY_LIMIT` (default 12 UTC) and
-`SJ_RECAP_PERIOD_LIMIT` (default 2 rewrites per league-season-week). Unchanged
+`SJ_RECAP_PERIOD_LIMIT` (default 2 rewrites per league-season-week). A slot is
+reserved under a lock **before** the LLM call (fail-closed if generation later
+errors). Unchanged
 facts skip the LLM unless the admin clicks Rewrite (`force`). Never generated
 on page load. `AUTH_DEV_BYPASS` may write the template columnist. Committed
 fixtures cover football-main weeks 13–14 and football-dynasty week 14.
