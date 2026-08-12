@@ -11,10 +11,7 @@ import {
   validateBio,
   validateDisplayName,
 } from "@/lib/hub-members";
-import {
-  readHubMembers,
-  writeHubMembers,
-} from "@/lib/hub-members-store";
+import { updateHubMembers } from "@/lib/hub-members-store";
 import { getViewer } from "@/lib/viewer";
 import { requireSession, devBypassEnabled } from "@/lib/session";
 
@@ -53,18 +50,23 @@ export async function PATCH(request: Request) {
   }
 
   try {
-    let file = await readHubMembers();
-    if (body.display_name !== undefined) {
-      validateDisplayName(body.display_name);
-      file = setMemberDisplayName(file, viewer.email, body.display_name);
-    }
-    if (body.bio !== undefined) {
-      validateBio(body.bio);
-      file = setMemberBio(file, viewer.email, body.bio);
-    }
-    const written = await writeHubMembers(file);
+    // Validate before touching disk so bad input never enters the write queue.
+    if (body.display_name !== undefined) validateDisplayName(body.display_name);
+    if (body.bio !== undefined) validateBio(body.bio);
+
+    const email = viewer.email;
+    const written = await updateHubMembers((file) => {
+      let next = file;
+      if (body.display_name !== undefined) {
+        next = setMemberDisplayName(next, email, body.display_name);
+      }
+      if (body.bio !== undefined) {
+        next = setMemberBio(next, email, body.bio);
+      }
+      return next;
+    });
     const member = written.members.find(
-      (m) => m.email === viewer.email?.toLowerCase(),
+      (m) => m.email === email.toLowerCase(),
     );
     return NextResponse.json({
       display_name: member?.display_name ?? null,

@@ -2,7 +2,11 @@
 
 import { useState } from "react";
 
-import { BIO_MAX } from "@/lib/hub-members";
+import {
+  BIO_MAX,
+  bioCharCount,
+  clampBioInput,
+} from "@/lib/hub-members";
 
 export function ProfileBioForm({ initialBio }: { initialBio: string | null }) {
   const [value, setValue] = useState(initialBio ?? "");
@@ -39,7 +43,7 @@ export function ProfileBioForm({ initialBio }: { initialBio: string | null }) {
   }
 
   const dirty = value.trim() !== saved.trim();
-  const remaining = BIO_MAX - value.length;
+  const remaining = BIO_MAX - bioCharCount(value);
 
   return (
     <form className="profile-username-form profile-bio-form" onSubmit={onSubmit}>
@@ -48,10 +52,9 @@ export function ProfileBioForm({ initialBio }: { initialBio: string | null }) {
         <textarea
           value={value}
           onChange={(e) => {
-            setValue(e.target.value);
+            setValue(clampBioInput(e.target.value));
             setOk(null);
           }}
-          maxLength={BIO_MAX}
           rows={3}
           placeholder="A short line about you — rivalries, catchphrases, draft-day lore…"
           disabled={busy}
@@ -59,7 +62,7 @@ export function ProfileBioForm({ initialBio }: { initialBio: string | null }) {
       </label>
       <p className="league-meta">
         Shown on your public profile. Up to {BIO_MAX} characters
-        {remaining < 40 ? ` (${remaining} left)` : ""}.
+        {remaining < 40 ? ` (${Math.max(0, remaining)} left)` : ""}.
       </p>
       <div className="cta-row profile-username-actions">
         <button className="button" type="submit" disabled={busy || !dirty}>

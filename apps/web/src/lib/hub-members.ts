@@ -235,6 +235,20 @@ export function validateImageUrl(raw: string): string {
 }
 
 /**
+ * Bio length in Unicode code points (same unit as the Settings textarea clamp).
+ * Avoids UTF-16 `string.length` disagreeing with emoji-heavy input.
+ */
+export function bioCharCount(text: string): number {
+  return [...text].length;
+}
+
+/** Clamp raw textarea input to BIO_MAX code points. */
+export function clampBioInput(raw: string): string {
+  const chars = [...raw];
+  return chars.length <= BIO_MAX ? raw : chars.slice(0, BIO_MAX).join("");
+}
+
+/**
  * Normalize / validate a public bio. Empty string clears.
  * Plain text only — collapses whitespace, caps length, strips control chars.
  */
@@ -253,7 +267,7 @@ export function validateBio(raw: string): string {
     .join("\n")
     .trim();
   if (!text) return "";
-  if (text.length > BIO_MAX) {
+  if (bioCharCount(text) > BIO_MAX) {
     throw new Error(`bio must be ≤ ${BIO_MAX} characters`);
   }
   return text;

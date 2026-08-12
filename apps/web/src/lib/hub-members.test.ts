@@ -5,7 +5,9 @@ import {
   assertCanControlAuction,
   assertCanFinalizeAuction,
   BIO_MAX,
+  bioCharCount,
   canAccessAdmin,
+  clampBioInput,
   effectiveAllowlist,
   emptyMembersFile,
   golfActingScope,
@@ -207,6 +209,11 @@ describe("hub-members", () => {
     expect(validateBio("")).toBe("");
     expect(validateBio("line one\n\n\nline two")).toBe("line one\n\nline two");
     expect(() => validateBio("x".repeat(BIO_MAX + 1))).toThrow(/≤ 280/);
+    // Code-point count: 280 emoji fit; UTF-16 length would be 560.
+    expect(validateBio("🙂".repeat(BIO_MAX))).toBe("🙂".repeat(BIO_MAX));
+    expect(() => validateBio("🙂".repeat(BIO_MAX + 1))).toThrow(/≤ 280/);
+    expect(clampBioInput("🙂".repeat(BIO_MAX + 5))).toBe("🙂".repeat(BIO_MAX));
+    expect(bioCharCount("🙂a")).toBe(2);
 
     let file = setMemberBio(
       emptyMembersFile(),
