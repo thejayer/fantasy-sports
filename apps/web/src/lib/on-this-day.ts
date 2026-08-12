@@ -215,7 +215,7 @@ export function collectOnThisDay(
 ): OnThisDayMoment[] {
   const limit = opts?.limit ?? 6;
   const moments: OnThisDayMoment[] = [];
-  const seenSeasons = new Set<string>();
+  const coveredWeeks = new Set<string>();
 
   for (const input of inputs) {
     const snapBySeason = new Map(
@@ -230,7 +230,7 @@ export function collectOnThisDay(
           transactions: full?.transactions,
           lineups: full?.lineups,
         });
-        seenSeasons.add(key);
+        coveredWeeks.add(key);
         moments.push(...weekRecapMoments(league, now));
         moments.push(...transactionMoments(league, now));
         moments.push(...golfEventMoments(league, now));
@@ -239,27 +239,15 @@ export function collectOnThisDay(
 
     for (const snap of input.snapshots) {
       const key = `${snap.league_id}:${snap.season}`;
-      if (seenSeasons.has(key)) {
-        // Archive path already covered weeks; still scan txs/golf if archive
-        // built without those concerns (history load skips them).
-        continue;
+      if (!coveredWeeks.has(key)) {
+        moments.push(...weekRecapMoments(snap, now));
       }
-      moments.push(...weekRecapMoments(snap, now));
+      // Full snaps always own txs / golf (history archive omits those concerns).
       moments.push(...transactionMoments(snap, now));
       moments.push(...golfEventMoments(snap, now));
     }
-
-    // When archive seasons were used, still pull txs/golf from full snaps
-    // (history slices don't carry them).
-    if (input.archive) {
-      for (const snap of input.snapshots) {
-        moments.push(...transactionMoments(snap, now));
-        moments.push(...golfEventMoments(snap, now));
-      }
-    }
   }
 
-  // Dedupe by id (tx/golf may be scanned twice).
   const byId = new Map<string, OnThisDayMoment>();
   for (const moment of moments) {
     if (!byId.has(moment.id)) byId.set(moment.id, moment);
