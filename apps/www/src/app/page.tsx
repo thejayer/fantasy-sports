@@ -1,4 +1,11 @@
-import { portalCopy } from "@/lib/content";
+import Image from "next/image";
+import Link from "next/link";
+
+import {
+  formatPortalEventDate,
+  portalCopy,
+  upcomingPortalEvents,
+} from "@/lib/content";
 import { getSiteConfig } from "@/lib/site";
 
 type Destination = {
@@ -16,6 +23,8 @@ export default function HomePage() {
   const { fantasyHubUrl, discordInviteUrl, palworldInfoUrl } = getSiteConfig();
   const copy = portalCopy;
   const items = copy.destinations.items;
+  const events = upcomingPortalEvents(copy.events.items);
+  const crew = copy.crew.members;
 
   const destinations: Destination[] = [
     {
@@ -77,37 +86,110 @@ export default function HomePage() {
   return (
     <main>
       <section className="hero" aria-label="Strictly Jayers home">
-        <p className="hero-kicker">{copy.hero.kicker}</p>
-        <div className="hero-brand">
-          Strictly
-          <br />
-          Jayers
+        <div className="hero-media" aria-hidden>
+          <Image
+            className="hero-media-img"
+            src="/hero-atmosphere.jpg"
+            alt=""
+            width={1280}
+            height={853}
+            priority
+          />
+          <div className="hero-media-wash" />
         </div>
-        <hr className="hero-rule" />
-        <h1>{copy.hero.headline}</h1>
-        <p>{copy.hero.support}</p>
-        <div className="cta-row">
-          <a
-            className="cta cta-primary"
-            href={fantasyHubUrl}
-            rel="noopener noreferrer"
-          >
-            {copy.hero.ctaFantasy} →
-          </a>
-          {discordInviteUrl ? (
+        <div className="hero-copy">
+          <p className="hero-kicker">{copy.hero.kicker}</p>
+          <div className="hero-brand">
+            Strictly
+            <br />
+            Jayers
+          </div>
+          <hr className="hero-rule" />
+          <h1>{copy.hero.headline}</h1>
+          <p>{copy.hero.support}</p>
+          <div className="cta-row hero-cta">
             <a
-              className="cta cta-secondary"
-              href={discordInviteUrl}
+              className="cta cta-primary"
+              href={fantasyHubUrl}
               rel="noopener noreferrer"
             >
-              {copy.hero.ctaDiscord}
+              {copy.hero.ctaFantasy} →
             </a>
-          ) : (
-            <a className="cta cta-secondary" href="#destinations">
-              {copy.hero.ctaExplore}
-            </a>
-          )}
+            {discordInviteUrl ? (
+              <a
+                className="cta cta-secondary"
+                href={discordInviteUrl}
+                rel="noopener noreferrer"
+              >
+                {copy.hero.ctaDiscord}
+              </a>
+            ) : (
+              <a className="cta cta-secondary" href="#destinations">
+                {copy.hero.ctaExplore}
+              </a>
+            )}
+          </div>
         </div>
+      </section>
+
+      <section
+        id="events"
+        className="section events-section"
+        aria-labelledby="events-heading"
+      >
+        <div className="section-head">
+          <div>
+            <h2 id="events-heading">{copy.events.heading}</h2>
+            <p>{copy.events.support}</p>
+          </div>
+          <div className="section-marker">{copy.events.marker}</div>
+        </div>
+        {events.length === 0 ? (
+          <p className="empty-note">{copy.events.empty}</p>
+        ) : (
+          <ul className="event-strip">
+            {events.map((event) => {
+              const when = formatPortalEventDate(event.date);
+              const body = (
+                <>
+                  <span className="event-when">{when}</span>
+                  <span className="event-label">{event.label}</span>
+                  <span className="event-where">{event.where}</span>
+                </>
+              );
+              return (
+                <li key={`${event.date}-${event.label}`}>
+                  {event.href ? (
+                    event.href.startsWith("/") ? (
+                      <Link className="event-row" href={event.href}>
+                        {body}
+                      </Link>
+                    ) : (
+                      <a
+                        className="event-row"
+                        href={event.href}
+                        rel="noopener noreferrer"
+                      >
+                        {body}
+                      </a>
+                    )
+                  ) : event.label.toLowerCase().includes("draft") ||
+                    event.label.toLowerCase().includes("golf") ? (
+                    <a
+                      className="event-row"
+                      href={fantasyHubUrl}
+                      rel="noopener noreferrer"
+                    >
+                      {body}
+                    </a>
+                  ) : (
+                    <div className="event-row">{body}</div>
+                  )}
+                </li>
+              );
+            })}
+          </ul>
+        )}
       </section>
 
       <section id="destinations" className="section">
@@ -126,9 +208,7 @@ export default function HomePage() {
             const action = item.pending ? (
               <span className="tag tag-outline">{item.action}</span>
             ) : (
-              <div className="destination-action">
-                {item.action} →
-              </div>
+              <div className="destination-action">{item.action} →</div>
             );
             const inner = (
               <>
@@ -165,6 +245,42 @@ export default function HomePage() {
             );
           })}
         </ul>
+      </section>
+
+      <section
+        id="crew"
+        className="section crew-section"
+        aria-labelledby="crew-heading"
+      >
+        <div className="section-head">
+          <div>
+            <h2 id="crew-heading">{copy.crew.heading}</h2>
+            <p>{copy.crew.support}</p>
+          </div>
+          <div className="section-marker">{copy.crew.marker}</div>
+        </div>
+        {!crew.length ? (
+          <p className="empty-note">{copy.crew.empty}</p>
+        ) : (
+          <ul className="crew-list">
+            {crew.map((member) => (
+              <li key={member.handle}>
+                <a
+                  className="crew-row"
+                  href={`${fantasyHubUrl}/u/${member.handle}`}
+                  rel="noopener noreferrer"
+                >
+                  <div className="crew-main">
+                    <h3>{member.name}</h3>
+                    <p className="crew-handle">@{member.handle}</p>
+                    <p>{member.blurb}</p>
+                  </div>
+                  <span className="destination-action">Profile →</span>
+                </a>
+              </li>
+            ))}
+          </ul>
+        )}
       </section>
 
       <footer className="site-footer">

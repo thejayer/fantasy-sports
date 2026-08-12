@@ -36,13 +36,18 @@ Discord CTA defaults to the crew invite (`lib/site.ts`); override with
 `DISCORD_INVITE_URL` on `sj-www` if the code rotates. Set `PALWORLD_INFO_URL`
 to turn the Palworld destination tile into a live link.
 
-**AI News** lives at `/ai` (nav + homepage destination). Headlines are fetched
-server-side from RSS (see `apps/www/src/lib/ai-news.ts`); X timelines use
-official embed widgets. Edit `AI_EDITOR_PICKS` for the big-story wall.
+**AI News** lives at `/ai` (nav + homepage destination). Big stories are
+hand-edited dated pieces in `AI_EDITOR_PICKS` (`apps/www/src/lib/ai-news.ts`);
+RSS covers the firehose below. X timelines use official embed widgets.
 
 **Watch** lives at `/watch` — embeds the shared YouTube playlist
-(`lib/watch.ts` default, override with `YOUTUBE_PLAYLIST_ID` on `sj-www`).
-Anyone with YouTube edit access can add/remove videos; the page stays in sync.
+(`lib/watch.ts` default, override with `YOUTUBE_PLAYLIST_ID` on `sj-www`),
+highlights **Tonight’s pick** from the playlist RSS, and links Discord voice /
+clip drops. Anyone with YouTube edit access can add/remove videos.
+
+Home also ships a **Coming up** event strip and **Meet the crew** links into
+hub `/u/{handle}` profiles (edit handles in `lib/content.ts`). The hub chrome
+links back with **Community** → `strictlyjayers.com` (`COMMUNITY_SITE_URL`).
 
 ## Local
 
@@ -52,6 +57,9 @@ cd apps/www && npm install && npm run dev
 
 # Hub (unchanged)
 cd apps/web && npm run dev
+
+# Portal unit + smoke (after npm run build for Playwright)
+cd apps/www && npm test && npm run test:e2e
 ```
 
 ## Deploy

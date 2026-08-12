@@ -120,7 +120,7 @@ jobs:
   www:
     name: www
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 20
     defaults:
       run:
         working-directory: apps/www
@@ -142,11 +142,30 @@ jobs:
       - name: Lint
         run: npm run lint
 
+      - name: Unit tests
+        run: npm test
+
       - name: Build
         run: npm run build
         env:
           SITE_URL: https://strictlyjayers.com
           FANTASY_HUB_URL: https://fantasy.strictlyjayers.com
+
+      - name: Cache Playwright browsers
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-www-${{ runner.os }}-${{ hashFiles('apps/www/package-lock.json') }}
+
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: Portal smoke
+        run: npm run test:e2e
+        env:
+          SITE_URL: http://127.0.0.1:3002
+          FANTASY_HUB_URL: https://fantasy.strictlyjayers.com
+          DISCORD_INVITE_URL: https://discord.gg/example
 
       - name: Audit dependencies
         run: npm audit --audit-level=high
