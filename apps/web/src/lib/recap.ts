@@ -172,8 +172,14 @@ export function validateRecapAgainstFacts(
   if (article.period !== facts.period) return "period mismatch";
   if (article.sport !== facts.sport) return "sport mismatch";
   const expected = new Set(facts.rankings.map((r) => r.teamId));
-  const got = new Set(article.ranking_copy.map((r) => r.team_id));
-  if (expected.size !== got.size) return "ranking_copy must cover every team";
+  const ids = article.ranking_copy.map((r) => r.team_id);
+  if (new Set(ids).size !== ids.length) {
+    return "duplicate team_id in ranking_copy";
+  }
+  if (ids.length !== expected.size) {
+    return "ranking_copy must cover every team once";
+  }
+  const got = new Set(ids);
   for (const id of expected) {
     if (!got.has(id)) return `missing ranking copy for team ${id}`;
   }
@@ -185,6 +191,20 @@ export function validateRecapAgainstFacts(
 
 function fmtScore(value: number | null): string {
   return value == null ? "—" : value.toFixed(1);
+}
+
+/** House-style one-liner; ties must not be narrated as a win. */
+export function formatTemplateGameLine(g: RecapGameFact): string {
+  const [leftOut, rightOut] = g.outcome.split("-");
+  if (leftOut === "T" || rightOut === "T") {
+    return `${g.leftName} ${fmtScore(g.leftScore)} tied ${g.rightName} ${fmtScore(g.rightScore)}`;
+  }
+  const leftWon = leftOut === "W";
+  const winner = leftWon ? g.leftName : g.rightName;
+  const loser = leftWon ? g.rightName : g.leftName;
+  const ws = leftWon ? g.leftScore : g.rightScore;
+  const ls = leftWon ? g.rightScore : g.leftScore;
+  return `${winner} ${fmtScore(ws)} over ${loser} ${fmtScore(ls)}`;
 }
 
 /** Deterministic house-style column when no LLM key is configured (dev / tests). */
@@ -202,14 +222,7 @@ export function writeTemplateRecap(
   const label = facts.periodLabel;
   const n = facts.period;
 
-  const gameLines = facts.games.map((g) => {
-    const leftWon = g.outcome.startsWith("W");
-    const winner = leftWon ? g.leftName : g.rightName;
-    const loser = leftWon ? g.rightName : g.leftName;
-    const ws = leftWon ? g.leftScore : g.rightScore;
-    const ls = leftWon ? g.rightScore : g.leftScore;
-    return `${winner} ${fmtScore(ws)} over ${loser} ${fmtScore(ls)}`;
-  });
+  const gameLines = facts.games.map(formatTemplateGameLine);
 
   const headline = top
     ? `${top.name} still running the table after ${label} ${n}`

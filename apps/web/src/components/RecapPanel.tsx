@@ -43,6 +43,11 @@ function RecapArticleView({
       <h3 className="recap-rank-heading">Power rankings</h3>
       <ol className="recap-rankings">
         {[...article.ranking_copy]
+          .filter(
+            (row, index, rows) =>
+              rows.findIndex((other) => other.team_id === row.team_id) ===
+              index,
+          )
           .sort(
             (a, b) =>
               (factsNames.get(a.team_id)?.rank ?? 99) -

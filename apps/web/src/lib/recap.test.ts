@@ -6,6 +6,7 @@ import { afterEach, describe, expect, it } from "vitest";
 import type { LeagueSnapshot, Team } from "@/lib/data";
 import { buildWeeklyDigest } from "@/lib/digest";
 import {
+  formatTemplateGameLine,
   parseRecapArticle,
   recapFactsFromDigest,
   recapFactsFromLeague,
@@ -13,7 +14,7 @@ import {
   validateRecapAgainstFacts,
   writeTemplateRecap,
 } from "@/lib/recap";
-import { recapLlmConfigFromEnv } from "@/lib/recap-llm";
+import { recapArticleFromModelJson, recapLlmConfigFromEnv } from "@/lib/recap-llm";
 import { listRecapPeriods, readRecap, writeRecap } from "@/lib/recap-store";
 
 function team(
@@ -97,6 +98,73 @@ describe("recap facts (roadmap 7.15)", () => {
     expect(validateRecapAgainstFacts(article, facts)).toMatch(
       /missing ranking copy|unknown team_id/,
     );
+  });
+
+  it("rejects duplicate ranking_copy rows", () => {
+    const facts = recapFactsFromLeague(league, 1)!;
+    const article = writeTemplateRecap(facts);
+    article.ranking_copy.push({ ...article.ranking_copy[0] });
+    expect(validateRecapAgainstFacts(article, facts)).toMatch(/duplicate team_id/);
+  });
+
+  it("narrates ties as ties, not a win for the right side", () => {
+    const line = formatTemplateGameLine({
+      leftName: "Alpha",
+      leftTeamId: 1,
+      leftScore: 100,
+      rightName: "Beta",
+      rightTeamId: 2,
+      rightScore: 100,
+      outcome: "T-T",
+    });
+    expect(line).toContain("tied");
+    expect(line).not.toMatch(/over/);
+    const article = writeTemplateRecap({
+      ...recapFactsFromLeague(league, 1)!,
+      games: [
+        {
+          leftName: "Alpha",
+          leftTeamId: 1,
+          leftScore: 100,
+          rightName: "Beta",
+          rightTeamId: 2,
+          rightScore: 100,
+          outcome: "T-T",
+        },
+      ],
+    });
+    expect(article.body[0]).toContain("tied");
+    expect(article.body[0]).not.toMatch(/over/);
+  });
+});
+
+describe("recapArticleFromModelJson", () => {
+  it("keeps trusted model and generated_at over model JSON", () => {
+    const facts = recapFactsFromLeague(league, 1)!;
+    const template = writeTemplateRecap(facts);
+    const article = recapArticleFromModelJson(
+      facts,
+      {
+        headline: template.headline,
+        dek: template.dek,
+        body: template.body,
+        ranking_copy: template.ranking_copy,
+        league_id: "spoofed",
+        season: 1999,
+        period: 99,
+        sport: "baseball",
+        generated_at: "1999-01-01T00:00:00.000Z",
+        model: "evil/model",
+      },
+      "anthropic/claude-sonnet-4-5",
+      new Date("2026-09-08T12:00:00.000Z"),
+    );
+    expect(article.league_id).toBe("recap-test");
+    expect(article.season).toBe(2026);
+    expect(article.period).toBe(1);
+    expect(article.sport).toBe("football");
+    expect(article.model).toBe("anthropic/claude-sonnet-4-5");
+    expect(article.generated_at).toBe("2026-09-08T12:00:00.000Z");
   });
 });
 

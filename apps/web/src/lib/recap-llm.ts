@@ -160,15 +160,32 @@ export async function generateRecapWithLlm(
     config.provider === "anthropic"
       ? await completeAnthropic(config, prompt)
       : await completeOpenAi(config, prompt);
+  return recapArticleFromModelJson(
+    facts,
+    extractJsonObject(text),
+    `${config.provider}/${config.model}`,
+    now,
+  );
+}
+
+/** Trusted identity/model fields always win over model JSON. */
+export function recapArticleFromModelJson(
+  facts: RecapFacts,
+  raw: unknown,
+  modelLabel: string,
+  now = new Date(),
+): RecapArticle {
+  const payload =
+    raw && typeof raw === "object" ? (raw as Record<string, unknown>) : {};
   const parsed = parseRecapArticle({
+    ...payload,
     schema_version: 1,
     league_id: facts.leagueId,
     season: facts.season,
     period: facts.period,
     sport: facts.sport,
     generated_at: now.toISOString(),
-    model: `${config.provider}/${config.model}`,
-    ...(extractJsonObject(text) as Record<string, unknown>),
+    model: modelLabel,
   });
   if (!parsed) throw new Error("model JSON failed recap schema");
   const mismatch = validateRecapAgainstFacts(parsed, facts);
