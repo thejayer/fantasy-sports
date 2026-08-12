@@ -362,6 +362,7 @@ def _build_team(
         points_for=points_for,
         points_against=points_against,
         standing=None,
+        final_standing=0,
         division_name=rng.choice(("East", "West")),
         roster=roster,
     )
@@ -416,6 +417,17 @@ def sample_league(
         )
     for place, team in enumerate(ranked, start=1):
         team.standing = place
+
+    # Football H2H: invent a finished-season final ladder so fixtures exercise
+    # playoff-champ ≠ seed #1 in the trophy case (roadmap 7.13). ESPN leaves
+    # final_standing at 0 mid-season; baseball/golf stay unset.
+    if spec.sport == "football":
+        n = len(ranked)
+        for place, team in enumerate(ranked, start=1):
+            team.final_standing = n - place + 1
+    else:
+        for team in built:
+            team.final_standing = 0
 
     draft = _build_draft(
         built,

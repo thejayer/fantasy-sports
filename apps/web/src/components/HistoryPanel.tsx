@@ -2,6 +2,7 @@ import Link from "next/link";
 import type { LeagueHistoryArchive } from "@/lib/data";
 import {
   allTimeStandings,
+  archiveHasPlayoffChampions,
   buildRecordBook,
   championsBySeason,
   defaultH2HPair,
@@ -9,8 +10,10 @@ import {
   formatWinPct,
   franchiseOptions,
   headToHead,
+  playoffChampionsBySeason,
   recordLabelFromCounts,
   seasonCountLabel,
+  type ChampionRow,
 } from "@/lib/history";
 
 export type HistoryView =
@@ -71,6 +74,7 @@ function AllTimeTable({
     return <p className="league-meta">No franchise history in this archive.</p>;
   }
   const showPoints = rows.some((row) => row.pointsFor > 0);
+  const showTitles = rows.some((row) => row.playoffChampionships > 0);
   return (
     <div className="panel table-scroll">
       <table className="table-cards">
@@ -82,6 +86,7 @@ function AllTimeTable({
             <th>Record</th>
             <th>Win%</th>
             <th>#1s</th>
+            {showTitles ? <th>Titles</th> : null}
             {showPoints ? <th>PF</th> : null}
             {showPoints ? <th>PA</th> : null}
           </tr>
@@ -106,12 +111,69 @@ function AllTimeTable({
               </td>
               <td data-label="Win%">{formatWinPct(row.winPct)}</td>
               <td data-label="#1s">{row.championships}</td>
+              {showTitles ? (
+                <td data-label="Titles">{row.playoffChampionships}</td>
+              ) : null}
               {showPoints ? (
                 <td data-label="PF">{formatPoints(row.pointsFor)}</td>
               ) : null}
               {showPoints ? (
                 <td data-label="PA">{formatPoints(row.pointsAgainst)}</td>
               ) : null}
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
+function ChampionRowsTable({
+  leagueId,
+  rows,
+  empty,
+}: {
+  leagueId: string;
+  rows: ChampionRow[];
+  empty: string;
+}) {
+  if (!rows.length) {
+    return <p className="league-meta">{empty}</p>;
+  }
+  return (
+    <div className="panel table-scroll">
+      <table className="table-cards">
+        <thead>
+          <tr>
+            <th>Season</th>
+            <th>Champion</th>
+            <th>Owner</th>
+            <th>Record</th>
+            <th>PF</th>
+          </tr>
+        </thead>
+        <tbody>
+          {rows.map((row) => (
+            <tr key={row.season}>
+              <td data-label="Season">
+                <Link
+                  href={`/leagues/${leagueId}?season=${row.season}&tab=standings`}
+                >
+                  {row.season}
+                </Link>
+              </td>
+              <td data-label="Champion">
+                <Link
+                  href={`/leagues/${leagueId}/teams/${row.teamId}?season=${row.season}`}
+                >
+                  {row.name}
+                </Link>
+              </td>
+              <td data-label="Owner">{row.owners.join(", ") || "—"}</td>
+              <td data-label="Record">
+                {recordLabelFromCounts(row.wins, row.losses, row.ties)}
+              </td>
+              <td data-label="PF">{formatPoints(row.pointsFor)}</td>
             </tr>
           ))}
         </tbody>
@@ -127,58 +189,41 @@ function ChampionsTable({
   archive: LeagueHistoryArchive;
   leagueId: string;
 }) {
-  const rows = championsBySeason(archive);
-  if (!rows.length) {
-    return (
-      <p className="league-meta">
-        No #1 finishes found across seasons in this archive.
-      </p>
-    );
-  }
+  const seedRows = championsBySeason(archive);
+  const titleRows = playoffChampionsBySeason(archive);
+  const hasTitles = archiveHasPlayoffChampions(archive);
   return (
     <div className="history-section">
-      <p className="league-meta">
-        Regular-season #1 finish by year (playoff champion is not in the
-        snapshot yet).
-      </p>
-      <div className="panel table-scroll">
-        <table className="table-cards">
-          <thead>
-            <tr>
-              <th>Season</th>
-              <th>Champion</th>
-              <th>Owner</th>
-              <th>Record</th>
-              <th>PF</th>
-            </tr>
-          </thead>
-          <tbody>
-            {rows.map((row) => (
-              <tr key={row.season}>
-                <td data-label="Season">
-                  <Link
-                    href={`/leagues/${leagueId}?season=${row.season}&tab=standings`}
-                  >
-                    {row.season}
-                  </Link>
-                </td>
-                <td data-label="Champion">
-                  <Link
-                    href={`/leagues/${leagueId}/teams/${row.teamId}?season=${row.season}`}
-                  >
-                    {row.name}
-                  </Link>
-                </td>
-                <td data-label="Owner">{row.owners.join(", ") || "—"}</td>
-                <td data-label="Record">
-                  {recordLabelFromCounts(row.wins, row.losses, row.ties)}
-                </td>
-                <td data-label="PF">{formatPoints(row.pointsFor)}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+      {hasTitles ? (
+        <>
+          <h3 className="roster-group-title">Playoff champions</h3>
+          <p className="league-meta">
+            Season title from ESPN&apos;s final ladder after the season ends.
+          </p>
+          <ChampionRowsTable
+            leagueId={leagueId}
+            rows={titleRows}
+            empty="No playoff champions in this archive yet."
+          />
+          <h3 className="roster-group-title" style={{ marginTop: "1.5rem" }}>
+            Regular-season #1
+          </h3>
+          <p className="league-meta">
+            Seed / regular-season rank #1 — not always the playoff champion.
+          </p>
+        </>
+      ) : (
+        <p className="league-meta">
+          Regular-season #1 finish by year. Playoff champions appear after a
+          re-sync once ESPN posts final standings (older snapshots omit the
+          field).
+        </p>
+      )}
+      <ChampionRowsTable
+        leagueId={leagueId}
+        rows={seedRows}
+        empty="No #1 finishes found across seasons in this archive."
+      />
     </div>
   );
 }
@@ -216,21 +261,32 @@ function TrophyCase({
   archive,
   leagueId,
   season,
+  sport,
 }: {
   archive: LeagueHistoryArchive;
   leagueId: string;
   season: number;
+  sport?: string;
 }) {
   const multi = archive.seasons.length > 1;
+  const hasTitles = archiveHasPlayoffChampions(archive);
+  const titleRows = playoffChampionsBySeason(archive);
+  const seedRows = championsBySeason(archive);
+  const h2hFootball = sport === "football";
   return (
     <div className="history-section trophy-case">
       <h3 className="roster-group-title">Trophy case</h3>
       <p className="league-meta">
-        Regular-season #1 finishes and league records
+        {hasTitles
+          ? "Playoff titles, regular-season #1 finishes, and league records"
+          : "Regular-season #1 finishes and league records"}
         {multi
           ? ` across ${seasonCountLabel(archive)}`
           : ` for ${seasonCountLabel(archive)}`}
-        . Playoff champions are not in the snapshot yet.
+        .
+        {h2hFootball && !hasTitles
+          ? " Playoff champions need a re-sync once ESPN posts final standings."
+          : null}
       </p>
       {!multi ? (
         <p className="league-meta trophy-case-note">
@@ -238,7 +294,40 @@ function TrophyCase({
           <code>sj backfill</code>) so past years fill this case.
         </p>
       ) : null}
-      <ChampionsTable archive={archive} leagueId={leagueId} />
+
+      {hasTitles ? (
+        <>
+          <h3 className="roster-group-title">Playoff champions</h3>
+          <p className="league-meta">
+            Season title from ESPN&apos;s final ladder — may differ from seed #1.
+          </p>
+          <ChampionRowsTable
+            leagueId={leagueId}
+            rows={titleRows}
+            empty="No playoff champions in this archive yet."
+          />
+        </>
+      ) : null}
+
+      <h3
+        className="roster-group-title"
+        style={{ marginTop: hasTitles ? "1.5rem" : undefined }}
+      >
+        {hasTitles ? "Regular-season #1" : "Season #1"}
+      </h3>
+      <p className="league-meta">
+        {hasTitles
+          ? "Seed / regular-season rank #1."
+          : sport === "baseball" || sport === "golf"
+            ? "Season #1 finish (no separate playoff ladder for this league)."
+            : "Regular-season #1 finish by year."}
+      </p>
+      <ChampionRowsTable
+        leagueId={leagueId}
+        rows={seedRows}
+        empty="No #1 finishes found across seasons in this archive."
+      />
+
       <h3 className="roster-group-title" style={{ marginTop: "1.5rem" }}>
         Record shelf
       </h3>
@@ -447,7 +536,12 @@ export function HistoryPanel({
         <AllTimeTable archive={archive} leagueId={leagueId} season={season} />
       ) : null}
       {active === "trophies" ? (
-        <TrophyCase archive={archive} leagueId={leagueId} season={season} />
+        <TrophyCase
+          archive={archive}
+          leagueId={leagueId}
+          season={season}
+          sport={sport}
+        />
       ) : null}
       {active === "champions" ? (
         <ChampionsTable archive={archive} leagueId={leagueId} />

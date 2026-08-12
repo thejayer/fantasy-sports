@@ -183,6 +183,11 @@ def test_seeded_snapshots_persist_settings_and_transactions(registry):
     assert all(not pick["keeper"] for pick in redraft["draft"])
     assert {pick["round"] for pick in dynasty["draft"] if pick["keeper"]} == {1}
     assert sum(1 for pick in dynasty["draft"] if pick["keeper"]) == 4
+    # Football fixtures invent a finished final ladder (seed #1 ≠ playoff champ).
+    assert all(t.get("final_standing") for t in redraft["teams"])
+    seed_one = next(t for t in redraft["teams"] if t["standing"] == 1)
+    title = next(t for t in redraft["teams"] if t["final_standing"] == 1)
+    assert seed_one["team_id"] != title["team_id"]
     assert redraft["settings"]["faab"] is True
     assert redraft["settings"]["position_slot_counts"]["QB"] == 1
     assert len(redraft["transactions"]) >= 1
