@@ -27,6 +27,10 @@ export type HubMember = {
    * (roadmap 7.10b). Optional — UI falls back to a monogram.
    */
   image_url?: string;
+  /**
+   * Short public blurb on `/u/{handle}` (roadmap 7.12). Optional plain text.
+   */
+  bio?: string;
   created_at: string;
   updated_at: string;
 };
@@ -37,6 +41,9 @@ export const DISPLAY_NAME_MIN = 2;
 export const DISPLAY_NAME_MAX = 24;
 /** Letters, numbers, spaces, and a few punctuation marks. */
 const DISPLAY_NAME_RE = /^[A-Za-z0-9 ._'-]+$/;
+
+/** Short public bio — one short paragraph on the profile page. */
+export const BIO_MAX = 280;
 
 export type HubMembersFile = {
   schema_version: 1;
@@ -227,6 +234,31 @@ export function validateImageUrl(raw: string): string {
   return url;
 }
 
+/**
+ * Normalize / validate a public bio. Empty string clears.
+ * Plain text only — collapses whitespace, caps length, strips control chars.
+ */
+export function validateBio(raw: string): string {
+  const text = [...raw.replace(/\r\n?/g, "\n")]
+    .filter((ch) => {
+      const code = ch.charCodeAt(0);
+      if (ch === "\n" || ch === "\t") return true;
+      return code >= 32 && code !== 127;
+    })
+    .join("")
+    .replace(/[^\S\n]+/g, " ")
+    .replace(/\n{3,}/g, "\n\n")
+    .split("\n")
+    .map((line) => line.trimEnd())
+    .join("\n")
+    .trim();
+  if (!text) return "";
+  if (text.length > BIO_MAX) {
+    throw new Error(`bio must be ≤ ${BIO_MAX} characters`);
+  }
+  return text;
+}
+
 /** email → current display_name for live feed joins. */
 export function memberDisplayNameMap(
   file: HubMembersFile | null | undefined,
@@ -263,6 +295,8 @@ export function upsertMember(
     display_name?: string | null;
     /** Pass `null` to clear; omit to leave unchanged. */
     image_url?: string | null;
+    /** Pass `null` to clear; omit to leave unchanged. */
+    bio?: string | null;
   },
   now = new Date(),
 ): HubMembersFile {
@@ -285,6 +319,12 @@ export function upsertMember(
     image_url = validated || undefined;
   }
 
+  let bio: string | undefined = existing?.bio;
+  if (input.bio !== undefined) {
+    const validated = validateBio(input.bio ?? "");
+    bio = validated || undefined;
+  }
+
   const next: HubMember = existing
     ? {
         ...existing,
@@ -305,6 +345,9 @@ export function upsertMember(
 
   if (image_url) next.image_url = image_url;
   else delete next.image_url;
+
+  if (bio) next.bio = bio;
+  else delete next.bio;
 
   const members = existing
     ? file.members.map((m) => (m.email === email ? next : m))
@@ -330,6 +373,16 @@ export function setMemberDisplayName(
     { email, display_name: displayName },
     now,
   );
+}
+
+/** Self-service bio write — creates a member row if needed. */
+export function setMemberBio(
+  file: HubMembersFile,
+  email: string,
+  bio: string,
+  now = new Date(),
+): HubMembersFile {
+  return upsertMember(file, { email, bio }, now);
 }
 
 /**

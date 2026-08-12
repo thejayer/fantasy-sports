@@ -32,6 +32,8 @@ export type Viewer = {
   name: string | null;
   /** Custom hub username when set (empty string means unset). */
   displayName: string | null;
+  /** Public bio when set. */
+  bio: string | null;
   /** HTTPS avatar (hub_members or Google session); null → monogram. */
   imageUrl: string | null;
   /** Profile URL slug (`/u/{handle}`) when the viewer has an email. */
@@ -50,6 +52,7 @@ const ANONYMOUS: Viewer = {
   email: null,
   name: null,
   displayName: null,
+  bio: null,
   imageUrl: null,
   handle: null,
   isAdmin: false,
@@ -85,6 +88,7 @@ export const getViewer = cache(async (): Promise<Viewer> => {
     const file = await readHubMembers().catch(() => null);
     const member = file ? findMember(file, email) : undefined;
     const custom = member?.display_name?.trim() || null;
+    const bio = member?.bio?.trim() || null;
     const handle = member
       ? memberProfileHandle(member)
       : memberProfileHandle({
@@ -98,6 +102,7 @@ export const getViewer = cache(async (): Promise<Viewer> => {
       email,
       name: resolveMemberDisplayName(member, email),
       displayName: custom,
+      bio,
       imageUrl: httpsImage(member?.image_url),
       handle,
       isAdmin: true,
@@ -113,6 +118,7 @@ export const getViewer = cache(async (): Promise<Viewer> => {
   const file = await readHubMembers().catch(() => null);
   const member = file ? findMember(file, email) : undefined;
   const custom = member?.display_name?.trim() || null;
+  const bio = member?.bio?.trim() || null;
   const fallback = session?.user?.name ?? email;
   const handle = member
     ? memberProfileHandle(member)
@@ -127,6 +133,7 @@ export const getViewer = cache(async (): Promise<Viewer> => {
     email,
     name: resolveMemberDisplayName(member, fallback),
     displayName: custom,
+    bio,
     imageUrl: httpsImage(member?.image_url) ?? httpsImage(session?.user?.image),
     handle,
     isAdmin: canAccessAdmin(email, file, adminOpts),
