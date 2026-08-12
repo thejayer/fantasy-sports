@@ -303,7 +303,7 @@ def serialize_team(
         if roster_points:
             points_for = round(sum(roster_points), 1)
     schedule, scores, outcomes = _team_matchup_arrays(team)
-    return {
+    row = {
         "team_id": getattr(team, "team_id", None),
         "name": getattr(team, "team_name", None),
         "abbrev": getattr(team, "team_abbrev", None),
@@ -315,7 +315,10 @@ def serialize_team(
         "win_pct": win_pct,
         "points_for": points_for,
         "points_against": _num(getattr(team, "points_against", None)),
-        "standing": _int(getattr(team, "standing", None) or getattr(team, "final_standing", None)),
+        # ESPN: standing ← playoffSeed; final_standing ← rankCalculatedFinal
+        # (1 = playoff champ after the season). Keep them separate so the trophy
+        # case can distinguish seed #1 from the title (roadmap 7.13).
+        "standing": _int(getattr(team, "standing", None)),
         "division": getattr(team, "division_name", None) or "",
         # Parallel arrays already populated by espn-api's mMatchup fetch
         # (football) or normalized from Matchup objects (baseball). Index i is
@@ -325,6 +328,11 @@ def serialize_team(
         "outcomes": outcomes,
         "roster": roster,
     }
+    final = _final_standing(team)
+    if final is not None:
+        # Omit mid-season / unset (ESPN uses 0) so older snapshots stay comparable.
+        row["final_standing"] = final
+    return row
 
 
 def serialize_settings(league: Any) -> dict[str, Any]:
@@ -819,6 +827,14 @@ def _int(value: Any) -> int | None:
         return int(value)
     except (TypeError, ValueError):
         return None
+
+
+def _final_standing(team: Any) -> int | None:
+    """ESPN ``rankCalculatedFinal`` — 0 mid-season means unset, not a rank."""
+    value = _int(getattr(team, "final_standing", None))
+    if value is None or value <= 0:
+        return None
+    return value
 
 
 def _player_id(player: Any) -> int | None:

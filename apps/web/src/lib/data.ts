@@ -389,7 +389,13 @@ export type Team = {
   win_pct?: number | null;
   points_for: number | null;
   points_against: number | null;
+  /** Regular-season / playoff seed rank (ESPN playoffSeed). */
   standing: number | null;
+  /**
+   * Post-season ladder rank (ESPN rankCalculatedFinal). `1` = playoff champion
+   * after the season ends; null/absent mid-season or on older snapshots.
+   */
+  final_standing?: number | null;
   division: string;
   schedule?: number[];
   scores?: Array<number | null>;
@@ -545,6 +551,7 @@ export type HistoryTeam = {
   points_for: number | null;
   points_against: number | null;
   standing: number | null;
+  final_standing?: number | null;
   schedule: number[];
   scores: Array<number | null>;
   outcomes: string[];
@@ -857,6 +864,7 @@ async function loadHistorySliceFromRoot(
         points_for: team.points_for,
         points_against: team.points_against,
         standing: team.standing,
+        final_standing: team.final_standing ?? null,
         schedule: team.schedule ?? [],
         scores: team.scores ?? [],
         outcomes: (team.outcomes ?? []).map(String),
@@ -891,6 +899,7 @@ async function loadHistorySliceFromRoot(
         points_for: team.points_for,
         points_against: team.points_against,
         standing: team.standing,
+        final_standing: team.final_standing ?? null,
         schedule: m.schedule ?? [],
         scores: m.scores ?? [],
         outcomes: (m.outcomes ?? []).map(String),

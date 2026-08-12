@@ -27,28 +27,48 @@ export type ProfileCareerInput = {
   leagueName: string;
 };
 
-/** Regular-season #1 chips that deep-link into History → Trophies. */
+/**
+ * Trophy chips that deep-link into History → Trophies.
+ * Prefers playoff titles when present; always includes seed #1 when earned.
+ */
 export function profileTrophyChips(
   careers: ProfileCareerInput[],
 ): ProfileTrophyChip[] {
   const chips: ProfileTrophyChip[] = [];
   for (const row of careers) {
-    const n = row.career?.totals?.championships ?? 0;
-    if (n <= 0) continue;
     const leagueName =
       row.leagueName.trim() ||
       row.link.league_name?.trim() ||
       row.link.league_id;
-    chips.push({
-      leagueId: row.link.league_id,
-      leagueName,
-      teamId: row.link.team_id,
-      label: `${n}× #1`,
-      detail: leagueName,
-      href: `/leagues/${row.link.league_id}?season=${row.season}&tab=history&view=trophies`,
-    });
+    const href = `/leagues/${row.link.league_id}?season=${row.season}&tab=history&view=trophies`;
+    const titles = row.career?.totals?.playoffChampionships ?? 0;
+    const seeds = row.career?.totals?.championships ?? 0;
+    if (titles > 0) {
+      chips.push({
+        leagueId: `${row.link.league_id}:title`,
+        leagueName,
+        teamId: row.link.team_id,
+        label: titles === 1 ? "1× title" : `${titles}× titles`,
+        detail: leagueName,
+        href,
+      });
+    }
+    if (seeds > 0) {
+      chips.push({
+        leagueId: `${row.link.league_id}:seed`,
+        leagueName,
+        teamId: row.link.team_id,
+        label: `${seeds}× #1`,
+        detail: leagueName,
+        href,
+      });
+    }
   }
-  return chips.sort((a, b) => a.leagueName.localeCompare(b.leagueName));
+  return chips.sort(
+    (a, b) =>
+      a.leagueName.localeCompare(b.leagueName) ||
+      a.label.localeCompare(b.label),
+  );
 }
 
 export type ProfileActivityKind = "comment" | "poll" | "reaction";

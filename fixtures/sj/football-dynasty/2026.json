@@ -1937,6 +1937,7 @@
     {
       "abbrev": "GG",
       "division": "West",
+      "final_standing": 3,
       "logo_url": null,
       "losses": 7,
       "name": "Gridiron Goons",
@@ -2444,6 +2445,7 @@
     {
       "abbrev": "TT",
       "division": "East",
+      "final_standing": 2,
       "logo_url": null,
       "losses": 2,
       "name": "Turf Titans",
@@ -2951,6 +2953,7 @@
     {
       "abbrev": "EZE",
       "division": "West",
+      "final_standing": 1,
       "logo_url": null,
       "losses": 5,
       "name": "End Zone Enforcers",

@@ -96,6 +96,9 @@ def test_serialize_team_and_league():
     assert snapshot["team_count"] == 1
     assert snapshot["teams"][0]["owners"] == ["A B"]
     assert snapshot["teams"][0]["win_pct"] == 0.75
+    # Seed vs final stay separate (final_standing 0 omitted mid-season).
+    assert snapshot["teams"][0]["standing"] == 1
+    assert "final_standing" not in snapshot["teams"][0]
     assert snapshot["teams"][0]["roster"][0]["name"] == "Test Player"
     assert snapshot["players"][0]["fantasy_team"] == "Unit Testers"
     assert snapshot["period_label"] == "week"
@@ -124,6 +127,32 @@ def test_serialize_team_and_league():
             "nominating_team_id": None,
         }
     ]
+
+
+def test_serialize_team_keeps_playoff_champ_separate_from_seed():
+    """ESPN seed #1 ≠ final_standing 1 — do not collapse them (roadmap 7.13)."""
+    team = SimpleNamespace(
+        team_id=3,
+        team_name="Dark Horse",
+        team_abbrev="DRK",
+        owners=[],
+        logo_url=None,
+        wins=8,
+        losses=6,
+        ties=0,
+        points_for=1100.0,
+        points_against=1050.0,
+        standing=3,
+        final_standing=1,
+        division_name="West",
+        schedule=[],
+        scores=[],
+        outcomes=[],
+        roster=[],
+    )
+    row = serialize_team(team)
+    assert row["standing"] == 3
+    assert row["final_standing"] == 1
 
 
 def test_serialize_settings_and_activity_shapes():

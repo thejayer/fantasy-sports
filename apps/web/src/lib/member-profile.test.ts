@@ -27,6 +27,7 @@ function careerWithTitles(n: number): FranchiseCareer {
       pointsFor: 1200,
       pointsAgainst: 1100,
       championships: n,
+      playoffChampionships: 0,
       winPct: 0.714,
     },
     rivals: [],
@@ -34,7 +35,9 @@ function careerWithTitles(n: number): FranchiseCareer {
 }
 
 describe("profileTrophyChips", () => {
-  it("emits #1 chips that deep-link to the trophy case", () => {
+  it("emits #1 and playoff-title chips that deep-link to the trophy case", () => {
+    const withTitles = careerWithTitles(2);
+    withTitles.totals!.playoffChampionships = 1;
     const chips = profileTrophyChips([
       {
         link: {
@@ -42,7 +45,7 @@ describe("profileTrophyChips", () => {
           team_id: 4,
           league_name: "Strictly Jayers Football",
         },
-        career: careerWithTitles(2),
+        career: withTitles,
         season: 2026,
         leagueName: "Strictly Jayers Football",
       },
@@ -53,12 +56,8 @@ describe("profileTrophyChips", () => {
         leagueName: "Baseball",
       },
     ]);
-    expect(chips).toHaveLength(1);
-    expect(chips[0]).toMatchObject({
-      label: "2× #1",
-      detail: "Strictly Jayers Football",
-      href: "/leagues/football-main?season=2026&tab=history&view=trophies",
-    });
+    expect(chips.map((c) => c.label).sort()).toEqual(["1× title", "2× #1"]);
+    expect(chips.every((c) => c.href.includes("view=trophies"))).toBe(true);
   });
 });
 

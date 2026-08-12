@@ -240,10 +240,14 @@ test.describe("hub smoke", () => {
     await expect(page.getByRole("link", { name: "All-time" })).toBeVisible();
   });
 
-  test("history trophies view shows trophy case (7.13)", async ({ page }) => {
+  test("history trophies view shows playoff and seed champions (7.13)", async ({
+    page,
+  }) => {
     await page.goto("/leagues/football-main?tab=history&view=trophies");
     await expect(page.getByRole("link", { name: "Trophies" })).toBeVisible();
     await expect(page.getByRole("heading", { name: "Trophy case" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Playoff champions" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Regular-season #1" })).toBeVisible();
     await expect(page.getByText(/Only one season is on disk/i)).toBeVisible();
     await expect(page.getByRole("heading", { name: "Record shelf" })).toBeVisible();
   });

@@ -204,6 +204,9 @@ export default async function MemberProfilePage({ params }: Props) {
                         career.totals.ties,
                       )}{" "}
                       ({formatWinPct(career.totals.winPct)})
+                      {career.totals.playoffChampionships
+                        ? ` · ${career.totals.playoffChampionships}× title${career.totals.playoffChampionships === 1 ? "" : "s"}`
+                        : ""}
                       {career.totals.championships
                         ? ` · ${career.totals.championships}× #1`
                         : ""}

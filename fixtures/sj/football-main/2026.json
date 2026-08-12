@@ -1925,6 +1925,7 @@
     {
       "abbrev": "HMH",
       "division": "West",
+      "final_standing": 4,
       "logo_url": null,
       "losses": 6,
       "name": "Hail Mary Heroes",
@@ -2312,6 +2313,7 @@
     {
       "abbrev": "EZE",
       "division": "East",
+      "final_standing": 3,
       "logo_url": null,
       "losses": 6,
       "name": "End Zone Enforcers",
@@ -2699,6 +2701,7 @@
     {
       "abbrev": "TT",
       "division": "East",
+      "final_standing": 2,
       "logo_url": null,
       "losses": 7,
       "name": "Turf Titans",
@@ -3086,6 +3089,7 @@
     {
       "abbrev": "GG",
       "division": "East",
+      "final_standing": 1,
       "logo_url": null,
       "losses": 9,
       "name": "Gridiron Goons",
