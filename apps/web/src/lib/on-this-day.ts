@@ -110,7 +110,8 @@ function weekRecapMoments(
     const digest = buildWeeklyDigest(league, period, now);
     if (!digest) continue;
     const top = digest.awards[0];
-    const yearsAgo = Math.max(0, now.getUTCFullYear() - league.season);
+    // Use the synthetic anchor's calendar year — late weeks can spill into January.
+    const yearsAgo = Math.max(0, now.getUTCFullYear() - when.getUTCFullYear());
     moments.push({
       id: `week:${league.league_id}:${league.season}:${period}`,
       kind: "week_recap",
@@ -118,7 +119,7 @@ function weekRecapMoments(
       leagueName: league.name || league.league_id,
       season: league.season,
       yearsAgo,
-      title: `Week ${period} · ${yearsAgoLabel(yearsAgo, league.season)}`,
+      title: `Week ${period} · ${yearsAgoLabel(yearsAgo, when.getUTCFullYear())}`,
       detail: top
         ? `${top.title}: ${top.detail}`
         : digest.headline,

@@ -96,6 +96,94 @@ describe("on-this-day", () => {
     expect(week?.title).toMatch(/2 years ago/);
   });
 
+  it("counts years-ago from the synthetic week date when it spills into January", () => {
+    // Sep 1 2024 + 18×7d ≈ early January 2025.
+    let januaryPeriod = 0;
+    let januaryWhen: Date | null = null;
+    for (let period = 1; period <= 30; period++) {
+      const when = new Date(digestPeriodMs(2024, period));
+      if (when.getUTCFullYear() === 2025 && when.getUTCMonth() === 0) {
+        januaryPeriod = period;
+        januaryWhen = when;
+        break;
+      }
+    }
+    expect(januaryPeriod).toBeGreaterThan(0);
+    expect(januaryWhen).not.toBeNull();
+
+    const n = januaryPeriod;
+    const league: LeagueSnapshot = {
+      league_id: "football-main",
+      espn_league_id: 1,
+      sport: "football",
+      format: "h2h",
+      season: 2024,
+      name: "Strictly Jayers Football",
+      team_count: 2,
+      current_week: n,
+      teams: [
+        {
+          team_id: 1,
+          name: "Alpha",
+          abbrev: "ALP",
+          owners: [],
+          wins: n,
+          losses: 0,
+          ties: 0,
+          points_for: 100,
+          points_against: 80,
+          standing: 1,
+          division: "",
+          schedule: Array.from({ length: n }, () => 2),
+          scores: Array.from({ length: n }, () => 120),
+          outcomes: Array.from({ length: n }, () => "W"),
+          roster: [],
+        },
+        {
+          team_id: 2,
+          name: "Beta",
+          abbrev: "BET",
+          owners: [],
+          wins: 0,
+          losses: n,
+          ties: 0,
+          points_for: 80,
+          points_against: 100,
+          standing: 2,
+          division: "",
+          schedule: Array.from({ length: n }, () => 1),
+          scores: Array.from({ length: n }, () => 90),
+          outcomes: Array.from({ length: n }, () => "L"),
+          roster: [],
+        },
+      ],
+      players: [],
+    };
+
+    const now = new Date(
+      Date.UTC(
+        2026,
+        januaryWhen!.getUTCMonth(),
+        januaryWhen!.getUTCDate(),
+        12,
+      ),
+    );
+    // Season-year math would claim 2 years; calendar year of the week is 2025 → 1.
+    expect(now.getUTCFullYear() - 2024).toBe(2);
+    expect(now.getUTCFullYear() - januaryWhen!.getUTCFullYear()).toBe(1);
+
+    const moments = collectOnThisDay(
+      [{ archive: null, snapshots: [league] }],
+      now,
+    );
+    const week = moments.find(
+      (m) => m.kind === "week_recap" && m.id.endsWith(`:${januaryPeriod}`),
+    );
+    expect(week?.yearsAgo).toBe(1);
+    expect(week?.title).toMatch(/1 year ago/);
+    expect(week?.title).toContain("2025");
+  });
+
   it("matches Sep 1 transaction anniversaries from fixtures", () => {
     const league = loadFootballMain();
     const moments = collectOnThisDay(
