@@ -22,12 +22,20 @@ export async function POST(request: Request, { params }: Props) {
   const denied = await enforceFeedModerate(leagueId);
   if (denied) return denied;
 
-  let body: { season?: number; period?: number; force?: boolean } = {};
+  let body: {
+    season?: number;
+    period?: number;
+    force?: boolean;
+    voice?: string;
+    note?: string;
+  } = {};
   try {
     body = (await request.json()) as {
       season?: number;
       period?: number;
       force?: boolean;
+      voice?: string;
+      note?: string;
     };
   } catch {
     return NextResponse.json({ error: "JSON body required" }, { status: 400 });
@@ -55,6 +63,8 @@ export async function POST(request: Request, { params }: Props) {
   const result = await generateAndStoreRecap(league, period, {
     allowTemplate: devBypassEnabled(),
     force: body.force === true,
+    voice: body.voice,
+    note: body.note,
   });
   if (!result.ok) {
     return NextResponse.json({ error: result.error }, { status: result.status });

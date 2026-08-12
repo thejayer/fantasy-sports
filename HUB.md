@@ -226,7 +226,10 @@ Haiku) unless `SJ_RECAP_ALLOW_EXPENSIVE=1`. Cost caps live in
 `{SJ_HUB_DIR}/recap_usage.json`: `SJ_RECAP_DAILY_LIMIT` (default 12 UTC) and
 `SJ_RECAP_PERIOD_LIMIT` (default 2 rewrites per league-season-week). A slot is
 reserved under a lock **before** the LLM call (fail-closed if generation later
-errors). Unchanged
+errors). Voice is **roast** by default (intramural needle, facts only); admins
+pick Roast / Mild / Savage on the Recap button (`voice` on the POST). Optional
+`SJ_RECAP_VOICE` / `SJ_RECAP_VOICE_NOTE` set the server default and a short
+house running-joke line (flavor, not new numbers). Unchanged
 facts skip the LLM unless the admin clicks Rewrite (`force`). Never generated
 on page load. `AUTH_DEV_BYPASS` may write the template columnist. Committed
 fixtures cover football-main weeks 13–14 and football-dynasty week 14.

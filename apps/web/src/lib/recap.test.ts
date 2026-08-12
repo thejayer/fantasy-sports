@@ -34,6 +34,12 @@ import {
   recordRecapLlmCall,
   reserveRecapLlmCall,
 } from "@/lib/recap-usage";
+import {
+  recapColumnistPrompt,
+  recapColumnistSystem,
+  recapStyleFromEnv,
+  recapVoiceFromEnv,
+} from "@/lib/recap-voice";
 
 function team(
   id: number,
@@ -261,7 +267,7 @@ describe("recapLlmConfigFromEnv", () => {
     ).toBeNull();
   });
 
-  it("sends Luna with reasoning off and a completion cap", () => {
+  it("sends Luna with reasoning off, a completion cap, and the roast system brief", () => {
     const body = openaiRecapRequestBody(
       { provider: "openai", apiKey: "sk", model: "gpt-5.6-luna" },
       "{}",
@@ -269,6 +275,34 @@ describe("recapLlmConfigFromEnv", () => {
     expect(body.reasoning_effort).toBe("none");
     expect(body.max_completion_tokens).toBe(900);
     expect(body.temperature).toBeUndefined();
+    const messages = body.messages as Array<{ role: string; content: string }>;
+    expect(messages[0]?.content).toMatch(/intramural roast/);
+  });
+});
+
+describe("recap voice", () => {
+  it("defaults to roast and accepts mild/savage", () => {
+    expect(recapVoiceFromEnv({})).toBe("roast");
+    expect(recapVoiceFromEnv({ SJ_RECAP_VOICE: "savage" })).toBe("savage");
+    expect(recapStyleFromEnv({ SJ_RECAP_VOICE: "hot-take" }).voice).toBe("roast");
+    expect(
+      recapStyleFromEnv({}, { voice: "mild", note: "  basement landlord  " }),
+    ).toEqual({ voice: "mild", note: "basement landlord" });
+  });
+
+  it("makes every joke hang on digest facts and changes heat by voice", () => {
+    const facts = recapFactsFromLeague(league, 1)!;
+    const roast = recapColumnistPrompt(facts, { voice: "roast" });
+    const mild = recapColumnistPrompt(facts, { voice: "mild" });
+    const savage = recapColumnistPrompt(facts, { voice: "savage" });
+    expect(roast).toMatch(/Do not invent scores/);
+    expect(roast).toMatch(/Every joke must cite a real number/);
+    expect(roast).toContain(JSON.stringify(facts));
+    expect(mild).toMatch(/Light ribbing/);
+    expect(savage).toMatch(/sharper knife/);
+    expect(recapColumnistSystem({ voice: "roast", note: "Call last place the cellar." })).toMatch(
+      /cellar/,
+    );
   });
 });
 
