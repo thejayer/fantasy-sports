@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Archivo } from "next/font/google";
+import localFont from "next/font/local";
 import Link from "next/link";
 
 import {
@@ -10,10 +10,27 @@ import { portalCopy } from "@/lib/content";
 import { getSiteConfig } from "@/lib/site";
 import "./globals.css";
 
-const archivo = Archivo({
-  subsets: ["latin"],
-  weight: ["400", "600", "800"],
+/** Self-hosted so Docker/CI builds do not fetch Google Fonts at compile time. */
+const archivo = localFont({
+  src: [
+    {
+      path: "../fonts/Archivo-latin-400.woff2",
+      weight: "400",
+      style: "normal",
+    },
+    {
+      path: "../fonts/Archivo-latin-600.woff2",
+      weight: "600",
+      style: "normal",
+    },
+    {
+      path: "../fonts/Archivo-latin-800.woff2",
+      weight: "800",
+      style: "normal",
+    },
+  ],
   variable: "--font-archivo",
+  display: "swap",
 });
 
 export function generateMetadata(): Metadata {
