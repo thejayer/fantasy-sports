@@ -203,7 +203,7 @@ and golf — plus the existing per-league cards. Local bypass: set
 | Env | Path (prod) | Mount | Owns |
 |---|---|---|---|
 | `SJ_DATA_DIR` | `/app/data/sj` | GCS **RW** (`…-sj-data`) | ESPN football/baseball from `sj sync` |
-| `SJ_HUB_DIR` | `/app/data/sj` | same mount | Golf leagues, auction rooms, league feeds (`feed.json`), `hub_members.json` |
+| `SJ_HUB_DIR` | `/app/data/sj` | same mount | Golf leagues, auction rooms, league feeds (`feed.json`), weekly recaps (`recaps/{period}.json`), `hub_members.json` |
 
 Prod uses **one** RW mount. A second FUSE volume (`…-sj-hub`) failed Cloud Run
 PORT probes. `getLeagueIndex` still merges roots when they differ (local sibling
@@ -213,6 +213,13 @@ PORT probes. `getLeagueIndex` still merges roots when they differ (local sibling
 Optional outbound digest: set `SJ_DISCORD_WEBHOOK_URL` on the hub service.
 Admins can send the latest weekly digest from the Feed tab; delivery is
 idempotent per league-season-period. Digests still render in-app when unset.
+
+Weekly **Recap** column (`?tab=recap&week=N`, football/baseball): funny
+power-rankings prose on top of the same digest facts. Admins POST
+`/api/leagues/{id}/recap` with `ANTHROPIC_API_KEY` or `OPENAI_API_KEY`
+(optional `SJ_RECAP_PROVIDER` / `SJ_RECAP_MODEL`). Never generated on page
+load. `AUTH_DEV_BYPASS` may write the template columnist. Committed fixtures
+cover football-main weeks 13–14 and football-dynasty week 14.
 
 ### Create / populate (Cloud Shell)
 

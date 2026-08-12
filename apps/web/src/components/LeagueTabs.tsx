@@ -35,6 +35,7 @@ const LABELS: Record<string, string> = {
   matchups: "Matchups",
   draft: "Draft",
   activity: "Feed",
+  recap: "Recap",
   waivers: "Waivers",
   history: "History",
   projections: "Projections",

@@ -627,6 +627,18 @@ test.describe("hub smoke", () => {
     await expect(page.getByLabel("Feed to date")).toBeVisible();
   });
 
+  test("recap tab shows the weekly power-rankings column", async ({ page }) => {
+    await page.goto("/leagues/football-main?tab=recap&week=14");
+    await expect(page.getByRole("heading", { name: /Weekly recap/i })).toBeVisible();
+    await expect(
+      page.getByRole("heading", {
+        name: /Enforcers cash a 56-point apology tour/i,
+      }),
+    ).toBeVisible();
+    await expect(page.getByText(/End Zone Enforcers drop 130.3/i)).toBeVisible();
+    await expect(page.getByRole("link", { name: /week 13/i })).toBeVisible();
+  });
+
   test("tools landing cards name each decision tool", async ({ page }) => {
     await page.goto("/leagues/football-main?tab=tools");
     await expect(page.getByRole("heading", { name: "Trade Desk" })).toBeVisible();

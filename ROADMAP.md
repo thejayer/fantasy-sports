@@ -815,6 +815,27 @@ Locks stay fail-closed.
 Still open from the original 7.7 scope: scheduled auto-send (today is
 admin-triggered) and email fallback.
 
+### 7.15 Weekly recap column — LANDED
+
+AI (or house-style) **power-rankings blog** per football/baseball league, one
+article per decided week.
+
+- **Facts stay 7.7.** `recapFactsFromLeague` wraps digest awards, true all-play
+  rankings, and decided H2H scores. The model is not allowed to invent numbers;
+  `validateRecapAgainstFacts` rejects ranking copy that misses or invents a team.
+- **Storage.** `{SJ_HUB_DIR}/{league}/{season}/recaps/{period}.json` (uncached,
+  like `feed.json`). Committed fixtures under `fixtures/sj/.../recaps/` so the
+  tab works offline. Hub root wins over fixtures.
+- **UI.** League tab **Recap** (`?tab=recap&week=N`) — overflow with Draft /
+  History, not a seventh primary pill. Feed digest titles deep-link here.
+  Golf has no week grain; the tab is omitted.
+- **Writer.** Admin POST `/api/leagues/{id}/recap` (same ACL as feed moderate).
+  Uses Anthropic (`ANTHROPIC_API_KEY` / `SJ_RECAP_API_KEY`) or OpenAI
+  (`OPENAI_API_KEY`); `SJ_RECAP_PROVIDER` / `SJ_RECAP_MODEL` optional.
+  **Never called from a page GET.** `AUTH_DEV_BYPASS` may fall back to the
+  deterministic template columnist. Cloud Run timeout is 300s; the route caps
+  at 60s.
+
 ### 7.8 Package the decision tools — LANDED
 
 - Tools tab opens on a **landing grid** (`view=home`) with proper nouns and
@@ -1153,6 +1174,7 @@ and tools. Builds on ~~7.1~~ / ~~7.6~~ / ~~7.9~~ / ~~7.10~~ and portal Watch
 | **7.12** Member profiles | landing | Crew-visible `/u/{handle}` (slug from username, else email local-part); unique usernames; optional **bio** (`hub_members.bio`, ≤280) on Settings + public page; avatar + franchises + career chips; **trophy shelf chips** → History trophies; **recent feed activity**; feed authors link here; Settings stays the edit surface. |
 | **7.13** Trophy case / hall of fame | landing | History `?view=trophies` packages **playoff titles** (`final_standing`) + regular-season #1 + record shelf; fixtures invent a divergent football title for disclosure; live seasons need re-sync/backfill for the field. |
 | **7.14** This day in SJ | landing | Member home shelf of calendar anniversaries: digest week anchors (Sep 1 + 7×period), ESPN transaction dates, golf `starts_at`. Multi-season archives label “N years ago.” `SJ_ON_THIS_DAY_NOW` freezes the clock for e2e. |
+| **7.15** Weekly recap column | landing | Per-league funny power-rankings article (`?tab=recap&week=N`); facts from 7.7 digest; LLM admin POST, fixtures committed. |
 | **P.6** Watch surface | landed | Playlist RSS queue + room CTAs on `apps/www` `/watch`. |
 
 **Build order:** ~~7.10b~~ → ~~7.9b~~ → ~~7.12~~ → ~~7.13~~ → **7.14** · ~~P.6~~.

@@ -1,0 +1,34 @@
+{
+  "schema_version": 1,
+  "league_id": "football-main",
+  "season": 2026,
+  "period": 14,
+  "sport": "football",
+  "generated_at": "2026-12-08T18:00:00.000Z",
+  "model": "fixture",
+  "headline": "Enforcers cash a 56-point apology tour",
+  "dek": "End Zone Enforcers drop 130.3 on Hail Mary Heroes, who spent 158 last week and apparently left the receipt in the car.",
+  "body": [
+    "Week 14 in Strictly Jayers Football was two different sports. End Zone Enforcers 130.3, Hail Mary Heroes 73.7 — a margin that should come with a courtesy text. Across the hall, Turf Titans 127.9 finally remembered Gridiron Goons exist and won 127.9–103.2.",
+    "Heroes had just put up 158 in week 13. This is the league's favorite genre: one week you are a problem, the next week you are a cautionary tale with a kicker.",
+    "The all-play board still has opinions about who is actually good. Read them below, then lie about them in Discord."
+  ],
+  "ranking_copy": [
+    {
+      "team_id": 4,
+      "blurb": "Hail Mary Heroes: 8-6 and 1,737 PF, which is a lot of points to still be capable of a 73-burger. Ceiling remains illegal."
+    },
+    {
+      "team_id": 3,
+      "blurb": "End Zone Enforcers: also 8-6, but they spent week 14 looking like the team the standings have been hinting at. Highest score, biggest blowout, no notes."
+    },
+    {
+      "team_id": 2,
+      "blurb": "Turf Titans: 7-7 after handling the Goons. Mid-table with a pulse. Do not draft their vibes in the group chat."
+    },
+    {
+      "team_id": 1,
+      "blurb": "Gridiron Goons: 5-9, 103.2, and still in the league, which is the participation trophy we do not give out."
+    }
+  ]
+}

@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { ActivityPanel } from "@/components/ActivityPanel";
+import { RecapPanel } from "@/components/RecapPanel";
 import { DraftResultsPanel } from "@/components/DraftResultsPanel";
 import { EmptyState } from "@/components/EmptyState";
 import { FreeAgentsBoard } from "@/components/FreeAgentsBoard";
@@ -275,6 +276,7 @@ const FOOTBALL_TABS = [
   "matchups",
   "draft",
   "activity",
+  "recap",
   "history",
   "projections",
   "tools",
@@ -288,6 +290,7 @@ const BASEBALL_TABS = [
   "matchups",
   "draft",
   "activity",
+  "recap",
   "waivers",
   "history",
   "projections",
@@ -479,6 +482,10 @@ export function LeagueView({
                 ? auctionQuery
                 : active === "activity"
                   ? `&view=${activityView}`
+                : active === "recap"
+                  ? week != null
+                    ? `&week=${week}`
+                    : ""
                   : active === "history"
                     ? `&view=${historyView}${historyPair}`
                     : active === "projections"
@@ -565,6 +572,7 @@ export function LeagueView({
                 (golfLineupTeamId != null ? `&team=${golfLineupTeamId}` : "")
               : "") +
             (name === "activity" ? `&view=${activityView}` : "") +
+            (name === "recap" && week != null ? `&week=${week}` : "") +
             (name === "history" ? `&view=${historyView}${historyPair}` : "") +
             (name === "projections" && projectionScoring
               ? `&scoring=${projectionScoring}`
@@ -677,6 +685,8 @@ export function LeagueView({
       {active === "activity" ? (
         <ActivityPanel league={league} view={activityView} />
       ) : null}
+
+      {active === "recap" ? <RecapPanel league={league} week={week} /> : null}
 
       {active === "waivers" ? (
         <FreeAgentsBoard
