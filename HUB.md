@@ -55,7 +55,7 @@ Room is file-backed + HTTP polling (no websockets/Redis).
 
 Hosted as Cloud Run service **`sj-hub`** in project **`fantasy-sports-analytics`**.
 
-App secrets (Google OAuth, allowlist, ESPN cookies) live in **GCP Secret Manager**.
+App secrets (Google OAuth, allowlist, ESPN cookies, OpenAI recap key) live in **GCP Secret Manager**.
 Deploy workflows authenticate with **Workload Identity Federation** (no JSON key):
 pool/provider `github`, SA `ffa-deployer@fantasy-sports-analytics.iam.gserviceaccount.com`.
 
@@ -174,6 +174,7 @@ Do not commit secret values.
 | `sj-allowed-emails` | `ALLOWED_EMAILS` | Next.js allowlist (unioned with `hub_members.json`) |
 | `sj-espn-s2` | `ESPN_S2` | ESPN sync (container start / CLI) |
 | `sj-espn-swid` | `ESPN_SWID` | ESPN sync (container start / CLI) |
+| `openai-api-key` | `OPENAI_API_KEY` | Weekly recap columnist (Cloud Run `sj-hub`, not CI) |
 
 Optional: `ADMIN_EMAILS` (not a Secret Manager entry yet) bootstraps who can open
 `/admin` until `hub_members.json` contains at least one `admin` role.
@@ -203,7 +204,7 @@ and golf — plus the existing per-league cards. Local bypass: set
 | Env | Path (prod) | Mount | Owns |
 |---|---|---|---|
 | `SJ_DATA_DIR` | `/app/data/sj` | GCS **RW** (`…-sj-data`) | ESPN football/baseball from `sj sync` |
-| `SJ_HUB_DIR` | `/app/data/sj` | same mount | Golf leagues, auction rooms, league feeds (`feed.json`), weekly recaps (`recaps/{period}.json`), `hub_members.json` |
+| `SJ_HUB_DIR` | `/app/data/sj` | same mount | Golf leagues, auction rooms, league feeds (`feed.json`), weekly recaps (`recaps/{period}.json`), recap usage caps (`recap_usage.json`), `hub_members.json` |
 
 Prod uses **one** RW mount. A second FUSE volume (`…-sj-hub`) failed Cloud Run
 PORT probes. `getLeagueIndex` still merges roots when they differ (local sibling
@@ -216,10 +217,17 @@ idempotent per league-season-period. Digests still render in-app when unset.
 
 Weekly **Recap** column (`?tab=recap&week=N`, football/baseball): funny
 power-rankings prose on top of the same digest facts. Admins POST
-`/api/leagues/{id}/recap` with `ANTHROPIC_API_KEY` or `OPENAI_API_KEY`
-(optional `SJ_RECAP_PROVIDER` / `SJ_RECAP_MODEL`). Never generated on page
-load. `AUTH_DEV_BYPASS` may write the template columnist. Committed fixtures
-cover football-main weeks 13–14 and football-dynasty week 14.
+`/api/leagues/{id}/recap`. Production uses Secret Manager `openai-api-key` →
+`OPENAI_API_KEY` on Cloud Run (`deploy-hub.yml` `--set-secrets`; a one-off
+`gcloud run services update` is wiped on the next hub deploy). Default model
+is **`gpt-5.6-luna`** (`SJ_RECAP_MODEL`); OpenAI wins when that key is set
+unless `SJ_RECAP_PROVIDER=anthropic`. Cheap-model allowlist (Luna / 4.1-mini /
+Haiku) unless `SJ_RECAP_ALLOW_EXPENSIVE=1`. Cost caps live in
+`{SJ_HUB_DIR}/recap_usage.json`: `SJ_RECAP_DAILY_LIMIT` (default 12 UTC) and
+`SJ_RECAP_PERIOD_LIMIT` (default 2 rewrites per league-season-week). Unchanged
+facts skip the LLM unless the admin clicks Rewrite (`force`). Never generated
+on page load. `AUTH_DEV_BYPASS` may write the template columnist. Committed
+fixtures cover football-main weeks 13–14 and football-dynasty week 14.
 
 ### Create / populate (Cloud Shell)
 
@@ -231,6 +239,7 @@ cover football-main weeks 13–14 and football-dynasty week 14.
 ./scripts/add-hub-secret-version.sh sj-allowed-emails
 ./scripts/add-hub-secret-version.sh sj-espn-s2
 ./scripts/add-hub-secret-version.sh sj-espn-swid
+./scripts/add-hub-secret-version.sh openai-api-key
 ./scripts/grant-hub-secret-access.sh
 ```
 

@@ -164,7 +164,7 @@ export async function RecapPanel({
       ) : facts ? (
         <EmptyState title={`No column for ${periodLabel} ${active} yet`}>
           {canWrite
-            ? "Admins can write this week’s recap. It uses the same awards and all-play board as the Feed digest."
+            ? "Admins can write this week’s recap. Same awards and all-play board as the Feed digest; Luna, with a daily call cap."
             : "The commissioner has not run the columnist for this week."}
         </EmptyState>
       ) : (

@@ -5,6 +5,8 @@
  * Prose is generated offline / via admin POST — never on a page GET.
  */
 
+import { createHash } from "node:crypto";
+
 import type { LeagueSnapshot } from "@/lib/data";
 import {
   buildWeeklyDigest,
@@ -52,6 +54,8 @@ export type RecapArticle = {
   generated_at: string;
   /** Model id, or `template` / `fixture`. */
   model: string;
+  /** SHA-256 prefix of the facts payload; skip LLM when unchanged. */
+  facts_hash?: string;
   headline: string;
   dek: string;
   body: string[];
@@ -110,6 +114,30 @@ export function recapFactsFromDigest(
   };
 }
 
+/** Stable 16-hex digest so a rewrite can skip the LLM when scores have not moved. */
+export function recapFactsHash(facts: RecapFacts): string {
+  const payload = {
+    leagueId: facts.leagueId,
+    season: facts.season,
+    period: facts.period,
+    sport: facts.sport,
+    games: facts.games,
+    awards: facts.awards.map((award) => ({
+      id: award.id,
+      detail: award.detail,
+      teamIds: award.teamIds,
+    })),
+    rankings: facts.rankings.map((row) => ({
+      teamId: row.teamId,
+      rank: row.rank,
+      allPlayWinPct: row.allPlayWinPct,
+      pointsFor: row.pointsFor,
+      record: row.record,
+    })),
+  };
+  return createHash("sha256").update(JSON.stringify(payload)).digest("hex").slice(0, 16);
+}
+
 const HEADLINE_MAX = 120;
 const DEK_MAX = 280;
 const BODY_MAX = 8;
@@ -153,6 +181,10 @@ export function parseRecapArticle(raw: unknown): RecapArticle | null {
         ? doc.generated_at
         : new Date().toISOString(),
     model: typeof doc.model === "string" ? doc.model : "unknown",
+    facts_hash:
+      typeof doc.facts_hash === "string" && /^[a-f0-9]{16}$/.test(doc.facts_hash)
+        ? doc.facts_hash
+        : undefined,
     headline: clip(doc.headline, HEADLINE_MAX),
     dek: clip(doc.dek, DEK_MAX),
     body: body.slice(0, BODY_MAX).map((p) => clip(p, 800)),
@@ -274,6 +306,7 @@ export function writeTemplateRecap(
     sport: facts.sport,
     generated_at: now.toISOString(),
     model: "template",
+    facts_hash: recapFactsHash(facts),
     headline: clip(headline, HEADLINE_MAX),
     dek: clip(dek, DEK_MAX),
     body: body.map((p) => clip(p, 800)),

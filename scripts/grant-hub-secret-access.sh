@@ -18,6 +18,8 @@ SECRETS=(
   sj-allowed-emails
   sj-espn-s2
   sj-espn-swid
+  # Weekly recap columnist (roadmap 7.15). Cheap default is gpt-5.6-luna.
+  openai-api-key
   # Read by the ffa dashboard service, which shares the runtime SA by default.
   ffa-dashboard-password
 )
