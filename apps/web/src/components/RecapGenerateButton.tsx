@@ -16,16 +16,18 @@ export function RecapGenerateButton({
   season,
   period,
   hasArticle,
+  defaultVoice = "roast",
 }: {
   leagueId: string;
   season: number;
   period: number;
   hasArticle: boolean;
+  defaultVoice?: RecapVoice;
 }) {
   const router = useRouter();
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [voice, setVoice] = useState<RecapVoice>("roast");
+  const [voice, setVoice] = useState<RecapVoice>(defaultVoice);
 
   async function run() {
     setBusy(true);

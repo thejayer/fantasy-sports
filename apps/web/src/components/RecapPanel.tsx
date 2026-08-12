@@ -16,6 +16,7 @@ import {
 } from "@/lib/hub-members";
 import { readHubMembers } from "@/lib/hub-members-store";
 import { getViewer } from "@/lib/viewer";
+import { recapVoiceFromEnv } from "@/lib/recap-voice";
 import { devBypassEnabled } from "@/lib/session";
 
 function RecapArticleView({
@@ -156,6 +157,7 @@ export async function RecapPanel({
           season={league.season}
           period={active}
           hasArticle={article != null}
+          defaultVoice={recapVoiceFromEnv()}
         />
       ) : null}
 

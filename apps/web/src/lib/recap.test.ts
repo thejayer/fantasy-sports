@@ -1,4 +1,4 @@
-import { mkdtemp, rm } from "node:fs/promises";
+import { mkdtemp, rm, readFile } from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
@@ -303,6 +303,36 @@ describe("recap voice", () => {
     expect(recapColumnistSystem({ voice: "roast", note: "Call last place the cellar." })).toMatch(
       /cellar/,
     );
+  });
+
+  it("RecapPanel seeds the picker from SJ_RECAP_VOICE", async () => {
+    const source = await readFile(
+      path.join(process.cwd(), "src/components/RecapPanel.tsx"),
+      "utf8",
+    );
+    expect(source).toMatch(/defaultVoice=\{recapVoiceFromEnv\(\)\}/);
+  });
+
+  it("falls back to SJ_RECAP_VOICE when the POST omits voice", async () => {
+    const prevHub = process.env.SJ_HUB_DIR;
+    const tmp = await mkdtemp(path.join(os.tmpdir(), "sj-recap-"));
+    process.env.SJ_HUB_DIR = tmp;
+    try {
+      let seen: string | undefined;
+      const result = await generateAndStoreRecap(league, 1, {
+        env: { OPENAI_API_KEY: "sk-test", SJ_RECAP_VOICE: "savage" },
+        generateWithLlm: async (facts, _config, now, style) => {
+          seen = style?.voice;
+          return writeTemplateRecap(facts, now);
+        },
+      });
+      expect(result.ok).toBe(true);
+      expect(seen).toBe("savage");
+    } finally {
+      if (prevHub == null) delete process.env.SJ_HUB_DIR;
+      else process.env.SJ_HUB_DIR = prevHub;
+      await rm(tmp, { recursive: true, force: true });
+    }
   });
 });
 
