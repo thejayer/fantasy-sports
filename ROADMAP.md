@@ -1066,7 +1066,7 @@ Everything else in phase 7 is independent and can land in any order: ~~7.3~~
 | J — Tools packaging | ~~7.8~~ | Trade Desk Δ make-% via samples sidecar |
 | K — Craft | ~~7.10~~, ~~7.11~~ | `globals.css`, HTML + JS CI budgets |
 | L — Sport depth | 8.1 · 8.2 · 8.3 | `src/sj` · `apps/web` · `src/sg` |
-| Q — Shared memory | ~~7.10b~~ · ~~7.9b~~ · ~~7.12~~ · ~~7.13~~ · ~~P.6~~ | `hub_members`, rosters, `/u`, history, `apps/www` |
+| Q — Shared memory | ~~7.10b~~ · ~~7.9b~~ · ~~7.12~~ · ~~7.13~~ · **7.14** · ~~P.6~~ | `hub_members`, rosters, `/u`, history, home, `apps/www` |
 
 G, H, and K barely overlap. I is the only track that introduces user-generated
 content, so it carries the validation/rate-limit/moderation risk and should not
@@ -1136,9 +1136,10 @@ and tools. Builds on ~~7.1~~ / ~~7.6~~ / ~~7.9~~ / ~~7.10~~ and portal Watch
 | **7.9b** Keeper status on rosters | landed | Join `draft[].keeper` → roster player ids; dynasty sample fixtures mark round-1 keepers; draft board uses Keeper badge. |
 | **7.12** Member profiles | landing | Crew-visible `/u/{handle}` (slug from username, else email local-part); unique usernames; optional **bio** (`hub_members.bio`, ≤280) on Settings + public page; avatar + franchises + career chips; **trophy shelf chips** → History trophies; **recent feed activity**; feed authors link here; Settings stays the edit surface. |
 | **7.13** Trophy case / hall of fame | landing | History `?view=trophies` packages **playoff titles** (`final_standing`) + regular-season #1 + record shelf; fixtures invent a divergent football title for disclosure; live seasons need re-sync/backfill for the field. |
+| **7.14** This day in SJ | landing | Member home shelf of calendar anniversaries: digest week anchors (Sep 1 + 7×period), ESPN transaction dates, golf `starts_at`. Multi-season archives label “N years ago.” `SJ_ON_THIS_DAY_NOW` freezes the clock for e2e. |
 | **P.6** Watch surface | landed | Playlist RSS queue + room CTAs on `apps/www` `/watch`. |
 
-**Build order:** ~~7.10b~~ → ~~7.9b~~ → ~~7.12~~ → ~~7.13~~ · ~~P.6~~.
+**Build order:** ~~7.10b~~ → ~~7.9b~~ → ~~7.12~~ → ~~7.13~~ → **7.14** · ~~P.6~~.
 
 ---
 

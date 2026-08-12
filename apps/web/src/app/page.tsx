@@ -2,9 +2,11 @@ import Link from "next/link";
 
 import { MemberDashboard } from "@/components/MemberDashboard";
 import {
+  getLeagueHistoryArchive,
   getLeagueIndex,
   getLeagueSnapshot,
   getPlayoffOddsSnapshot,
+  type LeagueSnapshot,
 } from "@/lib/data";
 import {
   buildLeagueCard,
@@ -13,6 +15,11 @@ import {
   resolveHomeSeason,
   type HomeLeagueCard,
 } from "@/lib/member-home";
+import {
+  collectOnThisDay,
+  formatMonthDay,
+  onThisDayClock,
+} from "@/lib/on-this-day";
 import { withPlayoffOdds } from "@/lib/portfolio";
 import { getViewer } from "@/lib/viewer";
 
@@ -74,9 +81,11 @@ export default async function HomePage({ searchParams }: Props) {
   }
 
   const cards: HomeLeagueCard[] = [];
+  const snapshotsByLeague = new Map<string, LeagueSnapshot>();
   for (const item of leagues) {
     const league = await getLeagueSnapshot(item.league_id, item.season);
     if (!league) continue;
+    snapshotsByLeague.set(item.league_id, league);
     const link = viewer.franchises.find(
       (franchise) => franchise.league_id === item.league_id,
     );
@@ -101,6 +110,27 @@ export default async function HomePage({ searchParams }: Props) {
     return a.sport.localeCompare(b.sport) || a.name.localeCompare(b.name);
   });
 
+  const now = onThisDayClock();
+  const linkedLeagueIds = [
+    ...new Set(viewer.franchises.map((f) => f.league_id)),
+  ];
+  const onThisDayInputs = await Promise.all(
+    linkedLeagueIds.map(async (leagueId) => {
+      const archive = await getLeagueHistoryArchive(leagueId);
+      const snap = snapshotsByLeague.get(leagueId);
+      return {
+        archive,
+        snapshots: snap ? [snap] : [],
+      };
+    }),
+  );
+  const onThisDay = collectOnThisDay(onThisDayInputs, now);
+  const onThisDayLabel = now.toLocaleDateString("en-US", {
+    month: "long",
+    day: "numeric",
+    timeZone: "UTC",
+  });
+
   return (
     <MemberDashboard
       cards={cards}
@@ -111,6 +141,8 @@ export default async function HomePage({ searchParams }: Props) {
         viewer.name?.split("@")[0] ??
         null
       }
+      onThisDay={onThisDay}
+      onThisDayLabel={onThisDayLabel || formatMonthDay(now)}
     />
   );
 }

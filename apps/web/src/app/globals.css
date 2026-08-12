@@ -532,6 +532,60 @@ a.nav-user:focus-visible {
   margin: 0 0 0.5rem;
 }
 
+.home-this-day {
+  padding: 0.85rem 1rem 1rem;
+  margin-bottom: 1.25rem;
+}
+
+.home-this-day .roster-group-title {
+  margin: 0 0 0.35rem;
+}
+
+.home-this-day-list {
+  list-style: none;
+  margin: 0.65rem 0 0;
+  padding: 0;
+  display: grid;
+  gap: 0.55rem;
+}
+
+.home-this-day-row {
+  display: grid;
+  gap: 0.2rem;
+  padding: 0.55rem 0.65rem;
+  border-radius: var(--radius);
+  color: inherit;
+  text-decoration: none;
+  background: var(--raise);
+  box-shadow: inset 0 0 0 1px var(--line);
+  transition: background 120ms ease, box-shadow 120ms ease;
+}
+
+.home-this-day-row:hover,
+.home-this-day-row:focus-visible {
+  background: color-mix(in srgb, var(--accent) 10%, var(--raise));
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent) 40%, var(--line));
+}
+
+.home-this-day-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem 0.65rem;
+  align-items: baseline;
+  justify-content: space-between;
+}
+
+.home-this-day-title {
+  font-weight: 650;
+}
+
+.home-this-day-detail {
+  margin: 0;
+  font-size: 0.92rem;
+  line-height: 1.4;
+  opacity: 0.9;
+}
+
 .home-grid {
   display: grid;
   gap: 0.9rem;

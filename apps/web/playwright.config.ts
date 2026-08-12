@@ -55,6 +55,9 @@ export default defineConfig({
       // (see lib/viewer.ts). Matches the email the admin-center spec adds.
       SJ_DEV_VIEWER_EMAIL:
         process.env.SJ_DEV_VIEWER_EMAIL ?? "demo@example.com",
+      // Freeze "This day in SJ" on Week 1's synthetic anniversary (Sep 8).
+      SJ_ON_THIS_DAY_NOW:
+        process.env.SJ_ON_THIS_DAY_NOW ?? "2026-09-08T12:00:00.000Z",
     },
   },
 });

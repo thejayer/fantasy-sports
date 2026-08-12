@@ -3,6 +3,7 @@ import Link from "next/link";
 import { PortfolioTable } from "@/components/PortfolioTable";
 import { SeasonSwitcher } from "@/components/SeasonSwitcher";
 import { TeamAvatar } from "@/components/TeamAvatar";
+import { ThisDayInSj } from "@/components/ThisDayInSj";
 import {
   dashboardActions,
   syncedLabel,
@@ -10,6 +11,7 @@ import {
 } from "@/lib/member-home";
 import { formatMatchupScore, outcomeTone } from "@/lib/matchups";
 import { sportFormatLabel } from "@/lib/league";
+import type { OnThisDayMoment } from "@/lib/on-this-day";
 
 function MatchupLine({ card }: { card: HomeLeagueCard }) {
   const { matchup } = card;
@@ -129,18 +131,22 @@ function LeagueCard({ card }: { card: HomeLeagueCard }) {
   );
 }
 
-/** The signed-in landing surface (roadmap 7.2 / 9.4). */
+/** The signed-in landing surface (roadmap 7.2 / 9.4 / 7.14). */
 export function MemberDashboard({
   cards,
   seasons,
   currentSeason,
   memberName,
+  onThisDay = [],
+  onThisDayLabel,
 }: {
   cards: HomeLeagueCard[];
   /** Union of on-disk seasons for the home year filter; chips hide when ≤1. */
   seasons: number[];
   currentSeason: number;
   memberName?: string | null;
+  onThisDay?: OnThisDayMoment[];
+  onThisDayLabel?: string;
 }) {
   const todo = dashboardActions(cards);
   const linked = cards.filter((card) => card.team).length;
@@ -169,6 +175,11 @@ export function MemberDashboard({
       </div>
 
       <PortfolioTable cards={cards} season={currentSeason} />
+
+      <ThisDayInSj
+        moments={onThisDay}
+        dayLabel={onThisDayLabel ?? "Today"}
+      />
 
       {todo.length ? (
         <section className="panel home-todo">
