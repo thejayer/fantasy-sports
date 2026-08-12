@@ -1,13 +1,11 @@
-import type { Metadata } from "next";
-import localFont from "next/font/local";
 import Link from "next/link";
 
-import {
-  ACCENT_INIT_SCRIPT,
-  AccentPicker,
-} from "@/components/AccentPicker";
+import { PortalNav } from "@/components/PortalNav";
+import { ACCENT_INIT_SCRIPT } from "@/components/AccentPicker";
 import { portalCopy } from "@/lib/content";
 import { getSiteConfig } from "@/lib/site";
+import localFont from "next/font/local";
+import type { Metadata } from "next";
 import "./globals.css";
 
 /** Self-hosted so Docker/CI builds do not fetch Google Fonts at compile time. */
@@ -78,22 +76,10 @@ export default function RootLayout({
             <Link href="/" className="brand-mark">
               Strictly Jayers
             </Link>
-            <nav className="nav-links" aria-label="Primary">
-              <Link href="/#destinations">Places</Link>
-              <Link href="/ai">AI News</Link>
-              <Link href="/watch">Watch</Link>
-              {discordInviteUrl ? (
-                <a href={discordInviteUrl} rel="noopener noreferrer">
-                  Discord
-                </a>
-              ) : (
-                <Link href="/#destinations">Discord</Link>
-              )}
-              <a href={fantasyHubUrl} rel="noopener noreferrer">
-                Fantasy
-              </a>
-              <AccentPicker />
-            </nav>
+            <PortalNav
+              fantasyHubUrl={fantasyHubUrl}
+              discordInviteUrl={discordInviteUrl}
+            />
           </header>
           {children}
         </div>

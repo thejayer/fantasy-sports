@@ -1088,28 +1088,35 @@ building if members ask.
 Separate from the fantasy hub product track. The apex site is the group home;
 fantasy stays on `fantasy.strictlyjayers.com`. Docs: [PORTAL.md](PORTAL.md).
 
-### P.1 Front door + fantasy handoff — LANDED (scaffold)
-- `apps/www` Next.js portal (Syne + Figtree, slate/cyan — distinct from hub greens).
+### P.1 Front door + fantasy handoff — LANDED
+- `apps/www` Next.js portal on the shared **Modernist** system (Archivo +
+  Signal Red accent — same `design/modernist/` language as the hub, not the
+  earlier Syne/Figtree + slate/cyan scaffold notes).
 - Absolute `FANTASY_HUB_URL` CTAs (no same-origin rewrite / proxy).
 - Optional `DISCORD_INVITE_URL` / `PALWORLD_INFO_URL` destination tiles.
 - Cloud Run `sj-www` deploy workflow + `./scripts/setup-portal-domain.sh`.
+- Hero atmosphere imagery under the Signal Red plane; intentional home motion
+  (brand settle, CTA lift, destination hover) with `prefers-reduced-motion`.
 
-### P.2 Content and destinations (partial)
+### P.2 Content and destinations — LANDED (Palworld pending)
 - Discord invite live (default in `lib/site.ts`; optional `DISCORD_INVITE_URL`).
-- Palworld server details still open (`PALWORLD_INFO_URL` on `sj-www`).
-- Additional community surfaces only when the group asks (events, servers, etc.).
-- Optional reciprocal “Community” link from the hub chrome back to the apex.
+- Palworld stays a **“Details soon”** tile until `PALWORLD_INFO_URL` is set on
+  `sj-www` — intentional, not a missing destination.
+- Home destinations answer “why go here now”; Coming up event strip + Meet the
+  crew deep-links to hub `/u/{handle}` (handles edited in `lib/content.ts`).
+- Reciprocal **Community** link in hub chrome (header + mobile nav) →
+  `strictlyjayers.com` (`COMMUNITY_SITE_URL` override).
 
-### P.3 Apex DNS cutover (ops)
+### P.3 Apex DNS cutover (ops — open)
 - Map `strictlyjayers.com` (+ `www`) → `sj-www`, set `SITE_URL`, leave hub
-  `AUTH_URL` on the fantasy host alone.
+  `AUTH_URL` on the fantasy host alone. Product copy on the portal is editorial;
+  this item is DNS/ops only.
 
-### P.4 AI News desk (open → landing)
-- `/ai` on `apps/www`: curated big stories, merged RSS headlines (OpenAI /
-  Anthropic mirror / Cursor mirror / Google AI), and X timeline embeds for
-  `@OpenAI` / `@AnthropicAI` / `@cursor_ai` (no paid X API).
-- Feeds revalidate ~30 minutes; editor picks stay hand-edited in
-  `lib/ai-news.ts`.
+### P.4 AI News desk — LANDED
+- `/ai` on `apps/www`: dated hand-picked big stories in `AI_EDITOR_PICKS`,
+  merged RSS headlines (OpenAI / Anthropic mirror / Cursor mirror / Google AI),
+  and X timeline embeds for `@OpenAI` / `@AnthropicAI` / `@cursor_ai` (no paid
+  X API). Feeds revalidate ~30 minutes; picks stay hand-edited.
 
 ### P.5 Shared Watch playlist — LANDED (scaffold)
 - `/watch` on `apps/www`: embed the crew YouTube playlist (default id in
@@ -1118,8 +1125,13 @@ fantasy stays on `fantasy.strictlyjayers.com`. Docs: [PORTAL.md](PORTAL.md).
 
 ### P.6 Watch as a real surface — LANDED
 Deeper Watch without a paid YouTube Data API: public playlist Atom/RSS titles
-+ count under `/watch`, stronger YouTube / Discord / hub cross-links, and a
-“how we use this” room section. Fail-soft when the feed is down (embed stays).
++ count under `/watch`, **Tonight’s pick** highlight, Discord “drop a clip /
+jump voice” CTAs, YouTube / hub cross-links, and a “how we use this” room
+section. Fail-soft when the feed is down (embed stays).
+
+### P.7 Portal smoke — LANDED (light)
+Vitest on portal content helpers + Playwright smoke (home CTAs, `/watch`
+embed + tonight’s pick, `/ai` editor picks). Wired into the `www` CI job.
 
 ---
 

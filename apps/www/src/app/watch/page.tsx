@@ -16,7 +16,7 @@ export const revalidate = 1800;
 export default async function WatchPage() {
   const { fantasyHubUrl, discordInviteUrl } = getSiteConfig();
   const playlist = await loadWatchPlaylist(12);
-  const latest = playlist.items[0] ?? null;
+  const tonight = playlist.items[0] ?? null;
 
   return (
     <main className="watch-page">
@@ -24,27 +24,73 @@ export default async function WatchPage() {
         <p className="hero-kicker">Shared queue</p>
         <h1>Watch</h1>
         <p>
-          One playlist for the crew. Pick a video in the player, queue the next
-          clip from the list, or open YouTube to add more.
+          One playlist for the crew. Hit tonight’s pick, queue the next clip, or
+          jump Discord voice while it plays.
         </p>
         <p className="page-hero-meta">
           {playlist.feedOk
             ? `${playlist.items.length} recent clip${playlist.items.length === 1 ? "" : "s"} from the feed`
             : "Playlist feed temporarily unavailable — player still works"}
-          {latest ? (
-            <>
-              {" · Latest: "}
-              <a href={latest.url} rel="noopener noreferrer">
-                {latest.title}
-              </a>
-            </>
-          ) : null}
           {" · "}
           <a href={playlist.playlistUrl} rel="noopener noreferrer">
             Open on YouTube →
           </a>
         </p>
       </section>
+
+      {tonight ? (
+        <section
+          className="section tonight-pick"
+          aria-labelledby="tonight-heading"
+        >
+          <div className="section-head">
+            <div>
+              <h2 id="tonight-heading">Tonight’s pick</h2>
+              <p>Top of the shared playlist feed — start here.</p>
+            </div>
+            <div className="section-marker">NOW</div>
+          </div>
+          <a
+            className="tonight-card"
+            href={tonight.url}
+            rel="noopener noreferrer"
+          >
+            <div className="story-meta">
+              <span>Featured</span>
+              <span>{formatFeedDate(tonight.publishedAt)}</span>
+            </div>
+            <h3>{tonight.title}</h3>
+            <span className="story-action">Play on YouTube →</span>
+          </a>
+          <p className="cta-row watch-cta-row">
+            {discordInviteUrl ? (
+              <>
+                <a
+                  className="cta cta-on-light"
+                  href={discordInviteUrl}
+                  rel="noopener noreferrer"
+                >
+                  Drop a clip in Discord →
+                </a>
+                <a
+                  className="cta cta-ghost"
+                  href={discordInviteUrl}
+                  rel="noopener noreferrer"
+                >
+                  Jump voice →
+                </a>
+              </>
+            ) : null}
+            <a
+              className="cta cta-ghost"
+              href={playlist.playlistUrl}
+              rel="noopener noreferrer"
+            >
+              Open full playlist →
+            </a>
+          </p>
+        </section>
+      ) : null}
 
       <section className="section watch-player-section" aria-label="Playlist player">
         <div className="section-head">
@@ -86,22 +132,13 @@ export default async function WatchPage() {
           >
             Open playlist →
           </a>
-          {latest ? (
-            <a
-              className="cta cta-ghost"
-              href={latest.url}
-              rel="noopener noreferrer"
-            >
-              Latest video →
-            </a>
-          ) : null}
           {discordInviteUrl ? (
             <a
               className="cta cta-ghost"
               href={discordInviteUrl}
               rel="noopener noreferrer"
             >
-              Discord →
+              Discord voice →
             </a>
           ) : null}
         </p>
@@ -153,9 +190,9 @@ export default async function WatchPage() {
           <div>
             <h2 id="room-heading">How we use this</h2>
             <p>
-              Drop clips for draft night, golf Sundays, or whatever the Discord
-              thread is arguing about. The playlist is the shared shelf — this
-              page is the living room.
+              Drop clips for draft night, golf Sundays, or whatever Discord is
+              arguing about. Hit voice, share the pick, then come back to the
+              hub when the waiver wire opens.
             </p>
           </div>
           <div className="section-marker">ROOM</div>
@@ -169,7 +206,7 @@ export default async function WatchPage() {
           {discordInviteUrl ? (
             <li>
               <a href={discordInviteUrl} rel="noopener noreferrer">
-                Crew Discord →
+                Jump Discord voice →
               </a>
             </li>
           ) : null}

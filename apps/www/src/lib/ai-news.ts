@@ -81,29 +81,41 @@ export const AI_TIMELINE_ACCOUNTS: TimelineAccount[] = [
 
 /**
  * Hand-picked “big stories”. Edit this list when something major lands —
- * RSS covers the firehose; this is the poster wall.
+ * RSS covers the firehose; this is the poster wall. Prefer dated articles
+ * over source homepages so the desk reads editorial.
  */
 export const AI_EDITOR_PICKS: EditorPick[] = [
   {
-    title: "OpenAI newsroom",
-    url: "https://openai.com/news/",
-    source: "OpenAI",
-    blurb: "Product launches, research, and safety posts from the mothership.",
-    date: "Ongoing",
+    title: "AMIE tries real-time clinical video consults",
+    url: "https://blog.google/innovation-and-ai/models-and-research/google-research/amie-video-consultations/",
+    source: "Google AI",
+    blurb:
+      "Google Research study on AMIE in simulated clinical video consultations.",
+    date: "Aug 11, 2026",
   },
   {
-    title: "Anthropic news",
-    url: "https://www.anthropic.com/news",
+    title: "Improving Fable 5's biology safeguards",
+    url: "https://www.anthropic.com/news/improving-fable-5-s-biology-safeguards",
     source: "Anthropic",
-    blurb: "Claude releases, policy, and research from Anthropic.",
-    date: "Ongoing",
+    blurb:
+      "Fewer false-positive biology fallbacks on Claude Fable 5 — dual-use topics still gated.",
+    date: "Aug 7, 2026",
   },
   {
-    title: "Cursor changelog & blog",
-    url: "https://cursor.com/changelog",
+    title: "How Cursor Router chooses the right model",
+    url: "https://cursor.com/blog/how-cursor-router-works",
     source: "Cursor",
-    blurb: "Editor releases and product notes for the coding agent stack.",
-    date: "Ongoing",
+    blurb:
+      "How Auto routes a task to the right model without making you pick every time.",
+    date: "Aug 6, 2026",
+  },
+  {
+    title: "Testing ads in ChatGPT",
+    url: "https://openai.com/index/testing-ads-in-chatgpt",
+    source: "OpenAI",
+    blurb:
+      "Labeled ads on Free/Go ChatGPT — privacy controls and answer independence called out.",
+    date: "Feb 9, 2026",
   },
 ];
 

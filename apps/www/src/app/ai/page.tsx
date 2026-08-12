@@ -26,11 +26,11 @@ export default async function AiNewsPage() {
   return (
     <main className="ai-news">
       <section className="page-hero" aria-label="AI News">
-        <p className="hero-kicker">Stay sharp</p>
+        <p className="hero-kicker">Editor desk</p>
         <h1>AI News</h1>
         <p>
-          Company posts, lab notes, and live timelines from the shops that
-          shape how we build — OpenAI, Anthropic, Cursor, and more.
+          Hand-picked stories first, then the RSS firehose and live timelines
+          from OpenAI, Anthropic, Cursor, and Google AI.
         </p>
         <p className="page-hero-meta">
           Feeds refreshed about every 30 minutes
@@ -48,7 +48,10 @@ export default async function AiNewsPage() {
         <div className="section-head">
           <div>
             <h2 id="picks-heading">Big stories</h2>
-            <p>Editor desk — the rooms worth bookmarking when something ships.</p>
+            <p>
+              Editor desk — dated pieces worth opening before you scroll the
+              firehose.
+            </p>
           </div>
           <div className="section-marker">PICKS</div>
         </div>

@@ -40,6 +40,8 @@ a {
   padding: var(--space-3) 0;
   border-bottom: 2px solid var(--color-divider);
   background: var(--color-bg);
+  position: relative;
+  z-index: 5;
 }
 
 .brand-mark {
@@ -49,6 +51,13 @@ a {
   letter-spacing: 0.02em;
   text-transform: uppercase;
   color: var(--color-text);
+}
+
+.portal-nav {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  position: relative;
 }
 
 .nav-links {
@@ -61,6 +70,78 @@ a {
 .nav-links a:hover,
 .nav-links a:focus-visible {
   color: var(--color-accent);
+}
+
+.nav-menu-toggle {
+  display: none;
+  min-height: 32px;
+  padding: 0.2rem 0.55rem;
+  border: 2px solid var(--color-divider);
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  cursor: pointer;
+}
+
+.nav-links-more {
+  display: flex;
+}
+
+.nav-accent-mobile {
+  display: none;
+}
+
+@media (max-width: 759px) {
+  .nav-menu-toggle {
+    display: inline-flex;
+    align-items: center;
+  }
+
+  .nav-accent-desktop {
+    display: none;
+  }
+
+  .nav-accent-mobile {
+    display: block;
+    padding: 0.55rem 0.65rem;
+    border-top: 2px solid var(--color-divider);
+    margin-top: 0.25rem;
+  }
+
+  .nav-accent-mobile .accent-picker {
+    margin-left: 0;
+  }
+
+  .nav-links-more {
+    display: none;
+    position: absolute;
+    top: calc(100% + 0.65rem);
+    right: 0;
+    min-width: 11rem;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0;
+    padding: 0.35rem;
+    background: var(--color-bg);
+    border: 2px solid var(--color-divider);
+    box-shadow: 0 12px 28px color-mix(in srgb, var(--color-text) 12%, transparent);
+  }
+
+  .nav-links-more.is-open {
+    display: flex;
+  }
+
+  .nav-links-more a {
+    padding: 0.55rem 0.65rem;
+  }
+
+  .nav-links-primary {
+    gap: var(--space-3);
+  }
 }
 
 .accent-picker {
@@ -85,6 +166,9 @@ a {
 }
 
 .hero {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
   margin: 0 calc(50% - 50vw);
   width: 100vw;
   min-height: min(88vh, 820px);
@@ -98,6 +182,35 @@ a {
   color: var(--color-bg);
 }
 
+.hero-media {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+}
+
+.hero-media-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center 40%;
+  opacity: 0.42;
+}
+
+.hero-media-wash {
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--color-accent) 55%, transparent) 0%,
+      var(--color-accent) 72%
+    );
+}
+
+.hero-copy {
+  max-width: 42rem;
+}
+
 .hero-kicker {
   margin: 0;
   font-family: var(--font-heading);
@@ -105,6 +218,7 @@ a {
   font-size: 13px;
   letter-spacing: 0.16em;
   text-transform: uppercase;
+  animation: portal-rise 700ms ease both;
 }
 
 .hero-brand {
@@ -116,6 +230,8 @@ a {
   letter-spacing: -0.03em;
   text-transform: uppercase;
   max-width: 10ch;
+  animation: portal-rise 850ms ease both;
+  animation-delay: 60ms;
 }
 
 .hero-rule {
@@ -134,6 +250,8 @@ a {
   line-height: 1.1;
   letter-spacing: -0.02em;
   color: var(--color-bg);
+  animation: portal-rise 900ms ease both;
+  animation-delay: 120ms;
 }
 
 .hero p {
@@ -142,6 +260,8 @@ a {
   font-size: 16px;
   line-height: 1.5;
   color: color-mix(in srgb, var(--color-bg) 88%, transparent);
+  animation: portal-rise 950ms ease both;
+  animation-delay: 160ms;
 }
 
 .cta-row {
@@ -149,6 +269,36 @@ a {
   flex-wrap: wrap;
   gap: var(--space-2);
   margin-top: var(--space-6);
+}
+
+.hero-cta {
+  animation: portal-rise 1000ms ease both;
+  animation-delay: 220ms;
+}
+
+@keyframes portal-rise {
+  from {
+    opacity: 0;
+    transform: translateY(0.85rem);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-kicker,
+  .hero-brand,
+  .hero h1,
+  .hero p,
+  .hero-cta,
+  .destination,
+  .cta-primary {
+    animation: none !important;
+    transition: none !important;
+    transform: none !important;
+  }
 }
 
 .cta {
@@ -170,11 +320,15 @@ a {
 .cta-primary {
   background: var(--color-bg);
   color: var(--accent-deep);
+  transition:
+    background 160ms ease,
+    transform 160ms ease;
 }
 
 .cta-primary:hover,
 .cta-primary:focus-visible {
   background: color-mix(in srgb, var(--color-bg) 90%, #000);
+  transform: translateY(-2px);
 }
 
 .cta-secondary {
@@ -238,12 +392,17 @@ a {
   gap: var(--space-4);
   align-items: center;
   padding: var(--space-6) 0;
-  transition: background 140ms ease;
+  transition:
+    background 160ms ease,
+    transform 160ms ease,
+    padding-left 160ms ease;
 }
 
 a.destination:hover,
 a.destination:focus-visible {
   background: var(--accent-tint);
+  transform: translateX(0.35rem);
+  padding-left: 0.35rem;
 }
 
 .destination-index {
@@ -290,6 +449,105 @@ a.destination .destination-action {
   white-space: nowrap;
 }
 
+.event-strip,
+.crew-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  border-top: 2px solid var(--color-divider);
+}
+
+.event-strip > li,
+.crew-list > li {
+  border-bottom: 2px solid var(--color-divider);
+}
+
+.event-row,
+.crew-row,
+.tonight-card {
+  display: grid;
+  gap: 0.25rem;
+  padding: var(--space-4) 0;
+  color: inherit;
+  text-decoration: none;
+  transition: background 160ms ease, padding-left 160ms ease;
+}
+
+a.event-row:hover,
+a.event-row:focus-visible,
+a.crew-row:hover,
+a.crew-row:focus-visible,
+a.tonight-card:hover,
+a.tonight-card:focus-visible {
+  background: var(--accent-tint);
+  padding-left: 0.35rem;
+}
+
+.event-row {
+  grid-template-columns: 5.5rem 1fr auto;
+  align-items: baseline;
+  gap: var(--space-4);
+}
+
+.event-when {
+  font-family: var(--font-heading);
+  font-weight: 700;
+  font-size: 13px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--accent-deep);
+}
+
+.event-label {
+  font-family: var(--font-heading);
+  font-weight: var(--font-heading-weight);
+  font-size: 18px;
+  text-transform: uppercase;
+}
+
+.event-where {
+  font-size: 14px;
+  color: color-mix(in srgb, var(--color-text) 55%, transparent);
+}
+
+.crew-row {
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  gap: var(--space-4);
+}
+
+.crew-main h3 {
+  margin: 0;
+  font-size: 20px;
+  text-transform: uppercase;
+}
+
+.crew-handle {
+  margin: 0.15rem 0 0;
+  font-size: 13px;
+  letter-spacing: 0.04em;
+  color: var(--accent-deep);
+}
+
+.crew-main p:last-child {
+  margin: var(--space-2) 0 0;
+  max-width: 42ch;
+  color: color-mix(in srgb, var(--color-text) 55%, transparent);
+}
+
+.tonight-card {
+  padding: var(--space-5) 0;
+  border-top: 2px solid var(--color-divider);
+  border-bottom: 2px solid var(--color-divider);
+}
+
+.tonight-card h3 {
+  margin: var(--space-2) 0 0;
+  font-size: clamp(22px, 3vw, 32px);
+  text-transform: uppercase;
+  letter-spacing: -0.02em;
+}
+
 .site-footer {
   display: flex;
   flex-wrap: wrap;
@@ -326,6 +584,26 @@ a.destination .destination-action {
 
   .destination-action {
     white-space: normal;
+  }
+
+  .event-row,
+  .crew-row {
+    grid-template-columns: 1fr;
+    gap: 0.35rem;
+  }
+
+  .event-when {
+    min-width: 0;
+  }
+
+  .tonight-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .tonight-actions .btn {
+    width: 100%;
+    justify-content: center;
   }
 }
 

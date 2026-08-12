@@ -98,6 +98,9 @@ export default async function RootLayout({
     memberRow?.image_url?.trim() ||
     session?.user?.image?.trim() ||
     null;
+  const communityUrl =
+    process.env.COMMUNITY_SITE_URL?.replace(/\/$/, "") ||
+    "https://strictlyjayers.com";
 
   return (
     <html lang="en" className={archivo.variable} suppressHydrationWarning>
@@ -116,6 +119,9 @@ export default async function RootLayout({
             <nav className="nav-links">
               <Link href="/">Home</Link>
               <Link href="/leagues">Leagues</Link>
+              <a href={communityUrl} rel="noopener noreferrer">
+                Community
+              </a>
               {showAdmin ? <Link href="/admin">Admin</Link> : null}
               {profileLabel ? (
                 <>
@@ -149,7 +155,11 @@ export default async function RootLayout({
           </header>
           {children}
         </div>
-        <MobileNav showAdmin={showAdmin} showProfile={Boolean(profileLabel)} />
+        <MobileNav
+          showAdmin={showAdmin}
+          showProfile={Boolean(profileLabel)}
+          communityUrl={communityUrl}
+        />
       </body>
     </html>
   );
