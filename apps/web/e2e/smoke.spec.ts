@@ -279,6 +279,7 @@ test.describe("hub smoke", () => {
               email: "profile.demo@example.com",
               role: "member",
               display_name: "Trophy Case",
+              bio: "Always drafting RBs.",
               teams: [
                 {
                   // Standing #1 in football-main fixtures → trophy chip.
@@ -329,6 +330,7 @@ test.describe("hub smoke", () => {
       await page.goto("/u/trophy-case");
       await expect(page.getByRole("heading", { name: "Trophy Case" })).toBeVisible();
       await expect(page.getByText("@trophy-case")).toBeVisible();
+      await expect(page.getByText("Always drafting RBs.")).toBeVisible();
       await expect(page.getByRole("heading", { name: "Trophy shelf" })).toBeVisible();
       await expect(page.getByRole("link", { name: /1× #1/i })).toBeVisible();
       await expect(page.getByRole("heading", { name: "Franchises" })).toBeVisible();

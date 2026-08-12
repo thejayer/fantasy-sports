@@ -46,12 +46,13 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       if (picture.startsWith("https://")) {
         try {
           const { setMemberImageUrl } = await import("@/lib/hub-members");
-          const { readHubMembers, writeHubMembers } = await import(
+          const { updateHubMembers } = await import(
             "@/lib/hub-members-store"
           );
-          const file = await readHubMembers();
-          const next = setMemberImageUrl(file, email, picture);
-          if (next !== file) await writeHubMembers(next);
+          await updateHubMembers((file) => {
+            const next = setMemberImageUrl(file, email, picture);
+            return next;
+          });
         } catch {
           // Allowlist already passed; avatar write must not block sign-in.
         }

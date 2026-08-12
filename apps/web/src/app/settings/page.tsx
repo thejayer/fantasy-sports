@@ -3,6 +3,7 @@ import Link from "next/link";
 
 import { AppearanceSettings } from "@/components/AppearanceSettings";
 import { MemberAvatar } from "@/components/MemberAvatar";
+import { ProfileBioForm } from "@/components/ProfileBioForm";
 import { ProfileUsernameForm } from "@/components/ProfileUsernameForm";
 import { auth, signOut } from "@/auth";
 import { getViewer } from "@/lib/viewer";
@@ -30,8 +31,8 @@ export default async function SettingsPage() {
         <div>
           <h2>Profile</h2>
           <p className="lede">
-            Your public username, account details, and how the hub looks on this
-            device.
+            Your public username, bio, account details, and how the hub looks on
+            this device.
           </p>
         </div>
         <Link className="button secondary" href="/">
@@ -67,12 +68,15 @@ export default async function SettingsPage() {
           </div>
         </div>
         {email || bypass ? (
-          <ProfileUsernameForm
-            initialUsername={viewer.displayName}
-            googleName={googleName || (bypass ? email : null)}
-          />
+          <>
+            <ProfileUsernameForm
+              initialUsername={viewer.displayName}
+              googleName={googleName || (bypass ? email : null)}
+            />
+            <ProfileBioForm initialBio={viewer.bio} />
+          </>
         ) : (
-          <p className="league-meta">Sign in to set a username.</p>
+          <p className="league-meta">Sign in to set a username and bio.</p>
         )}
         <dl className="profile-identity">
           {email ? (

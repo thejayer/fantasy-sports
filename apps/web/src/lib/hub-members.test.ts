@@ -4,7 +4,10 @@ import {
   assertCanActAsTeam,
   assertCanControlAuction,
   assertCanFinalizeAuction,
+  BIO_MAX,
+  bioCharCount,
   canAccessAdmin,
+  clampBioInput,
   effectiveAllowlist,
   emptyMembersFile,
   golfActingScope,
@@ -16,11 +19,13 @@ import {
   normalizeEmail,
   removeMember,
   resolveMemberDisplayName,
+  setMemberBio,
   setMemberDisplayName,
   setMemberImageUrl,
   setMemberTeams,
   slugifyProfileHandle,
   upsertMember,
+  validateBio,
   validateDisplayName,
   validateImageUrl,
 } from "@/lib/hub-members";
@@ -197,6 +202,32 @@ describe("hub-members", () => {
     expect(memberProfileHandle(file.members.find((m) => m.email === "other@example.com")!)).toBe(
       "other",
     );
+  });
+
+  it("validates and stores bios", () => {
+    expect(validateBio("  Always drafting RBs.  ")).toBe("Always drafting RBs.");
+    expect(validateBio("")).toBe("");
+    expect(validateBio("line one\n\n\nline two")).toBe("line one\n\nline two");
+    expect(() => validateBio("x".repeat(BIO_MAX + 1))).toThrow(/≤ 280/);
+    // Code-point count: 280 emoji fit; UTF-16 length would be 560.
+    expect(validateBio("🙂".repeat(BIO_MAX))).toBe("🙂".repeat(BIO_MAX));
+    expect(() => validateBio("🙂".repeat(BIO_MAX + 1))).toThrow(/≤ 280/);
+    expect(clampBioInput("🙂".repeat(BIO_MAX + 5))).toBe("🙂".repeat(BIO_MAX));
+    expect(bioCharCount("🙂a")).toBe(2);
+
+    let file = setMemberBio(
+      emptyMembersFile(),
+      "jay@example.com",
+      "Commissioner by day.",
+    );
+    expect(file.members[0]?.bio).toBe("Commissioner by day.");
+
+    file = setMemberDisplayName(file, "jay@example.com", "The Cap");
+    expect(file.members[0]?.bio).toBe("Commissioner by day.");
+    expect(file.members[0]?.display_name).toBe("The Cap");
+
+    file = setMemberBio(file, "jay@example.com", "");
+    expect(file.members[0]?.bio).toBeUndefined();
   });
 
   it("stores https avatars and skips no-op writes", () => {

@@ -44,9 +44,10 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const name = member
     ? resolveMemberDisplayName(member, memberProfileHandle(member))
     : slugifyProfileHandle(handle);
+  const bio = member?.bio?.trim();
   return {
     title: name,
-    description: `${name}'s Strictly Jayers profile`,
+    description: bio || `${name}'s Strictly Jayers profile`,
   };
 }
 
@@ -61,6 +62,7 @@ export default async function MemberProfilePage({ params }: Props) {
 
   const handle = memberProfileHandle(member);
   const displayName = resolveMemberDisplayName(member, handle);
+  const bio = member.bio?.trim() || null;
   const viewer = await getViewer();
   const isSelf =
     viewer.email != null &&
@@ -142,6 +144,8 @@ export default async function MemberProfilePage({ params }: Props) {
           </Link>
         </div>
       </div>
+
+      {bio ? <p className="profile-bio">{bio}</p> : null}
 
       {trophyChips.length ? (
         <section
@@ -263,8 +267,8 @@ export default async function MemberProfilePage({ params }: Props) {
       </section>
 
       <p className="league-meta">
-        Username and photo sync from Profile settings. Trophy depth grows when
-        past seasons are backfilled into the league history archive.
+        Username, bio, and photo sync from Profile settings. Trophy depth grows
+        when past seasons are backfilled into the league history archive.
       </p>
     </main>
   );
