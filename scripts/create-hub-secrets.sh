@@ -21,6 +21,8 @@ SECRETS=(
   sj-allowed-emails
   sj-espn-s2
   sj-espn-swid
+  # Hub recap columnist (Cloud Run sj-hub). Do not put this in GitHub Actions.
+  openai-api-key
   # Shared password for the ffa Streamlit dashboard (separate Cloud Run
   # service). Kept here so every deployed secret has one source of truth.
   ffa-dashboard-password
@@ -63,6 +65,7 @@ echo "  ./scripts/add-hub-secret-version.sh sj-auth-google-secret"
 echo "  ./scripts/add-hub-secret-version.sh sj-allowed-emails"
 echo "  ./scripts/add-hub-secret-version.sh sj-espn-s2"
 echo "  ./scripts/add-hub-secret-version.sh sj-espn-swid"
+echo "  ./scripts/add-hub-secret-version.sh openai-api-key"
 echo "  ./scripts/add-hub-secret-version.sh ffa-dashboard-password"
 echo
 echo "Or generate AUTH_SECRET now:"

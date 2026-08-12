@@ -5,17 +5,35 @@ import { afterEach, describe, expect, it } from "vitest";
 
 import type { LeagueSnapshot, Team } from "@/lib/data";
 import { buildWeeklyDigest } from "@/lib/digest";
+import { generateAndStoreRecap } from "@/lib/recap-generate";
 import {
   formatTemplateGameLine,
   parseRecapArticle,
   recapFactsFromDigest,
   recapFactsFromLeague,
+  recapFactsHash,
   recapSport,
   validateRecapAgainstFacts,
   writeTemplateRecap,
 } from "@/lib/recap";
-import { recapArticleFromModelJson, recapLlmConfigFromEnv } from "@/lib/recap-llm";
+import {
+  DEFAULT_ANTHROPIC_RECAP_MODEL,
+  DEFAULT_OPENAI_RECAP_MODEL,
+  isCheapRecapModel,
+  openaiRecapRequestBody,
+  recapArticleFromModelJson,
+  recapExpensiveModelError,
+  recapLlmConfigFromEnv,
+} from "@/lib/recap-llm";
 import { listRecapPeriods, readRecap, writeRecap } from "@/lib/recap-store";
+import {
+  DEFAULT_RECAP_DAILY_LIMIT,
+  readRecapUsage,
+  recapBudgetError,
+  recapUsageLimitsFromEnv,
+  recordRecapLlmCall,
+  reserveRecapLlmCall,
+} from "@/lib/recap-usage";
 
 function team(
   id: number,
@@ -86,6 +104,7 @@ describe("recap facts (roadmap 7.15)", () => {
     expect(facts).not.toBeNull();
     const article = writeTemplateRecap(facts!, new Date("2026-09-08T12:00:00Z"));
     expect(article.model).toBe("template");
+    expect(article.facts_hash).toBe(recapFactsHash(facts!));
     expect(article.headline.length).toBeGreaterThan(8);
     expect(article.body.length).toBeGreaterThanOrEqual(2);
     expect(validateRecapAgainstFacts(article, facts!)).toBeNull();
@@ -165,6 +184,7 @@ describe("recapArticleFromModelJson", () => {
     expect(article.sport).toBe("football");
     expect(article.model).toBe("anthropic/claude-sonnet-4-5");
     expect(article.generated_at).toBe("2026-09-08T12:00:00.000Z");
+    expect(article.facts_hash).toBe(recapFactsHash(facts));
   });
 });
 
@@ -192,21 +212,63 @@ describe("recapLlmConfigFromEnv", () => {
   it("prefers explicit provider", () => {
     expect(
       recapLlmConfigFromEnv({
-        SJ_RECAP_PROVIDER: "openai",
+        SJ_RECAP_PROVIDER: "anthropic",
         OPENAI_API_KEY: "sk-test",
         ANTHROPIC_API_KEY: "ant-test",
       }),
-    ).toMatchObject({ provider: "openai", apiKey: "sk-test" });
+    ).toMatchObject({ provider: "anthropic", apiKey: "ant-test" });
   });
 
-  it("defaults to Anthropic when that key is set", () => {
+  it("prefers OpenAI Luna when both keys are set", () => {
+    expect(
+      recapLlmConfigFromEnv({
+        OPENAI_API_KEY: "sk-test",
+        ANTHROPIC_API_KEY: "ant-test",
+      }),
+    ).toMatchObject({
+      provider: "openai",
+      apiKey: "sk-test",
+      model: DEFAULT_OPENAI_RECAP_MODEL,
+    });
+  });
+
+  it("defaults to Haiku when only Anthropic is set", () => {
     expect(
       recapLlmConfigFromEnv({ ANTHROPIC_API_KEY: "ant-test" }),
-    ).toMatchObject({ provider: "anthropic" });
+    ).toMatchObject({
+      provider: "anthropic",
+      model: DEFAULT_ANTHROPIC_RECAP_MODEL,
+    });
   });
 
   it("returns null without keys", () => {
     expect(recapLlmConfigFromEnv({})).toBeNull();
+  });
+
+  it("allowlists Luna and rejects Sol unless unlocked", () => {
+    expect(isCheapRecapModel("openai", "gpt-5.6-luna")).toBe(true);
+    expect(isCheapRecapModel("openai", "gpt-5.6-luna-2026-02-16")).toBe(true);
+    expect(isCheapRecapModel("openai", "gpt-5.6-sol")).toBe(false);
+    expect(isCheapRecapModel("anthropic", "claude-3-5-haiku-latest")).toBe(true);
+    expect(isCheapRecapModel("anthropic", "claude-sonnet-4-5")).toBe(false);
+    const sol = recapLlmConfigFromEnv({
+      OPENAI_API_KEY: "sk-test",
+      SJ_RECAP_MODEL: "gpt-5.6-sol",
+    })!;
+    expect(recapExpensiveModelError(sol, {})).toMatch(/allowlist/);
+    expect(
+      recapExpensiveModelError(sol, { SJ_RECAP_ALLOW_EXPENSIVE: "1" }),
+    ).toBeNull();
+  });
+
+  it("sends Luna with reasoning off and a completion cap", () => {
+    const body = openaiRecapRequestBody(
+      { provider: "openai", apiKey: "sk", model: "gpt-5.6-luna" },
+      "{}",
+    );
+    expect(body.reasoning_effort).toBe("none");
+    expect(body.max_completion_tokens).toBe(900);
+    expect(body.temperature).toBeUndefined();
   });
 });
 
@@ -228,6 +290,156 @@ describe("recap store", () => {
     await writeRecap(article);
     const loaded = await readRecap("recap-test", 2026, 1);
     expect(loaded?.headline).toBe(article.headline);
+    expect(loaded?.facts_hash).toBe(article.facts_hash);
     expect(await listRecapPeriods("recap-test", 2026)).toEqual([1]);
+  });
+});
+
+describe("recap cost guardrails", () => {
+  const prevHub = process.env.SJ_HUB_DIR;
+  let tmp = "";
+
+  afterEach(async () => {
+    if (prevHub == null) delete process.env.SJ_HUB_DIR;
+    else process.env.SJ_HUB_DIR = prevHub;
+    if (tmp) await rm(tmp, { recursive: true, force: true });
+  });
+
+  async function withHub() {
+    tmp = await mkdtemp(path.join(os.tmpdir(), "sj-recap-"));
+    process.env.SJ_HUB_DIR = tmp;
+  }
+
+  it("defaults daily limit to 12 and blocks when the UTC day is full", () => {
+    expect(recapUsageLimitsFromEnv({}).daily).toBe(DEFAULT_RECAP_DAILY_LIMIT);
+    const now = new Date("2026-08-12T18:00:00Z");
+    const error = recapBudgetError(
+      { schema_version: 1, daily: { "2026-08-12": { calls: 12 } }, periods: {} },
+      "recap-test",
+      2026,
+      1,
+      now,
+      recapUsageLimitsFromEnv({}),
+    );
+    expect(error).toMatch(/today's cap/);
+  });
+
+  it("skips the LLM when facts_hash is unchanged", async () => {
+    await withHub();
+    const facts = recapFactsFromLeague(league, 1)!;
+    await writeRecap(writeTemplateRecap(facts));
+    let calls = 0;
+    const result = await generateAndStoreRecap(league, 1, {
+      env: { OPENAI_API_KEY: "sk-test" },
+      generateWithLlm: async () => {
+        calls += 1;
+        throw new Error("should not call the model");
+      },
+    });
+    expect(result.ok).toBe(true);
+    expect(calls).toBe(0);
+  });
+
+  it("refuses a rewrite after the per-week cap", async () => {
+    await withHub();
+    const now = new Date("2026-08-12T18:00:00Z");
+    await recordRecapLlmCall("recap-test", 2026, 1, now);
+    await recordRecapLlmCall("recap-test", 2026, 1, now);
+    let calls = 0;
+    const result = await generateAndStoreRecap(league, 1, {
+      force: true,
+      now,
+      env: { OPENAI_API_KEY: "sk-test", SJ_RECAP_PERIOD_LIMIT: "2" },
+      generateWithLlm: async (facts) => {
+        calls += 1;
+        return writeTemplateRecap(facts);
+      },
+    });
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      expect(result.status).toBe(429);
+      expect(result.error).toMatch(/already has 2/);
+    }
+    expect(calls).toBe(0);
+  });
+
+  it("records a successful Luna write against the daily cap", async () => {
+    await withHub();
+    const now = new Date("2026-08-12T18:00:00Z");
+    const result = await generateAndStoreRecap(league, 1, {
+      now,
+      env: { OPENAI_API_KEY: "sk-test" },
+      generateWithLlm: async (facts) => writeTemplateRecap(facts, now),
+    });
+    expect(result.ok).toBe(true);
+    const blocked = await generateAndStoreRecap(league, 1, {
+      force: true,
+      now,
+      env: { OPENAI_API_KEY: "sk-test", SJ_RECAP_DAILY_LIMIT: "1" },
+      generateWithLlm: async (facts) => writeTemplateRecap(facts, now),
+    });
+    expect(blocked.ok).toBe(false);
+    if (!blocked.ok) expect(blocked.status).toBe(429);
+  });
+
+  it("lets only one of two concurrent writes take the last daily slot", async () => {
+    await withHub();
+    const now = new Date("2026-08-12T18:00:00Z");
+    let llmCalls = 0;
+    const env = { OPENAI_API_KEY: "sk-test", SJ_RECAP_DAILY_LIMIT: "1" };
+    const run = () =>
+      generateAndStoreRecap(league, 1, {
+        force: true,
+        now,
+        env,
+        generateWithLlm: async (facts) => {
+          llmCalls += 1;
+          return writeTemplateRecap(facts, now);
+        },
+      });
+    const [first, second] = await Promise.all([run(), run()]);
+    const statuses = [first, second].map((row) =>
+      row.ok ? 200 : row.status,
+    );
+    expect(statuses.sort()).toEqual([200, 429]);
+    expect(llmCalls).toBe(1);
+    const usage = await readRecapUsage();
+    expect(usage.daily["2026-08-12"]?.calls).toBe(1);
+  });
+
+  it("keeps a reserved slot when the model fails so a retry cannot double-bill", async () => {
+    await withHub();
+    const now = new Date("2026-08-12T18:00:00Z");
+    const failed = await generateAndStoreRecap(league, 1, {
+      now,
+      env: { OPENAI_API_KEY: "sk-test", SJ_RECAP_DAILY_LIMIT: "1" },
+      generateWithLlm: async () => {
+        throw new Error("OpenAI 500");
+      },
+    });
+    expect(failed.ok).toBe(false);
+    if (!failed.ok) expect(failed.status).toBe(502);
+    const retry = await generateAndStoreRecap(league, 1, {
+      now,
+      env: { OPENAI_API_KEY: "sk-test", SJ_RECAP_DAILY_LIMIT: "1" },
+      generateWithLlm: async (facts) => writeTemplateRecap(facts, now),
+    });
+    expect(retry.ok).toBe(false);
+    if (!retry.ok) expect(retry.status).toBe(429);
+  });
+
+  it("reserveRecapLlmCall is serialized so two callers cannot both pass a limit of 1", async () => {
+    await withHub();
+    const now = new Date("2026-08-12T18:00:00Z");
+    const limits = recapUsageLimitsFromEnv({ SJ_RECAP_DAILY_LIMIT: "1" });
+    const [a, b] = await Promise.all([
+      reserveRecapLlmCall("recap-test", 2026, 1, now, limits),
+      reserveRecapLlmCall("recap-test", 2026, 1, now, limits),
+    ]);
+    const okCount = [a, b].filter((row) => row.ok).length;
+    expect(okCount).toBe(1);
+    expect([a, b].some((row) => !row.ok && row.error.includes("today's cap"))).toBe(
+      true,
+    );
   });
 });

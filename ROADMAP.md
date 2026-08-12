@@ -830,8 +830,14 @@ article per decided week.
   History, not a seventh primary pill. Feed digest titles deep-link here.
   Golf has no week grain; the tab is omitted.
 - **Writer.** Admin POST `/api/leagues/{id}/recap` (same ACL as feed moderate).
-  Uses Anthropic (`ANTHROPIC_API_KEY` / `SJ_RECAP_API_KEY`) or OpenAI
-  (`OPENAI_API_KEY`); `SJ_RECAP_PROVIDER` / `SJ_RECAP_MODEL` optional.
+  Production path is OpenAI **`gpt-5.6-luna`** via Secret Manager
+  `openai-api-key` → `OPENAI_API_KEY` on Cloud Run (hub CD `--set-secrets`).
+  Anthropic (`ANTHROPIC_API_KEY` / `SJ_RECAP_API_KEY`) remains a fallback;
+  `SJ_RECAP_PROVIDER` / `SJ_RECAP_MODEL` optional. Cheap-model allowlist
+  unless `SJ_RECAP_ALLOW_EXPENSIVE=1`. Daily / per-week rewrite caps in
+  `recap_usage.json` (`SJ_RECAP_DAILY_LIMIT` / `SJ_RECAP_PERIOD_LIMIT`);
+  slots are reserved before the LLM call so a double-click cannot bypass them.
+  Unchanged `facts_hash` skips the LLM unless Rewrite (`force`).
   **Never called from a page GET.** `AUTH_DEV_BYPASS` may fall back to the
   deterministic template columnist. Cloud Run timeout is 300s; the route caps
   at 60s.

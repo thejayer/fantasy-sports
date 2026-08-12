@@ -25,7 +25,7 @@ export function RecapGenerateButton({
       const response = await fetch(`/api/leagues/${leagueId}/recap`, {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ season, period }),
+        body: JSON.stringify({ season, period, force: hasArticle }),
       });
       const data = (await response.json().catch(() => ({}))) as {
         error?: string;

@@ -49,9 +49,21 @@ umask 077
   env_line AUTH_GOOGLE_SECRET "${AUTH_GOOGLE_SECRET}"
   env_line ALLOWED_EMAILS "${ALLOWED_EMAILS}"
   echo "AUTH_DEV_BYPASS=0"
+  echo "SJ_RECAP_MODEL=gpt-5.6-luna"
 } >"${OUT}"
 
 echo "Wrote ${OUT}"
+
+if OPENAI_API_KEY="$(access openai-api-key 2>/dev/null)"; then
+  if [[ "${OPENAI_API_KEY}" != "REPLACE_ME" && -n "${OPENAI_API_KEY}" ]]; then
+    env_line OPENAI_API_KEY "${OPENAI_API_KEY}" >>"${OUT}"
+    echo "Appended OPENAI_API_KEY to ${OUT}"
+  else
+    echo "openai-api-key still REPLACE_ME — skipped OPENAI_API_KEY"
+  fi
+else
+  echo "openai-api-key not readable — skipped OPENAI_API_KEY"
+fi
 
 if ESPN_S2="$(access sj-espn-s2 2>/dev/null)" && ESPN_SWID="$(access sj-espn-swid 2>/dev/null)"; then
   if [[ "${ESPN_S2}" != "REPLACE_ME" && "${ESPN_SWID}" != "REPLACE_ME" ]]; then
