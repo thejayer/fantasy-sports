@@ -171,7 +171,9 @@ else
   echo "When DNS + TLS look good, cut SITE_URL over with:"
   echo "  ./scripts/setup-portal-domain.sh --cutover"
   echo
-  echo "Deploy CD will preserve a non-*.run.app SITE_URL once set."
+  echo "Production already uses SITE_URL=https://strictlyjayers.com when the"
+  echo "custom domain is Ready — deploy CD preserves a non-*.run.app value."
+  echo "Portal middleware 308s www → apex once SITE_URL is set."
 fi
 
 echo

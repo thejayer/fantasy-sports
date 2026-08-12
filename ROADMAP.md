@@ -1107,10 +1107,14 @@ fantasy stays on `fantasy.strictlyjayers.com`. Docs: [PORTAL.md](PORTAL.md).
 - Reciprocal **Community** link in hub chrome (header + mobile nav) →
   `strictlyjayers.com` (`COMMUNITY_SITE_URL` override).
 
-### P.3 Apex DNS cutover (ops — open)
-- Map `strictlyjayers.com` (+ `www`) → `sj-www`, set `SITE_URL`, leave hub
-  `AUTH_URL` on the fantasy host alone. Product copy on the portal is editorial;
-  this item is DNS/ops only.
+### P.3 Apex DNS cutover — LANDED
+- `strictlyjayers.com` (+ `www`) → Cloud Run `sj-www`; `SITE_URL=https://strictlyjayers.com`
+  preserved by deploy CD (non-`*.run.app` keep). Hub `AUTH_URL` stays on
+  `fantasy.strictlyjayers.com`.
+- Live check: `/api/health` → `{"service":"sj-www"}` on apex and www; fantasy
+  host still Auth.js.
+- `www` → apex **308** in `apps/www` middleware (`lib/apex-host.ts`) so the
+  canonical host matches `SITE_URL`. DNS/ops script: `./scripts/setup-portal-domain.sh`.
 
 ### P.4 AI News desk — LANDED
 - `/ai` on `apps/www`: dated hand-picked big stories in `AI_EDITOR_PICKS`,
