@@ -400,6 +400,11 @@ test.describe("hub smoke", () => {
       await expect(
         page.getByRole("columnheader", { name: "Standing" }),
       ).toBeVisible();
+      // Track Q 7.14 — frozen clock (SJ_ON_THIS_DAY_NOW) lands on Week 1's Sep 8.
+      await expect(
+        page.getByRole("heading", { name: /This day in SJ/i }),
+      ).toBeVisible();
+      await expect(page.getByText(/Week 1 · 2026/i).first()).toBeVisible();
       await expect(
         page.getByRole("link", { name: /Strictly Jayers Football(?! Dynasty)/i }).first(),
       ).toBeVisible();

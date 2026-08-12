@@ -38,8 +38,16 @@ export type WeeklyDigest = {
   body: string;
 };
 
-function periodMs(season: number, period: number): number {
+/**
+ * Synthetic calendar anchor for a matchup period (Sep 1 of the season year +
+ * 7×period days). Shared with feed digests and "This day in SJ".
+ */
+export function digestPeriodMs(season: number, period: number): number {
   return Date.UTC(season, 8, 1) + period * 7 * 24 * 60 * 60 * 1000;
+}
+
+function periodMs(season: number, period: number): number {
+  return digestPeriodMs(season, period);
 }
 
 function teamRecord(team: Team): string {
