@@ -54,6 +54,8 @@ describe("LeagueView unification", () => {
     expect(viewSource).toMatch(/ActivityPanel/);
     expect(viewSource).toMatch(/"draft"/);
     expect(viewSource).toMatch(/"activity"/);
+    expect(viewSource).toMatch(/RecapPanel/);
+    expect(viewSource).toMatch(/"recap"/);
     expect(viewSource).toMatch(/FreeAgentsBoard/);
     expect(viewSource).toMatch(/"waivers"/);
     // Roadmap 4.6: baseball stays projection-free; 8.2 fills tools with arithmetic.

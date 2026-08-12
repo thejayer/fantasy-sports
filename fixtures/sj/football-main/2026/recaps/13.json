@@ -1,0 +1,34 @@
+{
+  "schema_version": 1,
+  "league_id": "football-main",
+  "season": 2026,
+  "period": 13,
+  "sport": "football",
+  "generated_at": "2026-12-01T18:00:00.000Z",
+  "model": "fixture",
+  "headline": "Heroes go nuclear, Goons file a missing-persons report",
+  "dek": "Hail Mary Heroes 158.0 — the week's high score and a personal attack on anyone who sat a running back.",
+  "body": [
+    "Week 13: Hail Mary Heroes 158.0, Gridiron Goons 90.0. That is not a football score so much as a weather event. End Zone Enforcers 144.7 beat Turf Titans 120.6 in the other room, which would have been the lede in a quieter league.",
+    "If you streamed a defense and felt clever, Heroes would like a word. If you are the Goons, maybe don't.",
+    "Power rankings below, computed the boring way (all-play), written the usual way (mean)."
+  ],
+  "ranking_copy": [
+    {
+      "team_id": 4,
+      "blurb": "Heroes at 158.0. When the high score and the blowout are the same team, the column writes itself and then takes the rest of the night off."
+    },
+    {
+      "team_id": 3,
+      "blurb": "Enforcers 144.7 — second banana on a week when second banana still cleared most of the league's season average."
+    },
+    {
+      "team_id": 2,
+      "blurb": "Titans lost 120.6–144.7 and will tell you they 'kept it close' in the sense that both teams used a football."
+    },
+    {
+      "team_id": 1,
+      "blurb": "Goons, 90.0. The bench was not the problem. The problem was also the bench."
+    }
+  ]
+}

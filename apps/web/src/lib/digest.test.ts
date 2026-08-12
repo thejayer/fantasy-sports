@@ -93,6 +93,7 @@ describe("weekly digest (roadmap 7.7)", () => {
     const event = digestAsFeedEvent(digest!);
     expect(event.id).toBe("digest:football-main:2026:1");
     expect(event.kind).toBe("digest");
+    expect(event.href).toContain("tab=recap&week=1");
     expect(formatDigestMessage(digest!)).toContain("Week 1 recap");
   });
 

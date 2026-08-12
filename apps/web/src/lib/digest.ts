@@ -302,7 +302,7 @@ export function digestAsFeedEvent(digest: WeeklyDigest): SystemFeedEvent {
       ...new Set(digest.awards.flatMap((a) => a.teamIds)),
     ],
     playerIds: [],
-    href: `/leagues/${digest.leagueId}?season=${digest.season}&tab=activity&view=all`,
+    href: `/leagues/${digest.leagueId}?season=${digest.season}&tab=recap&week=${digest.period}`,
   };
 }
 
