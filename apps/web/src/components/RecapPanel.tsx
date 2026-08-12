@@ -16,6 +16,7 @@ import {
 } from "@/lib/hub-members";
 import { readHubMembers } from "@/lib/hub-members-store";
 import { getViewer } from "@/lib/viewer";
+import { recapVoiceFromEnv } from "@/lib/recap-voice";
 import { devBypassEnabled } from "@/lib/session";
 
 function RecapArticleView({
@@ -156,6 +157,7 @@ export async function RecapPanel({
           season={league.season}
           period={active}
           hasArticle={article != null}
+          defaultVoice={recapVoiceFromEnv()}
         />
       ) : null}
 
@@ -164,7 +166,7 @@ export async function RecapPanel({
       ) : facts ? (
         <EmptyState title={`No column for ${periodLabel} ${active} yet`}>
           {canWrite
-            ? "Admins can write this week’s recap. Same awards and all-play board as the Feed digest; Luna, with a daily call cap."
+            ? "Admins can write this week’s recap. Roast (default), mild, or savage — jokes still have to hang on the digest scores."
             : "The commissioner has not run the columnist for this week."}
         </EmptyState>
       ) : (

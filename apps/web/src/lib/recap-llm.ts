@@ -13,6 +13,11 @@ import {
   type RecapArticle,
   type RecapFacts,
 } from "@/lib/recap";
+import {
+  recapColumnistPrompt,
+  recapColumnistSystem,
+  type RecapLlmStyle,
+} from "@/lib/recap-voice";
 
 export const DEFAULT_OPENAI_RECAP_MODEL = "gpt-5.6-luna";
 export const DEFAULT_ANTHROPIC_RECAP_MODEL = "claude-3-5-haiku-latest";
@@ -90,23 +95,6 @@ export function recapLlmConfigFromEnv(
   return null;
 }
 
-function factsPrompt(facts: RecapFacts): string {
-  return `You are the Strictly Jayers house columnist. Write a funny weekly power-rankings recap for one fantasy league.
-
-Rules:
-- Use ONLY the facts JSON below. Do not invent scores, records, or transactions.
-- Tone: intramural roast, not a press release. Short sentences. No hashtags. No "in a thrilling contest".
-- Power ranking blurbs must include every team_id from facts.rankings, one each.
-- Return JSON only, no markdown fence.
-- Body: 2 to 5 short paragraphs.
-
-Output shape:
-{"headline":"max 120 chars","dek":"one-sentence lede, max 280 chars","body":["paragraphs"],"ranking_copy":[{"team_id":1,"blurb":"one or two sentences"}]}
-
-Facts:
-${JSON.stringify(facts)}`;
-}
-
 function extractJsonObject(text: string): unknown {
   const trimmed = text.trim();
   const fenced = trimmed.match(/```(?:json)?\s*([\s\S]*?)```/);
@@ -151,6 +139,7 @@ async function completeAnthropic(
 export function openaiRecapRequestBody(
   config: RecapLlmConfig,
   prompt: string,
+  style: RecapLlmStyle = { voice: "roast" },
 ): Record<string, unknown> {
   const gpt5 = config.model.toLowerCase().includes("gpt-5");
   const body: Record<string, unknown> = {
@@ -160,7 +149,7 @@ export function openaiRecapRequestBody(
     messages: [
       {
         role: "system",
-        content: "Return only a JSON object matching the requested shape.",
+        content: recapColumnistSystem(style),
       },
       { role: "user", content: prompt },
     ],
@@ -177,6 +166,7 @@ export function openaiRecapRequestBody(
 async function completeOpenAi(
   config: RecapLlmConfig,
   prompt: string,
+  style: RecapLlmStyle,
 ): Promise<string> {
   const response = await fetch("https://api.openai.com/v1/chat/completions", {
     method: "POST",
@@ -184,7 +174,7 @@ async function completeOpenAi(
       "content-type": "application/json",
       authorization: `Bearer ${config.apiKey}`,
     },
-    body: JSON.stringify(openaiRecapRequestBody(config, prompt)),
+    body: JSON.stringify(openaiRecapRequestBody(config, prompt, style)),
   });
   if (!response.ok) {
     const detail = (await response.text()).slice(0, 180);
@@ -202,12 +192,13 @@ export async function generateRecapWithLlm(
   facts: RecapFacts,
   config: RecapLlmConfig,
   now = new Date(),
+  style: RecapLlmStyle = { voice: "roast" },
 ): Promise<RecapArticle> {
-  const prompt = factsPrompt(facts);
+  const prompt = recapColumnistPrompt(facts, style);
   const text =
     config.provider === "anthropic"
       ? await completeAnthropic(config, prompt)
-      : await completeOpenAi(config, prompt);
+      : await completeOpenAi(config, prompt, style);
   return recapArticleFromModelJson(
     facts,
     extractJsonObject(text),

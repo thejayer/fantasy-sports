@@ -837,7 +837,9 @@ article per decided week.
   unless `SJ_RECAP_ALLOW_EXPENSIVE=1`. Daily / per-week rewrite caps in
   `recap_usage.json` (`SJ_RECAP_DAILY_LIMIT` / `SJ_RECAP_PERIOD_LIMIT`);
   slots are reserved before the LLM call so a double-click cannot bypass them.
-  Unchanged `facts_hash` skips the LLM unless Rewrite (`force`).
+  Default voice is an intramural **roast** (jokes must cite digest numbers);
+  admin picker Roast / Mild / Savage, plus optional `SJ_RECAP_VOICE` /
+  `SJ_RECAP_VOICE_NOTE`. Unchanged `facts_hash` skips the LLM unless Rewrite (`force`).
   **Never called from a page GET.** `AUTH_DEV_BYPASS` may fall back to the
   deterministic template columnist. Cloud Run timeout is 300s; the route caps
   at 60s.

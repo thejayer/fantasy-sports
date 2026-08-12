@@ -22,6 +22,7 @@ import {
   recapUsageLimitsFromEnv,
   reserveRecapLlmCall,
 } from "@/lib/recap-usage";
+import { recapStyleFromEnv, type RecapLlmStyle } from "@/lib/recap-voice";
 
 export type GenerateRecapResult =
   | { ok: true; article: RecapArticle }
@@ -33,10 +34,13 @@ export type GenerateRecapOpts = {
   /** Rewrite even when facts_hash matches the on-disk column. */
   force?: boolean;
   env?: Record<string, string | undefined>;
+  voice?: unknown;
+  note?: unknown;
   generateWithLlm?: (
     facts: RecapFacts,
     config: RecapLlmConfig,
     now?: Date,
+    style?: RecapLlmStyle,
   ) => Promise<RecapArticle>;
 };
 
@@ -82,7 +86,12 @@ export async function generateAndStoreRecap(
   try {
     const generate = opts?.generateWithLlm ?? generateRecapWithLlm;
     const article = llm
-      ? await generate(facts, llm, now)
+      ? await generate(
+          facts,
+          llm,
+          now,
+          recapStyleFromEnv(env, { voice: opts?.voice, note: opts?.note }),
+        )
       : opts?.allowTemplate
         ? writeTemplateRecap(facts, now)
         : null;
