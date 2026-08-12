@@ -42,16 +42,18 @@ test.describe("portal smoke", () => {
 
   test("ai editor picks desk", async ({ page }) => {
     await page.goto("/ai");
-    await expect(page.getByRole("heading", { name: /AI News/i })).toBeVisible();
     await expect(
-      page.getByRole("heading", { name: /Big stories/i }),
+      page.getByRole("heading", { name: "AI News", exact: true }),
     ).toBeVisible();
-    await expect(page.getByText(/Editor desk/i).first()).toBeVisible();
+    const picks = page.locator("section").filter({
+      has: page.getByRole("heading", { name: /Big stories/i }),
+    });
+    await expect(picks.getByText(/Editor desk/i)).toBeVisible();
     await expect(
-      page.getByRole("link", { name: /AMIE tries real-time/i }),
+      picks.getByRole("link", { name: /AMIE tries real-time/i }),
     ).toBeVisible();
     await expect(
-      page.getByRole("link", { name: /Testing ads in ChatGPT/i }),
+      picks.getByRole("link", { name: /Testing ads in ChatGPT/i }),
     ).toBeVisible();
   });
 });
