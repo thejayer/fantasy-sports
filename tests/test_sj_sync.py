@@ -20,10 +20,13 @@ from sj.registry import LeagueSpec, load_registry
 from sj.sample import sample_league
 from sj.sync import (
     ACTIVITY_MIN_SEASON,
+    DEFAULT_ACTIVITY_MAX_PAGES,
     FREE_AGENT_MIN_SEASON,
+    MAX_ACTIVITY_MAX_PAGES,
     SyncAllFailed,
     SyncFailure,
     SyncResult,
+    activity_max_pages,
     classify_sync_error,
     espn_call,
     espn_credentials,
@@ -394,6 +397,38 @@ def test_fetch_recent_activity_treats_invalid_league_as_empty():
         "League 39790 does not exist"
     )
     assert fetch_recent_activity(league) == []
+
+
+def test_fetch_recent_activity_stops_at_max_pages(monkeypatch):
+    monkeypatch.setattr("sj.sync.time.sleep", lambda *_a, **_k: None)
+    league = MagicMock()
+    league.year = 2025
+    league.recent_activity.side_effect = lambda **_kw: [MagicMock(), MagicMock()]
+    items = fetch_recent_activity(league, page_size=2, max_pages=3)
+    assert len(items) == 6
+    assert league.recent_activity.call_count == 3
+
+
+def test_activity_max_pages_from_env(monkeypatch):
+    monkeypatch.delenv("SJ_ACTIVITY_MAX_PAGES", raising=False)
+    assert activity_max_pages() == DEFAULT_ACTIVITY_MAX_PAGES
+    monkeypatch.setenv("SJ_ACTIVITY_MAX_PAGES", "12")
+    assert activity_max_pages() == 12
+    monkeypatch.setenv("SJ_ACTIVITY_MAX_PAGES", "9999")
+    assert activity_max_pages() == MAX_ACTIVITY_MAX_PAGES
+    monkeypatch.setenv("SJ_ACTIVITY_MAX_PAGES", "nope")
+    assert activity_max_pages() == DEFAULT_ACTIVITY_MAX_PAGES
+
+
+def test_fetch_recent_activity_uses_env_page_cap(monkeypatch):
+    monkeypatch.setattr("sj.sync.time.sleep", lambda *_a, **_k: None)
+    monkeypatch.setenv("SJ_ACTIVITY_MAX_PAGES", "2")
+    league = MagicMock()
+    league.year = 2025
+    league.recent_activity.side_effect = lambda **_kw: [MagicMock(), MagicMock()]
+    items = fetch_recent_activity(league, page_size=2)
+    assert len(items) == 4
+    assert league.recent_activity.call_count == 2
 
 
 def test_fetch_free_agents_empty_before_2019():

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { DroppedPlayersPanel } from "@/components/DroppedPlayersPanel";
 import { EmptyState } from "@/components/EmptyState";
 import { GameLogPanel } from "@/components/GameLogPanel";
 import { KeeperBadge } from "@/components/KeeperBadge";
@@ -68,6 +69,8 @@ export function BaseballRosterView({
       />
 
       <GameLogPanel league={league} team={team} />
+
+      <DroppedPlayersPanel league={league} team={team} />
 
       {!team.roster.length ? (
         <EmptyState title="No roster players in this snapshot">

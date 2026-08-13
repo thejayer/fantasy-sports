@@ -43,6 +43,21 @@ export function classifyAction(action: string | null | undefined): ActivityActio
   return "other";
 }
 
+/** ESPN `DROPPED` / `WAIVER DROPPED` (and any other DROP* action string). */
+export function isDropAction(action: string | null | undefined): boolean {
+  return (action ?? "").toUpperCase().includes("DROP");
+}
+
+/** One unique player a franchise dropped this season (roadmap 7.4). */
+export type DroppedPlayerSummary = {
+  key: string;
+  playerId: number | null;
+  playerName: string;
+  dropCount: number;
+  lastDateLabel: string;
+  lastSortKey: number;
+};
+
 /** Parse ESPN `YYYYMMDDHHmmss` (or shorter date prefixes) into a Date. */
 export function parseEspnActivityDate(
   value: string | number | null | undefined,
@@ -127,6 +142,52 @@ export function flattenTransactions(
     });
   });
   return rows.sort((a, b) => b.sortKey - a.sortKey || a.key.localeCompare(b.key));
+}
+
+/** Newest-first drop events for one franchise. */
+export function droppedRowsForTeam(
+  league: Pick<LeagueSnapshot, "transactions" | "teams">,
+  teamId: number,
+): ActivityActionRow[] {
+  return flattenTransactions(league.transactions, league.teams).filter(
+    (row) => row.teamId === teamId && isDropAction(row.action),
+  );
+}
+
+/**
+ * Unique players a manager dropped this season, newest last-drop first.
+ * Same player dropped twice collapses to one row with `dropCount`.
+ */
+export function droppedPlayersForTeam(
+  league: Pick<LeagueSnapshot, "transactions" | "teams">,
+  teamId: number,
+): DroppedPlayerSummary[] {
+  const groups = new Map<string, DroppedPlayerSummary>();
+  for (const row of droppedRowsForTeam(league, teamId)) {
+    const key =
+      row.playerId != null ? `id:${row.playerId}` : `name:${row.playerName}`;
+    const existing = groups.get(key);
+    if (!existing) {
+      groups.set(key, {
+        key,
+        playerId: row.playerId,
+        playerName: row.playerName,
+        dropCount: 1,
+        lastDateLabel: row.dateLabel,
+        lastSortKey: row.sortKey,
+      });
+      continue;
+    }
+    existing.dropCount += 1;
+    if (row.sortKey > existing.lastSortKey) {
+      existing.lastDateLabel = row.dateLabel;
+      existing.lastSortKey = row.sortKey;
+    }
+  }
+  return [...groups.values()].sort(
+    (a, b) =>
+      b.lastSortKey - a.lastSortKey || a.playerName.localeCompare(b.playerName),
+  );
 }
 
 export function filterActivityRows(

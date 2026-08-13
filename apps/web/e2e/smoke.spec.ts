@@ -482,6 +482,22 @@ test.describe("hub smoke", () => {
     await expect(page.getByRole("columnheader", { name: "Opponent" })).toBeVisible();
   });
 
+  test("baseball team page lists players the manager dropped (roadmap 7.4)", async ({
+    page,
+  }) => {
+    await page.goto("/leagues/baseball-dynasty/teams/1");
+    await expect(
+      page.getByRole("heading", { name: /Diamond Dogs/i }),
+    ).toBeVisible();
+    await expect(
+      page.getByRole("heading", { name: /Dropped this season/i }),
+    ).toBeVisible();
+    await expect(page.getByRole("link", { name: "Daniel Moore" })).toBeVisible();
+    await expect(
+      page.getByRole("link", { name: /League adds \/ drops/i }),
+    ).toBeVisible();
+  });
+
   test("football settings tab renders synced ESPN settings (roadmap 7.9)", async ({
     page,
   }) => {
@@ -534,7 +550,9 @@ test.describe("hub smoke", () => {
     await page.goto("/leagues/football-main/teams/1");
     await expect(page.getByRole("heading", { name: "Gridiron Goons" })).toBeVisible();
     // First roster player on team_id 1 in committed football-main/2026.json.
-    await expect(page.getByText("Juan Phillips")).toBeVisible();
+    // Dropped this season also names him (fixture add then drop), so the
+    // roster cell is not the only match.
+    await expect(page.getByText("Juan Phillips").first()).toBeVisible();
   });
 
   test("unknown league and team return the not-found panel", async ({
@@ -607,7 +625,8 @@ test.describe("hub smoke", () => {
 
   test("dynasty roster and draft show keeper badges (7.9b)", async ({ page }) => {
     await page.goto("/leagues/football-dynasty/teams/1");
-    await expect(page.getByText("Gregory Rivera")).toBeVisible();
+    // Same name can appear in Dropped this season and on the roster.
+    await expect(page.getByText("Gregory Rivera").first()).toBeVisible();
     await expect(page.getByText("Keeper", { exact: true }).first()).toBeVisible();
     await page.goto("/leagues/football-dynasty?tab=draft");
     await expect(page.getByRole("columnheader", { name: "Keeper", exact: true })).toBeVisible();

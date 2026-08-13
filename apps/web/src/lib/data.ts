@@ -1303,8 +1303,10 @@ export const getPlayerMap = cache(
 );
 
 /**
- * Load one team without pulling matchups/draft/transactions when the season is
- * on the v2 layout — the point of the schema split (AUDIT #16).
+ * Load one team without pulling draft/free-agents/the full player board when
+ * the season is on the v2 layout — the point of the schema split (AUDIT #16).
+ * Matchups (roadmap 7.4) and transactions (manager drops) are small concerns
+ * and are read here so the team page can show the season.
  */
 export async function getTeam(
   leagueId: string,
@@ -1369,10 +1371,15 @@ async function loadTeamSelective(
   }
   // A team page with no results on it is the one thing a team page is for
   // (roadmap 7.4). matchups.json is the smallest concern in the split — no
-  // rosters, no draft, no transactions — so read it here rather than leaving
+  // rosters, no draft — so read it here rather than leaving
   // schedule/scores/outcomes empty as the original 2.2 fast path did.
   const matchups = manifest.files.matchups
     ? await readJson<MatchupsFile>(path.join(directory, manifest.files.matchups))
+    : null;
+  const transactions = manifest.files.transactions
+    ? await readJson<TransactionsFile>(
+        path.join(directory, manifest.files.transactions),
+      )
     : null;
   const mine = matchups?.teams?.[key] ?? {};
   const team: Team = {
@@ -1411,6 +1418,7 @@ async function loadTeamSelective(
     synced_at: manifest.synced_at,
     schema_version: manifest.schema_version,
     draft: [],
+    transactions: transactions?.transactions ?? [],
     teams: [team, ...opponents],
     players: [],
   };

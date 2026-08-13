@@ -30,14 +30,17 @@ test.describe("portal smoke", () => {
     await expect(
       page.locator('iframe[title="Strictly Jayers YouTube playlist"]'),
     ).toBeVisible();
-    // Tonight's pick needs playlist RSS; fail-soft is OK — heading may still
-    // render when the feed returns titles.
+    // Tonight's pick and its "Drop a clip" CTA need playlist RSS. The player
+    // section still exposes Discord when the feed is empty.
     const tonight = page.getByRole("heading", { name: /Tonight’s pick/i });
     if (await tonight.isVisible().catch(() => false)) {
       await expect(tonight).toBeVisible();
+      await expect(
+        page.getByRole("link", { name: /Drop a clip in Discord/i }),
+      ).toBeVisible();
     }
     await expect(
-      page.getByRole("link", { name: /Drop a clip in Discord/i }),
+      page.getByRole("link", { name: /Discord voice/i }).first(),
     ).toBeVisible();
   });
 

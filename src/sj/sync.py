@@ -35,7 +35,11 @@ BOX_SCORE_MIN_SEASON = 2019
 DEFAULT_ESPN_TIMEOUT_SECONDS = 30.0
 DEFAULT_ESPN_MAX_ATTEMPTS = 4
 DEFAULT_ACTIVITY_PAGE_SIZE = 25
-DEFAULT_ACTIVITY_MAX_PAGES = 40
+# 25 × 200 = 5,000 communication topics. Football almost always stops early
+# (short page); baseball add/drop seasons routinely exceed the old 40-page
+# (1,000) cap. Override with SJ_ACTIVITY_MAX_PAGES.
+DEFAULT_ACTIVITY_MAX_PAGES = 200
+MAX_ACTIVITY_MAX_PAGES = 400
 DEFAULT_FREE_AGENT_SIZE = 50
 MAX_FREE_AGENT_SIZE = 150
 # Cap HTTP cost on deep historical syncs (~3 ESPN round-trips per week).
@@ -317,22 +321,42 @@ def fetch_free_agents(
         raise
 
 
+def activity_max_pages() -> int:
+    """ESPN ``recent_activity`` page cap (default 200). 25 topics per page."""
+    raw = os.environ.get("SJ_ACTIVITY_MAX_PAGES", "").strip()
+    if not raw:
+        return DEFAULT_ACTIVITY_MAX_PAGES
+    try:
+        value = int(raw)
+    except ValueError:
+        return DEFAULT_ACTIVITY_MAX_PAGES
+    return max(1, min(value, MAX_ACTIVITY_MAX_PAGES))
+
+
 def fetch_recent_activity(
     league: Any,
     *,
     page_size: int = DEFAULT_ACTIVITY_PAGE_SIZE,
-    max_pages: int = DEFAULT_ACTIVITY_MAX_PAGES,
+    max_pages: int | None = None,
 ) -> list[Any]:
-    """Page through ESPN recent activity for football / baseball / basketball."""
+    """Page through ESPN recent activity for football / baseball / basketball.
+
+    ESPN's communication view is newest-first and offset-paged; espn-api's
+    ``limitPerMessageSet`` is 25, so we keep ``page_size`` at 25 and raise
+    ``max_pages`` (or ``SJ_ACTIVITY_MAX_PAGES``) when a season has more
+    topics than one thousand. Each sync *replaces* ``transactions.json`` —
+    it does not merge with a prior pull — so the cap must cover the season.
+    """
     season = int(getattr(league, "year", 0) or 0)
     if season and season < ACTIVITY_MIN_SEASON:
         return []
     if not callable(getattr(league, "recent_activity", None)):
         return []
 
+    pages = activity_max_pages() if max_pages is None else max_pages
     items: list[Any] = []
     offset = 0
-    for _ in range(max_pages):
+    for _ in range(pages):
         try:
             page = espn_call(
                 lambda current=offset: league.recent_activity(
