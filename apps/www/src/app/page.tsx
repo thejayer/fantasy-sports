@@ -58,6 +58,16 @@ export default function HomePage() {
       pending: false,
     },
     {
+      id: "people",
+      index: items.people.index,
+      kicker: items.people.kicker,
+      title: items.people.title,
+      body: items.people.body,
+      href: "/people",
+      action: items.people.action,
+      pending: false,
+    },
+    {
       id: "discord",
       index: items.discord.index,
       kicker: items.discord.kicker,

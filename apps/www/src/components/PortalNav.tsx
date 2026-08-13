@@ -10,7 +10,7 @@ type Props = {
   discordInviteUrl: string | null;
 };
 
-/** Collapses Places / AI / Watch on small screens; Fantasy + Discord stay visible. */
+/** Collapses Places / AI / People / Watch on small screens; Fantasy + Discord stay visible. */
 export function PortalNav({ fantasyHubUrl, discordInviteUrl }: Props) {
   const [open, setOpen] = useState(false);
   const panelId = useId();
@@ -68,6 +68,9 @@ export function PortalNav({ fantasyHubUrl, discordInviteUrl }: Props) {
         </Link>
         <Link href="/ai" onClick={() => setOpen(false)}>
           AI News
+        </Link>
+        <Link href="/people" onClick={() => setOpen(false)}>
+          People
         </Link>
         <Link href="/watch" onClick={() => setOpen(false)}>
           Watch

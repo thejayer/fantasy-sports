@@ -213,6 +213,9 @@ export default async function WatchPage() {
           <li>
             <Link href="/ai">AI News →</Link>
           </li>
+          <li>
+            <Link href="/people">People →</Link>
+          </li>
         </ul>
       </section>
 

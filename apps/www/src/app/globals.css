@@ -450,7 +450,8 @@ a.destination .destination-action {
 }
 
 .event-strip,
-.crew-list {
+.crew-list,
+.people-list {
   list-style: none;
   margin: 0;
   padding: 0;
@@ -458,12 +459,14 @@ a.destination .destination-action {
 }
 
 .event-strip > li,
-.crew-list > li {
+.crew-list > li,
+.people-list > li {
   border-bottom: 2px solid var(--color-divider);
 }
 
 .event-row,
 .crew-row,
+.people-row,
 .tonight-card {
   display: grid;
   gap: 0.25rem;
@@ -477,6 +480,8 @@ a.event-row:hover,
 a.event-row:focus-visible,
 a.crew-row:hover,
 a.crew-row:focus-visible,
+a.people-row:hover,
+a.people-row:focus-visible,
 a.tonight-card:hover,
 a.tonight-card:focus-visible {
   background: var(--accent-tint);
@@ -510,13 +515,15 @@ a.tonight-card:focus-visible {
   color: color-mix(in srgb, var(--color-text) 55%, transparent);
 }
 
-.crew-row {
+.crew-row,
+.people-row {
   grid-template-columns: 1fr auto;
   align-items: center;
   gap: var(--space-4);
 }
 
-.crew-main h3 {
+.crew-main h3,
+.people-main h3 {
   margin: 0;
   font-size: 20px;
   text-transform: uppercase;
@@ -529,7 +536,20 @@ a.tonight-card:focus-visible {
   color: var(--accent-deep);
 }
 
-.crew-main p:last-child {
+.people-handle {
+  letter-spacing: 0.04em;
+  color: var(--accent-deep);
+}
+
+.people-meta {
+  margin: 0.15rem 0 0;
+  font-size: 13px;
+  letter-spacing: 0.04em;
+  color: color-mix(in srgb, var(--color-text) 55%, transparent);
+}
+
+.crew-main p:last-child,
+.people-main p:last-child {
   margin: var(--space-2) 0 0;
   max-width: 42ch;
   color: color-mix(in srgb, var(--color-text) 55%, transparent);
@@ -587,7 +607,8 @@ a.tonight-card:focus-visible {
   }
 
   .event-row,
-  .crew-row {
+  .crew-row,
+  .people-row {
     grid-template-columns: 1fr;
     gap: 0.35rem;
   }

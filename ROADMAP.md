@@ -1164,7 +1164,14 @@ section. Fail-soft when the feed is down (embed stays).
 
 ### P.7 Portal smoke — LANDED (light)
 Vitest on portal content helpers + Playwright smoke (home CTAs, `/watch`
-embed + tonight’s pick, `/ai` editor picks). Wired into the `www` CI job.
+embed + tonight’s pick, `/ai` editor picks, `/people` X links). Wired into the
+`www` CI job.
+
+### P.8 People directory — LANDING
+- `/people` on `apps/www`: hand-edited influential accounts with official X
+  profile links (`lib/people.ts`). Lanes: builders (Elon, Jensen, …), AI desk,
+  sports desk. No X API / no timeline widgets (those stay on `/ai`).
+- Nav More + homepage destination tile. Edit the list in code; do not scrape.
 
 ---
 

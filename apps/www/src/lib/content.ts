@@ -19,12 +19,12 @@ export type CrewMember = {
 
 export const portalCopy = {
   metaDescription:
-    "Strictly Jayers — the crew's front door for Discord, games, watch party, AI news, and fantasy leagues.",
+    "Strictly Jayers — the crew's front door for Discord, games, watch party, AI news, people to follow, and fantasy leagues.",
   hero: {
     kicker: "The front door",
     headline: "Same crew. Different rooms.",
     support:
-      "Chat is warm, Watch is queued, AI headlines are skimmed, and the fantasy hub is one click when draft night hits.",
+      "Chat is warm, Watch is queued, people to follow are listed, AI headlines are skimmed, and the fantasy hub is one click when draft night hits.",
     ctaFantasy: "Open fantasy hub",
     ctaDiscord: "Join Discord",
     ctaExplore: "See where to go",
@@ -55,8 +55,8 @@ export const portalCopy = {
   },
   destinations: {
     heading: "Where to go",
-    support: "Five rooms. Pick the one you need right now.",
-    marker: "01 — 05",
+    support: "Six rooms. Pick the one you need right now.",
+    marker: "01 — 06",
     items: {
       fantasy: {
         index: "01",
@@ -82,8 +82,16 @@ export const portalCopy = {
         action: "Open Watch",
         actionPending: "Open Watch",
       },
-      discord: {
+      people: {
         index: "04",
+        kicker: "Follow",
+        title: "People",
+        body: "Elon, Jensen, and the rest of the desk — one tap to their X.",
+        action: "Open People",
+        actionPending: "Open People",
+      },
+      discord: {
+        index: "05",
         kicker: "Chat",
         title: "Discord",
         body: "Jump voice for the argument that does not belong on a league page.",
@@ -91,7 +99,7 @@ export const portalCopy = {
         actionPending: "Invite soon",
       },
       palworld: {
-        index: "05",
+        index: "06",
         kicker: "Games",
         title: "Palworld",
         body: "Co-op when the world’s up — join details land here so they are not buried in chat.",
