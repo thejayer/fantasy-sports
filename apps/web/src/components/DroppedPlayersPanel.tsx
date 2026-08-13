@@ -41,7 +41,7 @@ export function DroppedPlayersPanel({
         <EmptyState title="No drops in the synced activity">
           Adds and drops appear after sync when ESPN returns recent activity
           for this season (empty before 2019). Very active baseball seasons
-          may not include every early drop — sync pages up to 1,000 items.
+          may not include every early drop if sync hit its activity page cap.
         </EmptyState>
       ) : (
         <div className="panel table-scroll">
