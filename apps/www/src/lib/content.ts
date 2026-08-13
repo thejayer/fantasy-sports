@@ -86,7 +86,7 @@ export const portalCopy = {
         index: "04",
         kicker: "Follow",
         title: "People",
-        body: "Elon, Jensen, and the rest of the desk — one tap to their X.",
+        body: "Portraits and bios for Elon, Jensen, and the rest of the desk — one tap to their X.",
         action: "Open People",
         actionPending: "Open People",
       },

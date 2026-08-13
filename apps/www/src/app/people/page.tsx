@@ -1,10 +1,12 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import Link from "next/link";
 
 import {
   INFLUENTIAL_PEOPLE,
   PEOPLE_LANE_COPY,
   peopleByLane,
+  personInitials,
   xProfileUrl,
 } from "@/lib/people";
 import { getSiteConfig } from "@/lib/site";
@@ -12,7 +14,7 @@ import { getSiteConfig } from "@/lib/site";
 export const metadata: Metadata = {
   title: "People",
   description:
-    "Influential people the crew actually follows — Elon, Jensen Huang, and the rest — with links to their X accounts.",
+    "Leadership desk for the accounts the crew actually follows — portraits, bios, and official X links.",
 };
 
 export default function PeoplePage() {
@@ -25,11 +27,13 @@ export default function PeoplePage() {
         <p className="hero-kicker">Who to follow</p>
         <h1>People</h1>
         <p>
-          A short desk of builders, AI, and sports — official X profiles only.
-          We do not invent handles. Open the account if you want the timeline.
+          Portraits, bios, and official X profiles — builders, the AI desk, and
+          sports. We do not invent handles. Open the account if you want the
+          timeline.
         </p>
         <p className="page-hero-meta">
-          {INFLUENTIAL_PEOPLE.length} people · hand-edited in the portal
+          {INFLUENTIAL_PEOPLE.length} people · portraits from Wikimedia Commons
+          where noted
         </p>
       </section>
 
@@ -48,25 +52,41 @@ export default function PeoplePage() {
               </div>
               <div className="section-marker">{copy.marker}</div>
             </div>
-            <ul className="people-list">
+            <ul className="people-grid">
               {group.people.map((person) => (
-                <li key={person.id}>
-                  <a
-                    className="people-row"
-                    href={xProfileUrl(person.handle)}
-                    rel="noopener noreferrer"
-                  >
-                    <div className="people-main">
-                      <h3>{person.name}</h3>
-                      <p className="people-meta">
-                        {person.role}
-                        {" · "}
-                        <span className="people-handle">@{person.handle}</span>
-                      </p>
-                      <p>{person.blurb}</p>
-                    </div>
-                    <span className="destination-action">X →</span>
-                  </a>
+                <li key={person.id} className="people-card">
+                  <div className="people-portrait">
+                    {person.photo ? (
+                      <Image
+                        className="people-portrait-img"
+                        src={person.photo}
+                        alt=""
+                        fill
+                        sizes="(max-width: 560px) 92vw, (max-width: 900px) 44vw, 330px"
+                      />
+                    ) : (
+                      <div className="people-monogram" aria-hidden="true">
+                        {personInitials(person.name)}
+                      </div>
+                    )}
+                  </div>
+                  <div className="people-card-body">
+                    <p className="people-card-role">{person.role}</p>
+                    <h3>{person.name}</h3>
+                    <p className="people-handle">@{person.handle}</p>
+                    <p className="people-card-bio">{person.bio}</p>
+                    {person.photoCredit ? (
+                      <p className="people-photo-credit">{person.photoCredit}</p>
+                    ) : null}
+                    <a
+                      className="people-follow"
+                      href={xProfileUrl(person.handle)}
+                      rel="noopener noreferrer"
+                      aria-label={`Follow ${person.name} on X`}
+                    >
+                      Follow on X →
+                    </a>
+                  </div>
                 </li>
               ))}
             </ul>

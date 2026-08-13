@@ -63,11 +63,13 @@ test.describe("portal smoke", () => {
     await expect(
       page.getByRole("heading", { name: "People", exact: true }),
     ).toBeVisible();
-    const elon = page.getByRole("link", { name: /Elon Musk/i });
+    const elon = page.getByRole("link", { name: "Follow Elon Musk on X" });
     await expect(elon).toBeVisible();
     await expect(elon).toHaveAttribute("href", "https://x.com/elonmusk");
-    const jensen = page.getByRole("link", { name: /Jensen Huang/i });
+    const jensen = page.getByRole("link", { name: "Follow Jensen Huang on X" });
     await expect(jensen).toBeVisible();
     await expect(jensen).toHaveAttribute("href", "https://x.com/JensenHuang");
+    const elonCard = page.locator(".people-card").filter({ hasText: "Elon Musk" });
+    await expect(elonCard.locator("img")).toBeVisible();
   });
 });
