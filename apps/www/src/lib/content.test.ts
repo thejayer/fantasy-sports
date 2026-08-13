@@ -50,4 +50,9 @@ describe("portal destinations", () => {
       expect(member.handle).toMatch(/^[a-z0-9-]+$/);
     }
   });
+
+  it("includes a People destination", () => {
+    expect(portalCopy.destinations.items.people.title).toBe("People");
+    expect(portalCopy.destinations.marker).toMatch(/06/);
+  });
 });

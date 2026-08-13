@@ -1,7 +1,7 @@
 import { expect, test } from "@playwright/test";
 
 /**
- * Portal smoke (roadmap P.7): home handoffs, Watch embed, AI editor desk.
+ * Portal smoke (roadmap P.7 / P.8): home handoffs, Watch embed, AI editor desk, People.
  */
 
 test.describe("portal smoke", () => {
@@ -14,6 +14,7 @@ test.describe("portal smoke", () => {
       page.getByRole("heading", { name: /Where to go/i }),
     ).toBeVisible();
     await expect(page.getByRole("link", { name: /Leagues & tools/i })).toBeVisible();
+    await expect(page.getByRole("link", { name: /People/i }).first()).toBeVisible();
     await expect(page.getByText(/Details soon/i)).toBeVisible();
     await expect(
       page.getByRole("heading", { name: /Coming up/i }),
@@ -55,5 +56,20 @@ test.describe("portal smoke", () => {
     await expect(
       picks.getByRole("link", { name: /Testing ads in ChatGPT/i }),
     ).toBeVisible();
+  });
+
+  test("people directory links to X", async ({ page }) => {
+    await page.goto("/people");
+    await expect(
+      page.getByRole("heading", { name: "People", exact: true }),
+    ).toBeVisible();
+    const elon = page.getByRole("link", { name: "Follow Elon Musk on X" });
+    await expect(elon).toBeVisible();
+    await expect(elon).toHaveAttribute("href", "https://x.com/elonmusk");
+    const jensen = page.getByRole("link", { name: "Follow Jensen Huang on X" });
+    await expect(jensen).toBeVisible();
+    await expect(jensen).toHaveAttribute("href", "https://x.com/JensenHuang");
+    const elonCard = page.locator(".people-card").filter({ hasText: "Elon Musk" });
+    await expect(elonCard.locator("img")).toBeVisible();
   });
 });

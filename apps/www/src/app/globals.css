@@ -548,6 +548,131 @@ a.tonight-card:focus-visible {
   letter-spacing: -0.02em;
 }
 
+/* —— People (/people) — bank-style leadership cards —— */
+.people-grid {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 2px;
+  background: var(--color-divider);
+  border: 2px solid var(--color-divider);
+}
+
+.people-card {
+  display: flex;
+  flex-direction: column;
+  background: var(--color-bg);
+  min-width: 0;
+}
+
+.people-portrait {
+  position: relative;
+  aspect-ratio: 3 / 4;
+  overflow: hidden;
+  background: var(--color-neutral-800);
+}
+
+.people-portrait-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: top center;
+  display: block;
+}
+
+.people-monogram {
+  width: 100%;
+  height: 100%;
+  display: grid;
+  place-items: center;
+  background: var(--color-accent);
+  color: var(--color-bg);
+  font-family: var(--font-heading);
+  font-weight: var(--font-heading-weight);
+  font-size: clamp(40px, 6vw, 64px);
+  letter-spacing: -0.04em;
+  text-transform: uppercase;
+}
+
+.people-card-body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  padding: var(--space-4);
+  flex: 1;
+  border-top: 2px solid var(--color-divider);
+}
+
+.people-card-role {
+  margin: 0;
+  font-family: var(--font-heading);
+  font-weight: 700;
+  font-size: 12px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--accent-deep);
+}
+
+.people-card-body h3 {
+  margin: 0.15rem 0 0;
+  font-size: clamp(18px, 2.2vw, 24px);
+  line-height: 1.05;
+  letter-spacing: -0.02em;
+  text-transform: uppercase;
+}
+
+.people-handle {
+  margin: 0.15rem 0 0;
+  font-size: 13px;
+  letter-spacing: 0.04em;
+  color: var(--accent-deep);
+}
+
+.people-card-bio {
+  margin: var(--space-3) 0 0;
+  font-size: 14px;
+  line-height: 1.5;
+  color: color-mix(in srgb, var(--color-text) 62%, transparent);
+}
+
+.people-photo-credit {
+  margin: var(--space-3) 0 0;
+  font-size: 11px;
+  letter-spacing: 0.02em;
+  line-height: 1.35;
+  color: color-mix(in srgb, var(--color-text) 42%, transparent);
+}
+
+.people-follow {
+  margin-top: auto;
+  padding-top: var(--space-4);
+  font-family: var(--font-heading);
+  font-weight: var(--font-heading-weight);
+  font-size: 13px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--accent-deep);
+}
+
+.people-follow:hover,
+.people-follow:focus-visible {
+  color: var(--color-accent);
+}
+
+@media (max-width: 980px) {
+  .people-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 640px) {
+  .people-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
 .site-footer {
   display: flex;
   flex-wrap: wrap;

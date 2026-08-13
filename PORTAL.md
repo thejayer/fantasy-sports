@@ -45,6 +45,13 @@ RSS covers the firehose below. X timelines use official embed widgets.
 highlights **Tonight’s pick** from the playlist RSS, and links Discord voice /
 clip drops. Anyone with YouTube edit access can add/remove videos.
 
+**People** lives at `/people` — a bank-style leadership desk (portrait, bio,
+Follow on X) of influential accounts (Elon, Jensen Huang, AI lab leads,
+NFL/golf). Official `x.com/{handle}` links only. Portraits are committed
+under `apps/www/public/people/` from Wikimedia Commons (credited on each
+card); missing shots use a monogram. Edit `INFLUENTIAL_PEOPLE` in
+`apps/www/src/lib/people.ts`. No X API.
+
 Home also ships a **Coming up** event strip and **Meet the crew** links into
 hub `/u/{handle}` profiles (edit handles in `lib/content.ts`). The hub chrome
 links back with **Community** → `strictlyjayers.com` (`COMMUNITY_SITE_URL`).
