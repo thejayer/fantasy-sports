@@ -487,7 +487,7 @@ test.describe("hub smoke", () => {
   }) => {
     await page.goto("/leagues/baseball-dynasty/teams/1");
     await expect(
-      page.getByRole("heading", { name: "Bat Flip Bandits" }),
+      page.getByRole("heading", { name: /Diamond Dogs/i }),
     ).toBeVisible();
     await expect(
       page.getByRole("heading", { name: /Dropped this season/i }),
