@@ -56,6 +56,7 @@ beforeAll(async () => {
       standings: "standings.json",
       rosters: "rosters.json",
       matchups: "matchups.json",
+      transactions: "transactions.json",
     },
   });
   await writeJson(`${dir}/standings.json`, {
@@ -118,6 +119,22 @@ beforeAll(async () => {
       "2": { schedule: [1, 1], scores: [95, 90], outcomes: ["L", "W"] },
     },
   });
+  await writeJson(`${dir}/transactions.json`, {
+    transactions: [
+      {
+        date: "20260910120000",
+        actions: [
+          {
+            team_id: 1,
+            action: "DROPPED",
+            player_id: 42,
+            player_name: "Cut Player",
+            bid_amount: 0,
+          },
+        ],
+      },
+    ],
+  });
   await writeJson("index.json", {
     leagues: [
       {
@@ -176,5 +193,24 @@ describe("getTeam on a schema_version 2 snapshot", () => {
   it("returns null for a team id that is not in the season", async () => {
     const { getTeam } = await import("@/lib/data");
     expect(await getTeam(LEAGUE, 99, SEASON)).toBeNull();
+  });
+
+  it("loads transactions so the team page can list drops", async () => {
+    const { getTeam } = await import("@/lib/data");
+    const result = await getTeam(LEAGUE, 1, SEASON);
+    expect(result!.league.transactions).toEqual([
+      {
+        date: "20260910120000",
+        actions: [
+          {
+            team_id: 1,
+            action: "DROPPED",
+            player_id: 42,
+            player_name: "Cut Player",
+            bid_amount: 0,
+          },
+        ],
+      },
+    ]);
   });
 });

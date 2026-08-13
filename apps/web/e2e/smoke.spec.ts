@@ -482,6 +482,22 @@ test.describe("hub smoke", () => {
     await expect(page.getByRole("columnheader", { name: "Opponent" })).toBeVisible();
   });
 
+  test("baseball team page lists players the manager dropped (roadmap 7.4)", async ({
+    page,
+  }) => {
+    await page.goto("/leagues/baseball-dynasty/teams/1");
+    await expect(
+      page.getByRole("heading", { name: "Bat Flip Bandits" }),
+    ).toBeVisible();
+    await expect(
+      page.getByRole("heading", { name: /Dropped this season/i }),
+    ).toBeVisible();
+    await expect(page.getByRole("link", { name: "Daniel Moore" })).toBeVisible();
+    await expect(
+      page.getByRole("link", { name: /League adds \/ drops/i }),
+    ).toBeVisible();
+  });
+
   test("football settings tab renders synced ESPN settings (roadmap 7.9)", async ({
     page,
   }) => {

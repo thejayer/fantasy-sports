@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { BaseballRosterView } from "@/components/BaseballRosterView";
+import { DroppedPlayersPanel } from "@/components/DroppedPlayersPanel";
 import { EmptyState } from "@/components/EmptyState";
 import { GameLogPanel } from "@/components/GameLogPanel";
 import { GolfRosterView } from "@/components/GolfRosterView";
@@ -129,6 +130,8 @@ export default async function TeamPage({ params, searchParams }: Props) {
       />
 
       <GameLogPanel league={league} team={team} />
+
+      <DroppedPlayersPanel league={league} team={team} />
 
       <h3 className="roster-group-title" style={{ marginTop: "1.5rem" }}>
         Roster
