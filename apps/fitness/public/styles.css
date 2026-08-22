@@ -266,7 +266,8 @@ button:disabled {
 }
 
 .nav-list {
-  display: grid;
+  display: flex;
+  flex-direction: column;
   gap: var(--space-2);
   min-width: 0;
   max-width: 100%;
@@ -2938,10 +2939,6 @@ body.dark .gps-map {
     height: auto;
   }
 
-  .nav-list {
-    grid-template-columns: repeat(12, minmax(0, 1fr));
-  }
-
   .sidebar-panel {
     margin-top: 0;
   }
@@ -3017,15 +3014,6 @@ body.dark .gps-map {
     padding: 18px;
   }
 
-  .sidebar .nav-list {
-    display: grid;
-    grid-auto-flow: column;
-    grid-auto-columns: minmax(126px, 1fr);
-    grid-template-columns: none;
-    overflow-x: auto;
-    padding-bottom: 4px;
-  }
-
   .sidebar-panel {
     display: none;
   }
@@ -3052,7 +3040,6 @@ body.dark .gps-map {
     flex: 1;
   }
 
-  .nav-list,
   .metric-grid,
   .today-grid,
   .program-grid,
@@ -3496,21 +3483,26 @@ body[data-view="dashboard"] .topbar {
   flex-wrap: nowrap;
   gap: 0;
   max-width: none;
+  grid-template-columns: none;
 }
 
-.nav-primary,
-.nav-more {
+/* Follow-up to #146: leftover athlete-log 12-col .nav-list grid plus a
+   combined primary/more flex display rule leaked Calendar / Goals /
+   Profile / Sports / GPS / Library into the first look. */
+.nav-primary {
   display: flex;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
 }
 
-.nav-more {
-  display: none;
-  border-top: 2px solid var(--color-divider);
+.nav-more:not(.is-open),
+.nav-more[hidden] {
+  display: none !important;
 }
 
 .nav-more.is-open {
   display: flex;
+  flex-wrap: wrap;
+  border-top: 2px solid var(--color-divider);
 }
 
 .nav-item,
@@ -3796,6 +3788,10 @@ body.dark .page-hero {
     grid-auto-flow: unset;
     grid-auto-columns: unset;
     grid-template-columns: none;
+  }
+
+  .nav-primary {
+    flex-wrap: wrap;
   }
 
   .nav-item,

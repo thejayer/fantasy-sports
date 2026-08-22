@@ -1299,6 +1299,8 @@ function setMoreNavOpen(open) {
   });
   if (!panel) return;
   panel.classList.toggle("is-open", open);
+  panel.toggleAttribute("hidden", !open);
+  panel.setAttribute("aria-hidden", open ? "false" : "true");
 }
 
 function syncMoreNav(viewId) {
@@ -1306,6 +1308,8 @@ function syncMoreNav(viewId) {
   document.querySelectorAll(".nav-more-toggle").forEach((toggle) => {
     toggle.classList.toggle("is-current", isMore);
   });
+  // Never auto-open on first paint / dashboard. Only reveal extra rooms
+  // after the athlete is already in a More destination.
   if (isMore) setMoreNavOpen(true);
 }
 
@@ -1382,6 +1386,7 @@ setupEventListeners();
 renderAll();
 store.subscribe(renderAll);
 setView("dashboard");
+setMoreNavOpen(false);
 applyTemplate(sessionTemplates[0].type);
 
 openAthleteDb()
