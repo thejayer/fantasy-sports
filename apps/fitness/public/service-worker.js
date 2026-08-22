@@ -1,5 +1,5 @@
 // @ts-nocheck -- ServiceWorkerGlobalScope is a separate lib from DOM.
-const cacheName = "sj-fitness-v5";
+const cacheName = "sj-fitness-v6";
 const appShell = [
   "./",
   "./app.html",
@@ -12,6 +12,7 @@ const appShell = [
   "./analytics.js",
   "./render.js",
   "./events.js",
+  "./sync.js",
   "./app.js",
   "./manifest.webmanifest",
   "./assets/court-course.svg",

@@ -12,6 +12,10 @@ test.describe("fitness smoke", () => {
 
   test("first look is a short editorial dashboard", async ({ page }) => {
     await page.goto("/");
+    await expect(page.locator("body[data-fitness-ready='1']")).toBeVisible({
+      timeout: 15_000,
+    });
+    await expect(page.getByRole("button", { name: "Sign out" })).toBeVisible();
     await expect(page).toHaveTitle(/Fitness · Strictly Jayers/);
     await expect(
       page.getByRole("link", { name: "Strictly Jayers" }).first(),
@@ -52,6 +56,9 @@ test.describe("fitness smoke", () => {
   test("1024px first viewport is one primary row with More closed", async ({ page }) => {
     await page.setViewportSize({ width: 1024, height: 768 });
     await page.goto("/");
+    await expect(page.locator("body[data-fitness-ready='1']")).toBeVisible({
+      timeout: 15_000,
+    });
     const appNav = page.getByRole("navigation", { name: "App sections" });
     const more = page.locator("#navMore");
     await expect(more).toBeHidden();
@@ -75,6 +82,9 @@ test.describe("fitness smoke", () => {
 
   test("More reveals secondary rooms without deleting them", async ({ page }) => {
     await page.goto("/");
+    await expect(page.locator("body[data-fitness-ready='1']")).toBeVisible({
+      timeout: 15_000,
+    });
     const appNav = page.getByRole("navigation", { name: "App sections" });
     await page.locator("#navMoreToggle").click();
     await expect(page.locator("#navMore")).toBeVisible();
@@ -90,6 +100,9 @@ test.describe("fitness smoke", () => {
 
   test("log workout view still exposes sport templates", async ({ page }) => {
     await page.goto("/");
+    await expect(page.locator("body[data-fitness-ready='1']")).toBeVisible({
+      timeout: 15_000,
+    });
     await page.getByRole("button", { name: /Log session/ }).first().click();
     await expect(page.locator("#log")).toBeVisible();
     await expect(page.locator("#sessionType")).toBeVisible();

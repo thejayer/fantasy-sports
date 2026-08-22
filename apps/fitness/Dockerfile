@@ -3,8 +3,8 @@
 # Build from the repo root:
 #   docker build -f apps/fitness/Dockerfile -t sj-fitness .
 #
-# No Auth.js, no ESPN sync, no GCS mount — public local-first PWA that
-# deep-links to strictlyjayers.com and fantasy.strictlyjayers.com.
+# Auth.js (same Google + allowlist as sj-hub). Per-user JSON on the hub
+# GCS mount at /app/data/sj/fitness — do not mkdir/stat that path here.
 
 FROM node:22-bookworm-slim AS deps
 WORKDIR /app/apps/fitness
@@ -37,7 +37,9 @@ USER sjfit
 ENV NODE_ENV=production \
     PORT=8080 \
     HOSTNAME=0.0.0.0 \
+    AUTH_TRUST_HOST=true \
     SITE_URL=https://fitness.strictlyjayers.com \
+    AUTH_URL=https://fitness.strictlyjayers.com \
     COMMUNITY_SITE_URL=https://strictlyjayers.com \
     FANTASY_HUB_URL=https://fantasy.strictlyjayers.com
 

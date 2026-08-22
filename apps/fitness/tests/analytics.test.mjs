@@ -9,6 +9,21 @@ const balancedCheckin = {
   stress: 4,
 };
 
+describe("empty member log", () => {
+  it("does not throw when recovery and sessions are empty", () => {
+    const ctx = loadAnalyticsContext({
+      sessions: [],
+      recovery: [],
+      readinessCheckins: [],
+      plannedSessions: [],
+    });
+    const stats = ctx.getTrainingStats();
+    expect(stats.highestFlag).toEqual({ area: "None", score: 0, trend: "Same" });
+    expect(stats.totalHours).toBe(0);
+    expect(() => ctx.getRecommendation(stats)).not.toThrow();
+  });
+});
+
 describe("getReadinessScoreFromCheckin", () => {
   it("returns null when no checkin is provided and no checkin exists for today", () => {
     const ctx = loadAnalyticsContext({ readinessCheckins: [] });

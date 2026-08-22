@@ -17,6 +17,7 @@ const requiredFiles = [
   "analytics.js",
   "render.js",
   "events.js",
+  "sync.js",
   "app.js",
   "service-worker.js",
   "manifest.webmanifest",
@@ -34,7 +35,7 @@ const requiredScripts = [
   "analytics.js",
   "render.js",
   "events.js",
-  "app.js",
+  "sync.js",
 ];
 
 const errors = [];
@@ -54,6 +55,14 @@ for (const script of requiredScripts) {
     errors.push(`app.html loads ${script} out of order`);
   }
   previousIndex = markerIndex;
+}
+
+const syncSource = exists("sync.js") ? read("sync.js") : "";
+if (!syncSource.includes('script.src = "app.js"') && !syncSource.includes('src="app.js"')) {
+  errors.push("sync.js must load app.js after /api/me hydrate");
+}
+if (!indexHtml.includes('id="sjAccount"') || !indexHtml.includes("Sign out")) {
+  errors.push("app.html should expose SJ sign-out chrome");
 }
 
 if (!indexHtml.includes("Strictly Jayers")) {
@@ -130,7 +139,7 @@ if (!serviceWorker.includes("/api/") || !serviceWorker.includes("/_next/")) {
   errors.push("service-worker.js must bypass /api/ and /_next/");
 }
 
-const appSource = requiredScripts.map((file) => read(file)).join("\n");
+const appSource = [...requiredScripts, "app.js"].map((file) => read(file)).join("\n");
 for (const symbol of [
   "renderGolfGps",
   "saveGpsRoundToLog",

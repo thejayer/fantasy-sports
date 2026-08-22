@@ -1180,12 +1180,18 @@ embed + tonight’s pick, `/ai` editor picks, `/people` X links). Wired into the
 ### P.9 Fitness training log — LANDING
 - Sibling Cloud Run app `apps/fitness` → `sj-fitness` → intended
   `fitness.strictlyjayers.com` (not a www route; SW would intercept the apex).
-- Athlete-log product behavior (sports logging, localStorage / IDB, PWA)
-  restyled onto Modernist tokens. Portal nav / People / destinations deep-link
-  via `FITNESS_URL`. Docs: [FITNESS.md](FITNESS.md).
+- Athlete-log product behavior (sports logging, PWA) restyled onto Modernist
+  tokens. Portal nav / People / destinations deep-link via `FITNESS_URL`.
+  Docs: [FITNESS.md](FITNESS.md).
+- **Per-member identity:** Auth.js + the same Google client and
+  `ALLOWED_EMAILS` ∪ `hub_members.json` allowlist as Fantasy. `/api/me`
+  persists `{SJ_FITNESS_DIR}/users/{hash}/athlete.json` (GCS mount, not
+  Firestore). Guests hit a sign-in wall. Anonymous `athleteLog.*` migrates
+  once into that signed-in profile. Local cache is `athleteLog.{userKey}.*`.
 - Deploy: `.github/workflows/deploy-fitness.yml` +
   `./scripts/setup-fitness-domain.sh` (ops maps DNS; PR does not require a
-  Spaceship click).
+  Spaceship click). Add the fitness origin/redirect to the existing Google
+  OAuth client.
 
 ---
 
