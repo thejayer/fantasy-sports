@@ -3289,13 +3289,42 @@ body[data-view="profile"] .fab-log {
 }
 
 
-/* —— Strictly Jayers chrome (replaces Texas Tech graphite sidebar) —— */
-html {
-  background: var(--color-bg);
+/* —— Strictly Jayers flatten (match apex /people /watch, not athlete-log) —— */
+html,
+body {
+  background: #f3f2f2;
 }
 
 ::selection {
   background: color-mix(in srgb, var(--color-accent) 30%, transparent);
+}
+
+h1,
+h2,
+h3,
+h4,
+.topbar h2,
+.section-head h2,
+.panel h3,
+.template-tools h3,
+.hero-band h2 {
+  font-family: var(--font-heading);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  text-transform: uppercase;
+}
+
+.eyebrow,
+.hero-kicker,
+.cockpit-status span,
+.metric-card .eyebrow,
+.sidebar .eyebrow {
+  font-family: var(--font-heading);
+  font-weight: 700;
+  font-size: 12px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--accent-deep);
 }
 
 .site-header {
@@ -3307,14 +3336,15 @@ html {
   margin: 0 auto;
   padding: var(--space-3) 0;
   border-bottom: 2px solid var(--color-divider);
-  background: var(--color-bg);
-  position: relative;
-  z-index: 6;
+  background: #f3f2f2;
+  position: sticky;
+  top: 0;
+  z-index: 40;
 }
 
 .sj-brand {
   font-family: var(--font-heading);
-  font-weight: var(--font-heading-weight);
+  font-weight: 800;
   font-size: 19px;
   letter-spacing: 0.02em;
   text-transform: uppercase;
@@ -3366,9 +3396,27 @@ html {
   outline-offset: 1px;
 }
 
-.app-frame {
+.page-hero {
   width: min(1100px, calc(100% - 2rem));
   margin: 0 auto;
+  padding: clamp(2.5rem, 6vw, 4rem) 0 clamp(1.5rem, 3vw, 2rem);
+  border-bottom: 2px solid var(--color-divider);
+}
+
+.page-hero h1 {
+  margin: var(--space-3) 0 0;
+  font-size: clamp(40px, 8vw, 72px);
+  line-height: 0.95;
+  letter-spacing: -0.03em;
+  text-transform: uppercase;
+}
+
+.page-hero > p {
+  margin: var(--space-4) 0 0;
+  max-width: 42ch;
+  font-size: 16px;
+  line-height: 1.5;
+  color: color-mix(in srgb, var(--color-text) 60%, transparent);
 }
 
 .site-footer {
@@ -3386,7 +3434,7 @@ html {
 
 .site-footer a {
   font-family: var(--font-heading);
-  font-weight: var(--font-heading-weight);
+  font-weight: 800;
   color: var(--accent-deep);
   text-decoration: none;
 }
@@ -3397,75 +3445,75 @@ html {
 }
 
 .app-shell {
-  border-left: 2px solid var(--color-divider);
-  border-right: 2px solid var(--color-divider);
+  display: block;
+  width: min(1100px, calc(100% - 2rem));
+  margin: 0 auto;
+  min-height: 0;
+  border: 0;
 }
 
 .sidebar {
-  background: var(--color-bg);
+  position: static;
+  height: auto;
+  min-width: 0;
+  padding: 0;
+  gap: 0;
+  background: transparent;
   color: var(--color-text);
-  padding: 20px 16px;
-  border-right: 2px solid var(--color-divider);
   box-shadow: none;
+  border: 0;
+  border-bottom: 2px solid var(--color-divider);
 }
 
+.brand,
 .brand-mark {
-  width: 40px;
-  height: 40px;
-  border-radius: 0;
-  background: var(--color-accent);
-  box-shadow: none;
-}
-
-.brand-mark span,
-.brand-mark span::after {
   display: none;
 }
 
-.brand h1 {
-  font-family: var(--font-heading);
-  font-weight: var(--font-heading-weight);
-  text-transform: uppercase;
-  letter-spacing: -0.02em;
-}
-
-.brand p,
-.sidebar .eyebrow,
-.sidebar-panel p:last-child {
-  color: color-mix(in srgb, var(--color-text) 55%, transparent);
+.nav-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0;
+  max-width: none;
 }
 
 .nav-item {
   color: var(--color-text);
-  border: 2px solid transparent;
+  background: transparent;
+  border: 0;
+  border-right: 2px solid var(--color-divider);
   border-radius: 0;
+  min-height: 40px;
+  padding: 0 0.85rem;
+  font-family: var(--font-heading);
+  font-size: 12px;
   font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.nav-item .icon {
+  display: none;
 }
 
 .nav-item.active,
 .nav-item:hover {
-  background: var(--accent-tint);
+  background: transparent;
+  color: var(--color-accent);
   border-color: var(--color-divider);
 }
 
 .nav-item.active::before {
-  left: -16px;
-  width: 2px;
-  height: 100%;
-  border-radius: 0;
-  background: var(--color-accent);
-}
-
-.icon {
-  border-radius: 0;
-  background: var(--accent-tint);
-  color: var(--accent-deep);
+  display: none;
 }
 
 .sidebar-panel {
-  border: 2px solid var(--color-divider);
+  margin: 0;
+  padding: var(--space-4) 0;
+  border: 0;
+  border-top: 2px solid var(--color-divider);
   border-radius: 0;
-  background: var(--color-bg);
+  background: transparent;
   backdrop-filter: none;
 }
 
@@ -3485,10 +3533,17 @@ html {
   background: var(--color-accent);
 }
 
+.content {
+  padding: 0 0 4rem;
+}
+
 .topbar {
-  background: var(--color-bg);
+  margin: 0;
+  padding: var(--space-4) 0;
+  background: #f3f2f2;
   backdrop-filter: none;
   border-bottom: 2px solid var(--color-divider);
+  position: static;
 }
 
 .cockpit-status div,
@@ -3497,64 +3552,224 @@ html {
 .icon-button,
 .panel,
 .metric-card,
+.analytics-card,
+.advanced-card,
+.program-card,
+.sport-dashboard-card,
+.record-card,
+.drill-card,
+.trend-card,
+.compare-card,
+.compare-table,
 .session-card,
 .template-card,
-.drill-card,
 .persistence-card,
 .calendar-day,
-.bottom-nav {
+.timer-card,
+.today-panel,
+.readiness-panel,
+.bottom-nav,
+.fab-log,
+.snackbar,
+.sport-radar,
+.radar-center,
+.radar-point {
   border-radius: 0 !important;
   box-shadow: none !important;
+  backdrop-filter: none !important;
+}
+
+.primary-button,
+.ghost-button,
+.icon-button {
+  font-family: var(--font-heading);
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  transform: none !important;
 }
 
 .primary-button {
-  background: var(--color-accent);
-  border: 2px solid var(--color-accent);
+  background: var(--color-text);
+  border: 2px solid var(--color-text);
   color: var(--color-bg);
-  text-transform: none;
-  font-family: var(--font-heading);
-  font-weight: var(--font-heading-weight);
 }
 
 .primary-button:hover {
-  background: var(--accent-deep);
-  border-color: var(--accent-deep);
+  background: color-mix(in srgb, var(--color-text) 88%, transparent);
+  border-color: var(--color-text);
 }
 
 .ghost-button,
 .icon-button {
-  border: 2px solid var(--color-divider);
   background: transparent;
-}
-
-.hero-band {
-  border: 2px solid var(--color-divider);
-  border-radius: 0;
-  background: var(--color-accent);
-  color: var(--color-bg);
-}
-
-body.dark .sidebar {
-  background: var(--color-bg);
+  border: 2px solid var(--color-text);
   color: var(--color-text);
 }
 
-body.dark .topbar {
-  background: var(--color-bg);
-  border-bottom-color: var(--color-divider);
+.ghost-button:hover,
+.icon-button:hover {
+  border-color: var(--color-accent);
+  color: var(--accent-deep);
 }
 
-.bottom-nav {
+.hero-band {
+  display: block;
+  min-height: 0;
+  margin: 0;
+  padding: clamp(2rem, 4vw, 3rem) 0;
+  border: 0;
+  border-bottom: 2px solid var(--color-divider);
+  border-radius: 0;
+  background: transparent;
+  color: var(--color-text);
+  box-shadow: none;
+  overflow: visible;
+}
+
+.hero-band::after {
+  display: none;
+}
+
+.hero-band .eyebrow,
+.hero-band p {
+  color: color-mix(in srgb, var(--color-text) 60%, transparent);
+}
+
+.hero-band h2 {
+  max-width: 18ch;
+  margin: var(--space-3) 0 0;
+  font-size: clamp(28px, 4vw, 40px);
+  line-height: 1.05;
+  letter-spacing: -0.02em;
+  color: var(--color-text);
+}
+
+.sport-radar {
+  display: none;
+}
+
+.metric-grid,
+.program-grid,
+.analytics-grid,
+.advanced-analytics-grid,
+.sport-dashboard-grid,
+.records-grid,
+.drill-grid,
+.trend-chart-grid,
+.compare-grid {
+  gap: 0;
   border-top: 2px solid var(--color-divider);
+}
+
+.metric-card,
+.analytics-card,
+.advanced-card,
+.program-card,
+.sport-dashboard-card,
+.record-card,
+.drill-card,
+.trend-card,
+.compare-card,
+.compare-table,
+.panel {
+  background: transparent;
+  border: 0;
+  border-bottom: 2px solid var(--color-divider);
+  border-radius: 0;
+  box-shadow: none;
+}
+
+.metric-card:hover,
+.analytics-card:hover,
+.advanced-card:hover,
+.program-card:hover,
+.sport-dashboard-card:hover,
+.record-card:hover,
+.drill-card:hover,
+.trend-card:hover,
+.compare-card:hover {
+  transform: none;
+  background: var(--accent-tint);
+  box-shadow: none;
+}
+
+.cockpit-status div {
+  background: transparent;
+  border: 2px solid var(--color-divider);
+}
+
+.fab-log {
+  display: none !important;
+}
+
+@media (max-width: 980px) {
+  .bottom-nav {
+    position: sticky;
+    left: auto;
+    right: auto;
+    bottom: auto;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    border-top: 2px solid var(--color-divider);
+    border-radius: 0;
+    background: #f3f2f2;
+    box-shadow: none;
+  }
+
+  .bottom-nav-item,
+  .bottom-nav-item:nth-child(3),
+  .bottom-nav-item:nth-child(4),
+  .bottom-nav-item:nth-child(5) {
+    display: inline-flex;
+    min-height: 40px;
+    padding: 0 0.75rem;
+    border: 0;
+    border-right: 2px solid var(--color-divider);
+    border-radius: 0;
+    background: transparent;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+
+  .bottom-nav-item span {
+    display: none;
+  }
+
+  .bottom-nav-item.active {
+    color: var(--color-accent);
+    background: transparent;
+  }
+}
+
+body.dark .sidebar,
+body.dark .topbar,
+body.dark .hero-band,
+body.dark .site-header,
+body.dark .page-hero {
   background: var(--color-bg);
+  color: var(--color-text);
+  border-color: var(--color-divider);
 }
 
 @media (max-width: 759px) {
-  .site-header {
+  .site-header,
+  .page-hero,
+  .app-shell,
+  .site-footer {
     width: calc(100% - 1.5rem);
   }
+
   .sj-nav {
     gap: var(--space-3);
     font-size: 13px;
+  }
+
+  .nav-item {
+    border-right: 0;
+    border-bottom: 2px solid var(--color-divider);
   }
 }

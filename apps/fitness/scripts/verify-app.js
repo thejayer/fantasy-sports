@@ -59,6 +59,9 @@ for (const script of requiredScripts) {
 if (!indexHtml.includes("Strictly Jayers")) {
   errors.push("app.html should use Strictly Jayers chrome");
 }
+if (!indexHtml.includes('class="page-hero"')) {
+  errors.push("app.html should use the SJ page-hero, not athlete-log brand chrome");
+}
 if (indexHtml.includes("Athlete Log")) {
   errors.push("app.html still brands as Athlete Log");
 }
