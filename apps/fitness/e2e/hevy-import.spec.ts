@@ -15,7 +15,9 @@ test.describe("Hevy CSV import", () => {
       name: "Profile",
     }).click();
     await expect(page.locator("#profile")).toBeVisible();
-    await expect(page.getByRole("heading", { name: "Import Hevy workouts" })).toBeVisible();
+    const hevyHeading = page.getByRole("heading", { name: "Import Hevy workouts" });
+    await hevyHeading.scrollIntoViewIfNeeded();
+    await expect(hevyHeading).toBeVisible();
 
     await page.locator("#hevyCsvFile").setInputFiles(
       path.join(__dirname, "../tests/fixtures/hevy_workouts.csv"),
