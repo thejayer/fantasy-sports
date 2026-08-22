@@ -856,6 +856,26 @@
                 <textarea id="importJsonText" rows="5" placeholder="Paste a Strictly Jayers Fitness JSON export"></textarea>
               </label>
               <button class="primary-button" id="importJson" type="button">Import data</button>
+              <div class="import-mapper hevy-import wide">
+                <div class="hevy-import-copy">
+                  <p class="eyebrow">Hevy</p>
+                  <h4>Import Hevy workouts</h4>
+                  <p>
+                    In Hevy: Profile → Settings → Export &amp; Import Data → Export Workouts → CSV.
+                    Free export — no API key. Workouts land on this signed-in log only.
+                  </p>
+                </div>
+                <label>
+                  Choose CSV
+                  <input id="hevyCsvFile" type="file" accept=".csv,text/csv,text/plain" />
+                </label>
+                <label class="wide">
+                  Or paste Hevy CSV
+                  <textarea id="hevyCsvText" rows="5" placeholder="Paste the Hevy workout CSV export"></textarea>
+                </label>
+                <button class="primary-button" id="importHevy" type="button">Import Hevy CSV</button>
+                <div class="import-preview" id="hevyImportStatus" role="status" aria-live="polite"></div>
+              </div>
               <div class="import-mapper wide">
                 <label>
                   Source
@@ -911,6 +931,7 @@
     </footer>
     <script src="sj-chrome.js"></script>
     <script src="utils.js"></script>
+    <script src="hevy-import.js"></script>
     <script src="data.js"></script>
     <script src="store.js"></script>
     <script src="timers.js"></script>

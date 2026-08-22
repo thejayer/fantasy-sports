@@ -1561,6 +1561,31 @@ textarea:focus-visible {
   padding: var(--space-4);
 }
 
+.hevy-import {
+  grid-template-columns: minmax(180px, 240px) minmax(0, 1fr) auto;
+}
+
+.hevy-import-copy {
+  grid-column: 1 / -1;
+  display: grid;
+  gap: var(--space-2);
+}
+
+.hevy-import-copy h4 {
+  margin: 0;
+  font-size: var(--text-ui);
+}
+
+.hevy-import-copy p {
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.5;
+}
+
+.hevy-import input[type="file"] {
+  padding: 8px var(--space-3);
+}
+
 .import-preview {
   grid-column: 1 / -1;
 }
@@ -2972,6 +2997,7 @@ body.dark .gps-map {
   .program-builder,
   .data-tools,
   .import-mapper,
+  .hevy-import,
   .profile-builder,
   .profile-form-grid,
   .profile-sport-grid,
@@ -3062,6 +3088,7 @@ body.dark .gps-map {
   .program-builder,
   .data-tools,
   .import-mapper,
+  .hevy-import,
   .profile-builder,
   .profile-form-grid,
   .profile-sport-grid,

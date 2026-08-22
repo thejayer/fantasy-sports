@@ -1,11 +1,12 @@
 // @ts-nocheck -- ServiceWorkerGlobalScope is a separate lib from DOM.
-const cacheName = "sj-fitness-v6";
+const cacheName = "sj-fitness-v7";
 const appShell = [
   "./",
   "./app.html",
   "./styles.css",
   "./sj-chrome.js",
   "./utils.js",
+  "./hevy-import.js",
   "./data.js",
   "./store.js",
   "./timers.js",

@@ -11,6 +11,7 @@ const requiredFiles = [
   "styles.css",
   "sj-chrome.js",
   "utils.js",
+  "hevy-import.js",
   "data.js",
   "store.js",
   "timers.js",
@@ -29,6 +30,7 @@ const requiredFiles = [
 const requiredScripts = [
   "sj-chrome.js",
   "utils.js",
+  "hevy-import.js",
   "data.js",
   "store.js",
   "timers.js",
@@ -99,6 +101,13 @@ if (indexHtml.includes("Athlete Log")) {
 if (indexHtml.includes("#cc0000")) {
   errors.push("app.html still uses the Texas Tech red token");
 }
+if (
+  !indexHtml.includes('id="hevyCsvFile"') ||
+  !indexHtml.includes('id="hevyCsvText"') ||
+  !indexHtml.includes('id="importHevy"')
+) {
+  errors.push("app.html should expose Hevy CSV file picker, paste, and import");
+}
 
 const styles = exists("styles.css") ? read("styles.css") : "";
 if (styles.includes("#cc0000")) {
@@ -145,6 +154,8 @@ for (const symbol of [
   "saveGpsRoundToLog",
   "normalizeGolfClubBag",
   "parseCsvRow",
+  "parseHevyCsv",
+  "mergeHevySessions",
 ]) {
   if (!appSource.includes(symbol)) errors.push(`Expected app symbol missing: ${symbol}`);
 }

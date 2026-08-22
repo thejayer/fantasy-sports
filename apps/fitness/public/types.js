@@ -19,6 +19,8 @@
  * @property {Record<string, string | number>} [values] - Sport-specific fields keyed by template field id.
  * @property {LiftSet[]} [sets] - For lifting sessions.
  * @property {string} [note]
+ * @property {string} [source] - e.g. "hevy" for imported workouts.
+ * @property {string} [importKey] - Stable external id used to skip re-imports.
  */
 
 /**
@@ -28,6 +30,7 @@
  * @property {number} reps
  * @property {number} weight
  * @property {number} [rpe]
+ * @property {number} [durationSeconds] - Timed Hevy sets (plank, holds).
  */
 
 /**

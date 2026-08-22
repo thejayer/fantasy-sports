@@ -607,6 +607,56 @@ function setupEventListeners() {
     showToast("CSV export prepared");
   });
 
+  const applyHevyCsvImport = (csvText) => {
+    const status = document.querySelector("#hevyImportStatus");
+    if (!isSignedInFitnessMember(window.__sjFitness)) {
+      const message = "Sign in to import Hevy workouts into your log.";
+      if (status) status.textContent = message;
+      showToast(message);
+      return;
+    }
+    let workouts;
+    try {
+      workouts = parseHevyCsv(csvText);
+    } catch (error) {
+      const message = error?.message || "Could not parse Hevy CSV";
+      if (status) status.textContent = message;
+      showToast(message);
+      return;
+    }
+    const incoming = hevyWorkoutsToSessions(workouts).map((session) => normalizeSession(session));
+    const result = mergeHevySessions(store.getState().sessions, incoming);
+    if (result.imported > 0) {
+      activeSessionId = result.sessions[0]?.id || activeSessionId;
+      store.updateSessions(() => result.sessions);
+    }
+    const summary = `${result.imported} workout${result.imported === 1 ? "" : "s"} imported, ${result.skipped} skipped`;
+    if (status) status.textContent = summary;
+    showToast(summary);
+  };
+
+  document.querySelector("#hevyCsvFile").addEventListener("change", (event) => {
+    const file = event.target.files && event.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      document.querySelector("#hevyCsvText").value = String(reader.result || "");
+    };
+    reader.onerror = () => {
+      showToast("Could not read that Hevy CSV file");
+    };
+    reader.readAsText(file);
+  });
+
+  document.querySelector("#importHevy").addEventListener("click", () => {
+    const csvText = document.querySelector("#hevyCsvText").value.trim();
+    if (!csvText) {
+      showToast("Paste a Hevy CSV or choose a file first");
+      return;
+    }
+    applyHevyCsvImport(csvText);
+  });
+
   document.querySelector("#importJson").addEventListener("click", () => {
     try {
       const payload = JSON.parse(document.querySelector("#importJsonText").value);
