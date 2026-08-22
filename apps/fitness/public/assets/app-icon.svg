@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Strictly Jayers Fitness">
+  <rect width="512" height="512" fill="#f3f2f2"/>
+  <rect x="48" y="48" width="416" height="416" fill="none" stroke="#201e1d" stroke-width="16"/>
+  <rect x="48" y="48" width="16" height="416" fill="#ec3013"/>
+  <text x="256" y="300" text-anchor="middle" font-family="Archivo, system-ui, sans-serif" font-size="168" font-weight="800" fill="#201e1d">SJ</text>
+</svg>

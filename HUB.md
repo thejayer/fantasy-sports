@@ -101,6 +101,7 @@ See [PORTAL.md](PORTAL.md) for the community front door and how it deep-links he
 |---|---|
 | `strictlyjayers.com` | Community portal (`sj-www` / `apps/www`) |
 | `fantasy.strictlyjayers.com` | This Cloud Run hub (`sj-hub` / `apps/web`) |
+| `fitness.strictlyjayers.com` | Training log (`sj-fitness` / `apps/fitness`) |
 
 One-time (Cloud Shell, after the hub already deploys on `*.run.app`):
 

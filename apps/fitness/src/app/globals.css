@@ -1,0 +1,5 @@
+/* Layout fallback only. The training log document loads public/styles.css. */
+body {
+  margin: 0;
+  font-family: Archivo, system-ui, sans-serif;
+}

@@ -1,0 +1,37 @@
+{
+  "name": "strictly-jayers-fitness",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev --turbopack --port 3003",
+    "build": "next build",
+    "start": "next start --port 3003",
+    "lint": "eslint .",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:verify": "node scripts/verify-app.js",
+    "test:e2e": "playwright test e2e/smoke.spec.ts",
+    "check:js": "node --check public/utils.js && node --check public/data.js && node --check public/store.js && node --check public/timers.js && node --check public/analytics.js && node --check public/render.js && node --check public/events.js && node --check public/app.js && node --check public/sj-chrome.js && node --check public/service-worker.js && node --check scripts/verify-app.js"
+  },
+  "dependencies": {
+    "next": "^16.2.12",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.62.0",
+    "@types/node": "^22",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "eslint": "^9",
+    "eslint-config-next": "^16.2.12",
+    "typescript": "^5",
+    "vitest": "^4.1.10"
+  },
+  "overrides": {
+    "brace-expansion": "^5.0.8",
+    "minimatch": "^10.2.6",
+    "postcss": "^8.5.23",
+    "sharp": "^0.35.3"
+  }
+}

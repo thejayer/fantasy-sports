@@ -21,6 +21,7 @@ npm run dev                  # http://localhost:3002
 |---|---|
 | `SITE_URL` | Canonical origin (metadata) |
 | `FANTASY_HUB_URL` | Absolute link to the hub (default production host) |
+| `FITNESS_URL` | Absolute link to the fitness log (default production host) |
 | `DISCORD_INVITE_URL` | Optional Discord CTA override (default baked in) |
 | `PALWORLD_INFO_URL` | Optional Palworld / games CTA |
 | `YOUTUBE_PLAYLIST_ID` | Optional override for `/watch` (default baked in) |

@@ -4,9 +4,11 @@ This repo hosts the **Strictly Jayers** community portal, member hub (ESPN
 leagues, teams, players, standings), and the `ffa` NFL analytics engine.
 
 - **Community portal (apex):** see [PORTAL.md](PORTAL.md) — `apps/www` at
-  `strictlyjayers.com`, with absolute links into the fantasy hub.
+  `strictlyjayers.com`, with absolute links into the fantasy hub and fitness log.
 - **Hub (fantasy subdomain):** see [HUB.md](HUB.md) — `configs/leagues.yaml`,
   `src/sj` sync CLI, and `apps/web` Next.js app at `fantasy.strictlyjayers.com`.
+- **Fitness (training log):** see [FITNESS.md](FITNESS.md) — `apps/fitness` at
+  `fitness.strictlyjayers.com` (Modernist restyle of the athlete-log PWA).
 - **Analytics engine:** `ffa` below — projections, ranking, draft tools, Streamlit dashboard.
 - **Where the site stands and where it's going:** [AUDIT.md](AUDIT.md) (findings,
   with reproductions) and [ROADMAP.md](ROADMAP.md) (the phased plan).

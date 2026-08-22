@@ -20,7 +20,8 @@ type Destination = {
 };
 
 export default function HomePage() {
-  const { fantasyHubUrl, discordInviteUrl, palworldInfoUrl } = getSiteConfig();
+  const { fantasyHubUrl, fitnessUrl, discordInviteUrl, palworldInfoUrl } =
+    getSiteConfig();
   const copy = portalCopy;
   const items = copy.destinations.items;
   const events = upcomingPortalEvents(copy.events.items);
@@ -90,6 +91,16 @@ export default function HomePage() {
         ? items.palworld.action
         : items.palworld.actionPending,
       pending: !palworldInfoUrl,
+    },
+    {
+      id: "fitness",
+      index: items.fitness.index,
+      kicker: items.fitness.kicker,
+      title: items.fitness.title,
+      body: items.fitness.body,
+      href: fitnessUrl,
+      action: items.fitness.action,
+      pending: false,
     },
   ];
 
@@ -295,9 +306,15 @@ export default function HomePage() {
 
       <footer className="site-footer">
         <span>{copy.footer.left}</span>
-        <a href={fantasyHubUrl} rel="noopener noreferrer">
-          {copy.footer.fantasyLabel} →
-        </a>
+        <span>
+          <a href={fitnessUrl} rel="noopener noreferrer">
+            {copy.footer.fitnessLabel} →
+          </a>
+          {" · "}
+          <a href={fantasyHubUrl} rel="noopener noreferrer">
+            {copy.footer.fantasyLabel} →
+          </a>
+        </span>
       </footer>
     </main>
   );

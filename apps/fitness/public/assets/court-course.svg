@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1400" height="900" viewBox="0 0 1400 900" role="img" aria-label="Abstract golf course and court training surface">
+  <rect width="1400" height="900" fill="#244b38"/>
+  <path d="M0 704C171 610 328 620 471 682C644 758 813 737 954 628C1094 520 1245 514 1400 571V900H0Z" fill="#5a8d59"/>
+  <path d="M0 256C187 169 386 160 580 232C786 309 948 306 1115 212C1218 154 1313 129 1400 138V0H0Z" fill="#2d7655"/>
+  <rect x="728" y="164" width="520" height="342" fill="none" stroke="#e7f2df" stroke-width="8" opacity=".58"/>
+  <path d="M988 164V506M728 335H1248" stroke="#e7f2df" stroke-width="6" opacity=".52"/>
+  <circle cx="354" cy="397" r="206" fill="#7ab167" opacity=".52"/>
+  <circle cx="354" cy="397" r="76" fill="#d7eec2" opacity=".72"/>
+  <circle cx="354" cy="397" r="16" fill="#f4f7ec"/>
+  <path d="M238 218C311 178 384 180 457 225" fill="none" stroke="#f4f7ec" stroke-width="12" stroke-linecap="round" opacity=".42"/>
+  <path d="M179 612C279 561 389 562 509 615" fill="none" stroke="#f4f7ec" stroke-width="9" stroke-linecap="round" opacity=".35"/>
+  <path d="M843 620C970 581 1085 589 1193 642" fill="none" stroke="#f4f7ec" stroke-width="10" stroke-linecap="round" opacity=".3"/>
+</svg>

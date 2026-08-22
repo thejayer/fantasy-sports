@@ -1,0 +1,915 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#ec3013" />
+    <title>Fitness · Strictly Jayers</title>
+    <link rel="manifest" href="manifest.webmanifest" />
+    <link rel="icon" href="assets/app-icon.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="styles.css" />
+    <meta name="sj-community" content="https://strictlyjayers.com" />
+    <meta name="sj-fantasy" content="https://fantasy.strictlyjayers.com" />
+    <meta name="application-name" content="Strictly Jayers" />
+    <script>
+      (function () {
+        try {
+          var saved = localStorage.getItem("sj-accent");
+          if (saved && /^#[0-9a-fA-F]{6}$/.test(saved)) {
+            document.documentElement.style.setProperty("--color-accent", saved);
+          }
+        } catch (e) {}
+      })();
+    </script>
+  </head>
+  <body>
+    <a class="skip-link" href="#dashboard-title">Skip to main content</a>
+    <header class="site-header">
+      <a class="sj-brand" data-sj-community href="https://strictlyjayers.com">Strictly Jayers</a>
+      <nav class="sj-nav" aria-label="Strictly Jayers">
+        <a data-sj-community href="https://strictlyjayers.com">Community</a>
+        <a data-sj-fantasy href="https://fantasy.strictlyjayers.com">Fantasy</a>
+        <a href="/" aria-current="page">Fitness</a>
+        <span class="accent-picker" id="accentPicker" aria-label="Accent color"></span>
+      </nav>
+    </header>
+    <div class="app-shell">
+      <aside class="sidebar" aria-label="Primary navigation">
+        <div class="brand">
+          <div class="brand-mark" aria-hidden="true">
+            <span></span>
+          </div>
+          <div>
+            <h1>Fitness</h1>
+            <p>Strictly Jayers</p>
+          </div>
+        </div>
+
+        <nav class="nav-list" aria-label="App sections">
+          <button class="nav-item active" data-view="dashboard" type="button">
+            <span class="icon" aria-hidden="true">H</span>
+            Dashboard
+          </button>
+          <button class="nav-item" data-view="log" type="button">
+            <span class="icon" aria-hidden="true">+</span>
+            Log Workout
+          </button>
+          <button class="nav-item" data-view="planner" type="button">
+            <span class="icon" aria-hidden="true">W</span>
+            Planner
+          </button>
+          <button class="nav-item" data-view="calendar" type="button">
+            <span class="icon" aria-hidden="true">C</span>
+            Calendar
+          </button>
+          <button class="nav-item" data-view="goals" type="button">
+            <span class="icon" aria-hidden="true">G</span>
+            Goals
+          </button>
+          <button class="nav-item" data-view="profile" type="button">
+            <span class="icon" aria-hidden="true">U</span>
+            Profile
+          </button>
+          <button class="nav-item" data-view="sports" type="button">
+            <span class="icon" aria-hidden="true">S</span>
+            Sports
+          </button>
+          <button class="nav-item" data-view="gps" type="button">
+            <span class="icon" aria-hidden="true">Y</span>
+            Golf GPS
+          </button>
+          <button class="nav-item" data-view="library" type="button">
+            <span class="icon" aria-hidden="true">L</span>
+            Library
+          </button>
+          <button class="nav-item" data-view="programs" type="button">
+            <span class="icon" aria-hidden="true">P</span>
+            Programs
+          </button>
+          <button class="nav-item" data-view="compare" type="button">
+            <span class="icon" aria-hidden="true">M</span>
+            Compare
+          </button>
+          <button class="nav-item" data-view="progress" type="button">
+            <span class="icon" aria-hidden="true">R</span>
+            Progress
+          </button>
+        </nav>
+
+        <section class="sidebar-panel">
+          <p class="eyebrow">Primary Goal</p>
+          <h2 id="sidebarGoalTitle">Golf power without losing mobility</h2>
+          <div class="goal-meter" id="sidebarGoalMeter" aria-label="Goal completion 68 percent">
+            <span style="width: 68%"></span>
+          </div>
+          <p id="sidebarGoalText">68% through the current four-week block.</p>
+        </section>
+      </aside>
+
+      <main class="content">
+        <header class="topbar">
+          <div class="topbar-copy">
+            <p class="eyebrow">Today</p>
+            <h2>Hybrid training cockpit</h2>
+          </div>
+          <div class="cockpit-status" aria-label="Current training status">
+            <div>
+              <span>Ready</span>
+              <strong id="topbarReadiness">82</strong>
+            </div>
+            <div>
+              <span>Load</span>
+              <strong id="topbarLoad">7.4h</strong>
+            </div>
+            <div>
+              <span>Focus</span>
+              <strong id="topbarFocus">Golf</strong>
+            </div>
+          </div>
+          <div class="top-actions">
+            <button class="icon-button" id="themeToggle" type="button" aria-label="Toggle theme" title="Toggle theme">T</button>
+            <button class="ghost-button install-button" id="installApp" type="button" hidden>Install</button>
+            <button class="primary-button" data-view-jump="log" type="button">Log session</button>
+          </div>
+        </header>
+
+        <section class="view active" id="dashboard" aria-labelledby="dashboard-title">
+          <div class="hero-band">
+            <div>
+              <p class="eyebrow">Training Focus</p>
+              <h2 id="dashboard-title">Build rotational power, quick feet, and durable shoulders.</h2>
+              <p>
+                A weekly plan for golf, tennis, pickleball, lifting, and endurance work without treating every session like the same generic gym entry.
+              </p>
+            </div>
+            <div class="sport-radar" aria-label="Sport performance profile">
+              <div class="radar-center">Ready</div>
+              <span class="radar-point golf">Golf</span>
+              <span class="radar-point tennis">Tennis</span>
+              <span class="radar-point pickleball">Pickle</span>
+              <span class="radar-point endurance">Base</span>
+              <span class="radar-point strength">Lift</span>
+            </div>
+          </div>
+
+          <div class="metric-grid">
+            <article class="metric-card">
+              <p class="eyebrow">Readiness</p>
+              <strong><span id="readinessMetric">82</span></strong>
+              <span id="readinessLabel">Green light for power work</span>
+            </article>
+            <article class="metric-card">
+              <p class="eyebrow">Weekly Load</p>
+              <strong><span id="loadMetric">7.4h</span></strong>
+              <span id="loadLabel">Balanced across sport and strength</span>
+            </article>
+            <article class="metric-card">
+              <p class="eyebrow">Sport Mix</p>
+              <strong><span id="mixMetric">4</span></strong>
+              <span id="mixLabel">Different training categories logged</span>
+            </article>
+            <article class="metric-card">
+              <p class="eyebrow">Recovery</p>
+              <strong><span id="recoveryMetric">Low</span></strong>
+              <span id="recoveryLabel">No major soreness flags</span>
+            </article>
+          </div>
+
+          <section class="panel readiness-panel">
+            <div class="panel-heading">
+              <div>
+                <p class="eyebrow">Daily Check-In</p>
+                <h3>Tell the app how you feel today</h3>
+              </div>
+              <span class="checkin-status" id="checkinStatus">Not checked in</span>
+            </div>
+            <form class="readiness-form" id="readinessForm">
+              <label>
+                Sleep
+                <input id="checkinSleep" type="range" min="1" max="10" value="7" />
+              </label>
+              <label>
+                Soreness
+                <input id="checkinSoreness" type="range" min="1" max="10" value="3" />
+              </label>
+              <label>
+                Energy
+                <input id="checkinEnergy" type="range" min="1" max="10" value="7" />
+              </label>
+              <label>
+                Stress
+                <input id="checkinStress" type="range" min="1" max="10" value="3" />
+              </label>
+              <label>
+                Motivation
+                <input id="checkinMotivation" type="range" min="1" max="10" value="8" />
+              </label>
+              <label class="wide">
+                Check-in note
+                <input id="checkinNote" type="text" placeholder="Shoulder feels tight, legs are fresh, slept well..." />
+              </label>
+              <button class="primary-button" type="submit">Save check-in</button>
+              <div class="readiness-score" id="readinessScore">Ready: 82</div>
+            </form>
+          </section>
+
+          <section class="panel today-panel">
+            <div class="panel-heading">
+              <div>
+                <p class="eyebrow">Today</p>
+                <h3>Start from the next useful action</h3>
+              </div>
+              <button class="ghost-button" id="refreshTodayPlan" type="button">Refresh</button>
+            </div>
+            <div class="today-grid" id="todayGrid"></div>
+          </section>
+
+          <div class="dashboard-grid">
+            <section class="panel">
+              <div class="panel-heading">
+                <div>
+                  <p class="eyebrow">This Week</p>
+                  <h3>Training mix</h3>
+                </div>
+                <button class="ghost-button" type="button">Adjust</button>
+              </div>
+              <div class="week-plan" id="weekPlan"></div>
+            </section>
+
+            <section class="panel">
+              <div class="panel-heading">
+                <div>
+                  <p class="eyebrow">Next Best Session</p>
+                  <h3>Recommended today</h3>
+                </div>
+              </div>
+              <div class="recommendation">
+                <div class="session-type" id="recommendationType">Golf Strength</div>
+                <h4 id="recommendationTitle">Rotational power + shoulder resilience</h4>
+                <p id="recommendationText">Trap bar jumps, landmine rotations, cable chops, scap control, and a short zone 2 finish.</p>
+                <button class="primary-button" data-view-jump="log" type="button">Start session</button>
+              </div>
+            </section>
+          </div>
+
+          <section class="panel insight-panel">
+            <div class="panel-heading">
+              <div>
+                <p class="eyebrow">Coach Notes</p>
+                <h3>Insights from your log</h3>
+              </div>
+            </div>
+            <div class="insight-list" id="insightList"></div>
+          </section>
+        </section>
+
+        <section class="view" id="profile" aria-labelledby="profile-title">
+          <div class="section-head">
+            <div>
+              <p class="eyebrow">Setup</p>
+              <h2 id="profile-title">Personalize the training cockpit</h2>
+            </div>
+          </div>
+
+          <form class="profile-builder" id="profileForm">
+            <section class="profile-card panel">
+              <div class="panel-heading">
+                <div>
+                  <p class="eyebrow">Identity</p>
+                  <h3>Who the app is coaching</h3>
+                </div>
+              </div>
+              <div class="profile-form-grid">
+                <label>
+                  Athlete name
+                  <input id="profileName" type="text" placeholder="Your name" />
+                </label>
+                <label>
+                  Experience
+                  <select id="profileExperience"></select>
+                </label>
+                <label>
+                  Primary sport
+                  <select id="profilePrimarySport"></select>
+                </label>
+                <label>
+                  Main goal
+                  <select id="profileGoal"></select>
+                </label>
+              </div>
+            </section>
+
+            <section class="profile-card panel profile-sports-panel">
+              <div class="panel-heading">
+                <div>
+                  <p class="eyebrow">Sport Mix</p>
+                  <h3>What you actually play and train</h3>
+                </div>
+              </div>
+              <div class="profile-sport-grid" id="profileSportGrid"></div>
+            </section>
+
+            <section class="profile-card panel">
+              <div class="panel-heading">
+                <div>
+                  <p class="eyebrow">Training Rules</p>
+                  <h3>How recommendations should feel</h3>
+                </div>
+              </div>
+              <div class="profile-form-grid">
+                <label>
+                  Weekly availability
+                  <input id="profileDays" type="number" min="1" max="7" value="4" />
+                </label>
+                <label>
+                  Preferred training days
+                  <input id="profileTrainingDays" type="text" placeholder="Mon, Wed, Fri, Sat" />
+                </label>
+                <label>
+                  Training style
+                  <select id="profileTrainingStyle"></select>
+                </label>
+                <label>
+                  Preferred session length
+                  <select id="profileSessionLength"></select>
+                </label>
+                <label>
+                  Intensity preference
+                  <select id="profileIntensity"></select>
+                </label>
+                <label>
+                  Watch areas
+                  <input id="profileWatchAreas" type="text" placeholder="Shoulder, back, knees" />
+                </label>
+                <label class="wide">
+                  Places and equipment you can access
+                  <input id="profileAccess" type="text" placeholder="Range, course, gym, courts, bike, pool" />
+                </label>
+                <label class="wide">
+                  Other activities
+                  <input id="profileOtherActivities" type="text" placeholder="Cycling, swimming, CrossFit, rec leagues" />
+                </label>
+                <label class="wide">
+                  Training note
+                  <textarea id="profileNote" rows="4" placeholder="What should the app remember when it recommends training?"></textarea>
+                </label>
+              </div>
+            </section>
+
+            <section class="profile-preview panel" id="profilePreview" aria-live="polite"></section>
+
+            <div class="profile-actions">
+              <button class="primary-button" type="submit">Save profile</button>
+            </div>
+          </form>
+        </section>
+
+        <section class="view" id="sports" aria-labelledby="sports-title">
+          <div class="section-head">
+            <div>
+              <p class="eyebrow">Sport Rooms</p>
+              <h2 id="sports-title">Dashboards for the way you actually play</h2>
+            </div>
+          </div>
+
+          <div class="sport-dashboard-grid" id="sportDashboardGrid"></div>
+        </section>
+
+        <section class="view" id="gps" aria-labelledby="gps-title">
+          <div class="section-head">
+            <div>
+              <p class="eyebrow">Course Mode</p>
+              <h2 id="gps-title">GPS-style golf round</h2>
+            </div>
+          </div>
+
+          <div id="golfGpsView"></div>
+        </section>
+
+        <section class="view" id="library" aria-labelledby="library-title">
+          <div class="section-head">
+            <div>
+              <p class="eyebrow">Library</p>
+              <h2 id="library-title">Drills and exercises to build sessions from</h2>
+            </div>
+          </div>
+
+          <div class="library-tools">
+            <label>
+              Sport
+              <select id="libraryFilter">
+                <option>All sports</option>
+              </select>
+            </label>
+            <label>
+              Search
+              <input id="librarySearch" type="search" placeholder="Search drills, lifts, or cues" />
+            </label>
+          </div>
+          <form class="custom-builder panel" id="customDrillForm">
+            <div class="wide">
+              <p class="eyebrow">Custom Builder</p>
+              <h3>Create your own drill or reusable practice template</h3>
+            </div>
+            <label>
+              Sport
+              <select id="customDrillSport">
+                <option>Golf</option>
+                <option>Tennis</option>
+                <option>Pickleball</option>
+                <option>Strength</option>
+                <option>Endurance</option>
+              </select>
+            </label>
+            <label>
+              Log type
+              <select id="customDrillType"></select>
+            </label>
+            <label>
+              Template name
+              <input id="customDrillTitle" type="text" placeholder="Driver start-line ladder" />
+            </label>
+            <label>
+              Tags
+              <input id="customDrillTags" type="text" placeholder="Speed, Accuracy" />
+            </label>
+            <label class="wide">
+              Session plan
+              <textarea id="customDrillDetail" rows="3" placeholder="Describe the reps, blocks, targets, or lift sequence."></textarea>
+            </label>
+            <label class="wide">
+              Coaching cue
+              <input id="customDrillCue" type="text" placeholder="One cue to remember during the session" />
+            </label>
+            <button class="primary-button" type="submit">Save custom drill</button>
+            <button class="ghost-button" id="clearCustomDrill" type="button">Clear form</button>
+          </form>
+          <div class="drill-grid" id="drillGrid"></div>
+        </section>
+
+        <section class="view" id="log" aria-labelledby="log-title">
+          <div class="section-head">
+            <div>
+              <p class="eyebrow">Capture</p>
+              <h2 id="log-title">Log a sport or training session</h2>
+            </div>
+          </div>
+
+          <div class="template-tools">
+            <div>
+              <p class="eyebrow">Templates</p>
+              <h3>Choose the way you trained</h3>
+            </div>
+            <button class="ghost-button" id="resetLog" type="button">Reset demo log</button>
+          </div>
+
+          <div class="practice-quick-picks" id="templateGrid" aria-label="Practice session shortcuts"></div>
+
+          <section class="timer-panel" aria-label="Workout timers">
+            <article class="timer-card">
+              <div>
+                <p class="eyebrow">Session Timer</p>
+                <strong id="sessionTimer">00:00</strong>
+              </div>
+              <div class="timer-actions">
+                <button class="primary-button" id="startSessionTimer" type="button">Start</button>
+                <button class="ghost-button" id="pauseSessionTimer" type="button">Pause</button>
+                <button class="ghost-button" id="resetSessionTimer" type="button">Reset</button>
+              </div>
+            </article>
+            <article class="timer-card">
+              <div>
+                <p class="eyebrow">Rest Timer</p>
+                <strong id="restTimer">01:30</strong>
+              </div>
+              <div class="timer-actions">
+                <button class="primary-button" id="startRestTimer" type="button">Start rest</button>
+                <button class="ghost-button" id="addRest15" type="button">+15 sec</button>
+                <button class="ghost-button" id="resetRestTimer" type="button">Reset</button>
+              </div>
+            </article>
+          </section>
+
+          <form class="log-form" id="workoutForm">
+            <div class="edit-banner wide" id="editBanner" hidden>
+              <span>Editing saved session</span>
+              <button class="ghost-button" id="cancelEdit" type="button">Cancel edit</button>
+            </div>
+            <label>
+              Date
+              <input id="sessionDate" type="date" />
+            </label>
+            <label>
+              Session type
+              <select id="sessionType"></select>
+            </label>
+            <label>
+              Duration
+              <input id="duration" type="number" min="5" max="300" value="55" />
+            </label>
+            <label>
+              Effort
+              <input id="effort" type="range" min="1" max="10" value="7" />
+            </label>
+            <label>
+              Sport outcome
+              <select id="outcome">
+                <option>Clubhead speed</option>
+                <option>Range consistency</option>
+                <option>Course management</option>
+                <option>Short game scoring</option>
+                <option>Serve durability</option>
+                <option>Ball machine consistency</option>
+                <option>Match endurance</option>
+                <option>Lateral quickness</option>
+                <option>Knee resilience</option>
+                <option>Aerobic base</option>
+                <option>Strength PR</option>
+                <option>Recovery</option>
+              </select>
+            </label>
+            <div class="sport-fields wide" id="sportFields" aria-live="polite"></div>
+            <section class="lift-set-builder wide" id="liftSetBuilder" hidden>
+              <div class="panel-heading">
+                <div>
+                  <p class="eyebrow">Strength Detail</p>
+                  <h3>Exercise sets</h3>
+                </div>
+                <button class="ghost-button" id="addLiftSet" type="button">Add set</button>
+              </div>
+              <div class="lift-set-list" id="liftSetList"></div>
+            </section>
+            <label class="wide">
+              Notes
+              <textarea id="notes" rows="4">Worked through wedges, mid irons, and driver. Driver start line was the main miss.</textarea>
+            </label>
+            <button class="primary-button wide" id="saveSessionButton" type="submit">Add to log</button>
+          </form>
+
+          <section class="panel">
+            <div class="panel-heading">
+              <div>
+                <p class="eyebrow">Recent</p>
+                <h3>Training log</h3>
+              </div>
+            </div>
+            <div class="history-tools">
+              <label>
+                Filter
+                <select id="historyFilter">
+                  <option>All sports</option>
+                </select>
+              </label>
+              <label>
+                Search
+                <input id="historySearch" type="search" placeholder="Search sessions or notes" />
+              </label>
+              <label>
+                Sort
+                <select id="historySort">
+                  <option value="newest">Newest first</option>
+                  <option value="oldest">Oldest first</option>
+                  <option value="hardest">Highest effort</option>
+                  <option value="longest">Longest duration</option>
+                </select>
+              </label>
+              <div class="history-count" id="historyCount">0 sessions</div>
+            </div>
+            <div class="session-list" id="sessionList"></div>
+          </section>
+
+          <section class="panel session-detail-panel" id="sessionDetailPanel" hidden></section>
+        </section>
+
+        <section class="view" id="planner" aria-labelledby="planner-title">
+          <div class="section-head">
+            <div>
+              <p class="eyebrow">Plan</p>
+              <h2 id="planner-title">Build the training week</h2>
+            </div>
+          </div>
+
+          <div class="planner-layout">
+            <section class="panel">
+              <div class="panel-heading">
+                <div>
+                  <p class="eyebrow">Weekly Board</p>
+                  <h3>Planned sessions</h3>
+                </div>
+                <button class="ghost-button" id="resetPlanner" type="button">Reset plan</button>
+              </div>
+              <div class="planner-board" id="plannerBoard"></div>
+            </section>
+
+            <aside class="panel planner-side">
+              <div>
+                <p class="eyebrow">Add Session</p>
+                <h3>Schedule from a template</h3>
+              </div>
+              <form class="planner-form" id="plannerForm">
+                <label>
+                  Day
+                  <select id="planDay"></select>
+                </label>
+                <label>
+                  Session
+                  <select id="planType"></select>
+                </label>
+                <label>
+                  Duration
+                  <input id="planDuration" type="number" min="5" max="300" value="45" />
+                </label>
+                <label>
+                  Priority
+                  <select id="planPriority">
+                    <option>Normal</option>
+                    <option>Key session</option>
+                    <option>Recovery</option>
+                  </select>
+                </label>
+                <button class="primary-button" type="submit">Add to week</button>
+              </form>
+
+              <div class="planner-summary" id="plannerSummary"></div>
+              <div class="planner-warnings" id="plannerWarnings"></div>
+            </aside>
+          </div>
+        </section>
+
+        <section class="view" id="calendar" aria-labelledby="calendar-title">
+          <div class="section-head">
+            <div>
+              <p class="eyebrow">Schedule</p>
+              <h2 id="calendar-title">Training calendar</h2>
+            </div>
+            <div class="calendar-controls">
+              <button class="ghost-button" id="prevMonth" type="button">Previous</button>
+              <button class="ghost-button" id="todayMonth" type="button">Today</button>
+              <button class="ghost-button" id="nextMonth" type="button">Next</button>
+            </div>
+          </div>
+
+          <section class="panel calendar-panel">
+            <div class="panel-heading">
+              <div>
+                <p class="eyebrow">Month View</p>
+                <h3 id="calendarMonthLabel">This month</h3>
+              </div>
+            </div>
+            <div class="calendar-weekdays" aria-hidden="true">
+              <span>Sun</span>
+              <span>Mon</span>
+              <span>Tue</span>
+              <span>Wed</span>
+              <span>Thu</span>
+              <span>Fri</span>
+              <span>Sat</span>
+            </div>
+            <div class="calendar-grid" id="calendarGrid"></div>
+          </section>
+        </section>
+
+        <section class="view" id="goals" aria-labelledby="goals-title">
+          <div class="section-head">
+            <div>
+              <p class="eyebrow">Direction</p>
+              <h2 id="goals-title">Choose the outcome that matters most</h2>
+            </div>
+          </div>
+
+          <div class="goals-layout">
+            <section class="panel">
+              <div class="panel-heading">
+                <div>
+                  <p class="eyebrow">Goal Library</p>
+                  <h3>Pick your primary training focus</h3>
+                </div>
+              </div>
+              <div class="goal-grid" id="goalGrid"></div>
+            </section>
+
+            <aside class="panel goal-detail" id="goalDetail"></aside>
+          </div>
+        </section>
+
+        <section class="view" id="programs" aria-labelledby="programs-title">
+          <div class="section-head">
+            <div>
+              <p class="eyebrow">Blocks</p>
+              <h2 id="programs-title">Programs built around the sports you play</h2>
+            </div>
+          </div>
+          <section class="panel program-builder-panel">
+            <div class="panel-heading">
+              <div>
+                <p class="eyebrow">Program Builder</p>
+                <h3>Generate a four-week block</h3>
+              </div>
+            </div>
+            <div class="program-builder">
+              <label>
+                Focus
+                <select id="programFocus"></select>
+              </label>
+              <label>
+                Weekly volume
+                <select id="programVolume">
+                  <option>Balanced</option>
+                  <option>Low impact</option>
+                  <option>High performance</option>
+                </select>
+              </label>
+              <button class="primary-button" id="generateProgram" type="button">Generate block</button>
+              <button class="ghost-button" id="loadProgramWeek" type="button">Load week one</button>
+              <button class="ghost-button" id="loadSmartWeek" type="button">Load smart week</button>
+            </div>
+            <div class="program-output" id="programOutput"></div>
+          </section>
+          <div class="program-grid" id="programGrid"></div>
+        </section>
+
+        <section class="view" id="compare" aria-labelledby="compare-title">
+          <div class="section-head">
+            <div>
+              <p class="eyebrow">Compare</p>
+              <h2 id="compare-title">Session comparison</h2>
+            </div>
+          </div>
+          <section class="panel">
+            <div class="compare-controls">
+              <label>
+                Session A
+                <select id="compareA"></select>
+              </label>
+              <label>
+                Session B
+                <select id="compareB"></select>
+              </label>
+            </div>
+            <div class="compare-grid" id="compareGrid"></div>
+          </section>
+        </section>
+
+        <section class="view" id="progress" aria-labelledby="progress-title">
+          <div class="section-head">
+            <div>
+              <p class="eyebrow">Trends</p>
+              <h2 id="progress-title">Performance dashboard</h2>
+            </div>
+          </div>
+          <div class="analytics-grid" id="analyticsGrid"></div>
+          <section class="panel trend-chart-panel">
+            <div class="panel-heading">
+              <div>
+                <p class="eyebrow">Charts</p>
+                <h3>Load, recovery, and sport momentum</h3>
+              </div>
+              <label class="compact-control">
+                Sport
+                <select id="progressSportFilter">
+                  <option>All sports</option>
+                </select>
+              </label>
+            </div>
+            <div class="trend-chart-grid" id="trendChartGrid"></div>
+          </section>
+          <section class="panel advanced-analytics-panel">
+            <div class="panel-heading">
+              <div>
+                <p class="eyebrow">Advanced</p>
+                <h3>Training intelligence</h3>
+              </div>
+            </div>
+            <div class="advanced-analytics-grid" id="advancedAnalyticsGrid"></div>
+          </section>
+          <section class="panel records-panel">
+            <div class="panel-heading">
+              <div>
+                <p class="eyebrow">Personal Records</p>
+                <h3>Best marks to chase</h3>
+              </div>
+            </div>
+            <div class="records-grid" id="recordsGrid"></div>
+          </section>
+          <div class="progress-layout">
+            <section class="panel">
+              <div class="panel-heading">
+                <div>
+                  <p class="eyebrow">Sport Metrics</p>
+                  <h3>What is moving</h3>
+                </div>
+              </div>
+              <div class="progress-bars" id="progressBars"></div>
+            </section>
+            <section class="panel">
+              <div class="panel-heading">
+                <div>
+                  <p class="eyebrow">Body Map</p>
+                  <h3>Recovery flags</h3>
+                </div>
+                <button class="ghost-button" id="resetRecovery" type="button">Reset</button>
+              </div>
+              <div class="body-map" id="bodyMap"></div>
+            </section>
+          </div>
+          <section class="panel insight-panel">
+            <div class="panel-heading">
+              <div>
+                <p class="eyebrow">Trend Readout</p>
+                <h3>What the data suggests</h3>
+              </div>
+            </div>
+            <div class="insight-list" id="trendReadout"></div>
+          </section>
+          <section class="panel data-tools-panel">
+            <div class="panel-heading">
+              <div>
+                <p class="eyebrow">Data</p>
+                <h3>Import and export</h3>
+              </div>
+            </div>
+            <div class="data-tools">
+              <article class="persistence-card wide" id="persistenceStatus" aria-live="polite">
+                <span>Storage</span>
+                <strong>Local storage ready</strong>
+                <p>Browser backup is available on this device.</p>
+              </article>
+              <button class="ghost-button" id="exportJson" type="button">Export JSON</button>
+              <button class="ghost-button" id="exportCsv" type="button">Export CSV</button>
+              <label class="wide">
+                Import JSON
+                <textarea id="importJsonText" rows="5" placeholder="Paste a Strictly Jayers Fitness JSON export"></textarea>
+              </label>
+              <button class="primary-button" id="importJson" type="button">Import data</button>
+              <div class="import-mapper wide">
+                <label>
+                  Source
+                  <select id="importSource">
+                    <option>Apple Health CSV</option>
+                    <option>Strava CSV</option>
+                    <option>Garmin CSV</option>
+                  </select>
+                </label>
+                <label class="wide">
+                  Activity import preview
+                  <textarea id="importMappingText" rows="5" placeholder="Paste a few CSV rows to preview date, type, duration, distance, and notes mapping"></textarea>
+                </label>
+                <button class="ghost-button" id="previewImportMapping" type="button">Preview mapping</button>
+                <div class="import-preview" id="importPreview" role="status" aria-live="polite"></div>
+              </div>
+            </div>
+          </section>
+        </section>
+      </main>
+    </div>
+
+    <button class="fab-log" data-view-jump="log" type="button" aria-label="Log session">+</button>
+
+    <nav class="bottom-nav" aria-label="Mobile navigation">
+      <button class="bottom-nav-item active" data-view="dashboard" type="button">
+        <span>H</span>
+        Home
+      </button>
+      <button class="bottom-nav-item" data-view="log" type="button">
+        <span>+</span>
+        Log
+      </button>
+      <button class="bottom-nav-item" data-view="planner" type="button">
+        <span>W</span>
+        Plan
+      </button>
+      <button class="bottom-nav-item" data-view="calendar" type="button">
+        <span>C</span>
+        Cal
+      </button>
+      <button class="bottom-nav-item" data-view="goals" type="button">
+        <span>G</span>
+        Goals
+      </button>
+      <button class="bottom-nav-item" data-view="sports" type="button">
+        <span>S</span>
+        Sports
+      </button>
+      <button class="bottom-nav-item" data-view="gps" type="button">
+        <span>Y</span>
+        GPS
+      </button>
+    </nav>
+
+    <div class="snackbar" id="snackbar" role="status" aria-live="polite"></div>
+
+    <footer class="site-footer">
+      <span>Strictly Jayers</span>
+      <a data-sj-community href="https://strictlyjayers.com">Community →</a>
+    </footer>
+    <script src="sj-chrome.js"></script>
+    <script src="utils.js"></script>
+    <script src="data.js"></script>
+    <script src="store.js"></script>
+    <script src="timers.js"></script>
+    <script src="analytics.js"></script>
+    <script src="render.js"></script>
+    <script src="events.js"></script>
+    <script src="app.js"></script>
+  </body>
+</html>

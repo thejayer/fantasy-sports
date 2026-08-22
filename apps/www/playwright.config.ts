@@ -45,6 +45,8 @@ export default defineConfig({
       SITE_URL: baseURL,
       FANTASY_HUB_URL:
         process.env.FANTASY_HUB_URL ?? "https://fantasy.strictlyjayers.com",
+      FITNESS_URL:
+        process.env.FITNESS_URL ?? "https://fitness.strictlyjayers.com",
       DISCORD_INVITE_URL:
         process.env.DISCORD_INVITE_URL ?? "https://discord.gg/example",
     },

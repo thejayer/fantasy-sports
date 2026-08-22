@@ -1177,6 +1177,16 @@ embed + tonight’s pick, `/ai` editor picks, `/people` X links). Wired into the
   No X API / no timeline widgets (those stay on `/ai`).
 - Nav More + homepage destination tile. Edit the list in code; do not scrape.
 
+### P.9 Fitness training log — LANDING
+- Sibling Cloud Run app `apps/fitness` → `sj-fitness` → intended
+  `fitness.strictlyjayers.com` (not a www route; SW would intercept the apex).
+- Athlete-log product behavior (sports logging, localStorage / IDB, PWA)
+  restyled onto Modernist tokens. Portal nav / People / destinations deep-link
+  via `FITNESS_URL`. Docs: [FITNESS.md](FITNESS.md).
+- Deploy: `.github/workflows/deploy-fitness.yml` +
+  `./scripts/setup-fitness-domain.sh` (ops maps DNS; PR does not require a
+  Spaceship click).
+
 ---
 
 ## Track Q — Shared memory & identity

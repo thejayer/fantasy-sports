@@ -20,7 +20,7 @@ export const metadata: Metadata = {
 export const revalidate = 1800;
 
 export default async function AiNewsPage() {
-  const { fantasyHubUrl } = getSiteConfig();
+  const { fantasyHubUrl, fitnessUrl } = getSiteConfig();
   const { items, sourcesOk, sourcesTotal, fetchedAt } = await loadAiHeadlines(28);
 
   return (
@@ -143,9 +143,15 @@ export default async function AiNewsPage() {
 
       <footer className="site-footer">
         <Link href="/">← Strictly Jayers</Link>
-        <a href={fantasyHubUrl} rel="noopener noreferrer">
-          Fantasy hub →
-        </a>
+        <span>
+          <a href={fitnessUrl} rel="noopener noreferrer">
+            Fitness →
+          </a>
+          {" · "}
+          <a href={fantasyHubUrl} rel="noopener noreferrer">
+            Fantasy hub →
+          </a>
+        </span>
       </footer>
     </main>
   );

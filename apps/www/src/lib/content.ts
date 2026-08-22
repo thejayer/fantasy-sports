@@ -19,12 +19,12 @@ export type CrewMember = {
 
 export const portalCopy = {
   metaDescription:
-    "Strictly Jayers — the crew's front door for Discord, games, watch party, AI news, people to follow, and fantasy leagues.",
+    "Strictly Jayers — the crew's front door for Discord, games, watch party, AI news, people to follow, fantasy leagues, and the training log.",
   hero: {
     kicker: "The front door",
     headline: "Same crew. Different rooms.",
     support:
-      "Chat is warm, Watch is queued, people to follow are listed, AI headlines are skimmed, and the fantasy hub is one click when draft night hits.",
+      "Chat is warm, Watch is queued, people to follow are listed, AI headlines are skimmed, the training log is on Fitness, and the fantasy hub is one click when draft night hits.",
     ctaFantasy: "Open fantasy hub",
     ctaDiscord: "Join Discord",
     ctaExplore: "See where to go",
@@ -55,9 +55,17 @@ export const portalCopy = {
   },
   destinations: {
     heading: "Where to go",
-    support: "Six rooms. Pick the one you need right now.",
-    marker: "01 — 06",
+    support: "Seven rooms. Pick the one you need right now.",
+    marker: "01 — 07",
     items: {
+      fitness: {
+        index: "07",
+        kicker: "Train",
+        title: "Fitness",
+        body: "Log golf, tennis, pickleball, lifting, and endurance — local-first, installable, offline.",
+        action: "Open Fitness",
+        actionPending: "Open Fitness",
+      },
       fantasy: {
         index: "01",
         kicker: "Fantasy",
@@ -136,6 +144,7 @@ export const portalCopy = {
   footer: {
     left: "Strictly Jayers",
     fantasyLabel: "Fantasy hub",
+    fitnessLabel: "Fitness",
   },
 } as const;
 
