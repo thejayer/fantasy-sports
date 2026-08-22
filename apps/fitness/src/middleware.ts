@@ -31,6 +31,12 @@ export default auth((req) => {
   const { pathname, search } = req.nextUrl;
   const bypass = process.env.AUTH_DEV_BYPASS === "1";
 
+  // API handlers return JSON (401/409). A login HTML redirect would break
+  // the PWA sync fetch and hide isolation failures.
+  if (pathname.startsWith("/api/")) {
+    return NextResponse.next();
+  }
+
   if (bypass || isPublicPath(pathname)) {
     return rewriteAppHome(req);
   }

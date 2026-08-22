@@ -17,8 +17,9 @@ test.describe("auth redirect", () => {
   });
 
   test("member API rejects anonymous reads", async ({ request }) => {
-    const response = await request.get("/api/me");
+    const response = await request.get("/api/me", { maxRedirects: 0 });
     expect(response.status()).toBe(401);
+    expect(response.headers()["content-type"] || "").toMatch(/json/);
     await expect(response.json()).resolves.toMatchObject({
       error: "sign in required",
     });
