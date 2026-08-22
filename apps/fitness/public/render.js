@@ -1275,6 +1275,10 @@ const renderGoals = () => {
     .setAttribute("aria-label", `Goal completion ${activeProgress.progress} percent`);
   document.querySelector("#sidebarGoalText").textContent =
     `${activeProgress.progress}% toward ${activeGoal.target.toLowerCase()}.`;
+  const todayGoal = document.querySelector("#todayGoalLine");
+  if (todayGoal) {
+    todayGoal.textContent = `${activeGoal.title} — ${activeProgress.progress}% toward ${activeGoal.target.toLowerCase()}.`;
+  }
 };
 
 const renderProgress = () => {
@@ -1466,6 +1470,19 @@ const renderDashboard = () => {
   document.querySelector("#recommendationType").textContent = recommendation.type;
   document.querySelector("#recommendationTitle").textContent = recommendation.title;
   document.querySelector("#recommendationText").textContent = recommendation.text;
+
+  const todayTitle = document.querySelector("#dashboard-title");
+  const todayLead = document.querySelector("#todayLead");
+  const todayNext = document.querySelector("#todayNext");
+  if (todayTitle) {
+    todayTitle.textContent = recommendation.title;
+  }
+  if (todayLead) {
+    todayLead.textContent = `${athleteProfile.primarySport} · ${stats.totalHours.toFixed(1)}h this week · Ready ${stats.readiness}`;
+  }
+  if (todayNext) {
+    todayNext.textContent = `Next up: ${recommendation.type}`;
+  }
 
   renderReadinessCheckin(stats);
   renderTodayPanel(stats, recommendation);

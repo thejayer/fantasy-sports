@@ -1286,6 +1286,44 @@ const deleteSession = (sessionId) => {
   showToast("Session deleted");
 };
 
+const PRIMARY_VIEWS = ["dashboard", "log", "planner", "progress"];
+
+function setMoreNavOpen(open) {
+  // Exposed for the More disclosure buttons (onclick in app.html).
+  const panel = document.querySelector("#navMore");
+  document.querySelectorAll(".nav-more-toggle").forEach((toggle) => {
+    toggle.setAttribute("aria-expanded", open ? "true" : "false");
+    if (!toggle.querySelector("[data-more-icon]")) {
+      toggle.textContent = open ? "Close" : "More";
+    }
+  });
+  if (!panel) return;
+  panel.classList.toggle("is-open", open);
+}
+
+function syncMoreNav(viewId) {
+  const isMore = !PRIMARY_VIEWS.includes(viewId);
+  document.querySelectorAll(".nav-more-toggle").forEach((toggle) => {
+    toggle.classList.toggle("is-current", isMore);
+  });
+  if (isMore) setMoreNavOpen(true);
+}
+
+function setupMoreNav() {
+  document.addEventListener("click", (event) => {
+    const toggle = event.target.closest(".nav-more-toggle");
+    if (!toggle) return;
+    event.preventDefault();
+    const panel = document.querySelector("#navMore");
+    setMoreNavOpen(!panel?.classList.contains("is-open"));
+  });
+  document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape") setMoreNavOpen(false);
+  });
+}
+
+window.setMoreNavOpen = setMoreNavOpen;
+
 const setView = (viewId, options = {}) => {
   document.body.dataset.view = viewId;
   document
@@ -1296,11 +1334,15 @@ const setView = (viewId, options = {}) => {
     item.classList.toggle("active", active);
     item.setAttribute("aria-current", active ? "page" : "false");
   });
-  document.querySelectorAll(".bottom-nav-item").forEach((item) => {
+  document.querySelectorAll(".bottom-nav-item[data-view]").forEach((item) => {
     const active = item.dataset.view === viewId;
     item.classList.toggle("active", active);
     item.setAttribute("aria-current", active ? "page" : "false");
   });
+  syncMoreNav(viewId);
+  if (PRIMARY_VIEWS.includes(viewId) && !options.keepMoreOpen) {
+    setMoreNavOpen(false);
+  }
   if (options.focus) {
     const heading = document.querySelector(`#${viewId} h2`);
     heading?.setAttribute("tabindex", "-1");
@@ -1335,6 +1377,7 @@ const renderAll = () => {
   renderImportPreview();
 };
 
+setupMoreNav();
 setupEventListeners();
 renderAll();
 store.subscribe(renderAll);
