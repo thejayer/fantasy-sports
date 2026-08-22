@@ -22,7 +22,7 @@
       })();
     </script>
   </head>
-  <body>
+  <body data-view="dashboard">
     <a class="skip-link" href="#dashboard-title">Skip to main content</a>
     <header class="site-header">
       <a class="sj-brand" data-sj-community href="https://strictlyjayers.com">Strictly Jayers</a>
@@ -30,6 +30,7 @@
         <a data-sj-community href="https://strictlyjayers.com">Community</a>
         <a data-sj-fantasy href="https://fantasy.strictlyjayers.com">Fantasy</a>
         <a href="/" aria-current="page">Fitness</a>
+        <button class="icon-button header-theme" id="themeToggle" type="button" aria-label="Toggle theme" title="Toggle theme">T</button>
         <span class="accent-picker" id="accentPicker" aria-label="Accent color"></span>
       </nav>
     </header>
@@ -40,6 +41,9 @@
         Golf, tennis, pickleball, lifting, and endurance — local-first, installable,
         offline.
       </p>
+      <div class="hero-cta">
+        <button class="primary-button" data-view-jump="log" type="button">Log session →</button>
+      </div>
     </section>
     <div class="app-shell">
       <aside class="sidebar" aria-label="Primary navigation">
@@ -54,54 +58,61 @@
         </div>
 
         <nav class="nav-list" aria-label="App sections">
-          <button class="nav-item active" data-view="dashboard" type="button">
-            <span class="icon" aria-hidden="true">H</span>
-            Dashboard
-          </button>
-          <button class="nav-item" data-view="log" type="button">
-            <span class="icon" aria-hidden="true">+</span>
-            Log Workout
-          </button>
-          <button class="nav-item" data-view="planner" type="button">
-            <span class="icon" aria-hidden="true">W</span>
-            Planner
-          </button>
-          <button class="nav-item" data-view="calendar" type="button">
-            <span class="icon" aria-hidden="true">C</span>
-            Calendar
-          </button>
-          <button class="nav-item" data-view="goals" type="button">
-            <span class="icon" aria-hidden="true">G</span>
-            Goals
-          </button>
-          <button class="nav-item" data-view="profile" type="button">
-            <span class="icon" aria-hidden="true">U</span>
-            Profile
-          </button>
-          <button class="nav-item" data-view="sports" type="button">
-            <span class="icon" aria-hidden="true">S</span>
-            Sports
-          </button>
-          <button class="nav-item" data-view="gps" type="button">
-            <span class="icon" aria-hidden="true">Y</span>
-            Golf GPS
-          </button>
-          <button class="nav-item" data-view="library" type="button">
-            <span class="icon" aria-hidden="true">L</span>
-            Library
-          </button>
-          <button class="nav-item" data-view="programs" type="button">
-            <span class="icon" aria-hidden="true">P</span>
-            Programs
-          </button>
-          <button class="nav-item" data-view="compare" type="button">
-            <span class="icon" aria-hidden="true">M</span>
-            Compare
-          </button>
-          <button class="nav-item" data-view="progress" type="button">
-            <span class="icon" aria-hidden="true">R</span>
-            Progress
-          </button>
+          <div class="nav-primary">
+            <button class="nav-item active" data-view="dashboard" type="button">
+              <span class="icon" aria-hidden="true">H</span>
+              Dashboard
+            </button>
+            <button class="nav-item" data-view="log" type="button">
+              <span class="icon" aria-hidden="true">+</span>
+              Log
+            </button>
+            <button class="nav-item" data-view="planner" type="button">
+              <span class="icon" aria-hidden="true">W</span>
+              Planner
+            </button>
+            <button class="nav-item" data-view="progress" type="button">
+              <span class="icon" aria-hidden="true">R</span>
+              Progress
+            </button>
+            <button class="nav-more-toggle" id="navMoreToggle" type="button" aria-expanded="false" aria-controls="navMore">
+              More
+            </button>
+          </div>
+          <div class="nav-more" id="navMore" hidden>
+            <button class="nav-item" data-view="calendar" type="button">
+              <span class="icon" aria-hidden="true">C</span>
+              Calendar
+            </button>
+            <button class="nav-item" data-view="goals" type="button">
+              <span class="icon" aria-hidden="true">G</span>
+              Goals
+            </button>
+            <button class="nav-item" data-view="profile" type="button">
+              <span class="icon" aria-hidden="true">U</span>
+              Profile
+            </button>
+            <button class="nav-item" data-view="sports" type="button">
+              <span class="icon" aria-hidden="true">S</span>
+              Sports
+            </button>
+            <button class="nav-item" data-view="gps" type="button">
+              <span class="icon" aria-hidden="true">Y</span>
+              Golf GPS
+            </button>
+            <button class="nav-item" data-view="library" type="button">
+              <span class="icon" aria-hidden="true">L</span>
+              Library
+            </button>
+            <button class="nav-item" data-view="programs" type="button">
+              <span class="icon" aria-hidden="true">P</span>
+              Programs
+            </button>
+            <button class="nav-item" data-view="compare" type="button">
+              <span class="icon" aria-hidden="true">M</span>
+              Compare
+            </button>
+          </div>
         </nav>
 
         <section class="sidebar-panel">
@@ -116,36 +127,28 @@
 
       <main class="content">
         <header class="topbar">
-          <div class="topbar-copy">
-            <p class="eyebrow">Today</p>
-            <h2>Hybrid training cockpit</h2>
-          </div>
-          <div class="cockpit-status" aria-label="Current training status">
-            <div>
-              <span>Ready</span>
-              <strong id="topbarReadiness">82</strong>
-            </div>
-            <div>
-              <span>Load</span>
-              <strong id="topbarLoad">7.4h</strong>
-            </div>
-            <div>
-              <span>Focus</span>
-              <strong id="topbarFocus">Golf</strong>
-            </div>
-          </div>
           <div class="top-actions">
-            <button class="icon-button" id="themeToggle" type="button" aria-label="Toggle theme" title="Toggle theme">T</button>
             <button class="ghost-button install-button" id="installApp" type="button" hidden>Install</button>
-            <button class="primary-button" data-view-jump="log" type="button">Log session →</button>
+            <button class="primary-button topbar-log" data-view-jump="log" type="button">Log session →</button>
           </div>
         </header>
 
         <section class="view active" id="dashboard" aria-labelledby="dashboard-title">
+          <section class="today-summary" aria-labelledby="dashboard-title">
+            <p class="eyebrow">Today</p>
+            <h2 id="dashboard-title">Ready to train</h2>
+            <p class="today-lead" id="todayLead">Golf · 7.4h this week · Ready 82</p>
+            <p class="today-next" id="todayNext">Next up: rotational power + shoulder resilience</p>
+            <p class="today-goal" id="todayGoalLine">Increase clubhead speed — 68% toward more speed without losing control.</p>
+            <span id="topbarReadiness" hidden>82</span>
+            <span id="topbarLoad" hidden>7.4h</span>
+            <span id="topbarFocus" hidden>Golf</span>
+          </section>
+
           <div class="hero-band">
             <div>
               <p class="eyebrow">Training Focus</p>
-              <h2 id="dashboard-title">Build rotational power, quick feet, and durable shoulders.</h2>
+              <h2 id="training-focus-title">Build rotational power, quick feet, and durable shoulders.</h2>
               <p>
                 A weekly plan for golf, tennis, pickleball, lifting, and endurance work without treating every session like the same generic gym entry.
               </p>
@@ -886,21 +889,13 @@
         <span>W</span>
         Plan
       </button>
-      <button class="bottom-nav-item" data-view="calendar" type="button">
-        <span>C</span>
-        Cal
+      <button class="bottom-nav-item" data-view="progress" type="button">
+        <span>R</span>
+        Progress
       </button>
-      <button class="bottom-nav-item" data-view="goals" type="button">
-        <span>G</span>
-        Goals
-      </button>
-      <button class="bottom-nav-item" data-view="sports" type="button">
-        <span>S</span>
-        Sports
-      </button>
-      <button class="bottom-nav-item" data-view="gps" type="button">
-        <span>Y</span>
-        GPS
+      <button class="bottom-nav-item nav-more-toggle" type="button" aria-expanded="false" aria-controls="navMore">
+        <span>…</span>
+        More
       </button>
     </nav>
 

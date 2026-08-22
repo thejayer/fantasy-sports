@@ -62,6 +62,25 @@ if (!indexHtml.includes("Strictly Jayers")) {
 if (!indexHtml.includes('class="page-hero"')) {
   errors.push("app.html should use the SJ page-hero, not athlete-log brand chrome");
 }
+if (!indexHtml.includes("nav-more-toggle") || !indexHtml.includes('id="navMore"')) {
+  errors.push("app.html should keep a short primary nav and put extra sections behind More");
+}
+if (!indexHtml.includes("today-summary")) {
+  errors.push("app.html should lead the dashboard with a short today summary");
+}
+if (!indexHtml.includes("Log session →")) {
+  errors.push("app.html should keep a Log session CTA in the first look");
+}
+if (indexHtml.includes("Hybrid training cockpit")) {
+  errors.push("app.html should not lead with the Hybrid training cockpit");
+}
+const primaryNavMatch = indexHtml.match(/class="nav-primary"([\s\S]*?)<\/div>/);
+const primaryViewCount = primaryNavMatch
+  ? (primaryNavMatch[1].match(/data-view="/g) || []).length
+  : 0;
+if (primaryViewCount > 4) {
+  errors.push(`app.html primary nav should have at most 4 views, found ${primaryViewCount}`);
+}
 if (indexHtml.includes("Athlete Log")) {
   errors.push("app.html still brands as Athlete Log");
 }

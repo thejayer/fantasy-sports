@@ -1286,6 +1286,34 @@ const deleteSession = (sessionId) => {
   showToast("Session deleted");
 };
 
+const PRIMARY_VIEWS = ["dashboard", "log", "planner", "progress"];
+
+const setMoreNavOpen = (open) => {
+  const panel = document.querySelector("#navMore");
+  document.querySelectorAll(".nav-more-toggle").forEach((toggle) => {
+    toggle.setAttribute("aria-expanded", open ? "true" : "false");
+    const icon = toggle.querySelector("span");
+    const label = open ? "Close" : "More";
+    if (icon) {
+      toggle.lastChild.textContent = ` ${label}`;
+    } else {
+      toggle.textContent = label;
+    }
+  });
+  if (panel) {
+    panel.hidden = !open;
+    panel.classList.toggle("is-open", open);
+  }
+};
+
+const syncMoreNav = (viewId) => {
+  const isMore = !PRIMARY_VIEWS.includes(viewId);
+  document.querySelectorAll(".nav-more-toggle").forEach((toggle) => {
+    toggle.classList.toggle("is-current", isMore);
+  });
+  if (isMore) setMoreNavOpen(true);
+};
+
 const setView = (viewId, options = {}) => {
   document.body.dataset.view = viewId;
   document
@@ -1296,11 +1324,15 @@ const setView = (viewId, options = {}) => {
     item.classList.toggle("active", active);
     item.setAttribute("aria-current", active ? "page" : "false");
   });
-  document.querySelectorAll(".bottom-nav-item").forEach((item) => {
+  document.querySelectorAll(".bottom-nav-item[data-view]").forEach((item) => {
     const active = item.dataset.view === viewId;
     item.classList.toggle("active", active);
     item.setAttribute("aria-current", active ? "page" : "false");
   });
+  syncMoreNav(viewId);
+  if (PRIMARY_VIEWS.includes(viewId) && !options.keepMoreOpen) {
+    setMoreNavOpen(false);
+  }
   if (options.focus) {
     const heading = document.querySelector(`#${viewId} h2`);
     heading?.setAttribute("tabindex", "-1");
