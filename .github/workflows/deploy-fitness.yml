@@ -3,8 +3,13 @@ name: deploy fitness
 # Deploy the Strictly Jayers fitness log to Cloud Run (sj-fitness).
 #
 # Auth: Workload Identity Federation (same deployer SA as www/hub).
-# No Secret Manager / GCS — public local-first PWA with absolute links
-# to the apex portal and fantasy hub.
+# Reuses sj-hub Secret Manager values (AUTH_SECRET / Google / ALLOWED_EMAILS)
+# and the ESPN+hub GCS bucket for hub_members.json + per-user athlete JSON.
+# Entrypoint must not mkdir/stat the FUSE mount (PORT probe).
+#
+# After deploy, add this host to the existing Google OAuth client:
+#   Authorized JavaScript origin:  https://fitness.strictlyjayers.com
+#   Authorized redirect URI:       https://fitness.strictlyjayers.com/api/auth/callback/google
 #
 # Deploys on merge to main when apps/fitness changes, and on workflow_dispatch.
 
@@ -29,8 +34,12 @@ on:
         description: "Cloud Run service name"
         required: true
         default: "sj-fitness"
+      bucket:
+        description: "GCS bucket RW at /app/data/sj (hub_members + fitness/). Blank on manual = leave mounts; push CD defaults to …-sj-data"
+        required: false
+        default: ""
       site_url:
-        description: "Canonical SITE_URL (blank = keep existing custom host, else Cloud Run URL)"
+        description: "Canonical SITE_URL / AUTH_URL (blank = keep existing custom host, else Cloud Run URL)"
         required: false
         default: ""
       community_site_url:
@@ -65,6 +74,9 @@ jobs:
       SERVICE: ${{ github.event.inputs.service || 'sj-fitness' }}
       MIN_INSTANCES: ${{ github.event.inputs.min_instances || '0' }}
       SITE_URL_INPUT: ${{ github.event.inputs.site_url || '' }}
+      BUCKET: ${{ github.event.inputs.bucket || '' }}
+      EVENT_NAME: ${{ github.event_name }}
+      DEFAULT_BUCKET: fantasy-sports-analytics-sj-data
       COMMUNITY_SITE_URL: ${{ github.event.inputs.community_site_url || 'https://strictlyjayers.com' }}
       FANTASY_HUB_URL: ${{ github.event.inputs.fantasy_hub_url || 'https://fantasy.strictlyjayers.com' }}
       PREFERRED_SITE_HOST: fitness.strictlyjayers.com
@@ -158,18 +170,39 @@ jobs:
           fi
           echo "Using SITE_URL=$SITE_URL (Cloud Run URL: $RUN_URL)"
 
-          gcloud run deploy "$SERVICE" \
-            --project "$PROJECT_ID" \
-            --region "$REGION" \
-            --image "$IMAGE" \
-            --platform managed \
-            --allow-unauthenticated \
-            --memory 512Mi --cpu 1 --port 8080 \
-            --timeout 60 \
-            --min-instances "$MIN_INSTANCES" \
-            --max-instances 3 \
-            --cpu-boost \
-            --update-env-vars "SITE_URL=$SITE_URL,COMMUNITY_SITE_URL=$COMMUNITY_SITE_URL,FANTASY_HUB_URL=$FANTASY_HUB_URL"
+          # Same Google + allowlist secrets as sj-hub. Default Compute SA already
+          # has secretAccessor from ./scripts/grant-hub-secret-access.sh.
+          ARGS=(
+            --project "$PROJECT_ID"
+            --region "$REGION"
+            --image "$IMAGE"
+            --platform managed
+            --allow-unauthenticated
+            --memory 512Mi --cpu 1 --port 8080
+            --timeout 60
+            --min-instances "$MIN_INSTANCES"
+            --max-instances 3
+            --cpu-boost
+            --update-env-vars "SITE_URL=$SITE_URL,AUTH_URL=$SITE_URL,AUTH_TRUST_HOST=true,SJ_HUB_DIR=/app/data/sj,SJ_FITNESS_DIR=/app/data/sj/fitness,COMMUNITY_SITE_URL=$COMMUNITY_SITE_URL,FANTASY_HUB_URL=$FANTASY_HUB_URL"
+            --set-secrets "AUTH_SECRET=sj-auth-secret:latest,AUTH_GOOGLE_ID=sj-auth-google-id:latest,AUTH_GOOGLE_SECRET=sj-auth-google-secret:latest,ALLOWED_EMAILS=sj-allowed-emails:latest"
+          )
+          if [ -z "$BUCKET" ] && [ "$EVENT_NAME" = "push" ]; then
+            BUCKET="$DEFAULT_BUCKET"
+            echo "Push CD: defaulting bucket to $BUCKET"
+          fi
+          if [ -n "$BUCKET" ]; then
+            echo "Mounting gs://$BUCKET RW at /app/data/sj (hub_members + fitness/)"
+            # uid/gid must match non-root sjfit (1001). Semicolons, not commas.
+            ARGS+=(
+              --clear-volumes
+              --clear-volume-mounts
+              --add-volume "name=sjdata,type=cloud-storage,bucket=$BUCKET,readonly=false,mount-options=uid=1001;gid=1001"
+              --add-volume-mount "volume=sjdata,mount-path=/app/data/sj"
+            )
+          else
+            echo "No bucket input — leaving Cloud Run volumes unchanged"
+          fi
+          gcloud run deploy "$SERVICE" "${ARGS[@]}"
 
           LIVE_URL="$(gcloud run services describe "$SERVICE" \
             --project "$PROJECT_ID" --region "$REGION" \
@@ -179,7 +212,7 @@ jobs:
             gcloud run services update "$SERVICE" \
               --project "$PROJECT_ID" \
               --region "$REGION" \
-              --update-env-vars "SITE_URL=$LIVE_URL"
+              --update-env-vars "SITE_URL=$LIVE_URL,AUTH_URL=$LIVE_URL,AUTH_TRUST_HOST=true"
             SITE_URL="$LIVE_URL"
           fi
           echo "SITE_URL=$SITE_URL" >> "$GITHUB_ENV"
@@ -195,3 +228,11 @@ jobs:
           echo
           echo "Custom domain (Spaceship): ./scripts/setup-fitness-domain.sh"
           echo "  Preferred host: https://$PREFERRED_SITE_HOST"
+          echo
+          echo "Add these to the existing Google OAuth client (same as sj-hub):"
+          echo "  Authorized JavaScript origin:  $SERVICE_URL"
+          echo "  Authorized redirect URI:       $SERVICE_URL/api/auth/callback/google"
+          if [ -n "$RUN_URL" ] && [ "$RUN_URL" != "$SERVICE_URL" ]; then
+            echo "  Also keep origin/redirect for:  $RUN_URL"
+            echo "  Also keep redirect URI:         $RUN_URL/api/auth/callback/google"
+          fi

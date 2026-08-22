@@ -43,6 +43,15 @@ export default defineConfig({
       HOSTNAME: "127.0.0.1",
       PORT: String(port),
       SITE_URL: baseURL,
+      AUTH_URL: process.env.AUTH_URL ?? baseURL,
+      AUTH_SECRET: process.env.AUTH_SECRET ?? "ci-fitness-secret",
+      AUTH_TRUST_HOST: "true",
+      AUTH_DEV_BYPASS: process.env.AUTH_DEV_BYPASS ?? "1",
+      SJ_DEV_VIEWER_EMAIL:
+        process.env.SJ_DEV_VIEWER_EMAIL ?? "demo@example.com",
+      SJ_FITNESS_DIR:
+        process.env.SJ_FITNESS_DIR ??
+        path.join(appRoot, ".next", "e2e-fitness-data"),
       COMMUNITY_SITE_URL:
         process.env.COMMUNITY_SITE_URL ?? "https://strictlyjayers.com",
       FANTASY_HUB_URL:

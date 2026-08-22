@@ -1,5 +1,149 @@
-/* Layout fallback only. The training log document loads public/styles.css. */
+/* Login + Next chrome. The training log document loads public/styles.css. */
+
+@font-face {
+  font-family: "Archivo";
+  src: url("/fonts/Archivo-latin-400.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Archivo";
+  src: url("/fonts/Archivo-latin-600.woff2") format("woff2");
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Archivo";
+  src: url("/fonts/Archivo-latin-800.woff2") format("woff2");
+  font-weight: 800;
+  font-style: normal;
+  font-display: swap;
+}
+
+:root {
+  --color-bg: #f3f2f2;
+  --color-surface: #eae9e9;
+  --color-text: #201e1d;
+  --color-accent: #ec3013;
+  --color-divider: color-mix(in srgb, #201e1d 40%, transparent);
+  --ink: #201e1d;
+  --paper: #f3f2f2;
+}
+
+html,
 body {
   margin: 0;
+  min-height: 100%;
+  background: var(--paper);
+  color: var(--ink);
   font-family: Archivo, system-ui, sans-serif;
+}
+
+.login-page {
+  min-height: 100vh;
+  display: grid;
+  align-content: start;
+  justify-items: center;
+  gap: 3rem;
+  padding: 1.5rem 1.25rem 3rem;
+}
+
+.login-brand {
+  width: min(1100px, 100%);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 2px solid var(--color-divider);
+}
+
+.login-brand a,
+.login-brand span {
+  color: inherit;
+  text-decoration: none;
+}
+
+.login-brand > a {
+  font-weight: 800;
+  font-size: 19px;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+
+.login-brand nav {
+  display: flex;
+  gap: 1rem;
+  font-size: 14px;
+}
+
+.login-brand nav [aria-current="page"],
+.login-brand nav a:hover {
+  color: var(--color-accent);
+  font-weight: 600;
+}
+
+.login-panel {
+  width: min(420px, 100%);
+  display: grid;
+  gap: 1rem;
+  padding: 2rem;
+  background: #fff;
+  border: 2px solid var(--ink);
+}
+
+.login-kicker {
+  margin: 0;
+  font-size: 0.72rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--color-accent);
+}
+
+.login-panel h1 {
+  margin: 0;
+  font-size: 2.4rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  line-height: 0.95;
+}
+
+.login-copy,
+.login-error {
+  margin: 0;
+  line-height: 1.45;
+}
+
+.login-copy {
+  color: color-mix(in srgb, var(--ink) 72%, transparent);
+}
+
+.login-error {
+  color: var(--color-accent);
+}
+
+.login-button {
+  width: 100%;
+  border: 0;
+  border-radius: 0;
+  padding: 0.85rem 1rem;
+  background: var(--color-accent);
+  color: #fff;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.login-button:hover,
+.login-button:focus-visible {
+  background: color-mix(in srgb, var(--color-accent) 82%, #000);
+}
+
+.login-button:focus-visible {
+  outline: 2px solid var(--ink);
+  outline-offset: 2px;
 }

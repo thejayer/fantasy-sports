@@ -30,6 +30,10 @@
         <a data-sj-community href="https://strictlyjayers.com">Community</a>
         <a data-sj-fantasy href="https://fantasy.strictlyjayers.com">Fantasy</a>
         <a href="/" aria-current="page">Fitness</a>
+        <span class="sj-account" id="sjAccount" hidden>
+          <span class="sj-account-name" id="sjAccountName"></span>
+          <button class="sj-sign-out" id="sjSignOut" type="button">Sign out</button>
+        </span>
         <button class="icon-button header-theme" id="themeToggle" type="button" aria-label="Toggle theme" title="Toggle theme">T</button>
         <span class="accent-picker" id="accentPicker" aria-label="Accent color"></span>
       </nav>
@@ -38,8 +42,8 @@
       <p class="hero-kicker">Train</p>
       <h1>Fitness</h1>
       <p>
-        Golf, tennis, pickleball, lifting, and endurance — local-first, installable,
-        offline.
+        Golf, tennis, pickleball, lifting, and endurance — signed in to your
+        profile, installable, offline.
       </p>
       <div class="hero-cta">
         <button class="primary-button" data-view-jump="log" type="button">Log session →</button>
@@ -913,6 +917,6 @@
     <script src="analytics.js"></script>
     <script src="render.js"></script>
     <script src="events.js"></script>
-    <script src="app.js"></script>
+    <script src="sync.js"></script>
   </body>
 </html>
