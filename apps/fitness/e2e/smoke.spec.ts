@@ -29,7 +29,11 @@ test.describe("fitness smoke", () => {
     await expect(appNav.getByRole("button", { name: "Planner" })).toBeVisible();
     await expect(appNav.getByRole("button", { name: "Progress" })).toBeVisible();
     await expect(appNav.getByRole("button", { name: "More" })).toBeVisible();
-    await expect(appNav.getByRole("button", { name: "Sports" })).toBeHidden();
+    await expect(page.locator("#navMore")).toBeHidden();
+    await expect(page.locator("#navMoreToggle")).toHaveAttribute("aria-expanded", "false");
+    for (const room of ["Calendar", "Goals", "Profile", "Sports", "Golf GPS", "Library", "Programs", "Compare"]) {
+      await expect(appNav.getByRole("button", { name: room })).toBeHidden();
+    }
     await expect(page.getByRole("heading", { name: "Hybrid training cockpit" })).toHaveCount(0);
 
     const viewport = page.viewportSize();
@@ -43,6 +47,30 @@ test.describe("fitness smoke", () => {
     const checkinBox = await checkin.boundingBox();
     expect(checkinBox).toBeTruthy();
     expect(checkinBox.y).toBeGreaterThan(viewport.height);
+  });
+
+  test("1024px first viewport is one primary row with More closed", async ({ page }) => {
+    await page.setViewportSize({ width: 1024, height: 768 });
+    await page.goto("/");
+    const appNav = page.getByRole("navigation", { name: "App sections" });
+    const more = page.locator("#navMore");
+    await expect(more).toBeHidden();
+    await expect(more).not.toHaveClass(/is-open/);
+    expect(await more.evaluate((el) => getComputedStyle(el).display)).toBe("none");
+    for (const room of ["Golf GPS", "Library", "Compare", "Calendar", "Sports"]) {
+      await expect(appNav.getByRole("button", { name: room })).toBeHidden();
+    }
+    const labels = ["Dashboard", "Log", "Planner", "Progress", "More"] as const;
+    const boxes = [];
+    for (const label of labels) {
+      const name = label === "Log" ? { name: "Log", exact: true } : { name: label };
+      const box = await appNav.getByRole("button", name).boundingBox();
+      expect(box, `${label} should be on the first viewport`).toBeTruthy();
+      boxes.push(box);
+    }
+    const tops = boxes.map((box) => box!.y);
+    expect(Math.max(...tops) - Math.min(...tops)).toBeLessThan(8);
+    expect(boxes).toHaveLength(5);
   });
 
   test("More reveals secondary rooms without deleting them", async ({ page }) => {
