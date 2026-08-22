@@ -3486,9 +3486,9 @@ body[data-view="dashboard"] .topbar {
   grid-template-columns: none;
 }
 
-/* Follow-up to #146: leftover athlete-log 12-col .nav-list grid + a
-   shared `.nav-primary, .nav-more { display:flex }` rule leaked Calendar /
-   Goals / Profile / Sports / GPS / Library into the first look. */
+/* Follow-up to #146: leftover athlete-log 12-col .nav-list grid plus a
+   combined primary/more flex display rule leaked Calendar / Goals /
+   Profile / Sports / GPS / Library into the first look. */
 .nav-primary {
   display: flex;
   flex-wrap: nowrap;

@@ -101,7 +101,7 @@ if (!styles.includes("--color-accent") || !styles.includes("Archivo")) {
 if (/nav-list[\s\S]{0,120}repeat\(\s*12/.test(styles)) {
   errors.push("styles.css must not keep the athlete-log 12-col .nav-list grid");
 }
-if (/\.nav-primary\s*,\s*\.nav-more\s*\{/.test(styles)) {
+if (/^\s*\.nav-primary\s*,\s*\.nav-more\s*\{/m.test(styles)) {
   errors.push("styles.css must not set display on .nav-primary and .nav-more together");
 }
 if (!styles.includes(".nav-more:not(.is-open)") || !styles.includes("display: none !important")) {
