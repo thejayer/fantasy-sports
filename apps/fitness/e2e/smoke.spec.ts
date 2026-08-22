@@ -48,7 +48,8 @@ test.describe("fitness smoke", () => {
   test("More reveals secondary rooms without deleting them", async ({ page }) => {
     await page.goto("/");
     const appNav = page.getByRole("navigation", { name: "App sections" });
-    await appNav.getByRole("button", { name: "More" }).click();
+    await page.locator("#navMoreToggle").click();
+    await expect(page.locator("#navMore")).toBeVisible();
     await expect(appNav.getByRole("button", { name: "Sports" })).toBeVisible();
     await expect(appNav.getByRole("button", { name: "Golf GPS" })).toBeVisible();
     await expect(appNav.getByRole("button", { name: "Library" })).toBeVisible();

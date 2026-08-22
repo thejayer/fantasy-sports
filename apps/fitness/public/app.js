@@ -1288,31 +1288,41 @@ const deleteSession = (sessionId) => {
 
 const PRIMARY_VIEWS = ["dashboard", "log", "planner", "progress"];
 
-const setMoreNavOpen = (open) => {
+function setMoreNavOpen(open) {
+  // Exposed for the More disclosure buttons (onclick in app.html).
   const panel = document.querySelector("#navMore");
   document.querySelectorAll(".nav-more-toggle").forEach((toggle) => {
     toggle.setAttribute("aria-expanded", open ? "true" : "false");
-    const icon = toggle.querySelector("span");
-    const label = open ? "Close" : "More";
-    if (icon) {
-      toggle.lastChild.textContent = ` ${label}`;
-    } else {
-      toggle.textContent = label;
+    if (!toggle.querySelector("[data-more-icon]")) {
+      toggle.textContent = open ? "Close" : "More";
     }
   });
-  if (panel) {
-    panel.hidden = !open;
-    panel.classList.toggle("is-open", open);
-  }
-};
+  if (!panel) return;
+  panel.classList.toggle("is-open", open);
+}
 
-const syncMoreNav = (viewId) => {
+function syncMoreNav(viewId) {
   const isMore = !PRIMARY_VIEWS.includes(viewId);
   document.querySelectorAll(".nav-more-toggle").forEach((toggle) => {
     toggle.classList.toggle("is-current", isMore);
   });
   if (isMore) setMoreNavOpen(true);
-};
+}
+
+function setupMoreNav() {
+  document.addEventListener("click", (event) => {
+    const toggle = event.target.closest(".nav-more-toggle");
+    if (!toggle) return;
+    event.preventDefault();
+    const panel = document.querySelector("#navMore");
+    setMoreNavOpen(!panel?.classList.contains("is-open"));
+  });
+  document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape") setMoreNavOpen(false);
+  });
+}
+
+window.setMoreNavOpen = setMoreNavOpen;
 
 const setView = (viewId, options = {}) => {
   document.body.dataset.view = viewId;
@@ -1367,6 +1377,7 @@ const renderAll = () => {
   renderImportPreview();
 };
 
+setupMoreNav();
 setupEventListeners();
 renderAll();
 store.subscribe(renderAll);

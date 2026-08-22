@@ -33,17 +33,6 @@ const collectProfileForm = () => {
 };
 
 function setupEventListeners() {
-  document.querySelectorAll(".nav-more-toggle").forEach((toggle) => {
-    toggle.addEventListener("click", () => {
-      const open = toggle.getAttribute("aria-expanded") !== "true";
-      setMoreNavOpen(open);
-    });
-  });
-
-  document.addEventListener("keydown", (event) => {
-    if (event.key === "Escape") setMoreNavOpen(false);
-  });
-
   document.querySelectorAll("[data-view]").forEach((button) => {
     button.addEventListener("click", () => setView(button.dataset.view, { focus: true }));
   });

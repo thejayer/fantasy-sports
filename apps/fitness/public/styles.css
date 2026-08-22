@@ -3504,12 +3504,13 @@ body[data-view="dashboard"] .topbar {
   flex-wrap: wrap;
 }
 
-.nav-more[hidden] {
+.nav-more {
   display: none;
+  border-top: 2px solid var(--color-divider);
 }
 
-.nav-more {
-  border-top: 2px solid var(--color-divider);
+.nav-more.is-open {
+  display: flex;
 }
 
 .nav-item,

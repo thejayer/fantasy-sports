@@ -21,6 +21,7 @@ export default defineConfig({
     ...devices["Desktop Chrome"],
     baseURL,
     trace: "on-first-retry",
+    serviceWorkers: "block",
   },
   webServer: {
     command: [
@@ -29,7 +30,8 @@ export default defineConfig({
       `if [ -d "${path.join(standaloneRoot, "apps/fitness/public")}" ]; then ` +
         `cp -R "${path.join(appRoot, "public")}/." "${path.join(standaloneRoot, "apps/fitness/public")}/"; ` +
         `fi`,
-      `cp -R "${path.join(appRoot, "public")}" "${path.join(standaloneRoot, "public")}" 2>/dev/null || true`,
+      `mkdir -p "${path.join(standaloneRoot, "public")}"`,
+      `cp -R "${path.join(appRoot, "public")}/." "${path.join(standaloneRoot, "public")}/"`,
       `node "${standaloneServer}"`,
     ].join(" && "),
     cwd: standaloneRoot,
