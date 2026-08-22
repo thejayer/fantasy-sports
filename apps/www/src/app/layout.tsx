@@ -63,7 +63,7 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const { fantasyHubUrl, discordInviteUrl } = getSiteConfig();
+  const { fantasyHubUrl, fitnessUrl, discordInviteUrl } = getSiteConfig();
 
   return (
     <html lang="en" className={archivo.variable}>
@@ -78,6 +78,7 @@ export default function RootLayout({
             </Link>
             <PortalNav
               fantasyHubUrl={fantasyHubUrl}
+              fitnessUrl={fitnessUrl}
               discordInviteUrl={discordInviteUrl}
             />
           </header>

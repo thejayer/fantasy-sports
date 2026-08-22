@@ -5,11 +5,13 @@ The apex site is the **community home**. Fantasy stays on a subdomain.
 Visual language is the shared **Modernist** system (`design/modernist/`) —
 Archivo, Signal Red accent (`--color-accent`), 0 radius, 2px rules. Both
 `apps/www` and `apps/web` vendor a copy under `src/styles/modernist.css`.
+Fitness restyles the training-log PWA onto the same tokens (`FITNESS.md`).
 
 | Host | App | Cloud Run | Role |
 |---|---|---|---|
 | `strictlyjayers.com` (and `www`) | `apps/www` | `sj-www` | Public community front door |
 | `fantasy.strictlyjayers.com` | `apps/web` | `sj-hub` | Authenticated member hub |
+| `fitness.strictlyjayers.com` | `apps/fitness` | `sj-fitness` | Local-first training log |
 
 ## Why two hosts
 
@@ -52,6 +54,10 @@ under `apps/www/public/people/` from Wikimedia Commons (credited on each
 card); missing shots use a monogram. Edit `INFLUENTIAL_PEOPLE` in
 `apps/www/src/lib/people.ts`. No X API.
 
+**Fitness** is a sibling host (`FITNESS_URL`, default
+`https://fitness.strictlyjayers.com`) — nav More, People, and the home
+destination list. Docs: [FITNESS.md](FITNESS.md).
+
 Home also ships a **Coming up** event strip and **Meet the crew** links into
 hub `/u/{handle}` profiles (edit handles in `lib/content.ts`). The hub chrome
 links back with **Community** → `strictlyjayers.com` (`COMMUNITY_SITE_URL`).
@@ -88,6 +94,7 @@ Re-run mapping / DNS printouts if you need them:
 ```
 SITE_URL=https://strictlyjayers.com
 FANTASY_HUB_URL=https://fantasy.strictlyjayers.com
+FITNESS_URL=https://fitness.strictlyjayers.com
 ```
 
 ```bash

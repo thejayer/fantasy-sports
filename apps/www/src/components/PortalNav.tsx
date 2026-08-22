@@ -7,11 +7,16 @@ import { AccentPicker } from "@/components/AccentPicker";
 
 type Props = {
   fantasyHubUrl: string;
+  fitnessUrl: string;
   discordInviteUrl: string | null;
 };
 
-/** Collapses Places / AI / People / Watch on small screens; Fantasy + Discord stay visible. */
-export function PortalNav({ fantasyHubUrl, discordInviteUrl }: Props) {
+/** Collapses Places / AI / People / Fitness / Watch on small screens; Fantasy + Discord stay visible. */
+export function PortalNav({
+  fantasyHubUrl,
+  fitnessUrl,
+  discordInviteUrl,
+}: Props) {
   const [open, setOpen] = useState(false);
   const panelId = useId();
 
@@ -72,6 +77,9 @@ export function PortalNav({ fantasyHubUrl, discordInviteUrl }: Props) {
         <Link href="/people" onClick={() => setOpen(false)}>
           People
         </Link>
+        <a href={fitnessUrl} rel="noopener noreferrer" onClick={() => setOpen(false)}>
+          Fitness
+        </a>
         <Link href="/watch" onClick={() => setOpen(false)}>
           Watch
         </Link>

@@ -17,7 +17,8 @@ COPY apps/www ./apps/www
 WORKDIR /app/apps/www
 ENV NEXT_TELEMETRY_DISABLED=1 \
     SITE_URL=https://strictlyjayers.com \
-    FANTASY_HUB_URL=https://fantasy.strictlyjayers.com
+    FANTASY_HUB_URL=https://fantasy.strictlyjayers.com \
+    FITNESS_URL=https://fitness.strictlyjayers.com
 RUN npm run build
 
 FROM node:22-bookworm-slim AS runtime
@@ -38,7 +39,8 @@ ENV NODE_ENV=production \
     PORT=8080 \
     HOSTNAME=0.0.0.0 \
     SITE_URL=https://strictlyjayers.com \
-    FANTASY_HUB_URL=https://fantasy.strictlyjayers.com
+    FANTASY_HUB_URL=https://fantasy.strictlyjayers.com \
+    FITNESS_URL=https://fitness.strictlyjayers.com
 
 EXPOSE 8080
 ENTRYPOINT ["/app/docker-entrypoint.sh"]

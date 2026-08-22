@@ -53,6 +53,11 @@ describe("portal destinations", () => {
 
   it("includes a People destination", () => {
     expect(portalCopy.destinations.items.people.title).toBe("People");
-    expect(portalCopy.destinations.marker).toMatch(/06/);
+    expect(portalCopy.destinations.marker).toMatch(/07/);
+  });
+
+  it("includes a Fitness destination", () => {
+    expect(portalCopy.destinations.items.fitness.title).toBe("Fitness");
+    expect(portalCopy.destinations.items.fitness.action).toBe("Open Fitness");
   });
 });

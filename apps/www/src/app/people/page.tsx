@@ -18,7 +18,7 @@ export const metadata: Metadata = {
 };
 
 export default function PeoplePage() {
-  const { fantasyHubUrl } = getSiteConfig();
+  const { fantasyHubUrl, fitnessUrl } = getSiteConfig();
   const groups = peopleByLane(INFLUENTIAL_PEOPLE);
 
   return (
@@ -34,6 +34,10 @@ export default function PeoplePage() {
         <p className="page-hero-meta">
           {INFLUENTIAL_PEOPLE.length} people · portraits from Wikimedia Commons
           where noted
+          {" · "}
+          <a href={fitnessUrl} rel="noopener noreferrer">
+            Fitness log →
+          </a>
         </p>
       </section>
 
@@ -96,9 +100,15 @@ export default function PeoplePage() {
 
       <footer className="site-footer">
         <Link href="/">← Strictly Jayers</Link>
-        <a href={fantasyHubUrl} rel="noopener noreferrer">
-          Fantasy hub →
-        </a>
+        <span>
+          <a href={fitnessUrl} rel="noopener noreferrer">
+            Fitness →
+          </a>
+          {" · "}
+          <a href={fantasyHubUrl} rel="noopener noreferrer">
+            Fantasy hub →
+          </a>
+        </span>
       </footer>
     </main>
   );

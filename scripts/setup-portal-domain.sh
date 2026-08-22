@@ -165,7 +165,7 @@ if [ "${CUTOVER}" = "1" ]; then
   gcloud run services update "${SERVICE}" \
     --project="${PROJECT}" \
     --region="${REGION}" \
-    --update-env-vars="SITE_URL=${PUBLIC_URL},FANTASY_HUB_URL=https://fantasy.${BASE_DOMAIN}"
+    --update-env-vars="SITE_URL=${PUBLIC_URL},FANTASY_HUB_URL=https://fantasy.${BASE_DOMAIN},FITNESS_URL=https://fitness.${BASE_DOMAIN}"
   echo "SITE_URL updated. Portal metadata and absolute links use ${PUBLIC_URL}."
 else
   echo "When DNS + TLS look good, cut SITE_URL over with:"
@@ -178,4 +178,5 @@ fi
 
 echo
 echo "Fantasy hub domain (separate): ./scripts/setup-hub-domain.sh"
+echo "Fitness log domain (separate): ./scripts/setup-fitness-domain.sh"
 echo "Done."

@@ -8,7 +8,8 @@ This is a multi-product monorepo. See `README.md` (ffa engine), `HUB.md` (member
 
 - **ffa** — Python NFL analytics engine + Streamlit dashboard (`src/ffa`, CLI `ffa`).
 - **Strictly Jayers hub** — Next.js member hub (`apps/web`) plus the ESPN sync CLI `sj` (`src/sj`).
-- **Community portal** — Next.js apex site (`apps/www`) at `strictlyjayers.com`; deep-links to `fantasy.strictlyjayers.com` (no Auth.js / no snapshot store).
+- **Community portal** — Next.js apex site (`apps/www`) at `strictlyjayers.com`; deep-links to `fantasy.strictlyjayers.com` and `fitness.strictlyjayers.com` (no Auth.js / no snapshot store).
+- **Fitness** — Next.js + static PWA (`apps/fitness`) at `fitness.strictlyjayers.com` (`sj-fitness`). Local: port 3003. See `FITNESS.md`. Do not put the service worker on the apex.
 
 ### Python env (venv)
 - Dependencies install into a virtualenv at `/workspace/.venv`. The update script creates it and installs from `requirements-lock.txt` then `pip install -e . --no-deps` (CI parity). `/workspace/.venv/bin` is prepended to `PATH` via `~/.bashrc`, so `ffa`, `sj`, `pytest`, and `ruff` work directly in a login shell; otherwise call them as `.venv/bin/<cmd>`.

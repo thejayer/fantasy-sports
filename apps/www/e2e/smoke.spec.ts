@@ -15,6 +15,7 @@ test.describe("portal smoke", () => {
     ).toBeVisible();
     await expect(page.getByRole("link", { name: /Leagues & tools/i })).toBeVisible();
     await expect(page.getByRole("link", { name: /People/i }).first()).toBeVisible();
+    await expect(page.getByRole("link", { name: /Fitness/i }).first()).toBeVisible();
     await expect(page.getByText(/Details soon/i)).toBeVisible();
     await expect(
       page.getByRole("heading", { name: /Coming up/i }),
@@ -74,5 +75,6 @@ test.describe("portal smoke", () => {
     await expect(jensen).toHaveAttribute("href", "https://x.com/JensenHuang");
     const elonCard = page.locator(".people-card").filter({ hasText: "Elon Musk" });
     await expect(elonCard.locator("img")).toBeVisible();
+    await expect(page.getByRole("link", { name: /Fitness/i }).first()).toBeVisible();
   });
 });

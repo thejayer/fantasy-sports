@@ -14,7 +14,7 @@ export const metadata: Metadata = {
 export const revalidate = 1800;
 
 export default async function WatchPage() {
-  const { fantasyHubUrl, discordInviteUrl } = getSiteConfig();
+  const { fantasyHubUrl, fitnessUrl, discordInviteUrl } = getSiteConfig();
   const playlist = await loadWatchPlaylist(12);
   const tonight = playlist.items[0] ?? null;
 
@@ -221,9 +221,15 @@ export default async function WatchPage() {
 
       <footer className="site-footer">
         <Link href="/">← Strictly Jayers</Link>
-        <a href={fantasyHubUrl} rel="noopener noreferrer">
-          Fantasy hub →
-        </a>
+        <span>
+          <a href={fitnessUrl} rel="noopener noreferrer">
+            Fitness →
+          </a>
+          {" · "}
+          <a href={fantasyHubUrl} rel="noopener noreferrer">
+            Fantasy hub →
+          </a>
+        </span>
       </footer>
     </main>
   );
