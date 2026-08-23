@@ -11,7 +11,12 @@ from pathlib import Path
 from typing import Any, Literal, TypeVar
 
 from sj.registry import LeagueSpec, load_registry
-from sj.serialize import build_week_box_scores_document, serialize_league
+from sj.serialize import (
+    build_week_box_scores_document,
+    build_week_category_document,
+    is_category_scoring,
+    serialize_league,
+)
 from sj.store import write_snapshot, write_week_box_scores
 
 FailureKind = Literal[
@@ -214,8 +219,11 @@ def espn_call(
 
 
 def open_espn_league(spec: LeagueSpec, season: int) -> Any:
-    if not spec.is_espn() or spec.espn_league_id is None:
-        raise ValueError(f"{spec.id}: not an ESPN league (platform={spec.platform})")
+    if not spec.has_live_espn_id():
+        raise ValueError(
+            f"{spec.id}: ESPN league id is not set "
+            f"(platform={spec.platform}, espn_league_id={spec.espn_league_id})"
+        )
 
     espn_s2, swid = espn_credentials()
     if not espn_s2 or not swid:
@@ -231,6 +239,8 @@ def open_espn_league(spec: LeagueSpec, season: int) -> Any:
         from espn_api.baseball import League
     elif spec.sport == "basketball":
         from espn_api.basketball import League
+    elif spec.sport == "hockey":
+        from espn_api.hockey import League
     else:  # pragma: no cover - registry validates sport
         raise ValueError(f"Unsupported sport: {spec.sport}")
 
@@ -339,7 +349,7 @@ def fetch_recent_activity(
     page_size: int = DEFAULT_ACTIVITY_PAGE_SIZE,
     max_pages: int | None = None,
 ) -> list[Any]:
-    """Page through ESPN recent activity for football / baseball / basketball.
+    """Page through ESPN recent activity for football / baseball / hockey.
 
     ESPN's communication view is newest-first and offset-paged; espn-api's
     ``limitPerMessageSet`` is 25, so we keep ``page_size`` at 25 and raise
@@ -471,6 +481,104 @@ def sync_football_box_scores(
     return written
 
 
+def _hockey_category_box(match: Any) -> Any | None:
+    """Adapt espn-api hockey Matchup cats into the baseball category-box shape."""
+    home_cats = getattr(match, "home_team_cats", None)
+    away_cats = getattr(match, "away_team_cats", None)
+    if not isinstance(home_cats, dict) and not isinstance(away_cats, dict):
+        return None
+
+    class _Box:
+        home_team = getattr(match, "home_team", None)
+        away_team = getattr(match, "away_team", None)
+        home_wins = None
+        home_losses = None
+        home_ties = None
+        away_wins = None
+        away_losses = None
+        away_ties = None
+        home_stats = home_cats if isinstance(home_cats, dict) else {}
+        away_stats = away_cats if isinstance(away_cats, dict) else {}
+
+    return _Box()
+
+
+def sync_hockey_week_boxes(
+    league: Any,
+    spec: LeagueSpec,
+    season: int,
+    snapshot: dict[str, Any],
+    store_dir: Path | str | None = None,
+) -> int:
+    """Write ``weeks/{N}.json`` from hockey box_scores or category matchups.
+
+    espn-api hockey exposes football-shaped ``box_scores`` (applied totals +
+    lineups) and, for H2H cats, ``Matchup.home_team_cats``. Empty weeks are
+    skipped — never invent player lines ESPN did not return.
+    """
+    if spec.sport != "hockey":
+        return 0
+    if season < BOX_SCORE_MIN_SEASON:
+        return 0
+    current = int(snapshot.get("current_week") or 0)
+    if current < 1:
+        return 0
+    last = min(current, box_score_max_weeks())
+    written = 0
+    synced_at = snapshot.get("synced_at")
+    scoring_type = snapshot.get("scoring_type")
+    if isinstance(scoring_type, str) and is_category_scoring(scoring_type):
+        scoreboard = getattr(league, "scoreboard", None)
+        if not callable(scoreboard):
+            return 0
+        for week in range(1, last + 1):
+            try:
+                matchups = espn_call(
+                    lambda current_week=week: scoreboard(matchupPeriod=current_week),
+                    label=f"hockey_scoreboard:w{week}",
+                )
+            except Exception as exc:
+                if _box_scores_unsupported(exc):
+                    continue
+                raise
+            boxes = [
+                box
+                for match in (matchups or [])
+                if (box := _hockey_category_box(match)) is not None
+            ]
+            if not boxes:
+                continue
+            doc = build_week_category_document(
+                league_id=spec.id,
+                season=season,
+                week=week,
+                box_scores=boxes,
+                synced_at=synced_at if isinstance(synced_at, str) else None,
+                period_label=str(snapshot.get("period_label") or "week"),
+            )
+            doc["sport"] = "hockey"
+            write_week_box_scores(doc, store_dir=store_dir)
+            written += 1
+        return written
+
+    for week in range(1, last + 1):
+        boxes = fetch_box_scores(league, week)
+        if not boxes:
+            continue
+        doc = build_week_box_scores_document(
+            league_id=spec.id,
+            season=season,
+            week=week,
+            box_scores=boxes,
+            synced_at=synced_at if isinstance(synced_at, str) else None,
+            period_label=str(snapshot.get("period_label") or "week"),
+            sport="hockey",
+        )
+        write_week_box_scores(doc, store_dir=store_dir)
+        written += 1
+    return written
+
+
 def build_snapshot(league: Any, spec: LeagueSpec, season: int) -> dict[str, Any]:
     """Serialize an espn-api league object into a store-ready snapshot.
 
@@ -520,6 +628,7 @@ def sync_league_season(
     # Football box scores are a side concern (roadmap 8.1) — after the season
     # write so a failed week pull never leaves a half-written manifest.
     sync_football_box_scores(league, spec, season, snapshot, store_dir=store_dir)
+    sync_hockey_week_boxes(league, spec, season, snapshot, store_dir=store_dir)
     if spec.sport == "baseball":
         from sj.baseball_enrich import (
             sync_baseball_category_boxes,
@@ -575,6 +684,12 @@ def sync_registry(
     for spec in selected:
         if not spec.is_espn():
             emit(f"skip {spec.id}: platform={spec.platform} (not ESPN)")
+            continue
+        if not spec.has_live_espn_id():
+            emit(
+                f"skip {spec.id}: espn_league_id={spec.espn_league_id} "
+                "(placeholder — fill the live ESPN id before sync)"
+            )
             continue
         target_seasons = [spec.current_season] if current_only else list(spec.seasons)
         if seasons is not None:

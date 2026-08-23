@@ -49,6 +49,46 @@ _TRAILING_SPLIT_IDS = {1: "7", 2: "15", 3: "30"}
 _PITCHER_SLOTS = {"P", "SP", "RP"}
 _PITCHER_POSITIONS = {"P", "SP", "RP"}
 
+# Core counting stats espn-api.hockey.constant.STATS_MAP actually names.
+# Skip digit placeholders ("5", "12") and "?" labels the package leaves blank.
+_HOCKEY_STAT_KEYS = (
+    "GS",
+    "W",
+    "L",
+    "SA",
+    "GA",
+    "SV",
+    "SO",
+    "OTL",
+    "GAA",
+    "SV%",
+    "G",
+    "A",
+    "+/-",
+    "PIM",
+    "PPG",
+    "PPA",
+    "SHG",
+    "SHA",
+    "GWG",
+    "FOW",
+    "FOL",
+    "ATOI",
+    "HAT",
+    "SOG",
+    "HIT",
+    "BLK",
+    "DEF",
+    "GP",
+    "STPG",
+    "STPA",
+    "STP",
+    "PPP",
+    "SHP",
+)
+_HOCKEY_GOALIE_POSITIONS = {"G", "GOALIE"}
+_HOCKEY_GOALIE_SLOTS = {"G", "GOALIE"}
+
 
 def _baseball_stats_map() -> dict[int, str]:
     try:
@@ -64,6 +104,24 @@ def _baseball_pro_team_map() -> dict[int, str]:
         from espn_api.baseball.constant import PRO_TEAM_MAP
 
         return {int(k): str(v) for k, v in PRO_TEAM_MAP.items()}
+    except ImportError:
+        return {}
+
+
+def _hockey_stats_map() -> dict[int, str]:
+    try:
+        from espn_api.hockey.constant import STATS_MAP
+
+        out: dict[int, str] = {}
+        for key, value in STATS_MAP.items():
+            label = str(value)
+            if not label or label.isdigit() or "?" in label:
+                continue
+            try:
+                out[int(key)] = label
+            except (TypeError, ValueError):
+                continue
+        return out
     except ImportError:
         return {}
 
@@ -133,6 +191,90 @@ def extract_baseball_trailing_stats(player: Any) -> dict[str, dict[str, float]]:
                     out[key] = stats
         return out
     return {}
+
+
+def extract_hockey_stat_breakdown(breakdown: Any) -> dict[str, float]:
+    """Named hockey counting stats from one espn-api stats dict."""
+    if not isinstance(breakdown, dict):
+        return {}
+    out: dict[str, float] = {}
+    for key in _HOCKEY_STAT_KEYS:
+        if key in breakdown and breakdown[key] is not None:
+            num = _num(breakdown[key])
+            if num is not None:
+                out[key] = num
+    return out
+
+
+def _hockey_total_bucket(player: Any) -> dict[str, Any]:
+    """espn-api hockey Player.stats is keyed ``Total 2025``, not period 0."""
+    stats = getattr(player, "stats", None) or {}
+    if not isinstance(stats, dict):
+        return {}
+    for key, bucket in stats.items():
+        if isinstance(key, str) and key.startswith("Total") and isinstance(bucket, dict):
+            return bucket
+    return _season_stat_bucket(player)
+
+
+def extract_hockey_season_stats(player: Any) -> dict[str, float]:
+    """Season counting stats from a hockey Player (``Total YYYY`` or stub)."""
+    attached = getattr(player, "season_stats", None)
+    if isinstance(attached, dict) and attached:
+        return extract_hockey_stat_breakdown(attached)
+    bucket = _hockey_total_bucket(player)
+    if not bucket:
+        return {}
+    if any(k in bucket for k in _HOCKEY_STAT_KEYS):
+        return extract_hockey_stat_breakdown(bucket)
+    return extract_hockey_stat_breakdown(
+        bucket.get("total") or bucket.get("breakdown") or {}
+    )
+
+
+def extract_hockey_trailing_stats(player: Any) -> dict[str, dict[str, float]]:
+    """Last 7 / 15 / 30 windows when espn-api hockey attaches them."""
+    attached = getattr(player, "trailing_stats", None)
+    if isinstance(attached, dict) and attached:
+        out: dict[str, dict[str, float]] = {}
+        for key in ("7", "15", "30"):
+            raw = attached.get(key) or attached.get(int(key))
+            if isinstance(raw, dict):
+                stats = (
+                    extract_hockey_stat_breakdown(raw)
+                    if any(k in raw for k in _HOCKEY_STAT_KEYS)
+                    else extract_hockey_stat_breakdown(
+                        raw.get("total") or raw.get("breakdown") or raw
+                    )
+                )
+                if stats:
+                    out[key] = stats
+        return out
+    stats = getattr(player, "stats", None) or {}
+    if not isinstance(stats, dict):
+        return {}
+    prefixes = {"Last 7": "7", "Last 15": "15", "Last 30": "30"}
+    out: dict[str, dict[str, float]] = {}
+    for key, bucket in stats.items():
+        if not isinstance(key, str) or not isinstance(bucket, dict):
+            continue
+        for prefix, window in prefixes.items():
+            if key.startswith(prefix):
+                extracted = extract_hockey_stat_breakdown(
+                    bucket.get("total") or bucket.get("breakdown") or bucket
+                )
+                if extracted:
+                    out[window] = extracted
+                break
+    return out
+
+
+def _hockey_player_role(position: str | None, slot: str | None) -> str:
+    pos = (position or "").upper()
+    sl = (slot or "").upper()
+    if sl in _HOCKEY_GOALIE_SLOTS or pos in _HOCKEY_GOALIE_POSITIONS:
+        return "goalie"
+    return "skater"
 
 
 def _player_role(position: str | None, slot: str | None) -> str:
@@ -226,9 +368,12 @@ def _named_stat_map(raw: dict[Any, Any]) -> dict[str, float]:
             abbr = _FOOTBALL_STAT_ABBR.get(int(key))
         if abbr is None:
             token = str(key).replace(" ", "").replace("_", "").upper()
-            abbr = _FOOTBALL_STAT_NAME_ABBR.get(token) or (
-                str(key).upper() if isinstance(key, str) and key.isalpha() else None
-            )
+            abbr = _FOOTBALL_STAT_NAME_ABBR.get(token)
+        if abbr is None and isinstance(key, str) and (
+            key in _HOCKEY_STAT_KEYS or key.isalpha()
+        ):
+            # Hockey box breakdowns are already STATS_MAP names (G, A, SV%, +/-).
+            abbr = key
         if not abbr:
             continue
         out[abbr] = float(num)
@@ -296,6 +441,7 @@ def build_week_box_scores_document(
     box_scores: list[Any],
     synced_at: str | None = None,
     period_label: str = "week",
+    sport: str = "football",
 ) -> dict[str, Any]:
     """Assemble ``weeks/{N}.json`` payload (side concern — not in manifest.files)."""
     when = synced_at or datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
@@ -304,7 +450,7 @@ def build_week_box_scores_document(
         "league_id": league_id,
         "season": int(season),
         "week": int(week),
-        "sport": "football",
+        "sport": sport,
         "period_label": period_label,
         "synced_at": when,
         "matchups": [serialize_box_score(box, week=week) for box in box_scores],
@@ -339,6 +485,13 @@ def serialize_player(player: Any, *, sport: str | None = None) -> dict[str, Any]
         payload["season_stats"] = season_stats
         payload["role"] = _player_role(position, slot)
         trailing = extract_baseball_trailing_stats(player)
+        if trailing:
+            payload["trailing_stats"] = trailing
+    elif sport == "hockey":
+        season_stats = extract_hockey_season_stats(player)
+        payload["season_stats"] = season_stats
+        payload["role"] = _hockey_player_role(position, slot)
+        trailing = extract_hockey_trailing_stats(player)
         if trailing:
             payload["trailing_stats"] = trailing
     return payload
@@ -431,7 +584,7 @@ def serialize_team(
     return row
 
 
-def serialize_settings(league: Any) -> dict[str, Any]:
+def serialize_settings(league: Any, *, sport: str | None = None) -> dict[str, Any]:
     """Persist league settings already loaded via ``mSettings`` (roadmap 2.4).
 
     No extra ESPN request. Football exposes roster slots / scoring format;
@@ -470,7 +623,7 @@ def serialize_settings(league: Any) -> dict[str, Any]:
     scoring_format = getattr(settings, "scoring_format", None)
     if scoring_format:
         payload["scoring_format"] = _serialize_scoring_format(scoring_format)
-    categories = extract_baseball_scoring_categories(settings)
+    categories = extract_scoring_categories(settings, sport=sport)
     if categories:
         payload["categories"] = categories
         # Season Points / H2H Points weight lists land in ``categories`` from
@@ -578,12 +731,26 @@ def season_gs_max_from_limits(limits: list[dict[str, Any]]) -> float | None:
 
 
 def extract_baseball_scoring_categories(settings: Any) -> list[dict[str, Any]]:
-    """Official H2H-cat list from ESPN ``scoringItems`` (or sample stubs)."""
+    """Official baseball H2H-cat / Season Points list from ESPN scoringItems."""
+    return extract_scoring_categories(settings, sport="baseball")
+
+
+def extract_scoring_categories(
+    settings: Any, *, sport: str | None = None
+) -> list[dict[str, Any]]:
+    """Official cat / weight list from ESPN ``scoringItems`` (or sample stubs)."""
     if settings is None:
         return []
     raw = getattr(settings, "_raw_scoring_settings", None) or {}
     items = raw.get("scoringItems") if isinstance(raw, dict) else None
-    stats_map = _baseball_stats_map()
+    if sport == "hockey":
+        stats_map = _hockey_stats_map()
+        whitelist = set(_HOCKEY_STAT_KEYS)
+        known_rates = {"GAA", "SV%"}
+    else:
+        stats_map = _baseball_stats_map()
+        whitelist = set(_BASEBALL_STAT_KEYS)
+        known_rates = {"AVG", "ERA", "WHIP", "OBP", "OPS"}
     rows: list[dict[str, Any]] = []
     if isinstance(items, list) and items:
         for item in items:
@@ -593,13 +760,8 @@ def extract_baseball_scoring_categories(settings: Any) -> list[dict[str, Any]]:
             if sid is None:
                 continue
             abbr = stats_map.get(sid) or str(item.get("statCode") or sid)
-            known_rates = {"AVG", "ERA", "WHIP", "OBP", "OPS"}
             # Skip obscure ids unless named in our whitelist or STATS_MAP.
-            if (
-                abbr not in _BASEBALL_STAT_KEYS
-                and abbr not in known_rates
-                and sid not in stats_map
-            ):
+            if abbr not in whitelist and abbr not in known_rates and sid not in stats_map:
                 continue
             rows.append(
                 {
@@ -615,7 +777,9 @@ def extract_baseball_scoring_categories(settings: Any) -> list[dict[str, Any]]:
     scoring_format = getattr(settings, "scoring_format", None)
     scoring_type = getattr(settings, "scoring_type", None)
     if scoring_format and (
-        is_category_scoring(scoring_type) or is_season_points_scoring(scoring_type)
+        is_category_scoring(scoring_type)
+        or is_season_points_scoring(scoring_type)
+        or sport == "hockey"
     ):
         return _serialize_scoring_format(scoring_format)
     return []
@@ -660,6 +824,13 @@ def serialize_free_agent(player: Any, *, sport: str | None = None) -> dict[str, 
             payload["role"] = _player_role(
                 payload.get("position"), payload.get("slot")
             )
+    elif sport == "hockey":
+        trailing = extract_hockey_trailing_stats(player)
+        if trailing:
+            payload["trailing_stats"] = trailing
+            payload["role"] = _hockey_player_role(
+                payload.get("position"), payload.get("slot")
+            )
     return payload
 
 
@@ -685,7 +856,7 @@ def serialize_league(
     sport: str,
     format: str,
     season: int,
-    espn_league_id: int,
+    espn_league_id: int | None,
     transactions: list[Any] | None = None,
     free_agents: list[Any] | None = None,
 ) -> dict[str, Any]:
@@ -718,7 +889,7 @@ def serialize_league(
         or getattr(league, "scoringPeriodId", None)
         or getattr(league, "current_matchday", None),
         "period_label": "period" if sport == "baseball" else "week",
-        "settings": serialize_settings(league),
+        "settings": serialize_settings(league, sport=sport),
         "draft": serialize_draft(league),
         "transactions": serialize_transactions(transactions),
         "free_agents": serialize_free_agents(free_agents, sport=sport),

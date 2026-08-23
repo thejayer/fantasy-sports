@@ -36,6 +36,12 @@ import {
   type TeamCountingTotals,
 } from "@/lib/baseball-tools";
 import {
+  HOCKEY_INVERT_KEYS,
+  hockeyCategoriesForLeague,
+  sumHockeySeasonStats,
+  type HockeyCategoryDef,
+} from "@/lib/hockey-tools";
+import {
   isCategoryScoring,
   isSeasonPointsScoring,
 } from "@/lib/scoring-type";
@@ -141,6 +147,13 @@ export type ScoringSandboxModel = {
     periods: BaseballPeriodMatchup[];
     invertKeys: string[];
     categories: CategoryDef[];
+  };
+  hockey?: {
+    mode: "season_points" | "category";
+    teams: BaseballTeamCounts[];
+    periods: BaseballPeriodMatchup[];
+    invertKeys: string[];
+    categories: HockeyCategoryDef[];
   };
   golf?: {
     events: GolfSandboxEvent[];
@@ -610,6 +623,9 @@ export function buildScoringSandboxModel(
   if (league.sport === "baseball") {
     return buildBaseballModel(league, teams, weeks);
   }
+  if (league.sport === "hockey") {
+    return buildHockeyModel(league, teams, weeks);
+  }
   return buildFootballModel(league, teams, weeks);
 }
 
@@ -803,6 +819,136 @@ function buildBaseballModel(
       mode === "category"
         ? "Sandbox only — ESPN is unchanged. Category wins recompute from stored period boxes and season roster counting stats. Rate stats (AVG/ERA/WHIP) stay inverted. This is not an MLB projection model."
         : "Sandbox only — ESPN is unchanged. Season Points reweight roster counting stats that exist on the snapshot (HR, R, RBI, K, …). Cats without a stored line (1B, BB, …) stay in the residual against ESPN points-for.",
+  };
+}
+
+const HOCKEY_STAT_KEYS = [
+  "G",
+  "A",
+  "PPP",
+  "PPG",
+  "SOG",
+  "HIT",
+  "BLK",
+  "W",
+  "SV",
+  "SO",
+] as const;
+
+function hockeySeasonStats(team: Team): Record<string, number> {
+  return sumHockeySeasonStats(team);
+}
+
+function buildHockeyModel(
+  league: LeagueSnapshot,
+  teams: SandboxTeam[],
+  weeks: WeekBoxScoreSnapshot[],
+): ScoringSandboxModel {
+  const official = officialWeightMap(league);
+  const categoryMode = isCategoryScoring(
+    league.scoring_type ?? league.settings?.scoring_type,
+  );
+  const seasonPoints = isSeasonPointsScoring(
+    league.scoring_type ?? league.settings?.scoring_type,
+  );
+  const mode: "season_points" | "category" =
+    categoryMode && !seasonPoints ? "category" : "season_points";
+
+  const items: SandboxScoringItem[] = [];
+  const seen = new Set<string>();
+  if (mode === "season_points") {
+    for (const [key, value] of Object.entries(official)) {
+      items.push({
+        key,
+        label: key,
+        official: value,
+        kind: "weight",
+        step: Math.abs(value) >= 1 ? 0.5 : 0.1,
+        min: -10,
+        max: 20,
+      });
+      seen.add(key);
+    }
+    for (const key of HOCKEY_STAT_KEYS) {
+      if (seen.has(key)) continue;
+      items.push({
+        key,
+        label: key,
+        official: official[key] ?? 0,
+        kind: "weight",
+        step: 0.5,
+        min: -10,
+        max: 20,
+        inferred: !(key in official),
+      });
+      seen.add(key);
+    }
+  } else {
+    for (const cat of hockeyCategoriesForLeague(league)) {
+      items.push({
+        key: cat.id,
+        label: cat.label,
+        official: 1,
+        kind: "toggle",
+        step: 1,
+        min: 0,
+        max: 1,
+      });
+    }
+  }
+
+  const counting: BaseballTeamCounts[] = league.teams.map((team) => ({
+    teamId: team.team_id,
+    name: team.name,
+    officialPoints: team.points_for,
+    officialStanding: team.standing,
+    stats: hockeySeasonStats(team),
+  }));
+
+  const periods: BaseballPeriodMatchup[] = [];
+  for (const snap of weeks) {
+    if (snap.sport && snap.sport !== "hockey") continue;
+    for (const matchup of snap.matchups ?? []) {
+      if (matchup.home_team_id == null || matchup.away_team_id == null) continue;
+      const homeStats = sideCatValues(matchup.home_stats);
+      const awayStats = sideCatValues(matchup.away_stats);
+      if (!Object.keys(homeStats).length && !Object.keys(awayStats).length) {
+        continue;
+      }
+      periods.push({
+        week: snap.week,
+        homeId: matchup.home_team_id,
+        awayId: matchup.away_team_id,
+        homeStats,
+        awayStats,
+        officialHomeWins: matchup.home_wins ?? 0,
+        officialHomeLosses: matchup.home_losses ?? 0,
+        officialHomeTies: matchup.home_ties ?? 0,
+      });
+    }
+  }
+
+  const hasStats = counting.some((team) => Object.keys(team.stats).length > 0);
+  return {
+    leagueId: league.league_id,
+    season: league.season,
+    sport: "hockey",
+    scoringType: league.scoring_type ?? league.settings?.scoring_type ?? null,
+    name: league.name,
+    periodLabel: league.period_label || "week",
+    items: hasStats || items.length ? items : [],
+    teams,
+    hockey: {
+      mode,
+      teams: counting,
+      periods,
+      invertKeys: [...HOCKEY_INVERT_KEYS],
+      categories: hockeyCategoriesForLeague(league),
+    },
+    disclaimer:
+      mode === "category"
+        ? "Sandbox only — ESPN is unchanged. Category wins recompute from stored period boxes and roster counting stats. This is not an NHL projection model. Missing stats stay empty — no invented fantasy points."
+        : "Sandbox only — ESPN is unchanged. Hockey points reweight roster counting stats that exist on the snapshot (G, A, PPP, SV, …). Cats without a stored line stay in the residual against ESPN points-for.",
   };
 }
 
@@ -1189,6 +1335,171 @@ function simulateBaseballCats(
       row.officialRank != null ? row.officialRank - row.simulatedRank : null;
   }
 
+  return {
+    mode: "category",
+    teams: rows.sort((a, b) => a.simulatedRank - b.simulatedRank),
+    flips,
+  };
+}
+
+export function simulateHockey(
+  model: ScoringSandboxModel,
+  tweaks: SandboxTweaks,
+): BaseballSimResult {
+  const hk = model.hockey;
+  if (!hk) {
+    return { mode: "season_points", teams: [], flips: [] };
+  }
+  if (hk.mode === "category") {
+    return simulateHockeyCats(model, tweaks);
+  }
+  const official = Object.fromEntries(
+    model.items.map((item) => [item.key, item.official]),
+  );
+  const rows: BaseballSimTeam[] = hk.teams.map((team) => {
+    const base = num(team.officialPoints);
+    const simulated = applyWeightDelta(base, team.stats, official, tweaks.weights);
+    return {
+      teamId: team.teamId,
+      name: team.name,
+      official: base,
+      simulated,
+      delta: simulated - base,
+      officialRank: team.officialStanding,
+      simulatedRank: 0,
+      rankDelta: null,
+      statDeltas: statDeltas(team.stats, official, tweaks.weights),
+    };
+  });
+  const ranks = rankBy(rows.map((r) => ({ teamId: r.teamId, value: r.simulated })));
+  for (const row of rows) {
+    row.simulatedRank = ranks.get(row.teamId) ?? rows.length;
+    row.rankDelta =
+      row.officialRank != null ? row.officialRank - row.simulatedRank : null;
+  }
+  return {
+    mode: "season_points",
+    teams: rows.sort((a, b) => a.simulatedRank - b.simulatedRank),
+    flips: [],
+  };
+}
+
+function hockeyRoto(
+  teams: BaseballTeamCounts[],
+  cats: HockeyCategoryDef[],
+): Map<number, number> {
+  const n = Math.max(teams.length, 1);
+  const roto = new Map<number, number>();
+  for (const team of teams) roto.set(team.teamId, 0);
+  for (const cat of cats) {
+    const values = teams.map((t) => ({
+      teamId: t.teamId,
+      value: t.stats[cat.id],
+    }));
+    const scored = values
+      .filter((v): v is { teamId: number; value: number } => v.value != null)
+      .sort((a, b) =>
+        cat.higherIsBetter ? b.value - a.value : a.value - b.value,
+      );
+    let i = 0;
+    while (i < scored.length) {
+      let j = i;
+      while (j < scored.length && scored[j]!.value === scored[i]!.value) j += 1;
+      const pts = (n - i + n - j + 1) / 2;
+      for (let k = i; k < j; k += 1) {
+        const id = scored[k]!.teamId;
+        roto.set(id, (roto.get(id) ?? 0) + pts);
+      }
+      i = j;
+    }
+  }
+  return roto;
+}
+
+function simulateHockeyCats(
+  model: ScoringSandboxModel,
+  tweaks: SandboxTweaks,
+): BaseballSimResult {
+  const hk = model.hockey!;
+  const enabled = hk.categories.filter((cat) => tweaks.enabled[cat.id] !== false);
+  const invert = new Set(hk.invertKeys);
+  const flips: BaseballCatFlip[] = [];
+  const record = new Map<number, { w: number; l: number; t: number }>();
+  for (const team of hk.teams) {
+    record.set(team.teamId, { w: 0, l: 0, t: 0 });
+  }
+
+  for (const period of hk.periods) {
+    let homeW = 0;
+    let homeL = 0;
+    let homeT = 0;
+    for (const cat of hk.categories) {
+      const home = period.homeStats[cat.id];
+      const away = period.awayStats[cat.id];
+      if (home == null || away == null) continue;
+      const invertCat = invert.has(cat.id) || !cat.higherIsBetter;
+      const official = compareCategory(home, away, invertCat);
+      const on = tweaks.enabled[cat.id] !== false;
+      const sim = on ? official : "T";
+      if (on) {
+        if (sim === "W") homeW += 1;
+        else if (sim === "L") homeL += 1;
+        else homeT += 1;
+      }
+      if (official !== sim) {
+        flips.push({
+          week: period.week,
+          homeId: period.homeId,
+          awayId: period.awayId,
+          key: cat.id,
+          official,
+          simulated: sim,
+        });
+      }
+    }
+    const homeRec = record.get(period.homeId);
+    const awayRec = record.get(period.awayId);
+    if (homeRec) {
+      homeRec.w += homeW;
+      homeRec.l += homeL;
+      homeRec.t += homeT;
+    }
+    if (awayRec) {
+      awayRec.w += homeL;
+      awayRec.l += homeW;
+      awayRec.t += homeT;
+    }
+  }
+
+  const rotoOfficial = hockeyRoto(hk.teams, hk.categories);
+  const rotoSim = hockeyRoto(hk.teams, enabled);
+  const rows: BaseballSimTeam[] = hk.teams.map((team) => {
+    const rec = record.get(team.teamId) ?? { w: 0, l: 0, t: 0 };
+    const officialRoto = rotoOfficial.get(team.teamId) ?? 0;
+    const simRoto = rotoSim.get(team.teamId) ?? 0;
+    return {
+      teamId: team.teamId,
+      name: team.name,
+      official: officialRoto,
+      simulated: simRoto,
+      delta: simRoto - officialRoto,
+      officialRank: team.officialStanding,
+      simulatedRank: 0,
+      rankDelta: null,
+      statDeltas: {},
+      catWins: rec.w,
+      catLosses: rec.l,
+      catTies: rec.t,
+      rotoOfficial: officialRoto,
+      rotoSimulated: simRoto,
+    };
+  });
+  const ranks = rankBy(rows.map((r) => ({ teamId: r.teamId, value: r.simulated })));
+  for (const row of rows) {
+    row.simulatedRank = ranks.get(row.teamId) ?? rows.length;
+    row.rankDelta =
+      row.officialRank != null ? row.officialRank - row.simulatedRank : null;
+  }
   return {
     mode: "category",
     teams: rows.sort((a, b) => a.simulatedRank - b.simulatedRank),

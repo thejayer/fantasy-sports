@@ -40,6 +40,22 @@ export type SeasonStats = {
   GS?: number;
   /** Synthetic OWGR rank on golf roster rows (roadmap 6.4b). */
   OWGR?: number;
+  /** Hockey counting stats from espn-api ``Total YYYY`` / STATS_MAP. */
+  G?: number;
+  A?: number;
+  PPP?: number;
+  PPG?: number;
+  PPA?: number;
+  SOG?: number;
+  HIT?: number;
+  BLK?: number;
+  PIM?: number;
+  SO?: number;
+  GA?: number;
+  SA?: number;
+  GAA?: number;
+  "SV%"?: number;
+  "+/-"?: number;
 };
 
 export type Player = {

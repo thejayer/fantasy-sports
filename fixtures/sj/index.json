@@ -44,6 +44,17 @@
       "sport": "golf",
       "synced_at": "2026-07-27T00:00:00+00:00",
       "team_count": 8
+    },
+    {
+      "espn_league_id": 1023106173,
+      "format": "redraft",
+      "league_id": "hockey-main",
+      "name": "Strictly Jayers Hockey",
+      "path": "hockey-main/2025.json",
+      "season": 2025,
+      "sport": "hockey",
+      "synced_at": "2026-07-27T00:00:00+00:00",
+      "team_count": 3
     }
   ]
 }

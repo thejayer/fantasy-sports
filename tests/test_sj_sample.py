@@ -63,7 +63,10 @@ def test_snapshot_matches_serializer_schema(registry):
     assert seeded["short_name"] == spec.short_name
 
 
-@pytest.mark.parametrize("league_id", ["football-main", "football-dynasty", "baseball-dynasty"])
+@pytest.mark.parametrize(
+    "league_id",
+    ["football-main", "football-dynasty", "baseball-dynasty", "hockey-main"],
+)
 def test_seeded_snapshot_shares_schema_with_committed_fixtures(
     registry, league_id, tmp_path: Path
 ):

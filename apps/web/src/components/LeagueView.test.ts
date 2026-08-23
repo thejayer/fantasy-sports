@@ -63,6 +63,9 @@ describe("LeagueView unification", () => {
     expect(viewSource).toMatch(/projection-free by design/);
     expect(viewSource).toMatch(/Baseball stays projection-free by design/);
     expect(viewSource).toMatch(/BaseballToolsPanel/);
+    expect(viewSource).toMatch(/HOCKEY_TABS/);
+    expect(viewSource).toMatch(/HockeyToolsPanel/);
+    expect(viewSource).toMatch(/Hockey stays projection-free by design/);
     expect(viewSource).not.toMatch(/Decision tools are football-only by design/);
     expect(viewSource).not.toMatch(/until roadmap 4\.6/);
     // Roadmap 6.4a–c: golf lane — settings, draft, lineup panel.

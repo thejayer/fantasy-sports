@@ -4,6 +4,7 @@ import { LeagueView } from "@/components/LeagueView";
 import type { MatchupsView } from "@/components/MatchupsPanel";
 import type { ToolsView } from "@/components/ToolsPanel";
 import { parseBaseballToolsView, parseTrailingWindow } from "@/lib/baseball-tools";
+import { parseHockeyToolsView } from "@/lib/hockey-tools";
 import type { ActivityView } from "@/lib/activity";
 import {
   getDraftSimSnapshot,
@@ -160,6 +161,7 @@ export default async function LeagueDetailPage({ params, searchParams }: Props) 
   ) as ToolsView;
   const baseballToolsView = parseBaseballToolsView(viewParam);
   const baseballTrailingWindow = parseTrailingWindow(windowParam);
+  const hockeyToolsView = parseHockeyToolsView(viewParam);
 
   const historyArchive =
     tab === "history" ? await getLeagueHistoryArchive(leagueId) : null;
@@ -274,7 +276,9 @@ export default async function LeagueDetailPage({ params, searchParams }: Props) 
   }
 
   const boxPair =
-    (league.sport === "football" || league.sport === "baseball") &&
+    (league.sport === "football" ||
+      league.sport === "baseball" ||
+      league.sport === "hockey") &&
     tab === "matchups"
       ? parseBoxPair(boxParam)
       : null;
@@ -386,6 +390,7 @@ export default async function LeagueDetailPage({ params, searchParams }: Props) 
       toolsView={toolsView}
       baseballToolsView={baseballToolsView}
       baseballTrailingWindow={baseballTrailingWindow}
+      hockeyToolsView={hockeyToolsView}
       proSchedule={proSchedule}
       toolsTeamA={a != null && !Number.isNaN(a) ? a : undefined}
       toolsTeamB={b != null && !Number.isNaN(b) ? b : undefined}

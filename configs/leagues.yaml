@@ -36,6 +36,19 @@ leagues:
     current_season: 2026
     espn_url: https://fantasy.espn.com/football/league?leagueId=94266
 
+  # ESPN hockey — last completed season is 2024-25 (hub 2025). Projection-free.
+  # Do not add 2026 until the league is reactivated on ESPN.
+  - id: hockey-main
+    name: Strictly Jayers Hockey
+    short_name: Hockey Main
+    sport: hockey
+    format: redraft
+    platform: espn
+    espn_league_id: 1023106173
+    seasons: [2025]
+    current_season: 2025
+    espn_url: https://fantasy.espn.com/hockey/league?leagueId=1023106173
+
   # Hub-native golf (roadmap Phase 6) — not ESPN. Seed/fixtures via `sg` / regenerate.
   - id: golf-main
     name: Strictly Jayers Golf
