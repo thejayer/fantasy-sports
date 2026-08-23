@@ -29,7 +29,18 @@
           "points": 22.1,
           "projected_points": 19.9,
           "injury_status": "ACTIVE",
-          "game_played": 100
+          "game_played": 100,
+          "stats": {
+            "PTD": 2,
+            "PY": 238,
+            "INT": 1,
+            "RY": 8,
+            "RTD": 0,
+            "REC": 0,
+            "REY": 0,
+            "RETD": 0,
+            "FUML": 1
+          }
         },
         {
           "id": 202600102,
@@ -42,7 +53,18 @@
           "points": 18.4,
           "projected_points": 16.6,
           "injury_status": "ACTIVE",
-          "game_played": 100
+          "game_played": 100,
+          "stats": {
+            "PTD": 0,
+            "PY": 0,
+            "INT": 0,
+            "RY": 86,
+            "RTD": 1,
+            "REC": 3,
+            "REY": 30,
+            "RETD": 0,
+            "FUML": 0
+          }
         },
         {
           "id": 202600103,
@@ -55,7 +77,18 @@
           "points": 8.2,
           "projected_points": 7.4,
           "injury_status": "ACTIVE",
-          "game_played": 100
+          "game_played": 100,
+          "stats": {
+            "PTD": 0,
+            "PY": 0,
+            "INT": 0,
+            "RY": 56,
+            "RTD": 0,
+            "REC": 4,
+            "REY": 44,
+            "RETD": 0,
+            "FUML": 0
+          }
         },
         {
           "id": 202600104,
@@ -68,7 +101,18 @@
           "points": 14.5,
           "projected_points": 13.1,
           "injury_status": "ACTIVE",
-          "game_played": 100
+          "game_played": 100,
+          "stats": {
+            "PTD": 0,
+            "PY": 0,
+            "INT": 0,
+            "RY": 6,
+            "RTD": 0,
+            "REC": 10,
+            "REY": 83,
+            "RETD": 0,
+            "FUML": 0
+          }
         },
         {
           "id": 202600105,
@@ -81,7 +125,18 @@
           "points": 21.0,
           "projected_points": 18.9,
           "injury_status": "ACTIVE",
-          "game_played": 100
+          "game_played": 100,
+          "stats": {
+            "PTD": 0,
+            "PY": 0,
+            "INT": 0,
+            "RY": 7,
+            "RTD": 0,
+            "REC": 6,
+            "REY": 110,
+            "RETD": 1,
+            "FUML": 0
+          }
         },
         {
           "id": 202600107,
@@ -94,7 +149,18 @@
           "points": 16.7,
           "projected_points": 15.0,
           "injury_status": "ACTIVE",
-          "game_played": 100
+          "game_played": 100,
+          "stats": {
+            "PTD": 0,
+            "PY": 0,
+            "INT": 0,
+            "RY": 0,
+            "RTD": 0,
+            "REC": 4,
+            "REY": 94,
+            "RETD": 1,
+            "FUML": 0
+          }
         },
         {
           "id": 202600108,
@@ -107,7 +173,18 @@
           "points": 27.0,
           "projected_points": 24.3,
           "injury_status": "ACTIVE",
-          "game_played": 100
+          "game_played": 100,
+          "stats": {
+            "PTD": 0,
+            "PY": 0,
+            "INT": 0,
+            "RY": 118,
+            "RTD": 2,
+            "REC": 3,
+            "REY": 27,
+            "RETD": 1,
+            "FUML": 0
+          }
         },
         {
           "id": 202600106,
@@ -120,7 +197,18 @@
           "points": 3.1,
           "projected_points": 2.8,
           "injury_status": "ACTIVE",
-          "game_played": 100
+          "game_played": 100,
+          "stats": {
+            "PTD": 0,
+            "PY": 0,
+            "INT": 0,
+            "RY": 8,
+            "RTD": 0,
+            "REC": 2,
+            "REY": 39,
+            "RETD": 0,
+            "FUML": 0
+          }
         }
       ],
       "away_lineup": [
@@ -135,7 +223,18 @@
           "points": 12.3,
           "projected_points": 11.1,
           "injury_status": "ACTIVE",
-          "game_played": 100
+          "game_played": 100,
+          "stats": {
+            "PTD": 1,
+            "PY": 216,
+            "INT": 1,
+            "RY": 18,
+            "RTD": 0,
+            "REC": 0,
+            "REY": 0,
+            "RETD": 0,
+            "FUML": 0
+          }
         },
         {
           "id": 202600002,
@@ -148,7 +247,18 @@
           "points": 24.1,
           "projected_points": 21.7,
           "injury_status": "ACTIVE",
-          "game_played": 100
+          "game_played": 100,
+          "stats": {
+            "PTD": 0,
+            "PY": 0,
+            "INT": 0,
+            "RY": 105,
+            "RTD": 1,
+            "REC": 2,
+            "REY": 16,
+            "RETD": 1,
+            "FUML": 0
+          }
         },
         {
           "id": 202600003,
@@ -161,7 +271,18 @@
           "points": 3.2,
           "projected_points": 2.9,
           "injury_status": "ACTIVE",
-          "game_played": 100
+          "game_played": 100,
+          "stats": {
+            "PTD": 0,
+            "PY": 0,
+            "INT": 0,
+            "RY": 43,
+            "RTD": 0,
+            "REC": 3,
+            "REY": 27,
+            "RETD": 0,
+            "FUML": 0
+          }
         },
         {
           "id": 202600004,
@@ -174,7 +295,18 @@
           "points": 8.5,
           "projected_points": 7.7,
           "injury_status": "ACTIVE",
-          "game_played": 100
+          "game_played": 100,
+          "stats": {
+            "PTD": 0,
+            "PY": 0,
+            "INT": 0,
+            "RY": 5,
+            "RTD": 0,
+            "REC": 18,
+            "REY": 63,
+            "RETD": 0,
+            "FUML": 0
+          }
         },
         {
           "id": 202600005,
@@ -187,7 +319,18 @@
           "points": 28.0,
           "projected_points": 25.2,
           "injury_status": "ACTIVE",
-          "game_played": 100
+          "game_played": 100,
+          "stats": {
+            "PTD": 0,
+            "PY": 0,
+            "INT": 0,
+            "RY": 6,
+            "RTD": 0,
+            "REC": 14,
+            "REY": 142,
+            "RETD": 1,
+            "FUML": 0
+          }
         },
         {
           "id": 202600007,
@@ -200,7 +343,18 @@
           "points": 9.1,
           "projected_points": 8.2,
           "injury_status": "ACTIVE",
-          "game_played": 100
+          "game_played": 100,
+          "stats": {
+            "PTD": 0,
+            "PY": 0,
+            "INT": 0,
+            "RY": 8,
+            "RTD": 0,
+            "REC": 14,
+            "REY": 68,
+            "RETD": 0,
+            "FUML": 0
+          }
         },
         {
           "id": 202600008,
@@ -213,7 +367,18 @@
           "points": 18.0,
           "projected_points": 16.2,
           "injury_status": "ACTIVE",
-          "game_played": 100
+          "game_played": 100,
+          "stats": {
+            "PTD": 0,
+            "PY": 0,
+            "INT": 0,
+            "RY": 0,
+            "RTD": 0,
+            "REC": 17,
+            "REY": 92,
+            "RETD": 1,
+            "FUML": 0
+          }
         },
         {
           "id": 202600006,
@@ -226,7 +391,18 @@
           "points": 2.0,
           "projected_points": 1.8,
           "injury_status": "ACTIVE",
-          "game_played": 100
+          "game_played": 100,
+          "stats": {
+            "PTD": 0,
+            "PY": 0,
+            "INT": 0,
+            "RY": 7,
+            "RTD": 0,
+            "REC": 5,
+            "REY": 39,
+            "RETD": 0,
+            "FUML": 0
+          }
         }
       ]
     },
@@ -252,7 +428,18 @@
           "points": 28.0,
           "projected_points": 25.2,
           "injury_status": "ACTIVE",
-          "game_played": 100
+          "game_played": 100,
+          "stats": {
+            "PTD": 2,
+            "PY": 256,
+            "INT": 1,
+            "RY": 9,
+            "RTD": 1,
+            "REC": 0,
+            "REY": 0,
+            "RETD": 0,
+            "FUML": 0
+          }
         },
         {
           "id": 202600202,
@@ -265,7 +452,18 @@
           "points": 31.2,
           "projected_points": 28.1,
           "injury_status": "ACTIVE",
-          "game_played": 100
+          "game_played": 100,
+          "stats": {
+            "PTD": 0,
+            "PY": 0,
+            "INT": 0,
+            "RY": 139,
+            "RTD": 2,
+            "REC": 4,
+            "REY": 20,
+            "RETD": 1,
+            "FUML": 0
+          }
         },
         {
           "id": 202600203,
@@ -278,7 +476,18 @@
           "points": 18.4,
           "projected_points": 16.6,
           "injury_status": "ACTIVE",
-          "game_played": 100
+          "game_played": 100,
+          "stats": {
+            "PTD": 0,
+            "PY": 0,
+            "INT": 0,
+            "RY": 85,
+            "RTD": 1,
+            "REC": 2,
+            "REY": 12,
+            "RETD": 0,
+            "FUML": 0
+          }
         },
         {
           "id": 202600204,
@@ -291,7 +500,18 @@
           "points": 12.1,
           "projected_points": 10.9,
           "injury_status": "ACTIVE",
-          "game_played": 100
+          "game_played": 100,
+          "stats": {
+            "PTD": 0,
+            "PY": 0,
+            "INT": 0,
+            "RY": 7,
+            "RTD": 0,
+            "REC": 10,
+            "REY": 69,
+            "RETD": 0,
+            "FUML": 0
+          }
         },
         {
           "id": 202600205,
@@ -304,7 +524,18 @@
           "points": 15.6,
           "projected_points": 14.0,
           "injury_status": "ACTIVE",
-          "game_played": 100
+          "game_played": 100,
+          "stats": {
+            "PTD": 0,
+            "PY": 0,
+            "INT": 0,
+            "RY": 8,
+            "RTD": 0,
+            "REC": 6,
+            "REY": 84,
+            "RETD": 0,
+            "FUML": 0
+          }
         },
         {
           "id": 202600207,
@@ -317,7 +548,18 @@
           "points": 4.0,
           "projected_points": 3.6,
           "injury_status": "ACTIVE",
-          "game_played": 100
+          "game_played": 100,
+          "stats": {
+            "PTD": 0,
+            "PY": 0,
+            "INT": 0,
+            "RY": 1,
+            "RTD": 0,
+            "REC": 5,
+            "REY": 40,
+            "RETD": 0,
+            "FUML": 0
+          }
         },
         {
           "id": 202600208,
@@ -330,7 +572,18 @@
           "points": 21.0,
           "projected_points": 18.9,
           "injury_status": "ACTIVE",
-          "game_played": 100
+          "game_played": 100,
+          "stats": {
+            "PTD": 0,
+            "PY": 0,
+            "INT": 0,
+            "RY": 2,
+            "RTD": 0,
+            "REC": 6,
+            "REY": 109,
+            "RETD": 1,
+            "FUML": 0
+          }
         },
         {
           "id": 202600206,
@@ -343,7 +596,18 @@
           "points": 6.2,
           "projected_points": 5.6,
           "injury_status": "ACTIVE",
-          "game_played": 100
+          "game_played": 100,
+          "stats": {
+            "PTD": 0,
+            "PY": 0,
+            "INT": 0,
+            "RY": 0,
+            "RTD": 0,
+            "REC": 2,
+            "REY": 47,
+            "RETD": 0,
+            "FUML": 0
+          }
         }
       ],
       "away_lineup": [
@@ -358,7 +622,18 @@
           "points": 8.5,
           "projected_points": 7.7,
           "injury_status": "ACTIVE",
-          "game_played": 100
+          "game_played": 100,
+          "stats": {
+            "PTD": 1,
+            "PY": 248,
+            "INT": 1,
+            "RY": 10,
+            "RTD": 0,
+            "REC": 0,
+            "REY": 0,
+            "RETD": 0,
+            "FUML": 0
+          }
         },
         {
           "id": 202600302,
@@ -371,7 +646,18 @@
           "points": 11.2,
           "projected_points": 10.1,
           "injury_status": "ACTIVE",
-          "game_played": 100
+          "game_played": 100,
+          "stats": {
+            "PTD": 0,
+            "PY": 0,
+            "INT": 0,
+            "RY": 77,
+            "RTD": 1,
+            "REC": 2,
+            "REY": 14,
+            "RETD": 0,
+            "FUML": 0
+          }
         },
         {
           "id": 202600303,
@@ -384,7 +670,18 @@
           "points": 19.0,
           "projected_points": 17.1,
           "injury_status": "ACTIVE",
-          "game_played": 100
+          "game_played": 100,
+          "stats": {
+            "PTD": 0,
+            "PY": 0,
+            "INT": 0,
+            "RY": 102,
+            "RTD": 1,
+            "REC": 3,
+            "REY": 24,
+            "RETD": 0,
+            "FUML": 0
+          }
         },
         {
           "id": 202600304,
@@ -397,7 +694,18 @@
           "points": 14.1,
           "projected_points": 12.7,
           "injury_status": "ACTIVE",
-          "game_played": 100
+          "game_played": 100,
+          "stats": {
+            "PTD": 0,
+            "PY": 0,
+            "INT": 0,
+            "RY": 8,
+            "RTD": 0,
+            "REC": 10,
+            "REY": 86,
+            "RETD": 0,
+            "FUML": 0
+          }
         },
         {
           "id": 202600305,
@@ -410,7 +718,18 @@
           "points": 12.4,
           "projected_points": 11.2,
           "injury_status": "ACTIVE",
-          "game_played": 100
+          "game_played": 100,
+          "stats": {
+            "PTD": 0,
+            "PY": 0,
+            "INT": 0,
+            "RY": 0,
+            "RTD": 0,
+            "REC": 6,
+            "REY": 80,
+            "RETD": 0,
+            "FUML": 0
+          }
         },
         {
           "id": 202600307,
@@ -423,7 +742,18 @@
           "points": 5.5,
           "projected_points": 5.0,
           "injury_status": "ACTIVE",
-          "game_played": 100
+          "game_played": 100,
+          "stats": {
+            "PTD": 0,
+            "PY": 0,
+            "INT": 0,
+            "RY": 2,
+            "RTD": 0,
+            "REC": 6,
+            "REY": 42,
+            "RETD": 0,
+            "FUML": 0
+          }
         },
         {
           "id": 202600308,
@@ -436,7 +766,18 @@
           "points": 3.0,
           "projected_points": 2.7,
           "injury_status": "ACTIVE",
-          "game_played": 100
+          "game_played": 100,
+          "stats": {
+            "PTD": 0,
+            "PY": 0,
+            "INT": 0,
+            "RY": 3,
+            "RTD": 0,
+            "REC": 4,
+            "REY": 33,
+            "RETD": 0,
+            "FUML": 0
+          }
         },
         {
           "id": 202600306,
@@ -449,7 +790,18 @@
           "points": 0.0,
           "projected_points": 0.0,
           "injury_status": "ACTIVE",
-          "game_played": 100
+          "game_played": 100,
+          "stats": {
+            "PTD": 0,
+            "PY": 0,
+            "INT": 0,
+            "RY": 1,
+            "RTD": 0,
+            "REC": 2,
+            "REY": 32,
+            "RETD": 0,
+            "FUML": 0
+          }
         }
       ]
     }

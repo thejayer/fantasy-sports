@@ -19,6 +19,7 @@ import {
   isSeasonPointsScoring,
   scoringTypeLabel,
 } from "@/lib/scoring-type";
+import { ScoringSandboxPanel } from "@/components/ScoringSandboxPanel";
 import { SettingsPanel } from "@/components/SettingsPanel";
 import { BaseballToolsPanel } from "@/components/BaseballToolsPanel";
 import { ToolsPanel, type ToolsView } from "@/components/ToolsPanel";
@@ -56,6 +57,7 @@ import {
 } from "@/lib/projection-join";
 import { StatusLegend } from "@/components/StatusLegend";
 import type { GolfActingScope } from "@/lib/hub-members";
+import type { ScoringSandboxModel } from "@/lib/scoring-sandbox";
 
 function RoleSwitcher({
   leagueId,
@@ -281,6 +283,7 @@ const FOOTBALL_TABS = [
   "projections",
   "tools",
   "settings",
+  "sandbox",
 ] as const;
 
 const BASEBALL_TABS = [
@@ -296,6 +299,7 @@ const BASEBALL_TABS = [
   "projections",
   "tools",
   "settings",
+  "sandbox",
 ] as const;
 
 /** Golf lane (roadmap 6.4a–e + 6.5 + live auction). */
@@ -303,6 +307,7 @@ const GOLF_TABS = [
   "standings",
   "teams",
   "settings",
+  "sandbox",
   "schedule",
   "lineup",
   "scoreboard",
@@ -348,6 +353,7 @@ export function LeagueView({
   boxPair = null,
   weekBoxScore = null,
   viewerTeamId,
+  scoringSandbox = null,
 }: {
   league: LeagueSnapshot;
   seasons: number[];
@@ -399,6 +405,8 @@ export function LeagueView({
   weekBoxScore?: WeekBoxScoreSnapshot | null;
   /** Signed-in member's franchise in this league (roadmap 7.1). */
   viewerTeamId?: number;
+  /** Compact LM scoring sandbox payload (roadmap 8.4). */
+  scoringSandbox?: ScoringSandboxModel | null;
 }) {
   const leagueId = league.league_id;
   const isBaseball = league.sport === "baseball";
@@ -603,6 +611,10 @@ export function LeagueView({
         ) : (
           <SettingsPanel league={league} />
         )
+      ) : null}
+
+      {active === "sandbox" && scoringSandbox ? (
+        <ScoringSandboxPanel model={scoringSandbox} />
       ) : null}
 
       {active === "schedule" && isGolf ? (

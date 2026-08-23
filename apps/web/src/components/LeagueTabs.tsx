@@ -41,6 +41,7 @@ const LABELS: Record<string, string> = {
   projections: "Projections",
   tools: "Tools",
   settings: "Settings",
+  sandbox: "Scoring lab",
   schedule: "Schedule",
   lineup: "Lineup",
   scoreboard: "Scoreboard",

@@ -244,6 +244,11 @@ export type BoxScorePlayer = {
   projected_points?: number | null;
   injury_status?: string | null;
   game_played?: number | null;
+  /**
+   * Named counting stats for the LM scoring sandbox (roadmap 8.4).
+   * Never display these as the score — ``points`` stays ESPN-applied.
+   */
+  stats?: Record<string, number | null>;
 };
 
 /** One category cell on a baseball H2H category box (roadmap 8.2). */

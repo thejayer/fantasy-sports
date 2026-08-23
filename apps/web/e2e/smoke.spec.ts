@@ -507,6 +507,29 @@ test.describe("hub smoke", () => {
     await expect(page.getByText(/Slots/i).first()).toBeVisible();
   });
 
+  test("football scoring lab flips a week 14 matchup when PPR turns on (roadmap 8.4)", async ({
+    page,
+  }) => {
+    await page.goto("/leagues/football-main?tab=sandbox&week=14");
+    await expect(page.getByText(/Scoring lab/i).first()).toBeVisible();
+    await expect(page.getByRole("heading", { name: /Team totals/i })).toBeVisible();
+    await page.getByRole("button", { name: /week 14/i }).click();
+    const rec = page.getByLabel("Receptions (PPR) value");
+    await expect(rec).toBeVisible();
+    const official = await rec.inputValue();
+    await rec.fill(String(Number(official) + 1));
+    await expect(page.getByText(/W → L|L → W/)).toBeVisible();
+  });
+
+  test("baseball scoring lab reweights HR (roadmap 8.4)", async ({ page }) => {
+    await page.goto("/leagues/baseball-dynasty?tab=sandbox");
+    await expect(page.getByText(/Season Points/i).first()).toBeVisible();
+    const hr = page.getByLabel("HR value");
+    await expect(hr).toBeVisible();
+    await hr.fill("10");
+    await expect(page.locator("td.is-delta, .is-delta").first()).toBeVisible();
+  });
+
   test("secondary tabs live behind the More disclosure (roadmap 7.5)", async ({
     page,
   }) => {

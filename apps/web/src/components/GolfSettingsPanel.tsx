@@ -1,3 +1,4 @@
+import Link from "next/link";
 import type { GolfSettings } from "@/lib/golf";
 import { DEFAULT_GOLF_SETTINGS, parseGolfSettings } from "@/lib/golf";
 import type { LeagueSnapshot } from "@/lib/data";
@@ -60,7 +61,13 @@ export function GolfSettingsPanel({ league }: { league: LeagueSnapshot }) {
       <p className="lede" style={{ marginTop: 0 }}>
         PGA Tour counting model. Offline snake or auction draft (optional
         keepers), weekly lineups with tee-time locks, EOD scoreboard, and
-        standings — no live tour feed.
+        standings — no live tour feed.{" "}
+        <Link
+          href={`/leagues/${league.league_id}?season=${league.season}&tab=sandbox`}
+        >
+          Scoring lab
+        </Link>{" "}
+        clones these counting knobs without writing the league.
       </p>
       <dl className="settings-grid">
         {rows.map(([label, value]) => (

@@ -2,16 +2,18 @@
 
 from __future__ import annotations
 
+import json
 from types import SimpleNamespace
 
 import pytest
 
 from sj.serialize import (
     build_week_box_scores_document,
+    extract_box_player_stats,
     serialize_box_player,
 )
 from sj.snapshot_layout import MANIFEST_NAME, split_snapshot, week_box_score_rel
-from sj.store import FileStore
+from sj.store import FIXTURES_DIR, FileStore
 from sj.sync import (
     BOX_SCORE_MIN_SEASON,
     fetch_box_scores,
@@ -32,6 +34,7 @@ def _box_player(**overrides):
         "projected_points": 15.2,
         "injuryStatus": "ACTIVE",
         "game_played": 100,
+        "stats": {"RY": 84.0, "REC": 3.0, "REY": 22.0},
     }
     base.update(overrides)
     return SimpleNamespace(**base)
@@ -54,12 +57,22 @@ def _box_score(**overrides):
     return SimpleNamespace(**base)
 
 
+def test_extract_box_player_stats_maps_espn_ids():
+    player = SimpleNamespace(points_breakdown={3: 2, 43: 6, 4: 240})
+    stats = extract_box_player_stats(player)
+    assert stats["PTD"] == pytest.approx(2)
+    assert stats["REC"] == pytest.approx(6)
+    assert stats["PY"] == pytest.approx(240)
+
+
 def test_serialize_box_player_uses_league_points():
     row = serialize_box_player(_box_player())
     assert row["id"] == 4242
     assert row["points"] == pytest.approx(18.4)
     assert row["projected_points"] == pytest.approx(15.2)
     assert row["slot"] == "RB"
+    assert row["stats"]["RY"] == pytest.approx(84.0)
+    assert row["stats"]["REC"] == pytest.approx(3.0)
     assert "breakdown" not in row
 
 
@@ -223,3 +236,21 @@ def test_sync_football_box_scores_skips_baseball(tmp_path):
     )
     assert written == 0
     assert not (tmp_path / "baseball-main").exists()
+
+
+def test_football_main_week_fixtures_carry_named_stats():
+    """Roadmap 8.4: committed weeks 13/14 include starter stat lines."""
+    for week in (13, 14):
+        path = FIXTURES_DIR / "football-main" / "2026" / "weeks" / f"{week}.json"
+        doc = json.loads(path.read_text(encoding="utf-8"))
+        starters = [
+            p
+            for m in doc["matchups"]
+            for p in (m.get("home_lineup") or []) + (m.get("away_lineup") or [])
+            if (p.get("slot") or "").upper() not in {"BE", "BN", "BENCH"}
+        ]
+        assert starters
+        assert all(p.get("stats") for p in starters)
+        recs = sum(float((p.get("stats") or {}).get("REC") or 0) for p in starters)
+        if week == 14:
+            assert recs > 20

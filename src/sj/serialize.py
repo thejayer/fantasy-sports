@@ -145,13 +145,105 @@ def _player_role(position: str | None, slot: str | None) -> str:
     return "batter"
 
 
+# ESPN football scoring-item ids → hub abbrs (roadmap 8.4 sandbox).
+# Names follow the same STATS_MAP abbreviations the settings tab already shows.
+_FOOTBALL_STAT_ABBR: dict[int, str] = {
+    3: "PTD",
+    4: "PY",
+    19: "INT",
+    20: "INT",
+    23: "RY",
+    24: "RTD",
+    25: "RY",
+    41: "REY",
+    42: "RETD",
+    43: "REC",
+    53: "FUM",
+    72: "FUML",
+}
+
+_FOOTBALL_STAT_NAME_ABBR: dict[str, str] = {
+    "PASSINGTOUCHDOWNS": "PTD",
+    "PASSINGTDS": "PTD",
+    "PTD": "PTD",
+    "PASSINGYARDS": "PY",
+    "PY": "PY",
+    "PASSINGINTS": "INT",
+    "PASSINGINTERCEPTIONS": "INT",
+    "INT": "INT",
+    "RUSHINGTOUCHDOWNS": "RTD",
+    "RUSHINGTDS": "RTD",
+    "RTD": "RTD",
+    "RUSHINGYARDS": "RY",
+    "RY": "RY",
+    "RECEIVINGYARDS": "REY",
+    "REY": "REY",
+    "RECEIVINGTOUCHDOWNS": "RETD",
+    "RECEIVINGTDS": "RETD",
+    "RETD": "RETD",
+    "RECEIVINGRECEPTIONS": "REC",
+    "RECEPTIONS": "REC",
+    "REC": "REC",
+    "FUMBLES": "FUM",
+    "FUM": "FUM",
+    "LOSTFUMBLES": "FUML",
+    "FUMBLESLOST": "FUML",
+    "FUML": "FUML",
+}
+
+
+def extract_box_player_stats(player: Any) -> dict[str, float]:
+    """Named counting stats for LM scoring sandbox (roadmap 8.4).
+
+    Display score stays ESPN ``points``. This side map is only for rescoring
+    from cloned weights — never a substitute for league-applied totals.
+    """
+    raw = (
+        getattr(player, "stats", None)
+        or getattr(player, "stat_line", None)
+        or getattr(player, "box_stats", None)
+        or getattr(player, "points_breakdown", None)
+        or getattr(player, "breakdown", None)
+    )
+    if isinstance(raw, dict) and raw:
+        nested = raw.get("breakdown") or raw.get("stats") or raw.get("appliedStats")
+        if isinstance(nested, dict) and nested:
+            raw = nested
+        out = _named_stat_map(raw)
+        if out:
+            return out
+    return {}
+
+
+def _named_stat_map(raw: dict[Any, Any]) -> dict[str, float]:
+    out: dict[str, float] = {}
+    for key, value in raw.items():
+        num = _num(value)
+        if num is None:
+            continue
+        abbr: str | None = None
+        if isinstance(key, int) or (isinstance(key, str) and key.isdigit()):
+            abbr = _FOOTBALL_STAT_ABBR.get(int(key))
+        if abbr is None:
+            token = str(key).replace(" ", "").replace("_", "").upper()
+            abbr = _FOOTBALL_STAT_NAME_ABBR.get(token) or (
+                str(key).upper() if isinstance(key, str) and key.isalpha() else None
+            )
+        if not abbr:
+            continue
+        out[abbr] = float(num)
+    return out
+
+
 def serialize_box_player(player: Any) -> dict[str, Any]:
     """Serialize one espn-api ``BoxPlayer`` (league-applied fantasy points).
 
     Roadmap 8.1: persist ESPN ``appliedTotal`` as ``points`` — never treat raw
     yards/TDs as the primary score column (Sleeper lesson / golf ``sg.score``).
+    Roadmap 8.4: optional ``stats`` (named counts) so the hub can rescore
+    locally without calling ESPN.
     """
-    return {
+    payload: dict[str, Any] = {
         "id": _player_id(player),
         "name": getattr(player, "name", None),
         "position": getattr(player, "position", None),
@@ -167,6 +259,10 @@ def serialize_box_player(player: Any) -> dict[str, Any]:
         or getattr(player, "injury_status", None),
         "game_played": _num(getattr(player, "game_played", None)),
     }
+    stats = extract_box_player_stats(player)
+    if stats:
+        payload["stats"] = stats
+    return payload
 
 
 def serialize_box_score(box: Any, *, week: int) -> dict[str, Any]:

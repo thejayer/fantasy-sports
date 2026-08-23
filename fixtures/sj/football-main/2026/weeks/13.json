@@ -29,7 +29,18 @@
           "points": 18.7,
           "projected_points": 16.2,
           "injury_status": "ACTIVE",
-          "game_played": 100
+          "game_played": 100,
+          "stats": {
+            "PTD": 1,
+            "PY": 222,
+            "INT": 1,
+            "RY": 18,
+            "RTD": 0,
+            "REC": 0,
+            "REY": 0,
+            "RETD": 0,
+            "FUML": 0
+          }
         },
         {
           "id": 202600002,
@@ -42,7 +53,18 @@
           "points": 11.4,
           "projected_points": 14.0,
           "injury_status": "ACTIVE",
-          "game_played": 100
+          "game_played": 100,
+          "stats": {
+            "PTD": 0,
+            "PY": 0,
+            "INT": 0,
+            "RY": 67,
+            "RTD": 1,
+            "REC": 2,
+            "REY": 16,
+            "RETD": 0,
+            "FUML": 0
+          }
         }
       ],
       "away_lineup": [
@@ -57,7 +79,18 @@
           "points": 28.5,
           "projected_points": 22.0,
           "injury_status": "ACTIVE",
-          "game_played": 100
+          "game_played": 100,
+          "stats": {
+            "PTD": 2,
+            "PY": 268,
+            "INT": 1,
+            "RY": 10,
+            "RTD": 1,
+            "REC": 0,
+            "REY": 0,
+            "RETD": 0,
+            "FUML": 0
+          }
         }
       ]
     }

@@ -44,12 +44,21 @@ projections only with a dedicated MLB modeling plan.
 not `ffa`. Package: `src/sg` (snake **or** offline auction + keepers) plus hub
 live nomination room (`auction_room.json`, polled). Fixture `golf-main` stays
 snake. Create UI can run offline auction or **Live nomination room** (empty
-draft → Auction tab). Hub surfaces: Standings, Teams, Settings, Schedule
+draft → Auction tab). Hub surfaces: Standings, Teams, Settings, Scoring lab, Schedule
 (with start-usage board), Lineup, Scoreboard (Final / Through + projected),
 Draft, **Auction**, History, plus golfer detail pages from roster links.
 Scoring stays offline — no live tour scrapes. Tee locks fail closed (UTC).
 Missed-deadline auto-pick and per-segment start caps are settings knobs.
 Room is file-backed + HTTP polling (no websockets/Redis).
+
+### Scoring lab (roadmap 8.4)
+
+`?tab=sandbox` on every sport clones the league's official scoring items
+(football/baseball weights, golf keep-N / multipliers) and rescores in the
+browser. Football uses stored week box `stats` and shows matchup W/L flips;
+baseball Season Points reweights roster counting stats (H2H cats show rank
+flips, not fake points); golf re-keeps scoreboard slot points. Nothing writes
+ESPN or the live settings file — optional `sessionStorage` draft only.
 
 ## Production (Cloud Run) — preferred
 
