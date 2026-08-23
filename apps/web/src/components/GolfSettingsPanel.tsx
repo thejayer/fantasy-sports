@@ -68,6 +68,7 @@ export function GolfSettingsPanel({ league }: { league: LeagueSnapshot }) {
           Scoring lab
         </Link>{" "}
         clones these counting knobs without writing the league.
+      </p>
       <dl className="settings-grid">
         {rows.map(([label, value]) => (
           <div key={label} className="settings-row">

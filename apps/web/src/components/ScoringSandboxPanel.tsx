@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 
 import { EmptyState } from "@/components/EmptyState";
 import {
@@ -101,25 +101,24 @@ export function ScoringSandboxPanel({ model }: { model: ScoringSandboxModel }) {
   );
   const [saved, setSaved] = useState<"idle" | "saved" | "restored">("idle");
 
-  useEffect(() => {
+  function restoreDraft() {
     try {
       const raw = sessionStorage.getItem(
         sandboxStorageKey(model.leagueId, model.season),
       );
       if (!raw) return;
       const parsed = JSON.parse(raw) as SandboxTweaks;
-      if (parsed?.weights) {
-        setTweaks({
-          ...defaultTweaks(model),
-          ...parsed,
-          golf: { ...defaultTweaks(model).golf, ...parsed.golf },
-        });
-        setSaved("restored");
-      }
+      if (!parsed?.weights) return;
+      setTweaks({
+        ...defaultTweaks(model),
+        ...parsed,
+        golf: { ...defaultTweaks(model).golf, ...parsed.golf },
+      });
+      setSaved("restored");
     } catch {
       /* ignore bad drafts */
     }
-  }, [model]);
+  }
 
   const football = useMemo(
     () =>
@@ -175,6 +174,13 @@ export function ScoringSandboxPanel({ model }: { model: ScoringSandboxModel }) {
               }}
             >
               Save this tab
+            </button>
+            <button
+              type="button"
+              className="button secondary"
+              onClick={restoreDraft}
+            >
+              Restore saved
             </button>
           </div>
         </div>

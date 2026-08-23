@@ -71,6 +71,7 @@ export type FootballTeamWeek = {
   officialScore: number;
   stats: Record<string, number>;
   officialOutcome: "W" | "L" | "T" | "U";
+  isHome: boolean;
 };
 
 export type FootballWeekSlice = {
@@ -688,6 +689,7 @@ function addFootballSide(
     officialScore,
     stats,
     officialOutcome,
+    isHome: side === "home",
   });
 }
 
@@ -950,7 +952,7 @@ export function simulateFootball(
         row.teamId,
         (officialByTeam.get(row.teamId) ?? 0) + row.officialScore,
       );
-      if (row.opponentId == null || row.teamId >= row.opponentId) continue;
+      if (!row.isHome || row.opponentId == null) continue;
       const key = `${slice.week}:${row.teamId}:${row.opponentId}`;
       if (seen.has(key)) continue;
       seen.add(key);

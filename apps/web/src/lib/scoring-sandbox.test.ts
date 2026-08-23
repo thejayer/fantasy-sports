@@ -142,7 +142,7 @@ describe("scoring sandbox math (roadmap 8.4)", () => {
     const tighter = defaultTweaks(model);
     tighter.golf.thuFriCount = 3;
     const sim = simulateGolf(model, tighter.golf);
-    const changed = sim.teams.some((row, i) => {
+    const changed = sim.teams.some((row) => {
       const base = official.teams.find((t) => t.teamId === row.teamId);
       return base != null && Math.abs(row.simulated - base.simulated) > 0.05;
     });
