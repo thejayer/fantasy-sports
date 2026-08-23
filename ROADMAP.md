@@ -655,7 +655,8 @@ against ESPN, Yahoo, Sleeper, and FantasyPros. That audit's finding: phases 0–
 built a very good reference library. Opening it does nothing.
 
 **Status: 7.1–7.11 have landed**, including the deferred Δ playoff-odds pricing
-(7.8) and golf tee-time reminders (7.7). Phase 8 is next. Measured results are
+(7.8) and golf tee-time reminders (7.7). Phase 8.1–8.3 landed; **8.4** is the
+LM scoring sandbox. Measured results are
 in "What done looks like" at the end.
 
 **Nine of its thirteen findings are blocked on nothing** — they are ordering,
@@ -1009,6 +1010,26 @@ ours:
   `settings.golf.scoring.drop_worst_golfer` (off by default).
 
 Live in-round scoring stays out — it needs a durable PGAT feed (risk 6.6).
+
+### 8.4 League Manager scoring sandbox — LANDING
+Read-only ESPN / hub-native settings already render (7.9). This is the
+commissioner *what-if*: clone the league's scoring items, tweak weights
+(or baseball cats / golf keep-N), and see every team's totals and weekly
+W/L move — without writing ESPN or the live settings file.
+
+- **Hub:** `?tab=sandbox` (Scoring lab) on football, baseball, and golf.
+  Starts from `settings.scoring_format` / `categories` / `settings.golf`.
+  Extra box-stat keys (PPR `REC`) appear at weight 0 when the snapshot
+  has the line. Optional sessionStorage draft for the tab.
+- **Football:** stored `weeks/{N}.json` starter `stats` × tweaked weights,
+  residual against ESPN `home_score` / `away_score`. Matchup table shows
+  Won → Lost. Fixtures: football-main weeks 13–14 with named stat lines.
+- **Baseball:** Season Points reweights roster `season_stats` (HR, R, …);
+  H2H cats show rank / cat-win flips, not a fake FP total. No `ffa` MLB.
+- **Golf:** re-keep scoreboard slot points (`thu_fri_count`, drop-worst,
+  multipliers) when the snapshot has events.
+- **Auth:** same hub allowlist as every league tab. Sandbox is ephemeral,
+  so any member can open it (admin-only stays on tools that write).
 
 ---
 

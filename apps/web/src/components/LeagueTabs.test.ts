@@ -19,6 +19,7 @@ const FOOTBALL = tabs(
   "projections",
   "tools",
   "settings",
+  "sandbox",
 );
 
 describe("tabLabel (roadmap 7.5)", () => {
@@ -28,6 +29,7 @@ describe("tabLabel (roadmap 7.5)", () => {
     expect(tabLabel("recap")).toBe("Recap");
     expect(tabLabel("start-sit")).toBe("Start-sit");
     expect(tabLabel("scoreboard")).toBe("Scoreboard");
+    expect(tabLabel("sandbox")).toBe("Scoring lab");
   });
 
   it("title-cases an unknown id rather than dropping it", () => {
@@ -52,6 +54,7 @@ describe("splitTabs", () => {
       "history",
       "projections",
       "settings",
+      "sandbox",
     ]);
   });
 
@@ -90,6 +93,7 @@ describe("splitTabs", () => {
       "standings",
       "teams",
       "settings",
+      "sandbox",
       "schedule",
       "lineup",
       "scoreboard",

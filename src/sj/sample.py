@@ -525,10 +525,19 @@ def _build_settings(spec: LeagueSpec, *, teams: int, games: int) -> _Stub:
         ),
         # Baseball weights come from ``_raw_scoring_settings`` → categories /
         # scoring_format in serialize_settings (STATS_MAP abbrs like HR, RBI).
+        # Football: typical ESPN items. REC is omitted (not 0) so
+        # scoringSlugFromLeague stays the PPR default; the 8.4 sandbox still
+        # exposes REC at weight 0 when box ``stats`` include receptions.
         scoring_format=(
             [
+                {"id": 4, "abbr": "PY", "label": "Passing Yards", "points": 0.04},
                 {"id": 3, "abbr": "PTD", "label": "Passing TD", "points": 4.0},
+                {"id": 20, "abbr": "INT", "label": "Interceptions", "points": -2.0},
+                {"id": 25, "abbr": "RY", "label": "Rushing Yards", "points": 0.1},
                 {"id": 24, "abbr": "RTD", "label": "Rushing TD", "points": 6.0},
+                {"id": 41, "abbr": "REY", "label": "Receiving Yards", "points": 0.1},
+                {"id": 42, "abbr": "RETD", "label": "Receiving TD", "points": 6.0},
+                {"id": 72, "abbr": "FUML", "label": "Fumbles Lost", "points": -2.0},
             ]
             if spec.sport == "football"
             else None

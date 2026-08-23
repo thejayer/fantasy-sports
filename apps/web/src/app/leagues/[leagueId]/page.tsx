@@ -18,6 +18,7 @@ import {
   getWeekBoxScore,
   getWeeklyProjectionSnapshot,
   listDraftSimSlots,
+  listWeekBoxScoreWeeks,
   type DraftSimSnapshot,
   type PlayerMapSnapshot,
   type PlayoffOddsSamples,
@@ -35,6 +36,7 @@ import {
 import { resolveGolfActingScope } from "@/lib/franchise-acl";
 import { getViewerTeamId } from "@/lib/viewer";
 import { parsePlayerTableQuery } from "@/lib/player-table";
+import { buildScoringSandboxModel } from "@/lib/scoring-sandbox";
 
 // See app/page.tsx. Already dynamic today, but declared so adding
 // generateStaticParams later cannot silently freeze snapshot data.
@@ -307,6 +309,23 @@ export default async function LeagueDetailPage({ params, searchParams }: Props) 
 
   // Only meaningful when the franchise is in this season's snapshot — a member
   // linked to a team that did not exist in 2016 must not highlight team_id 4.
+  let scoringSandbox = null;
+  if (tab === "sandbox") {
+    const weekNums = await listWeekBoxScoreWeeks(
+      league.league_id,
+      league.season,
+    );
+    const weekDocs = await Promise.all(
+      weekNums.map((n) =>
+        getWeekBoxScore(league.league_id, league.season, n),
+      ),
+    );
+    scoringSandbox = buildScoringSandboxModel(
+      league,
+      weekDocs.filter((doc): doc is WeekBoxScoreSnapshot => doc != null),
+    );
+  }
+
   const linkedTeamId = await getViewerTeamId(leagueId);
   const viewerTeamId = league.teams.some((t) => t.team_id === linkedTeamId)
     ? linkedTeamId
@@ -384,6 +403,7 @@ export default async function LeagueDetailPage({ params, searchParams }: Props) 
       boxPair={boxPair}
       weekBoxScore={weekBoxScore}
       viewerTeamId={viewerTeamId}
+      scoringSandbox={scoringSandbox}
     />
   );
 }

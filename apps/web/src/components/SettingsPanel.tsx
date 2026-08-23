@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { EmptyState } from "@/components/EmptyState";
 import type { LeagueSnapshot } from "@/lib/data";
 import { espnSettingsUrl } from "@/lib/espn-links";
@@ -70,6 +71,15 @@ export function SettingsPanel({ league }: { league: LeagueSnapshot }) {
           — commissioner tools live there, not here.
         </p>
       ) : null}
+      <p className="muted">
+        <Link
+          href={`/leagues/${league.league_id}?season=${league.season}&tab=sandbox`}
+        >
+          Open the Scoring lab
+        </Link>{" "}
+        to clone these weights and see standings or week W/L move. The hub
+        does not write ESPN.
+      </p>
     </div>
   );
 }
