@@ -151,7 +151,7 @@ describe("scoring sandbox math (roadmap 8.4)", () => {
   });
 
   it("rewights hockey H2H points from roster goals", () => {
-    const league = loadJson<LeagueSnapshot>("hockey-main/2025.json");
+    const league = loadJson<LeagueSnapshot>("hockey-main/2026.json");
     const model = buildScoringSandboxModel(league, []);
     expect(model.sport).toBe("hockey");
     expect(model.hockey?.mode).toBe("season_points");
@@ -171,7 +171,7 @@ describe("scoring sandbox math (roadmap 8.4)", () => {
   });
 
   it("shows Empty hockey model when stats and weights are missing", () => {
-    const league = loadJson<LeagueSnapshot>("hockey-main/2025.json");
+    const league = loadJson<LeagueSnapshot>("hockey-main/2026.json");
     const stripped: LeagueSnapshot = {
       ...league,
       settings: { ...league.settings, scoring_format: [], categories: [] },

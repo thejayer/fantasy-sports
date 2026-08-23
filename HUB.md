@@ -20,7 +20,7 @@ Yahoo, Sleeper, and FantasyPros), and [ROADMAP.md](ROADMAP.md) (phases 0–9).
 | `baseball-dynasty` | baseball | dynasty | ESPN `2499137` | 2024–2026 |
 | `football-main` | football | redraft | ESPN `39790` | 2015–2026 |
 | `football-dynasty` | football | dynasty | ESPN `94266` | 2018–2026 |
-| `hockey-main` | hockey | redraft | ESPN `1023106173` | 2025 |
+| `hockey-main` | hockey | redraft | ESPN `1023106173` | 2026 |
 | `golf-main` | golf | h2h | hub (no ESPN) | 2026 |
 
 Registry: [`configs/leagues.yaml`](configs/leagues.yaml)
@@ -41,8 +41,8 @@ projections only with a dedicated MLB modeling plan.
 
 ### Hockey scope
 
-**ESPN, projection-free.** `hockey-main` is ESPN `1023106173` for the 2024–25 /
-hub 2025 season. Do not add 2026 until the league is reactivated. `sj sync` /
+**ESPN, projection-free.** `hockey-main` is ESPN `1023106173` for the 2025–26 /
+hub 2026 season. ESPN years 2024 and 2025 do not exist for this id. `sj sync` /
 `sj backfill` pull that id when ESPN cookies are set. `sj sync` still skips
 `espn_league_id <= 0` so other placeholders cannot call `League(0)`.
 
