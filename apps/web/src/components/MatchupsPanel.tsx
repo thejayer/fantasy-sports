@@ -296,7 +296,7 @@ export function MatchupsPanel({
       <div className="matchups-panel">
         {league.sport === "baseball" ||
         (league.sport === "hockey" && baseballCategory) ? (
-          <CategoryBoxPanel>
+          <CategoryBoxPanel
             league={league}
             week={activeWeek}
             teamA={boxPair.a}
@@ -349,7 +349,9 @@ export function MatchupsPanel({
               periodLabel={periodLabel}
               viewerTeamId={viewerTeamId}
               showBoxLink={
-                league.sport === "football" || baseballCategory
+                league.sport === "football" ||
+                league.sport === "hockey" ||
+                baseballCategory
               }
               boxLinkLabel={
                 baseballCategory ? "Category box" : "Box score"

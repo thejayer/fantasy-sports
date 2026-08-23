@@ -39,6 +39,7 @@ function team(partial: Partial<Team>): Team {
     points_for: 40,
     points_against: 30,
     standing: 1,
+    division: "",
     schedule: [],
     scores: [],
     outcomes: [],
