@@ -42,11 +42,14 @@ def test_registry_espn_ids_and_formats():
     assert hockey.sport == "hockey"
     assert hockey.format == "redraft"
     assert hockey.platform == "espn"
-    assert hockey.espn_league_id == 0
+    assert hockey.espn_league_id == 1023106173
     assert hockey.seasons == [2025]
     assert hockey.current_season == 2025
-    assert hockey.has_live_espn_id() is False
-    assert hockey.espn_url == "https://fantasy.espn.com/hockey/league?leagueId="
+    assert hockey.has_live_espn_id() is True
+    assert hockey.espn_url == (
+        "https://fantasy.espn.com/hockey/league?leagueId=1023106173"
+    )
+    assert "pendingReactivation" not in (hockey.espn_url or "")
 
     golf = registry.by_id("golf-main")
     assert golf.sport == "golf"

@@ -195,7 +195,7 @@ def test_open_espn_league_refuses_placeholder_id(monkeypatch):
     monkeypatch.setenv("ESPN_S2", "s2")
     monkeypatch.setenv("ESPN_SWID", "{swid}")
     spec = LeagueSpec(
-        id="hockey-main",
+        id="hockey-pending",
         name="Hockey",
         short_name="Hockey",
         sport="hockey",
@@ -213,7 +213,7 @@ def test_sync_registry_skips_placeholder_espn_id(tmp_path, monkeypatch):
     path.write_text(
         """\
 leagues:
-  - id: hockey-main
+  - id: hockey-pending
     name: Hockey
     short_name: Hockey
     sport: hockey
@@ -238,6 +238,24 @@ leagues:
     assert results == []
     assert failures == []
     assert any("placeholder" in event for event in events)
+
+
+def test_sync_registry_attempts_hockey_main(tmp_path, monkeypatch):
+    called: list[tuple[str, int | None, int]] = []
+
+    def fake(spec, season, store_dir=None):
+        called.append((spec.id, spec.espn_league_id, season))
+        return SyncResult(spec.id, season, f"{spec.id}/{season}.json", 3)
+
+    monkeypatch.setattr("sj.sync.sync_league_season", fake)
+    results, failures = sync_registry(
+        league_ids=["hockey-main"],
+        store_dir=tmp_path / "store",
+        current_only=True,
+    )
+    assert failures == []
+    assert [r.league_id for r in results] == ["hockey-main"]
+    assert called == [("hockey-main", 1023106173, 2025)]
 
 
 # ---------------------------------------------------------------------------

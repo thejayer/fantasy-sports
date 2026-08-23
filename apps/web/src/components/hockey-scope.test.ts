@@ -15,8 +15,9 @@ describe("hockey scope", () => {
     expect(hub).toMatch(/Hockey scope/);
     expect(hub).toMatch(/hockey-main/);
     expect(hub).toMatch(/Projection-free by design/);
-    expect(hub).toMatch(/espn_league_id.*0|league id TBD/i);
+    expect(hub).toMatch(/1023106173/);
     expect(agents).toMatch(/hockey-main/);
+    expect(agents).toMatch(/1023106173/);
     expect(agents).toMatch(/projection-free/);
   });
 

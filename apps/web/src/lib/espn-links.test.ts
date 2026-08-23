@@ -11,7 +11,7 @@ import {
 
 const football = { sport: "football", espnLeagueId: 39790, season: 2026 };
 const baseball = { sport: "baseball", espnLeagueId: 2499137, season: 2026 };
-const hockey = { sport: "hockey", espnLeagueId: 0, season: 2025 };
+const hockey = { sport: "hockey", espnLeagueId: 1023106173, season: 2025 };
 const golf = { sport: "golf", espnLeagueId: null, season: 2026 };
 
 describe("espn-links (roadmap 7.3)", () => {
@@ -36,13 +36,11 @@ describe("espn-links (roadmap 7.3)", () => {
     expect(espnSettingsUrl(football)).toContain("/league/settings?");
   });
 
-  it("builds hockey urls only after a live ESPN id is filled", () => {
-    expect(espnLeagueUrl(hockey)).toBeNull();
-    expect(
-      espnLeagueUrl({ ...hockey, espnLeagueId: 12345 }),
-    ).toBe(
-      "https://fantasy.espn.com/hockey/league?leagueId=12345&seasonId=2025",
+  it("builds hockey urls for the live ESPN league id", () => {
+    expect(espnLeagueUrl(hockey)).toBe(
+      "https://fantasy.espn.com/hockey/league?leagueId=1023106173&seasonId=2025",
     );
+    expect(espnLeagueUrl({ ...hockey, espnLeagueId: 0 })).toBeNull();
     expect(espnPlayerUrl("hockey", 4024123)).toBe(
       "https://www.espn.com/nhl/player/_/id/4024123",
     );
