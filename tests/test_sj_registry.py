@@ -43,8 +43,8 @@ def test_registry_espn_ids_and_formats():
     assert hockey.format == "redraft"
     assert hockey.platform == "espn"
     assert hockey.espn_league_id == 1023106173
-    assert hockey.seasons == [2025]
-    assert hockey.current_season == 2025
+    assert hockey.seasons == [2026]
+    assert hockey.current_season == 2026
     assert hockey.has_live_espn_id() is True
     assert hockey.espn_url == (
         "https://fantasy.espn.com/hockey/league?leagueId=1023106173"

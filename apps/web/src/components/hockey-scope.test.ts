@@ -16,9 +16,14 @@ describe("hockey scope", () => {
     expect(hub).toMatch(/hockey-main/);
     expect(hub).toMatch(/Projection-free by design/);
     expect(hub).toMatch(/1023106173/);
+    expect(hub).toMatch(/`hockey-main` \| hockey \| redraft \| ESPN `1023106173` \| 2026/);
+    expect(hub).toMatch(/hub 2026 season/);
+    expect(hub).not.toMatch(/Do not add 2026/);
     expect(agents).toMatch(/hockey-main/);
     expect(agents).toMatch(/1023106173/);
     expect(agents).toMatch(/projection-free/);
+    expect(agents).toMatch(/2026 \/ 2025–26/);
+    expect(agents).not.toMatch(/Do not add 2026/);
   });
 
   it("keeps projection bundle load football-gated", () => {

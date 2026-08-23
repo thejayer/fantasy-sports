@@ -255,7 +255,7 @@ def test_sync_registry_attempts_hockey_main(tmp_path, monkeypatch):
     )
     assert failures == []
     assert [r.league_id for r in results] == ["hockey-main"]
-    assert called == [("hockey-main", 1023106173, 2025)]
+    assert called == [("hockey-main", 1023106173, 2026)]
 
 
 # ---------------------------------------------------------------------------
