@@ -369,10 +369,11 @@ def _named_stat_map(raw: dict[Any, Any]) -> dict[str, float]:
         if abbr is None:
             token = str(key).replace(" ", "").replace("_", "").upper()
             abbr = _FOOTBALL_STAT_NAME_ABBR.get(token)
-        if abbr is None and isinstance(key, str):
+        if abbr is None and isinstance(key, str) and (
+            key in _HOCKEY_STAT_KEYS or key.isalpha()
+        ):
             # Hockey box breakdowns are already STATS_MAP names (G, A, SV%, +/-).
-            if key in _HOCKEY_STAT_KEYS or key.isalpha():
-                abbr = key
+            abbr = key
         if not abbr:
             continue
         out[abbr] = float(num)
