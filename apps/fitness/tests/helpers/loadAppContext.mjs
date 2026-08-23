@@ -147,3 +147,13 @@ export function loadAnalyticsContext(state = {}) {
   vm.runInContext(program, sandbox, { filename: "app-context.js" });
   return sandbox;
 }
+
+// Loads utils.js + hevy-import.js so the CSV mapper can reuse getDateKey.
+export function loadHevyImportContext() {
+  const sandbox = vm.createContext({
+    console,
+  });
+  vm.runInContext(readFile("utils.js"), sandbox, { filename: "utils.js" });
+  vm.runInContext(readFile("hevy-import.js"), sandbox, { filename: "hevy-import.js" });
+  return sandbox;
+}

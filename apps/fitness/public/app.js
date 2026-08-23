@@ -65,6 +65,8 @@ const normalizeSession = (session, index = 0) => ({
   values: session.values || {},
   sets: Array.isArray(session.sets) ? session.sets : [],
   note: session.note || "",
+  source: typeof session.source === "string" ? session.source : undefined,
+  importKey: typeof session.importKey === "string" ? session.importKey : undefined,
 });
 
 const storedSessions = readStoredJson(storageKey, null);

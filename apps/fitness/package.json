@@ -10,9 +10,9 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:verify": "node scripts/verify-app.js",
-    "test:e2e": "playwright test e2e/smoke.spec.ts",
+    "test:e2e": "playwright test e2e/smoke.spec.ts e2e/hevy-import.spec.ts",
     "test:e2e:auth": "AUTH_DEV_BYPASS=0 PORT=3004 PLAYWRIGHT_BASE_URL=http://127.0.0.1:3004 playwright test e2e/auth-redirect.spec.ts",
-    "check:js": "node --check public/utils.js && node --check public/data.js && node --check public/store.js && node --check public/timers.js && node --check public/analytics.js && node --check public/render.js && node --check public/events.js && node --check public/sync.js && node --check public/app.js && node --check public/sj-chrome.js && node --check public/service-worker.js && node --check scripts/verify-app.js"
+    "check:js": "node --check public/utils.js && node --check public/hevy-import.js && node --check public/data.js && node --check public/store.js && node --check public/timers.js && node --check public/analytics.js && node --check public/render.js && node --check public/events.js && node --check public/sync.js && node --check public/app.js && node --check public/sj-chrome.js && node --check public/service-worker.js && node --check scripts/verify-app.js"
   },
   "dependencies": {
     "next": "^16.2.12",

@@ -377,6 +377,65 @@
               <button class="primary-button" type="submit">Save profile</button>
             </div>
           </form>
+
+          <section class="panel data-tools-panel">
+            <div class="panel-heading">
+              <div>
+                <p class="eyebrow">Data</p>
+                <h3>Import and export</h3>
+              </div>
+            </div>
+            <div class="data-tools">
+              <article class="persistence-card wide" id="persistenceStatus" aria-live="polite">
+                <span>Storage</span>
+                <strong>Local storage ready</strong>
+                <p>Browser backup is available on this device.</p>
+              </article>
+              <button class="ghost-button" id="exportJson" type="button">Export JSON</button>
+              <button class="ghost-button" id="exportCsv" type="button">Export CSV</button>
+              <label class="wide">
+                Import JSON
+                <textarea id="importJsonText" rows="5" placeholder="Paste a Strictly Jayers Fitness JSON export"></textarea>
+              </label>
+              <button class="primary-button" id="importJson" type="button">Import data</button>
+              <div class="import-mapper hevy-import wide">
+                <div class="hevy-import-copy">
+                  <p class="eyebrow">Hevy</p>
+                  <h4>Import Hevy workouts</h4>
+                  <p>
+                    In Hevy: Profile → Settings → Export &amp; Import Data → Export Workouts → CSV.
+                    Free export — no API key. Workouts land on this signed-in log only.
+                  </p>
+                </div>
+                <label>
+                  Choose CSV
+                  <input id="hevyCsvFile" type="file" accept=".csv,text/csv,text/plain" />
+                </label>
+                <label class="wide">
+                  Or paste Hevy CSV
+                  <textarea id="hevyCsvText" rows="5" placeholder="Paste the Hevy workout CSV export"></textarea>
+                </label>
+                <button class="primary-button" id="importHevy" type="button">Import Hevy CSV</button>
+                <div class="import-preview" id="hevyImportStatus" role="status" aria-live="polite"></div>
+              </div>
+              <div class="import-mapper wide">
+                <label>
+                  Source
+                  <select id="importSource">
+                    <option>Apple Health CSV</option>
+                    <option>Strava CSV</option>
+                    <option>Garmin CSV</option>
+                  </select>
+                </label>
+                <label class="wide">
+                  Activity import preview
+                  <textarea id="importMappingText" rows="5" placeholder="Paste a few CSV rows to preview date, type, duration, distance, and notes mapping"></textarea>
+                </label>
+                <button class="ghost-button" id="previewImportMapping" type="button">Preview mapping</button>
+                <div class="import-preview" id="importPreview" role="status" aria-live="polite"></div>
+              </div>
+            </div>
+          </section>
         </section>
 
         <section class="view" id="sports" aria-labelledby="sports-title">
@@ -836,44 +895,6 @@
             </div>
             <div class="insight-list" id="trendReadout"></div>
           </section>
-          <section class="panel data-tools-panel">
-            <div class="panel-heading">
-              <div>
-                <p class="eyebrow">Data</p>
-                <h3>Import and export</h3>
-              </div>
-            </div>
-            <div class="data-tools">
-              <article class="persistence-card wide" id="persistenceStatus" aria-live="polite">
-                <span>Storage</span>
-                <strong>Local storage ready</strong>
-                <p>Browser backup is available on this device.</p>
-              </article>
-              <button class="ghost-button" id="exportJson" type="button">Export JSON</button>
-              <button class="ghost-button" id="exportCsv" type="button">Export CSV</button>
-              <label class="wide">
-                Import JSON
-                <textarea id="importJsonText" rows="5" placeholder="Paste a Strictly Jayers Fitness JSON export"></textarea>
-              </label>
-              <button class="primary-button" id="importJson" type="button">Import data</button>
-              <div class="import-mapper wide">
-                <label>
-                  Source
-                  <select id="importSource">
-                    <option>Apple Health CSV</option>
-                    <option>Strava CSV</option>
-                    <option>Garmin CSV</option>
-                  </select>
-                </label>
-                <label class="wide">
-                  Activity import preview
-                  <textarea id="importMappingText" rows="5" placeholder="Paste a few CSV rows to preview date, type, duration, distance, and notes mapping"></textarea>
-                </label>
-                <button class="ghost-button" id="previewImportMapping" type="button">Preview mapping</button>
-                <div class="import-preview" id="importPreview" role="status" aria-live="polite"></div>
-              </div>
-            </div>
-          </section>
         </section>
       </main>
     </div>
@@ -911,6 +932,7 @@
     </footer>
     <script src="sj-chrome.js"></script>
     <script src="utils.js"></script>
+    <script src="hevy-import.js"></script>
     <script src="data.js"></script>
     <script src="store.js"></script>
     <script src="timers.js"></script>

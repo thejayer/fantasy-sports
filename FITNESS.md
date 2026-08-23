@@ -90,7 +90,7 @@ auction room): one file per member on the GCS-backed filesystem.
 - Browser cache: `athleteLog.{userKey}.*` localStorage + namespaced IndexedDB
 - Legacy anonymous `athleteLog.sessions.v1` (etc.) is migrated **once** into
   that signed-in member's store when their server profile has no training yet
-- Athlete Log JSON export/import still works from the Profile tools
+- Athlete Log JSON export/import still works from the Profile tools. Hevy workout CSV (Profile → Settings → Export & Import Data → Export Workouts) imports as lifting sessions on the signed-in member via `/api/me`; re-import is idempotent.
 
 `fitness/` lives next to hub files on the shared bucket. `sj sync` only
 writes known ESPN league paths and will not touch it.
