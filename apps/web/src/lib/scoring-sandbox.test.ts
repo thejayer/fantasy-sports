@@ -12,6 +12,7 @@ import {
   simulateBaseball,
   simulateFootball,
   simulateGolf,
+  simulateHockey,
 } from "@/lib/scoring-sandbox";
 
 const FIXTURES = path.resolve(process.cwd(), "../../fixtures/sj");
@@ -147,5 +148,40 @@ describe("scoring sandbox math (roadmap 8.4)", () => {
       return base != null && Math.abs(row.simulated - base.simulated) > 0.05;
     });
     expect(changed).toBe(true);
+  });
+
+  it("rewights hockey H2H points from roster goals", () => {
+    const league = loadJson<LeagueSnapshot>("hockey-main/2025.json");
+    const model = buildScoringSandboxModel(league, []);
+    expect(model.sport).toBe("hockey");
+    expect(model.hockey?.mode).toBe("season_points");
+    const goals = model.items.find((i) => i.key === "G");
+    expect(goals?.official).toBe(3);
+
+    const official = simulateHockey(model, defaultTweaks(model));
+    const doubled = defaultTweaks(model);
+    doubled.weights.G = 6;
+    const sim = simulateHockey(model, doubled);
+    const before = official.teams.find((t) => t.teamId === 1);
+    const after = sim.teams.find((t) => t.teamId === 1);
+    expect(before).toBeTruthy();
+    expect(after).toBeTruthy();
+    expect(after!.delta).toBeGreaterThan(0);
+    expect(after!.statDeltas.G).toBeCloseTo(after!.delta, 5);
+  });
+
+  it("shows Empty hockey model when stats and weights are missing", () => {
+    const league = loadJson<LeagueSnapshot>("hockey-main/2025.json");
+    const stripped: LeagueSnapshot = {
+      ...league,
+      settings: { ...league.settings, scoring_format: [], categories: [] },
+      teams: league.teams.map((team) => ({
+        ...team,
+        roster: team.roster.map((player) => ({ ...player, season_stats: {} })),
+      })),
+    };
+    const model = buildScoringSandboxModel(stripped, []);
+    const hasStats = model.hockey?.teams.some((t) => Object.keys(t.stats).length);
+    expect(hasStats).toBe(false);
   });
 });

@@ -14,6 +14,7 @@ def test_load_default_registry():
         "baseball-dynasty",
         "football-main",
         "football-dynasty",
+        "hockey-main",
         "golf-main",
     }
 
@@ -36,6 +37,16 @@ def test_registry_espn_ids_and_formats():
     assert dynasty.espn_league_id == 94266
     assert dynasty.format == "dynasty"
     assert dynasty.seasons[0] == 2018
+
+    hockey = registry.by_id("hockey-main")
+    assert hockey.sport == "hockey"
+    assert hockey.format == "redraft"
+    assert hockey.platform == "espn"
+    assert hockey.espn_league_id == 0
+    assert hockey.seasons == [2025]
+    assert hockey.current_season == 2025
+    assert hockey.has_live_espn_id() is False
+    assert hockey.espn_url == "https://fantasy.espn.com/hockey/league?leagueId="
 
     golf = registry.by_id("golf-main")
     assert golf.sport == "golf"

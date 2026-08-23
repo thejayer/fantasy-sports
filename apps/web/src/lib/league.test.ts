@@ -58,5 +58,6 @@ describe("league helpers", () => {
   it("builds sport · format kicker labels", () => {
     expect(sportFormatLabel("football", "redraft")).toBe("Football · Redraft");
     expect(sportFormatLabel("baseball", "dynasty")).toBe("Baseball · Dynasty");
+    expect(sportFormatLabel("hockey", "redraft")).toBe("Hockey · Redraft");
   });
 });

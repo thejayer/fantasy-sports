@@ -122,7 +122,7 @@ def test_committed_fixtures_readable_as_v1_monolith():
 @pytest.mark.parametrize(
     ("command", "needle"),
     [
-        (["regenerate-fixtures", "--fixtures-dir"], "regenerated 4"),
+        (["regenerate-fixtures", "--fixtures-dir"], "regenerated 5"),
         (["validate-fixtures", "--fixtures-dir"], "fixtures ok"),
     ],
 )

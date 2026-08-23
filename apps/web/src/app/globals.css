@@ -1348,6 +1348,10 @@ tr:last-child td {
   background: linear-gradient(120deg, #d9e4f0, #b7c9de);
 }
 
+.league-view.sport-hockey .sport-pill {
+  background: linear-gradient(120deg, #c5d4e8, #8fa8c8);
+}
+
 .season-switch {
   display: flex;
   flex-wrap: wrap;

@@ -25,6 +25,9 @@ test.describe("hub smoke", () => {
       page.getByRole("link", { name: /Strictly Jayers Baseball/ }),
     ).toBeVisible();
     await expect(
+      page.getByRole("link", { name: /Strictly Jayers Hockey/ }),
+    ).toBeVisible();
+    await expect(
       page.getByRole("link", { name: /Strictly Jayers Golf/ }),
     ).toBeVisible();
     await expect(
@@ -528,6 +531,27 @@ test.describe("hub smoke", () => {
     await expect(hr).toBeVisible();
     await hr.fill("10");
     await expect(page.locator("td.is-delta, .is-delta").first()).toBeVisible();
+  });
+
+  test("hockey league opens standings and scoring lab from fixtures", async ({
+    page,
+  }) => {
+    await page.goto("/leagues/hockey-main");
+    await expect(
+      page.getByRole("heading", { name: /Strictly Jayers Hockey/i }),
+    ).toBeVisible();
+    await expect(page.getByText(/projection-free by design/i)).toBeVisible();
+    await expect(page.getByText(/Hockey · Redraft/i)).toBeVisible();
+    await page.goto("/leagues/hockey-main?tab=sandbox");
+    await expect(page.getByText(/Scoring lab/i).first()).toBeVisible();
+    const goals = page.getByLabel("G value");
+    await expect(goals).toBeVisible();
+    await goals.fill("6");
+    await expect(page.locator("td.is-delta, .is-delta").first()).toBeVisible();
+    await page.goto("/leagues/hockey-main?tab=projections");
+    await expect(
+      page.getByText(/Hockey stays projection-free by design/i),
+    ).toBeVisible();
   });
 
   test("secondary tabs live behind the More disclosure (roadmap 7.5)", async ({

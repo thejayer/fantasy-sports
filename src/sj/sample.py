@@ -89,6 +89,21 @@ _FOOTBALL_TEAM_NAMES = (
     "Fourth Down Fiends",
 )
 
+_HOCKEY_TEAM_NAMES = (
+    "Five Hole Heroes",
+    "Crease Crashers",
+    "Biscuit Bandits",
+    "Blue Line Brigade",
+    "Slot Shot Syndicate",
+    "Power Play Pirates",
+    "Saucer Pass Squad",
+    "Hat Trick Havoc",
+    "Iron Cross Crew",
+    "Otter Box Outlaws",
+    "Celly Club",
+    "Wrister Warriors",
+)
+
 _BASEBALL_TEAM_NAMES = (
     "Diamond Dogs",
     "Bat Flip Bandits",
@@ -112,6 +127,13 @@ _NFL_TEAMS = (
     "PHI", "PIT", "SEA", "SF", "TB", "TEN", "WSH",
 )
 
+_NHL_TEAMS = (
+    "BOS", "BUF", "CGY", "CHI", "DET", "EDM", "CAR", "LA", "DAL", "MTL",
+    "NJ", "NYI", "NYR", "OTT", "PHI", "PIT", "COL", "SJ", "STL", "TB",
+    "TOR", "VAN", "WSH", "ANA", "FLA", "NSH", "WPG", "CBJ", "MIN", "VGK",
+    "SEA", "UTA",
+)
+
 _MLB_TEAMS = (
     "ARI", "ATL", "BAL", "BOS", "CHC", "CWS", "CIN", "CLE", "COL", "DET", "HOU", "KC",
     "LAA", "LAD", "MIA", "MIL", "MIN", "NYM", "NYY", "OAK", "PHI", "PIT", "SD", "SF",
@@ -127,6 +149,9 @@ _BASEBALL_PITCHER_SLOTS = ("SP", "SP", "SP", "SP", "RP", "RP", "RP")
 _FLEX_POSITIONS = ("RB", "WR", "TE")
 _FOOTBALL_BENCH_POSITIONS = ("QB", "RB", "RB", "WR", "WR", "TE", "K")
 _BASEBALL_FIELD_POSITIONS = ("C", "1B", "2B", "3B", "SS", "OF")
+_HOCKEY_SKATER_SLOTS = ("C", "C", "LW", "RW", "F", "D", "D", "D", "Util")
+_HOCKEY_GOALIE_SLOTS = ("G",)
+_HOCKEY_SKATER_POSITIONS = ("C", "LW", "RW", "F", "D")
 
 # Mean season fantasy points by position, used as the centre of a wide normal.
 _FOOTBALL_POINT_BASE = {"QB": 280.0, "RB": 170.0, "WR": 160.0, "TE": 110.0, "K": 120.0}
@@ -274,6 +299,87 @@ def _baseball_player(rng: random.Random, player_id: int, slot: str) -> _Stub:
     )
 
 
+def _hockey_player(rng: random.Random, player_id: int, slot: str) -> _Stub:
+    if slot in {"G"}:
+        goalie = True
+    elif slot in {"BE", "IR", "Util"}:
+        goalie = rng.random() < 0.18
+    else:
+        goalie = False
+
+    if slot in {"BE", "IR", "Util"}:
+        position = "G" if goalie else rng.choice(_HOCKEY_SKATER_POSITIONS)
+    else:
+        position = slot
+
+    if goalie:
+        breakdown = {
+            "W": float(rng.randint(4, 38)),
+            "L": float(rng.randint(2, 28)),
+            "OTL": float(rng.randint(0, 10)),
+            "SV": float(rng.randint(400, 1800)),
+            "SO": float(rng.randint(0, 8)),
+            "GA": float(rng.randint(40, 160)),
+            "SA": float(rng.randint(450, 1950)),
+            "GAA": round(rng.uniform(2.05, 3.55), 2),
+            "SV%": round(rng.uniform(0.888, 0.932), 3),
+            "GS": float(rng.randint(10, 62)),
+            "GP": float(rng.randint(12, 64)),
+        }
+        total = round(max(0.0, rng.gauss(280.0, 90.0)), 1)
+    else:
+        breakdown = {
+            "G": float(rng.randint(2, 48)),
+            "A": float(rng.randint(4, 72)),
+            "+/-": float(rng.randint(-22, 38)),
+            "PIM": float(rng.randint(0, 86)),
+            "PPG": float(rng.randint(0, 16)),
+            "PPA": float(rng.randint(0, 24)),
+            "PPP": float(rng.randint(0, 32)),
+            "SOG": float(rng.randint(40, 320)),
+            "HIT": float(rng.randint(8, 220)),
+            "BLK": float(rng.randint(4, 160)),
+            "GP": float(rng.randint(40, 82)),
+        }
+        breakdown["PPP"] = breakdown["PPG"] + breakdown["PPA"]
+        total = round(max(0.0, rng.gauss(210.0, 80.0)), 1)
+
+    return _Stub(
+        playerId=player_id,
+        name=_person(rng),
+        position=position,
+        lineupSlot=slot,
+        proTeam=rng.choice(_NHL_TEAMS),
+        injuryStatus=rng.choice(_INJURY_STATUSES),
+        status="ACTIVE",
+        injured=rng.random() < 0.10,
+        eligibleSlots=[position, "BE", "IR"],
+        acquisitionType=rng.choice(_ACQUISITION_TYPES),
+        percent_owned=_percent_owned(rng),
+        total_points=total,
+        projected_total_points=round(total * rng.uniform(0.8, 1.25), 1),
+        avg_points=round(total / 82.0, 1),
+        stats={"Total 2025": {"total": breakdown}},
+        trailing_stats=_hockey_trailing_from_season(rng, breakdown),
+    )
+
+
+def _hockey_trailing_from_season(
+    rng: random.Random, breakdown: dict[str, float]
+) -> dict[str, dict[str, float]]:
+    out: dict[str, dict[str, float]] = {}
+    for key, frac in (("7", 0.08), ("15", 0.16), ("30", 0.30)):
+        window: dict[str, float] = {}
+        jitter = rng.uniform(0.75, 1.25)
+        for stat, value in breakdown.items():
+            if stat in {"GAA", "SV%"}:
+                window[stat] = round(float(value) * rng.uniform(0.9, 1.1), 3)
+            else:
+                window[stat] = round(float(value) * frac * jitter, 1)
+        out[key] = window
+    return out
+
+
 def _trailing_from_season(
     rng: random.Random, breakdown: dict[str, float], *, pitcher: bool
 ) -> dict[str, dict[str, float]]:
@@ -300,12 +406,20 @@ def _roster_slots(spec: LeagueSpec) -> tuple[str, ...]:
     if spec.sport == "baseball":
         bench = ("BE",) * (10 if spec.format == "dynasty" else 6)
         return _BASEBALL_BATTER_SLOTS + _BASEBALL_PITCHER_SLOTS + bench + ("IL", "IL")
+    if spec.sport == "hockey":
+        bench = ("BE",) * (6 if spec.format == "dynasty" else 4)
+        return _HOCKEY_SKATER_SLOTS + _HOCKEY_GOALIE_SLOTS + bench + ("IR",)
     bench = ("BE",) * (12 if spec.format == "dynasty" else 6)
     return _FOOTBALL_STARTERS + bench
 
 
 def _team_names(spec: LeagueSpec, count: int) -> list[str]:
-    pool = _BASEBALL_TEAM_NAMES if spec.sport == "baseball" else _FOOTBALL_TEAM_NAMES
+    if spec.sport == "baseball":
+        pool = _BASEBALL_TEAM_NAMES
+    elif spec.sport == "hockey":
+        pool = _HOCKEY_TEAM_NAMES
+    else:
+        pool = _FOOTBALL_TEAM_NAMES
     if count <= len(pool):
         return list(pool[:count])
     # More teams than names: suffix the wrapped entries so names stay unique.
@@ -324,7 +438,12 @@ def _build_team(
     first_player_id: int,
     games: int,
 ) -> _Stub:
-    make_player = _baseball_player if spec.sport == "baseball" else _football_player
+    if spec.sport == "baseball":
+        make_player = _baseball_player
+    elif spec.sport == "hockey":
+        make_player = _hockey_player
+    else:
+        make_player = _football_player
     roster = [
         make_player(rng, first_player_id + offset, slot)
         for offset, slot in enumerate(_roster_slots(spec))
@@ -349,6 +468,12 @@ def _build_team(
             sum(float(p.total_points) for p in starter_like) * rng.uniform(0.62, 0.78),
             1,
         )
+    elif spec.sport == "hockey":
+        wins = rng.randint(0, games)
+        losses = games - wins
+        starter_like = roster[: len(_HOCKEY_SKATER_SLOTS) + len(_HOCKEY_GOALIE_SLOTS)]
+        points_for = round(sum(float(p.total_points) for p in starter_like), 1)
+        points_against = round(points_for * rng.uniform(0.82, 1.18), 1)
 
     return _Stub(
         team_id=team_index + 1,
@@ -379,7 +504,7 @@ def sample_league(
         raise ValueError("teams must be at least 2")
 
     rng = random.Random(f"{spec.id}:{season}")
-    games = 14 if spec.sport == "football" else 24
+    games = 14 if spec.sport == "football" else 21 if spec.sport == "hockey" else 24
     names = _team_names(spec, teams)
 
     built = [
@@ -399,6 +524,7 @@ def sample_league(
     # the mMatchup fetch. Draft mirrors league.draft from mDraftDetail. Both are
     # free data the live serializer now persists (roadmap 2.1).
     # Baseball Strictly Jayers is Season Points — no H2H schedule tape.
+    # Hockey fixtures are H2H points (common ESPN default) and keep a tape.
     if spec.sport != "baseball":
         _assign_matchups(built, games=games, rng=rng)
         # Random pre-matchup W/L must not disagree with the schedule tape.
@@ -521,13 +647,28 @@ def _build_settings(spec: LeagueSpec, *, teams: int, games: int) -> _Stub:
         position_slot_counts=(
             {"QB": 1, "RB": 2, "WR": 2, "TE": 1, "FLEX": 1, "DST": 1, "K": 1, "BE": 6}
             if spec.sport == "football"
-            else None
+            else (
+                {
+                    "C": 2,
+                    "LW": 1,
+                    "RW": 1,
+                    "F": 1,
+                    "D": 3,
+                    "Util": 1,
+                    "G": 1,
+                    "BE": 4,
+                    "IR": 1,
+                }
+                if spec.sport == "hockey"
+                else None
+            )
         ),
         # Baseball weights come from ``_raw_scoring_settings`` → categories /
         # scoring_format in serialize_settings (STATS_MAP abbrs like HR, RBI).
         # Football: typical ESPN items. REC is omitted (not 0) so
         # scoringSlugFromLeague stays the PPR default; the 8.4 sandbox still
         # exposes REC at weight 0 when box ``stats`` include receptions.
+        # Hockey fixtures are H2H points with named ESPN hockey weights.
         scoring_format=(
             [
                 {"id": 4, "abbr": "PY", "label": "Passing Yards", "points": 0.04},
@@ -540,7 +681,22 @@ def _build_settings(spec: LeagueSpec, *, teams: int, games: int) -> _Stub:
                 {"id": 72, "abbr": "FUML", "label": "Fumbles Lost", "points": -2.0},
             ]
             if spec.sport == "football"
-            else None
+            else (
+                [
+                    {"id": 13, "abbr": "G", "label": "Goals", "points": 3.0},
+                    {"id": 14, "abbr": "A", "label": "Assists", "points": 2.0},
+                    {"id": 18, "abbr": "PPG", "label": "Power-Play Goals", "points": 1.0},
+                    {"id": 38, "abbr": "PPP", "label": "Power-Play Points", "points": 1.0},
+                    {"id": 29, "abbr": "SOG", "label": "Shots on Goal", "points": 0.2},
+                    {"id": 31, "abbr": "HIT", "label": "Hits", "points": 0.1},
+                    {"id": 32, "abbr": "BLK", "label": "Blocks", "points": 0.2},
+                    {"id": 1, "abbr": "W", "label": "Wins", "points": 3.0},
+                    {"id": 6, "abbr": "SV", "label": "Saves", "points": 0.2},
+                    {"id": 7, "abbr": "SO", "label": "Shutouts", "points": 3.0},
+                ]
+                if spec.sport == "hockey"
+                else None
+            )
         ),
         # Map scoring-period ids for Week Forecaster / locks (not H2H weeks).
         matchup_periods=(
@@ -554,7 +710,25 @@ def _build_settings(spec: LeagueSpec, *, teams: int, games: int) -> _Stub:
                 "scoringItems": baseball_scoring_items,
             }
             if spec.sport == "baseball"
-            else {}
+            else (
+                {
+                    "scoringType": "H2H_POINTS",
+                    "scoringItems": [
+                        {"statId": 13, "statName": "Goals", "points": 3.0},
+                        {"statId": 14, "statName": "Assists", "points": 2.0},
+                        {"statId": 18, "statName": "Power-Play Goals", "points": 1.0},
+                        {"statId": 38, "statName": "Power-Play Points", "points": 1.0},
+                        {"statId": 29, "statName": "Shots on Goal", "points": 0.2},
+                        {"statId": 31, "statName": "Hits", "points": 0.1},
+                        {"statId": 32, "statName": "Blocks", "points": 0.2},
+                        {"statId": 1, "statName": "Wins", "points": 3.0},
+                        {"statId": 6, "statName": "Saves", "points": 0.2},
+                        {"statId": 7, "statName": "Shutouts", "points": 3.0},
+                    ],
+                }
+                if spec.sport == "hockey"
+                else {}
+            )
         ),
         # Season GS cap (ESPN dynasty shape) + Yahoo-style weekly IP floor for demos.
         lineup_slot_stat_limits=(
@@ -607,6 +781,9 @@ def _build_free_agents(
         if spec.sport == "baseball":
             slot = rng.choice(("OF", "1B", "SP", "RP", "UTIL"))
             player = _baseball_player(rng, player_id, slot)
+        elif spec.sport == "hockey":
+            slot = rng.choice(("C", "LW", "RW", "D", "G", "F"))
+            player = _hockey_player(rng, player_id, slot)
         else:
             slot = rng.choice(("QB", "RB", "WR", "TE", "D/ST", "K"))
             player = _football_player(rng, player_id, slot)

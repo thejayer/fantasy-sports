@@ -20,6 +20,7 @@ Yahoo, Sleeper, and FantasyPros), and [ROADMAP.md](ROADMAP.md) (phases 0–9).
 | `baseball-dynasty` | baseball | dynasty | ESPN `2499137` | 2024–2026 |
 | `football-main` | football | redraft | ESPN `39790` | 2015–2026 |
 | `football-dynasty` | football | dynasty | ESPN `94266` | 2018–2026 |
+| `hockey-main` | hockey | redraft | ESPN id TBD (`0` placeholder) | 2025 |
 | `golf-main` | golf | h2h | hub (no ESPN) | 2026 |
 
 Registry: [`configs/leagues.yaml`](configs/leagues.yaml)
@@ -38,6 +39,21 @@ boxes open from Matchups (`CategoryBoxPanel` over `weeks/{N}.json`). FA
 browsing remains the Waivers tab. Do not stub a half engine. Revisit
 projections only with a dedicated MLB modeling plan.
 
+### Hockey scope
+
+**ESPN, projection-free.** `hockey-main` is registered for the 2024–25 / ESPN
+2025 season. `espn_league_id` is `0` until ops fills the live id — do not invent
+one. After the real id is in `configs/leagues.yaml`, run `sj sync` /
+`sj backfill`. `sj sync` skips the placeholder so a scheduled job cannot call
+`espn_api.hockey.League(0)`.
+
+Hockey reuses the ESPN snapshot layout (standings, rosters, matchups, draft,
+activity, free agents). espn-api hockey is closer to baseball (Matchup objects,
+optional category matrices) plus football-shaped `box_scores` with applied
+totals. The hub does **not** invent player week lines ESPN omitted, and does
+**not** add NHL code to `src/ffa`. Tools are Category Board (when
+`season_stats` exist) plus Scoring lab; `projections` stays EmptyState.
+
 ### Golf scope (roadmap 6.4a–e + 6.5 + auction/keepers + live room + 8.3)
 
 **Hub-native** PGA Tour counting leagues (LIV real-team model) — not ESPN and
@@ -54,11 +70,12 @@ Room is file-backed + HTTP polling (no websockets/Redis).
 ### Scoring lab (roadmap 8.4)
 
 `?tab=sandbox` on every sport clones the league's official scoring items
-(football/baseball weights, golf keep-N / multipliers) and rescores in the
+(football/baseball/hockey weights, golf keep-N / multipliers) and rescores in the
 browser. Football uses stored week box `stats` and shows matchup W/L flips;
-baseball Season Points reweights roster counting stats (H2H cats show rank
-flips, not fake points); golf re-keeps scoreboard slot points. Nothing writes
-ESPN or the live settings file — optional `sessionStorage` draft only.
+baseball and hockey Season Points / H2H points reweight roster counting stats
+(H2H cats show rank flips, not fake points — empty stats stay EmptyState);
+golf re-keeps scoreboard slot points. Nothing writes ESPN or the live settings
+file — optional `sessionStorage` draft only.
 
 ## Production (Cloud Run) — preferred
 

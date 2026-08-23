@@ -520,3 +520,105 @@ def test_serialize_season_points_without_team_points_leaves_pf_none():
         espn_league_id=1,
     )
     assert snapshot["teams"][0]["points_for"] is None
+
+
+def test_hockey_player_season_stats_from_total_key():
+    from sj.serialize import extract_hockey_season_stats, extract_hockey_trailing_stats
+
+    skater = SimpleNamespace(
+        playerId=99,
+        name="Sniper",
+        position="C",
+        lineupSlot="C",
+        proTeam="BOS",
+        injuryStatus="ACTIVE",
+        status="ACTIVE",
+        injured=False,
+        eligibleSlots=["C", "F"],
+        acquisitionType="DRAFT",
+        percent_owned=80.0,
+        total_points=140.0,
+        projected_total_points=130.0,
+        avg_points=1.7,
+        stats={
+            "Total 2025": {
+                "total": {"G": 32.0, "A": 48.0, "PPP": 22.0, "SOG": 210.0, "HIT": 40.0}
+            },
+            "Last 7 2025": {"total": {"G": 3.0, "A": 4.0}},
+        },
+    )
+    goalie = SimpleNamespace(
+        playerId=100,
+        name="Wall",
+        position="Goalie",
+        lineupSlot="G",
+        proTeam="NYR",
+        injuryStatus="ACTIVE",
+        status="ACTIVE",
+        injured=False,
+        eligibleSlots=["G"],
+        acquisitionType="DRAFT",
+        percent_owned=70.0,
+        total_points=90.0,
+        projected_total_points=88.0,
+        avg_points=2.0,
+        stats={"Total 2025": {"total": {"W": 28.0, "SV": 1200.0, "SO": 4.0, "GAA": 2.31}}},
+    )
+    assert extract_hockey_season_stats(skater)["G"] == 32.0
+    assert extract_hockey_trailing_stats(skater)["7"]["G"] == 3.0
+    s_payload = serialize_player(skater, sport="hockey")
+    g_payload = serialize_player(goalie, sport="hockey")
+    assert s_payload["role"] == "skater"
+    assert s_payload["season_stats"]["A"] == 48.0
+    assert g_payload["role"] == "goalie"
+    assert g_payload["season_stats"]["W"] == 28.0
+
+    settings = SimpleNamespace(
+        name="Hockey",
+        scoring_type="H2H_POINTS",
+        scoring_format=[
+            {"id": 13, "abbr": "G", "label": "Goals", "points": 3.0},
+        ],
+        _raw_scoring_settings={
+            "scoringType": "H2H_POINTS",
+            "scoringItems": [
+                {"statId": 13, "statName": "Goals", "points": 3.0},
+                {"statId": 14, "statName": "Assists", "points": 2.0},
+            ],
+        },
+    )
+    team = SimpleNamespace(
+        team_id=1,
+        team_name="Five Hole",
+        team_abbrev="FH",
+        owners=["A"],
+        wins=8,
+        losses=4,
+        ties=0,
+        points_for=410.0,
+        points_against=380.0,
+        standing=1,
+        roster=[skater],
+        schedule=[2],
+        scores=[42.0],
+        outcomes=["W"],
+    )
+    league = SimpleNamespace(
+        settings=settings,
+        teams=[team],
+        current_week=12,
+        scoring_type="H2H_POINTS",
+    )
+    snapshot = serialize_league(
+        league,
+        league_id="hockey-main",
+        sport="hockey",
+        format="redraft",
+        season=2025,
+        espn_league_id=0,
+    )
+    assert snapshot["sport"] == "hockey"
+    assert snapshot["espn_league_id"] == 0
+    assert snapshot["period_label"] == "week"
+    assert snapshot["settings"]["scoring_format"][0]["abbr"] == "G"
+    assert snapshot["settings"]["categories"][0]["abbr"] == "G"

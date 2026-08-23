@@ -12,6 +12,7 @@ import {
   simulateBaseball,
   simulateFootball,
   simulateGolf,
+  simulateHockey,
   type SandboxScoringItem,
   type SandboxTweaks,
   type ScoringSandboxModel,
@@ -129,6 +130,10 @@ export function ScoringSandboxPanel({ model }: { model: ScoringSandboxModel }) {
   );
   const baseball = useMemo(
     () => (model.sport === "baseball" ? simulateBaseball(model, tweaks) : null),
+    [model, tweaks],
+  );
+  const hockey = useMemo(
+    () => (model.sport === "hockey" ? simulateHockey(model, tweaks) : null),
     [model, tweaks],
   );
   const golf = useMemo(
@@ -271,12 +276,21 @@ export function ScoringSandboxPanel({ model }: { model: ScoringSandboxModel }) {
 
       {football ? <FootballTables model={model} result={football} /> : null}
       {baseball ? <BaseballTables model={model} result={baseball} /> : null}
+      {hockey ? <BaseballTables model={model} result={hockey} /> : null}
       {golf ? <GolfTables model={model} result={golf} /> : null}
 
       {model.sport === "football" && !model.football?.weeks.length ? (
         <EmptyState title="No stored box scores">
           Sync football <code>weeks/{"{N}"}.json</code> to resimulate weekly
           W/L. Scoring sliders still edit locally.
+        </EmptyState>
+      ) : null}
+      {model.sport === "hockey" &&
+      !model.items.length &&
+      !model.hockey?.teams.some((t) => Object.keys(t.stats).length) ? (
+        <EmptyState title="No hockey stats on this snapshot">
+          Scoring lab will not invent fantasy points. Sync ESPN settings or
+          roster <code>season_stats</code> first.
         </EmptyState>
       ) : null}
     </div>

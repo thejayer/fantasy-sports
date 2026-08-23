@@ -40,6 +40,13 @@ const SLOT_ORDER = [
   "SP",
   "RP",
   "P",
+  "C",
+  "LW",
+  "RW",
+  "F",
+  "D",
+  "Util",
+  "G",
   "NA",
 ];
 
