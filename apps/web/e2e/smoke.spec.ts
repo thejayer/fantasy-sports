@@ -544,7 +544,8 @@ test.describe("hub smoke", () => {
     await expect(page.getByText(/Hockey · Redraft/i)).toBeVisible();
     await page.goto("/leagues/hockey-main?tab=sandbox");
     await expect(page.getByText(/Scoring lab/i).first()).toBeVisible();
-    const goals = page.getByLabel("G value");
+    // "G value" is a substring of "PPG value" / "SOG value" — match exact.
+    const goals = page.getByRole("spinbutton", { name: "G value", exact: true });
     await expect(goals).toBeVisible();
     await goals.fill("6");
     await expect(page.locator("td.is-delta, .is-delta").first()).toBeVisible();
