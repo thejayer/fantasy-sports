@@ -498,6 +498,19 @@ export function BaseballToolsPanel({
               </Link>
             ),
             )}
+            <Link
+              href={`/leagues/${leagueId}?season=${season}&tab=drops`}
+              className="panel"
+              style={{ textDecoration: "none", color: "inherit" }}
+            >
+              <h3 className="roster-group-title" style={{ marginTop: 0 }}>
+                Hall of Shame
+              </h3>
+              <p className="league-meta" style={{ marginBottom: 0 }}>
+                Worst drops ranked by the cut player&apos;s season fantasy
+                points. Read-only.
+              </p>
+            </Link>
           </div>
         </section>
       ) : null}

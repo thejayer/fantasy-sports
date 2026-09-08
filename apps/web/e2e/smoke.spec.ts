@@ -732,6 +732,21 @@ test.describe("hub smoke", () => {
     ).toBeVisible();
   });
 
+  test("baseball hall of shame ranks fixture drop by season FP (roadmap 9.5)", async ({
+    page,
+  }) => {
+    await page.goto("/leagues/baseball-dynasty?tab=drops");
+    await expect(page.getByRole("heading", { name: /Hall of Shame/i })).toBeVisible();
+    await expect(page.getByText(/worst drops this season/i)).toBeVisible();
+    await expect(
+      page.getByRole("columnheader", { name: "Season FP" }).first(),
+    ).toBeVisible();
+    await expect(page.getByRole("link", { name: "Daniel Moore" }).first()).toBeVisible();
+    await expect(page.getByText("541.5").first()).toBeVisible();
+    await expect(page.getByText("Diamond Dogs").first()).toBeVisible();
+    await expect(page.getByText(/Bruce Green/).first()).toBeVisible();
+  });
+
   test("baseball Season Points standings show points without H2H record", async ({
     page,
   }) => {

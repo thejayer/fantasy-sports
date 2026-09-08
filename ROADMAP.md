@@ -1055,6 +1055,12 @@ Named so they are not accidentally treated as roadmap:
   `playoff_odds` exists. Cards below keep matchup detail and actions.
   Shared year filter (`?season=` + `SeasonSwitcher`) switches all league
   cards/portfolio rows at once; leagues without that season are omitted.
+- ~~**Hall of Shame / worst drops**~~ — **LANDED** as `?tab=drops` on ESPN
+  sports (roadmap 9.5): first `DROPPED` / `WAIVER DROPPED` per team–player,
+  ranked by the cut player's ESPN-applied season FP from roster /
+  `free_agents` / `players`. Claimed-after via later `FA ADDED` /
+  `WAIVER ADDED`; same-team re-add noted. Empty ledger → EmptyState.
+  Sandbox / read-only.
 - **Native/PWA install.** `manifest.ts` already exists; a real app shell is a
   separate project.
 
@@ -1306,7 +1312,8 @@ football box scores + player week game logs; 8.2 baseball projection-free
 toolkit (category board + period boxes, trailing, schedule/two-starts/locks,
 IP/GS caps); 8.3 golf depth (projected week totals, golfer pages, segment
 start limits, auto-pick, optional drop-worst — offline / EOD; not live
-hole-by-hole); 9.4 multi-league portfolio table on `/`.
+hole-by-hole); 9.4 multi-league portfolio table on `/`; 9.5 Hall of Shame
+worst drops (`?tab=drops`).
 Open: remaining Phase 9 items only if members ask (live scoring, side games,
 dues, PWA).
 Postponed: 7.7 scheduled Discord auto-send / email fallback.
