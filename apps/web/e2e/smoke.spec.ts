@@ -740,7 +740,9 @@ test.describe("hub smoke", () => {
     await expect(
       page.getByText(/standings by cumulative fantasy points/i),
     ).toBeVisible();
-    await expect(page.getByRole("columnheader", { name: "Points" })).toBeVisible();
+    await expect(
+      page.getByRole("columnheader", { name: "Season FP" }),
+    ).toBeVisible();
     await expect(page.getByRole("columnheader", { name: "Record" })).toHaveCount(
       0,
     );

@@ -143,12 +143,24 @@ export function ScoringSandboxPanel({ model }: { model: ScoringSandboxModel }) {
 
   const changed = dirty(model, tweaks);
   const weeks = model.football?.weeks.map((w) => w.week) ?? [];
+  const recItem = model.items.find((item) => item.key === "REC");
+
+  function applyRecPreset(value: number | null) {
+    const baseline = defaultTweaks(model);
+    if (value == null || !recItem) {
+      setTweaks(baseline);
+      setSaved("idle");
+      return;
+    }
+    setTweaks(applyItem(baseline, recItem, value));
+    setSaved("idle");
+  }
 
   return (
     <div className="scoring-sandbox">
       <p className="lede">
-        Scoring lab — clone this season&apos;s official items, tweak them, and
-        see every team move. Nothing writes to ESPN or the live settings file.
+        Scoring lab — clone this season&apos;s official items and see every team
+        move. Sandbox only: nothing writes ESPN or the live settings file.
       </p>
       <p className="league-meta">{model.disclaimer}</p>
 
@@ -194,6 +206,40 @@ export function ScoringSandboxPanel({ model }: { model: ScoringSandboxModel }) {
         ) : null}
         {saved === "restored" ? (
           <p className="league-meta">Restored the draft from this browser tab.</p>
+        ) : null}
+
+        {recItem ? (
+          <div className="scoring-sandbox-presets" role="group" aria-label="Reception presets">
+            <span className="league-meta">Receptions</span>
+            <button
+              type="button"
+              className="button secondary"
+              onClick={() => applyRecPreset(null)}
+            >
+              Official
+            </button>
+            <button
+              type="button"
+              className="button secondary"
+              onClick={() => applyRecPreset(1)}
+            >
+              1.0
+            </button>
+            <button
+              type="button"
+              className="button secondary"
+              onClick={() => applyRecPreset(0.5)}
+            >
+              0.5
+            </button>
+            <button
+              type="button"
+              className="button secondary"
+              onClick={() => applyRecPreset(0)}
+            >
+              0
+            </button>
+          </div>
         ) : null}
 
         {weeks.length ? (

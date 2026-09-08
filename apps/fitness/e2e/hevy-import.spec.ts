@@ -27,6 +27,9 @@ test.describe("Hevy CSV import", () => {
     await expect(page.locator("#hevyImportStatus")).toHaveText(
       "2 workouts imported, 0 skipped",
     );
+    await expect(page.locator("#log")).toBeVisible();
+    await expect(page.locator("#snackbar")).toContainText(/2 workouts imported/i);
+    await expect(page.locator("#sessionList")).toBeVisible();
 
     const prefix = await page.evaluate(() => {
       const identity = (
@@ -57,6 +60,11 @@ test.describe("Hevy CSV import", () => {
       })
       .toBe(2);
 
+    await page.locator("#navMoreToggle").click();
+    await page.getByRole("navigation", { name: "App sections" }).getByRole("button", {
+      name: "Profile",
+    }).click();
+    await expect(page.locator("#profile")).toBeVisible();
     await page.getByRole("button", { name: "Import Hevy CSV" }).click();
     await expect(page.locator("#hevyImportStatus")).toHaveText(
       "0 workouts imported, 2 skipped",

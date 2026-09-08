@@ -10,7 +10,11 @@ import { GolfSchedulePanel } from "@/components/GolfSchedulePanel";
 import { GolfScoreboardPanel } from "@/components/GolfScoreboardPanel";
 import { GolfSettingsPanel } from "@/components/GolfSettingsPanel";
 import { HistoryPanel, type HistoryView } from "@/components/HistoryPanel";
-import { LeagueTabs, tabLabel } from "@/components/LeagueTabs";
+import {
+  LeagueTabs,
+  SEASON_POINTS_PRIMARY,
+  tabLabel,
+} from "@/components/LeagueTabs";
 import { MatchupsPanel, type MatchupsView } from "@/components/MatchupsPanel";
 import { PlayersBoard } from "@/components/PlayersBoard";
 import { ProjectionsBoard } from "@/components/ProjectionsBoard";
@@ -116,8 +120,11 @@ function StandingsTable({
     baseballSeasonPoints ||
     league.teams.some((team) => team.points_for != null);
   const showAgainst = isFootball || (isGolf && !golfSeasonPoints);
-  const pointsLabel =
-    isFootball || (isGolf && !golfSeasonPoints) ? "PF" : "Points";
+  const pointsLabel = seasonPoints
+    ? "Season FP"
+    : isFootball || (isGolf && !golfSeasonPoints)
+      ? "PF"
+      : "Points";
 
   if (!league.teams.length) {
     return (
@@ -423,6 +430,9 @@ export function LeagueView({
   const isGolf = league.sport === "golf";
   const isFootball = league.sport === "football";
   const isProjectionFree = isBaseball || isHockey;
+  const seasonPoints =
+    (isGolf && league.format === "season_points") ||
+    ((isBaseball || isHockey) && isSeasonPointsScoring(league.scoring_type));
   const period =
     league.period_label ||
     (isGolf ? "event" : isBaseball ? "period" : "week");
@@ -583,6 +593,7 @@ export function LeagueView({
 
       <LeagueTabs
         active={active}
+        primary={seasonPoints ? SEASON_POINTS_PRIMARY : undefined}
         tabs={tabs.map((name) => ({
           id: name,
           label: tabLabel(name),

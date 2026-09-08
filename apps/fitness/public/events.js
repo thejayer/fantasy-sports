@@ -156,6 +156,32 @@ function setupEventListeners() {
     showToast("Today panel refreshed");
   });
 
+  const openHomeSession = (sessionId) => {
+    activeSessionId = sessionId;
+    renderSessions();
+    setView("log", { focus: true });
+    document
+      .querySelector("#sessionDetailPanel")
+      ?.scrollIntoView({ behavior: "smooth", block: "start" });
+  };
+
+  document.querySelector("#homeRecentSessions")?.addEventListener("click", (event) => {
+    const openCard = event.target.closest("[data-today-open]");
+    if (openCard) {
+      openHomeSession(openCard.dataset.todayOpen);
+    }
+  });
+
+  document.querySelector("#homeSportChips")?.addEventListener("click", (event) => {
+    const chip = event.target.closest("[data-home-sport]");
+    if (!chip) return;
+    const filter = document.querySelector("#historyFilter");
+    if (filter) filter.value = chip.dataset.homeSport;
+    renderSessions();
+    setView("log", { focus: true });
+    document.querySelector("#sessionList")?.scrollIntoView({ behavior: "smooth", block: "start" });
+  });
+
   document.querySelector("#todayGrid").addEventListener("click", (event) => {
     const completeButton = event.target.closest("[data-today-complete]");
     const openButton = event.target.closest("[data-today-open]");
@@ -633,6 +659,10 @@ function setupEventListeners() {
     const summary = `${result.imported} workout${result.imported === 1 ? "" : "s"} imported, ${result.skipped} skipped`;
     if (status) status.textContent = summary;
     showToast(summary);
+    if (result.imported > 0) {
+      setView("log", { focus: true });
+      document.querySelector("#sessionList")?.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
   };
 
   document.querySelector("#hevyCsvFile").addEventListener("change", (event) => {

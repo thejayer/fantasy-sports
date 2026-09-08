@@ -11,6 +11,7 @@
  */
 
 import type { LeagueIndexItem, LeagueSnapshot, Team } from "@/lib/data";
+import { isSeasonPointsScoring } from "@/lib/scoring-type";
 import { buildGameLog, type GameLogRow } from "@/lib/game-log";
 import { gamesForPeriod, isViewerGame, resolvePeriod, periodCount } from "@/lib/matchups";
 import { recordLabel, winPctLabel, injuryTone } from "@/lib/league";
@@ -95,6 +96,9 @@ export type HomeLeagueCard = {
   next: GameLogRow | null;
   actions: ActionItem[];
   href: string;
+  scoringType?: string | null;
+  /** Season-points / golf season_points — standings are FP, not H2H. */
+  seasonPoints?: boolean;
   /** Football make-playoffs % when a playoff_odds snapshot exists (roadmap 9.4). */
   makePlayoffs?: number | null;
   makePlayoffsDelta?: number | null;
@@ -310,6 +314,12 @@ export function buildLeagueCard(
     next,
     actions: sortActions(actions),
     href: `/leagues/${league.league_id}?season=${league.season}`,
+    scoringType: league.scoring_type ?? league.settings?.scoring_type ?? null,
+    seasonPoints:
+      (league.sport === "golf" && league.format === "season_points") ||
+      isSeasonPointsScoring(
+        league.scoring_type ?? league.settings?.scoring_type,
+      ),
   };
 }
 

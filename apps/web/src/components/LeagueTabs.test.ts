@@ -1,6 +1,11 @@
 import { describe, expect, it } from "vitest";
 
-import { splitTabs, tabLabel, type LeagueTab } from "@/components/LeagueTabs";
+import {
+  SEASON_POINTS_PRIMARY,
+  splitTabs,
+  tabLabel,
+  type LeagueTab,
+} from "@/components/LeagueTabs";
 import { visibleSeasons } from "@/components/SeasonSwitcher";
 
 function tabs(...ids: string[]): LeagueTab[] {
@@ -45,16 +50,16 @@ describe("splitTabs", () => {
       "teams",
       "players",
       "matchups",
-      "activity",
       "tools",
+      "sandbox",
     ]);
     expect(hidden.map((t) => t.id)).toEqual([
       "draft",
+      "activity",
       "recap",
       "history",
       "projections",
       "settings",
-      "sandbox",
     ]);
   });
 
@@ -77,8 +82,8 @@ describe("splitTabs", () => {
       "players",
       "matchups",
       "draft",
-      "activity",
       "tools",
+      "sandbox",
     ]);
   });
 
@@ -105,10 +110,22 @@ describe("splitTabs", () => {
     expect(shown.map((t) => t.id)).toEqual([
       "standings",
       "teams",
+      "sandbox",
       "schedule",
       "lineup",
       "scoreboard",
     ]);
+  });
+
+  it("keeps matchups out of the everyday row for season-points leagues", () => {
+    const { shown, hidden } = splitTabs(
+      tabs("standings", "teams", "players", "matchups", "tools", "sandbox"),
+      "standings",
+      SEASON_POINTS_PRIMARY,
+    );
+    expect(shown.map((t) => t.id)).not.toContain("matchups");
+    expect(hidden.map((t) => t.id)).toContain("matchups");
+    expect(shown.map((t) => t.id)).toContain("sandbox");
   });
 });
 
