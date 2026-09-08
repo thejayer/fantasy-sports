@@ -191,7 +191,7 @@ alert trustworthy. Optional uptime check on `/api/health` is documented in
 HUB.md (console click; needs the live hub URL).
 
 ### 1.7 Next.js 16 and the ESLint CLI — LANDED
-`apps/web` is on `next` / `eslint-config-next` 16.2.x. Lint is the ESLint CLI
+`apps/web` is on `next` / `eslint-config-next` 16.3.x. Lint is the ESLint CLI
 (`eslint .`) via the codemod flat config (`eslint-config-next/core-web-vitals` +
 `typescript`). `next-auth@5.0.0-beta.32` already peers `^16`.
 
@@ -204,6 +204,7 @@ Compatibility notes kept in-tree:
   `app-build-manifest.json` is absent (Turbopack is the default `next build`).
 - Overrides revisited: `next` still pins `postcss` 8.4.31 / `sharp` ^0.34.5;
   advisory-clean `brace-expansion@5` needs `minimatch@^10` alongside it.
+  Aug 2026 RCE advisories: `next@16.3.4`, `sharp@^0.35.4`, `js-yaml@^4.3.2`.
 
 ---
 
@@ -256,8 +257,10 @@ Shipped the high-leverage slice without ballooning snapshot size:
   ESPN request; this is what makes `format: dynasty` mean something on disk.
 - **Transactions / trades** via paged `recent_activity` (both sports; empty
   before 2019) → `transactions.json` (fills the 2.2 stub). Default 200 pages ×
-  25 topics (`SJ_ACTIVITY_MAX_PAGES`, max 400). Sync replaces the file; it
-  does not merge with a prior pull.
+  25 topics (`SJ_ACTIVITY_MAX_PAGES`, max 400). Historical seasons fall back
+  to `mTransactions2` by scoring period when the communication view is empty
+  or raises `ESPNInvalidLeague`. Sync replaces the file; it does not merge
+  with a prior pull.
 - **Free agents / waivers** via `league.free_agents` (both sports; empty before
   2019; size-capped, default 50, `SJ_FREE_AGENT_SIZE` up to 150) →
   `free_agents.json`. Hub Waivers tab prefers this list (joined to season

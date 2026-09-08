@@ -304,10 +304,13 @@ Cloud Scheduler ──▶ Cloud Run Job (sj-sync) ──▶ gs://<project>-sj-da
 - **ESPN writes:** the `sj-sync` job runs `sj sync --current-only` on a schedule
   (default every 30 minutes) with ESPN cookies from Secret Manager.
   Transactions come from paged `recent_activity` (25 topics per page, default
-  200 pages / 5,000 topics; `SJ_ACTIVITY_MAX_PAGES` up to 400). Each sync
-  **replaces** `transactions.json` — it does not merge with the prior file —
-  so raise the cap if a baseball season is still missing early drops, then
-  redeploy/run the sync job.
+  200 pages / 5,000 topics; `SJ_ACTIVITY_MAX_PAGES` up to 400). Historical
+  seasons (2019+) where that communication view is empty or raises
+  `ESPNInvalidLeague` fall back to `mTransactions2` across scoring periods
+  (`SJ_TXN_MAX_PERIODS`, default 200; `SJ_TXN_PERIOD_THROTTLE`, default 0.15s).
+  Each sync **replaces** `transactions.json` — it does not merge with the prior
+  file — so raise the cap if a baseball season is still missing early drops,
+  then redeploy/run the sync job.
 - **Hub writes:** golf leagues, auction rooms, and `hub_members.json` go to the
   same bucket (`SJ_HUB_DIR=/app/data/sj`). Sync skips `platform: hub` / golf.
 - **Reads:** the hub mounts the bucket read-write at `/app/data/sj` and caches

@@ -10,6 +10,7 @@ from dataclasses import asdict, dataclass
 from pathlib import Path
 from typing import Any, Literal, TypeVar
 
+from sj.mtransactions import fetch_transactions_mview
 from sj.registry import LeagueSpec, load_registry
 from sj.serialize import (
     build_week_box_scores_document,
@@ -356,35 +357,41 @@ def fetch_recent_activity(
     ``max_pages`` (or ``SJ_ACTIVITY_MAX_PAGES``) when a season has more
     topics than one thousand. Each sync *replaces* ``transactions.json`` —
     it does not merge with a prior pull — so the cap must cover the season.
+
+    Historical seasons (2019+) often raise ``ESPNInvalidLeague`` on that
+    communication view even though the league exists. When the page is empty
+    or unsupported, fall back to ``mTransactions2`` across scoring periods
+    (see :func:`sj.mtransactions.fetch_transactions_mview`).
     """
     season = int(getattr(league, "year", 0) or 0)
     if season and season < ACTIVITY_MIN_SEASON:
         return []
-    if not callable(getattr(league, "recent_activity", None)):
-        return []
 
-    pages = activity_max_pages() if max_pages is None else max_pages
     items: list[Any] = []
-    offset = 0
-    for _ in range(pages):
-        try:
-            page = espn_call(
-                lambda current=offset: league.recent_activity(
-                    size=page_size, offset=current
-                ),
-                label="recent_activity",
-            )
-        except Exception as exc:
-            if offset == 0 and _activity_unsupported(exc):
-                return []
-            raise
-        if not page:
-            break
-        items.extend(page)
-        if len(page) < page_size:
-            break
-        offset += page_size
-    return items
+    if callable(getattr(league, "recent_activity", None)):
+        pages = activity_max_pages() if max_pages is None else max_pages
+        offset = 0
+        for _ in range(pages):
+            try:
+                page = espn_call(
+                    lambda current=offset: league.recent_activity(
+                        size=page_size, offset=current
+                    ),
+                    label="recent_activity",
+                )
+            except Exception as exc:
+                if offset == 0 and _activity_unsupported(exc):
+                    return fetch_transactions_mview(league)
+                raise
+            if not page:
+                break
+            items.extend(page)
+            if len(page) < page_size:
+                break
+            offset += page_size
+    if items:
+        return items
+    return fetch_transactions_mview(league)
 
 
 def box_score_max_weeks() -> int:
@@ -588,6 +595,7 @@ def build_snapshot(league: Any, spec: LeagueSpec, season: int) -> dict[str, Any]
     """
     # recent_activity (paged) + free_agents (size-capped) are extra ESPN calls;
     # settings come free from the League constructor's mSettings fetch.
+    # Historical seasons fall back to mTransactions2 inside fetch_recent_activity.
     activities = fetch_recent_activity(league)
     agents = fetch_free_agents(league, size=free_agent_size())
     snapshot = serialize_league(
