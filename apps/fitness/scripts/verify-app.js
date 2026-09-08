@@ -70,6 +70,12 @@ if (!indexHtml.includes('id="sjAccount"') || !indexHtml.includes("Sign out")) {
 if (!indexHtml.includes("Strictly Jayers")) {
   errors.push("app.html should use Strictly Jayers chrome");
 }
+if (!exists("favicon.ico")) {
+  errors.push("Missing required file: favicon.ico");
+}
+if (!indexHtml.includes('href="/favicon.ico"')) {
+  errors.push("app.html should expose /favicon.ico for browser chrome");
+}
 if (!indexHtml.includes('class="page-hero"')) {
   errors.push("app.html should use the SJ page-hero, not athlete-log brand chrome");
 }

@@ -26,6 +26,16 @@ describe("roadmap 3.6 polish surface", () => {
     expect(existsSync(path.join(APP_DIR, "opengraph-image.tsx"))).toBe(true);
   });
 
+  it("keeps opengraph and icon routes outside the auth matcher", () => {
+    const middleware = readFileSync(
+      path.join(APP_DIR, "../middleware.ts"),
+      "utf8",
+    );
+    expect(middleware).toMatch(/isPublicMetadataPath/);
+    expect(middleware).toMatch(/opengraph-image/);
+    expect(middleware).toMatch(/twitter-image/);
+  });
+
   it("removes create-next-app boilerplate SVGs", () => {
     // Keep public/ present (Docker COPY needs the directory) via .gitkeep only.
     const names = existsSync(PUBLIC_DIR) ? readdirSync(PUBLIC_DIR) : [];

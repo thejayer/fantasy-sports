@@ -13,6 +13,7 @@
 html,
 body {
   min-height: 100%;
+  overflow-x: clip;
 }
 
 body {
@@ -1074,20 +1075,38 @@ a.headline-row:focus-visible {
 }
 
 .timeline-card {
+  display: grid;
+  align-content: start;
+  gap: 0.55rem;
   border: 2px solid var(--color-divider);
-  padding: var(--space-3);
-  min-height: 280px;
+  padding: var(--space-4);
   background: var(--color-bg);
 }
 
 .timeline-card-head {
   display: flex;
-  justify-content: space-between;
-  align-items: baseline;
-  gap: var(--space-2);
-  margin-bottom: var(--space-3);
+  align-items: center;
+  gap: var(--space-3);
   padding-bottom: var(--space-2);
   border-bottom: 2px solid var(--color-divider);
+}
+
+.timeline-monogram {
+  display: grid;
+  place-items: center;
+  flex: 0 0 2.75rem;
+  width: 2.75rem;
+  height: 2.75rem;
+  background: var(--color-accent);
+  color: var(--color-bg);
+  font-family: var(--font-heading);
+  font-weight: 800;
+  font-size: 13px;
+  letter-spacing: 0.04em;
+}
+
+.timeline-card-identity {
+  min-width: 0;
 }
 
 .timeline-card-head h3 {
@@ -1097,17 +1116,32 @@ a.headline-row:focus-visible {
   letter-spacing: -0.01em;
 }
 
-.timeline-handle {
-  font-family: var(--font-heading);
-  font-weight: 600;
-  font-size: 12px;
+.timeline-handle-text {
+  margin: 0.15rem 0 0;
+  font-size: 13px;
   letter-spacing: 0.04em;
   color: var(--accent-deep);
-  white-space: nowrap;
 }
 
-.timeline-handle:hover,
-.timeline-handle:focus-visible {
+.timeline-blurb {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.45;
+  color: color-mix(in srgb, var(--color-text) 58%, transparent);
+}
+
+.timeline-open {
+  justify-self: start;
+  font-family: var(--font-heading);
+  font-weight: 700;
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--accent-deep);
+}
+
+.timeline-open:hover,
+.timeline-open:focus-visible {
   color: var(--color-accent);
 }
 
@@ -1291,6 +1325,11 @@ a.pulse-cell:focus-visible {
   align-items: start;
 }
 
+.watch-stage-player {
+  position: sticky;
+  top: 1rem;
+}
+
 .watch-now-copy {
   margin-top: var(--space-4);
 }
@@ -1322,6 +1361,14 @@ a.pulse-cell:focus-visible {
   border: 2px solid var(--color-divider);
   background: var(--color-bg);
   min-width: 0;
+  display: flex;
+  flex-direction: column;
+  max-height: min(42rem, calc(100vh - 7rem));
+}
+
+.watch-queue-panel .watch-queue {
+  overflow-y: auto;
+  overscroll-behavior: contain;
 }
 
 .watch-queue-head {
@@ -1528,14 +1575,14 @@ a.editor-pick-row:focus-visible {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: var(--space-4);
+  align-items: start;
 }
 
 .news-card {
   display: grid;
   align-content: start;
   gap: 0.45rem;
-  min-height: 14rem;
-  padding: var(--space-5);
+  padding: var(--space-4);
   border: 2px solid var(--color-divider);
   color: inherit;
   text-decoration: none;
@@ -1564,7 +1611,7 @@ a.editor-pick-row:focus-visible {
 }
 
 .news-card-read {
-  margin-top: auto;
+  margin-top: 0.25rem;
   justify-self: start;
   padding: 0.2rem 0.7rem;
   border: 2px solid var(--color-divider);
@@ -1658,6 +1705,14 @@ a.news-card:focus-visible .news-card-read {
   .watch-stage,
   .news-desk-grid {
     grid-template-columns: 1fr;
+  }
+
+  .watch-stage-player {
+    position: static;
+  }
+
+  .watch-queue-panel {
+    max-height: none;
   }
 }
 
