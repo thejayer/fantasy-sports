@@ -163,8 +163,7 @@ export default async function AiNewsPage() {
           <div>
             <h2 id="timelines-heading">Timelines</h2>
             <p>
-              Live X profiles via official embeds — open the handle if a widget
-              stays blank.
+              Official X profiles — open the handle for the live timeline.
             </p>
           </div>
           <div className="section-marker">X</div>

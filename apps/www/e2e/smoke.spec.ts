@@ -63,6 +63,16 @@ test.describe("portal smoke", () => {
     await expect(
       page.getByRole("heading", { name: /Top stories/i }),
     ).toBeVisible();
+    await expect(page.locator(".twitter-timeline")).toHaveCount(0);
+    await expect(
+      page.getByRole("link", { name: "Open OpenAI on X" }),
+    ).toHaveAttribute("href", "https://x.com/OpenAI");
+    await expect(
+      page.getByRole("link", { name: "Open Anthropic on X" }),
+    ).toHaveAttribute("href", "https://x.com/AnthropicAI");
+    await expect(
+      page.getByRole("link", { name: "Open Cursor on X" }),
+    ).toHaveAttribute("href", "https://x.com/cursor_ai");
   });
 
   test("people directory links to X", async ({ page }) => {
