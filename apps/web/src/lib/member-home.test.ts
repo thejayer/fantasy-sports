@@ -256,6 +256,20 @@ describe("buildLeagueCard", () => {
     );
     expect(card.actions.some((a) => a.id.startsWith("stale-"))).toBe(false);
   });
+
+  it("flags ESPN season-points leagues for FP chrome", () => {
+    const card = buildLeagueCard(
+      football({
+        sport: "baseball",
+        scoring_type: "TOTAL_SEASON_POINTS",
+        settings: { scoring_type: "TOTAL_SEASON_POINTS" },
+      } as Partial<LeagueSnapshot>),
+      1,
+      { now },
+    );
+    expect(card.seasonPoints).toBe(true);
+    expect(card.scoringType).toBe("TOTAL_SEASON_POINTS");
+  });
 });
 
 describe("golfLineupAction", () => {

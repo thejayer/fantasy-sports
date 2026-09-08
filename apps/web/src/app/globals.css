@@ -1159,6 +1159,63 @@ tr:last-child td {
   margin: 0 0 1rem;
 }
 
+.league-tabs {
+  padding: 0.4rem 0 0.85rem;
+  margin: 0 0 1.15rem;
+  border-bottom: 2px solid var(--line);
+  background: var(--page-bg);
+}
+
+.league-switch {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+  margin: 0 0 1rem;
+}
+
+.league-pulse {
+  display: grid;
+  gap: 0.55rem;
+  padding: 0.85rem 1rem 1rem;
+  margin-bottom: 1.25rem;
+  background: var(--surface);
+  box-shadow: inset 0 0 0 1px var(--line);
+}
+
+.league-pulse-kicker {
+  margin: 0;
+  font-size: 0.78rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--signal);
+}
+
+.league-pulse-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.75rem;
+}
+
+.league-pulse-grid strong {
+  display: block;
+  margin-top: 0.15rem;
+  font-size: 1.15rem;
+}
+
+.scoring-sandbox-presets {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.45rem;
+  margin: 0.35rem 0 0.75rem;
+}
+
+@media (max-width: 720px) {
+  .league-pulse-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
 .tab {
   padding: 0.55rem 0.9rem;
   border-radius: 999px;

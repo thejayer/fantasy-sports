@@ -21,6 +21,8 @@ export type PortfolioRow = {
   matchup: string;
   next: string | null;
   makePlayoffs: string | null;
+  seasonPoints: boolean;
+  pointsFor: number | null;
   linked: boolean;
 };
 
@@ -84,6 +86,8 @@ export function buildPortfolioRows(cards: HomeLeagueCard[]): PortfolioRow[] {
       const sign = card.makePlayoffsDelta > 0 ? "+" : "";
       makePlayoffs = `${make} (${sign}${delta})`;
     }
+    const seasonPoints = Boolean(card.seasonPoints);
+    const pointsFor = card.team?.pointsFor ?? null;
     return {
       leagueId: card.leagueId,
       sport: card.sport,
@@ -95,14 +99,20 @@ export function buildPortfolioRows(cards: HomeLeagueCard[]): PortfolioRow[] {
       teamHref: card.team
         ? `/leagues/${card.leagueId}/teams/${card.team.teamId}?season=${card.season}`
         : null,
-      record: card.team?.record ?? null,
+      record: seasonPoints ? null : card.team?.record ?? null,
       standing: formatPortfolioStanding(
         card.team?.standing,
         card.team?.teamCount,
       ),
-      matchup: formatPortfolioMatchup(card.matchup),
-      next: formatPortfolioNext(card),
+      matchup: seasonPoints
+        ? pointsFor != null
+          ? `${pointsFor.toFixed(1)} FP`
+          : "Season points"
+        : formatPortfolioMatchup(card.matchup),
+      next: seasonPoints ? null : formatPortfolioNext(card),
       makePlayoffs,
+      seasonPoints,
+      pointsFor,
       linked,
     };
   });
