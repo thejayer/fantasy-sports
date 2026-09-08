@@ -27,6 +27,6 @@ describe("portal chrome after Phase E audit", () => {
     const css = readFileSync(path.join(APP_DIR, "globals.css"), "utf8");
     expect(css).toMatch(/overflow-x:\s*clip/);
     expect(css).not.toMatch(/\.news-card\s*\{[^}]*min-height:\s*14rem/);
-    expect(css).toMatch(/\.watch-stage-player\s*\{[^}]*position:\s*sticky/s);
+    expect(css).toMatch(/\.watch-stage-player \{[\s\S]*?position:\s*sticky/);
   });
 });
