@@ -2,14 +2,17 @@ import Image from "next/image";
 import Link from "next/link";
 
 import {
-  formatPortalEventDate,
+  crewInitials,
+  formatPortalEventChip,
   portalCopy,
+  readyCrewMembers,
   upcomingPortalEvents,
+  type DestinationId,
 } from "@/lib/content";
 import { getSiteConfig } from "@/lib/site";
 
 type Destination = {
-  id: string;
+  id: DestinationId;
   index: string;
   kicker: string;
   title: string;
@@ -19,90 +22,106 @@ type Destination = {
   pending: boolean;
 };
 
+function RoomGlyph({ id }: { id: DestinationId }) {
+  const common = {
+    viewBox: "0 0 24 24",
+    width: 28,
+    height: 28,
+    fill: "none",
+    stroke: "currentColor",
+    strokeWidth: 1.75,
+    "aria-hidden": true as const,
+  };
+  if (id === "fantasy") {
+    return (
+      <svg {...common}>
+        <path d="M4 19V7l8-4 8 4v12" />
+        <path d="M8 19v-6h8v6" />
+      </svg>
+    );
+  }
+  if (id === "fitness") {
+    return (
+      <svg {...common}>
+        <path d="M4 10h3l2 8 3-12 2 8h6" />
+      </svg>
+    );
+  }
+  if (id === "discord") {
+    return (
+      <svg {...common}>
+        <path d="M7 8h10M7 16h10M8 8c0 5 8 5 8 8" />
+        <circle cx="8" cy="8" r="1.2" fill="currentColor" stroke="none" />
+        <circle cx="16" cy="16" r="1.2" fill="currentColor" stroke="none" />
+      </svg>
+    );
+  }
+  if (id === "watch") {
+    return (
+      <svg {...common}>
+        <rect x="3" y="6" width="18" height="12" />
+        <path d="M10 10l5 2-5 2v-4z" />
+      </svg>
+    );
+  }
+  return (
+    <svg {...common}>
+      <circle cx="12" cy="12" r="8" />
+      <path d="M12 8v8M8 12h8" />
+    </svg>
+  );
+}
+
+function destinationHref(
+  id: DestinationId,
+  hrefs: {
+    fantasyHubUrl: string;
+    fitnessUrl: string;
+    discordInviteUrl: string | null;
+    palworldInfoUrl: string | null;
+  },
+): string | null {
+  if (id === "fantasy") return hrefs.fantasyHubUrl;
+  if (id === "fitness") return hrefs.fitnessUrl;
+  if (id === "discord") return hrefs.discordInviteUrl;
+  if (id === "watch") return "/watch";
+  if (id === "ai") return "/ai";
+  if (id === "people") return "/people";
+  return hrefs.palworldInfoUrl;
+}
+
 export default function HomePage() {
   const { fantasyHubUrl, fitnessUrl, discordInviteUrl, palworldInfoUrl } =
     getSiteConfig();
   const copy = portalCopy;
   const items = copy.destinations.items;
   const events = upcomingPortalEvents(copy.events.items);
-  const crew = copy.crew.members;
+  const crew = readyCrewMembers(copy.crew.members);
+  const hrefs = {
+    fantasyHubUrl,
+    fitnessUrl,
+    discordInviteUrl,
+    palworldInfoUrl,
+  };
 
-  const destinations: Destination[] = [
-    {
-      id: "fantasy",
-      index: items.fantasy.index,
-      kicker: items.fantasy.kicker,
-      title: items.fantasy.title,
-      body: items.fantasy.body,
-      href: fantasyHubUrl,
-      action: items.fantasy.action,
-      pending: false,
-    },
-    {
-      id: "ai",
-      index: items.ai.index,
-      kicker: items.ai.kicker,
-      title: items.ai.title,
-      body: items.ai.body,
-      href: "/ai",
-      action: items.ai.action,
-      pending: false,
-    },
-    {
-      id: "watch",
-      index: items.watch.index,
-      kicker: items.watch.kicker,
-      title: items.watch.title,
-      body: items.watch.body,
-      href: "/watch",
-      action: items.watch.action,
-      pending: false,
-    },
-    {
-      id: "people",
-      index: items.people.index,
-      kicker: items.people.kicker,
-      title: items.people.title,
-      body: items.people.body,
-      href: "/people",
-      action: items.people.action,
-      pending: false,
-    },
-    {
-      id: "discord",
-      index: items.discord.index,
-      kicker: items.discord.kicker,
-      title: items.discord.title,
-      body: items.discord.body,
-      href: discordInviteUrl,
-      action: discordInviteUrl
-        ? items.discord.action
-        : items.discord.actionPending,
-      pending: !discordInviteUrl,
-    },
-    {
-      id: "palworld",
-      index: items.palworld.index,
-      kicker: items.palworld.kicker,
-      title: items.palworld.title,
-      body: items.palworld.body,
-      href: palworldInfoUrl,
-      action: palworldInfoUrl
-        ? items.palworld.action
-        : items.palworld.actionPending,
-      pending: !palworldInfoUrl,
-    },
-    {
-      id: "fitness",
-      index: items.fitness.index,
-      kicker: items.fitness.kicker,
-      title: items.fitness.title,
-      body: items.fitness.body,
-      href: fitnessUrl,
-      action: items.fitness.action,
-      pending: false,
-    },
-  ];
+  function buildDestination(id: DestinationId): Destination {
+    const item = items[id];
+    const href = destinationHref(id, hrefs);
+    const pending = href == null;
+    return {
+      id,
+      index: item.index,
+      kicker: item.kicker,
+      title: item.title,
+      body: item.body,
+      href,
+      action: pending ? item.actionPending : item.action,
+      pending,
+    };
+  }
+
+  const primary = copy.destinations.primary.map(buildDestination);
+  const secondary = copy.destinations.secondary.map(buildDestination);
 
   return (
     <main>
@@ -168,43 +187,52 @@ export default function HomePage() {
         {events.length === 0 ? (
           <p className="empty-note">{copy.events.empty}</p>
         ) : (
-          <ul className="event-strip">
+          <ul className="event-cards">
             {events.map((event) => {
-              const when = formatPortalEventDate(event.date);
-              const body = (
+              const chip = formatPortalEventChip(event.date);
+              const href =
+                event.href ??
+                (event.label.toLowerCase().includes("draft") ||
+                event.label.toLowerCase().includes("golf") ||
+                event.sport === "Football" ||
+                event.sport === "Golf"
+                  ? fantasyHubUrl
+                  : null);
+              const cta = event.cta ?? (href ? "Open" : null);
+              const inner = (
                 <>
-                  <span className="event-when">{when}</span>
-                  <span className="event-label">{event.label}</span>
-                  <span className="event-where">{event.where}</span>
+                  <span className="event-chip">
+                    <span className="event-chip-month">{chip.month}</span>
+                    <span className="event-chip-day">{chip.day}</span>
+                  </span>
+                  <span className="event-main">
+                    {event.sport ? (
+                      <span className="event-sport">{event.sport}</span>
+                    ) : null}
+                    <span className="event-label">{event.label}</span>
+                    <span className="event-where">{event.where}</span>
+                  </span>
+                  {cta ? <span className="destination-action">{cta} →</span> : null}
                 </>
               );
               return (
                 <li key={`${event.date}-${event.label}`}>
-                  {event.href ? (
-                    event.href.startsWith("/") ? (
-                      <Link className="event-row" href={event.href}>
-                        {body}
+                  {href ? (
+                    href.startsWith("/") ? (
+                      <Link className="event-card" href={href}>
+                        {inner}
                       </Link>
                     ) : (
                       <a
-                        className="event-row"
-                        href={event.href}
+                        className="event-card"
+                        href={href}
                         rel="noopener noreferrer"
                       >
-                        {body}
+                        {inner}
                       </a>
                     )
-                  ) : event.label.toLowerCase().includes("draft") ||
-                    event.label.toLowerCase().includes("golf") ? (
-                    <a
-                      className="event-row"
-                      href={fantasyHubUrl}
-                      rel="noopener noreferrer"
-                    >
-                      {body}
-                    </a>
                   ) : (
-                    <div className="event-row">{body}</div>
+                    <div className="event-card">{inner}</div>
                   )}
                 </li>
               );
@@ -221,26 +249,70 @@ export default function HomePage() {
           </div>
           <div className="section-marker">{copy.destinations.marker}</div>
         </div>
-        <ul className="destinations">
-          {destinations.map((item) => {
+        <ul className="room-grid">
+          {primary.map((item) => {
             const className = item.pending
-              ? "destination is-muted"
-              : "destination";
-            const action = item.pending ? (
-              <span className="tag tag-outline">{item.action}</span>
-            ) : (
-              <div className="destination-action">{item.action} →</div>
-            );
+              ? "room-tile is-muted"
+              : "room-tile";
             const inner = (
               <>
-                <div className="destination-index">
-                  {item.index} · {item.kicker}
+                <div className="room-tile-top">
+                  <span className="room-icon">
+                    <RoomGlyph id={item.id} />
+                  </span>
+                  {item.pending ? (
+                    <span className="soon-badge">{item.action}</span>
+                  ) : null}
                 </div>
-                <div className="destination-main">
+                <p className="destination-index">
+                  {item.index} · {item.kicker}
+                </p>
+                <h3>{item.title}</h3>
+                <p>{item.body}</p>
+                {item.pending ? null : (
+                  <div className="destination-action">{item.action} →</div>
+                )}
+              </>
+            );
+            return (
+              <li key={item.id}>
+                {item.href ? (
+                  item.href.startsWith("/") ? (
+                    <a className={className} href={item.href}>
+                      {inner}
+                    </a>
+                  ) : (
+                    <a
+                      className={className}
+                      href={item.href}
+                      rel="noopener noreferrer"
+                    >
+                      {inner}
+                    </a>
+                  )
+                ) : (
+                  <div className={className}>{inner}</div>
+                )}
+              </li>
+            );
+          })}
+        </ul>
+        <ul className="room-secondary">
+          {secondary.map((item) => {
+            const className = item.pending
+              ? "room-compact is-muted"
+              : "room-compact";
+            const inner = (
+              <>
+                <div className="room-compact-copy">
                   <h3>{item.title}</h3>
                   <p>{item.body}</p>
                 </div>
-                {action}
+                {item.pending ? (
+                  <span className="soon-badge">{item.action}</span>
+                ) : (
+                  <span className="destination-action">{item.action} →</span>
+                )}
               </>
             );
             return (
@@ -283,19 +355,37 @@ export default function HomePage() {
         {!crew.length ? (
           <p className="empty-note">{copy.crew.empty}</p>
         ) : (
-          <ul className="crew-list">
+          <ul className="crew-grid">
             {crew.map((member) => (
               <li key={member.handle}>
                 <a
-                  className="crew-row"
+                  className="crew-card"
                   href={`${fantasyHubUrl}/u/${member.handle}`}
                   rel="noopener noreferrer"
                 >
-                  <div className="crew-main">
-                    <h3>{member.name}</h3>
-                    <p className="crew-handle">@{member.handle}</p>
-                    <p>{member.blurb}</p>
-                  </div>
+                  <span className="crew-avatar" aria-hidden>
+                    {member.photo ? (
+                      <Image
+                        className="crew-avatar-img"
+                        src={member.photo}
+                        alt=""
+                        width={88}
+                        height={88}
+                      />
+                    ) : (
+                      <span className="crew-monogram">
+                        {crewInitials(member.name)}
+                      </span>
+                    )}
+                  </span>
+                  <h3>
+                    {member.mark ? (
+                      <span className="crew-mark">{member.mark}</span>
+                    ) : null}
+                    {member.name}
+                  </h3>
+                  <p className="crew-handle">@{member.handle}</p>
+                  <p>{member.blurb}</p>
                   <span className="destination-action">Profile →</span>
                 </a>
               </li>

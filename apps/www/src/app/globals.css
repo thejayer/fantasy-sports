@@ -375,6 +375,132 @@ a {
   white-space: nowrap;
 }
 
+.room-grid,
+.room-secondary,
+.event-cards,
+.crew-grid {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.room-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: var(--space-4);
+}
+
+.room-tile,
+.room-compact,
+.event-card,
+.crew-card {
+  display: grid;
+  color: inherit;
+  text-decoration: none;
+  border: 2px solid var(--color-divider);
+  background: var(--color-bg);
+  transition:
+    background 160ms ease,
+    border-color 160ms ease,
+    transform 160ms ease;
+}
+
+.room-tile {
+  gap: var(--space-3);
+  align-content: start;
+  min-height: 16.5rem;
+  padding: var(--space-5);
+}
+
+.room-tile-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.room-icon {
+  color: var(--color-accent);
+}
+
+.room-tile h3,
+.room-compact h3,
+.crew-card h3 {
+  margin: 0;
+  font-size: 22px;
+  text-transform: uppercase;
+  letter-spacing: -0.015em;
+}
+
+.room-tile p,
+.room-compact p {
+  margin: 0;
+  color: color-mix(in srgb, var(--color-text) 55%, transparent);
+}
+
+.room-tile .destination-action {
+  margin-top: auto;
+}
+
+a.room-tile:hover,
+a.room-tile:focus-visible,
+a.room-compact:hover,
+a.room-compact:focus-visible,
+a.event-card:hover,
+a.event-card:focus-visible,
+a.crew-card:hover,
+a.crew-card:focus-visible {
+  background: var(--accent-tint);
+  border-color: var(--color-accent);
+  transform: translateY(-2px);
+}
+
+.room-secondary {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--space-3);
+  margin-top: var(--space-4);
+}
+
+.room-compact {
+  grid-template-columns: 1fr auto;
+  gap: var(--space-3);
+  align-items: center;
+  padding: var(--space-4);
+}
+
+.room-compact-copy {
+  display: grid;
+  gap: 0.35rem;
+}
+
+.room-compact h3 {
+  font-size: 16px;
+}
+
+.room-compact p {
+  font-size: 13px;
+}
+
+.soon-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.15rem 0.45rem;
+  border: 2px solid var(--color-divider);
+  font-family: var(--font-heading);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: color-mix(in srgb, var(--color-text) 62%, transparent);
+  white-space: nowrap;
+}
+
+.room-tile.is-muted,
+.room-compact.is-muted {
+  opacity: 0.78;
+}
+
 .destinations {
   list-style: none;
   margin: 0;
@@ -449,53 +575,54 @@ a.destination .destination-action {
   white-space: nowrap;
 }
 
-.event-strip,
-.crew-list {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  border-top: 2px solid var(--color-divider);
-}
-
-.event-strip > li,
-.crew-list > li {
-  border-bottom: 2px solid var(--color-divider);
-}
-
-.event-row,
-.crew-row,
-.tonight-card {
+.event-cards {
   display: grid;
-  gap: 0.25rem;
-  padding: var(--space-4) 0;
-  color: inherit;
-  text-decoration: none;
-  transition: background 160ms ease, padding-left 160ms ease;
+  gap: var(--space-3);
 }
 
-a.event-row:hover,
-a.event-row:focus-visible,
-a.crew-row:hover,
-a.crew-row:focus-visible,
-a.tonight-card:hover,
-a.tonight-card:focus-visible {
-  background: var(--accent-tint);
-  padding-left: 0.35rem;
+.event-card {
+  grid-template-columns: 5.25rem 1fr auto;
+  align-items: center;
+  gap: var(--space-5);
+  padding: var(--space-4) var(--space-5);
 }
 
-.event-row {
-  grid-template-columns: 5.5rem 1fr auto;
-  align-items: baseline;
-  gap: var(--space-4);
+.event-chip {
+  display: grid;
+  justify-items: start;
+  gap: 0.1rem;
 }
 
-.event-when {
+.event-chip-month {
   font-family: var(--font-heading);
+  font-size: 12px;
   font-weight: 700;
-  font-size: 13px;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
   color: var(--accent-deep);
+}
+
+.event-chip-day {
+  font-family: var(--font-heading);
+  font-size: 28px;
+  font-weight: 800;
+  letter-spacing: -0.04em;
+  line-height: 0.95;
+}
+
+.event-main {
+  display: grid;
+  gap: 0.2rem;
+  min-width: 0;
+}
+
+.event-sport {
+  font-family: var(--font-heading);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--color-accent);
 }
 
 .event-label {
@@ -510,29 +637,93 @@ a.tonight-card:focus-visible {
   color: color-mix(in srgb, var(--color-text) 55%, transparent);
 }
 
-.crew-row {
-  grid-template-columns: 1fr auto;
-  align-items: center;
-  gap: var(--space-4);
+.crew-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--space-5);
 }
 
-.crew-main h3 {
-  margin: 0;
+.crew-card {
+  justify-items: start;
+  gap: 0.35rem;
+  padding: var(--space-5);
+}
+
+.crew-avatar {
+  display: grid;
+  place-items: center;
+  width: 5.5rem;
+  height: 5.5rem;
+  margin-bottom: 0.4rem;
+  padding: 3px;
+  background: linear-gradient(
+    135deg,
+    #4a90d9 0%,
+    var(--color-accent) 52%,
+    #f4a261 100%
+  );
+}
+
+.crew-avatar,
+.crew-monogram,
+.crew-avatar-img {
+  border-radius: 50%;
+}
+
+.crew-monogram,
+.crew-avatar-img {
+  width: 100%;
+  height: 100%;
+}
+
+.crew-monogram {
+  display: grid;
+  place-items: center;
+  background: var(--color-bg);
+  color: var(--color-text);
+  font-family: var(--font-heading);
+  font-size: 1.35rem;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+}
+
+.crew-card h3 {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
   font-size: 20px;
-  text-transform: uppercase;
+}
+
+.crew-mark {
+  font-size: 1rem;
 }
 
 .crew-handle {
-  margin: 0.15rem 0 0;
+  margin: 0;
   font-size: 13px;
   letter-spacing: 0.04em;
   color: var(--accent-deep);
 }
 
-.crew-main p:last-child {
-  margin: var(--space-2) 0 0;
-  max-width: 42ch;
+.crew-card p:last-of-type {
+  margin: 0.15rem 0 0.35rem;
+  max-width: 28ch;
   color: color-mix(in srgb, var(--color-text) 55%, transparent);
+}
+
+.tonight-card {
+  display: grid;
+  gap: 0.25rem;
+  padding: var(--space-4) 0;
+  color: inherit;
+  text-decoration: none;
+  transition: background 160ms ease, padding-left 160ms ease;
+}
+
+a.tonight-card:hover,
+a.tonight-card:focus-visible {
+  background: var(--accent-tint);
+  padding-left: 0.35rem;
 }
 
 .tonight-card {
@@ -695,6 +886,14 @@ a.tonight-card:focus-visible {
   color: var(--color-accent);
 }
 
+@media (max-width: 980px) {
+  .room-grid,
+  .room-secondary,
+  .crew-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
 @media (max-width: 760px) {
   .destination {
     grid-template-columns: 1fr;
@@ -711,14 +910,20 @@ a.tonight-card:focus-visible {
     white-space: normal;
   }
 
-  .event-row,
-  .crew-row {
+  .room-grid,
+  .room-secondary,
+  .crew-grid {
     grid-template-columns: 1fr;
-    gap: 0.35rem;
   }
 
-  .event-when {
-    min-width: 0;
+  .room-tile {
+    min-height: 0;
+  }
+
+  .event-card,
+  .room-compact {
+    grid-template-columns: 1fr;
+    gap: 0.65rem;
   }
 
   .tonight-actions {

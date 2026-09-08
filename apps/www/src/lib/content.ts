@@ -8,13 +8,30 @@ export type PortalEvent = {
   date: string;
   label: string;
   where: string;
+  /** Short sport / room chip (Football, Golf, Watch…). */
+  sport?: string;
   href?: string;
+  cta?: string;
 };
 
 export type CrewMember = {
   handle: string;
   name: string;
   blurb: string;
+  /** Folk-style mark next to the name. */
+  mark?: string;
+  photo?: string;
+  /** Omit from the grid when false — no hollow shells. */
+  ready?: boolean;
+};
+
+export type DestinationItem = {
+  index: string;
+  kicker: string;
+  title: string;
+  body: string;
+  action: string;
+  actionPending: string;
 };
 
 export const portalCopy = {
@@ -31,7 +48,7 @@ export const portalCopy = {
   },
   events: {
     heading: "Coming up",
-    support: "The next reasons to open Discord or the hub.",
+    support: "Date, room, and a door into Discord or the hub.",
     marker: "CAL",
     empty: "Nothing dated yet — check Discord for the next hang.",
     items: [
@@ -39,27 +56,50 @@ export const portalCopy = {
         date: "2026-08-16",
         label: "Watch party",
         where: "Discord voice + Watch",
+        sport: "Watch",
         href: "/watch",
+        cta: "Open Watch",
       },
       {
         date: "2026-09-01",
         label: "Football draft night",
         where: "Fantasy hub",
+        sport: "Football",
+        cta: "Open Fantasy",
       },
       {
         date: "2026-09-12",
         label: "Golf season kickoff",
         where: "Fantasy hub · Golf",
+        sport: "Golf",
+        cta: "Open Golf",
+      },
+      {
+        date: "2026-09-18",
+        label: "Thursday night watch",
+        where: "Discord voice + Watch",
+        sport: "Watch",
+        href: "/watch",
+        cta: "Open Watch",
+      },
+      {
+        date: "2026-10-02",
+        label: "Waiver-week hang",
+        where: "Fantasy hub · Football",
+        sport: "Football",
+        cta: "Open Fantasy",
       },
     ] satisfies PortalEvent[],
   },
   destinations: {
     heading: "Where to go",
-    support: "Seven rooms. Pick the one you need right now.",
-    marker: "01 — 07",
+    support: "Four rooms first. The rest stay close — stubs stay small.",
+    marker: "ROOMS",
+    primary: ["fantasy", "fitness", "discord", "watch"] as const,
+    secondary: ["ai", "people", "palworld"] as const,
     items: {
       fitness: {
-        index: "07",
+        index: "02",
         kicker: "Train",
         title: "Fitness",
         body: "Log golf, tennis, pickleball, lifting, and endurance — local-first, installable, offline.",
@@ -68,14 +108,14 @@ export const portalCopy = {
       },
       fantasy: {
         index: "01",
-        kicker: "Fantasy",
-        title: "Leagues & tools",
+        kicker: "Leagues",
+        title: "Fantasy",
         body: "Need standings, a waiver claim, or draft order? The hub has the live boards.",
         action: "Open the hub",
         actionPending: "Open the hub",
       },
       ai: {
-        index: "02",
+        index: "05",
         kicker: "Signal",
         title: "AI News",
         body: "Catch up in five minutes — editor picks first, then the RSS firehose.",
@@ -83,7 +123,7 @@ export const portalCopy = {
         actionPending: "Read AI News",
       },
       watch: {
-        index: "03",
+        index: "04",
         kicker: "Queue",
         title: "Watch",
         body: "Tonight’s clip is already queued — hit play or drop the next one from Discord.",
@@ -91,7 +131,7 @@ export const portalCopy = {
         actionPending: "Open Watch",
       },
       people: {
-        index: "04",
+        index: "06",
         kicker: "Follow",
         title: "People",
         body: "Portraits and bios for Elon, Jensen, and the rest of the desk — one tap to their X.",
@@ -99,7 +139,7 @@ export const portalCopy = {
         actionPending: "Open People",
       },
       discord: {
-        index: "05",
+        index: "03",
         kicker: "Chat",
         title: "Discord",
         body: "Jump voice for the argument that does not belong on a league page.",
@@ -107,14 +147,14 @@ export const portalCopy = {
         actionPending: "Invite soon",
       },
       palworld: {
-        index: "06",
+        index: "07",
         kicker: "Games",
         title: "Palworld",
         body: "Co-op when the world’s up — join details land here so they are not buried in chat.",
         action: "Server info",
-        actionPending: "Details soon",
+        actionPending: "Soon",
       },
-    },
+    } satisfies Record<string, DestinationItem>,
   },
   crew: {
     heading: "Meet the crew",
@@ -127,17 +167,23 @@ export const portalCopy = {
       {
         handle: "jay",
         name: "Jay",
+        mark: "⛳",
         blurb: "Commissioner energy. Sets the draft music too loud.",
+        ready: true,
       },
       {
         handle: "the-cap",
         name: "The Cap",
+        mark: "🏈",
         blurb: "Always drafting RBs. Trophy-case regular.",
+        ready: true,
       },
       {
         handle: "gridiron",
         name: "Gridiron",
+        mark: "🎙️",
         blurb: "Late-round steals and worse takes in voice.",
+        ready: true,
       },
     ] satisfies CrewMember[],
   },
@@ -148,11 +194,13 @@ export const portalCopy = {
   },
 } as const;
 
+export type DestinationId = keyof typeof portalCopy.destinations.items;
+
 /** Upcoming events on/after `now` (UTC day), oldest first. */
 export function upcomingPortalEvents(
   items: readonly PortalEvent[],
   now = new Date(),
-  limit = 3,
+  limit = 4,
 ): PortalEvent[] {
   const today = Date.UTC(
     now.getUTCFullYear(),
@@ -176,4 +224,37 @@ export function formatPortalEventDate(isoDate: string): string {
     day: "numeric",
     timeZone: "UTC",
   });
+}
+
+export function formatPortalEventChip(isoDate: string): {
+  month: string;
+  day: string;
+} {
+  const [y, m, d] = isoDate.split("-").map(Number);
+  if (!y || !m || !d) return { month: "", day: isoDate };
+  const date = new Date(Date.UTC(y, m - 1, d));
+  return {
+    month: date.toLocaleDateString("en-US", { month: "short", timeZone: "UTC" }),
+    day: String(d),
+  };
+}
+
+export function crewInitials(name: string): string {
+  const parts = name.trim().split(/\s+/).filter(Boolean);
+  if (!parts.length) return "?";
+  if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
+  return `${parts[0][0]}${parts[parts.length - 1][0]}`.toUpperCase();
+}
+
+/** Cards that have a name, handle, and one-line bio — skip shells. */
+export function readyCrewMembers(
+  members: readonly CrewMember[] = portalCopy.crew.members,
+): CrewMember[] {
+  return members.filter(
+    (member) =>
+      member.ready !== false &&
+      member.handle.trim() &&
+      member.name.trim() &&
+      member.blurb.trim(),
+  );
 }

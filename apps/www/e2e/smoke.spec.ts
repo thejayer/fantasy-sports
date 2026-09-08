@@ -13,10 +13,10 @@ test.describe("portal smoke", () => {
     await expect(
       page.getByRole("heading", { name: /Where to go/i }),
     ).toBeVisible();
-    await expect(page.getByRole("link", { name: /Leagues & tools/i })).toBeVisible();
+    await expect(page.getByRole("link", { name: /^Fantasy/i }).first()).toBeVisible();
     await expect(page.getByRole("link", { name: /People/i }).first()).toBeVisible();
     await expect(page.getByRole("link", { name: /Fitness/i }).first()).toBeVisible();
-    await expect(page.getByText(/Details soon/i)).toBeVisible();
+    await expect(page.getByText(/^Soon$/i).first()).toBeVisible();
     await expect(
       page.getByRole("heading", { name: /Coming up/i }),
     ).toBeVisible();
