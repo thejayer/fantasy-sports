@@ -294,6 +294,10 @@ a {
   .hero p,
   .hero-cta,
   .destination,
+  .room-tile,
+  .room-compact,
+  .event-card,
+  .crew-card,
   .cta-primary {
     animation: none !important;
     transition: none !important;

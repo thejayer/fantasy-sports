@@ -1475,7 +1475,7 @@ const renderDashboard = () => {
   const todayLead = document.querySelector("#todayLead");
   const todayNext = document.querySelector("#todayNext");
   if (todayTitle) {
-    todayTitle.textContent = recommendation.title;
+    todayTitle.textContent = sessions.length ? "Keep the log going" : "Log a session";
   }
   if (todayLead) {
     todayLead.textContent = `${athleteProfile.primarySport} · ${stats.totalHours.toFixed(1)}h this week · Ready ${stats.readiness}`;
@@ -1486,7 +1486,57 @@ const renderDashboard = () => {
 
   renderReadinessCheckin(stats);
   renderTodayPanel(stats, recommendation);
+  renderHomeLog();
   renderInsights(stats);
+};
+
+const renderHomeLog = () => {
+  const chips = document.querySelector("#homeSportChips");
+  const list = document.querySelector("#homeRecentSessions");
+  if (!chips || !list) return;
+
+  const sports = getProfileSports();
+  const recent = [...sessions]
+    .sort((a, b) => b.date.localeCompare(a.date))
+    .slice(0, 3);
+
+  chips.innerHTML = ["All", ...sports]
+    .map(
+      (sport) => `
+    <button class="sport-chip" data-home-sport="${sport === "All" ? "All sports" : escapeHtml(sport)}" type="button">${escapeHtml(sport)}</button>
+  `
+    )
+    .join("");
+
+  if (!recent.length) {
+    list.innerHTML = `
+      <article class="empty-state compact">
+        <strong>No sessions yet</strong>
+        <p>Log the first one — lifting stays dense, golf and court sports stay light.</p>
+        <button class="primary-button" data-view-jump="log" type="button">Log session</button>
+      </article>
+    `;
+    return;
+  }
+
+  list.innerHTML = recent
+    .map((item) => {
+      const sport = getTemplate(item.type).sport;
+      return `
+    <article class="home-session-card" data-today-open="${item.id}">
+      <div class="session-date">
+        <strong>${formatDate(item.date)}</strong>
+        <span>${escapeHtml(sport)}</span>
+      </div>
+      <div>
+        <strong>${escapeHtml(item.type)}</strong>
+        <p>${escapeHtml(getSessionSummary(item))}</p>
+      </div>
+      <span class="tag">${getSessionMinutes(item)} min</span>
+    </article>
+  `;
+    })
+    .join("");
 };
 
 const renderTodayPanel = (
@@ -1656,17 +1706,22 @@ const renderLiftSets = (sets = []) => {
 
   const liftSets = sets.length ? sets : getDefaultLiftSets();
   list.innerHTML = liftSets
-    .map(
-      (set, index) => `
+    .map((set, index) => {
+      const prev = index > 0 ? liftSets[index - 1] : null;
+      const prevLabel = prev
+        ? `${prev.reps || 0} × ${prev.weight || 0}`
+        : "—";
+      return `
     <div class="lift-set-row" data-lift-row>
       <input data-lift-field="exercise" type="text" value="${escapeHtml(set.exercise || "Exercise")}" aria-label="Exercise" />
       <input data-lift-field="set" type="number" min="1" value="${set.set || index + 1}" aria-label="Set number" />
+      <span class="lift-prev" title="Previous set">${escapeHtml(prevLabel)}</span>
       <input data-lift-field="reps" type="number" min="1" value="${set.reps || 5}" aria-label="Reps" />
       <input data-lift-field="weight" type="number" min="0" value="${set.weight || 0}" aria-label="Weight" />
       <input data-lift-field="rpe" type="number" min="1" max="10" value="${set.rpe || 7}" aria-label="RPE" />
-      <button class="ghost-button danger-button" data-lift-remove type="button">Remove</button>
+      <button class="ghost-button danger-button" data-lift-remove type="button" aria-label="Remove set">×</button>
     </div>
-  `
-    )
+  `;
+    })
     .join("");
 };

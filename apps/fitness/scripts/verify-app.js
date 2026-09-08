@@ -82,6 +82,9 @@ if (!/id="navMore"[^>]*\bhidden\b/.test(indexHtml)) {
 if (!indexHtml.includes("today-summary")) {
   errors.push("app.html should lead the dashboard with a short today summary");
 }
+if (!indexHtml.includes("home-log") || !indexHtml.includes("homeRecentSessions")) {
+  errors.push("app.html should keep a log-first recent-session strip on the dashboard");
+}
 if (!indexHtml.includes("Log session →")) {
   errors.push("app.html should keep a Log session CTA in the first look");
 }

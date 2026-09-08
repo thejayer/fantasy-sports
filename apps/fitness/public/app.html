@@ -149,6 +149,18 @@
             <span id="topbarFocus" hidden>Golf</span>
           </section>
 
+          <section class="home-log" aria-labelledby="home-log-title">
+            <div class="home-log-head">
+              <div>
+                <p class="eyebrow">Log</p>
+                <h3 id="home-log-title">Last sessions</h3>
+              </div>
+              <button class="ghost-button" data-view-jump="log" type="button">Open log</button>
+            </div>
+            <div class="sport-chips" id="homeSportChips"></div>
+            <div class="home-session-list" id="homeRecentSessions"></div>
+          </section>
+
           <div class="hero-band">
             <div>
               <p class="eyebrow">Training Focus</p>
@@ -606,10 +618,19 @@
             <section class="lift-set-builder wide" id="liftSetBuilder" hidden>
               <div class="panel-heading">
                 <div>
-                  <p class="eyebrow">Strength Detail</p>
-                  <h3>Exercise sets</h3>
+                  <p class="eyebrow">Strength</p>
+                  <h3>Sets</h3>
                 </div>
-                <button class="ghost-button" id="addLiftSet" type="button">Add set</button>
+                <button class="ghost-button" id="addLiftSet" type="button">+ Add set</button>
+              </div>
+              <div class="lift-set-head" aria-hidden="true">
+                <span>Exercise</span>
+                <span>Set</span>
+                <span>Prev</span>
+                <span>Reps</span>
+                <span>Weight</span>
+                <span>RPE</span>
+                <span></span>
               </div>
               <div class="lift-set-list" id="liftSetList"></div>
             </section>
