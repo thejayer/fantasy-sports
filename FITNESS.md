@@ -20,7 +20,7 @@ from [athlete-log](https://github.com/thejayer/athlete-log) is not used.
   Community / AI / People / Watch routes.
 - Product boundary matches Fantasy: absolute cross-origin links, independent
   scale-to-zero.
-- Portal `/ai` `/watch` `/people` are content pages. Fitness is an app.
+- Portal `/ai` `/watch` `/people` `/palworld` are content pages. Fitness is an app.
 
 The old Pages site (`thejayer.github.io/athlete-log`) is stale and is not
 the deploy target. This repo is.

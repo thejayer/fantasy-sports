@@ -150,8 +150,8 @@ export const portalCopy = {
         index: "07",
         kicker: "Games",
         title: "Palworld",
-        body: "Co-op when the world’s up — join details land here so they are not buried in chat.",
-        action: "Server info",
+        body: "Co-op when the world’s up — join details live on the room page, passwords stay in Discord.",
+        action: "Open Palworld",
         actionPending: "Soon",
       },
     } satisfies Record<string, DestinationItem>,
@@ -186,6 +186,36 @@ export const portalCopy = {
         ready: true,
       },
     ] satisfies CrewMember[],
+  },
+  palworld: {
+    heading: "Palworld",
+    kicker: "Co-op world",
+    support:
+      "Join details live here so they are not buried in chat. IPs and passwords stay in Discord.",
+    marker: "WORLD",
+    statusLabel: "World status",
+    status:
+      "World status and the current password live in Discord — we do not post IPs here.",
+    howToJoinHeading: "How to join",
+    steps: [
+      {
+        title: "Join the crew Discord",
+        body: "Voice and the games channel are where someone says the world is up.",
+      },
+      {
+        title: "Ask for the current world",
+        body: "A regular will drop the invite or password in-channel. Nothing public on this page.",
+      },
+      {
+        title: "Jump in when it’s live",
+        body: "Co-op when the world’s up — no public server-browser listing.",
+      },
+    ],
+    discordCta: "Open Discord for join details",
+    extraInfoCta: "More info",
+    empty:
+      "World is dark right now — ping Discord when you want a session.",
+    ready: true,
   },
   footer: {
     left: "Strictly Jayers",
@@ -257,4 +287,81 @@ export function readyCrewMembers(
       member.name.trim() &&
       member.blurb.trim(),
   );
+}
+
+export type PalworldRoom = (typeof portalCopy)["palworld"];
+
+/** True when the Palworld room has public join copy (not a hollow stub). */
+export function hasPalworldJoinContent(
+  room: PalworldRoom = portalCopy.palworld,
+  statusOverride?: string | null,
+): boolean {
+  if (statusOverride?.trim()) return true;
+  if (!room.ready) return false;
+  return Boolean(room.status.trim() || room.steps.length > 0);
+}
+
+export type PulseCell = {
+  id: "event" | "watch" | "discord";
+  kicker: string;
+  title: string;
+  detail: string | null;
+  href: string;
+  external?: boolean;
+};
+
+/**
+ * Home pulse strip — next dated event, Watch feed facts, Discord CTA.
+ * Watch count/title only when the playlist feed actually returned items.
+ */
+export function buildPortalPulse(opts: {
+  nextEvent: PortalEvent | null;
+  watchTitle: string | null;
+  watchCount: number | null;
+  discordInviteUrl: string | null;
+}): PulseCell[] {
+  const cells: PulseCell[] = [];
+  if (opts.nextEvent) {
+    const when = formatPortalEventDate(opts.nextEvent.date);
+    cells.push({
+      id: "event",
+      kicker: "Next",
+      title: opts.nextEvent.label,
+      detail: opts.nextEvent.where
+        ? `${when} · ${opts.nextEvent.where}`
+        : when,
+      href: opts.nextEvent.href ?? "/#events",
+    });
+  }
+  if (opts.watchCount != null && opts.watchCount > 0) {
+    cells.push({
+      id: "watch",
+      kicker: "Watch",
+      title: opts.watchTitle ?? `${opts.watchCount} clips`,
+      detail:
+        opts.watchTitle != null
+          ? `${opts.watchCount} clip${opts.watchCount === 1 ? "" : "s"} in the queue`
+          : null,
+      href: "/watch",
+    });
+  } else {
+    cells.push({
+      id: "watch",
+      kicker: "Watch",
+      title: "Shared playlist",
+      detail: "Open the queue",
+      href: "/watch",
+    });
+  }
+  if (opts.discordInviteUrl) {
+    cells.push({
+      id: "discord",
+      kicker: "Discord",
+      title: "Jump voice",
+      detail: "Drop a clip or hang",
+      href: opts.discordInviteUrl,
+      external: true,
+    });
+  }
+  return cells;
 }
