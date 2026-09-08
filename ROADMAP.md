@@ -256,8 +256,10 @@ Shipped the high-leverage slice without ballooning snapshot size:
   ESPN request; this is what makes `format: dynasty` mean something on disk.
 - **Transactions / trades** via paged `recent_activity` (both sports; empty
   before 2019) → `transactions.json` (fills the 2.2 stub). Default 200 pages ×
-  25 topics (`SJ_ACTIVITY_MAX_PAGES`, max 400). Sync replaces the file; it
-  does not merge with a prior pull.
+  25 topics (`SJ_ACTIVITY_MAX_PAGES`, max 400). Historical seasons fall back
+  to `mTransactions2` by scoring period when the communication view is empty
+  or raises `ESPNInvalidLeague`. Sync replaces the file; it does not merge
+  with a prior pull.
 - **Free agents / waivers** via `league.free_agents` (both sports; empty before
   2019; size-capped, default 50, `SJ_FREE_AGENT_SIZE` up to 150) →
   `free_agents.json`. Hub Waivers tab prefers this list (joined to season
