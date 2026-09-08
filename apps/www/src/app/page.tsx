@@ -2,14 +2,17 @@ import Image from "next/image";
 import Link from "next/link";
 
 import {
+  buildPortalPulse,
   crewInitials,
   formatPortalEventChip,
+  hasPalworldJoinContent,
   portalCopy,
   readyCrewMembers,
   upcomingPortalEvents,
   type DestinationId,
 } from "@/lib/content";
 import { getSiteConfig } from "@/lib/site";
+import { loadWatchPlaylist } from "@/lib/watch";
 
 type Destination = {
   id: DestinationId;
@@ -78,7 +81,6 @@ function destinationHref(
     fantasyHubUrl: string;
     fitnessUrl: string;
     discordInviteUrl: string | null;
-    palworldInfoUrl: string | null;
   },
 ): string | null {
   if (id === "fantasy") return hrefs.fantasyHubUrl;
@@ -87,27 +89,36 @@ function destinationHref(
   if (id === "watch") return "/watch";
   if (id === "ai") return "/ai";
   if (id === "people") return "/people";
-  return hrefs.palworldInfoUrl;
+  return "/palworld";
 }
 
-export default function HomePage() {
-  const { fantasyHubUrl, fitnessUrl, discordInviteUrl, palworldInfoUrl } =
+export const revalidate = 1800;
+
+export default async function HomePage() {
+  const { fantasyHubUrl, fitnessUrl, discordInviteUrl, palworldStatus } =
     getSiteConfig();
   const copy = portalCopy;
   const items = copy.destinations.items;
   const events = upcomingPortalEvents(copy.events.items);
   const crew = readyCrewMembers(copy.crew.members);
+  const playlist = await loadWatchPlaylist(8);
+  const pulse = buildPortalPulse({
+    nextEvent: events[0] ?? null,
+    watchTitle: playlist.feedOk ? (playlist.items[0]?.title ?? null) : null,
+    watchCount: playlist.feedOk ? playlist.items.length : null,
+    discordInviteUrl,
+  });
+  const palworldReady = hasPalworldJoinContent(copy.palworld, palworldStatus);
   const hrefs = {
     fantasyHubUrl,
     fitnessUrl,
     discordInviteUrl,
-    palworldInfoUrl,
   };
 
   function buildDestination(id: DestinationId): Destination {
     const item = items[id];
     const href = destinationHref(id, hrefs);
-    const pending = href == null;
+    const pending = id === "palworld" ? !palworldReady : href == null;
     return {
       id,
       index: item.index,
@@ -171,6 +182,45 @@ export default function HomePage() {
           </div>
         </div>
       </section>
+
+      {pulse.length > 0 ? (
+        <section className="pulse-strip" aria-label="Crew pulse">
+          <ul className="pulse-strip-inner">
+            {pulse.map((cell) => {
+              const inner = (
+                <>
+                  <span className="pulse-kicker">{cell.kicker}</span>
+                  <span className="pulse-title">{cell.title}</span>
+                  {cell.detail ? (
+                    <span className="pulse-detail">{cell.detail}</span>
+                  ) : null}
+                </>
+              );
+              return (
+                <li key={cell.id}>
+                  {cell.external ? (
+                    <a
+                      className="pulse-cell"
+                      href={cell.href}
+                      rel="noopener noreferrer"
+                    >
+                      {inner}
+                    </a>
+                  ) : cell.href.startsWith("/") ? (
+                    <Link className="pulse-cell" href={cell.href}>
+                      {inner}
+                    </Link>
+                  ) : (
+                    <a className="pulse-cell" href={cell.href}>
+                      {inner}
+                    </a>
+                  )}
+                </li>
+              );
+            })}
+          </ul>
+        </section>
+      ) : null}
 
       <section
         id="events"

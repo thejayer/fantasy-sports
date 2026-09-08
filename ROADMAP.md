@@ -1150,10 +1150,11 @@ fantasy stays on `fantasy.strictlyjayers.com`. Docs: [PORTAL.md](PORTAL.md).
 - Hero atmosphere imagery under the Signal Red plane; intentional home motion
   (brand settle, CTA lift, destination hover) with `prefers-reduced-motion`.
 
-### P.2 Content and destinations — LANDED (Palworld pending)
+### P.2 Content and destinations — LANDED
 - Discord invite live (default in `lib/site.ts`; optional `DISCORD_INVITE_URL`).
-- Palworld stays a **“Details soon”** tile until `PALWORLD_INFO_URL` is set on
-  `sj-www` — intentional, not a missing destination.
+- Palworld is a real `/palworld` room (P.10); home tile links there. Soon only
+  if join copy is emptied. Optional `PALWORLD_STATUS` / `PALWORLD_INFO_URL`
+  — never IPs or passwords.
 - Home destinations answer “why go here now”; Coming up event strip + Meet the
   crew deep-links to hub `/u/{handle}` (handles edited in `lib/content.ts`).
 - Reciprocal **Community** link in hub chrome (header + mobile nav) →
@@ -1186,9 +1187,9 @@ jump voice” CTAs, YouTube / hub cross-links, and a “how we use this” room
 section. Fail-soft when the feed is down (embed stays).
 
 ### P.7 Portal smoke — LANDED (light)
-Vitest on portal content helpers + Playwright smoke (home CTAs, `/watch`
-embed + tonight’s pick, `/ai` editor picks, `/people` X links). Wired into the
-`www` CI job.
+Vitest on portal content helpers + Playwright smoke (home pulse + rooms,
+`/watch` player + queue, `/ai` Must read, `/people` X links, `/palworld`).
+Wired into the `www` CI job.
 
 ### P.8 People directory — LANDING
 - `/people` on `apps/www`: bank-style leadership cards (portrait, 2–3 sentence
@@ -1213,6 +1214,19 @@ embed + tonight’s pick, `/ai` editor picks, `/people` X links). Wired into the
   `./scripts/setup-fitness-domain.sh` (ops maps DNS; PR does not require a
   Spaceship click). Add the fitness origin/redirect to the existing Google
   OAuth client.
+
+### P.10 Living rooms + portal pulse — LANDING
+Phase E of the sitewide UX pass (A–D shipped in #153).
+- Home **pulse strip** under the hero: next dated event, Watch feed title/count
+  (only when the playlist RSS returns items), Discord voice CTA. No invented
+  numbers.
+- `/watch` player + queue (HoneyBook / ClickUp): featured embed ~2/3, sidebar
+  queue ~1/3 with thumbnails and Playing. `?v=` stays on youtube-nocookie +
+  the same playlist. Discord / YouTube CTAs kept.
+- `/ai` editorial desk: Must read hero + editor-picks sidebar, Top stories
+  card grid for RSS. Same hourly-ish feed plumbing.
+- `/palworld` room + sitemap. Nav More and room pages cross-link Watch ↔ AI ↔
+  People ↔ Palworld.
 
 ---
 

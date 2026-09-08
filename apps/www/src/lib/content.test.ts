@@ -1,9 +1,11 @@
 import { describe, expect, it } from "vitest";
 
 import {
+  buildPortalPulse,
   crewInitials,
   formatPortalEventChip,
   formatPortalEventDate,
+  hasPalworldJoinContent,
   portalCopy,
   readyCrewMembers,
   upcomingPortalEvents,
@@ -55,8 +57,14 @@ describe("formatPortalEventChip", () => {
 });
 
 describe("portal destinations", () => {
-  it("keeps Palworld pending-friendly copy", () => {
+  it("keeps Palworld pending-friendly copy and a real room", () => {
     expect(portalCopy.destinations.items.palworld.actionPending).toBe("Soon");
+    expect(portalCopy.destinations.items.palworld.action).toBe("Open Palworld");
+    expect(hasPalworldJoinContent()).toBe(true);
+    expect(portalCopy.palworld.status.toLowerCase()).toMatch(/discord/);
+    expect(portalCopy.palworld.status.toLowerCase()).not.toMatch(
+      /\b(?:\d{1,3}\.){3}\d{1,3}\b/,
+    );
   });
 
   it("lists crew handles for hub /u deep-links", () => {
@@ -88,6 +96,41 @@ describe("portal destinations", () => {
       "palworld",
     ]);
     expect(portalCopy.destinations.items.fantasy.title).toBe("Fantasy");
+  });
+});
+
+describe("buildPortalPulse", () => {
+  it("uses the next event, Watch feed facts, and Discord — no invented counts", () => {
+    const cells = buildPortalPulse({
+      nextEvent: {
+        date: "2026-09-18",
+        label: "Thursday night watch",
+        where: "Discord voice + Watch",
+        href: "/watch",
+      },
+      watchTitle: "Tonight’s clip",
+      watchCount: 4,
+      discordInviteUrl: "https://discord.gg/6BH4CfB",
+    });
+    expect(cells.map((c) => c.id)).toEqual(["event", "watch", "discord"]);
+    expect(cells[0]?.title).toBe("Thursday night watch");
+    expect(cells[0]?.href).toBe("/watch");
+    expect(cells[1]?.title).toBe("Tonight’s clip");
+    expect(cells[1]?.detail).toMatch(/4 clips/);
+    expect(cells[2]?.external).toBe(true);
+  });
+
+  it("omits a Watch count when the feed is empty", () => {
+    const cells = buildPortalPulse({
+      nextEvent: null,
+      watchTitle: null,
+      watchCount: null,
+      discordInviteUrl: null,
+    });
+    expect(cells).toHaveLength(1);
+    expect(cells[0]?.id).toBe("watch");
+    expect(cells[0]?.title).toBe("Shared playlist");
+    expect(cells[0]?.detail).not.toMatch(/\d/);
   });
 });
 

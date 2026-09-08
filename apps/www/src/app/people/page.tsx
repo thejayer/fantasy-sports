@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 
+import { RoomCrossLinks } from "@/components/RoomCrossLinks";
 import {
   INFLUENTIAL_PEOPLE,
   PEOPLE_LANE_COPY,
@@ -97,6 +98,8 @@ export default function PeoplePage() {
           </section>
         );
       })}
+
+      <RoomCrossLinks current="people" />
 
       <footer className="site-footer">
         <Link href="/">← Strictly Jayers</Link>

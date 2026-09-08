@@ -10,6 +10,10 @@ export type FeedItem = {
   publishedAt: string | null;
   sourceId: string;
   sourceLabel: string;
+  /** Present on YouTube Atom entries (`yt:videoId`). */
+  videoId?: string | null;
+  /** `media:thumbnail` when the feed provides one. */
+  thumbnailUrl?: string | null;
 };
 
 function decodeEntities(value: string): string {
@@ -59,6 +63,13 @@ function publishedFromItem(block: string): string | null {
   return date.toISOString();
 }
 
+function attrUrl(block: string, tag: string): string | null {
+  const re = new RegExp(`<${tag}[^>]+url=["']([^"']+)["'][^>]*>`, "i");
+  const match = block.match(re);
+  if (match?.[1]?.startsWith("http")) return match[1];
+  return null;
+}
+
 /** Parse `<item>` / `<entry>` blocks from an RSS or Atom document. */
 export function parseFeedItems(
   xml: string,
@@ -80,6 +91,8 @@ export function parseFeedItems(
       tagContent(block, "summary") ||
       tagContent(block, "content") ||
       null;
+    const videoId = tagContent(block, "yt:videoId");
+    const thumbnailUrl = attrUrl(block, "media:thumbnail");
     items.push({
       title,
       url,
@@ -87,6 +100,8 @@ export function parseFeedItems(
       publishedAt: publishedFromItem(block),
       sourceId: opts.sourceId,
       sourceLabel: opts.sourceLabel,
+      videoId,
+      thumbnailUrl,
     });
     if (items.length >= limit) break;
   }

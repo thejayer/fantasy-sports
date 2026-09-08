@@ -11,7 +11,7 @@ type Props = {
   discordInviteUrl: string | null;
 };
 
-/** Collapses Places / AI / People / Fitness / Watch on small screens; Fantasy + Discord stay visible. */
+/** Collapses Places / AI / People / Fitness / Watch / Palworld on small screens; Fantasy + Discord stay visible. */
 export function PortalNav({
   fantasyHubUrl,
   fitnessUrl,
@@ -82,6 +82,9 @@ export function PortalNav({
         </a>
         <Link href="/watch" onClick={() => setOpen(false)}>
           Watch
+        </Link>
+        <Link href="/palworld" onClick={() => setOpen(false)}>
+          Palworld
         </Link>
         <div className="nav-accent-mobile">
           <AccentPicker />

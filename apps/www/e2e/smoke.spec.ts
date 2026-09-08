@@ -1,7 +1,7 @@
 import { expect, test } from "@playwright/test";
 
 /**
- * Portal smoke (roadmap P.7 / P.8): home handoffs, Watch embed, AI editor desk, People.
+ * Portal smoke (roadmap P.7 / P.8 / P.10): home pulse, Watch stage, AI desk, People, Palworld.
  */
 
 test.describe("portal smoke", () => {
@@ -16,7 +16,10 @@ test.describe("portal smoke", () => {
     await expect(page.getByRole("link", { name: /^Fantasy/i }).first()).toBeVisible();
     await expect(page.getByRole("link", { name: /People/i }).first()).toBeVisible();
     await expect(page.getByRole("link", { name: /Fitness/i }).first()).toBeVisible();
-    await expect(page.getByText(/^Soon$/i).first()).toBeVisible();
+    await expect(page.getByRole("region", { name: /Crew pulse/i })).toBeVisible();
+    const palworld = page.locator(".room-compact").filter({ hasText: "Palworld" });
+    await expect(palworld).toHaveAttribute("href", "/palworld");
+    await expect(palworld.getByText(/^Soon$/i)).toHaveCount(0);
     await expect(
       page.getByRole("heading", { name: /Coming up/i }),
     ).toBeVisible();
@@ -31,15 +34,12 @@ test.describe("portal smoke", () => {
     await expect(
       page.locator('iframe[title="Strictly Jayers YouTube playlist"]'),
     ).toBeVisible();
-    // Tonight's pick and its "Drop a clip" CTA need playlist RSS. The player
-    // section still exposes Discord when the feed is empty.
-    const tonight = page.getByRole("heading", { name: /Tonight’s pick/i });
-    if (await tonight.isVisible().catch(() => false)) {
-      await expect(tonight).toBeVisible();
-      await expect(
-        page.getByRole("link", { name: /Drop a clip in Discord/i }),
-      ).toBeVisible();
-    }
+    await expect(
+      page.getByRole("heading", { name: /Video playlist/i }),
+    ).toBeVisible();
+    await expect(
+      page.getByRole("link", { name: /Drop a clip in Discord/i }),
+    ).toBeVisible();
     await expect(
       page.getByRole("link", { name: /Discord voice/i }).first(),
     ).toBeVisible();
@@ -51,7 +51,7 @@ test.describe("portal smoke", () => {
       page.getByRole("heading", { name: "AI News", exact: true }),
     ).toBeVisible();
     const picks = page.locator("section").filter({
-      has: page.getByRole("heading", { name: /Big stories/i }),
+      has: page.getByRole("heading", { name: /Must read/i }),
     });
     await expect(picks.getByText(/Editor desk/i)).toBeVisible();
     await expect(
@@ -59,6 +59,9 @@ test.describe("portal smoke", () => {
     ).toBeVisible();
     await expect(
       picks.getByRole("link", { name: /Testing ads in ChatGPT/i }),
+    ).toBeVisible();
+    await expect(
+      page.getByRole("heading", { name: /Top stories/i }),
     ).toBeVisible();
   });
 
@@ -76,5 +79,18 @@ test.describe("portal smoke", () => {
     const elonCard = page.locator(".people-card").filter({ hasText: "Elon Musk" });
     await expect(elonCard.locator("img")).toBeVisible();
     await expect(page.getByRole("link", { name: /Fitness/i }).first()).toBeVisible();
+  });
+
+  test("palworld room and join details", async ({ page }) => {
+    await page.goto("/palworld");
+    await expect(
+      page.getByRole("heading", { name: "Palworld", exact: true }),
+    ).toBeVisible();
+    await expect(
+      page.getByRole("link", { name: /Open Discord for join details/i }),
+    ).toBeVisible();
+    await expect(page.getByRole("link", { name: /^Watch/i }).first()).toBeVisible();
+    await expect(page.getByRole("link", { name: /AI News/i }).first()).toBeVisible();
+    await expect(page.getByRole("link", { name: /^People/i }).first()).toBeVisible();
   });
 });
