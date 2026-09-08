@@ -16,9 +16,10 @@ from __future__ import annotations
 
 import os
 import time
+from collections.abc import Callable
 from dataclasses import dataclass
 from types import SimpleNamespace
-from typing import Any, Callable
+from typing import Any
 
 # Executed ledger types we persist. Proposals / vetoes / roster moves stay out
 # so the hub Feed matches recent_activity (adds, drops, executed trades).
@@ -82,13 +83,15 @@ def txn_period_throttle() -> float:
 def _positive_int(value: Any, default: int | None = None) -> int | None:
     if value is None or isinstance(value, bool):
         return default
-    try:
-        number = int(value)
-    except (TypeError, ValueError):
-        return default
-    if number < 0:
-        return default
-    return number
+    if isinstance(value, int):
+        return value if value >= 0 else default
+    if isinstance(value, str):
+        try:
+            number = int(value)
+        except ValueError:
+            return default
+        return number if number >= 0 else default
+    return default
 
 
 def discover_scoring_periods(
