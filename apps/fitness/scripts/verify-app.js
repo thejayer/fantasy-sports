@@ -22,6 +22,7 @@ const requiredFiles = [
   "app.js",
   "service-worker.js",
   "manifest.webmanifest",
+  "favicon.ico",
   "assets/app-icon.svg",
   "assets/court-course.svg",
   "fonts/Archivo-latin-400.woff2",
@@ -69,6 +70,9 @@ if (!indexHtml.includes('id="sjAccount"') || !indexHtml.includes("Sign out")) {
 
 if (!indexHtml.includes("Strictly Jayers")) {
   errors.push("app.html should use Strictly Jayers chrome");
+}
+if (!indexHtml.includes('href="/favicon.ico"')) {
+  errors.push("app.html should expose /favicon.ico for browser chrome");
 }
 if (!indexHtml.includes('class="page-hero"')) {
   errors.push("app.html should use the SJ page-hero, not athlete-log brand chrome");

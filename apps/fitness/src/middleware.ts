@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
 import { authConfig } from "@/auth.config";
+import { isPublicMetadataPath } from "@/lib/public-metadata";
 import { safeCallbackUrl } from "@/lib/safe-redirect";
 
 const { auth } = NextAuth(authConfig);
@@ -12,6 +13,7 @@ function isPublicPath(pathname: string): boolean {
   if (pathname.startsWith("/login")) return true;
   if (pathname.startsWith("/api/auth")) return true;
   if (pathname.startsWith("/fonts/")) return true;
+  if (isPublicMetadataPath(pathname)) return true;
   return false;
 }
 
@@ -52,6 +54,6 @@ export default auth((req) => {
 
 export const config = {
   matcher: [
-    "/((?!api/health|_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp|woff2)$).*)",
+    "/((?!api/health|_next/static|_next/image|favicon.ico|icon(?:/|$)|apple-icon|opengraph-image|twitter-image|.*\\.(?:svg|png|jpg|jpeg|gif|webp|woff2)$).*)",
   ],
 };
