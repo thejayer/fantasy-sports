@@ -1,11 +1,11 @@
 /**
- * Fitness host config. Community and fantasy stay on their own Cloud Run
- * hosts — never route those products through this app.
+ * Hub host config. Community / fitness stay on their own Cloud Run hosts —
+ * never route those products through this app.
  */
-export type FitnessSiteConfig = {
+export type HubSiteConfig = {
   siteUrl: string;
   communitySiteUrl: string;
-  fantasyHubUrl: string;
+  fitnessUrl: string;
   discordInviteUrl: string | null;
 };
 
@@ -22,17 +22,18 @@ function optionalUrl(raw: string | undefined): string | null {
   return trimTrailingSlash(value);
 }
 
-export function getFitnessSiteConfig(): FitnessSiteConfig {
+export function getHubSiteConfig(): HubSiteConfig {
   return {
     siteUrl: trimTrailingSlash(
-      process.env.SITE_URL?.trim() || "http://localhost:3003",
+      process.env.AUTH_URL?.trim() ||
+        process.env.SITE_URL?.trim() ||
+        "http://localhost:3000",
     ),
     communitySiteUrl: trimTrailingSlash(
       process.env.COMMUNITY_SITE_URL?.trim() || "https://strictlyjayers.com",
     ),
-    fantasyHubUrl: trimTrailingSlash(
-      process.env.FANTASY_HUB_URL?.trim() ||
-        "https://fantasy.strictlyjayers.com",
+    fitnessUrl: trimTrailingSlash(
+      process.env.FITNESS_URL?.trim() || "https://fitness.strictlyjayers.com",
     ),
     discordInviteUrl:
       optionalUrl(process.env.DISCORD_INVITE_URL) || DEFAULT_DISCORD_INVITE_URL,
