@@ -191,7 +191,7 @@ alert trustworthy. Optional uptime check on `/api/health` is documented in
 HUB.md (console click; needs the live hub URL).
 
 ### 1.7 Next.js 16 and the ESLint CLI — LANDED
-`apps/web` is on `next` / `eslint-config-next` 16.2.x. Lint is the ESLint CLI
+`apps/web` is on `next` / `eslint-config-next` 16.3.x. Lint is the ESLint CLI
 (`eslint .`) via the codemod flat config (`eslint-config-next/core-web-vitals` +
 `typescript`). `next-auth@5.0.0-beta.32` already peers `^16`.
 
@@ -204,6 +204,7 @@ Compatibility notes kept in-tree:
   `app-build-manifest.json` is absent (Turbopack is the default `next build`).
 - Overrides revisited: `next` still pins `postcss` 8.4.31 / `sharp` ^0.34.5;
   advisory-clean `brace-expansion@5` needs `minimatch@^10` alongside it.
+  Aug 2026 RCE advisories: `next@16.3.4`, `sharp@^0.35.4`, `js-yaml@^4.3.2`.
 
 ---
 
