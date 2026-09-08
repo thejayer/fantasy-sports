@@ -1,8 +1,21 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useSyncExternalStore } from "react";
 
 const STORAGE_KEY = "sj-last-auth-provider";
+
+function subscribeLastUsed(onStoreChange: () => void) {
+  window.addEventListener("storage", onStoreChange);
+  return () => window.removeEventListener("storage", onStoreChange);
+}
+
+function readLastUsed(): boolean {
+  try {
+    return localStorage.getItem(STORAGE_KEY) === "google";
+  } catch {
+    return false;
+  }
+}
 
 function GoogleMark() {
   return (
@@ -47,15 +60,11 @@ export function GoogleSignInButton({
 }: {
   children?: string;
 }) {
-  const [lastUsed, setLastUsed] = useState(false);
-
-  useEffect(() => {
-    try {
-      setLastUsed(localStorage.getItem(STORAGE_KEY) === "google");
-    } catch {
-      setLastUsed(false);
-    }
-  }, []);
+  const lastUsed = useSyncExternalStore(
+    subscribeLastUsed,
+    readLastUsed,
+    () => false,
+  );
 
   return (
     <span className="login-google-wrap">
