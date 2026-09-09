@@ -64,6 +64,32 @@ type ChronoRow = ActivityActionRow & {
   seq: number;
 };
 
+/** Display date; if ESPN YYYYMMDD* has an invalid day, keep year–month. */
+export function formatDropDate(
+  value: string | number | null | undefined,
+): string {
+  const label = formatActivityDate(value);
+  if (value == null || value === "") return label;
+  if (label !== String(value)) return label;
+  const digits = String(value).replace(/\D/g, "");
+  if (digits.length < 6) return label;
+  const year = Number(digits.slice(0, 4));
+  const month = Number(digits.slice(4, 6));
+  if (
+    !Number.isFinite(year) ||
+    !Number.isFinite(month) ||
+    year < 1990 ||
+    month < 1 ||
+    month > 12
+  ) {
+    return label;
+  }
+  return new Date(Date.UTC(year, month - 1, 1)).toLocaleString(undefined, {
+    year: "numeric",
+    month: "short",
+  });
+}
+
 function ownerLabel(team: Team | undefined): string {
   const owners = team?.owners?.filter(Boolean) ?? [];
   return owners.length ? owners.join(", ") : "—";
@@ -114,7 +140,7 @@ function chronologicalActions(
       rows.push({
         key: `${txIndex}-${actionIndex}-${action.player_id ?? "x"}-${action.action}`,
         dateRaw: tx.date,
-        dateLabel: formatActivityDate(tx.date),
+        dateLabel: formatDropDate(tx.date),
         sortKey: activitySortKey(tx.date),
         teamId: action.team_id,
         teamName:

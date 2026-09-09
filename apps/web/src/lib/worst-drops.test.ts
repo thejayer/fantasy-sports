@@ -3,7 +3,7 @@ import path from "node:path";
 import { describe, expect, it } from "vitest";
 
 import type { LeagueSnapshot, Player, Team, Transaction } from "@/lib/data";
-import { buildWorstDropsBoard } from "@/lib/worst-drops";
+import { buildWorstDropsBoard, formatDropDate } from "@/lib/worst-drops";
 
 const FIXTURES = path.resolve(process.cwd(), "../../fixtures/sj");
 
@@ -67,6 +67,12 @@ function tx(
 }
 
 describe("worst drops (roadmap 9.5)", () => {
+  it("formats valid ESPN dates and falls back to year–month", () => {
+    expect(formatDropDate("20260401120000")).toMatch(/2026/);
+    expect(formatDropDate("20260987400000")).toMatch(/2026/);
+    expect(formatDropDate("20260987400000")).not.toBe("20260987400000");
+  });
+
   it("returns an empty board when transactions are missing", () => {
     const board = buildWorstDropsBoard(
       league({ transactions: [], teams: [team({ team_id: 1 })] }),
@@ -310,6 +316,8 @@ describe("worst drops (roadmap 9.5)", () => {
     expect(board.rows[0]?.seasonFp).toBe(541.5);
     expect(board.rows[0]?.teamName).toBe("Diamond Dogs");
     expect(board.rows[0]?.ownerLabel).toBe("Bruce Green");
+    expect(board.rows[0]?.dateLabel).toMatch(/2026/);
+    expect(board.rows[0]?.dateLabel).not.toBe("20260987400000");
     expect(board.rows[0]?.claimedByTeamName).toBeNull();
     expect(board.rows[0]?.reAddedBySameTeam).toBe(false);
   });
