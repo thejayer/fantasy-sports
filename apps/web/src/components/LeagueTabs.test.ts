@@ -25,6 +25,7 @@ const FOOTBALL = tabs(
   "tools",
   "settings",
   "sandbox",
+  "drops",
 );
 
 describe("tabLabel (roadmap 7.5)", () => {
@@ -35,6 +36,7 @@ describe("tabLabel (roadmap 7.5)", () => {
     expect(tabLabel("start-sit")).toBe("Start-sit");
     expect(tabLabel("scoreboard")).toBe("Scoreboard");
     expect(tabLabel("sandbox")).toBe("Scoring lab");
+    expect(tabLabel("drops")).toBe("Hall of Shame");
   });
 
   it("title-cases an unknown id rather than dropping it", () => {
@@ -60,6 +62,7 @@ describe("splitTabs", () => {
       "history",
       "projections",
       "settings",
+      "drops",
     ]);
   });
 
@@ -119,13 +122,22 @@ describe("splitTabs", () => {
 
   it("keeps matchups out of the everyday row for season-points leagues", () => {
     const { shown, hidden } = splitTabs(
-      tabs("standings", "teams", "players", "matchups", "tools", "sandbox"),
+      tabs(
+        "standings",
+        "teams",
+        "players",
+        "matchups",
+        "tools",
+        "sandbox",
+        "drops",
+      ),
       "standings",
       SEASON_POINTS_PRIMARY,
     );
     expect(shown.map((t) => t.id)).not.toContain("matchups");
     expect(hidden.map((t) => t.id)).toContain("matchups");
     expect(shown.map((t) => t.id)).toContain("sandbox");
+    expect(shown.map((t) => t.id)).toContain("drops");
   });
 });
 

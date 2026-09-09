@@ -36,7 +36,8 @@ Caps (season IP/GS + period IP floors), PR7/PR15/PR30 trailing windows,
 games-per-team and two-start pitchers from `pro_schedule.json` (site
 `probables`), and daily locks from game start times. ESPN period H2H category
 boxes open from Matchups (`CategoryBoxPanel` over `weeks/{N}.json`). FA
-browsing remains the Waivers tab. Do not stub a half engine. Revisit
+browsing remains the Waivers tab. Hall of Shame (`?tab=drops`, roadmap 9.5)
+ranks worst drops from synced activity. Do not stub a half engine. Revisit
 projections only with a dedicated MLB modeling plan.
 
 ### Hockey scope
@@ -65,6 +66,20 @@ Draft, **Auction**, History, plus golfer detail pages from roster links.
 Scoring stays offline — no live tour scrapes. Tee locks fail closed (UTC).
 Missed-deadline auto-pick and per-segment start caps are settings knobs.
 Room is file-backed + HTTP polling (no websockets/Redis).
+
+### Hall of Shame / worst drops (roadmap 9.5)
+
+`?tab=drops` on ESPN sports (football, baseball, hockey) ranks this season's
+first drop per team–player by the cut player's **season fantasy points**
+(`total_points` on the current roster, free-agent, or players row — ESPN
+applied total for the whole season, not points after the cut). Claimed-after
+is the first later `FA ADDED` / `WAIVER ADDED`; a note flags when the same
+franchise re-added the player. Trades are not drops. Empty
+`transactions.json` (pre-2019, or a season that has not been re-synced after
+the `mTransactions2` fallback) shows an EmptyState. Season chips switch
+2024 / 2025 / 2026 when those snapshots exist. Read-only — no ESPN write-back.
+Season-points baseball keeps the tab beside Scoring lab; other leagues file
+it under More.
 
 ### Scoring lab (roadmap 8.4)
 

@@ -75,6 +75,8 @@ describe("LeagueView unification", () => {
     expect(viewSource).toMatch(/GolfScoreboardPanel/);
     expect(viewSource).toMatch(/ScoringSandboxPanel/);
     expect(viewSource).toMatch(/"sandbox"/);
+    expect(viewSource).toMatch(/HallOfShamePanel/);
+    expect(viewSource).toMatch(/"drops"/);
     expect(viewSource).toMatch(/isGolf/);
     expect(viewSource).not.toMatch(/Snake draft comes in 6\.4b/);
     expect(viewSource).not.toMatch(/Weekly lineups come in 6\.4c/);

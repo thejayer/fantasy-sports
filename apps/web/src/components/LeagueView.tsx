@@ -24,6 +24,7 @@ import {
   scoringTypeLabel,
 } from "@/lib/scoring-type";
 import { ScoringSandboxPanel } from "@/components/ScoringSandboxPanel";
+import { HallOfShamePanel } from "@/components/HallOfShamePanel";
 import { SettingsPanel } from "@/components/SettingsPanel";
 import { BaseballToolsPanel } from "@/components/BaseballToolsPanel";
 import { HockeyToolsPanel } from "@/components/HockeyToolsPanel";
@@ -295,6 +296,7 @@ const FOOTBALL_TABS = [
   "tools",
   "settings",
   "sandbox",
+  "drops",
 ] as const;
 
 const BASEBALL_TABS = [
@@ -311,6 +313,7 @@ const BASEBALL_TABS = [
   "tools",
   "settings",
   "sandbox",
+  "drops",
 ] as const;
 
 const HOCKEY_TABS = BASEBALL_TABS;
@@ -656,6 +659,10 @@ export function LeagueView({
             — the hub will not invent fantasy points.
           </EmptyState>
         )
+      ) : null}
+
+      {active === "drops" ? (
+        <HallOfShamePanel league={league} viewerTeamId={viewerTeamId} />
       ) : null}
 
       {active === "schedule" && isGolf ? (

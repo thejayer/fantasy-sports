@@ -80,6 +80,17 @@ export function SettingsPanel({ league }: { league: LeagueSnapshot }) {
         to clone these weights and see standings or week W/L move. The hub
         does not write ESPN.
       </p>
+      {league.sport !== "golf" ? (
+        <p className="muted">
+          <Link
+            href={`/leagues/${league.league_id}?season=${league.season}&tab=drops`}
+          >
+            Hall of Shame
+          </Link>{" "}
+          ranks this season&apos;s worst drops by the cut player&apos;s season
+          FP. Read-only over synced activity.
+        </p>
+      ) : null}
     </div>
   );
 }

@@ -7,6 +7,7 @@ import {
   droppedPlayersForTeam,
   droppedRowsForTeam,
   formatActivityDate,
+  isAddAction,
   isDropAction,
   parseEspnActivityDate,
 } from "@/lib/activity";
@@ -76,6 +77,15 @@ describe("activity helpers", () => {
     expect(isDropAction("WAIVER DROPPED")).toBe(true);
     expect(isDropAction("FA ADDED")).toBe(false);
     expect(isDropAction("TRADED")).toBe(false);
+  });
+
+  it("detects ESPN add action strings", () => {
+    expect(isAddAction("FA ADDED")).toBe(true);
+    expect(isAddAction("WAIVER ADDED")).toBe(true);
+    expect(isAddAction("DROPPED")).toBe(false);
+    expect(isAddAction("WAIVER DROPPED")).toBe(false);
+    expect(isAddAction("TRADED")).toBe(false);
+    expect(isAddAction("TRADE_RECEIVED")).toBe(false);
   });
 
   it("flattens and filters league transactions newest-first", () => {
