@@ -13,6 +13,7 @@ import json
 from pathlib import Path
 from typing import Any
 
+from sj.jsonutil import dumps_snapshot
 from sj.registry import LeagueSpec, load_registry
 from sj.sample import sample_pro_schedule_for_snapshot, sample_snapshot
 from sj.store import FIXTURES_DIR, INDEX_NAME, FileStore, monolith_rel
@@ -58,7 +59,7 @@ def expected_fixture_snapshot(spec: LeagueSpec, season: int | None = None) -> di
 
 
 def _dump(payload: dict[str, Any]) -> str:
-    return json.dumps(payload, indent=2, sort_keys=True) + "\n"
+    return dumps_snapshot(payload)
 
 
 def regenerate_fixtures(

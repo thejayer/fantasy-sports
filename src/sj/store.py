@@ -34,6 +34,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Protocol
 
+from sj.jsonutil import dumps_snapshot
 from sj.snapshot_layout import (
     CONCERN_FILES,
     MANIFEST_NAME,
@@ -80,7 +81,7 @@ def _stamp(snapshot: dict[str, Any]) -> dict[str, Any]:
 
 
 def _dump(payload: dict[str, Any]) -> str:
-    return json.dumps(payload, indent=2, sort_keys=True) + "\n"
+    return dumps_snapshot(payload)
 
 
 def _is_v1_monolith_rel(rel: str) -> bool:

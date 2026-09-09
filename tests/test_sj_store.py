@@ -7,6 +7,7 @@ from sj.snapshot_layout import MANIFEST_NAME, SCHEMA_VERSION
 from sj.store import (
     FileStore,
     GcsStore,
+    _dump,
     describe_store,
     list_snapshots,
     read_snapshot,
@@ -282,3 +283,42 @@ def test_gcs_write_upserts_without_listing_bucket(monkeypatch):
     )
     store.write(snapshot(2025))
     assert {item["season"] for item in store.list()} == {2024, 2025}
+
+
+def test_write_round_trip_never_emits_infinity_or_nan(tmp_path: Path):
+    """Production incident: free_agents ERA Infinity crashed hub JSON.parse."""
+    payload = snapshot(2026)
+    payload["league_id"] = "baseball-dynasty"
+    payload["sport"] = "baseball"
+    payload["free_agents"] = [
+        {
+            "id": 700373770,
+            "name": "Zero IP Reliever",
+            "trailing_stats": {
+                "7": {
+                    "ERA": float("inf"),
+                    "WHIP": float("-inf"),
+                    "AVG": float("nan"),
+                    "K": 0.0,
+                }
+            },
+        }
+    ]
+    dumped = _dump({"ERA": float("inf"), "WHIP": float("nan")})
+    assert "Infinity" not in dumped
+    assert "NaN" not in dumped
+
+    write_snapshot(payload, store_dir=tmp_path)
+    fa_path = tmp_path / "baseball-dynasty" / "2026" / "free_agents.json"
+    text = fa_path.read_text(encoding="utf-8")
+    assert "Infinity" not in text
+    assert "NaN" not in text
+    loaded = json.loads(text)
+    stats = loaded["free_agents"][0]["trailing_stats"]["7"]
+    assert stats["ERA"] is None
+    assert stats["WHIP"] is None
+    assert stats["AVG"] is None
+    assert stats["K"] == 0.0
+    # Round-trip through the store reader stays parseable.
+    snap = read_snapshot("baseball-dynasty", 2026, store_dir=tmp_path)
+    assert snap["free_agents"][0]["trailing_stats"]["7"]["ERA"] is None
