@@ -2,8 +2,11 @@ from types import SimpleNamespace
 
 from sj.serialize import (
     extract_baseball_season_stats,
+    extract_baseball_stat_breakdown,
+    extract_baseball_trailing_stats,
     serialize_activity,
     serialize_draft,
+    serialize_free_agent,
     serialize_free_agents,
     serialize_league,
     serialize_player,
@@ -622,3 +625,70 @@ def test_hockey_player_season_stats_from_total_key():
     assert snapshot["period_label"] == "week"
     assert snapshot["settings"]["scoring_format"][0]["abbr"] == "G"
     assert snapshot["settings"]["categories"][0]["abbr"] == "G"
+
+
+def test_baseball_nonfinite_era_whip_serialize_to_null():
+    """0-IP pitchers emit ERA/WHIP as null, not IEEE Infinity (hub crash)."""
+    breakdown = extract_baseball_stat_breakdown(
+        {
+            "OUTS": 0,
+            "K": 0,
+            "ERA": float("inf"),
+            "WHIP": float("-inf"),
+            "AVG": float("nan"),
+        }
+    )
+    assert breakdown["ERA"] is None
+    assert breakdown["WHIP"] is None
+    assert breakdown["AVG"] is None
+    assert breakdown["IP"] == 0.0
+    assert breakdown["K"] == 0.0
+
+    pitcher = SimpleNamespace(
+        playerId=99,
+        name="Zero IP Reliever",
+        position="RP",
+        lineupSlot="FA",
+        proTeam="BOS",
+        injuryStatus="ACTIVE",
+        status="FREEAGENT",
+        injured=False,
+        eligibleSlots=["P", "RP"],
+        acquisitionType=None,
+        percent_owned=0.4,
+        total_points=0.0,
+        projected_total_points=1.0,
+        avg_points=0.0,
+        stats={
+            0: {
+                "breakdown": {
+                    "OUTS": 0,
+                    "ERA": float("inf"),
+                    "WHIP": float("inf"),
+                    "K": 0,
+                }
+            }
+        },
+        trailing_stats={
+            "7": {
+                "OUTS": 0,
+                "ERA": float("inf"),
+                "WHIP": float("nan"),
+                "K": 1,
+            }
+        },
+    )
+    season = extract_baseball_season_stats(pitcher)
+    assert season["ERA"] is None
+    assert season["WHIP"] is None
+    trailing = extract_baseball_trailing_stats(pitcher)
+    assert trailing["7"]["ERA"] is None
+    assert trailing["7"]["WHIP"] is None
+    assert trailing["7"]["K"] == 1.0
+
+    row = serialize_free_agent(pitcher, sport="baseball")
+    assert row["trailing_stats"]["7"]["ERA"] is None
+    assert row["trailing_stats"]["7"]["WHIP"] is None
+    roster = serialize_player(pitcher, sport="baseball")
+    assert roster["season_stats"]["ERA"] is None
+    assert roster["season_stats"]["WHIP"] is None

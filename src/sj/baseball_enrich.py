@@ -44,7 +44,7 @@ def _iso_from_ms(ms: Any) -> str | None:
     return datetime.fromtimestamp(value, tz=timezone.utc).isoformat()
 
 
-def _breakdown_from_raw_stats(stats_entry: dict[str, Any]) -> dict[str, float]:
+def _breakdown_from_raw_stats(stats_entry: dict[str, Any]) -> dict[str, float | None]:
     stats_map = _baseball_stats_map()
     raw = stats_entry.get("stats") or stats_entry.get("appliedStats") or {}
     named: dict[str, Any] = {}
@@ -59,9 +59,11 @@ def _breakdown_from_raw_stats(stats_entry: dict[str, Any]) -> dict[str, float]:
     return extract_baseball_stat_breakdown(named)
 
 
-def parse_trailing_from_player_card(players_payload: list[Any]) -> dict[int, dict[str, dict[str, float]]]:
+def parse_trailing_from_player_card(
+    players_payload: list[Any],
+) -> dict[int, dict[str, dict[str, float | None]]]:
     """Map espn player id → ``{"7": stats, "15": …, "30": …}``."""
-    out: dict[int, dict[str, dict[str, float]]] = {}
+    out: dict[int, dict[str, dict[str, float | None]]] = {}
     for row in players_payload:
         if not isinstance(row, dict):
             continue
@@ -72,7 +74,7 @@ def parse_trailing_from_player_card(players_payload: list[Any]) -> dict[int, dic
             pid = int(player.get("id"))
         except (TypeError, ValueError):
             continue
-        windows: dict[str, dict[str, float]] = {}
+        windows: dict[str, dict[str, float | None]] = {}
         for stats in player.get("stats") or []:
             if not isinstance(stats, dict):
                 continue
@@ -90,7 +92,7 @@ def parse_trailing_from_player_card(players_payload: list[Any]) -> dict[int, dic
 
 def fetch_trailing_stats_for_ids(
     league: Any, player_ids: list[int]
-) -> dict[int, dict[str, dict[str, float]]]:
+) -> dict[int, dict[str, dict[str, float | None]]]:
     """Batch ``get_player_card`` with L7/L15/L30 filters."""
     request = getattr(league, "espn_request", None)
     if request is None or not callable(getattr(request, "get_player_card", None)):
@@ -104,7 +106,7 @@ def fetch_trailing_stats_for_ids(
         or 200
     )
     filters = [f"01{year}", f"02{year}", f"03{year}"]
-    merged: dict[int, dict[str, dict[str, float]]] = {}
+    merged: dict[int, dict[str, dict[str, float | None]]] = {}
     for start in range(0, len(player_ids), _PLAYER_CARD_BATCH):
         batch = player_ids[start : start + _PLAYER_CARD_BATCH]
         if not batch:
@@ -132,7 +134,7 @@ def fetch_trailing_stats_for_ids(
 
 def apply_trailing_stats_to_snapshot(
     snapshot: dict[str, Any],
-    trailing_by_id: dict[int, dict[str, dict[str, float]]],
+    trailing_by_id: dict[int, dict[str, dict[str, float | None]]],
 ) -> int:
     """Mutate roster / players / FA rows in place. Returns rows updated."""
     if not trailing_by_id:

@@ -2,8 +2,11 @@
 
 from __future__ import annotations
 
+import math
 from datetime import datetime, timezone
 from typing import Any
+
+from sj.jsonutil import is_nonfinite_number
 
 # ESPN ``scoringSettings.scoringType`` for cumulative points leagues (UI: Season Points).
 SEASON_POINTS_SCORING_TYPES = frozenset({"TOTAL_SEASON_POINTS"})
@@ -147,29 +150,27 @@ def _season_stat_bucket(player: Any) -> dict[str, Any]:
     return bucket if isinstance(bucket, dict) else {}
 
 
-def extract_baseball_stat_breakdown(breakdown: Any) -> dict[str, float]:
+def extract_baseball_stat_breakdown(breakdown: Any) -> dict[str, float | None]:
     """Named counting stats + derived IP from one ESPN stats breakdown dict."""
     if not isinstance(breakdown, dict):
         return {}
-    out: dict[str, float] = {}
+    out: dict[str, float | None] = {}
     for key in _BASEBALL_STAT_KEYS:
         if key in breakdown and breakdown[key] is not None:
-            num = _num(breakdown[key])
-            if num is not None:
-                out[key] = num
+            _put_named_stat(out, key, breakdown[key])
     outs = out.get("OUTS")
     if outs is not None:
         out["IP"] = round(outs / 3.0, 1)
     return out
 
 
-def extract_baseball_season_stats(player: Any) -> dict[str, float]:
+def extract_baseball_season_stats(player: Any) -> dict[str, float | None]:
     """Pull named season counting stats + derived IP from a baseball Player."""
     bucket = _season_stat_bucket(player)
     return extract_baseball_stat_breakdown(bucket.get("breakdown") or {})
 
 
-def extract_baseball_trailing_stats(player: Any) -> dict[str, dict[str, float]]:
+def extract_baseball_trailing_stats(player: Any) -> dict[str, dict[str, float | None]]:
     """PR7 / PR15 / PR30 windows when present on the player.
 
     Prefer an attached ``trailing_stats`` map (sample stubs + post-sync
@@ -178,7 +179,7 @@ def extract_baseball_trailing_stats(player: Any) -> dict[str, dict[str, float]]:
     """
     attached = getattr(player, "trailing_stats", None)
     if isinstance(attached, dict) and attached:
-        out: dict[str, dict[str, float]] = {}
+        out: dict[str, dict[str, float | None]] = {}
         for key in ("7", "15", "30"):
             raw = attached.get(key) or attached.get(int(key))
             if isinstance(raw, dict):
@@ -193,16 +194,14 @@ def extract_baseball_trailing_stats(player: Any) -> dict[str, dict[str, float]]:
     return {}
 
 
-def extract_hockey_stat_breakdown(breakdown: Any) -> dict[str, float]:
+def extract_hockey_stat_breakdown(breakdown: Any) -> dict[str, float | None]:
     """Named hockey counting stats from one espn-api stats dict."""
     if not isinstance(breakdown, dict):
         return {}
-    out: dict[str, float] = {}
+    out: dict[str, float | None] = {}
     for key in _HOCKEY_STAT_KEYS:
         if key in breakdown and breakdown[key] is not None:
-            num = _num(breakdown[key])
-            if num is not None:
-                out[key] = num
+            _put_named_stat(out, key, breakdown[key])
     return out
 
 
@@ -217,7 +216,7 @@ def _hockey_total_bucket(player: Any) -> dict[str, Any]:
     return _season_stat_bucket(player)
 
 
-def extract_hockey_season_stats(player: Any) -> dict[str, float]:
+def extract_hockey_season_stats(player: Any) -> dict[str, float | None]:
     """Season counting stats from a hockey Player (``Total YYYY`` or stub)."""
     attached = getattr(player, "season_stats", None)
     if isinstance(attached, dict) and attached:
@@ -232,11 +231,11 @@ def extract_hockey_season_stats(player: Any) -> dict[str, float]:
     )
 
 
-def extract_hockey_trailing_stats(player: Any) -> dict[str, dict[str, float]]:
+def extract_hockey_trailing_stats(player: Any) -> dict[str, dict[str, float | None]]:
     """Last 7 / 15 / 30 windows when espn-api hockey attaches them."""
     attached = getattr(player, "trailing_stats", None)
     if isinstance(attached, dict) and attached:
-        out: dict[str, dict[str, float]] = {}
+        out: dict[str, dict[str, float | None]] = {}
         for key in ("7", "15", "30"):
             raw = attached.get(key) or attached.get(int(key))
             if isinstance(raw, dict):
@@ -254,7 +253,7 @@ def extract_hockey_trailing_stats(player: Any) -> dict[str, dict[str, float]]:
     if not isinstance(stats, dict):
         return {}
     prefixes = {"Last 7": "7", "Last 15": "15", "Last 30": "30"}
-    out: dict[str, dict[str, float]] = {}
+    out: dict[str, dict[str, float | None]] = {}
     for key, bucket in stats.items():
         if not isinstance(key, str) or not isinstance(bucket, dict):
             continue
@@ -1078,13 +1077,25 @@ def _unique_players(teams: list[dict[str, Any]]) -> list[dict[str, Any]]:
     return players
 
 
+def _put_named_stat(out: dict[str, float | None], key: str, raw: Any) -> None:
+    """Store a finite number, or ``None`` when ESPN sent NaN / ±Infinity."""
+    num = _num(raw)
+    if num is not None:
+        out[key] = num
+    elif is_nonfinite_number(raw):
+        out[key] = None
+
+
 def _num(value: Any) -> float | None:
     if value is None:
         return None
     try:
-        return float(value)
+        num = float(value)
     except (TypeError, ValueError):
         return None
+    if math.isnan(num) or math.isinf(num):
+        return None
+    return num
 
 
 def _int(value: Any) -> int | None:
