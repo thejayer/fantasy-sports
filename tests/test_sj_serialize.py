@@ -298,6 +298,45 @@ def test_baseball_matchups_normalize_to_parallel_arrays():
     assert payload["outcomes"] == ["W", "W"]
 
 
+def test_hockey_matchup_missing_winner_is_undecided():
+    """Preseason / BYE Matchup objects omit winner — do not KeyError."""
+    team = SimpleNamespace(
+        team_id=1,
+        team_name="Five Hole",
+        team_abbrev="FH",
+        owners=["A"],
+        logo_url="",
+        wins=0,
+        losses=0,
+        ties=0,
+        points_for=0.0,
+        points_against=0.0,
+        standing=1,
+        final_standing=0,
+        division_name="",
+        schedule=[
+            SimpleNamespace(
+                home_team=1,
+                away_team=4,
+                home_final_score=0.0,
+                away_final_score=0.0,
+            ),
+            SimpleNamespace(
+                home_team=2,
+                away_team=1,
+                home_final_score=3.0,
+                away_final_score=1.0,
+                winner="AWAY",
+            ),
+        ],
+        roster=[],
+    )
+    payload = serialize_team(team, sport="hockey")
+    assert payload["schedule"] == [4, 2]
+    assert payload["scores"] == [0.0, 1.0]
+    assert payload["outcomes"] == ["U", "W"]
+
+
 def test_baseball_player_season_stats_and_role():
     hitter = SimpleNamespace(
         playerId=2,

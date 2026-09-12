@@ -8,6 +8,13 @@ from types import SimpleNamespace
 
 import pytest
 
+from sj.hockey_espn import (
+    install_matchup_guards,
+    is_missing_winner_error,
+    unpatched_box_score_init,
+    unpatched_matchup_fetch,
+    with_default_winner,
+)
 from sj.serialize import (
     build_week_box_scores_document,
     extract_box_player_stats,
@@ -391,6 +398,124 @@ def test_sync_hockey_week_boxes_rejects_week_kwarg(tmp_path):
     # probes week= then recovers with matchup_period/scoring_period.
     assert seen_week
     assert (tmp_path / "hockey-main" / "2026" / "weeks" / "1.json").is_file()
+
+
+def test_espn_api_hockey_box_score_requires_winner():
+    """Lock the 0.46 KeyError that crashed sj-sync after #159."""
+    from espn_api.hockey.box_score import BoxScore
+
+    box = object.__new__(BoxScore)
+    with pytest.raises(KeyError, match="winner") as excinfo:
+        unpatched_box_score_init()(box, {"home": {"teamId": 1}}, {}, True)
+    assert is_missing_winner_error(excinfo.value)
+
+
+def test_espn_api_hockey_matchup_requires_winner():
+    from espn_api.hockey.matchup import Matchup
+
+    match = object.__new__(Matchup)
+    payload = {
+        "home": {"teamId": 1, "totalPoints": 0},
+        "away": {"teamId": 2, "totalPoints": 0},
+    }
+    with pytest.raises(KeyError, match="winner") as excinfo:
+        unpatched_matchup_fetch()(match, payload)
+    assert is_missing_winner_error(excinfo.value)
+
+
+def test_with_default_winner_does_not_mutate():
+    raw = {"home": {"teamId": 1}}
+    filled = with_default_winner(raw)
+    assert raw == {"home": {"teamId": 1}}
+    assert filled["winner"] == "UNDECIDED"
+    assert with_default_winner({"winner": "HOME"})["winner"] == "HOME"
+
+
+def test_install_guards_box_score_missing_winner_keeps_complete_rows():
+    """BYE / season-points rows omit winner; keep the rest of the week."""
+    from espn_api.hockey.box_score import BoxScore
+
+    install_matchup_guards()
+    complete = {
+        "home": {"teamId": 1, "totalPoints": 4.0},
+        "away": {"teamId": 2, "totalPoints": 1.0},
+        "winner": "HOME",
+    }
+    bye = {"home": {"teamId": 3, "totalPoints": 0}}
+    boxes = [BoxScore(row, {}, True) for row in (complete, bye)]
+    assert boxes[0].winner == "HOME"
+    assert boxes[0].home_team == 1
+    assert boxes[1].winner == "UNDECIDED"
+    assert boxes[1].home_team == 3
+    assert boxes[1].away_team == 0
+
+
+def test_fetch_box_scores_hockey_keeps_week_when_one_row_omits_winner():
+    """espn-api builds BoxScore in a list-comp — one BYE must not drop the week."""
+    from espn_api.hockey.box_score import BoxScore
+
+    def box_scores(matchup_period=None, scoring_period=None, matchup_total=True):
+        rows = [
+            {
+                "home": {"teamId": 1},
+                "away": {"teamId": 2},
+                "winner": "HOME",
+            },
+            {"home": {"teamId": 3}},
+        ]
+        return [BoxScore(row, {}, True) for row in rows]
+
+    league = SimpleNamespace(year=2026, box_scores=box_scores)
+    boxes = fetch_box_scores(league, 1)
+    assert len(boxes) == 2
+    assert boxes[0].winner == "HOME"
+    assert boxes[1].winner == "UNDECIDED"
+
+
+def test_install_guards_matchup_missing_winner():
+    from espn_api.hockey.matchup import Matchup
+
+    install_matchup_guards()
+    match = Matchup(
+        {
+            "home": {"teamId": 1, "totalPoints": 0},
+            "away": {"teamId": 2, "totalPoints": 0},
+        }
+    )
+    assert match.winner == "UNDECIDED"
+    assert match.home_team == 1
+    assert match.away_team == 2
+
+
+def test_fetch_box_scores_skips_week_on_winner_keyerror():
+    """Safety net: if a constructor still raises, skip the week, not the job."""
+
+    def box_scores(matchup_period=None, scoring_period=None, matchup_total=True):
+        raise KeyError("winner")
+
+    league = SimpleNamespace(year=2026, box_scores=box_scores)
+    assert fetch_box_scores(league, 1) == []
+
+
+def test_sync_hockey_week_boxes_skips_missing_winner_week(tmp_path):
+    def box_scores(matchup_period=None, scoring_period=None, matchup_total=True):
+        if matchup_period == 1:
+            raise KeyError("winner")
+        return [_box_score()]
+
+    league = SimpleNamespace(year=2026, box_scores=box_scores)
+    spec = SimpleNamespace(id="hockey-main", sport="hockey")
+    snapshot = {
+        "current_week": 2,
+        "period_label": "week",
+        "scoring_type": "TOTAL_SEASON_POINTS",
+    }
+    written = sync_hockey_week_boxes(
+        league, spec, 2026, snapshot, store_dir=tmp_path
+    )
+    assert written == 1
+    assert not (tmp_path / "hockey-main" / "2026" / "weeks" / "1.json").exists()
+    assert (tmp_path / "hockey-main" / "2026" / "weeks" / "2.json").is_file()
 
 
 def test_sync_hockey_week_boxes_skips_football(tmp_path):
