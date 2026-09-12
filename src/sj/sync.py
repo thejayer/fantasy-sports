@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import inspect
 import json
 import os
 import time
@@ -36,7 +37,7 @@ TOLERATED_BACKFILL_KINDS: frozenset[FailureKind] = frozenset({"invalid_league"})
 # ESPN activity / free-agent endpoints are unavailable before 2019 in espn-api.
 ACTIVITY_MIN_SEASON = 2019
 FREE_AGENT_MIN_SEASON = 2019
-# Football box_scores() uses the same floor (espn-api raises below 2019).
+# espn-api football/hockey box_scores() refuse seasons before 2019.
 BOX_SCORE_MIN_SEASON = 2019
 DEFAULT_ESPN_TIMEOUT_SECONDS = 30.0
 DEFAULT_ESPN_MAX_ATTEMPTS = 4
@@ -406,6 +407,10 @@ def box_score_max_weeks() -> int:
     return max(1, min(value, MAX_BOX_SCORE_MAX_WEEKS))
 
 
+def _unexpected_keyword_argument(exc: BaseException) -> bool:
+    return "unexpected keyword argument" in str(exc).lower()
+
+
 def _box_scores_unsupported(exc: BaseException) -> bool:
     msg = str(exc).lower()
     return (
@@ -413,7 +418,49 @@ def _box_scores_unsupported(exc: BaseException) -> bool:
         or "cant retrieve" in msg
         or "can't retrieve" in msg
         or "does not exist" in msg
+        # Last resort after sport-correct kwargs: a future espn-api signature
+        # change must skip the week, not fail the whole scheduled sync.
+        or _unexpected_keyword_argument(exc)
     )
+
+
+def _box_scores_param_names(fn: Callable[..., Any]) -> frozenset[str]:
+    try:
+        return frozenset(inspect.signature(fn).parameters)
+    except (TypeError, ValueError):
+        return frozenset()
+
+
+def _invoke_box_scores(
+    league: Any,
+    week: int,
+    player_team_cache: dict[int, int] | None,
+) -> Any:
+    """Call espn-api ``box_scores`` with sport-correct kwargs.
+
+    Football 0.46 accepts ``week=`` and optional ``player_team_cache``.
+    Hockey (and baseball) accept ``matchup_period=`` / ``scoring_period=``
+    only — passing ``week=`` raises TypeError and used to fail the job.
+    """
+    names = _box_scores_param_names(league.box_scores)
+    if "matchup_period" in names or "scoring_period" in names:
+        kwargs: dict[str, Any] = {}
+        if "matchup_period" in names:
+            kwargs["matchup_period"] = week
+        if "scoring_period" in names:
+            kwargs["scoring_period"] = week
+        return league.box_scores(**kwargs)
+    try:
+        return league.box_scores(week=week, player_team_cache=player_team_cache)
+    except TypeError as exc:
+        if not _unexpected_keyword_argument(exc):
+            raise
+        try:
+            return league.box_scores(week=week)
+        except TypeError as exc2:
+            if not _unexpected_keyword_argument(exc2):
+                raise
+            return league.box_scores(matchup_period=week, scoring_period=week)
 
 
 def fetch_box_scores(
@@ -422,10 +469,11 @@ def fetch_box_scores(
     *,
     player_team_cache: dict[int, int] | None = None,
 ) -> list[Any]:
-    """Fetch football ``BoxScore`` objects for one scoring period.
+    """Fetch ``BoxScore`` objects for one scoring period.
 
-    espn-api ``box_scores`` is football-only and refuses seasons before 2019.
-    ``player_team_cache`` should be shared across weeks in one sync.
+    espn-api football uses ``week=``; hockey uses ``matchup_period`` /
+    ``scoring_period``. Both refuse seasons before 2019.
+    ``player_team_cache`` is football-only and shared across weeks in one sync.
     """
     season = int(getattr(league, "year", 0) or 0)
     if season and season < BOX_SCORE_MIN_SEASON:
@@ -433,14 +481,9 @@ def fetch_box_scores(
     if not callable(getattr(league, "box_scores", None)):
         return []
     try:
-        # espn-api accepts player_team_cache on recent versions; fall back if not.
+
         def _call() -> Any:
-            try:
-                return league.box_scores(
-                    week=week, player_team_cache=player_team_cache
-                )
-            except TypeError:
-                return league.box_scores(week=week)
+            return _invoke_box_scores(league, week, player_team_cache)
 
         return list(espn_call(_call, label=f"box_scores:w{week}") or [])
     except Exception as exc:
@@ -520,7 +563,8 @@ def sync_hockey_week_boxes(
     """Write ``weeks/{N}.json`` from hockey box_scores or category matchups.
 
     espn-api hockey exposes football-shaped ``box_scores`` (applied totals +
-    lineups) and, for H2H cats, ``Matchup.home_team_cats``. Empty weeks are
+    lineups) via ``matchup_period`` / ``scoring_period`` — not football's
+    ``week=`` — and, for H2H cats, ``Matchup.home_team_cats``. Empty weeks are
     skipped — never invent player lines ESPN did not return.
     """
     if spec.sport != "hockey":
