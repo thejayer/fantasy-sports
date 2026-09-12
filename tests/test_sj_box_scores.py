@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import inspect
 import json
 from types import SimpleNamespace
 
@@ -204,6 +205,18 @@ def test_week_box_score_rel():
 def test_fetch_box_scores_skips_pre_2019():
     league = SimpleNamespace(year=BOX_SCORE_MIN_SEASON - 1, box_scores=lambda **_: [_box_score()])
     assert fetch_box_scores(league, 1) == []
+
+
+def test_espn_api_hockey_box_scores_rejects_week():
+    """Lock the 0.46 hockey signature that crashed sj-sync."""
+    from espn_api.hockey.league import League
+
+    params = inspect.signature(League.box_scores).parameters
+    assert "week" not in params
+    assert "matchup_period" in params
+    assert "scoring_period" in params
+    with pytest.raises(TypeError, match="unexpected keyword argument 'week'"):
+        League.box_scores(None, week=1)  # type: ignore[misc]
 
 
 def test_fetch_box_scores_hockey_signature_never_passes_week():
