@@ -11,6 +11,7 @@ from dataclasses import asdict, dataclass
 from pathlib import Path
 from typing import Any, Literal, TypeVar
 
+from sj.hockey_espn import install_matchup_guards, is_missing_winner_error
 from sj.mtransactions import fetch_transactions_mview
 from sj.registry import LeagueSpec, load_registry
 from sj.serialize import (
@@ -243,6 +244,10 @@ def open_espn_league(spec: LeagueSpec, season: int) -> Any:
         from espn_api.basketball import League
     elif spec.sport == "hockey":
         from espn_api.hockey import League
+
+        # espn-api 0.46 Matchup/BoxScore require data['winner']; BYE and
+        # season-points rows omit it. Patch before League() builds schedules.
+        install_matchup_guards()
     else:  # pragma: no cover - registry validates sport
         raise ValueError(f"Unsupported sport: {spec.sport}")
 
@@ -480,6 +485,11 @@ def fetch_box_scores(
         return []
     if not callable(getattr(league, "box_scores", None)):
         return []
+    # Hockey 0.46 BoxScore requires data['winner']; install before the call
+    # so a live espn-api list-comp does not fail the week.
+    names = _box_scores_param_names(league.box_scores)
+    if "matchup_period" in names or "scoring_period" in names:
+        install_matchup_guards()
     try:
 
         def _call() -> Any:
@@ -487,7 +497,7 @@ def fetch_box_scores(
 
         return list(espn_call(_call, label=f"box_scores:w{week}") or [])
     except Exception as exc:
-        if _box_scores_unsupported(exc):
+        if _box_scores_unsupported(exc) or is_missing_winner_error(exc):
             return []
         raise
 
@@ -569,6 +579,7 @@ def sync_hockey_week_boxes(
     """
     if spec.sport != "hockey":
         return 0
+    install_matchup_guards()
     if season < BOX_SCORE_MIN_SEASON:
         return 0
     current = int(snapshot.get("current_week") or 0)
@@ -589,7 +600,7 @@ def sync_hockey_week_boxes(
                     label=f"hockey_scoreboard:w{week}",
                 )
             except Exception as exc:
-                if _box_scores_unsupported(exc):
+                if _box_scores_unsupported(exc) or is_missing_winner_error(exc):
                     continue
                 raise
             boxes = [

@@ -1010,8 +1010,9 @@ def _team_matchup_arrays(
 
 
 def _looks_like_matchup(item: Any) -> bool:
+    """True for espn-api Matchup-shaped objects (winner may be missing)."""
     return hasattr(item, "home_final_score") or (
-        hasattr(item, "home_team") and hasattr(item, "away_team") and hasattr(item, "winner")
+        hasattr(item, "home_team") and hasattr(item, "away_team")
     )
 
 
