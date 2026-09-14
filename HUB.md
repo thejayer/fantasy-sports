@@ -317,7 +317,8 @@ Cloud Scheduler ──▶ Cloud Run Job (sj-sync) ──▶ gs://<project>-sj-da
 ```
 
 - **ESPN writes:** the `sj-sync` job runs `sj sync --current-only` on a schedule
-  (default every 30 minutes) with ESPN cookies from Secret Manager.
+  (default once daily at 6:00 America/Chicago; override with `SJ_SCHEDULE`)
+  with ESPN cookies from Secret Manager.
   Transactions come from paged `recent_activity` (25 topics per page, default
   200 pages / 5,000 topics; `SJ_ACTIVITY_MAX_PAGES` up to 400). Historical
   seasons (2019+) where that communication view is empty or raises
@@ -353,8 +354,9 @@ Cloud Scheduler ──▶ Cloud Run Job (sj-sync) ──▶ gs://<project>-sj-da
 ./scripts/setup-github-deployer.sh   # also grants refresh promote objectUser
 ```
 
-Creates the bucket, grants IAM, and registers the Cloud Scheduler trigger.
-Override defaults with `SJ_BUCKET`, `SJ_SCHEDULE`, `GCP_REGION`.
+Creates the bucket, grants IAM, and registers the Cloud Scheduler trigger
+(`0 6 * * *` America/Chicago unless overridden).
+Override defaults with `SJ_BUCKET`, `SJ_SCHEDULE`, `SJ_TIMEZONE`, `GCP_REGION`.
 
 ### Alerting (Cloud Shell)
 

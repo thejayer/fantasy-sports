@@ -1040,7 +1040,7 @@ W/L move — without writing ESPN or the live settings file.
 
 Named so they are not accidentally treated as roadmap:
 
-- **Live scoring.** Requires a real-time feed and a push channel; the 30-minute
+- **Live scoring.** Requires a real-time feed and a push channel; the daily
   batch sync is a deliberate architecture. Tighten sync cadence on game days
   before considering it.
 - **Side games.** Survivor/knockout (ESPN shipped Knockout for 2026, Yahoo
