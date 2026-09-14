@@ -373,7 +373,8 @@ path exits 1 on any skipped season. Also creates an HTTPS uptime check on
 `/api/health` (expects HTTP 200) when the hub URL is resolvable. Confirm the
 notification channel from the verification mail Google sends. The health probe
 returns 503 when snapshots are missing or older than `SJ_HEALTH_STALE_SECONDS`
-(default 2 hours) — prefer a GCS-mounted hub so sync keeps timestamps fresh.
+(default 26 hours — one missed daily sync plus 2h slack) — prefer a
+GCS-mounted hub so sync keeps timestamps fresh.
 
 ### Deploy
 

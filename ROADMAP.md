@@ -182,7 +182,7 @@ GitHub Actions on a weekly cadence. After a Dependabot bump to
 ### 1.6 Baseline observability — LANDED
 Public `GET /api/health` (middleware allowlisted, session-free) reports
 per-league `synced_at` age for the latest season of each league. HTTP 200 when
-fresh, 503 when empty or past `SJ_HEALTH_STALE_SECONDS` (default 2h). Route-level
+fresh, 503 when empty or past `SJ_HEALTH_STALE_SECONDS` (default 26h). Route-level
 `error.tsx` / `not-found.tsx` log to stderr for Cloud Logging / Error Reporting.
 
 `scripts/setup-sync-alerting.sh` creates a Cloud Monitoring email alert on

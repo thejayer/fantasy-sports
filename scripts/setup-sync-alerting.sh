@@ -186,7 +186,7 @@ Uptime: HTTPS check \`${UPTIME_NAME}\` on /api/health (when hub URL is known).
 Wire the check to the same notification channel in Cloud Monitoring → Alerting
 if the console does not attach it automatically.
 
-Freshness threshold is SJ_HEALTH_STALE_SECONDS on the hub (default 7200).
+Freshness threshold is SJ_HEALTH_STALE_SECONDS on the hub (default 93600 / 26h).
 Prefer a GCS-mounted hub so sync keeps synced_at fresh — fixture-only deploys
 can 503 the probe when baked timestamps look stale.
 ================================================================
