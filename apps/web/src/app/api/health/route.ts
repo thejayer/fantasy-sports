@@ -9,7 +9,7 @@ export const runtime = "nodejs";
  * Public liveness + snapshot-freshness probe.
  *
  * Auth is bypassed in middleware for this path. Returns HTTP 200 when every
- * latest-season snapshot is within `SJ_HEALTH_STALE_SECONDS` (default 2h),
+ * latest-season snapshot is within `SJ_HEALTH_STALE_SECONDS` (default 26h),
  * otherwise 503 so uptime checks can page on stale or missing data.
  */
 export async function GET() {
