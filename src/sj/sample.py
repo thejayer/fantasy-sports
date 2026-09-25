@@ -1105,6 +1105,19 @@ def seed_store(
             location = store.write(snapshot)
             if spec.sport == "baseball":
                 store.write_pro_schedule(sample_pro_schedule_for_snapshot(snapshot))
+                from sj.baseball_analysis import sample_baseball_analysis_for_snapshot
+                from sj.serialize import is_season_points_scoring
+
+                if is_season_points_scoring(
+                    snapshot.get("scoring_type")
+                    if isinstance(snapshot.get("scoring_type"), str)
+                    else None
+                ):
+                    slot_doc, series_doc = sample_baseball_analysis_for_snapshot(
+                        snapshot
+                    )
+                    store.write_analysis(slot_doc, "slot_points")
+                    store.write_analysis(series_doc, "points_timeseries")
             written.append((spec.id, season, location))
             emit(
                 f"seeded {spec.id} {season} "

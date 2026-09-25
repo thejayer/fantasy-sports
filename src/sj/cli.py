@@ -14,6 +14,7 @@ from sj.sync import (
     SyncAllFailed,
     failures_should_fail_run,
     notify_hub_revalidate,
+    open_espn_league,
     sync_registry,
     sync_summary_line,
 )
@@ -221,6 +222,71 @@ def status_cmd(
             f"{item['league_id']:20} {item['season']}  "
             f"{item.get('team_count', '?')} teams  synced={item.get('synced_at', '?')}"
         )
+
+
+@app.command("analysis")
+def analysis_cmd(
+    league: list[str] | None = typer.Option(
+        None, "--league", "-l", help="League id (repeatable). Default: baseball leagues."
+    ),
+    season: list[int] | None = typer.Option(
+        None, "--season", "-s", help="Season year (repeatable). Default: listed seasons."
+    ),
+    current_only: bool = typer.Option(
+        False, "--current-only", help="Only each league's current_season."
+    ),
+    force: bool = typer.Option(
+        False, "--force", help="Re-fetch every scoring period (ignore incremental cache)."
+    ),
+    store_dir: Path | None = typer.Option(
+        None, help="Write to this directory instead of the configured store."
+    ),
+    registry: Path | None = typer.Option(None, help="Path to leagues.yaml"),
+) -> None:
+    """Rebuild baseball season-points analysis sidecars (roadmap 8.5).
+
+    Walks ESPN ``view=mRoster`` per scoring period and writes
+    ``analysis/slot_points.json`` + ``analysis/points_timeseries.json``.
+    Requires ESPN_S2 / ESPN_SWID. Incremental by default — completed
+    periods are reused unless ``--force``. ``sj sync`` / ``sj backfill``
+    already run this for season-points baseball leagues.
+    """
+    from sj.baseball_analysis import sync_baseball_analysis
+    from sj.store import read_snapshot
+
+    typer.echo(f"store: {describe_store(store_dir)}")
+    reg = load_registry(registry)
+    selected = [lg for lg in reg.leagues if lg.is_espn() and lg.sport == "baseball"]
+    if league:
+        wanted = set(league)
+        selected = [lg for lg in selected if lg.id in wanted]
+        missing = wanted - {lg.id for lg in selected}
+        if missing:
+            typer.echo(f"error: unknown baseball league id(s): {sorted(missing)}", err=True)
+            raise typer.Exit(code=1)
+    wrote = 0
+    for spec in selected:
+        if not spec.has_live_espn_id():
+            typer.echo(f"skip {spec.id}: espn_league_id placeholder")
+            continue
+        target = [spec.current_season] if current_only else list(spec.seasons)
+        if season is not None:
+            target = [s for s in target if s in season]
+        for year in target:
+            try:
+                espn = open_espn_league(spec, year)
+                snapshot = read_snapshot(spec.id, year, store_dir=store_dir)
+            except Exception as exc:  # noqa: BLE001
+                typer.echo(f"skip {spec.id} {year}: {exc}", err=True)
+                continue
+            n = sync_baseball_analysis(
+                espn, spec, year, snapshot, store_dir=store_dir, force=force
+            )
+            wrote += n
+            typer.echo(f"analysis {spec.id} {year} ({n} files)")
+    if wrote:
+        typer.echo(f"hub revalidate: {notify_hub_revalidate()}")
+    typer.echo(f"done: {wrote} analysis files")
 
 
 @app.command("regenerate-fixtures")

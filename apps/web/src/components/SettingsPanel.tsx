@@ -91,6 +91,18 @@ export function SettingsPanel({ league }: { league: LeagueSnapshot }) {
           FP. Read-only over synced activity.
         </p>
       ) : null}
+      {league.sport === "baseball" ? (
+        <p className="muted">
+          <Link
+            href={`/leagues/${league.league_id}?season=${league.season}&tab=analysis`}
+          >
+            Analysis
+          </Link>{" "}
+          shows season-points by lineup slot and a cumulative points chart.
+          Needs a synced <code>analysis/</code> sidecar — the hub does not
+          call ESPN from this page.
+        </p>
+      ) : null}
     </div>
   );
 }

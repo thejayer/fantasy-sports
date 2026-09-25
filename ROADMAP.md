@@ -990,6 +990,23 @@ tooling needs no model — it is scheduling and roster arithmetic:
 
 Hub: `BaseballToolsPanel` + `lib/baseball-tools.ts`. Keep projections EmptyState.
 
+### 8.5 Baseball season-points Analysis — LANDING
+Season Points (`TOTAL_SEASON_POINTS`) leagues — especially `baseball-dynasty`
+— have no stored daily lineups. Analysis is snapshot arithmetic from a
+sync-time ESPN period walk, not projections and not a Next.js ESPN fan-out.
+
+- **Sync:** `sj sync` / `sj backfill` / `sj analysis` write
+  `{league}/{season}/analysis/slot_points.json` and
+  `points_timeseries.json`. Each scoring period: `view=mRoster`, credit
+  `player.stats` `appliedTotal` (`statSourceId=0`, `statSplitTypeId=5`) to
+  `lineupSlotId`. Never `ppe.appliedStatTotal`. Incremental reuse of
+  completed `period_slots`; throttle via `SJ_TXN_PERIOD_THROTTLE`.
+- **Hub:** `?tab=analysis` (primary on season-points baseball) — slot table,
+  bats vs pitchers, multi-team cumulative chart (`?series=`).
+  `getBaseballAnalysis` + EmptyState when missing / H2H category.
+- **Fixtures:** synthetic 3-team sample next to `baseball-dynasty/2026`.
+  Live 2026 slot totals matching the offline 2499137 run need a cookie sync.
+
 ### 8.3 Golf: close the week-to-week loop — LANDED (offline)
 Golf is the one sport where the hub *is* the system of record, so every gap is
 ours:
@@ -1312,8 +1329,9 @@ football box scores + player week game logs; 8.2 baseball projection-free
 toolkit (category board + period boxes, trailing, schedule/two-starts/locks,
 IP/GS caps); 8.3 golf depth (projected week totals, golfer pages, segment
 start limits, auto-pick, optional drop-worst — offline / EOD; not live
-hole-by-hole); 9.4 multi-league portfolio table on `/`; 9.5 Hall of Shame
-worst drops (`?tab=drops`).
+hole-by-hole); 8.5 baseball season-points Analysis (`?tab=analysis`, slot
+table + cumulative chart from sync `mRoster` walk); 9.4 multi-league
+portfolio table on `/`; 9.5 Hall of Shame worst drops (`?tab=drops`).
 Open: remaining Phase 9 items only if members ask (live scoring, side games,
 dues, PWA).
 Postponed: 7.7 scheduled Discord auto-send / email fallback.

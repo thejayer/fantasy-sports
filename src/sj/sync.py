@@ -701,6 +701,7 @@ def sync_league_season(
     sync_football_box_scores(league, spec, season, snapshot, store_dir=store_dir)
     sync_hockey_week_boxes(league, spec, season, snapshot, store_dir=store_dir)
     if spec.sport == "baseball":
+        from sj.baseball_analysis import sync_baseball_analysis
         from sj.baseball_enrich import (
             sync_baseball_category_boxes,
             sync_baseball_pro_schedule,
@@ -710,6 +711,12 @@ def sync_league_season(
             league, spec, season, snapshot, store_dir=store_dir
         )
         sync_baseball_category_boxes(
+            league, spec, season, snapshot, store_dir=store_dir
+        )
+        # Season-points slot / timeseries analysis (roadmap 8.5). Side
+        # concern after the season write; period failures are recorded in
+        # the JSON rather than failing the league-season.
+        sync_baseball_analysis(
             league, spec, season, snapshot, store_dir=store_dir
         )
     return SyncResult(

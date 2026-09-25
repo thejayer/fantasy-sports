@@ -24,6 +24,7 @@ describe("LeagueView unification", () => {
     expect(pageSource).not.toMatch(/BaseballLeagueView/);
     expect(pageSource).not.toMatch(/function record\(/);
     expect(pageSource).toMatch(/getProSchedule/);
+    expect(pageSource).toMatch(/getBaseballAnalysis/);
   });
 
   it("shared view includes season chips, win%, and sport-gated standings", () => {
@@ -77,6 +78,8 @@ describe("LeagueView unification", () => {
     expect(viewSource).toMatch(/"sandbox"/);
     expect(viewSource).toMatch(/HallOfShamePanel/);
     expect(viewSource).toMatch(/"drops"/);
+    expect(viewSource).toMatch(/BaseballAnalysisPanel/);
+    expect(viewSource).toMatch(/"analysis"/);
     expect(viewSource).toMatch(/isGolf/);
     expect(viewSource).not.toMatch(/Snake draft comes in 6\.4b/);
     expect(viewSource).not.toMatch(/Weekly lineups come in 6\.4c/);

@@ -511,6 +511,21 @@ export function BaseballToolsPanel({
                 points. Read-only.
               </p>
             </Link>
+            {isSeasonPointsScoring(league.scoring_type) ? (
+              <Link
+                href={`/leagues/${leagueId}?season=${season}&tab=analysis`}
+                className="panel"
+                style={{ textDecoration: "none", color: "inherit" }}
+              >
+                <h3 className="roster-group-title" style={{ marginTop: 0 }}>
+                  Analysis
+                </h3>
+                <p className="league-meta" style={{ marginBottom: 0 }}>
+                  Points by lineup slot, bats vs pitchers, and a season
+                  time series. Snapshot arithmetic — not projections.
+                </p>
+              </Link>
+            ) : null}
           </div>
         </section>
       ) : null}

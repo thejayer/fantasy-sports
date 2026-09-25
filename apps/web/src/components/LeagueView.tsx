@@ -25,6 +25,7 @@ import {
 } from "@/lib/scoring-type";
 import { ScoringSandboxPanel } from "@/components/ScoringSandboxPanel";
 import { HallOfShamePanel } from "@/components/HallOfShamePanel";
+import { BaseballAnalysisPanel } from "@/components/BaseballAnalysisPanel";
 import { SettingsPanel } from "@/components/SettingsPanel";
 import { BaseballToolsPanel } from "@/components/BaseballToolsPanel";
 import { HockeyToolsPanel } from "@/components/HockeyToolsPanel";
@@ -65,6 +66,10 @@ import {
 import { StatusLegend } from "@/components/StatusLegend";
 import type { GolfActingScope } from "@/lib/hub-members";
 import type { ScoringSandboxModel } from "@/lib/scoring-sandbox";
+import type {
+  AnalysisSeriesMode,
+  BaseballAnalysisSnapshot,
+} from "@/lib/baseball-analysis";
 
 function RoleSwitcher({
   leagueId,
@@ -313,10 +318,26 @@ const BASEBALL_TABS = [
   "tools",
   "settings",
   "sandbox",
+  "analysis",
   "drops",
 ] as const;
 
-const HOCKEY_TABS = BASEBALL_TABS;
+const HOCKEY_TABS = [
+  "standings",
+  "teams",
+  "players",
+  "matchups",
+  "draft",
+  "activity",
+  "recap",
+  "waivers",
+  "history",
+  "projections",
+  "tools",
+  "settings",
+  "sandbox",
+  "drops",
+] as const;
 
 /** Golf lane (roadmap 6.4a–e + 6.5 + live auction). */
 const GOLF_TABS = [
@@ -371,6 +392,8 @@ export function LeagueView({
   weekBoxScore = null,
   viewerTeamId,
   scoringSandbox = null,
+  baseballAnalysis = null,
+  analysisSeriesMode = "cumulative",
 }: {
   league: LeagueSnapshot;
   seasons: number[];
@@ -426,6 +449,9 @@ export function LeagueView({
   viewerTeamId?: number;
   /** Compact LM scoring sandbox payload (roadmap 8.4). */
   scoringSandbox?: ScoringSandboxModel | null;
+  /** Baseball season-points analysis sidecars (roadmap 8.5). */
+  baseballAnalysis?: BaseballAnalysisSnapshot | null;
+  analysisSeriesMode?: AnalysisSeriesMode;
 }) {
   const leagueId = league.league_id;
   const isBaseball = league.sport === "baseball";
@@ -533,7 +559,9 @@ export function LeagueView({
                       ? scoringQuery
                       : active === "tools"
                         ? toolsPair
-                        : "";
+                        : active === "analysis"
+                          ? `&series=${analysisSeriesMode}`
+                          : "";
 
   const players = isBaseball
     ? league.players.filter((player) => {
@@ -619,7 +647,8 @@ export function LeagueView({
             (name === "projections" && projectionScoring
               ? `&scoring=${projectionScoring}`
               : "") +
-            (name === "tools" ? toolsPair : ""),
+            (name === "tools" ? toolsPair : "") +
+            (name === "analysis" ? `&series=${analysisSeriesMode}` : ""),
         }))}
       />
 
@@ -663,6 +692,15 @@ export function LeagueView({
 
       {active === "drops" ? (
         <HallOfShamePanel league={league} viewerTeamId={viewerTeamId} />
+      ) : null}
+
+      {active === "analysis" ? (
+        <BaseballAnalysisPanel
+          league={league}
+          analysis={baseballAnalysis}
+          seriesMode={analysisSeriesMode}
+          viewerTeamId={viewerTeamId}
+        />
       ) : null}
 
       {active === "schedule" && isGolf ? (

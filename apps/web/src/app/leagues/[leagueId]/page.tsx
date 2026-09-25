@@ -3,6 +3,7 @@ import type { HistoryView } from "@/components/HistoryPanel";
 import { LeagueView } from "@/components/LeagueView";
 import type { MatchupsView } from "@/components/MatchupsPanel";
 import type { ToolsView } from "@/components/ToolsPanel";
+import { parseAnalysisSeriesMode } from "@/lib/baseball-analysis";
 import { parseBaseballToolsView, parseTrailingWindow } from "@/lib/baseball-tools";
 import { parseHockeyToolsView } from "@/lib/hockey-tools";
 import type { ActivityView } from "@/lib/activity";
@@ -11,6 +12,7 @@ import {
   getLeagueHistoryArchive,
   getLeagueSeasons,
   getLeagueSnapshot,
+  getBaseballAnalysis,
   getPlayerMap,
   getPlayoffOddsSamples,
   getPlayoffOddsSnapshot,
@@ -65,6 +67,7 @@ type Props = {
     dp?: string;
     box?: string;
     window?: string;
+    series?: string;
   }>;
 };
 
@@ -110,6 +113,7 @@ export default async function LeagueDetailPage({ params, searchParams }: Props) 
     dp: draftPageParam,
     box: boxParam,
     window: windowParam,
+    series: seriesParam,
   } = await searchParams;
   const seasons = await getLeagueSeasons(leagueId);
   const season = seasonParam ? Number(seasonParam) : undefined;
@@ -162,6 +166,7 @@ export default async function LeagueDetailPage({ params, searchParams }: Props) 
   const baseballToolsView = parseBaseballToolsView(viewParam);
   const baseballTrailingWindow = parseTrailingWindow(windowParam);
   const hockeyToolsView = parseHockeyToolsView(viewParam);
+  const analysisSeriesMode = parseAnalysisSeriesMode(seriesParam);
 
   const historyArchive =
     tab === "history" ? await getLeagueHistoryArchive(leagueId) : null;
@@ -169,6 +174,11 @@ export default async function LeagueDetailPage({ params, searchParams }: Props) 
   const proSchedule: ProScheduleSnapshot | null =
     league.sport === "baseball" && tab === "tools"
       ? await getProSchedule(league.league_id, league.season)
+      : null;
+
+  const baseballAnalysis =
+    league.sport === "baseball" && tab === "analysis"
+      ? await getBaseballAnalysis(league.league_id, league.season)
       : null;
 
   const wantsProjections =
@@ -409,6 +419,8 @@ export default async function LeagueDetailPage({ params, searchParams }: Props) 
       weekBoxScore={weekBoxScore}
       viewerTeamId={viewerTeamId}
       scoringSandbox={scoringSandbox}
+      baseballAnalysis={baseballAnalysis}
+      analysisSeriesMode={analysisSeriesMode}
     />
   );
 }

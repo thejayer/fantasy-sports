@@ -37,6 +37,7 @@ describe("tabLabel (roadmap 7.5)", () => {
     expect(tabLabel("scoreboard")).toBe("Scoreboard");
     expect(tabLabel("sandbox")).toBe("Scoring lab");
     expect(tabLabel("drops")).toBe("Hall of Shame");
+    expect(tabLabel("analysis")).toBe("Analysis");
   });
 
   it("title-cases an unknown id rather than dropping it", () => {
