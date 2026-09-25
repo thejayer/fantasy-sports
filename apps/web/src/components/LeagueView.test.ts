@@ -80,6 +80,12 @@ describe("LeagueView unification", () => {
     expect(viewSource).toMatch(/"drops"/);
     expect(viewSource).toMatch(/BaseballAnalysisPanel/);
     expect(viewSource).toMatch(/"analysis"/);
+    expect(
+      readFileSync(
+        path.join(process.cwd(), "src/components/BaseballAnalysisPanel.tsx"),
+        "utf8",
+      ),
+    ).toMatch(/^["']use client["']/m);
     expect(viewSource).toMatch(/isGolf/);
     expect(viewSource).not.toMatch(/Snake draft comes in 6\.4b/);
     expect(viewSource).not.toMatch(/Weekly lineups come in 6\.4c/);
