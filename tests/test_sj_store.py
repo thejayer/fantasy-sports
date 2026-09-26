@@ -264,6 +264,15 @@ def test_gcs_store_round_trip(monkeypatch):
     # Concern objects landed too.
     assert "snapshots/football-main/2025/standings.json" in bucket.objects
 
+    analysis_loc = store.write_analysis(
+        {"league_id": "baseball-dynasty", "season": 2026, "teams": []},
+        "slot_points",
+    )
+    assert analysis_loc.endswith("baseball-dynasty/2026/analysis/slot_points.json")
+    assert store.read_analysis("baseball-dynasty", 2026, "slot_points")["season"] == 2026
+    # Side concern — index unchanged.
+    assert len(json.loads(bucket.objects["snapshots/index.json"])["leagues"]) == 2
+
 
 def test_gcs_write_upserts_without_listing_bucket(monkeypatch):
     bucket = FakeBucket()

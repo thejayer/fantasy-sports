@@ -105,6 +105,19 @@ def regenerate_fixtures(
             store = FileStore(root)
             store.write_pro_schedule(sample_pro_schedule_for_snapshot(snapshot))
             emit(f"wrote {spec.id}/{season}/pro_schedule.json")
+            from sj.baseball_analysis import sample_baseball_analysis_for_snapshot
+            from sj.serialize import is_season_points_scoring
+
+            if is_season_points_scoring(
+                snapshot.get("scoring_type")
+                if isinstance(snapshot.get("scoring_type"), str)
+                else None
+            ):
+                slot_doc, series_doc = sample_baseball_analysis_for_snapshot(snapshot)
+                store.write_analysis(slot_doc, "slot_points")
+                store.write_analysis(series_doc, "points_timeseries")
+                emit(f"wrote {spec.id}/{season}/analysis/slot_points.json")
+                emit(f"wrote {spec.id}/{season}/analysis/points_timeseries.json")
             week = int(snapshot.get("current_week") or 1)
             teams = snapshot.get("teams") or []
             if len(teams) >= 2:

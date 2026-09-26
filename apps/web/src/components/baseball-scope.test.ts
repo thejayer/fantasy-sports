@@ -16,6 +16,8 @@ describe("baseball scope (roadmap 4.6)", () => {
     expect(hub).toMatch(/Projection-free by design/);
     expect(hub).toMatch(/8\.2/);
     expect(hub).toMatch(/Hall of Shame/);
+    expect(hub).toMatch(/Analysis/);
+    expect(roadmap).toMatch(/8\.5/);
     expect(roadmap).toMatch(/4\.6 Baseball — LANDED/);
     expect(roadmap).toMatch(/9\.5 Hall of Shame/);
     expect(roadmap).toMatch(/keep baseball data-rich but projection-free/);

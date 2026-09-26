@@ -38,6 +38,7 @@ from sj.jsonutil import dumps_snapshot
 from sj.snapshot_layout import (
     CONCERN_FILES,
     MANIFEST_NAME,
+    analysis_rel,
     assemble_snapshot,
     manifest_rel,
     monolith_rel,
@@ -162,6 +163,12 @@ class SnapshotStore(Protocol):
         self, league_id: str, season: int
     ) -> dict[str, Any] | None: ...
 
+    def write_analysis(self, document: dict[str, Any], name: str) -> str: ...
+
+    def read_analysis(
+        self, league_id: str, season: int, name: str
+    ) -> dict[str, Any] | None: ...
+
 
 class FileStore:
     """Snapshots as JSON files under ``root``."""
@@ -227,6 +234,24 @@ class FileStore:
         self, league_id: str, season: int
     ) -> dict[str, Any] | None:
         path = self.root / pro_schedule_rel(league_id, season)
+        if not path.exists():
+            return None
+        return json.loads(path.read_text(encoding="utf-8"))
+
+    def write_analysis(self, document: dict[str, Any], name: str) -> str:
+        """Write ``analysis/{name}.json`` without touching ``index.json`` (roadmap 8.5)."""
+        league_id = str(document["league_id"])
+        season = int(document["season"])
+        rel = analysis_rel(league_id, season, name)
+        path = self.root / rel
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(_dump(document), encoding="utf-8")
+        return str(path)
+
+    def read_analysis(
+        self, league_id: str, season: int, name: str
+    ) -> dict[str, Any] | None:
+        path = self.root / analysis_rel(league_id, season, name)
         if not path.exists():
             return None
         return json.loads(path.read_text(encoding="utf-8"))
@@ -390,6 +415,26 @@ class GcsStore:
             return None
         return json.loads(blob.download_as_text())
 
+    def write_analysis(self, document: dict[str, Any], name: str) -> str:
+        """Write ``analysis/{name}.json`` without touching ``index.json`` (roadmap 8.5)."""
+        league_id = str(document["league_id"])
+        season = int(document["season"])
+        key = self._key(analysis_rel(league_id, season, name))
+        blob = self._get_bucket().blob(key)
+        blob.cache_control = "no-cache"
+        blob.upload_from_string(_dump(document), content_type="application/json")
+        return f"gs://{self.bucket_name}/{key}"
+
+    def read_analysis(
+        self, league_id: str, season: int, name: str
+    ) -> dict[str, Any] | None:
+        blob = self._get_bucket().blob(
+            self._key(analysis_rel(league_id, season, name))
+        )
+        if not blob.exists():
+            return None
+        return json.loads(blob.download_as_text())
+
     def read(self, league_id: str, season: int) -> dict[str, Any] | None:
         assembled = self._read_v2(league_id, season)
         if assembled is not None:
@@ -532,6 +577,25 @@ def read_pro_schedule(
 ) -> dict[str, Any] | None:
     """Read ``pro_schedule.json`` from the active store (no fixture fallback)."""
     return resolve_store(store_dir).read_pro_schedule(league_id, season)
+
+
+def write_analysis(
+    document: dict[str, Any],
+    name: str,
+    store_dir: Path | str | None = None,
+) -> str:
+    """Persist one baseball analysis sidecar (no index upsert)."""
+    return resolve_store(store_dir).write_analysis(document, name)
+
+
+def read_analysis(
+    league_id: str,
+    season: int,
+    name: str,
+    store_dir: Path | str | None = None,
+) -> dict[str, Any] | None:
+    """Read ``analysis/{name}.json`` from the active store (no fixture fallback)."""
+    return resolve_store(store_dir).read_analysis(league_id, season, name)
 
 
 def read_snapshot(

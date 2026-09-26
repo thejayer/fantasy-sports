@@ -62,6 +62,16 @@ def pro_schedule_rel(league_id: str, season: int) -> str:
     return f"{season_dir_rel(league_id, season)}/pro_schedule.json"
 
 
+def analysis_rel(league_id: str, season: int, name: str) -> str:
+    """Side-concern baseball analysis JSON (roadmap 8.5).
+
+    ``name`` is ``slot_points`` or ``points_timeseries``. Not listed in
+    ``manifest.files`` — season assemble must never load these.
+    """
+    safe = str(name).strip().replace("..", "")
+    return f"{season_dir_rel(league_id, season)}/analysis/{safe}.json"
+
+
 def manifest_rel(league_id: str, season: int) -> str:
     return f"{season_dir_rel(league_id, season)}/{MANIFEST_NAME}"
 

@@ -732,6 +732,24 @@ test.describe("hub smoke", () => {
     ).toBeVisible();
   });
 
+  test("baseball analysis tab shows slot table and chart (roadmap 8.5)", async ({
+    page,
+  }) => {
+    await page.goto("/leagues/baseball-dynasty?tab=analysis");
+    await expect(page.getByRole("heading", { name: "Analysis" })).toBeVisible();
+    await expect(
+      page.getByRole("heading", { name: "Points by lineup slot" }),
+    ).toBeVisible();
+    await expect(page.getByRole("columnheader", { name: "Starters" }).first()).toBeVisible();
+    await expect(page.getByText("Bat Flip Bandits").first()).toBeVisible();
+    await expect(
+      page.getByRole("heading", { name: "Batters vs pitchers" }),
+    ).toBeVisible();
+    await expect(page.getByRole("img", { name: /Season points by team/i })).toBeVisible();
+    await page.getByRole("link", { name: "Daily" }).click();
+    await expect(page).toHaveURL(/series=daily/);
+  });
+
   test("baseball hall of shame ranks fixture drop by season FP (roadmap 9.5)", async ({
     page,
   }) => {

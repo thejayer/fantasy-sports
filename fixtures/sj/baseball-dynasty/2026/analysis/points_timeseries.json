@@ -1,0 +1,608 @@
+{
+  "espn_league_id": 2499137,
+  "grain": "scoring_period",
+  "league_id": "baseball-dynasty",
+  "method": "player.stats appliedTotal (statSourceId=0, statSplitTypeId=5) attributed to that day's lineupSlotId",
+  "period_label": "day",
+  "schema_version": 1,
+  "scoring_type": "TOTAL_SEASON_POINTS",
+  "season": 2026,
+  "sport": "baseball",
+  "synced_at": "2026-07-27T00:00:00+00:00",
+  "teams": [
+    {
+      "name": "Diamond Dogs",
+      "points": [
+        {
+          "cumulative_starters": 292.2,
+          "daily_bats": 149.6,
+          "daily_pitchers": 142.6,
+          "daily_starters": 292.2,
+          "date": "2026-03-26",
+          "period": 1
+        },
+        {
+          "cumulative_starters": 591.7,
+          "daily_bats": 153.4,
+          "daily_pitchers": 146.1,
+          "daily_starters": 299.5,
+          "date": "2026-03-27",
+          "period": 2
+        },
+        {
+          "cumulative_starters": 894.2,
+          "daily_bats": 154.9,
+          "daily_pitchers": 147.6,
+          "daily_starters": 302.5,
+          "date": "2026-03-28",
+          "period": 3
+        },
+        {
+          "cumulative_starters": 1195.3,
+          "daily_bats": 154.2,
+          "daily_pitchers": 146.9,
+          "daily_starters": 301.1,
+          "date": "2026-03-29",
+          "period": 4
+        },
+        {
+          "cumulative_starters": 1490.6,
+          "daily_bats": 151.2,
+          "daily_pitchers": 144.1,
+          "daily_starters": 295.3,
+          "date": "2026-03-30",
+          "period": 5
+        },
+        {
+          "cumulative_starters": 1776.1,
+          "daily_bats": 146.2,
+          "daily_pitchers": 139.3,
+          "daily_starters": 285.5,
+          "date": "2026-03-31",
+          "period": 6
+        },
+        {
+          "cumulative_starters": 2048.3,
+          "daily_bats": 139.4,
+          "daily_pitchers": 132.8,
+          "daily_starters": 272.2,
+          "date": "2026-04-01",
+          "period": 7
+        },
+        {
+          "cumulative_starters": 2304.9,
+          "daily_bats": 131.4,
+          "daily_pitchers": 125.2,
+          "daily_starters": 256.6,
+          "date": "2026-04-02",
+          "period": 8
+        },
+        {
+          "cumulative_starters": 2544.5,
+          "daily_bats": 122.7,
+          "daily_pitchers": 116.9,
+          "daily_starters": 239.6,
+          "date": "2026-04-03",
+          "period": 9
+        },
+        {
+          "cumulative_starters": 2766.9,
+          "daily_bats": 113.9,
+          "daily_pitchers": 108.5,
+          "daily_starters": 222.4,
+          "date": "2026-04-04",
+          "period": 10
+        },
+        {
+          "cumulative_starters": 2973.0,
+          "daily_bats": 105.5,
+          "daily_pitchers": 100.6,
+          "daily_starters": 206.1,
+          "date": "2026-04-05",
+          "period": 11
+        },
+        {
+          "cumulative_starters": 3164.9,
+          "daily_bats": 98.3,
+          "daily_pitchers": 93.6,
+          "daily_starters": 191.9,
+          "date": "2026-04-06",
+          "period": 12
+        },
+        {
+          "cumulative_starters": 3345.6,
+          "daily_bats": 92.5,
+          "daily_pitchers": 88.2,
+          "daily_starters": 180.7,
+          "date": "2026-04-07",
+          "period": 13
+        },
+        {
+          "cumulative_starters": 3519.0,
+          "daily_bats": 88.8,
+          "daily_pitchers": 84.6,
+          "daily_starters": 173.4,
+          "date": "2026-04-08",
+          "period": 14
+        },
+        {
+          "cumulative_starters": 3689.3,
+          "daily_bats": 87.2,
+          "daily_pitchers": 83.1,
+          "daily_starters": 170.3,
+          "date": "2026-04-09",
+          "period": 15
+        },
+        {
+          "cumulative_starters": 3861.1,
+          "daily_bats": 88.0,
+          "daily_pitchers": 83.8,
+          "daily_starters": 171.8,
+          "date": "2026-04-10",
+          "period": 16
+        },
+        {
+          "cumulative_starters": 4038.7,
+          "daily_bats": 90.9,
+          "daily_pitchers": 86.7,
+          "daily_starters": 177.6,
+          "date": "2026-04-11",
+          "period": 17
+        },
+        {
+          "cumulative_starters": 4226.2,
+          "daily_bats": 96.0,
+          "daily_pitchers": 91.5,
+          "daily_starters": 187.5,
+          "date": "2026-04-12",
+          "period": 18
+        },
+        {
+          "cumulative_starters": 4426.9,
+          "daily_bats": 102.8,
+          "daily_pitchers": 97.9,
+          "daily_starters": 200.7,
+          "date": "2026-04-13",
+          "period": 19
+        },
+        {
+          "cumulative_starters": 4643.2,
+          "daily_bats": 110.8,
+          "daily_pitchers": 105.5,
+          "daily_starters": 216.3,
+          "date": "2026-04-14",
+          "period": 20
+        },
+        {
+          "cumulative_starters": 4876.5,
+          "daily_bats": 119.5,
+          "daily_pitchers": 113.8,
+          "daily_starters": 233.3,
+          "date": "2026-04-15",
+          "period": 21
+        },
+        {
+          "cumulative_starters": 5127.1,
+          "daily_bats": 128.3,
+          "daily_pitchers": 122.3,
+          "daily_starters": 250.6,
+          "date": "2026-04-16",
+          "period": 22
+        },
+        {
+          "cumulative_starters": 5393.9,
+          "daily_bats": 136.6,
+          "daily_pitchers": 130.2,
+          "daily_starters": 266.8,
+          "date": "2026-04-17",
+          "period": 23
+        },
+        {
+          "cumulative_starters": 5674.9,
+          "daily_bats": 143.9,
+          "daily_pitchers": 137.1,
+          "daily_starters": 281.0,
+          "date": "2026-04-18",
+          "period": 24
+        }
+      ],
+      "team_id": 1
+    },
+    {
+      "name": "Bat Flip Bandits",
+      "points": [
+        {
+          "cumulative_starters": 336.7,
+          "daily_bats": 174.4,
+          "daily_pitchers": 162.3,
+          "daily_starters": 336.7,
+          "date": "2026-03-26",
+          "period": 1
+        },
+        {
+          "cumulative_starters": 663.0,
+          "daily_bats": 169.0,
+          "daily_pitchers": 157.3,
+          "daily_starters": 326.3,
+          "date": "2026-03-27",
+          "period": 2
+        },
+        {
+          "cumulative_starters": 974.9,
+          "daily_bats": 161.6,
+          "daily_pitchers": 150.3,
+          "daily_starters": 311.9,
+          "date": "2026-03-28",
+          "period": 3
+        },
+        {
+          "cumulative_starters": 1269.5,
+          "daily_bats": 152.6,
+          "daily_pitchers": 142.0,
+          "daily_starters": 294.6,
+          "date": "2026-03-29",
+          "period": 4
+        },
+        {
+          "cumulative_starters": 1545.0,
+          "daily_bats": 142.7,
+          "daily_pitchers": 132.8,
+          "daily_starters": 275.5,
+          "date": "2026-03-30",
+          "period": 5
+        },
+        {
+          "cumulative_starters": 1800.8,
+          "daily_bats": 132.5,
+          "daily_pitchers": 123.3,
+          "daily_starters": 255.8,
+          "date": "2026-03-31",
+          "period": 6
+        },
+        {
+          "cumulative_starters": 2037.9,
+          "daily_bats": 122.8,
+          "daily_pitchers": 114.3,
+          "daily_starters": 237.1,
+          "date": "2026-04-01",
+          "period": 7
+        },
+        {
+          "cumulative_starters": 2258.4,
+          "daily_bats": 114.2,
+          "daily_pitchers": 106.3,
+          "daily_starters": 220.5,
+          "date": "2026-04-02",
+          "period": 8
+        },
+        {
+          "cumulative_starters": 2465.5,
+          "daily_bats": 107.3,
+          "daily_pitchers": 99.8,
+          "daily_starters": 207.1,
+          "date": "2026-04-03",
+          "period": 9
+        },
+        {
+          "cumulative_starters": 2663.4,
+          "daily_bats": 102.5,
+          "daily_pitchers": 95.4,
+          "daily_starters": 197.9,
+          "date": "2026-04-04",
+          "period": 10
+        },
+        {
+          "cumulative_starters": 2857.0,
+          "daily_bats": 100.3,
+          "daily_pitchers": 93.3,
+          "daily_starters": 193.6,
+          "date": "2026-04-05",
+          "period": 11
+        },
+        {
+          "cumulative_starters": 3051.2,
+          "daily_bats": 100.6,
+          "daily_pitchers": 93.6,
+          "daily_starters": 194.2,
+          "date": "2026-04-06",
+          "period": 12
+        },
+        {
+          "cumulative_starters": 3251.2,
+          "daily_bats": 103.6,
+          "daily_pitchers": 96.4,
+          "daily_starters": 200.0,
+          "date": "2026-04-07",
+          "period": 13
+        },
+        {
+          "cumulative_starters": 3461.6,
+          "daily_bats": 109.0,
+          "daily_pitchers": 101.4,
+          "daily_starters": 210.4,
+          "date": "2026-04-08",
+          "period": 14
+        },
+        {
+          "cumulative_starters": 3686.5,
+          "daily_bats": 116.5,
+          "daily_pitchers": 108.4,
+          "daily_starters": 224.9,
+          "date": "2026-04-09",
+          "period": 15
+        },
+        {
+          "cumulative_starters": 3928.6,
+          "daily_bats": 125.4,
+          "daily_pitchers": 116.7,
+          "daily_starters": 242.1,
+          "date": "2026-04-10",
+          "period": 16
+        },
+        {
+          "cumulative_starters": 4189.9,
+          "daily_bats": 135.4,
+          "daily_pitchers": 125.9,
+          "daily_starters": 261.3,
+          "date": "2026-04-11",
+          "period": 17
+        },
+        {
+          "cumulative_starters": 4470.8,
+          "daily_bats": 145.5,
+          "daily_pitchers": 135.4,
+          "daily_starters": 280.9,
+          "date": "2026-04-12",
+          "period": 18
+        },
+        {
+          "cumulative_starters": 4770.4,
+          "daily_bats": 155.2,
+          "daily_pitchers": 144.4,
+          "daily_starters": 299.6,
+          "date": "2026-04-13",
+          "period": 19
+        },
+        {
+          "cumulative_starters": 5086.6,
+          "daily_bats": 163.8,
+          "daily_pitchers": 152.4,
+          "daily_starters": 316.2,
+          "date": "2026-04-14",
+          "period": 20
+        },
+        {
+          "cumulative_starters": 5416.2,
+          "daily_bats": 170.7,
+          "daily_pitchers": 158.9,
+          "daily_starters": 329.6,
+          "date": "2026-04-15",
+          "period": 21
+        },
+        {
+          "cumulative_starters": 5755.0,
+          "daily_bats": 175.5,
+          "daily_pitchers": 163.3,
+          "daily_starters": 338.8,
+          "date": "2026-04-16",
+          "period": 22
+        },
+        {
+          "cumulative_starters": 6098.2,
+          "daily_bats": 177.8,
+          "daily_pitchers": 165.4,
+          "daily_starters": 343.2,
+          "date": "2026-04-17",
+          "period": 23
+        },
+        {
+          "cumulative_starters": 6440.7,
+          "daily_bats": 177.4,
+          "daily_pitchers": 165.1,
+          "daily_starters": 342.5,
+          "date": "2026-04-18",
+          "period": 24
+        }
+      ],
+      "team_id": 2
+    },
+    {
+      "name": "Curveball Crew",
+      "points": [
+        {
+          "cumulative_starters": 223.4,
+          "daily_bats": 117.1,
+          "daily_pitchers": 106.3,
+          "daily_starters": 223.4,
+          "date": "2026-03-26",
+          "period": 1
+        },
+        {
+          "cumulative_starters": 431.1,
+          "daily_bats": 108.8,
+          "daily_pitchers": 98.9,
+          "daily_starters": 207.7,
+          "date": "2026-03-27",
+          "period": 2
+        },
+        {
+          "cumulative_starters": 623.6,
+          "daily_bats": 100.9,
+          "daily_pitchers": 91.6,
+          "daily_starters": 192.5,
+          "date": "2026-03-28",
+          "period": 3
+        },
+        {
+          "cumulative_starters": 802.4,
+          "daily_bats": 93.7,
+          "daily_pitchers": 85.1,
+          "daily_starters": 178.8,
+          "date": "2026-03-29",
+          "period": 4
+        },
+        {
+          "cumulative_starters": 970.0,
+          "daily_bats": 87.8,
+          "daily_pitchers": 79.8,
+          "daily_starters": 167.6,
+          "date": "2026-03-30",
+          "period": 5
+        },
+        {
+          "cumulative_starters": 1129.6,
+          "daily_bats": 83.6,
+          "daily_pitchers": 76.0,
+          "daily_starters": 159.6,
+          "date": "2026-03-31",
+          "period": 6
+        },
+        {
+          "cumulative_starters": 1284.9,
+          "daily_bats": 81.4,
+          "daily_pitchers": 73.9,
+          "daily_starters": 155.3,
+          "date": "2026-04-01",
+          "period": 7
+        },
+        {
+          "cumulative_starters": 1440.1,
+          "daily_bats": 81.3,
+          "daily_pitchers": 73.9,
+          "daily_starters": 155.2,
+          "date": "2026-04-02",
+          "period": 8
+        },
+        {
+          "cumulative_starters": 1599.2,
+          "daily_bats": 83.4,
+          "daily_pitchers": 75.7,
+          "daily_starters": 159.1,
+          "date": "2026-04-03",
+          "period": 9
+        },
+        {
+          "cumulative_starters": 1766.0,
+          "daily_bats": 87.4,
+          "daily_pitchers": 79.4,
+          "daily_starters": 166.8,
+          "date": "2026-04-04",
+          "period": 10
+        },
+        {
+          "cumulative_starters": 1943.7,
+          "daily_bats": 93.1,
+          "daily_pitchers": 84.6,
+          "daily_starters": 177.7,
+          "date": "2026-04-05",
+          "period": 11
+        },
+        {
+          "cumulative_starters": 2135.0,
+          "daily_bats": 100.2,
+          "daily_pitchers": 91.1,
+          "daily_starters": 191.3,
+          "date": "2026-04-06",
+          "period": 12
+        },
+        {
+          "cumulative_starters": 2341.5,
+          "daily_bats": 108.2,
+          "daily_pitchers": 98.3,
+          "daily_starters": 206.5,
+          "date": "2026-04-07",
+          "period": 13
+        },
+        {
+          "cumulative_starters": 2563.6,
+          "daily_bats": 116.4,
+          "daily_pitchers": 105.7,
+          "daily_starters": 222.1,
+          "date": "2026-04-08",
+          "period": 14
+        },
+        {
+          "cumulative_starters": 2801.0,
+          "daily_bats": 124.4,
+          "daily_pitchers": 113.0,
+          "daily_starters": 237.4,
+          "date": "2026-04-09",
+          "period": 15
+        },
+        {
+          "cumulative_starters": 3052.0,
+          "daily_bats": 131.5,
+          "daily_pitchers": 119.5,
+          "daily_starters": 251.0,
+          "date": "2026-04-10",
+          "period": 16
+        },
+        {
+          "cumulative_starters": 3314.2,
+          "daily_bats": 137.4,
+          "daily_pitchers": 124.8,
+          "daily_starters": 262.2,
+          "date": "2026-04-11",
+          "period": 17
+        },
+        {
+          "cumulative_starters": 3584.5,
+          "daily_bats": 141.6,
+          "daily_pitchers": 128.7,
+          "daily_starters": 270.3,
+          "date": "2026-04-12",
+          "period": 18
+        },
+        {
+          "cumulative_starters": 3859.0,
+          "daily_bats": 143.8,
+          "daily_pitchers": 130.7,
+          "daily_starters": 274.5,
+          "date": "2026-04-13",
+          "period": 19
+        },
+        {
+          "cumulative_starters": 4133.6,
+          "daily_bats": 143.9,
+          "daily_pitchers": 130.7,
+          "daily_starters": 274.6,
+          "date": "2026-04-14",
+          "period": 20
+        },
+        {
+          "cumulative_starters": 4404.4,
+          "daily_bats": 141.9,
+          "daily_pitchers": 128.9,
+          "daily_starters": 270.8,
+          "date": "2026-04-15",
+          "period": 21
+        },
+        {
+          "cumulative_starters": 4667.4,
+          "daily_bats": 137.8,
+          "daily_pitchers": 125.2,
+          "daily_starters": 263.0,
+          "date": "2026-04-16",
+          "period": 22
+        },
+        {
+          "cumulative_starters": 4919.5,
+          "daily_bats": 132.1,
+          "daily_pitchers": 120.0,
+          "daily_starters": 252.1,
+          "date": "2026-04-17",
+          "period": 23
+        },
+        {
+          "cumulative_starters": 5158.0,
+          "daily_bats": 125.0,
+          "daily_pitchers": 113.5,
+          "daily_starters": 238.5,
+          "date": "2026-04-18",
+          "period": 24
+        }
+      ],
+      "team_id": 3
+    }
+  ]
+}

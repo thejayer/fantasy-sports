@@ -37,8 +37,40 @@ games-per-team and two-start pitchers from `pro_schedule.json` (site
 `probables`), and daily locks from game start times. ESPN period H2H category
 boxes open from Matchups (`CategoryBoxPanel` over `weeks/{N}.json`). FA
 browsing remains the Waivers tab. Hall of Shame (`?tab=drops`, roadmap 9.5)
-ranks worst drops from synced activity. Do not stub a half engine. Revisit
-projections only with a dedicated MLB modeling plan.
+ranks worst drops from synced activity. Season-points Analysis
+(`?tab=analysis`, roadmap 8.5) shows points by lineup slot, bats vs
+pitchers, and a cumulative season chart from synced
+`analysis/slot_points.json` + `analysis/points_timeseries.json` — `sj sync`
+walks ESPN `mRoster` per scoring period offline; the hub never calls ESPN
+from a request. H2H category baseball gets an EmptyState (no invented FP).
+Do not stub a half engine. Revisit projections only with a dedicated MLB
+modeling plan.
+
+### Baseball Analysis (roadmap 8.5)
+
+`?tab=analysis` on baseball Season Points (`TOTAL_SEASON_POINTS`, especially
+`baseball-dynasty`). Three views on one page:
+
+1. **Points by lineup slot** — C / 1B / 2B / 3B / SS / OF / DH / UTIL / P / RP
+   plus Starters, ESPN team pts, Bench+IL unused.
+2. **Batters vs pitchers** — Bats = C+1B+2B+3B+SS+OF+DH+UTIL; Pitchers = P+RP.
+3. **Season points chart** — one line per team of cumulative starter FP across
+   scoring periods (ESPN baseball `scoringPeriodId` ≈ calendar day). Toggle
+   `?series=cumulative|daily|weekly` (cumulative default). Month ticks when
+   dates exist.
+
+**How it is produced.** Not from `lineups.json` / `weeks/` (those are empty for
+season-points baseball). After the season snapshot, `sj sync` / `sj backfill`
+call `sync_baseball_analysis`: for each scoring period, `view=mRoster` and
+credit `player.stats[].appliedTotal` where `statSourceId=0` and
+`statSplitTypeId=5` to that day's `lineupSlotId`. Do **not** use
+`ppe.appliedStatTotal` (~1.7× high vs ESPN). Starter sum should land within
+~1% of ESPN team points. Incremental: completed periods in
+`analysis/slot_points.json` `period_slots` are reused; `--force` / `sj analysis --force`
+re-walks. Throttle matches the transactions fallback (`SJ_TXN_PERIOD_THROTTLE`).
+Missing analysis → EmptyState. Committed fixtures ship a synthetic 3-team
+sample; live 2026 dynasty numbers come from a cookie sync, not from those
+fixtures.
 
 ### Hockey scope
 
@@ -78,8 +110,8 @@ franchise re-added the player. Trades are not drops. Empty
 `transactions.json` (pre-2019, or a season that has not been re-synced after
 the `mTransactions2` fallback) shows an EmptyState. Season chips switch
 2024 / 2025 / 2026 when those snapshots exist. Read-only — no ESPN write-back.
-Season-points baseball keeps the tab beside Scoring lab; other leagues file
-it under More.
+Season-points baseball keeps the tab beside Scoring lab and Analysis; other
+leagues file it under More.
 
 ### Scoring lab (roadmap 8.4)
 
@@ -414,6 +446,7 @@ source .env.espn
 pip install -e ".[dev,gcs]"
 
 sj sync --current-only                 # writes to ./data/sj
+sj analysis --league baseball-dynasty --force   # optional full re-walk
 sj status
 
 # Replace fixture/dummy copies under data/sj with live ESPN:
