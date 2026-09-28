@@ -1,16 +1,70 @@
+/*
+  Modernist hub skin (design/modernist). Existing component classnames keep
+  working via this bridge: --ink/--signal/--radius map onto Modernist tokens.
+  Light is the product default; dark remains a selectable override.
+*/
+@import "../styles/modernist.css";
+
 :root {
-  --ink: #13231c;
-  --field: #1f4d3a;
-  --field-deep: #0f2a20;
-  --chalk: #eef3ec;
-  --mist: #d5e0d4;
-  --signal: #d2f15b;
-  --ember: #d85a2a;
-  --line: rgba(19, 35, 28, 0.14);
-  --shadow: 0 24px 60px rgba(15, 42, 32, 0.18);
-  --radius: 18px;
-  --font-display: var(--font-display-face), "Arial Narrow", sans-serif;
-  --font-body: var(--font-body-face), "Helvetica Neue", sans-serif;
+  color-scheme: light dark;
+
+  --font-heading: var(--font-archivo), "Archivo", system-ui, sans-serif;
+  --font-body: var(--font-archivo), "Archivo", system-ui, sans-serif;
+  --font-display: var(--font-heading);
+  --font-display-face: var(--font-archivo);
+  --font-body-face: var(--font-archivo);
+
+  --ink: var(--color-text);
+  --ink: light-dark(var(--color-text), #f3f2f2);
+  --field: var(--color-accent);
+  --field: light-dark(var(--color-accent), var(--color-accent-400));
+  --field-deep: var(--accent-deep);
+  --field-deep: light-dark(var(--accent-deep), var(--color-accent-300));
+  --chalk: var(--color-bg);
+  --chalk: light-dark(var(--color-bg), #201e1d);
+  --mist: var(--color-surface);
+  --mist: light-dark(var(--color-surface), #2d2b2b);
+  --signal: var(--color-accent);
+  --signal: light-dark(var(--color-accent), var(--color-accent-400));
+  --ember: var(--color-accent-600);
+  --ember: light-dark(var(--color-accent-600), var(--color-accent-400));
+  --good: #3d8f5a;
+  --good: light-dark(#3d8f5a, #63c88a);
+  --caution: #d4a017;
+  --caution: light-dark(#d4a017, #e8bf4d);
+  --line: var(--color-divider);
+  --line: light-dark(var(--color-divider), color-mix(in srgb, #f3f2f2 28%, transparent));
+  --shadow: var(--shadow-md);
+  --surface: var(--color-surface);
+  --surface: light-dark(var(--color-surface), color-mix(in srgb, #f3f2f2 8%, transparent));
+  --surface-strong: #ffffff;
+  --surface-strong: light-dark(#ffffff, color-mix(in srgb, #f3f2f2 12%, transparent));
+  --raise: #ffffff;
+  --raise: light-dark(#ffffff, #2d2b2b);
+  --on-accent: var(--color-bg);
+  --glow-a: transparent;
+  --glow-b: transparent;
+  --wash-top: var(--color-bg);
+  --wash-mid: var(--color-bg);
+  --wash-bottom: var(--color-bg);
+  --page-bg: var(--color-bg);
+  --page-bg: light-dark(var(--color-bg), #201e1d);
+
+  --radius: 0px;
+}
+
+:root[data-theme="light"] {
+  color-scheme: only light;
+}
+
+:root[data-theme="dark"] {
+  color-scheme: only dark;
+  --color-bg: #201e1d;
+  --color-surface: #2d2b2b;
+  --color-text: #f3f2f2;
+  --color-divider: color-mix(in srgb, #f3f2f2 28%, transparent);
+  --accent-deep: color-mix(in srgb, var(--color-accent) 70%, #fff);
+  --accent-tint: color-mix(in srgb, var(--color-accent) 16%, var(--color-bg));
 }
 
 * {
@@ -22,10 +76,7 @@ body {
   margin: 0;
   min-height: 100%;
   color: var(--ink);
-  background:
-    radial-gradient(1200px 600px at 10% -10%, rgba(210, 241, 91, 0.28), transparent 55%),
-    radial-gradient(900px 500px at 100% 0%, rgba(31, 77, 58, 0.18), transparent 50%),
-    linear-gradient(180deg, #f5f8f3 0%, #e7efe4 45%, #dce7d8 100%);
+  background: var(--page-bg);
   font-family: var(--font-body);
 }
 
@@ -54,14 +105,17 @@ button,
   align-items: center;
   justify-content: space-between;
   gap: 1rem;
-  padding: 1.25rem 0 0.5rem;
+  padding: var(--space-3) 0;
+  border-bottom: 2px solid var(--line);
 }
 
 .brand-mark {
   font-family: var(--font-display);
-  font-size: clamp(1.4rem, 2vw, 1.8rem);
+  font-weight: var(--font-heading-weight);
+  font-size: 19px;
   letter-spacing: 0.02em;
   text-transform: uppercase;
+  color: var(--signal);
 }
 
 .nav-links {
@@ -72,17 +126,85 @@ button,
 }
 
 .nav-links a {
-  opacity: 0.8;
-  transition: opacity 160ms ease;
+  opacity: 1;
+  transition: color 160ms ease;
 }
 
-.nav-links a:hover {
-  opacity: 1;
+.nav-links a:hover,
+.nav-links a[aria-current="page"] {
+  color: var(--signal);
+}
+
+.accent-picker {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.accent-picker.is-labeled {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(9.5rem, 1fr));
+  gap: 0.5rem;
+  width: 100%;
+  max-width: 36rem;
+}
+
+.accent-swatch {
+  width: 14px;
+  height: 14px;
+  padding: 0;
+  border: 1px solid color-mix(in srgb, var(--ink) 35%, transparent);
+  border-radius: var(--radius);
+  cursor: pointer;
+  background: none;
+  flex-shrink: 0;
+}
+
+.accent-swatch.is-active {
+  outline: 2px solid var(--ink);
+  outline-offset: 1px;
+}
+
+.accent-choice {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  padding: 0.55rem 0.75rem;
+  border: 0;
+  border-radius: var(--radius);
+  background: var(--surface);
+  box-shadow: inset 0 0 0 1px var(--line);
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.accent-choice.is-active {
+  box-shadow: inset 0 0 0 2px var(--signal);
+}
+
+.accent-choice-name {
+  font-size: 0.9rem;
+  font-weight: 600;
 }
 
 .nav-user {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
   opacity: 0.72;
   font-size: 0.9rem;
+}
+
+.nav-user-label {
+  min-width: 0;
+}
+
+a.nav-user:hover,
+a.nav-user:focus-visible {
+  opacity: 1;
+  color: var(--signal);
 }
 
 .hero {
@@ -133,18 +255,20 @@ button,
 .button {
   display: inline-flex;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-start;
   border: 0;
-  border-radius: 999px;
-  padding: 0.85rem 1.35rem;
-  background: var(--ink);
-  color: var(--chalk);
-  transition: transform 180ms ease, background 180ms ease;
+  border-radius: var(--radius);
+  padding: 0.7rem 1.1rem;
+  font-family: var(--font-display);
+  font-weight: var(--font-heading-weight);
+  font-size: 14px;
+  background: var(--signal);
+  color: var(--on-accent);
+  transition: background 160ms ease;
 }
 
 .button:hover {
-  transform: translateY(-1px);
-  background: var(--field-deep);
+  background: var(--color-accent-600);
 }
 
 .button.secondary {
@@ -173,6 +297,209 @@ button,
   opacity: 0.8;
 }
 
+/* League header stays one line so data is not pushed off a phone (7.5). */
+.section .lede.league-lede {
+  margin-bottom: 0.9rem;
+  max-width: none;
+}
+
+.section-head {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem 1.5rem;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 0.5rem;
+}
+
+.section-head .lede {
+  margin-bottom: 0;
+}
+
+.settings-form,
+.settings-grid {
+  margin-top: 0.5rem;
+}
+
+/* ESPN settings tab (roadmap 7.9) */
+.settings-panel {
+  display: grid;
+  gap: 0.85rem;
+}
+
+.settings-groups {
+  display: grid;
+  gap: 0.85rem;
+  grid-template-columns: repeat(auto-fit, minmax(19rem, 1fr));
+  align-items: start;
+}
+
+.settings-groups .settings-row:last-child {
+  border-bottom: 0;
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(14rem, 1fr));
+  gap: 0.9rem 1rem;
+  margin-bottom: 1rem;
+}
+
+.settings-form label {
+  display: grid;
+  gap: 0.35rem;
+  font-size: 0.85rem;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+
+.settings-form input,
+.settings-form select {
+  padding: 0.55rem 0.75rem;
+  border: 0;
+  border-radius: 0.65rem;
+  box-shadow: inset 0 0 0 1px var(--line);
+  background: color-mix(in srgb, var(--chalk) 88%, var(--raise));
+  color: var(--ink);
+  font: inherit;
+  text-transform: none;
+  letter-spacing: normal;
+}
+
+.settings-form input:focus,
+.settings-form select:focus {
+  outline: 2px solid color-mix(in srgb, var(--ink) 35%, transparent);
+  outline-offset: 1px;
+}
+
+.form-check {
+  display: flex !important;
+  align-items: center;
+  gap: 0.55rem;
+  text-transform: none !important;
+  letter-spacing: normal !important;
+  font-size: 0.95rem !important;
+  align-self: end;
+  padding-bottom: 0.35rem;
+}
+
+.form-error {
+  color: var(--ember);
+  font-weight: 600;
+}
+
+.settings-grid {
+  display: grid;
+  gap: 0;
+  margin: 0;
+  padding: 0.25rem 0 0.5rem;
+}
+
+.settings-row {
+  display: grid;
+  grid-template-columns: minmax(8rem, 12rem) 1fr;
+  gap: 0.75rem 1rem;
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid var(--line);
+}
+
+.settings-row dt {
+  margin: 0;
+  font-size: 0.78rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  opacity: 0.72;
+}
+
+.settings-row dd {
+  margin: 0;
+}
+
+/* LM scoring sandbox (roadmap 8.4) */
+.scoring-sandbox {
+  display: grid;
+  gap: 0.85rem;
+}
+
+.scoring-sandbox-controls {
+  padding: 0.85rem 1rem 1rem;
+}
+
+.scoring-sandbox-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.65rem;
+}
+
+.scoring-sandbox-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+}
+
+.scoring-sandbox-items {
+  display: grid;
+  gap: 0.7rem;
+  grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr));
+  margin-top: 0.75rem;
+}
+
+.scoring-sandbox-item {
+  display: grid;
+  gap: 0.35rem;
+  font-size: 0.88rem;
+}
+
+.scoring-sandbox-slider {
+  display: grid;
+  grid-template-columns: 1fr 5.2rem;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.scoring-sandbox-slider input[type="range"] {
+  width: 100%;
+  accent-color: var(--accent, var(--ink));
+}
+
+.scoring-sandbox-slider input[type="number"] {
+  padding: 0.35rem 0.5rem;
+  border: 0;
+  border-radius: 0.5rem;
+  box-shadow: inset 0 0 0 1px var(--line);
+  background: color-mix(in srgb, var(--chalk) 88%, var(--raise));
+  color: var(--ink);
+  font: inherit;
+}
+
+.scoring-sandbox .is-delta {
+  color: var(--accent, var(--ember));
+  font-weight: 600;
+}
+
+.lineup-roster {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.45rem;
+}
+
+.lineup-roster label {
+  display: flex;
+  gap: 0.65rem;
+  align-items: flex-start;
+  text-transform: none;
+  letter-spacing: normal;
+  font-size: 0.95rem;
+}
+
+.lineup-roster label.is-locked {
+  opacity: 0.65;
+}
+
 .league-list {
   display: grid;
   gap: 0.85rem;
@@ -185,14 +512,14 @@ button,
   align-items: center;
   padding: 1.15rem 1.25rem;
   border-radius: var(--radius);
-  background: rgba(255, 255, 255, 0.55);
+  background: var(--surface);
   box-shadow: inset 0 0 0 1px var(--line);
   transition: transform 180ms ease, background 180ms ease, box-shadow 180ms ease;
 }
 
 .league-link:hover {
   transform: translateY(-2px);
-  background: rgba(255, 255, 255, 0.82);
+  background: var(--surface-strong);
   box-shadow: var(--shadow);
 }
 
@@ -204,19 +531,229 @@ button,
   text-transform: uppercase;
 }
 
+.league-link-body {
+  display: grid;
+  gap: 0.3rem;
+  min-width: 0;
+}
+
+.league-link-team {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  margin-top: 0.15rem;
+}
+
 .league-meta,
 .muted {
   opacity: 0.72;
   font-size: 0.92rem;
 }
 
+/* Member dashboard (roadmap 7.2) */
+.home-dashboard {
+  display: block;
+}
+
+.home-head-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem 1rem;
+  align-items: center;
+  justify-content: flex-end;
+}
+
+.portfolio-panel {
+  padding: 0.85rem 1rem 1rem;
+  margin-bottom: 1.25rem;
+}
+
+.portfolio-panel .roster-group-title {
+  margin: 0 0 0.35rem;
+}
+
+.portfolio-lede {
+  margin: 0 0 0.75rem;
+}
+
+.portfolio-table-wrap {
+  margin: 0;
+  box-shadow: none;
+  background: transparent;
+  padding: 0;
+}
+
+.portfolio-table .sport-pill {
+  font-size: 0.7rem;
+}
+
+.home-todo {
+  padding: 0.85rem 1rem 1rem;
+  margin-bottom: 1.25rem;
+}
+
+.home-todo .roster-group-title {
+  margin: 0 0 0.5rem;
+}
+
+.home-this-day {
+  padding: 0.85rem 1rem 1rem;
+  margin-bottom: 1.25rem;
+}
+
+.home-this-day .roster-group-title {
+  margin: 0 0 0.35rem;
+}
+
+.home-this-day-list {
+  list-style: none;
+  margin: 0.65rem 0 0;
+  padding: 0;
+  display: grid;
+  gap: 0.55rem;
+}
+
+.home-this-day-row {
+  display: grid;
+  gap: 0.2rem;
+  padding: 0.55rem 0.65rem;
+  border-radius: var(--radius);
+  color: inherit;
+  text-decoration: none;
+  background: var(--raise);
+  box-shadow: inset 0 0 0 1px var(--line);
+  transition: background 120ms ease, box-shadow 120ms ease;
+}
+
+.home-this-day-row:hover,
+.home-this-day-row:focus-visible {
+  background: color-mix(in srgb, var(--accent) 10%, var(--raise));
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent) 40%, var(--line));
+}
+
+.home-this-day-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem 0.65rem;
+  align-items: baseline;
+  justify-content: space-between;
+}
+
+.home-this-day-title {
+  font-weight: 650;
+}
+
+.home-this-day-detail {
+  margin: 0;
+  font-size: 0.92rem;
+  line-height: 1.4;
+  opacity: 0.9;
+}
+
+.home-grid {
+  display: grid;
+  gap: 0.9rem;
+  grid-template-columns: repeat(auto-fit, minmax(20rem, 1fr));
+  align-items: start;
+}
+
+.home-card {
+  display: grid;
+  gap: 0.55rem;
+  padding: 1.15rem 1.25rem;
+  border-radius: var(--radius);
+  background: var(--surface);
+  box-shadow: inset 0 0 0 1px var(--line);
+}
+
+.home-card-head {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 0.75rem;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.home-card-title {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 1.3rem;
+  letter-spacing: 0.01em;
+  text-transform: uppercase;
+}
+
+.home-team {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+}
+
+.home-team-name {
+  font-weight: 700;
+}
+
+.home-matchup {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  align-items: center;
+  margin: 0;
+  padding: 0.6rem 0.75rem;
+  border-radius: calc(var(--radius) - 8px);
+  background: var(--surface);
+  box-shadow: inset 0 0 0 1px var(--line);
+}
+
+.home-score {
+  font-family: var(--font-display);
+  font-size: 1.15rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.home-live-pill {
+  background: color-mix(in srgb, var(--field) 20%, transparent);
+  font-size: 0.65rem;
+}
+
+.home-next,
+.home-unlinked {
+  margin: 0;
+}
+
+.home-actions {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.35rem;
+}
+
+.home-action {
+  padding-left: 0.7rem;
+  border-left: 3px solid var(--line);
+  font-size: 0.92rem;
+  line-height: 1.35;
+}
+
+.home-action.tone-urgent {
+  border-left-color: var(--ember);
+}
+
+.home-action.tone-attention {
+  border-left-color: var(--caution);
+}
+
+.home-action.tone-info {
+  opacity: 0.72;
+}
+
 .pill {
   display: inline-flex;
   align-items: center;
   padding: 0.35rem 0.7rem;
-  border-radius: 999px;
-  background: var(--signal);
-  color: var(--ink);
+  border-radius: var(--radius);
+  background: var(--color-accent-100);
+  color: var(--color-accent-800);
   font-size: 0.78rem;
   font-weight: 700;
   letter-spacing: 0.04em;
@@ -226,7 +763,7 @@ button,
 .panel {
   overflow: auto;
   border-radius: var(--radius);
-  background: rgba(255, 255, 255, 0.62);
+  background: var(--surface);
   box-shadow: inset 0 0 0 1px var(--line);
 }
 
@@ -245,13 +782,374 @@ td {
 
 th {
   font-size: 0.78rem;
-  letter-spacing: 0.06em;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
   opacity: 0.7;
+  border-bottom: 2px solid var(--line);
 }
 
 tr:last-child td {
   border-bottom: 0;
+}
+
+/* League feed layout (roadmap 7.6) — panels need padding; tables do not. */
+.feed-panel {
+  display: grid;
+  gap: 1rem;
+  margin-top: 0.75rem;
+}
+
+.feed-lede {
+  margin: 0;
+  max-width: 52ch;
+}
+
+.feed-composer,
+.feed-item {
+  padding: 1rem 1.15rem 1.1rem;
+}
+
+.feed-field {
+  display: grid;
+  gap: 0.35rem;
+}
+
+.feed-field textarea,
+.feed-field input {
+  display: block;
+  width: 100%;
+  font: inherit;
+  padding: 0.55rem 0.65rem;
+  border: 0;
+  border-radius: var(--radius);
+  background: var(--raise);
+  box-shadow: inset 0 0 0 1px var(--line);
+  color: inherit;
+}
+
+.feed-composer-actions,
+.feed-poll-composer {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 0.65rem;
+}
+
+.feed-poll-composer {
+  display: grid;
+  gap: 0.65rem;
+}
+
+.feed-gate {
+  margin: 0;
+}
+
+.feed-stream {
+  display: grid;
+  gap: 0.85rem;
+}
+
+.feed-stream-title {
+  margin: 0;
+  font-size: 1rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.feed-item-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem 0.75rem;
+}
+
+.feed-item-title {
+  margin: 0.45rem 0 0.35rem;
+  font-size: 1.1rem;
+  letter-spacing: -0.01em;
+}
+
+.feed-item-body {
+  margin: 0;
+  white-space: pre-wrap;
+  font-family: inherit;
+  font-size: 0.92rem;
+  line-height: 1.45;
+  color: color-mix(in srgb, var(--ink) 72%, transparent);
+}
+
+.recap-panel .section-title {
+  margin: 0 0 0.35rem;
+}
+
+.recap-weeks {
+  margin: 0.85rem 0 0.5rem;
+}
+
+.recap-admin {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.65rem;
+  margin: 0.5rem 0 1rem;
+}
+
+.recap-voice {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.85rem;
+}
+
+.recap-voice select {
+  font: inherit;
+  padding: 0.25rem 0.45rem;
+}
+
+.recap-admin-error {
+  color: var(--ember);
+}
+
+.recap-article {
+  margin-top: 0.75rem;
+  padding-top: 0.75rem;
+  border-top: 2px solid var(--line);
+  max-width: 46rem;
+}
+
+.recap-kicker {
+  margin: 0;
+  font-family: var(--font-heading);
+  font-weight: 600;
+  font-size: 12px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--field-deep);
+}
+
+.recap-headline {
+  margin: 0.4rem 0 0;
+  font-size: clamp(1.45rem, 3vw, 2rem);
+  line-height: 1.15;
+  letter-spacing: -0.02em;
+  max-width: 22ch;
+}
+
+.recap-dek {
+  margin: 0.65rem 0 0;
+  max-width: 46ch;
+  font-size: 1.05rem;
+  line-height: 1.4;
+}
+
+.recap-body {
+  margin-top: 1.1rem;
+  display: grid;
+  gap: 0.85rem;
+  max-width: 58ch;
+}
+
+.recap-body p {
+  margin: 0;
+  line-height: 1.55;
+}
+
+.recap-rank-heading {
+  margin: 1.5rem 0 0.65rem;
+  font-size: 0.95rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.recap-rankings {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  border-top: 2px solid var(--line);
+}
+
+.recap-rankings > li {
+  padding: 0.85rem 0;
+  border-bottom: 2px solid var(--line);
+}
+
+.recap-rank-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.5rem 0.75rem;
+  margin-bottom: 0.25rem;
+}
+
+.recap-rank-num {
+  font-family: var(--font-heading);
+  font-weight: 800;
+  min-width: 1.5rem;
+}
+
+.recap-rankings p {
+  margin: 0;
+  max-width: 52ch;
+  color: color-mix(in srgb, var(--ink) 70%, transparent);
+}
+
+.feed-poll-options {
+  list-style: none;
+  margin: 0.35rem 0 0;
+  padding: 0;
+  display: grid;
+  gap: 0.4rem;
+}
+
+.feed-reactions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: 0.45rem 0.65rem;
+  margin-top: 0.75rem;
+}
+
+.feed-reaction {
+  display: grid;
+  gap: 0.15rem;
+  max-width: 14rem;
+}
+
+.feed-reaction-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  min-height: 2rem;
+  padding: 0.2rem 0.55rem;
+  border: 0;
+  border-radius: var(--radius);
+  background: var(--surface);
+  box-shadow: inset 0 0 0 1px var(--line);
+  color: inherit;
+  font: inherit;
+  font-size: 0.9rem;
+  cursor: pointer;
+}
+
+.feed-reaction-btn:hover:not(:disabled),
+.feed-reaction-btn.is-mine {
+  box-shadow: inset 0 0 0 2px var(--signal);
+}
+
+.feed-reaction-btn:disabled {
+  opacity: 0.55;
+  cursor: default;
+}
+
+.feed-reaction-names {
+  font-size: 0.75rem;
+  line-height: 1.3;
+  word-break: break-word;
+}
+
+.feed-reply-btn {
+  margin-top: 0.55rem;
+}
+
+.feed-comment {
+  margin-top: 0.85rem;
+  padding: 0.75rem 0 0 0.9rem;
+  border-left: 2px solid var(--line);
+}
+
+.feed-author {
+  font-weight: 700;
+  font-size: 0.9rem;
+}
+
+.feed-comment-body {
+  margin: 0.35rem 0 0;
+  line-height: 1.45;
+}
+
+.profile-username-form {
+  display: grid;
+  gap: 0.45rem;
+  margin-bottom: 1.15rem;
+}
+
+.profile-username-form label {
+  display: grid;
+  gap: 0.3rem;
+}
+
+.profile-field-label {
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  opacity: 0.65;
+}
+
+.profile-username-form input,
+.profile-bio-form textarea {
+  max-width: 22rem;
+  min-height: 2.4rem;
+  padding: 0.45rem 0.65rem;
+  border: 0;
+  border-radius: var(--radius);
+  background: var(--raise);
+  box-shadow: inset 0 0 0 1px var(--line);
+  color: inherit;
+  font: inherit;
+}
+
+.profile-bio-form textarea {
+  max-width: 32rem;
+  min-height: 5rem;
+  resize: vertical;
+  line-height: 1.45;
+}
+
+.profile-username-actions {
+  gap: 0.5rem;
+  margin-top: 0.25rem;
+}
+
+.profile-bio {
+  margin: 0.15rem 0 0;
+  max-width: 36rem;
+  white-space: pre-wrap;
+  line-height: 1.45;
+  opacity: 0.9;
+}
+
+.feed-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 0.65rem 0.85rem;
+  margin: 0.25rem 0 0;
+  padding: 0.75rem 0;
+  border-top: 2px solid var(--line);
+  border-bottom: 2px solid var(--line);
+}
+
+.feed-sort {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+
+.feed-date-field {
+  display: grid;
+  gap: 0.25rem;
+}
+
+.feed-date-field input[type="date"] {
+  min-height: 36px;
+  padding: 0.35rem 0.5rem;
+  font: inherit;
+  color: var(--ink);
+  background: var(--raise);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
 }
 
 .tabs {
@@ -259,6 +1157,63 @@ tr:last-child td {
   gap: 0.5rem;
   flex-wrap: wrap;
   margin: 0 0 1rem;
+}
+
+.league-tabs {
+  padding: 0.4rem 0 0.85rem;
+  margin: 0 0 1.15rem;
+  border-bottom: 2px solid var(--line);
+  background: var(--page-bg);
+}
+
+.league-switch {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+  margin: 0 0 1rem;
+}
+
+.league-pulse {
+  display: grid;
+  gap: 0.55rem;
+  padding: 0.85rem 1rem 1rem;
+  margin-bottom: 1.25rem;
+  background: var(--surface);
+  box-shadow: inset 0 0 0 1px var(--line);
+}
+
+.league-pulse-kicker {
+  margin: 0;
+  font-size: 0.78rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--signal);
+}
+
+.league-pulse-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.75rem;
+}
+
+.league-pulse-grid strong {
+  display: block;
+  margin-top: 0.15rem;
+  font-size: 1.15rem;
+}
+
+.scoring-sandbox-presets {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.45rem;
+  margin: 0.35rem 0 0.75rem;
+}
+
+@media (max-width: 720px) {
+  .league-pulse-grid {
+    grid-template-columns: 1fr;
+  }
 }
 
 .tab {
@@ -276,42 +1231,353 @@ tr:last-child td {
   box-shadow: none;
 }
 
+/* Overflow disclosure for tabs and season chips (roadmap 7.5) */
+.chip-overflow {
+  position: relative;
+}
+
+.chip-overflow > summary {
+  cursor: pointer;
+  list-style: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+.chip-overflow > summary::-webkit-details-marker {
+  display: none;
+}
+
+.chip-overflow > summary::after {
+  content: "▾";
+  font-size: 0.7em;
+  opacity: 0.7;
+}
+
+.chip-overflow[open] > summary::after {
+  content: "▴";
+}
+
+.chip-overflow-menu {
+  position: absolute;
+  z-index: 20;
+  top: calc(100% + 0.35rem);
+  left: 0;
+  display: grid;
+  gap: 0.3rem;
+  min-width: 9rem;
+  padding: 0.55rem;
+  border-radius: calc(var(--radius) - 6px);
+  background: color-mix(in srgb, var(--chalk) 92%, var(--raise));
+  box-shadow: var(--shadow), inset 0 0 0 1px var(--line);
+}
+
+.chip-overflow-menu .tab,
+.chip-overflow-menu .season-chip {
+  box-shadow: none;
+  text-align: left;
+  opacity: 0.9;
+}
+
+.chip-overflow-menu .tab:hover,
+.chip-overflow-menu .season-chip:hover {
+  background: var(--surface-strong);
+  opacity: 1;
+}
+
+/*
+  The tab strip is deliberately NOT sticky. A sticky strip covered the auction
+  room's buttons once the page scrolled — a sticky element over interactive
+  content is a real hazard, not just a test failure. The overflow disclosure
+  already solved the row-of-ten-pills problem on its own.
+*/
+
+/* Wide tables keep their header visible inside their own scroll container. */
+.panel.table-scroll thead th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  background: color-mix(in srgb, var(--chalk) 88%, var(--raise));
+}
+
+/* Mobile bottom bar (roadmap 7.5) */
+.mobile-nav {
+  display: none;
+}
+
+@media (max-width: 720px) {
+  .mobile-nav {
+    position: fixed;
+    inset: auto 0 0 0;
+    z-index: 40;
+    display: flex;
+    justify-content: space-around;
+    gap: 0.25rem;
+    padding: 0.55rem 0.75rem;
+    padding-bottom: max(0.55rem, env(safe-area-inset-bottom));
+    background: color-mix(in srgb, var(--chalk) 94%, var(--raise));
+    box-shadow: 0 -8px 24px rgba(15, 42, 32, 0.12);
+    font-size: 0.92rem;
+  }
+
+  .mobile-nav a {
+    padding: 0.4rem 0.9rem;
+    border-radius: 999px;
+  }
+
+  /* Leave room so the bar never covers the last row of a table. */
+  body {
+    padding-bottom: 3.75rem;
+  }
+}
+
+body:has(.login-page) {
+  padding-bottom: 0;
+}
+
+body:has(.login-page) .site-header,
+body:has(.login-page) .mobile-nav {
+  display: none;
+}
+
+body:has(.login-page) .shell {
+  width: 100%;
+  max-width: none;
+  padding: 0;
+}
+
 .login-page {
   min-height: 100vh;
   display: grid;
-  place-items: center;
-  padding: 2rem;
+  grid-template-rows: auto 1fr auto;
+  align-content: stretch;
+  justify-items: stretch;
+  gap: 0;
+  padding: 1.5rem 1.25rem 1.25rem;
+  background:
+    radial-gradient(
+      80rem 28rem at 10% -10%,
+      color-mix(in srgb, var(--signal) 16%, transparent),
+      transparent 58%
+    ),
+    repeating-linear-gradient(
+      -18deg,
+      transparent,
+      transparent 11px,
+      color-mix(in srgb, var(--ink) 4%, transparent) 11px,
+      color-mix(in srgb, var(--ink) 4%, transparent) 12px
+    ),
+    var(--page-bg);
+}
+
+.login-brand,
+.login-foot {
+  width: min(1100px, 100%);
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.login-brand {
+  padding-bottom: 0.75rem;
+  border-bottom: 2px solid var(--line);
+}
+
+.login-brand a,
+.login-brand span,
+.login-foot a,
+.login-foot span {
+  color: inherit;
+  text-decoration: none;
+}
+
+.login-brand > a {
+  font-family: var(--font-display);
+  font-weight: var(--font-heading-weight);
+  font-size: 19px;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: var(--signal);
+}
+
+.login-brand nav,
+.login-foot {
+  display: flex;
+  gap: 1rem;
+  font-size: 14px;
+}
+
+.login-brand nav [aria-current="page"],
+.login-brand nav a:hover,
+.login-foot [aria-current="page"],
+.login-foot a:hover {
+  color: var(--signal);
+  font-weight: 600;
+}
+
+.login-foot {
+  justify-content: center;
+  padding-top: 1rem;
+  color: color-mix(in srgb, var(--ink) 55%, transparent);
+}
+
+.login-shell {
+  width: min(880px, 100%);
+  margin: auto;
+  display: grid;
+  grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
+  border: 2px solid var(--ink);
+  background: var(--surface-strong);
+  box-shadow: var(--shadow);
+  animation: rise 600ms ease both;
+}
+
+.login-aside {
+  display: grid;
+  align-content: end;
+  gap: 0.75rem;
+  padding: 2rem 1.5rem;
+  background:
+    linear-gradient(
+      160deg,
+      color-mix(in srgb, var(--signal) 88%, #000),
+      color-mix(in srgb, var(--ink) 92%, var(--signal))
+    );
+  color: var(--chalk);
+}
+
+.login-aside-kicker {
+  margin: 0;
+  font-size: 0.72rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  opacity: 0.8;
+}
+
+.login-aside-mark {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: clamp(4rem, 12vw, 6.5rem);
+  font-weight: 800;
+  line-height: 0.85;
+  letter-spacing: -0.06em;
+  text-transform: uppercase;
+}
+
+.login-aside-copy {
+  margin: 0;
+  max-width: 22ch;
+  line-height: 1.4;
+  opacity: 0.88;
 }
 
 .login-panel {
-  width: min(420px, 100%);
   display: grid;
+  align-content: center;
   gap: 1rem;
   padding: 2rem;
-  border-radius: calc(var(--radius) + 4px);
-  background: rgba(255, 255, 255, 0.72);
-  box-shadow: var(--shadow);
-  animation: rise 600ms ease both;
 }
 
 .login-panel h1 {
   margin: 0;
   font-family: var(--font-display);
-  font-size: 2.4rem;
+  font-size: clamp(1.8rem, 4vw, 2.4rem);
   text-transform: uppercase;
   line-height: 0.95;
 }
 
+.login-copy,
+.login-error,
+.login-help {
+  margin: 0;
+  line-height: 1.45;
+}
+
+.login-copy,
+.login-help {
+  color: color-mix(in srgb, var(--ink) 72%, transparent);
+}
+
+.login-error {
+  color: var(--ember);
+}
+
+.login-help a {
+  color: var(--signal);
+  font-weight: 600;
+}
+
+.login-google-wrap {
+  position: relative;
+  display: block;
+}
+
+.login-last-used {
+  position: absolute;
+  top: -0.55rem;
+  right: 0.65rem;
+  z-index: 1;
+  padding: 0.12rem 0.4rem;
+  background: var(--mist);
+  color: var(--ink);
+  border: 1px solid var(--line);
+  font-size: 0.68rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.login-google-button {
+  width: 100%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.65rem;
+  min-height: 2.75rem;
+  padding: 0.75rem 1rem;
+  border: 2px solid var(--ink);
+  background: var(--raise);
+  color: var(--ink);
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.login-google-button:hover,
+.login-google-button:focus-visible {
+  background: color-mix(in srgb, var(--signal) 10%, var(--raise));
+}
+
+.login-google-button:focus-visible {
+  outline: 2px solid var(--ink);
+  outline-offset: 2px;
+}
+
+.login-google-mark {
+  flex: 0 0 auto;
+}
+
+@media (max-width: 720px) {
+  .login-shell {
+    grid-template-columns: 1fr;
+  }
+
+  .login-aside {
+    padding: 1.25rem 1.5rem;
+  }
+
+  .login-aside-mark {
+    font-size: 3.2rem;
+  }
+
+  .login-brand {
+    flex-wrap: wrap;
+  }
+}
+
 .atmosphere {
-  position: fixed;
-  inset: 0;
-  pointer-events: none;
-  background-image:
-    linear-gradient(rgba(19, 35, 28, 0.03) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(19, 35, 28, 0.03) 1px, transparent 1px);
-  background-size: 48px 48px;
-  mask-image: radial-gradient(circle at 30% 20%, black 20%, transparent 70%);
-  z-index: -1;
+  display: none;
 }
 
 @keyframes rise {
@@ -336,8 +1602,8 @@ tr:last-child td {
   }
 }
 
-/* Baseball league views */
-.baseball-league {
+/* Shared league / roster views (roadmap 3.1) */
+.league-view.sport-baseball {
   --clay: #c45c26;
 }
 
@@ -351,7 +1617,15 @@ tr:last-child td {
 
 .sport-pill {
   background: linear-gradient(120deg, #f0d7a8, #e8b86d);
-  color: var(--ink);
+  color: var(--on-accent);
+}
+
+.league-view.sport-football .sport-pill {
+  background: linear-gradient(120deg, #d9e4f0, #b7c9de);
+}
+
+.league-view.sport-hockey .sport-pill {
+  background: linear-gradient(120deg, #c5d4e8, #8fa8c8);
 }
 
 .season-switch {
@@ -386,16 +1660,220 @@ tr:last-child td {
   overflow-x: auto;
 }
 
+/* Viewer's own franchise (roadmap 7.1) */
+.viewer-badge {
+  display: inline-flex;
+  align-items: center;
+  margin-left: 0.4rem;
+  padding: 0.05rem 0.4rem;
+  border-radius: 999px;
+  background: var(--ink);
+  color: var(--chalk);
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  vertical-align: middle;
+}
+
+/* Kept players (roadmap 7.9b) — distinct from viewer "You" ink chip. */
+.keeper-badge {
+  display: inline-flex;
+  align-items: center;
+  margin-left: 0.4rem;
+  padding: 0.05rem 0.4rem;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--caution) 22%, var(--chalk));
+  color: var(--ink);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--caution) 55%, var(--line));
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  vertical-align: middle;
+}
+
+tr.is-viewer {
+  background: color-mix(in srgb, var(--signal) 26%, transparent);
+}
+
+tr.is-viewer td {
+  font-weight: 600;
+}
+
+.league-link.is-viewer {
+  background: color-mix(in srgb, var(--signal) 22%, var(--surface));
+  box-shadow: inset 0 0 0 1.5px color-mix(in srgb, var(--ink) 45%, transparent);
+}
+
+.matchup-card.is-viewer {
+  background: color-mix(in srgb, var(--signal) 18%, var(--surface-strong));
+  box-shadow: inset 0 0 0 1.5px color-mix(in srgb, var(--ink) 45%, transparent);
+}
+
+.matchup-card-flag {
+  grid-column: 1 / -1;
+  margin: 0;
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  opacity: 0.7;
+}
+
 .status-dot {
   display: inline-block;
   width: 0.55rem;
   height: 0.55rem;
   border-radius: 50%;
-  background: #3d8f5a;
+  background: var(--good);
+}
+
+/* Status key (roadmap 7.10) — colour alone is not a signal. */
+.status-legend {
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem 1.1rem;
+  margin: 0.85rem 0 0;
+  padding: 0;
+  font-size: 0.85rem;
+  opacity: 0.72;
+}
+
+.status-legend li {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.projection-coverage {
+  margin: 0 0 0.75rem;
+}
+
+/* Theme switch (roadmap 7.10) — cycle control kept for tests / reuse */
+.theme-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.3rem 0.7rem;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  box-shadow: inset 0 0 0 1px var(--line);
+  color: inherit;
+  font-size: 0.85rem;
+  opacity: 0.8;
+}
+
+.theme-toggle:hover {
+  opacity: 1;
+  background: var(--surface);
+}
+
+@media (max-width: 480px) {
+  .theme-toggle-label {
+    display: none;
+  }
+}
+
+/* Profile / appearance (moved off the header into /settings) */
+.profile-settings {
+  display: grid;
+  gap: 1.25rem;
+}
+
+.profile-section {
+  padding: 1rem 1.1rem 1.15rem;
+}
+
+.profile-identity {
+  display: grid;
+  gap: 0.75rem;
+  margin: 0 0 1rem;
+}
+
+.profile-identity dt {
+  margin: 0;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  opacity: 0.65;
+}
+
+.profile-identity dd {
+  margin: 0.15rem 0 0;
+  font-size: 1.05rem;
+  font-weight: 600;
+}
+
+.profile-franchise-lede {
+  margin: 0 0 0.4rem;
+}
+
+.profile-franchises {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.35rem;
+}
+
+.appearance-settings {
+  display: grid;
+  gap: 1.35rem;
+  margin-top: 0.85rem;
+}
+
+.appearance-block .roster-group-title {
+  margin-bottom: 0.25rem;
+}
+
+.theme-chooser {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.5rem;
+  max-width: 28rem;
+  margin-top: 0.55rem;
+}
+
+.theme-choice {
+  display: grid;
+  gap: 0.2rem;
+  padding: 0.65rem 0.7rem;
+  border: 0;
+  border-radius: var(--radius);
+  background: var(--surface);
+  box-shadow: inset 0 0 0 1px var(--line);
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.theme-choice.is-active {
+  box-shadow: inset 0 0 0 2px var(--signal);
+}
+
+.theme-choice-label {
+  font-weight: 700;
+  font-size: 0.95rem;
+}
+
+.theme-choice-hint {
+  font-size: 0.78rem;
+  opacity: 0.65;
+}
+
+@media (max-width: 520px) {
+  .theme-chooser {
+    grid-template-columns: 1fr;
+  }
 }
 
 .status-dot.warn {
-  background: #d4a017;
+  background: var(--caution);
 }
 
 .status-dot.bad {
@@ -410,7 +1888,942 @@ tr:last-child td {
   text-transform: uppercase;
 }
 
-.baseball-league .panel td:nth-child(n + 5),
-.baseball-league .panel th:nth-child(n + 5) {
+.league-view .panel td:nth-child(n + 5),
+.league-view .panel th:nth-child(n + 5) {
   font-variant-numeric: tabular-nums;
+}
+
+/* Reusable DataTable (roadmap 3.3) */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.data-table {
+  display: grid;
+  gap: 0.85rem;
+}
+
+.table-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem 1rem;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.table-search input {
+  width: min(22rem, 100%);
+  padding: 0.55rem 0.8rem;
+  border: 0;
+  border-radius: 0.65rem;
+  box-shadow: inset 0 0 0 1px var(--line);
+  background: color-mix(in srgb, var(--chalk) 88%, var(--raise));
+  color: var(--ink);
+  font: inherit;
+}
+
+.table-search input:focus {
+  outline: 2px solid color-mix(in srgb, var(--ink) 35%, transparent);
+  outline-offset: 1px;
+}
+
+.table-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.filter-chip {
+  padding: 0.35rem 0.7rem;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  box-shadow: inset 0 0 0 1px var(--line);
+  color: var(--ink);
+  font: inherit;
+  font-size: 0.85rem;
+  cursor: pointer;
+  opacity: 0.8;
+}
+
+.filter-chip:hover {
+  opacity: 1;
+}
+
+.filter-chip.active {
+  background: var(--ink);
+  color: var(--chalk);
+  opacity: 1;
+  box-shadow: none;
+}
+
+.sort-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.15rem;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  font-weight: inherit;
+  letter-spacing: inherit;
+  text-transform: inherit;
+  cursor: pointer;
+}
+
+.sort-button:hover {
+  text-decoration: underline;
+  text-underline-offset: 0.15em;
+}
+
+.sort-indicator {
+  font-size: 0.75em;
+  opacity: 0.85;
+}
+
+.data-table th.numeric,
+.data-table td.numeric {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.data-table th.narrow,
+.data-table td.narrow {
+  width: 1.25rem;
+}
+
+.table-pager {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem 1rem;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 0.92rem;
+}
+
+.table-pager-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.55rem;
+  align-items: center;
+}
+
+.table-pager-page {
+  opacity: 0.75;
+  min-width: 6.5rem;
+  text-align: center;
+}
+
+.table-pager .button.secondary:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* Team crests + detail pages (roadmap 7.3) */
+.team-avatar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  overflow: hidden;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--field) 16%, var(--chalk));
+  box-shadow: inset 0 0 0 1px var(--line);
+  font-family: var(--font-display);
+  line-height: 1;
+  vertical-align: middle;
+}
+
+.team-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.team-avatar-sm {
+  width: 1.5rem;
+  height: 1.5rem;
+  font-size: 0.6rem;
+}
+
+.team-avatar-md {
+  width: 2.15rem;
+  height: 2.15rem;
+  font-size: 0.8rem;
+}
+
+.team-avatar-lg {
+  width: 2.75rem;
+  height: 2.75rem;
+  font-size: 1rem;
+  margin-right: 0.6rem;
+}
+
+.team-avatar-monogram {
+  opacity: 0.75;
+  letter-spacing: 0.02em;
+}
+
+/* Member faces (roadmap 7.10b) — same geometry as team crests. */
+.member-avatar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  overflow: hidden;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--signal) 18%, var(--chalk));
+  box-shadow: inset 0 0 0 1px var(--line);
+  font-family: var(--font-display);
+  line-height: 1;
+  vertical-align: middle;
+}
+
+.member-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.member-avatar-sm {
+  width: 1.5rem;
+  height: 1.5rem;
+  font-size: 0.6rem;
+}
+
+.member-avatar-md {
+  width: 2.15rem;
+  height: 2.15rem;
+  font-size: 0.8rem;
+}
+
+.member-avatar-lg {
+  width: 3.25rem;
+  height: 3.25rem;
+  font-size: 1.1rem;
+}
+
+.member-avatar-monogram {
+  opacity: 0.8;
+  letter-spacing: 0.02em;
+}
+
+.profile-avatar-row {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  margin: 0 0 1.1rem;
+}
+
+.profile-public-hero {
+  display: flex;
+  align-items: center;
+  gap: 0.9rem;
+  min-width: 0;
+}
+
+.profile-public-hero h2 {
+  margin: 0;
+}
+
+.profile-franchise-cards {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.75rem;
+}
+
+.profile-career-line {
+  margin-top: 0.2rem;
+}
+
+.profile-trophy-chips {
+  margin: 0.75rem 0 0;
+}
+
+a.profile-trophy-chip {
+  display: grid;
+  gap: 0.2rem;
+  color: inherit;
+  text-decoration: none;
+  transition: background 120ms ease, box-shadow 120ms ease;
+}
+
+a.profile-trophy-chip:hover,
+a.profile-trophy-chip:focus-visible {
+  background: color-mix(in srgb, var(--caution) 18%, var(--surface));
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--caution) 45%, var(--line));
+}
+
+.profile-trophy-label {
+  font-family: var(--font-display);
+  font-size: 1.2rem;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.1;
+}
+
+.profile-trophy-detail {
+  font-size: 0.72rem;
+  letter-spacing: 0.04em;
+  opacity: 0.7;
+  line-height: 1.3;
+}
+
+.profile-activity-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.65rem;
+}
+
+.profile-activity-row {
+  display: grid;
+  gap: 0.25rem;
+  padding: 0.65rem 0.75rem;
+  border-radius: calc(var(--radius) - 6px);
+  background: var(--surface);
+  box-shadow: inset 0 0 0 1px var(--line);
+  color: inherit;
+  text-decoration: none;
+}
+
+.profile-activity-row:hover,
+.profile-activity-row:focus-visible {
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--signal) 45%, var(--line));
+}
+
+.profile-activity-meta {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 0.35rem 0.75rem;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  opacity: 0.7;
+}
+
+.profile-activity-body {
+  margin: 0;
+  line-height: 1.4;
+}
+
+.feed-author-row {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+}
+
+.feed-author-link {
+  color: inherit;
+  text-decoration: underline;
+  text-decoration-color: color-mix(in srgb, var(--signal) 55%, transparent);
+  text-underline-offset: 0.15em;
+}
+
+.feed-author-link:hover,
+.feed-author-link:focus-visible {
+  color: var(--signal);
+}
+
+.trophy-case-note {
+  margin: 0.35rem 0 0.85rem;
+}
+
+.team-identity {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  min-width: 0;
+}
+
+.team-identity-body {
+  min-width: 0;
+}
+
+.player-section {
+  display: grid;
+  gap: 0.75rem;
+  margin-top: 1.75rem;
+}
+
+.stat-chips {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(7.5rem, 1fr));
+  gap: 0.6rem;
+  margin: 0 0 1.25rem;
+}
+
+.stat-chip {
+  padding: 0.6rem 0.75rem;
+  border-radius: calc(var(--radius) - 6px);
+  background: var(--surface);
+  box-shadow: inset 0 0 0 1px var(--line);
+}
+
+.stat-chip dt {
+  margin: 0 0 0.15rem;
+  font-size: 0.66rem;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  opacity: 0.62;
+}
+
+.stat-chip dd {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 1.2rem;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Team season results (roadmap 7.4) */
+.game-log {
+  display: grid;
+  gap: 0.75rem;
+  margin-top: 1rem;
+}
+
+.game-log-head {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem 1rem;
+  align-items: baseline;
+  justify-content: space-between;
+}
+
+.game-log-head .roster-group-title {
+  margin: 0;
+}
+
+.game-log-next {
+  margin: 0;
+}
+
+.dropped-players {
+  display: grid;
+  gap: 0.75rem;
+  margin-top: 1.5rem;
+}
+
+.sparkline {
+  display: flex;
+  align-items: flex-end;
+  gap: 0.2rem;
+  height: 3.5rem;
+  padding: 0.5rem 0.75rem;
+  border-radius: var(--radius);
+  background: var(--surface);
+  box-shadow: inset 0 0 0 1px var(--line);
+}
+
+.sparkline-bar {
+  flex: 1 1 0;
+  min-width: 0.35rem;
+  min-height: 2px;
+  border-radius: 2px 2px 0 0;
+  background: color-mix(in srgb, var(--field) 45%, transparent);
+}
+
+.sparkline-bar.tone-win {
+  background: color-mix(in srgb, var(--good) 75%, transparent);
+}
+
+.sparkline-bar.tone-loss {
+  background: color-mix(in srgb, var(--ember) 65%, transparent);
+}
+
+.sparkline-bar.tone-tie {
+  background: color-mix(in srgb, var(--caution) 70%, transparent);
+}
+
+tr.is-upcoming td {
+  opacity: 0.6;
+}
+
+/* Matchups / schedule / playoffs (roadmap 3.4) */
+.matchups-panel {
+  display: grid;
+  gap: 1rem;
+}
+
+.week-switch {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.week-chip {
+  min-width: 2rem;
+  padding: 0.35rem 0.55rem;
+  border-radius: 999px;
+  text-align: center;
+  font-size: 0.85rem;
+  box-shadow: inset 0 0 0 1px var(--line);
+  opacity: 0.8;
+}
+
+.week-chip.active {
+  background: var(--ink);
+  color: var(--chalk);
+  opacity: 1;
+  box-shadow: none;
+}
+
+.week-chip.playoff:not(.active) {
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--ember) 55%, var(--line));
+}
+
+.matchup-period {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.matchup-period-title {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 1.15rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.matchup-grid {
+  display: grid;
+  gap: 0.75rem;
+  grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr));
+}
+
+.matchup-card {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  gap: 0.55rem;
+  align-items: center;
+  padding: 0.85rem 1rem;
+  border-radius: var(--radius);
+  background: var(--surface);
+  box-shadow: inset 0 0 0 1px var(--line);
+}
+
+.matchup-card.projected {
+  opacity: 0.92;
+  background: color-mix(in srgb, var(--field) 8%, var(--surface));
+}
+
+.matchup-team {
+  display: grid;
+  gap: 0.25rem;
+  min-width: 0;
+}
+
+.matchup-team-right {
+  text-align: right;
+}
+
+.matchup-team-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  align-items: center;
+  font-size: 0.92rem;
+}
+
+.matchup-team-right .matchup-team-meta {
+  justify-content: flex-end;
+}
+
+.matchup-seed {
+  font-size: 0.75rem;
+  opacity: 0.65;
+  font-variant-numeric: tabular-nums;
+}
+
+.matchup-score {
+  font-family: var(--font-display);
+  font-size: 1.35rem;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.02em;
+}
+
+.matchup-vs {
+  font-size: 0.75rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  opacity: 0.45;
+}
+
+.matchup-byes {
+  margin: 0;
+  font-size: 0.9rem;
+  opacity: 0.75;
+}
+
+.outcome-pill {
+  display: inline-block;
+  padding: 0.1rem 0.4rem;
+  border-radius: 999px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.outcome-pill.outcome-win {
+  background: color-mix(in srgb, var(--good) 22%, transparent);
+  color: color-mix(in srgb, var(--good) 80%, var(--ink));
+}
+
+.outcome-pill.outcome-loss {
+  background: color-mix(in srgb, var(--ember) 18%, transparent);
+  color: var(--ember);
+}
+
+.outcome-pill.outcome-tie {
+  background: color-mix(in srgb, var(--caution) 22%, transparent);
+  color: color-mix(in srgb, var(--caution) 70%, var(--ink));
+}
+
+.matchup-schedule {
+  display: grid;
+  gap: 1.5rem;
+}
+
+.playoffs-view {
+  display: grid;
+  gap: 1.25rem;
+}
+
+@media (max-width: 640px) {
+  .matchup-card {
+    grid-template-columns: 1fr;
+    text-align: left;
+  }
+
+  .matchup-team-right,
+  .matchup-team-right .matchup-team-meta {
+    text-align: left;
+    justify-content: flex-start;
+  }
+
+  .matchup-vs {
+    display: none;
+  }
+}
+
+/* History / records (roadmap 3.5) */
+.history-panel {
+  display: grid;
+  gap: 1rem;
+}
+
+.history-section {
+  display: grid;
+  gap: 0.85rem;
+}
+
+.record-grid {
+  display: grid;
+  gap: 0.75rem;
+  grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr));
+}
+
+.record-card {
+  padding: 0.95rem 1rem;
+  border-radius: var(--radius);
+  background: var(--surface);
+  box-shadow: inset 0 0 0 1px var(--line);
+}
+
+.record-label {
+  font-size: 0.75rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  opacity: 0.65;
+  margin-bottom: 0.35rem;
+}
+
+.record-value {
+  font-family: var(--font-display);
+  font-size: 1.6rem;
+  letter-spacing: 0.02em;
+  font-variant-numeric: tabular-nums;
+}
+
+.h2h-pickers {
+  display: grid;
+  gap: 1rem;
+}
+
+.h2h-summary {
+  padding: 0.85rem 1rem;
+}
+
+.h2h-summary-inner {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem 1rem;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.h2h-record {
+  font-family: var(--font-display);
+  font-size: 1.4rem;
+  letter-spacing: 0.04em;
+}
+
+/* States / polish (roadmap 3.6) */
+.state-panel {
+  width: min(460px, 100%);
+  display: grid;
+  gap: 1rem;
+  margin: 3rem auto;
+  padding: 2rem;
+  border-radius: calc(var(--radius) + 4px);
+  background: var(--surface-strong);
+  box-shadow: var(--shadow);
+  animation: rise 600ms ease both;
+}
+
+.state-panel h1 {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: clamp(1.8rem, 4vw, 2.4rem);
+  text-transform: uppercase;
+  line-height: 0.95;
+}
+
+.state-brand {
+  justify-self: start;
+}
+
+.empty-state {
+  padding: 1.25rem 1.35rem;
+  display: grid;
+  gap: 0.45rem;
+}
+
+.empty-state-title {
+  font-family: var(--font-display);
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+
+.empty-state-body {
+  margin: 0;
+  line-height: 1.45;
+}
+
+.skeleton {
+  border-radius: 0.75rem;
+  background: linear-gradient(
+    90deg,
+    color-mix(in srgb, var(--ink) 6%, transparent) 0%,
+    color-mix(in srgb, var(--ink) 12%, transparent) 45%,
+    color-mix(in srgb, var(--ink) 6%, transparent) 100%
+  );
+  background-size: 200% 100%;
+  animation: skeleton-shine 1.2s ease-in-out infinite;
+}
+
+.skeleton-kicker {
+  width: 8rem;
+  height: 1.1rem;
+}
+
+.skeleton-title {
+  width: min(18rem, 70%);
+  height: 2.2rem;
+  margin-top: 0.75rem;
+}
+
+.skeleton-lede {
+  width: min(28rem, 90%);
+  height: 1rem;
+  margin-top: 0.75rem;
+}
+
+.skeleton-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin: 1.25rem 0;
+}
+
+.skeleton-chip {
+  width: 4.5rem;
+  height: 2rem;
+  border-radius: 999px;
+}
+
+.skeleton-panel {
+  width: 100%;
+  height: 12rem;
+  border-radius: var(--radius);
+}
+
+.skeleton-panel.short {
+  height: 7rem;
+  margin-top: 0.85rem;
+}
+
+@keyframes skeleton-shine {
+  0% {
+    background-position: 100% 0;
+  }
+  100% {
+    background-position: -100% 0;
+  }
+}
+
+@media (max-width: 720px) {
+  /*
+    Wrapping chip rows are the main reason a phone shows more chrome than data
+    (roadmap 7.5). Scroll them sideways on one line instead: 14 week chips or 9
+    position filters cost a single row rather than three.
+  */
+  .table-filters,
+  .week-switch,
+  .season-switch,
+  .league-tabs,
+  .matchups-subtabs {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .table-filters::-webkit-scrollbar,
+  .week-switch::-webkit-scrollbar,
+  .season-switch::-webkit-scrollbar,
+  .league-tabs::-webkit-scrollbar,
+  .matchups-subtabs::-webkit-scrollbar {
+    display: none;
+  }
+
+  .table-filters > *,
+  .week-switch > *,
+  .season-switch > *,
+  .league-tabs > * {
+    flex: 0 0 auto;
+  }
+
+  /* An absolutely-positioned menu inside an overflow container gets clipped. */
+  .league-tabs,
+  .season-switch {
+    overflow-x: visible;
+    flex-wrap: wrap;
+  }
+
+  .table-cards thead {
+    display: none;
+  }
+
+  .table-cards tbody {
+    display: grid;
+    gap: 0.75rem;
+    padding: 0.75rem;
+  }
+
+  .table-cards tr {
+    display: grid;
+    gap: 0.4rem 0.75rem;
+    padding: 0.85rem 0.95rem;
+    border-radius: calc(var(--radius) - 4px);
+    background: color-mix(in srgb, var(--chalk) 70%, var(--raise));
+    box-shadow: inset 0 0 0 1px var(--line);
+  }
+
+  /* Stacked cards set their own background, so the viewer tint has to win. */
+  .table-cards tr.is-viewer {
+    background: color-mix(in srgb, var(--signal) 30%, var(--chalk));
+    box-shadow: inset 0 0 0 1.5px color-mix(in srgb, var(--ink) 45%, transparent);
+  }
+
+  .table-cards td {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 0.15rem 0;
+    border-bottom: 0;
+    white-space: normal;
+    text-align: right;
+  }
+
+  .table-cards td::before {
+    content: attr(data-label);
+    font-size: 0.75rem;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    opacity: 0.6;
+    text-align: left;
+  }
+
+  .table-cards td:not([data-label])::before,
+  .table-cards td[data-label=""]::before {
+    content: none;
+  }
+
+  .table-cards tr.table-empty-row td {
+    display: block;
+    text-align: left;
+  }
+
+  .table-cards .narrow {
+    width: auto;
+  }
+}
+
+.season-points-chart {
+  margin-top: 0.75rem;
+  padding: 0.75rem 1rem 1rem;
+}
+
+.season-points-chart-svg {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.season-points-grid {
+  stroke: var(--line);
+  stroke-width: 1;
+}
+
+.season-points-axis {
+  fill: var(--ink);
+  font-size: 11px;
+  opacity: 0.7;
+}
+
+.season-points-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 1rem;
+  list-style: none;
+  margin: 0.75rem 0 0;
+  padding: 0;
+  font-size: 0.85rem;
+}
+
+.season-points-legend li {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.season-points-swatch {
+  width: 0.7rem;
+  height: 0.7rem;
+  display: inline-block;
 }

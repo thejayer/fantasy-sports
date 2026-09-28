@@ -1,9 +1,11 @@
 """Generate realistic-scale synthetic snapshots for local development.
 
-The committed fixtures in ``fixtures/sj/`` are deliberately tiny -- a few teams
-with one or two players each -- which keeps them cheap to review but hides every
-problem that only shows up at real scale: unpaginated tables, wide-table layout
-on mobile, page weight, and multi-season navigation.
+The committed fixtures in ``fixtures/sj/`` stay small (3–4 teams) and on the
+schema_version 1 monolith layout so dual-read stays covered, but they are
+regenerated from this module via ``sj regenerate-fixtures`` (roadmap 2.5) so
+they cannot drift from the live serializer. They still hide problems that only
+show up at real scale — unpaginated tables, wide-table layout on mobile, page
+weight, and multi-season navigation — which is what ``sj seed`` is for.
 
 This module fills that gap. It fabricates espn-api-shaped objects and runs them
 through the *real* serializer (:func:`sj.sync.build_snapshot`) and the *real*
@@ -25,6 +27,7 @@ from pathlib import Path
 from typing import Any
 
 from sj.registry import LeagueSpec, load_registry
+from sj.serialize import build_pro_schedule_document
 from sj.store import DEFAULT_STORE_DIR, INDEX_NAME, FileStore
 from sj.sync import build_snapshot
 
@@ -86,6 +89,21 @@ _FOOTBALL_TEAM_NAMES = (
     "Fourth Down Fiends",
 )
 
+_HOCKEY_TEAM_NAMES = (
+    "Five Hole Heroes",
+    "Crease Crashers",
+    "Biscuit Bandits",
+    "Blue Line Brigade",
+    "Slot Shot Syndicate",
+    "Power Play Pirates",
+    "Saucer Pass Squad",
+    "Hat Trick Havoc",
+    "Iron Cross Crew",
+    "Otter Box Outlaws",
+    "Celly Club",
+    "Wrister Warriors",
+)
+
 _BASEBALL_TEAM_NAMES = (
     "Diamond Dogs",
     "Bat Flip Bandits",
@@ -109,6 +127,13 @@ _NFL_TEAMS = (
     "PHI", "PIT", "SEA", "SF", "TB", "TEN", "WSH",
 )
 
+_NHL_TEAMS = (
+    "BOS", "BUF", "CGY", "CHI", "DET", "EDM", "CAR", "LA", "DAL", "MTL",
+    "NJ", "NYI", "NYR", "OTT", "PHI", "PIT", "COL", "SJ", "STL", "TB",
+    "TOR", "VAN", "WSH", "ANA", "FLA", "NSH", "WPG", "CBJ", "MIN", "VGK",
+    "SEA", "UTA",
+)
+
 _MLB_TEAMS = (
     "ARI", "ATL", "BAL", "BOS", "CHC", "CWS", "CIN", "CLE", "COL", "DET", "HOU", "KC",
     "LAA", "LAD", "MIA", "MIL", "MIN", "NYM", "NYY", "OAK", "PHI", "PIT", "SD", "SF",
@@ -124,6 +149,9 @@ _BASEBALL_PITCHER_SLOTS = ("SP", "SP", "SP", "SP", "RP", "RP", "RP")
 _FLEX_POSITIONS = ("RB", "WR", "TE")
 _FOOTBALL_BENCH_POSITIONS = ("QB", "RB", "RB", "WR", "WR", "TE", "K")
 _BASEBALL_FIELD_POSITIONS = ("C", "1B", "2B", "3B", "SS", "OF")
+_HOCKEY_SKATER_SLOTS = ("C", "C", "LW", "RW", "F", "D", "D", "D", "Util")
+_HOCKEY_GOALIE_SLOTS = ("G",)
+_HOCKEY_SKATER_POSITIONS = ("C", "LW", "RW", "F", "D")
 
 # Mean season fantasy points by position, used as the centre of a wide normal.
 _FOOTBALL_POINT_BASE = {"QB": 280.0, "RB": 170.0, "WR": 160.0, "TE": 110.0, "K": 120.0}
@@ -227,6 +255,7 @@ def _baseball_player(rng: random.Random, player_id: int, slot: str) -> _Stub:
             "SV": float(rng.randint(0, 38)),
             "HLD": float(rng.randint(0, 30)),
             "QS": float(rng.randint(0, 24)),
+            "GS": float(rng.randint(0, 32)),
             "K": float(rng.randint(20, 250)),
             "ERA": round(rng.uniform(2.05, 5.85), 2),
             "WHIP": round(rng.uniform(0.92, 1.62), 2),
@@ -266,7 +295,110 @@ def _baseball_player(rng: random.Random, player_id: int, slot: str) -> _Stub:
         projected_total_points=round(total * rng.uniform(0.8, 1.25), 1),
         avg_points=round(total / 26.0, 1),
         stats={0: {"breakdown": breakdown}},
+        trailing_stats=_trailing_from_season(rng, breakdown, pitcher=pitcher),
     )
+
+
+def _hockey_player(rng: random.Random, player_id: int, slot: str) -> _Stub:
+    if slot in {"G"}:
+        goalie = True
+    elif slot in {"BE", "IR", "Util"}:
+        goalie = rng.random() < 0.18
+    else:
+        goalie = False
+
+    if slot in {"BE", "IR", "Util"}:
+        position = "G" if goalie else rng.choice(_HOCKEY_SKATER_POSITIONS)
+    else:
+        position = slot
+
+    if goalie:
+        breakdown = {
+            "W": float(rng.randint(4, 38)),
+            "L": float(rng.randint(2, 28)),
+            "OTL": float(rng.randint(0, 10)),
+            "SV": float(rng.randint(400, 1800)),
+            "SO": float(rng.randint(0, 8)),
+            "GA": float(rng.randint(40, 160)),
+            "SA": float(rng.randint(450, 1950)),
+            "GAA": round(rng.uniform(2.05, 3.55), 2),
+            "SV%": round(rng.uniform(0.888, 0.932), 3),
+            "GS": float(rng.randint(10, 62)),
+            "GP": float(rng.randint(12, 64)),
+        }
+        total = round(max(0.0, rng.gauss(280.0, 90.0)), 1)
+    else:
+        breakdown = {
+            "G": float(rng.randint(2, 48)),
+            "A": float(rng.randint(4, 72)),
+            "+/-": float(rng.randint(-22, 38)),
+            "PIM": float(rng.randint(0, 86)),
+            "PPG": float(rng.randint(0, 16)),
+            "PPA": float(rng.randint(0, 24)),
+            "PPP": float(rng.randint(0, 32)),
+            "SOG": float(rng.randint(40, 320)),
+            "HIT": float(rng.randint(8, 220)),
+            "BLK": float(rng.randint(4, 160)),
+            "GP": float(rng.randint(40, 82)),
+        }
+        breakdown["PPP"] = breakdown["PPG"] + breakdown["PPA"]
+        total = round(max(0.0, rng.gauss(210.0, 80.0)), 1)
+
+    return _Stub(
+        playerId=player_id,
+        name=_person(rng),
+        position=position,
+        lineupSlot=slot,
+        proTeam=rng.choice(_NHL_TEAMS),
+        injuryStatus=rng.choice(_INJURY_STATUSES),
+        status="ACTIVE",
+        injured=rng.random() < 0.10,
+        eligibleSlots=[position, "BE", "IR"],
+        acquisitionType=rng.choice(_ACQUISITION_TYPES),
+        percent_owned=_percent_owned(rng),
+        total_points=total,
+        projected_total_points=round(total * rng.uniform(0.8, 1.25), 1),
+        avg_points=round(total / 82.0, 1),
+        stats={"Total 2025": {"total": breakdown}},
+        trailing_stats=_hockey_trailing_from_season(rng, breakdown),
+    )
+
+
+def _hockey_trailing_from_season(
+    rng: random.Random, breakdown: dict[str, float]
+) -> dict[str, dict[str, float]]:
+    out: dict[str, dict[str, float]] = {}
+    for key, frac in (("7", 0.08), ("15", 0.16), ("30", 0.30)):
+        window: dict[str, float] = {}
+        jitter = rng.uniform(0.75, 1.25)
+        for stat, value in breakdown.items():
+            if stat in {"GAA", "SV%"}:
+                window[stat] = round(float(value) * rng.uniform(0.9, 1.1), 3)
+            else:
+                window[stat] = round(float(value) * frac * jitter, 1)
+        out[key] = window
+    return out
+
+
+def _trailing_from_season(
+    rng: random.Random, breakdown: dict[str, float], *, pitcher: bool
+) -> dict[str, dict[str, float]]:
+    """Synthetic PR7/PR15/PR30 windows scaled from season totals (fixtures)."""
+    out: dict[str, dict[str, float]] = {}
+    for key, frac in (("7", 0.08), ("15", 0.16), ("30", 0.30)):
+        window: dict[str, float] = {}
+        jitter = rng.uniform(0.75, 1.25)
+        for stat, value in breakdown.items():
+            if stat in {"ERA", "WHIP", "AVG", "OBP", "OPS"}:
+                # Rate stats wander near season line.
+                window[stat] = round(float(value) * rng.uniform(0.85, 1.15), 3)
+            else:
+                window[stat] = round(max(0.0, float(value) * frac * jitter), 1)
+        if pitcher and "OUTS" in window:
+            # Keep OUTS integer-ish for IP derive.
+            window["OUTS"] = float(max(3, int(window["OUTS"])))
+        out[key] = window
+    return out
 
 
 def _roster_slots(spec: LeagueSpec) -> tuple[str, ...]:
@@ -274,12 +406,20 @@ def _roster_slots(spec: LeagueSpec) -> tuple[str, ...]:
     if spec.sport == "baseball":
         bench = ("BE",) * (10 if spec.format == "dynasty" else 6)
         return _BASEBALL_BATTER_SLOTS + _BASEBALL_PITCHER_SLOTS + bench + ("IL", "IL")
+    if spec.sport == "hockey":
+        bench = ("BE",) * (6 if spec.format == "dynasty" else 4)
+        return _HOCKEY_SKATER_SLOTS + _HOCKEY_GOALIE_SLOTS + bench + ("IR",)
     bench = ("BE",) * (12 if spec.format == "dynasty" else 6)
     return _FOOTBALL_STARTERS + bench
 
 
 def _team_names(spec: LeagueSpec, count: int) -> list[str]:
-    pool = _BASEBALL_TEAM_NAMES if spec.sport == "baseball" else _FOOTBALL_TEAM_NAMES
+    if spec.sport == "baseball":
+        pool = _BASEBALL_TEAM_NAMES
+    elif spec.sport == "hockey":
+        pool = _HOCKEY_TEAM_NAMES
+    else:
+        pool = _FOOTBALL_TEAM_NAMES
     if count <= len(pool):
         return list(pool[:count])
     # More teams than names: suffix the wrapped entries so names stay unique.
@@ -298,18 +438,44 @@ def _build_team(
     first_player_id: int,
     games: int,
 ) -> _Stub:
-    make_player = _baseball_player if spec.sport == "baseball" else _football_player
+    if spec.sport == "baseball":
+        make_player = _baseball_player
+    elif spec.sport == "hockey":
+        make_player = _hockey_player
+    else:
+        make_player = _football_player
     roster = [
         make_player(rng, first_player_id + offset, slot)
         for offset, slot in enumerate(_roster_slots(spec))
     ]
 
-    wins = rng.randint(0, games)
     owner = _person(rng).split()
     points_for: float | None = None
+    wins = 0
+    losses = 0
+    points_against: float | None = None
     if spec.sport == "football":
         # Starters drive scoring; bench points never count toward a team total.
+        wins = rng.randint(0, games)
+        losses = games - wins
         points_for = round(sum(p.total_points for p in roster[: len(_FOOTBALL_STARTERS)]), 1)
+        points_against = round(points_for * rng.uniform(0.82, 1.18), 1)
+    elif spec.sport == "baseball":
+        # Season Points (TOTAL_SEASON_POINTS): ESPN standings use team.points,
+        # not a roster sum of player totals (bench/IL inflate the latter).
+        starter_like = roster[:18]
+        points_for = round(
+            sum(float(p.total_points) for p in starter_like) * rng.uniform(0.62, 0.78),
+            1,
+        )
+    elif spec.sport == "hockey":
+        # Season Points (TOTAL_SEASON_POINTS): ESPN standings use team.points,
+        # not a roster sum (bench/IR inflate) and not H2H W/L.
+        starter_like = roster[: len(_HOCKEY_SKATER_SLOTS) + len(_HOCKEY_GOALIE_SLOTS)]
+        points_for = round(
+            sum(float(p.total_points) for p in starter_like) * rng.uniform(0.62, 0.78),
+            1,
+        )
 
     return _Stub(
         team_id=team_index + 1,
@@ -318,15 +484,12 @@ def _build_team(
         owners=[{"firstName": owner[0], "lastName": owner[-1]}],
         logo_url=None,
         wins=wins,
-        losses=games - wins,
+        losses=losses,
         ties=0,
-        # Baseball leaves points_for unset on the ESPN team object; leaving it
-        # None here exercises the serializer's roster-sum fallback.
         points_for=points_for,
-        points_against=(
-            round(points_for * rng.uniform(0.82, 1.18), 1) if points_for is not None else None
-        ),
+        points_against=points_against,
         standing=None,
+        final_standing=0,
         division_name=rng.choice(("East", "West")),
         roster=roster,
     )
@@ -343,7 +506,7 @@ def sample_league(
         raise ValueError("teams must be at least 2")
 
     rng = random.Random(f"{spec.id}:{season}")
-    games = 14 if spec.sport == "football" else 24
+    games = 14 if spec.sport == "football" else 21 if spec.sport == "hockey" else 24
     names = _team_names(spec, teams)
 
     built = [
@@ -359,22 +522,396 @@ def sample_league(
         for index in range(teams)
     ]
 
-    # Standings by win pct then points, matching how ESPN orders a league.
-    ranked = sorted(
-        built,
-        key=lambda team: (-(team.wins), -(team.points_for or 0.0)),
-    )
+    # Schedule / scores / outcomes mirror what espn-api already attaches after
+    # the mMatchup fetch. Draft mirrors league.draft from mDraftDetail. Both are
+    # free data the live serializer now persists (roadmap 2.1).
+    # Baseball and hockey Strictly Jayers are Season Points — no H2H schedule tape.
+    if spec.sport not in {"baseball", "hockey"}:
+        _assign_matchups(built, games=games, rng=rng)
+        # Random pre-matchup W/L must not disagree with the schedule tape.
+        _reconcile_records_from_matchups(built)
+
+    # Standings: Season Points by cumulative PF; H2H by win pct then points.
+    if spec.sport in {"baseball", "hockey"}:
+        ranked = sorted(built, key=lambda team: -(team.points_for or 0.0))
+    else:
+        ranked = sorted(
+            built,
+            key=lambda team: (
+                -(team.wins + 0.5 * getattr(team, "ties", 0)),
+                -(team.points_for or 0.0),
+            ),
+        )
     for place, team in enumerate(ranked, start=1):
         team.standing = place
 
+    # Football H2H: invent a finished-season final ladder so fixtures exercise
+    # playoff-champ ≠ seed #1 in the trophy case (roadmap 7.13). ESPN leaves
+    # final_standing at 0 mid-season; baseball/golf stay unset.
+    if spec.sport == "football":
+        n = len(ranked)
+        for place, team in enumerate(ranked, start=1):
+            team.final_standing = n - place + 1
+    else:
+        for team in built:
+            team.final_standing = 0
+
+    draft = _build_draft(
+        built,
+        rounds=3,
+        # One kept player per team is enough for offline roster badges (7.9b).
+        keeper_rounds=1 if spec.format == "dynasty" else 0,
+    )
+    # Settings (from mSettings) + recent_activity + free_agents (roadmap 2.4).
+    settings = _build_settings(spec, teams=teams, games=games)
+    activities = _build_activities(built, season=season, rng=rng)
+    agents = _build_free_agents(spec, season=season, rng=rng)
+
+    def recent_activity(
+        size: int = 25,
+        msg_type: str | None = None,
+        offset: int = 0,
+    ) -> list[_Stub]:
+        del msg_type
+        return activities[offset : offset + size]
+
+    def free_agents(
+        week: int | None = None,
+        size: int = 50,
+        position: str | None = None,
+        position_id: int | None = None,
+    ) -> list[_Stub]:
+        del week, position, position_id
+        return agents[:size]
+
     return _Stub(
-        settings=_Stub(
-            name=spec.name,
-            scoring_type="H2H_CATEGORY" if spec.sport == "baseball" else "H2H_POINTS",
-        ),
+        settings=settings,
+        scoring_type=getattr(settings, "scoring_type", None),
         teams=built,
         current_week=games,
+        draft=draft,
+        year=season,
+        recent_activity=recent_activity,
+        free_agents=free_agents,
     )
+
+
+def _build_settings(spec: LeagueSpec, *, teams: int, games: int) -> _Stub:
+    dynasty = spec.format == "dynasty"
+    # Live Strictly Jayers baseball is ESPN Season Points (TOTAL_SEASON_POINTS).
+    baseball_scoring_items = [
+        {"statId": 7, "statName": "Singles", "points": 1.0},
+        {"statId": 3, "statName": "Doubles", "points": 2.0},
+        {"statId": 4, "statName": "Triples", "points": 3.0},
+        {"statId": 5, "statName": "Home Runs", "points": 5.0},
+        {"statId": 20, "statName": "Runs", "points": 1.0},
+        {"statId": 21, "statName": "RBIs", "points": 1.0},
+        {"statId": 23, "statName": "Stolen Bases", "points": 1.0},
+        {"statId": 10, "statName": "Walks", "points": 1.0},
+        {"statId": 12, "statName": "Hit By Pitch", "points": 1.0},
+        {"statId": 27, "statName": "Strikeouts", "points": -1.0},
+        {"statId": 34, "statName": "Outs", "points": 1.0},
+        {"statId": 48, "statName": "Pitcher Strikeouts", "points": 1.0},
+        {"statId": 53, "statName": "Wins", "points": 5.0},
+        {"statId": 54, "statName": "Losses", "points": -5.0},
+        {"statId": 57, "statName": "Saves", "points": 5.0},
+        {"statId": 60, "statName": "Holds", "points": 3.0},
+        {"statId": 63, "statName": "Quality Starts", "points": 3.0},
+        {"statId": 45, "statName": "Earned Runs", "points": -2.0},
+        {"statId": 37, "statName": "Hits Allowed", "points": -1.0},
+        {"statId": 39, "statName": "Walks Allowed", "points": -1.0},
+    ]
+    return _Stub(
+        name=spec.name,
+        scoring_type=(
+            "TOTAL_SEASON_POINTS"
+            if spec.sport in {"baseball", "hockey"}
+            else "H2H_POINTS"
+        ),
+        # Season Points has no H2H schedule; keep scoring-period map for tools.
+        reg_season_count=games if spec.sport not in {"baseball", "hockey"} else None,
+        playoff_team_count=(
+            0
+            if spec.sport in {"baseball", "hockey"}
+            else (4 if teams >= 6 else max(2, teams // 2))
+        ),
+        playoff_matchup_period_length=1 if spec.sport not in {"baseball", "hockey"} else None,
+        playoff_seed_tie_rule="TOTAL_POINTS_SCORED",
+        playoff_tie_rule="NONE",
+        tie_rule="NONE",
+        keeper_count=5 if dynasty else 0,
+        faab=True,
+        acquisition_budget=200 if dynasty else 100,
+        veto_votes_required=4,
+        trade_deadline=max(1, games - 2),
+        team_count=teams,
+        median_scoring=False,
+        division_map={"0": "East", "1": "West"} if teams >= 8 else {},
+        position_slot_counts=(
+            {"QB": 1, "RB": 2, "WR": 2, "TE": 1, "FLEX": 1, "DST": 1, "K": 1, "BE": 6}
+            if spec.sport == "football"
+            else (
+                {
+                    "C": 2,
+                    "LW": 1,
+                    "RW": 1,
+                    "F": 1,
+                    "D": 3,
+                    "Util": 1,
+                    "G": 1,
+                    "BE": 4,
+                    "IR": 1,
+                }
+                if spec.sport == "hockey"
+                else None
+            )
+        ),
+        # Baseball weights come from ``_raw_scoring_settings`` → categories /
+        # scoring_format in serialize_settings (STATS_MAP abbrs like HR, RBI).
+        # Football: typical ESPN items. REC is omitted (not 0) so
+        # scoringSlugFromLeague stays the PPR default; the 8.4 sandbox still
+        # exposes REC at weight 0 when box ``stats`` include receptions.
+        # Hockey fixtures are Season Points with named ESPN hockey weights.
+        scoring_format=(
+            [
+                {"id": 4, "abbr": "PY", "label": "Passing Yards", "points": 0.04},
+                {"id": 3, "abbr": "PTD", "label": "Passing TD", "points": 4.0},
+                {"id": 20, "abbr": "INT", "label": "Interceptions", "points": -2.0},
+                {"id": 25, "abbr": "RY", "label": "Rushing Yards", "points": 0.1},
+                {"id": 24, "abbr": "RTD", "label": "Rushing TD", "points": 6.0},
+                {"id": 41, "abbr": "REY", "label": "Receiving Yards", "points": 0.1},
+                {"id": 42, "abbr": "RETD", "label": "Receiving TD", "points": 6.0},
+                {"id": 72, "abbr": "FUML", "label": "Fumbles Lost", "points": -2.0},
+            ]
+            if spec.sport == "football"
+            else (
+                [
+                    {"id": 13, "abbr": "G", "label": "Goals", "points": 3.0},
+                    {"id": 14, "abbr": "A", "label": "Assists", "points": 2.0},
+                    {"id": 18, "abbr": "PPG", "label": "Power-Play Goals", "points": 1.0},
+                    {"id": 38, "abbr": "PPP", "label": "Power-Play Points", "points": 1.0},
+                    {"id": 29, "abbr": "SOG", "label": "Shots on Goal", "points": 0.2},
+                    {"id": 31, "abbr": "HIT", "label": "Hits", "points": 0.1},
+                    {"id": 32, "abbr": "BLK", "label": "Blocks", "points": 0.2},
+                    {"id": 1, "abbr": "W", "label": "Wins", "points": 3.0},
+                    {"id": 6, "abbr": "SV", "label": "Saves", "points": 0.2},
+                    {"id": 7, "abbr": "SO", "label": "Shutouts", "points": 3.0},
+                ]
+                if spec.sport == "hockey"
+                else None
+            )
+        ),
+        # Map scoring-period ids for Week Forecaster / locks (not H2H weeks).
+        matchup_periods=(
+            {str(i): [i] for i in range(1, games + 1)}
+            if spec.sport == "baseball"
+            else None
+        ),
+        _raw_scoring_settings=(
+            {
+                "scoringType": "TOTAL_SEASON_POINTS",
+                "scoringItems": baseball_scoring_items,
+            }
+            if spec.sport == "baseball"
+            else (
+                {
+                    "scoringType": "TOTAL_SEASON_POINTS",
+                    "scoringItems": [
+                        {"statId": 13, "statName": "Goals", "points": 3.0},
+                        {"statId": 14, "statName": "Assists", "points": 2.0},
+                        {"statId": 18, "statName": "Power-Play Goals", "points": 1.0},
+                        {"statId": 38, "statName": "Power-Play Points", "points": 1.0},
+                        {"statId": 29, "statName": "Shots on Goal", "points": 0.2},
+                        {"statId": 31, "statName": "Hits", "points": 0.1},
+                        {"statId": 32, "statName": "Blocks", "points": 0.2},
+                        {"statId": 1, "statName": "Wins", "points": 3.0},
+                        {"statId": 6, "statName": "Saves", "points": 0.2},
+                        {"statId": 7, "statName": "Shutouts", "points": 3.0},
+                    ],
+                }
+                if spec.sport == "hockey"
+                else {}
+            )
+        ),
+        # Season GS cap (ESPN dynasty shape) + Yahoo-style weekly IP floor for demos.
+        lineup_slot_stat_limits=(
+            [{"slot": "P", "stat": "GS", "limit": 200.0}]
+            if spec.sport == "baseball"
+            else None
+        ),
+        min_weekly_ip=20.0 if spec.sport == "baseball" else None,
+        season_ip_max=1400.0 if spec.sport == "baseball" else None,
+    )
+
+
+def _build_activities(
+    teams: list[_Stub], *, season: int, rng: random.Random
+) -> list[_Stub]:
+    """Fabricate a small FA add/drop + trade board for seed snapshots."""
+    if season < 2019 or len(teams) < 2:
+        return []
+    t0, t1 = teams[0], teams[1]
+    p0 = t0.roster[0]
+    p1 = t1.roster[0]
+    # Dates as epoch-ms strings matching espn-api Activity.date.
+    base = int(f"{season}0901000000")
+    return [
+        _Stub(
+            date=str(base),
+            actions=[(t0, "FA ADDED", p0, 12.0)],
+        ),
+        _Stub(
+            date=str(base + 86_400_000),
+            actions=[(t0, "DROPPED", p0, 0), (t1, "TRADED", p1, 0)],
+        ),
+        _Stub(
+            date=str(base + 172_800_000),
+            actions=[(t1, "FA ADDED", p1, 3.0)],
+        ),
+    ]
+
+
+def _build_free_agents(
+    spec: LeagueSpec, *, season: int, rng: random.Random, count: int = 20
+) -> list[_Stub]:
+    """Fabricate a size-capped FREEAGENT/WAIVERS pool (ids outside roster space)."""
+    if season < 2019:
+        return []
+    agents: list[_Stub] = []
+    for index in range(count):
+        # Keep ids far from roster ids (season * 1000 + …) used by sample_league.
+        player_id = season * 100_000 + 50_000 + index
+        if spec.sport == "baseball":
+            slot = rng.choice(("OF", "1B", "SP", "RP", "UTIL"))
+            player = _baseball_player(rng, player_id, slot)
+        elif spec.sport == "hockey":
+            slot = rng.choice(("C", "LW", "RW", "D", "G", "F"))
+            player = _hockey_player(rng, player_id, slot)
+        else:
+            slot = rng.choice(("QB", "RB", "WR", "TE", "D/ST", "K"))
+            player = _football_player(rng, player_id, slot)
+        player.lineupSlot = "FA"
+        player.slot_position = "FA"
+        player.status = "FREEAGENT" if index % 3 else "WAIVERS"
+        agents.append(player)
+    return agents
+
+
+def _assign_matchups(teams: list[_Stub], *, games: int, rng: random.Random) -> None:
+    """Fill parallel schedule/scores/outcomes arrays on every team stub."""
+    by_id = {team.team_id: team for team in teams}
+    ids = list(by_id)
+    n = len(ids)
+    for team in teams:
+        team.schedule = []
+        team.scores = []
+        team.outcomes = []
+
+    if n < 2:
+        return
+
+    for week in range(games):
+        # Circle method: fix one team, rotate the rest, pair ends.
+        rotation = week % (n - 1)
+        ordered = ids[0:1] + ids[1:][rotation:] + ids[1:][:rotation]
+        paired: set[int] = set()
+        week_results: dict[int, tuple[int, float, str]] = {}
+        for i in range(n // 2):
+            home_id = ordered[i]
+            away_id = ordered[n - 1 - i]
+            home_score = round(rng.uniform(70.0, 160.0), 1)
+            away_score = round(rng.uniform(70.0, 160.0), 1)
+            if home_score > away_score:
+                home_out, away_out = "W", "L"
+            elif home_score < away_score:
+                home_out, away_out = "L", "W"
+            else:
+                home_out, away_out = "T", "T"
+            week_results[home_id] = (away_id, home_score, home_out)
+            week_results[away_id] = (home_id, away_score, away_out)
+            paired.add(home_id)
+            paired.add(away_id)
+
+        for team_id, team in by_id.items():
+            if team_id in week_results:
+                opponent, score, outcome = week_results[team_id]
+                team.schedule.append(opponent)
+                team.scores.append(score)
+                team.outcomes.append(outcome)
+            else:
+                # Bye week — espn-api sets opponent id to self and outcome U.
+                team.schedule.append(team_id)
+                team.scores.append(0.0)
+                team.outcomes.append("U")
+
+
+def _reconcile_records_from_matchups(teams: list[_Stub]) -> None:
+    """Set wins / losses / ties / points_for from schedule outcomes.
+
+    ``_build_team`` picks a random record before matchups exist; after
+    ``_assign_matchups`` the tape is authoritative. Bye weeks (outcome ``U``,
+    opponent == self) do not count in the record. Football ``points_for`` is
+    the sum of non-bye scores so it matches the schedule board.
+    """
+    for team in teams:
+        wins = losses = ties = 0
+        points = 0.0
+        schedule = getattr(team, "schedule", None) or []
+        scores = getattr(team, "scores", None) or []
+        outcomes = getattr(team, "outcomes", None) or []
+        for i, outcome in enumerate(outcomes):
+            opp = schedule[i] if i < len(schedule) else team.team_id
+            if opp == team.team_id:
+                continue
+            if outcome == "W":
+                wins += 1
+            elif outcome == "L":
+                losses += 1
+            elif outcome == "T":
+                ties += 1
+            if i < len(scores) and scores[i] is not None:
+                points += float(scores[i])
+        team.wins = wins
+        team.losses = losses
+        team.ties = ties
+        if hasattr(team, "points_for") and team.points_for is not None:
+            # Football stubs set points_for; baseball leaves it None for the
+            # serializer's roster-sum fallback — preserve that.
+            team.points_for = round(points, 1)
+
+
+def _build_draft(
+    teams: list[_Stub],
+    *,
+    rounds: int = 3,
+    keeper_rounds: int = 0,
+) -> list[_Stub]:
+    """Snake-draft the first roster players so seed snapshots carry a draft board.
+
+    Dynasty samples mark early rounds as keepers (roadmap 7.9b) so roster/draft
+    UI can exercise badges offline; redraft leaves ``keeper_status`` false.
+    """
+    order = [team.team_id for team in teams]
+    by_id = {team.team_id: team for team in teams}
+    picks: list[_Stub] = []
+    for rnd in range(1, rounds + 1):
+        round_order = order if rnd % 2 == 1 else list(reversed(order))
+        for pick_num, team_id in enumerate(round_order, start=1):
+            team = by_id[team_id]
+            player = team.roster[(rnd - 1) % len(team.roster)]
+            picks.append(
+                _Stub(
+                    team=team,
+                    playerId=player.playerId,
+                    playerName=player.name,
+                    round_num=rnd,
+                    round_pick=pick_num,
+                    bid_amount=0,
+                    keeper_status=rnd <= keeper_rounds,
+                    nominatingTeam=None,
+                )
+            )
+    return picks
 
 
 def sample_snapshot(
@@ -384,7 +921,138 @@ def sample_snapshot(
     teams: int = DEFAULT_TEAM_COUNT,
 ) -> dict[str, Any]:
     """Build one synthetic snapshot in the live sync's exact schema."""
+    if spec.sport == "golf":
+        from sg.snapshot import build_golf_snapshot, golf_settings_from_registry
+
+        return build_golf_snapshot(
+            league_id=spec.id,
+            name=spec.name,
+            short_name=spec.short_name,
+            season=season,
+            format=spec.format,
+            team_count=int(spec.team_count or teams),
+            golf=golf_settings_from_registry(spec),
+            synced_at=None,  # callers (fixtures) may stamp after
+        )
     return build_snapshot(sample_league(spec, season, teams=teams), spec, season)
+
+
+def sample_pro_schedule_for_snapshot(snapshot: dict[str, Any]) -> dict[str, Any]:
+    """Deterministic MLB slate for fixtures/seeds (roadmap 8.2).
+
+    Uses roster ``pro_team`` abbreviations and ``synced_at`` as the fixture day
+    so Daily Locks + games-per-period work offline without a live ESPN pull.
+    Assigns roster SPs as ``probable_*`` (incl. one true two-start) for the
+    Week Forecaster board.
+    """
+    from datetime import datetime, timedelta, timezone
+
+    synced = snapshot.get("synced_at") or "2026-07-27T00:00:00+00:00"
+    try:
+        day = datetime.fromisoformat(str(synced).replace("Z", "+00:00"))
+    except ValueError:
+        day = datetime(2026, 7, 27, tzinfo=timezone.utc)
+    if day.tzinfo is None:
+        day = day.replace(tzinfo=timezone.utc)
+
+    period = int(snapshot.get("current_week") or 1)
+    settings = snapshot.get("settings") or {}
+    matchup_periods = settings.get("matchup_periods") or {str(period): [period]}
+
+    # Prefer SP/P roster rows as probable starters, keyed by pro team.
+    starters_by_team: dict[str, list[dict[str, Any]]] = {}
+    teams: list[str] = []
+    seen: set[str] = set()
+    for team in snapshot.get("teams") or []:
+        for player in team.get("roster") or []:
+            abbr = (player.get("pro_team") or "").strip().upper()
+            if not abbr or abbr == "FA":
+                continue
+            if abbr not in seen:
+                seen.add(abbr)
+                teams.append(abbr)
+            pos = str(player.get("position") or player.get("slot") or "").upper()
+            role = str(player.get("role") or "").lower()
+            if role == "pitcher" or pos in {"P", "SP", "RP"}:
+                if pos == "RP":
+                    continue
+                starters_by_team.setdefault(abbr, []).append(
+                    {
+                        "id": player.get("id"),
+                        "name": player.get("name") or f"Player {player.get('id')}",
+                    }
+                )
+    if len(teams) < 2:
+        teams = list(_MLB_TEAMS[:8])
+
+    def _pop_probable(abbr: str) -> dict[str, Any] | None:
+        pool = starters_by_team.get(abbr) or []
+        if not pool:
+            return None
+        # Rotate so the same SP can be reused for a two-start later.
+        athlete = pool[0]
+        starters_by_team[abbr] = pool[1:] + pool[:1]
+        return {"id": athlete["id"], "name": athlete["name"]}
+
+    games: list[dict[str, Any]] = []
+    # Three scoring periods around "today": yesterday / today / tomorrow.
+    for offset, period_id in ((-1, max(1, period - 1)), (0, period), (1, period + 1)):
+        start_day = day + timedelta(days=offset)
+        for i in range(0, len(teams) - 1, 2):
+            home = teams[i]
+            away = teams[i + 1]
+            start = start_day.replace(hour=17 + (i % 3), minute=5, second=0, microsecond=0)
+            games.append(
+                {
+                    "scoring_period_id": period_id,
+                    "home_pro_team": home,
+                    "away_pro_team": away,
+                    "home_pro_team_id": None,
+                    "away_pro_team_id": None,
+                    "start_time": start.isoformat(),
+                    "probable_home": _pop_probable(home),
+                    "probable_away": _pop_probable(away),
+                }
+            )
+
+    # Guarantee one two-start in the current matchup period for fixtures/e2e.
+    period_idxs = [
+        i
+        for i, game in enumerate(games)
+        if game.get("scoring_period_id") == period
+    ]
+    anchor: dict[str, Any] | None = None
+    anchor_game_i: int | None = None
+    for i in period_idxs:
+        game = games[i]
+        for side in ("probable_home", "probable_away"):
+            probable = game.get(side)
+            if isinstance(probable, dict) and probable.get("id") is not None:
+                anchor = {"id": probable["id"], "name": probable["name"]}
+                anchor_game_i = i
+                break
+        if anchor is not None:
+            break
+    if anchor is not None and anchor_game_i is not None:
+        for i in period_idxs:
+            if i == anchor_game_i:
+                continue
+            game = games[i]
+            # Prefer an empty home probable slot; otherwise overwrite home.
+            if game.get("probable_home") is None:
+                game["probable_home"] = dict(anchor)
+            else:
+                game["probable_home"] = dict(anchor)
+            break
+
+    return build_pro_schedule_document(
+        league_id=str(snapshot["league_id"]),
+        season=int(snapshot["season"]),
+        sport="baseball",
+        games=games,
+        matchup_periods=matchup_periods if isinstance(matchup_periods, dict) else {},
+        synced_at=str(synced),
+    )
 
 
 def seed_store(
@@ -434,8 +1102,24 @@ def seed_store(
         if seasons is not None:
             target_seasons = [s for s in target_seasons if s in seasons]
         for season in target_seasons:
-            snapshot = sample_snapshot(spec, season, teams=teams)
+            # Golf uses registry team_count (6–14); ESPN seeds use --teams.
+            season_teams = int(spec.team_count) if spec.sport == "golf" and spec.team_count else teams
+            snapshot = sample_snapshot(spec, season, teams=season_teams)
             location = store.write(snapshot)
+            if spec.sport == "baseball":
+                store.write_pro_schedule(sample_pro_schedule_for_snapshot(snapshot))
+            if spec.sport in {"baseball", "hockey"}:
+                from sj.season_points_analysis import sample_analysis_for_snapshot
+                from sj.serialize import is_season_points_scoring
+
+                if is_season_points_scoring(
+                    snapshot.get("scoring_type")
+                    if isinstance(snapshot.get("scoring_type"), str)
+                    else None
+                ):
+                    slot_doc, series_doc = sample_analysis_for_snapshot(snapshot)
+                    store.write_analysis(slot_doc, "slot_points")
+                    store.write_analysis(series_doc, "points_timeseries")
             written.append((spec.id, season, location))
             emit(
                 f"seeded {spec.id} {season} "
@@ -448,4 +1132,7 @@ def _has_real_snapshots(root: Path) -> bool:
     """True when ``root`` holds snapshots that `sj seed` did not write."""
     if not root.exists() or (root / MARKER_NAME).exists():
         return False
-    return any(path.name != INDEX_NAME for path in root.glob("*/*.json"))
+    # v1 monoliths or v2 manifests both count as existing snapshot data.
+    if any(path.name != INDEX_NAME for path in root.glob("*/*.json")):
+        return True
+    return any(root.glob("*/*/manifest.json"))
