@@ -462,6 +462,8 @@ def build_nhl_documents(
     }
     # H2/H3: per-game values + durability + ROS from the documents above.
     scoring = resolve_scoring(snapshot)
+    # 2026–27 is 84 games; durability and ROS need the real season length.
+    season_info = attempt("season list", client.seasons, {}).get(cur_id) or {}
     documents["values"] = build_values(
         snapshot,
         player_map=documents["player_map"],
@@ -471,6 +473,7 @@ def build_nhl_documents(
         scoring_source=scoring.source,
         as_of=as_of,
         generated_at=generated_at,
+        season_games=season_info.get("games") or 82,
     )
     for doc in documents.values():
         doc["errors"] = list(errors)

@@ -1056,7 +1056,7 @@ W/L move — without writing ESPN or the live settings file.
 - **Auth:** same hub allowlist as every league tab. Sandbox is ephemeral,
   so any member can open it (admin-only stays on tools that write).
 
-### 8.6 Hockey: Rinkside port — H0–H3 LANDED
+### 8.6 Hockey: Rinkside port — H0–H3 + H2b LANDED
 Plan and phases live in [HOCKEY-PORT.md](HOCKEY-PORT.md) (H0–H8). This replaces
 "projection-free" for hockey one phase at a time; `src/ffa` stays NFL-only and
 hockey gets its own package, `src/nhl`.
@@ -1075,7 +1075,10 @@ hockey gets its own package, `src/nhl`.
   history / prospect estimate, role adjustment ±25%, durability, ROS). Hockey
   `projections` tab is the values board with a recent-form setting and input
   breakdowns; roster + Waivers gain Value / ROS.
-- **Next:** H2b backtest (tune the weights), then H4–H8 per HOCKEY-PORT.md.
+- ~~**H2b backtest**~~ — **LANDED**: `sj nhl-backtest` over 2022–23 … 2025–26;
+  tuned weights adopted (−15% held-out error, 4/4 seasons). Report in
+  HOCKEY-BACKTEST.md; the projections board states the model's accuracy.
+- **Next:** H4–H8 per HOCKEY-PORT.md (H4 Daily Faceoff lines + goalies next).
   SJ Hockey is Season Points (no weekly matchups); the fixture league matches.
 
 ---
@@ -1170,7 +1173,7 @@ Everything else in phase 7 is independent and can land in any order: ~~7.3~~
 | I — Social | ~~7.6 → 7.7~~ | feed.json + digest + Discord + tee reminders |
 | J — Tools packaging | ~~7.8~~ | Trade Desk Δ make-% via samples sidecar |
 | K — Craft | ~~7.10~~, ~~7.11~~ | `globals.css`, HTML + JS CI budgets |
-| L — Sport depth | 8.1 · 8.2 · 8.3 · 8.6 (hockey H0–H3 landed) | `src/sj` · `apps/web` · `src/sg` · `src/nhl` |
+| L — Sport depth | 8.1 · 8.2 · 8.3 · 8.6 (hockey H0–H3 + H2b landed) | `src/sj` · `apps/web` · `src/sg` · `src/nhl` |
 | Q — Shared memory | ~~7.10b~~ · ~~7.9b~~ · ~~7.12~~ · ~~7.13~~ · **7.14** · ~~P.6~~ | `hub_members`, rosters, `/u`, history, home, `apps/www` |
 
 G, H, and K barely overlap. I is the only track that introduces user-generated

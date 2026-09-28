@@ -1,17 +1,67 @@
 {
   "as_of": "2026-07-27",
+  "backtest": {
+    "bias": 0.0485,
+    "checkpoints": [
+      "preseason",
+      "dec1",
+      "feb1"
+    ],
+    "config": {
+      "aging": true,
+      "durability_pull": 0.4,
+      "history_decay": [
+        1.0,
+        0.5,
+        0.25
+      ],
+      "history_full_gp": 80,
+      "prospect_base": 0.15,
+      "recent": 0.25,
+      "role_adjust": false,
+      "season_base": 0.5,
+      "season_full_gp": 40,
+      "trailing_scale": 0.5
+    },
+    "mae_by_group": {
+      "D": 0.283,
+      "F": 0.343,
+      "G": 1.312
+    },
+    "n": 8491,
+    "seasons": [
+      "20222023",
+      "20232024",
+      "20242025",
+      "20252026"
+    ],
+    "spearman": 0.8427
+  },
   "errors": [],
   "generated_at": "2026-07-27T00:00:00+00:00",
   "league_id": "hockey-main",
+  "model": {
+    "aging": true,
+    "durability_pull": 0.4,
+    "history_decay": [
+      1.0,
+      0.5,
+      0.25
+    ],
+    "history_full_gp": 80,
+    "prospect_base": 0.15,
+    "recent": 0.25,
+    "role_adjust": false,
+    "season_base": 0.5,
+    "season_full_gp": 40,
+    "trailing_scale": 0.5
+  },
   "nhl_season": "20262027",
   "players": {
     "202700001": {
-      "adjustments": [
-        "+top line",
-        "+PP1"
-      ],
+      "adjustments": [],
       "age": 31,
-      "base": 7.242,
+      "base": 7.056,
       "durability": {
         "basis": "ESPN projects 78 GP; played 71, 73 GP in recent seasons",
         "iron_man": false,
@@ -26,13 +76,13 @@
       "fantasy_team_id": 1,
       "group": "F",
       "injury_status": null,
-      "mult": 1.16,
+      "mult": 1.0,
       "name": "Christian Hill",
       "nhl_id": 8470027,
       "nhl_team": "WSH",
       "parts": [
         {
-          "base": 0.1,
+          "base": 0.05,
           "fpg": 8.953,
           "games_factor": 1.0,
           "gp": 3,
@@ -40,7 +90,7 @@
           "label": "last 7 days"
         },
         {
-          "base": 0.15,
+          "base": 0.075,
           "fpg": 9.047,
           "games_factor": 0.95,
           "gp": 5,
@@ -48,7 +98,7 @@
           "label": "last 15 days"
         },
         {
-          "base": 0.15,
+          "base": 0.075,
           "fpg": 9.075,
           "games_factor": 1.0,
           "gp": 12,
@@ -56,7 +106,7 @@
           "label": "last 30 days"
         },
         {
-          "base": 0.35,
+          "base": 0.5,
           "fpg": 9.056,
           "games_factor": 1.0,
           "gp": 43,
@@ -73,7 +123,7 @@
         },
         {
           "base": 0.0,
-          "fpg": 2.141,
+          "fpg": 2.131,
           "games_factor": 1.0,
           "gp": 144,
           "kind": "history",
@@ -83,18 +133,15 @@
       "position": "LW",
       "pro_team": "WSH",
       "remaining_games": 2,
-      "ros": 15.5,
+      "ros": 13.0,
       "rostered": true,
       "source": "current",
-      "value": 8.401
+      "value": 7.056
     },
     "202700002": {
-      "adjustments": [
-        "+top line",
-        "\u2212no PP time"
-      ],
+      "adjustments": [],
       "age": 21,
-      "base": 3.984,
+      "base": 4.003,
       "durability": {
         "basis": "ESPN projects 78 GP; played 68, 55, 59 GP in recent seasons",
         "iron_man": false,
@@ -109,13 +156,13 @@
       "fantasy_team_id": 1,
       "group": "F",
       "injury_status": "OUT",
-      "mult": 1.01,
+      "mult": 1.0,
       "name": "Peter Rogers",
       "nhl_id": 8470028,
       "nhl_team": "CGY",
       "parts": [
         {
-          "base": 0.1,
+          "base": 0.05,
           "fpg": 3.92,
           "games_factor": 1.0,
           "gp": 4,
@@ -123,7 +170,7 @@
           "label": "last 7 days"
         },
         {
-          "base": 0.15,
+          "base": 0.075,
           "fpg": 3.962,
           "games_factor": 1.0,
           "gp": 11,
@@ -131,7 +178,7 @@
           "label": "last 15 days"
         },
         {
-          "base": 0.15,
+          "base": 0.075,
           "fpg": 3.962,
           "games_factor": 1.0,
           "gp": 21,
@@ -139,7 +186,7 @@
           "label": "last 30 days"
         },
         {
-          "base": 0.35,
+          "base": 0.5,
           "fpg": 3.949,
           "games_factor": 1.0,
           "gp": 59,
@@ -156,7 +203,7 @@
         },
         {
           "base": 0.0,
-          "fpg": 4.08,
+          "fpg": 4.135,
           "games_factor": 1.0,
           "gp": 182,
           "kind": "history",
@@ -169,15 +216,12 @@
       "ros": 14.4,
       "rostered": true,
       "source": "current",
-      "value": 4.024
+      "value": 4.003
     },
     "202700003": {
-      "adjustments": [
-        "+top line",
-        "\u2212no PP time"
-      ],
+      "adjustments": [],
       "age": 19,
-      "base": 3.859,
+      "base": 3.856,
       "durability": {
         "basis": "ESPN projects 78 GP; played 34, 30, 51 GP in recent seasons",
         "iron_man": false,
@@ -192,13 +236,13 @@
       "fantasy_team_id": 1,
       "group": "F",
       "injury_status": null,
-      "mult": 1.01,
+      "mult": 1.0,
       "name": "Benjamin Long",
       "nhl_id": 8470029,
       "nhl_team": "PHI",
       "parts": [
         {
-          "base": 0.1,
+          "base": 0.05,
           "fpg": 3.202,
           "games_factor": 1.0,
           "gp": 5,
@@ -206,7 +250,7 @@
           "label": "last 7 days"
         },
         {
-          "base": 0.15,
+          "base": 0.075,
           "fpg": 3.19,
           "games_factor": 1.0,
           "gp": 8,
@@ -214,7 +258,7 @@
           "label": "last 15 days"
         },
         {
-          "base": 0.15,
+          "base": 0.075,
           "fpg": 3.222,
           "games_factor": 1.0,
           "gp": 20,
@@ -222,7 +266,7 @@
           "label": "last 30 days"
         },
         {
-          "base": 0.35,
+          "base": 0.5,
           "fpg": 3.215,
           "games_factor": 1.0,
           "gp": 66,
@@ -239,8 +283,8 @@
         },
         {
           "base": 0.0,
-          "fpg": 5.769,
-          "games_factor": 0.958,
+          "fpg": 5.437,
+          "games_factor": 1.0,
           "gp": 115,
           "kind": "history",
           "label": "NHL history, age-adjusted (3 seasons, 115 GP)"
@@ -249,18 +293,15 @@
       "position": "RW",
       "pro_team": "PHI",
       "remaining_games": 6,
-      "ros": 19.2,
+      "ros": 19.0,
       "rostered": true,
       "source": "current",
-      "value": 3.898
+      "value": 3.856
     },
     "202700004": {
-      "adjustments": [
-        "+top line",
-        "+PP1"
-      ],
+      "adjustments": [],
       "age": 26,
-      "base": 3.837,
+      "base": 3.783,
       "durability": {
         "basis": "played 66, 39, 62 GP in recent seasons",
         "iron_man": false,
@@ -271,13 +312,13 @@
       "fantasy_team_id": 1,
       "group": "F",
       "injury_status": "INJURY_RESERVE",
-      "mult": 1.16,
+      "mult": 1.0,
       "name": "Gary Gonzalez",
       "nhl_id": 8470030,
       "nhl_team": "DAL",
       "parts": [
         {
-          "base": 0.1,
+          "base": 0.05,
           "fpg": 3.737,
           "games_factor": 1.0,
           "gp": 6,
@@ -285,7 +326,7 @@
           "label": "last 7 days"
         },
         {
-          "base": 0.15,
+          "base": 0.075,
           "fpg": 3.705,
           "games_factor": 1.0,
           "gp": 9,
@@ -293,7 +334,7 @@
           "label": "last 15 days"
         },
         {
-          "base": 0.15,
+          "base": 0.075,
           "fpg": 3.723,
           "games_factor": 1.0,
           "gp": 19,
@@ -301,7 +342,7 @@
           "label": "last 30 days"
         },
         {
-          "base": 0.35,
+          "base": 0.5,
           "fpg": 3.724,
           "games_factor": 1.0,
           "gp": 70,
@@ -310,7 +351,7 @@
         },
         {
           "base": 0.0,
-          "fpg": 4.046,
+          "fpg": 3.871,
           "games_factor": 1.0,
           "gp": 167,
           "kind": "history",
@@ -320,15 +361,15 @@
       "position": "C",
       "pro_team": "DAL",
       "remaining_games": 8,
-      "ros": 27.7,
+      "ros": 23.5,
       "rostered": true,
       "source": "current",
-      "value": 4.451
+      "value": 3.783
     },
     "202700005": {
       "adjustments": [],
       "age": 23,
-      "base": 4.06,
+      "base": 4.098,
       "durability": {
         "basis": "ESPN projects 78 GP",
         "iron_man": true,
@@ -349,7 +390,7 @@
       "nhl_team": "VAN",
       "parts": [
         {
-          "base": 0.1,
+          "base": 0.05,
           "fpg": 4.556,
           "games_factor": 1.0,
           "gp": 5,
@@ -357,7 +398,7 @@
           "label": "last 7 days"
         },
         {
-          "base": 0.15,
+          "base": 0.075,
           "fpg": 4.607,
           "games_factor": 1.0,
           "gp": 8,
@@ -365,7 +406,7 @@
           "label": "last 15 days"
         },
         {
-          "base": 0.15,
+          "base": 0.075,
           "fpg": 4.595,
           "games_factor": 1.0,
           "gp": 16,
@@ -373,7 +414,7 @@
           "label": "last 30 days"
         },
         {
-          "base": 0.35,
+          "base": 0.5,
           "fpg": 4.594,
           "games_factor": 1.0,
           "gp": 71,
@@ -400,18 +441,15 @@
       "position": "RW",
       "pro_team": "VAN",
       "remaining_games": 4,
-      "ros": 15.4,
+      "ros": 15.6,
       "rostered": true,
       "source": "rookie_playing",
-      "value": 4.06
+      "value": 4.098
     },
     "202700006": {
-      "adjustments": [
-        "+top line",
-        "+PP2"
-      ],
+      "adjustments": [],
       "age": 22,
-      "base": 3.062,
+      "base": 2.963,
       "durability": {
         "basis": "ESPN projects 78 GP; played 57, 50 GP in recent seasons",
         "iron_man": false,
@@ -426,13 +464,13 @@
       "fantasy_team_id": 1,
       "group": "F",
       "injury_status": null,
-      "mult": 1.08,
+      "mult": 1.0,
       "name": "Jason Perez",
       "nhl_id": 8470032,
       "nhl_team": "VAN",
       "parts": [
         {
-          "base": 0.1,
+          "base": 0.05,
           "fpg": 3.359,
           "games_factor": 1.0,
           "gp": 7,
@@ -440,7 +478,7 @@
           "label": "last 7 days"
         },
         {
-          "base": 0.15,
+          "base": 0.075,
           "fpg": 3.392,
           "games_factor": 1.0,
           "gp": 12,
@@ -448,7 +486,7 @@
           "label": "last 15 days"
         },
         {
-          "base": 0.15,
+          "base": 0.075,
           "fpg": 3.362,
           "games_factor": 1.0,
           "gp": 19,
@@ -456,7 +494,7 @@
           "label": "last 30 days"
         },
         {
-          "base": 0.35,
+          "base": 0.5,
           "fpg": 3.366,
           "games_factor": 1.0,
           "gp": 71,
@@ -473,8 +511,8 @@
         },
         {
           "base": 0.0,
-          "fpg": 2.088,
-          "games_factor": 0.892,
+          "fpg": 1.966,
+          "games_factor": 1.0,
           "gp": 107,
           "kind": "history",
           "label": "NHL history, age-adjusted (2 seasons, 107 GP)"
@@ -483,18 +521,15 @@
       "position": "LW",
       "pro_team": "VAN",
       "remaining_games": 4,
-      "ros": 11.6,
+      "ros": 10.4,
       "rostered": true,
       "source": "current",
-      "value": 3.307
+      "value": 2.963
     },
     "202700007": {
-      "adjustments": [
-        "+top line",
-        "+PP2"
-      ],
+      "adjustments": [],
       "age": 33,
-      "base": 4.801,
+      "base": 4.298,
       "durability": {
         "basis": "ESPN projects 78 GP; played 81 GP in recent seasons",
         "iron_man": true,
@@ -509,13 +544,13 @@
       "fantasy_team_id": 1,
       "group": "F",
       "injury_status": null,
-      "mult": 1.08,
+      "mult": 1.0,
       "name": "Jason Murphy",
       "nhl_id": 8470033,
       "nhl_team": "MIN",
       "parts": [
         {
-          "base": 0.1,
+          "base": 0.05,
           "fpg": 5.845,
           "games_factor": 1.0,
           "gp": 4,
@@ -523,7 +558,7 @@
           "label": "last 7 days"
         },
         {
-          "base": 0.15,
+          "base": 0.075,
           "fpg": 5.791,
           "games_factor": 1.0,
           "gp": 10,
@@ -531,7 +566,7 @@
           "label": "last 15 days"
         },
         {
-          "base": 0.15,
+          "base": 0.075,
           "fpg": 5.817,
           "games_factor": 1.0,
           "gp": 19,
@@ -539,7 +574,7 @@
           "label": "last 30 days"
         },
         {
-          "base": 0.35,
+          "base": 0.5,
           "fpg": 5.803,
           "games_factor": 1.0,
           "gp": 66,
@@ -557,7 +592,7 @@
         {
           "base": 0.0,
           "fpg": 0.583,
-          "games_factor": 0.675,
+          "games_factor": 1.0,
           "gp": 81,
           "kind": "history",
           "label": "NHL history, age-adjusted (1 season, 81 GP)"
@@ -566,18 +601,15 @@
       "position": "LW",
       "pro_team": "MIN",
       "remaining_games": 6,
-      "ros": 29.6,
+      "ros": 24.6,
       "rostered": true,
       "source": "current",
-      "value": 5.185
+      "value": 4.298
     },
     "202700008": {
-      "adjustments": [
-        "+top line",
-        "+PP1"
-      ],
+      "adjustments": [],
       "age": 22,
-      "base": 8.024,
+      "base": 7.954,
       "durability": {
         "basis": "ESPN projects 78 GP; played 40, 30, 70 GP in recent seasons",
         "iron_man": false,
@@ -592,13 +624,13 @@
       "fantasy_team_id": 1,
       "group": "F",
       "injury_status": "OUT",
-      "mult": 1.16,
+      "mult": 1.0,
       "name": "Elijah Martinez",
       "nhl_id": 8470034,
       "nhl_team": "LAK",
       "parts": [
         {
-          "base": 0.1,
+          "base": 0.05,
           "fpg": 8.838,
           "games_factor": 1.0,
           "gp": 4,
@@ -606,7 +638,7 @@
           "label": "last 7 days"
         },
         {
-          "base": 0.15,
+          "base": 0.075,
           "fpg": 8.855,
           "games_factor": 1.0,
           "gp": 8,
@@ -614,7 +646,7 @@
           "label": "last 15 days"
         },
         {
-          "base": 0.15,
+          "base": 0.075,
           "fpg": 8.868,
           "games_factor": 0.883,
           "gp": 10,
@@ -622,7 +654,7 @@
           "label": "last 30 days"
         },
         {
-          "base": 0.35,
+          "base": 0.5,
           "fpg": 8.874,
           "games_factor": 1.0,
           "gp": 46,
@@ -639,7 +671,7 @@
         },
         {
           "base": 0.0,
-          "fpg": 5.653,
+          "fpg": 5.692,
           "games_factor": 1.0,
           "gp": 140,
           "kind": "history",
@@ -649,18 +681,15 @@
       "position": "LW",
       "pro_team": "LA",
       "remaining_games": 5,
-      "ros": 39.0,
+      "ros": 33.4,
       "rostered": true,
       "source": "current",
-      "value": 9.308
+      "value": 7.954
     },
     "202700009": {
-      "adjustments": [
-        "+top line",
-        "+PP1"
-      ],
+      "adjustments": [],
       "age": 19,
-      "base": 2.29,
+      "base": 2.252,
       "durability": {
         "basis": "ESPN projects 78 GP; played 38, 60, 73 GP in recent seasons",
         "iron_man": false,
@@ -675,13 +704,13 @@
       "fantasy_team_id": 1,
       "group": "F",
       "injury_status": null,
-      "mult": 1.16,
+      "mult": 1.0,
       "name": "Patrick Rogers",
       "nhl_id": 8470035,
       "nhl_team": "EDM",
       "parts": [
         {
-          "base": 0.1,
+          "base": 0.05,
           "fpg": 2.4,
           "games_factor": 1.0,
           "gp": 5,
@@ -689,7 +718,7 @@
           "label": "last 7 days"
         },
         {
-          "base": 0.15,
+          "base": 0.075,
           "fpg": 2.36,
           "games_factor": 1.0,
           "gp": 9,
@@ -697,7 +726,7 @@
           "label": "last 15 days"
         },
         {
-          "base": 0.15,
+          "base": 0.075,
           "fpg": 2.356,
           "games_factor": 1.0,
           "gp": 18,
@@ -705,7 +734,7 @@
           "label": "last 30 days"
         },
         {
-          "base": 0.35,
+          "base": 0.5,
           "fpg": 2.357,
           "games_factor": 1.0,
           "gp": 75,
@@ -722,7 +751,7 @@
         },
         {
           "base": 0.0,
-          "fpg": 2.094,
+          "fpg": 1.994,
           "games_factor": 1.0,
           "gp": 171,
           "kind": "history",
@@ -732,18 +761,15 @@
       "position": "RW",
       "pro_team": "EDM",
       "remaining_games": 2,
-      "ros": 4.6,
+      "ros": 3.9,
       "rostered": true,
       "source": "current",
-      "value": 2.656
+      "value": 2.252
     },
     "202700010": {
-      "adjustments": [
-        "+top pair",
-        "+PP1"
-      ],
+      "adjustments": [],
       "age": 31,
-      "base": 2.446,
+      "base": 2.5,
       "durability": {
         "basis": "ESPN projects 78 GP; played 38, 76, 74 GP in recent seasons",
         "iron_man": false,
@@ -758,13 +784,13 @@
       "fantasy_team_id": 1,
       "group": "D",
       "injury_status": null,
-      "mult": 1.14,
+      "mult": 1.0,
       "name": "Paul Baker",
       "nhl_id": 8470036,
       "nhl_team": "STL",
       "parts": [
         {
-          "base": 0.1,
+          "base": 0.05,
           "fpg": 2.5,
           "games_factor": 1.0,
           "gp": 4,
@@ -772,7 +798,7 @@
           "label": "last 7 days"
         },
         {
-          "base": 0.15,
+          "base": 0.075,
           "fpg": 2.503,
           "games_factor": 1.0,
           "gp": 8,
@@ -780,7 +806,7 @@
           "label": "last 15 days"
         },
         {
-          "base": 0.15,
+          "base": 0.075,
           "fpg": 2.469,
           "games_factor": 1.0,
           "gp": 15,
@@ -788,7 +814,7 @@
           "label": "last 30 days"
         },
         {
-          "base": 0.35,
+          "base": 0.5,
           "fpg": 2.487,
           "games_factor": 1.0,
           "gp": 63,
@@ -797,7 +823,7 @@
         },
         {
           "base": 0.0,
-          "fpg": 2.37,
+          "fpg": 2.518,
           "games_factor": 1.0,
           "gp": 188,
           "kind": "history",
@@ -807,18 +833,15 @@
       "position": "D",
       "pro_team": "STL",
       "remaining_games": 8,
-      "ros": 19.6,
+      "ros": 17.6,
       "rostered": true,
       "source": "current",
-      "value": 2.788
+      "value": 2.5
     },
     "202700011": {
-      "adjustments": [
-        "+top pair",
-        "+PP2"
-      ],
+      "adjustments": [],
       "age": 23,
-      "base": 2.25,
+      "base": 2.194,
       "durability": {
         "basis": "ESPN projects 78 GP; played 67, 70, 59 GP in recent seasons",
         "iron_man": false,
@@ -833,13 +856,13 @@
       "fantasy_team_id": 1,
       "group": "D",
       "injury_status": null,
-      "mult": 1.06,
+      "mult": 1.0,
       "name": "Albert Miller",
       "nhl_id": 8470037,
       "nhl_team": "COL",
       "parts": [
         {
-          "base": 0.1,
+          "base": 0.05,
           "fpg": 2.543,
           "games_factor": 1.0,
           "gp": 7,
@@ -847,7 +870,7 @@
           "label": "last 7 days"
         },
         {
-          "base": 0.15,
+          "base": 0.075,
           "fpg": 2.532,
           "games_factor": 1.0,
           "gp": 11,
@@ -855,7 +878,7 @@
           "label": "last 15 days"
         },
         {
-          "base": 0.15,
+          "base": 0.075,
           "fpg": 2.538,
           "games_factor": 1.0,
           "gp": 22,
@@ -863,7 +886,7 @@
           "label": "last 30 days"
         },
         {
-          "base": 0.35,
+          "base": 0.5,
           "fpg": 2.535,
           "games_factor": 1.0,
           "gp": 79,
@@ -880,7 +903,7 @@
         },
         {
           "base": 0.0,
-          "fpg": 1.439,
+          "fpg": 1.351,
           "games_factor": 1.0,
           "gp": 196,
           "kind": "history",
@@ -890,18 +913,15 @@
       "position": "D",
       "pro_team": "COL",
       "remaining_games": 2,
-      "ros": 4.3,
+      "ros": 4.0,
       "rostered": true,
       "source": "current",
-      "value": 2.385
+      "value": 2.194
     },
     "202700012": {
-      "adjustments": [
-        "+top pair",
-        "+PP2"
-      ],
+      "adjustments": [],
       "age": 21,
-      "base": 3.663,
+      "base": 3.632,
       "durability": {
         "basis": "ESPN projects 78 GP",
         "iron_man": true,
@@ -916,13 +936,13 @@
       "fantasy_team_id": 1,
       "group": "D",
       "injury_status": null,
-      "mult": 1.06,
+      "mult": 1.0,
       "name": "Randy Flores",
       "nhl_id": 8470038,
       "nhl_team": "NJD",
       "parts": [
         {
-          "base": 0.1,
+          "base": 0.05,
           "fpg": 3.723,
           "games_factor": 1.0,
           "gp": 4,
@@ -930,7 +950,7 @@
           "label": "last 7 days"
         },
         {
-          "base": 0.15,
+          "base": 0.075,
           "fpg": 3.713,
           "games_factor": 1.0,
           "gp": 11,
@@ -938,7 +958,7 @@
           "label": "last 15 days"
         },
         {
-          "base": 0.15,
+          "base": 0.075,
           "fpg": 3.72,
           "games_factor": 1.0,
           "gp": 19,
@@ -946,7 +966,7 @@
           "label": "last 30 days"
         },
         {
-          "base": 0.35,
+          "base": 0.5,
           "fpg": 3.714,
           "games_factor": 1.0,
           "gp": 64,
@@ -964,7 +984,7 @@
         {
           "base": 0.0,
           "fpg": 3.229,
-          "games_factor": 0.333,
+          "games_factor": 0.5,
           "gp": 40,
           "kind": "history",
           "label": "NHL history, age-adjusted (1 season, 40 GP)"
@@ -973,18 +993,15 @@
       "position": "D",
       "pro_team": "NJ",
       "remaining_games": 7,
-      "ros": 25.8,
+      "ros": 24.2,
       "rostered": true,
       "source": "current",
-      "value": 3.883
+      "value": 3.632
     },
     "202700013": {
-      "adjustments": [
-        "+top pair",
-        "+PP1"
-      ],
+      "adjustments": [],
       "age": 34,
-      "base": 3.242,
+      "base": 3.165,
       "durability": {
         "basis": "ESPN projects 78 GP; played 57, 52 GP in recent seasons",
         "iron_man": false,
@@ -999,13 +1016,13 @@
       "fantasy_team_id": 1,
       "group": "D",
       "injury_status": null,
-      "mult": 1.14,
+      "mult": 1.0,
       "name": "Gabriel Sanchez",
       "nhl_id": 8470039,
       "nhl_team": "WSH",
       "parts": [
         {
-          "base": 0.1,
+          "base": 0.05,
           "fpg": 3.611,
           "games_factor": 1.0,
           "gp": 3,
@@ -1013,7 +1030,7 @@
           "label": "last 7 days"
         },
         {
-          "base": 0.15,
+          "base": 0.075,
           "fpg": 3.596,
           "games_factor": 1.0,
           "gp": 6,
@@ -1021,7 +1038,7 @@
           "label": "last 15 days"
         },
         {
-          "base": 0.15,
+          "base": 0.075,
           "fpg": 3.616,
           "games_factor": 1.0,
           "gp": 17,
@@ -1029,7 +1046,7 @@
           "label": "last 30 days"
         },
         {
-          "base": 0.35,
+          "base": 0.5,
           "fpg": 3.63,
           "games_factor": 1.0,
           "gp": 56,
@@ -1046,8 +1063,8 @@
         },
         {
           "base": 0.0,
-          "fpg": 2.049,
-          "games_factor": 0.908,
+          "fpg": 2.021,
+          "games_factor": 1.0,
           "gp": 109,
           "kind": "history",
           "label": "NHL history, age-adjusted (2 seasons, 109 GP)"
@@ -1056,15 +1073,15 @@
       "position": "D",
       "pro_team": "WSH",
       "remaining_games": 2,
-      "ros": 6.5,
+      "ros": 5.5,
       "rostered": true,
       "source": "current",
-      "value": 3.696
+      "value": 3.165
     },
     "202700014": {
       "adjustments": [],
       "age": 27,
-      "base": 3.433,
+      "base": 3.457,
       "durability": {
         "basis": "ESPN projects 78 GP",
         "iron_man": true,
@@ -1085,7 +1102,7 @@
       "nhl_team": "ANA",
       "parts": [
         {
-          "base": 0.1,
+          "base": 0.05,
           "fpg": 3.743,
           "games_factor": 1.0,
           "gp": 4,
@@ -1093,7 +1110,7 @@
           "label": "last 7 days"
         },
         {
-          "base": 0.15,
+          "base": 0.075,
           "fpg": 3.755,
           "games_factor": 1.0,
           "gp": 7,
@@ -1101,7 +1118,7 @@
           "label": "last 15 days"
         },
         {
-          "base": 0.15,
+          "base": 0.075,
           "fpg": 3.76,
           "games_factor": 1.0,
           "gp": 16,
@@ -1109,7 +1126,7 @@
           "label": "last 30 days"
         },
         {
-          "base": 0.35,
+          "base": 0.5,
           "fpg": 3.76,
           "games_factor": 1.0,
           "gp": 47,
@@ -1139,15 +1156,12 @@
       "ros": 3.3,
       "rostered": true,
       "source": "rookie_playing",
-      "value": 3.433
+      "value": 3.457
     },
     "202700015": {
-      "adjustments": [
-        "+top line",
-        "\u2212no PP time"
-      ],
+      "adjustments": [],
       "age": 23,
-      "base": 3.213,
+      "base": 3.167,
       "durability": {
         "basis": "ESPN projects 78 GP; played 58, 68 GP in recent seasons",
         "iron_man": false,
@@ -1162,13 +1176,13 @@
       "fantasy_team_id": 1,
       "group": "F",
       "injury_status": "QUESTIONABLE",
-      "mult": 1.01,
+      "mult": 1.0,
       "name": "Russell Cooper",
       "nhl_id": 8470041,
       "nhl_team": "SJS",
       "parts": [
         {
-          "base": 0.1,
+          "base": 0.05,
           "fpg": 3.589,
           "games_factor": 1.0,
           "gp": 5,
@@ -1176,7 +1190,7 @@
           "label": "last 7 days"
         },
         {
-          "base": 0.15,
+          "base": 0.075,
           "fpg": 3.59,
           "games_factor": 1.0,
           "gp": 12,
@@ -1184,7 +1198,7 @@
           "label": "last 15 days"
         },
         {
-          "base": 0.15,
+          "base": 0.075,
           "fpg": 3.604,
           "games_factor": 1.0,
           "gp": 20,
@@ -1192,7 +1206,7 @@
           "label": "last 30 days"
         },
         {
-          "base": 0.35,
+          "base": 0.5,
           "fpg": 3.597,
           "games_factor": 1.0,
           "gp": 63,
@@ -1209,7 +1223,7 @@
         },
         {
           "base": 0.0,
-          "fpg": 2.126,
+          "fpg": 2.106,
           "games_factor": 1.0,
           "gp": 126,
           "kind": "history",
@@ -1219,15 +1233,15 @@
       "position": "RW",
       "pro_team": "SJ",
       "remaining_games": 8,
-      "ros": 23.2,
+      "ros": 22.6,
       "rostered": true,
       "source": "current",
-      "value": 3.245
+      "value": 3.167
     },
     "202700016": {
       "adjustments": [],
       "age": 33,
-      "base": 2.887,
+      "base": 2.808,
       "durability": {
         "basis": "no start share yet; assuming 90% of games",
         "iron_man": false,
@@ -1248,7 +1262,7 @@
       "nhl_team": "SEA",
       "parts": [
         {
-          "base": 0.1,
+          "base": 0.05,
           "fpg": 3.092,
           "games_factor": 0.433,
           "gp": 1,
@@ -1256,7 +1270,7 @@
           "label": "last 7 days"
         },
         {
-          "base": 0.15,
+          "base": 0.075,
           "fpg": 3.142,
           "games_factor": 0.5,
           "gp": 3,
@@ -1264,7 +1278,7 @@
           "label": "last 15 days"
         },
         {
-          "base": 0.15,
+          "base": 0.075,
           "fpg": 3.187,
           "games_factor": 0.533,
           "gp": 6,
@@ -1272,9 +1286,9 @@
           "label": "last 30 days"
         },
         {
-          "base": 0.35,
+          "base": 0.5,
           "fpg": 3.186,
-          "games_factor": 0.88,
+          "games_factor": 0.55,
           "gp": 22,
           "kind": "season",
           "label": "this season"
@@ -1289,8 +1303,8 @@
         },
         {
           "base": 0.0,
-          "fpg": 2.165,
-          "games_factor": 0.958,
+          "fpg": 2.131,
+          "games_factor": 1.0,
           "gp": 115,
           "kind": "history",
           "label": "NHL history, age-adjusted (2 seasons, 115 GP)"
@@ -1299,17 +1313,15 @@
       "position": "G",
       "pro_team": "SEA",
       "remaining_games": 7,
-      "ros": 18.2,
+      "ros": 17.7,
       "rostered": true,
       "source": "current",
-      "value": 2.887
+      "value": 2.808
     },
     "202700017": {
-      "adjustments": [
-        "\u2212backup"
-      ],
+      "adjustments": [],
       "age": 21,
-      "base": 3.08,
+      "base": 3.073,
       "durability": {
         "basis": "28% of starts (last season)",
         "iron_man": false,
@@ -1320,13 +1332,13 @@
       "fantasy_team_id": 1,
       "group": "G",
       "injury_status": "OUT",
-      "mult": 0.75,
+      "mult": 1.0,
       "name": "Robert Phillips",
       "nhl_id": 8470043,
       "nhl_team": "SJS",
       "parts": [
         {
-          "base": 0.1,
+          "base": 0.05,
           "fpg": 3.18,
           "games_factor": 1.0,
           "gp": 4,
@@ -1334,7 +1346,7 @@
           "label": "last 7 days"
         },
         {
-          "base": 0.15,
+          "base": 0.075,
           "fpg": 3.159,
           "games_factor": 1.0,
           "gp": 11,
@@ -1342,7 +1354,7 @@
           "label": "last 15 days"
         },
         {
-          "base": 0.15,
+          "base": 0.075,
           "fpg": 3.163,
           "games_factor": 1.0,
           "gp": 17,
@@ -1350,7 +1362,7 @@
           "label": "last 30 days"
         },
         {
-          "base": 0.35,
+          "base": 0.5,
           "fpg": 3.152,
           "games_factor": 1.0,
           "gp": 59,
@@ -1359,7 +1371,7 @@
         },
         {
           "base": 0.0,
-          "fpg": 2.938,
+          "fpg": 2.956,
           "games_factor": 1.0,
           "gp": 207,
           "kind": "history",
@@ -1369,18 +1381,15 @@
       "position": "G",
       "pro_team": "SJ",
       "remaining_games": 8,
-      "ros": 5.1,
+      "ros": 6.8,
       "rostered": true,
       "source": "current",
-      "value": 2.31
+      "value": 3.073
     },
     "202700018": {
-      "adjustments": [
-        "+top line",
-        "+PP1"
-      ],
+      "adjustments": [],
       "age": 20,
-      "base": 4.818,
+      "base": 4.704,
       "durability": {
         "basis": "ESPN projects 78 GP; played 57, 30, 39 GP in recent seasons",
         "iron_man": false,
@@ -1395,13 +1404,13 @@
       "fantasy_team_id": 1,
       "group": "F",
       "injury_status": null,
-      "mult": 1.16,
+      "mult": 1.0,
       "name": "David Jackson",
       "nhl_id": 8470044,
       "nhl_team": "WPG",
       "parts": [
         {
-          "base": 0.1,
+          "base": 0.05,
           "fpg": 5.63,
           "games_factor": 1.0,
           "gp": 4,
@@ -1409,7 +1418,7 @@
           "label": "last 7 days"
         },
         {
-          "base": 0.15,
+          "base": 0.075,
           "fpg": 5.671,
           "games_factor": 1.0,
           "gp": 11,
@@ -1417,7 +1426,7 @@
           "label": "last 15 days"
         },
         {
-          "base": 0.15,
+          "base": 0.075,
           "fpg": 5.655,
           "games_factor": 1.0,
           "gp": 19,
@@ -1425,7 +1434,7 @@
           "label": "last 30 days"
         },
         {
-          "base": 0.35,
+          "base": 0.5,
           "fpg": 5.657,
           "games_factor": 1.0,
           "gp": 63,
@@ -1442,7 +1451,7 @@
         },
         {
           "base": 0.0,
-          "fpg": 2.443,
+          "fpg": 2.353,
           "games_factor": 1.0,
           "gp": 126,
           "kind": "history",
@@ -1452,18 +1461,15 @@
       "position": "C",
       "pro_team": "WPG",
       "remaining_games": 7,
-      "ros": 33.2,
+      "ros": 27.9,
       "rostered": true,
       "source": "current",
-      "value": 5.589
+      "value": 4.704
     },
     "202700019": {
-      "adjustments": [
-        "+top line",
-        "+PP2"
-      ],
+      "adjustments": [],
       "age": 23,
-      "base": 3.372,
+      "base": 3.408,
       "durability": {
         "basis": "ESPN projects 78 GP; played 52, 40, 70 GP in recent seasons",
         "iron_man": false,
@@ -1478,13 +1484,13 @@
       "fantasy_team_id": 1,
       "group": "F",
       "injury_status": "OUT",
-      "mult": 1.08,
+      "mult": 1.0,
       "name": "Timothy King",
       "nhl_id": 8470045,
       "nhl_team": "STL",
       "parts": [
         {
-          "base": 0.1,
+          "base": 0.05,
           "fpg": 2.731,
           "games_factor": 1.0,
           "gp": 4,
@@ -1492,7 +1498,7 @@
           "label": "last 7 days"
         },
         {
-          "base": 0.15,
+          "base": 0.075,
           "fpg": 2.738,
           "games_factor": 1.0,
           "gp": 11,
@@ -1500,7 +1506,7 @@
           "label": "last 15 days"
         },
         {
-          "base": 0.15,
+          "base": 0.075,
           "fpg": 2.737,
           "games_factor": 1.0,
           "gp": 27,
@@ -1508,7 +1514,7 @@
           "label": "last 30 days"
         },
         {
-          "base": 0.35,
+          "base": 0.5,
           "fpg": 2.741,
           "games_factor": 1.0,
           "gp": 79,
@@ -1525,7 +1531,7 @@
         },
         {
           "base": 0.0,
-          "fpg": 5.163,
+          "fpg": 5.056,
           "games_factor": 1.0,
           "gp": 162,
           "kind": "history",
@@ -1535,18 +1541,15 @@
       "position": "C",
       "pro_team": "STL",
       "remaining_games": 8,
-      "ros": 25.2,
+      "ros": 23.6,
       "rostered": true,
       "source": "current",
-      "value": 3.642
+      "value": 3.408
     },
     "202700020": {
-      "adjustments": [
-        "+top line",
-        "+PP1"
-      ],
+      "adjustments": [],
       "age": 25,
-      "base": 3.884,
+      "base": 3.833,
       "durability": {
         "basis": "ESPN projects 78 GP; played 68, 41, 67 GP in recent seasons",
         "iron_man": false,
@@ -1561,13 +1564,13 @@
       "fantasy_team_id": 1,
       "group": "F",
       "injury_status": null,
-      "mult": 1.16,
+      "mult": 1.0,
       "name": "Michael Johnson",
       "nhl_id": 8470046,
       "nhl_team": "FLA",
       "parts": [
         {
-          "base": 0.1,
+          "base": 0.05,
           "fpg": 4.397,
           "games_factor": 1.0,
           "gp": 5,
@@ -1575,7 +1578,7 @@
           "label": "last 7 days"
         },
         {
-          "base": 0.15,
+          "base": 0.075,
           "fpg": 4.396,
           "games_factor": 1.0,
           "gp": 9,
@@ -1583,7 +1586,7 @@
           "label": "last 15 days"
         },
         {
-          "base": 0.15,
+          "base": 0.075,
           "fpg": 4.375,
           "games_factor": 1.0,
           "gp": 17,
@@ -1591,7 +1594,7 @@
           "label": "last 30 days"
         },
         {
-          "base": 0.35,
+          "base": 0.5,
           "fpg": 4.396,
           "games_factor": 1.0,
           "gp": 70,
@@ -1608,7 +1611,7 @@
         },
         {
           "base": 0.0,
-          "fpg": 2.437,
+          "fpg": 2.446,
           "games_factor": 1.0,
           "gp": 176,
           "kind": "history",
@@ -1618,17 +1621,15 @@
       "position": "RW",
       "pro_team": "FLA",
       "remaining_games": 4,
-      "ros": 16.0,
+      "ros": 13.6,
       "rostered": true,
       "source": "current",
-      "value": 4.505
+      "value": 3.833
     },
     "202700021": {
-      "adjustments": [
-        "+starter"
-      ],
+      "adjustments": [],
       "age": 27,
-      "base": 3.931,
+      "base": 3.833,
       "durability": {
         "basis": "100% of starts (last season)",
         "iron_man": true,
@@ -1643,13 +1644,13 @@
       "fantasy_team_id": 1,
       "group": "G",
       "injury_status": null,
-      "mult": 1.05,
+      "mult": 1.0,
       "name": "Brandon Williams",
       "nhl_id": 8470047,
       "nhl_team": "CGY",
       "parts": [
         {
-          "base": 0.1,
+          "base": 0.05,
           "fpg": 4.171,
           "games_factor": 0.567,
           "gp": 1,
@@ -1657,7 +1658,7 @@
           "label": "last 7 days"
         },
         {
-          "base": 0.15,
+          "base": 0.075,
           "fpg": 4.322,
           "games_factor": 0.817,
           "gp": 4,
@@ -1665,7 +1666,7 @@
           "label": "last 15 days"
         },
         {
-          "base": 0.15,
+          "base": 0.075,
           "fpg": 4.233,
           "games_factor": 0.583,
           "gp": 7,
@@ -1673,9 +1674,9 @@
           "label": "last 30 days"
         },
         {
-          "base": 0.35,
+          "base": 0.5,
           "fpg": 4.275,
-          "games_factor": 1.0,
+          "games_factor": 0.65,
           "gp": 26,
           "kind": "season",
           "label": "this season"
@@ -1690,7 +1691,7 @@
         },
         {
           "base": 0.0,
-          "fpg": 3.036,
+          "fpg": 2.967,
           "games_factor": 1.0,
           "gp": 204,
           "kind": "history",
@@ -1700,18 +1701,15 @@
       "position": "G",
       "pro_team": "CGY",
       "remaining_games": 4,
-      "ros": 16.5,
+      "ros": 15.3,
       "rostered": true,
       "source": "current",
-      "value": 4.128
+      "value": 3.833
     },
     "202700022": {
-      "adjustments": [
-        "+top-6",
-        "+PP2"
-      ],
+      "adjustments": [],
       "age": 26,
-      "base": 4.01,
+      "base": 4.057,
       "durability": {
         "basis": "ESPN projects 78 GP; played 36, 77, 46 GP in recent seasons",
         "iron_man": false,
@@ -1726,13 +1724,13 @@
       "fantasy_team_id": 1,
       "group": "F",
       "injury_status": null,
-      "mult": 1.05,
+      "mult": 1.0,
       "name": "James Jackson",
       "nhl_id": 8470048,
       "nhl_team": "CBJ",
       "parts": [
         {
-          "base": 0.1,
+          "base": 0.05,
           "fpg": 3.824,
           "games_factor": 1.0,
           "gp": 4,
@@ -1740,7 +1738,7 @@
           "label": "last 7 days"
         },
         {
-          "base": 0.15,
+          "base": 0.075,
           "fpg": 3.795,
           "games_factor": 1.0,
           "gp": 14,
@@ -1748,7 +1746,7 @@
           "label": "last 15 days"
         },
         {
-          "base": 0.15,
+          "base": 0.075,
           "fpg": 3.789,
           "games_factor": 1.0,
           "gp": 17,
@@ -1756,7 +1754,7 @@
           "label": "last 30 days"
         },
         {
-          "base": 0.35,
+          "base": 0.5,
           "fpg": 3.796,
           "games_factor": 1.0,
           "gp": 71,
@@ -1773,7 +1771,7 @@
         },
         {
           "base": 0.0,
-          "fpg": 4.614,
+          "fpg": 4.7,
           "games_factor": 1.0,
           "gp": 159,
           "kind": "history",
@@ -1783,15 +1781,15 @@
       "position": "C",
       "pro_team": "CBJ",
       "remaining_games": 5,
-      "ros": 18.1,
+      "ros": 17.5,
       "rostered": true,
       "source": "current",
-      "value": 4.21
+      "value": 4.057
     },
     "202700023": {
       "adjustments": [],
       "age": 20,
-      "base": 6.189,
+      "base": 6.258,
       "durability": {
         "basis": "ESPN projects 78 GP",
         "iron_man": true,
@@ -1812,7 +1810,7 @@
       "nhl_team": "BUF",
       "parts": [
         {
-          "base": 0.1,
+          "base": 0.05,
           "fpg": 7.121,
           "games_factor": 1.0,
           "gp": 3,
@@ -1820,7 +1818,7 @@
           "label": "last 7 days"
         },
         {
-          "base": 0.15,
+          "base": 0.075,
           "fpg": 7.114,
           "games_factor": 0.817,
           "gp": 4,
@@ -1828,7 +1826,7 @@
           "label": "last 15 days"
         },
         {
-          "base": 0.15,
+          "base": 0.075,
           "fpg": 7.094,
           "games_factor": 1.0,
           "gp": 14,
@@ -1836,7 +1834,7 @@
           "label": "last 30 days"
         },
         {
-          "base": 0.35,
+          "base": 0.5,
           "fpg": 7.088,
           "games_factor": 1.0,
           "gp": 40,
@@ -1863,15 +1861,15 @@
       "position": "RW",
       "pro_team": "BUF",
       "remaining_games": 5,
-      "ros": 29.4,
+      "ros": 29.8,
       "rostered": true,
       "source": "rookie_playing",
-      "value": 6.189
+      "value": 6.258
     },
     "202700024": {
       "adjustments": [],
       "age": null,
-      "base": 4.605,
+      "base": 4.608,
       "durability": {
         "basis": "ESPN projects 78 GP",
         "iron_man": true,
@@ -1892,7 +1890,7 @@
       "nhl_team": "NSH",
       "parts": [
         {
-          "base": 0.1,
+          "base": 0.05,
           "fpg": 4.61,
           "games_factor": 1.0,
           "gp": 6,
@@ -1900,7 +1898,7 @@
           "label": "last 7 days"
         },
         {
-          "base": 0.15,
+          "base": 0.075,
           "fpg": 4.571,
           "games_factor": 1.0,
           "gp": 10,
@@ -1908,7 +1906,7 @@
           "label": "last 15 days"
         },
         {
-          "base": 0.15,
+          "base": 0.075,
           "fpg": 4.607,
           "games_factor": 1.0,
           "gp": 27,
@@ -1916,7 +1914,7 @@
           "label": "last 30 days"
         },
         {
-          "base": 0.35,
+          "base": 0.5,
           "fpg": 4.609,
           "games_factor": 1.0,
           "gp": 76,
@@ -1938,15 +1936,12 @@
       "ros": 17.5,
       "rostered": true,
       "source": "current",
-      "value": 4.605
+      "value": 4.608
     },
     "202700025": {
-      "adjustments": [
-        "+top line",
-        "+PP1"
-      ],
+      "adjustments": [],
       "age": 27,
-      "base": 3.31,
+      "base": 3.343,
       "durability": {
         "basis": "ESPN projects 78 GP; played 41, 69 GP in recent seasons",
         "iron_man": false,
@@ -1961,13 +1956,13 @@
       "fantasy_team_id": 1,
       "group": "F",
       "injury_status": "INJURY_RESERVE",
-      "mult": 1.16,
+      "mult": 1.0,
       "name": "Gary Edwards",
       "nhl_id": 8470051,
       "nhl_team": "VAN",
       "parts": [
         {
-          "base": 0.1,
+          "base": 0.05,
           "fpg": 3.443,
           "games_factor": 1.0,
           "gp": 7,
@@ -1975,7 +1970,7 @@
           "label": "last 7 days"
         },
         {
-          "base": 0.15,
+          "base": 0.075,
           "fpg": 3.422,
           "games_factor": 1.0,
           "gp": 14,
@@ -1983,7 +1978,7 @@
           "label": "last 15 days"
         },
         {
-          "base": 0.15,
+          "base": 0.075,
           "fpg": 3.44,
           "games_factor": 1.0,
           "gp": 26,
@@ -1991,7 +1986,7 @@
           "label": "last 30 days"
         },
         {
-          "base": 0.35,
+          "base": 0.5,
           "fpg": 3.438,
           "games_factor": 1.0,
           "gp": 79,
@@ -2008,8 +2003,8 @@
         },
         {
           "base": 0.0,
-          "fpg": 2.918,
-          "games_factor": 0.917,
+          "fpg": 3.107,
+          "games_factor": 1.0,
           "gp": 110,
           "kind": "history",
           "label": "NHL history, age-adjusted (2 seasons, 110 GP)"
@@ -2018,18 +2013,15 @@
       "position": "RW",
       "pro_team": "VAN",
       "remaining_games": 4,
-      "ros": 13.1,
+      "ros": 11.4,
       "rostered": true,
       "source": "current",
-      "value": 3.84
+      "value": 3.343
     },
     "202700026": {
-      "adjustments": [
-        "+top line",
-        "+PP2"
-      ],
+      "adjustments": [],
       "age": 29,
-      "base": 5.166,
+      "base": 5.059,
       "durability": {
         "basis": "ESPN projects 78 GP; played 81, 79 GP in recent seasons",
         "iron_man": true,
@@ -2044,13 +2036,13 @@
       "fantasy_team_id": 1,
       "group": "F",
       "injury_status": null,
-      "mult": 1.08,
+      "mult": 1.0,
       "name": "Elijah Wilson",
       "nhl_id": 8470052,
       "nhl_team": "PIT",
       "parts": [
         {
-          "base": 0.1,
+          "base": 0.05,
           "fpg": 6.197,
           "games_factor": 1.0,
           "gp": 3,
@@ -2058,7 +2050,7 @@
           "label": "last 7 days"
         },
         {
-          "base": 0.15,
+          "base": 0.075,
           "fpg": 6.143,
           "games_factor": 0.9,
           "gp": 5,
@@ -2066,7 +2058,7 @@
           "label": "last 15 days"
         },
         {
-          "base": 0.15,
+          "base": 0.075,
           "fpg": 6.169,
           "games_factor": 1.0,
           "gp": 12,
@@ -2074,7 +2066,7 @@
           "label": "last 30 days"
         },
         {
-          "base": 0.35,
+          "base": 0.5,
           "fpg": 6.186,
           "games_factor": 1.0,
           "gp": 42,
@@ -2091,7 +2083,7 @@
         },
         {
           "base": 0.0,
-          "fpg": 2.313,
+          "fpg": 2.288,
           "games_factor": 1.0,
           "gp": 160,
           "kind": "history",
@@ -2101,18 +2093,15 @@
       "position": "C",
       "pro_team": "PIT",
       "remaining_games": 5,
-      "ros": 26.5,
+      "ros": 24.0,
       "rostered": true,
       "source": "current",
-      "value": 5.579
+      "value": 5.059
     },
     "202700027": {
-      "adjustments": [
-        "+top line",
-        "+PP1"
-      ],
+      "adjustments": [],
       "age": 30,
-      "base": 3.751,
+      "base": 3.716,
       "durability": {
         "basis": "ESPN projects 78 GP; played 36, 71 GP in recent seasons",
         "iron_man": false,
@@ -2127,13 +2116,13 @@
       "fantasy_team_id": 1,
       "group": "F",
       "injury_status": "OUT",
-      "mult": 1.16,
+      "mult": 1.0,
       "name": "Roy Bailey",
       "nhl_id": 8470053,
       "nhl_team": "STL",
       "parts": [
         {
-          "base": 0.1,
+          "base": 0.05,
           "fpg": 3.867,
           "games_factor": 1.0,
           "gp": 6,
@@ -2141,7 +2130,7 @@
           "label": "last 7 days"
         },
         {
-          "base": 0.15,
+          "base": 0.075,
           "fpg": 3.873,
           "games_factor": 1.0,
           "gp": 9,
@@ -2149,7 +2138,7 @@
           "label": "last 15 days"
         },
         {
-          "base": 0.15,
+          "base": 0.075,
           "fpg": 3.858,
           "games_factor": 1.0,
           "gp": 21,
@@ -2157,7 +2146,7 @@
           "label": "last 30 days"
         },
         {
-          "base": 0.35,
+          "base": 0.5,
           "fpg": 3.863,
           "games_factor": 1.0,
           "gp": 68,
@@ -2166,8 +2155,8 @@
         },
         {
           "base": 0.0,
-          "fpg": 3.518,
-          "games_factor": 0.892,
+          "fpg": 3.5,
+          "games_factor": 1.0,
           "gp": 107,
           "kind": "history",
           "label": "NHL history, age-adjusted (2 seasons, 107 GP)"
@@ -2176,18 +2165,15 @@
       "position": "C",
       "pro_team": "STL",
       "remaining_games": 8,
-      "ros": 29.9,
+      "ros": 25.5,
       "rostered": true,
       "source": "current",
-      "value": 4.351
+      "value": 3.716
     },
     "202700101": {
-      "adjustments": [
-        "+top line",
-        "\u2212no PP time"
-      ],
+      "adjustments": [],
       "age": 21,
-      "base": 5.061,
+      "base": 5.623,
       "durability": {
         "basis": "ESPN projects 78 GP; played 32, 47 GP in recent seasons",
         "iron_man": false,
@@ -2202,13 +2188,13 @@
       "fantasy_team_id": 2,
       "group": "F",
       "injury_status": "QUESTIONABLE",
-      "mult": 1.01,
+      "mult": 1.0,
       "name": "Keith Thompson",
       "nhl_id": 8470000,
       "nhl_team": "ANA",
       "parts": [
         {
-          "base": 0.1,
+          "base": 0.05,
           "fpg": 4.083,
           "games_factor": 1.0,
           "gp": 3,
@@ -2216,7 +2202,7 @@
           "label": "last 7 days"
         },
         {
-          "base": 0.15,
+          "base": 0.075,
           "fpg": 3.996,
           "games_factor": 1.0,
           "gp": 8,
@@ -2224,7 +2210,7 @@
           "label": "last 15 days"
         },
         {
-          "base": 0.15,
+          "base": 0.075,
           "fpg": 4.018,
           "games_factor": 1.0,
           "gp": 13,
@@ -2232,7 +2218,7 @@
           "label": "last 30 days"
         },
         {
-          "base": 0.35,
+          "base": 0.5,
           "fpg": 4.004,
           "games_factor": 1.0,
           "gp": 47,
@@ -2249,8 +2235,8 @@
         },
         {
           "base": 0.0,
-          "fpg": 9.588,
-          "games_factor": 0.658,
+          "fpg": 9.662,
+          "games_factor": 0.988,
           "gp": 79,
           "kind": "history",
           "label": "NHL history, age-adjusted (2 seasons, 79 GP)"
@@ -2259,18 +2245,15 @@
       "position": "LW",
       "pro_team": "ANA",
       "remaining_games": 1,
-      "ros": 4.2,
+      "ros": 4.6,
       "rostered": true,
       "source": "current",
-      "value": 5.112
+      "value": 5.623
     },
     "202700102": {
-      "adjustments": [
-        "+top line",
-        "\u2212no PP time"
-      ],
+      "adjustments": [],
       "age": 29,
-      "base": 3.541,
+      "base": 3.505,
       "durability": {
         "basis": "ESPN projects 78 GP; played 80, 54 GP in recent seasons",
         "iron_man": false,
@@ -2285,13 +2268,13 @@
       "fantasy_team_id": 2,
       "group": "F",
       "injury_status": "ACTIVE",
-      "mult": 1.01,
+      "mult": 1.0,
       "name": "Arthur Garcia",
       "nhl_id": 8470001,
       "nhl_team": "SJS",
       "parts": [
         {
-          "base": 0.1,
+          "base": 0.05,
           "fpg": 3.89,
           "games_factor": 1.0,
           "gp": 5,
@@ -2299,7 +2282,7 @@
           "label": "last 7 days"
         },
         {
-          "base": 0.15,
+          "base": 0.075,
           "fpg": 3.867,
           "games_factor": 1.0,
           "gp": 10,
@@ -2307,7 +2290,7 @@
           "label": "last 15 days"
         },
         {
-          "base": 0.15,
+          "base": 0.075,
           "fpg": 3.874,
           "games_factor": 1.0,
           "gp": 14,
@@ -2315,7 +2298,7 @@
           "label": "last 30 days"
         },
         {
-          "base": 0.35,
+          "base": 0.5,
           "fpg": 3.875,
           "games_factor": 1.0,
           "gp": 56,
@@ -2332,7 +2315,7 @@
         },
         {
           "base": 0.0,
-          "fpg": 2.592,
+          "fpg": 2.593,
           "games_factor": 1.0,
           "gp": 134,
           "kind": "history",
@@ -2342,18 +2325,15 @@
       "position": "LW",
       "pro_team": "SJ",
       "remaining_games": 8,
-      "ros": 26.6,
+      "ros": 26.0,
       "rostered": true,
       "source": "current",
-      "value": 3.576
+      "value": 3.505
     },
     "202700103": {
-      "adjustments": [
-        "+top-6",
-        "+PP2"
-      ],
+      "adjustments": [],
       "age": 21,
-      "base": 3.466,
+      "base": 3.63,
       "durability": {
         "basis": "ESPN projects 78 GP; played 51, 46 GP in recent seasons",
         "iron_man": false,
@@ -2368,13 +2348,13 @@
       "fantasy_team_id": 2,
       "group": "F",
       "injury_status": null,
-      "mult": 1.05,
+      "mult": 1.0,
       "name": "Bradley Murphy",
       "nhl_id": 8470002,
       "nhl_team": "PIT",
       "parts": [
         {
-          "base": 0.1,
+          "base": 0.05,
           "fpg": 2.726,
           "games_factor": 1.0,
           "gp": 7,
@@ -2382,7 +2362,7 @@
           "label": "last 7 days"
         },
         {
-          "base": 0.15,
+          "base": 0.075,
           "fpg": 2.732,
           "games_factor": 1.0,
           "gp": 15,
@@ -2390,7 +2370,7 @@
           "label": "last 15 days"
         },
         {
-          "base": 0.15,
+          "base": 0.075,
           "fpg": 2.733,
           "games_factor": 1.0,
           "gp": 27,
@@ -2398,7 +2378,7 @@
           "label": "last 30 days"
         },
         {
-          "base": 0.35,
+          "base": 0.5,
           "fpg": 2.731,
           "games_factor": 1.0,
           "gp": 81,
@@ -2415,8 +2395,8 @@
         },
         {
           "base": 0.0,
-          "fpg": 6.044,
-          "games_factor": 0.808,
+          "fpg": 5.85,
+          "games_factor": 1.0,
           "gp": 97,
           "kind": "history",
           "label": "NHL history, age-adjusted (2 seasons, 97 GP)"
@@ -2428,15 +2408,12 @@
       "ros": 15.6,
       "rostered": true,
       "source": "current",
-      "value": 3.639
+      "value": 3.63
     },
     "202700104": {
-      "adjustments": [
-        "+top line",
-        "+PP1"
-      ],
+      "adjustments": [],
       "age": 26,
-      "base": 4.185,
+      "base": 4.26,
       "durability": {
         "basis": "ESPN projects 78 GP",
         "iron_man": true,
@@ -2451,13 +2428,13 @@
       "fantasy_team_id": 2,
       "group": "F",
       "injury_status": null,
-      "mult": 1.16,
+      "mult": 1.0,
       "name": "Keith Adams",
       "nhl_id": 8470003,
       "nhl_team": "WSH",
       "parts": [
         {
-          "base": 0.1,
+          "base": 0.05,
           "fpg": 4.096,
           "games_factor": 1.0,
           "gp": 4,
@@ -2465,7 +2442,7 @@
           "label": "last 7 days"
         },
         {
-          "base": 0.15,
+          "base": 0.075,
           "fpg": 4.06,
           "games_factor": 1.0,
           "gp": 11,
@@ -2473,7 +2450,7 @@
           "label": "last 15 days"
         },
         {
-          "base": 0.15,
+          "base": 0.075,
           "fpg": 4.053,
           "games_factor": 1.0,
           "gp": 22,
@@ -2481,7 +2458,7 @@
           "label": "last 30 days"
         },
         {
-          "base": 0.35,
+          "base": 0.5,
           "fpg": 4.063,
           "games_factor": 1.0,
           "gp": 71,
@@ -2499,7 +2476,7 @@
         {
           "base": 0.0,
           "fpg": 5.363,
-          "games_factor": 0.292,
+          "games_factor": 0.438,
           "gp": 35,
           "kind": "history",
           "label": "NHL history, age-adjusted (1 season, 35 GP)"
@@ -2508,15 +2485,15 @@
       "position": "RW",
       "pro_team": "WSH",
       "remaining_games": 2,
-      "ros": 9.2,
+      "ros": 8.1,
       "rostered": true,
       "source": "current",
-      "value": 4.855
+      "value": 4.26
     },
     "202700105": {
       "adjustments": [],
       "age": 33,
-      "base": 4.677,
+      "base": 4.722,
       "durability": {
         "basis": "ESPN projects 78 GP",
         "iron_man": true,
@@ -2537,7 +2514,7 @@
       "nhl_team": "CHI",
       "parts": [
         {
-          "base": 0.1,
+          "base": 0.05,
           "fpg": 5.272,
           "games_factor": 1.0,
           "gp": 3,
@@ -2545,7 +2522,7 @@
           "label": "last 7 days"
         },
         {
-          "base": 0.15,
+          "base": 0.075,
           "fpg": 5.333,
           "games_factor": 1.0,
           "gp": 7,
@@ -2553,7 +2530,7 @@
           "label": "last 15 days"
         },
         {
-          "base": 0.15,
+          "base": 0.075,
           "fpg": 5.322,
           "games_factor": 1.0,
           "gp": 17,
@@ -2561,7 +2538,7 @@
           "label": "last 30 days"
         },
         {
-          "base": 0.35,
+          "base": 0.5,
           "fpg": 5.32,
           "games_factor": 1.0,
           "gp": 54,
@@ -2588,18 +2565,15 @@
       "position": "RW",
       "pro_team": "CHI",
       "remaining_games": 6,
-      "ros": 26.7,
+      "ros": 26.9,
       "rostered": true,
       "source": "rookie_playing",
-      "value": 4.677
+      "value": 4.722
     },
     "202700106": {
-      "adjustments": [
-        "+top line",
-        "+PP1"
-      ],
+      "adjustments": [],
       "age": 22,
-      "base": 3.533,
+      "base": 3.493,
       "durability": {
         "basis": "ESPN projects 78 GP; played 61, 35, 35 GP in recent seasons",
         "iron_man": false,
@@ -2614,13 +2588,13 @@
       "fantasy_team_id": 2,
       "group": "F",
       "injury_status": null,
-      "mult": 1.16,
+      "mult": 1.0,
       "name": "Austin Clark",
       "nhl_id": 8470005,
       "nhl_team": "BUF",
       "parts": [
         {
-          "base": 0.1,
+          "base": 0.05,
           "fpg": 3.236,
           "games_factor": 1.0,
           "gp": 5,
@@ -2628,7 +2602,7 @@
           "label": "last 7 days"
         },
         {
-          "base": 0.15,
+          "base": 0.075,
           "fpg": 3.194,
           "games_factor": 1.0,
           "gp": 10,
@@ -2636,7 +2610,7 @@
           "label": "last 15 days"
         },
         {
-          "base": 0.15,
+          "base": 0.075,
           "fpg": 3.197,
           "games_factor": 1.0,
           "gp": 18,
@@ -2644,7 +2618,7 @@
           "label": "last 30 days"
         },
         {
-          "base": 0.35,
+          "base": 0.5,
           "fpg": 3.189,
           "games_factor": 1.0,
           "gp": 57,
@@ -2661,7 +2635,7 @@
         },
         {
           "base": 0.0,
-          "fpg": 4.497,
+          "fpg": 4.243,
           "games_factor": 1.0,
           "gp": 131,
           "kind": "history",
@@ -2671,18 +2645,15 @@
       "position": "LW",
       "pro_team": "BUF",
       "remaining_games": 5,
-      "ros": 17.5,
+      "ros": 15.0,
       "rostered": true,
       "source": "current",
-      "value": 4.098
+      "value": 3.493
     },
     "202700107": {
-      "adjustments": [
-        "+top line",
-        "\u2212no PP time"
-      ],
+      "adjustments": [],
       "age": 33,
-      "base": 3.177,
+      "base": 3.155,
       "durability": {
         "basis": "ESPN projects 78 GP; played 49, 39, 37 GP in recent seasons",
         "iron_man": false,
@@ -2697,13 +2668,13 @@
       "fantasy_team_id": 2,
       "group": "F",
       "injury_status": "DOUBTFUL",
-      "mult": 1.01,
+      "mult": 1.0,
       "name": "Roy Kelly",
       "nhl_id": 8470006,
       "nhl_team": "OTT",
       "parts": [
         {
-          "base": 0.1,
+          "base": 0.05,
           "fpg": 3.271,
           "games_factor": 1.0,
           "gp": 5,
@@ -2711,7 +2682,7 @@
           "label": "last 7 days"
         },
         {
-          "base": 0.15,
+          "base": 0.075,
           "fpg": 3.273,
           "games_factor": 1.0,
           "gp": 12,
@@ -2719,7 +2690,7 @@
           "label": "last 15 days"
         },
         {
-          "base": 0.15,
+          "base": 0.075,
           "fpg": 3.243,
           "games_factor": 1.0,
           "gp": 18,
@@ -2727,7 +2698,7 @@
           "label": "last 30 days"
         },
         {
-          "base": 0.35,
+          "base": 0.5,
           "fpg": 3.258,
           "games_factor": 1.0,
           "gp": 72,
@@ -2744,7 +2715,7 @@
         },
         {
           "base": 0.0,
-          "fpg": 2.946,
+          "fpg": 2.9,
           "games_factor": 1.0,
           "gp": 125,
           "kind": "history",
@@ -2754,18 +2725,15 @@
       "position": "RW",
       "pro_team": "OTT",
       "remaining_games": 4,
-      "ros": 10.8,
+      "ros": 10.6,
       "rostered": true,
       "source": "current",
-      "value": 3.209
+      "value": 3.155
     },
     "202700108": {
-      "adjustments": [
-        "+top line",
-        "+PP1"
-      ],
+      "adjustments": [],
       "age": 28,
-      "base": 4.403,
+      "base": 4.312,
       "durability": {
         "basis": "played 64, 71 GP in recent seasons",
         "iron_man": false,
@@ -2776,13 +2744,13 @@
       "fantasy_team_id": 2,
       "group": "F",
       "injury_status": null,
-      "mult": 1.16,
+      "mult": 1.0,
       "name": "Randy Castillo",
       "nhl_id": 8470007,
       "nhl_team": "FLA",
       "parts": [
         {
-          "base": 0.1,
+          "base": 0.05,
           "fpg": 5.094,
           "games_factor": 1.0,
           "gp": 4,
@@ -2790,7 +2758,7 @@
           "label": "last 7 days"
         },
         {
-          "base": 0.15,
+          "base": 0.075,
           "fpg": 5.106,
           "games_factor": 1.0,
           "gp": 8,
@@ -2798,7 +2766,7 @@
           "label": "last 15 days"
         },
         {
-          "base": 0.15,
+          "base": 0.075,
           "fpg": 5.099,
           "games_factor": 1.0,
           "gp": 17,
@@ -2806,7 +2774,7 @@
           "label": "last 30 days"
         },
         {
-          "base": 0.35,
+          "base": 0.5,
           "fpg": 5.088,
           "games_factor": 1.0,
           "gp": 66,
@@ -2815,7 +2783,7 @@
         },
         {
           "base": 0.0,
-          "fpg": 3.138,
+          "fpg": 3.173,
           "games_factor": 1.0,
           "gp": 135,
           "kind": "history",
@@ -2825,15 +2793,15 @@
       "position": "RW",
       "pro_team": "FLA",
       "remaining_games": 4,
-      "ros": 17.2,
+      "ros": 14.5,
       "rostered": true,
       "source": "current",
-      "value": 5.107
+      "value": 4.312
     },
     "202700109": {
       "adjustments": [],
       "age": 24,
-      "base": 5.416,
+      "base": 5.424,
       "durability": {
         "basis": "ESPN projects 78 GP; played 39, 72 GP in recent seasons",
         "iron_man": false,
@@ -2854,7 +2822,7 @@
       "nhl_team": "CBJ",
       "parts": [
         {
-          "base": 0.1,
+          "base": 0.05,
           "fpg": 5.523,
           "games_factor": 1.0,
           "gp": 5,
@@ -2862,7 +2830,7 @@
           "label": "last 7 days"
         },
         {
-          "base": 0.15,
+          "base": 0.075,
           "fpg": 5.592,
           "games_factor": 1.0,
           "gp": 11,
@@ -2870,7 +2838,7 @@
           "label": "last 15 days"
         },
         {
-          "base": 0.15,
+          "base": 0.075,
           "fpg": 5.56,
           "games_factor": 1.0,
           "gp": 21,
@@ -2878,7 +2846,7 @@
           "label": "last 30 days"
         },
         {
-          "base": 0.35,
+          "base": 0.5,
           "fpg": 5.566,
           "games_factor": 1.0,
           "gp": 67,
@@ -2895,8 +2863,8 @@
         },
         {
           "base": 0.0,
-          "fpg": 4.958,
-          "games_factor": 0.925,
+          "fpg": 5.072,
+          "games_factor": 1.0,
           "gp": 111,
           "kind": "history",
           "label": "NHL history, age-adjusted (2 seasons, 111 GP)"
@@ -2905,18 +2873,15 @@
       "position": "C",
       "pro_team": "CBJ",
       "remaining_games": 5,
-      "ros": 23.1,
+      "ros": 23.2,
       "rostered": true,
       "source": "current",
-      "value": 5.416
+      "value": 5.424
     },
     "202700110": {
-      "adjustments": [
-        "+top pair",
-        "+PP2"
-      ],
+      "adjustments": [],
       "age": 32,
-      "base": 4.06,
+      "base": 3.962,
       "durability": {
         "basis": "ESPN projects 78 GP; played 41, 56 GP in recent seasons",
         "iron_man": false,
@@ -2931,13 +2896,13 @@
       "fantasy_team_id": 2,
       "group": "D",
       "injury_status": null,
-      "mult": 1.06,
+      "mult": 1.0,
       "name": "Bradley Mendoza",
       "nhl_id": 8470009,
       "nhl_team": "EDM",
       "parts": [
         {
-          "base": 0.1,
+          "base": 0.05,
           "fpg": 4.384,
           "games_factor": 1.0,
           "gp": 4,
@@ -2945,7 +2910,7 @@
           "label": "last 7 days"
         },
         {
-          "base": 0.15,
+          "base": 0.075,
           "fpg": 4.389,
           "games_factor": 1.0,
           "gp": 13,
@@ -2953,7 +2918,7 @@
           "label": "last 15 days"
         },
         {
-          "base": 0.15,
+          "base": 0.075,
           "fpg": 4.375,
           "games_factor": 1.0,
           "gp": 22,
@@ -2961,7 +2926,7 @@
           "label": "last 30 days"
         },
         {
-          "base": 0.35,
+          "base": 0.5,
           "fpg": 4.384,
           "games_factor": 1.0,
           "gp": 69,
@@ -2978,8 +2943,8 @@
         },
         {
           "base": 0.0,
-          "fpg": 2.926,
-          "games_factor": 0.808,
+          "fpg": 2.922,
+          "games_factor": 1.0,
           "gp": 97,
           "kind": "history",
           "label": "NHL history, age-adjusted (2 seasons, 97 GP)"
@@ -2988,18 +2953,15 @@
       "position": "D",
       "pro_team": "EDM",
       "remaining_games": 2,
-      "ros": 7.3,
+      "ros": 6.7,
       "rostered": true,
       "source": "current",
-      "value": 4.304
+      "value": 3.962
     },
     "202700111": {
-      "adjustments": [
-        "+top pair",
-        "+PP1"
-      ],
+      "adjustments": [],
       "age": 22,
-      "base": 3.381,
+      "base": 3.357,
       "durability": {
         "basis": "ESPN projects 78 GP; played 58, 50, 75 GP in recent seasons",
         "iron_man": false,
@@ -3014,13 +2976,13 @@
       "fantasy_team_id": 2,
       "group": "D",
       "injury_status": "QUESTIONABLE",
-      "mult": 1.14,
+      "mult": 1.0,
       "name": "Bradley Lewis",
       "nhl_id": 8470010,
       "nhl_team": "COL",
       "parts": [
         {
-          "base": 0.1,
+          "base": 0.05,
           "fpg": 3.535,
           "games_factor": 1.0,
           "gp": 6,
@@ -3028,7 +2990,7 @@
           "label": "last 7 days"
         },
         {
-          "base": 0.15,
+          "base": 0.075,
           "fpg": 3.543,
           "games_factor": 1.0,
           "gp": 13,
@@ -3036,7 +2998,7 @@
           "label": "last 15 days"
         },
         {
-          "base": 0.15,
+          "base": 0.075,
           "fpg": 3.516,
           "games_factor": 1.0,
           "gp": 17,
@@ -3044,7 +3006,7 @@
           "label": "last 30 days"
         },
         {
-          "base": 0.35,
+          "base": 0.5,
           "fpg": 3.519,
           "games_factor": 1.0,
           "gp": 74,
@@ -3061,7 +3023,7 @@
         },
         {
           "base": 0.0,
-          "fpg": 2.979,
+          "fpg": 2.954,
           "games_factor": 1.0,
           "gp": 183,
           "kind": "history",
@@ -3071,18 +3033,15 @@
       "position": "D",
       "pro_team": "COL",
       "remaining_games": 2,
-      "ros": 6.8,
+      "ros": 5.9,
       "rostered": true,
       "source": "current",
-      "value": 3.854
+      "value": 3.357
     },
     "202700112": {
-      "adjustments": [
-        "+top pair",
-        "+PP1"
-      ],
+      "adjustments": [],
       "age": 24,
-      "base": 5.252,
+      "base": 5.132,
       "durability": {
         "basis": "ESPN projects 78 GP; played 45, 47, 79 GP in recent seasons",
         "iron_man": false,
@@ -3097,13 +3056,13 @@
       "fantasy_team_id": 2,
       "group": "D",
       "injury_status": null,
-      "mult": 1.14,
+      "mult": 1.0,
       "name": "Christopher Patel",
       "nhl_id": 8470011,
       "nhl_team": "ANA",
       "parts": [
         {
-          "base": 0.1,
+          "base": 0.05,
           "fpg": 6.24,
           "games_factor": 1.0,
           "gp": 3,
@@ -3111,7 +3070,7 @@
           "label": "last 7 days"
         },
         {
-          "base": 0.15,
+          "base": 0.075,
           "fpg": 6.276,
           "games_factor": 1.0,
           "gp": 7,
@@ -3119,7 +3078,7 @@
           "label": "last 15 days"
         },
         {
-          "base": 0.15,
+          "base": 0.075,
           "fpg": 6.308,
           "games_factor": 0.908,
           "gp": 10,
@@ -3127,7 +3086,7 @@
           "label": "last 30 days"
         },
         {
-          "base": 0.35,
+          "base": 0.5,
           "fpg": 6.295,
           "games_factor": 1.0,
           "gp": 41,
@@ -3136,7 +3095,7 @@
         },
         {
           "base": 0.0,
-          "fpg": 3.374,
+          "fpg": 3.435,
           "games_factor": 1.0,
           "gp": 171,
           "kind": "history",
@@ -3146,18 +3105,15 @@
       "position": "D",
       "pro_team": "ANA",
       "remaining_games": 1,
-      "ros": 5.2,
+      "ros": 4.4,
       "rostered": true,
       "source": "current",
-      "value": 5.987
+      "value": 5.132
     },
     "202700113": {
-      "adjustments": [
-        "+top pair",
-        "+PP2"
-      ],
+      "adjustments": [],
       "age": 22,
-      "base": 5.09,
+      "base": 5.012,
       "durability": {
         "basis": "ESPN projects 78 GP; played 63, 41, 47 GP in recent seasons",
         "iron_man": false,
@@ -3172,13 +3128,13 @@
       "fantasy_team_id": 2,
       "group": "D",
       "injury_status": null,
-      "mult": 1.06,
+      "mult": 1.0,
       "name": "Christopher Wright",
       "nhl_id": 8470012,
       "nhl_team": "MTL",
       "parts": [
         {
-          "base": 0.1,
+          "base": 0.05,
           "fpg": 5.688,
           "games_factor": 1.0,
           "gp": 5,
@@ -3186,7 +3142,7 @@
           "label": "last 7 days"
         },
         {
-          "base": 0.15,
+          "base": 0.075,
           "fpg": 5.695,
           "games_factor": 1.0,
           "gp": 7,
@@ -3194,7 +3150,7 @@
           "label": "last 15 days"
         },
         {
-          "base": 0.15,
+          "base": 0.075,
           "fpg": 5.703,
           "games_factor": 1.0,
           "gp": 15,
@@ -3202,7 +3158,7 @@
           "label": "last 30 days"
         },
         {
-          "base": 0.35,
+          "base": 0.5,
           "fpg": 5.704,
           "games_factor": 1.0,
           "gp": 53,
@@ -3219,7 +3175,7 @@
         },
         {
           "base": 0.0,
-          "fpg": 3.359,
+          "fpg": 3.308,
           "games_factor": 1.0,
           "gp": 151,
           "kind": "history",
@@ -3229,15 +3185,15 @@
       "position": "D",
       "pro_team": "MTL",
       "remaining_games": 6,
-      "ros": 28.2,
+      "ros": 26.2,
       "rostered": true,
       "source": "current",
-      "value": 5.395
+      "value": 5.012
     },
     "202700114": {
       "adjustments": [],
       "age": null,
-      "base": 4.204,
+      "base": 4.202,
       "durability": {
         "basis": "ESPN projects 78 GP",
         "iron_man": true,
@@ -3258,7 +3214,7 @@
       "nhl_team": "TOR",
       "parts": [
         {
-          "base": 0.1,
+          "base": 0.05,
           "fpg": 4.194,
           "games_factor": 1.0,
           "gp": 5,
@@ -3266,7 +3222,7 @@
           "label": "last 7 days"
         },
         {
-          "base": 0.15,
+          "base": 0.075,
           "fpg": 4.24,
           "games_factor": 1.0,
           "gp": 7,
@@ -3274,7 +3230,7 @@
           "label": "last 15 days"
         },
         {
-          "base": 0.15,
+          "base": 0.075,
           "fpg": 4.195,
           "games_factor": 1.0,
           "gp": 13,
@@ -3282,7 +3238,7 @@
           "label": "last 30 days"
         },
         {
-          "base": 0.35,
+          "base": 0.5,
           "fpg": 4.2,
           "games_factor": 1.0,
           "gp": 56,
@@ -3304,15 +3260,12 @@
       "ros": 8.0,
       "rostered": true,
       "source": "current",
-      "value": 4.204
+      "value": 4.202
     },
     "202700115": {
-      "adjustments": [
-        "+top line",
-        "+PP1"
-      ],
+      "adjustments": [],
       "age": 32,
-      "base": 3.879,
+      "base": 3.766,
       "durability": {
         "basis": "ESPN projects 78 GP; played 80, 60 GP in recent seasons",
         "iron_man": false,
@@ -3327,13 +3280,13 @@
       "fantasy_team_id": 2,
       "group": "F",
       "injury_status": "DOUBTFUL",
-      "mult": 1.16,
+      "mult": 1.0,
       "name": "Andrew Lopez",
       "nhl_id": 8470014,
       "nhl_team": "SJS",
       "parts": [
         {
-          "base": 0.1,
+          "base": 0.05,
           "fpg": 4.847,
           "games_factor": 1.0,
           "gp": 3,
@@ -3341,7 +3294,7 @@
           "label": "last 7 days"
         },
         {
-          "base": 0.15,
+          "base": 0.075,
           "fpg": 4.799,
           "games_factor": 1.0,
           "gp": 8,
@@ -3349,7 +3302,7 @@
           "label": "last 15 days"
         },
         {
-          "base": 0.15,
+          "base": 0.075,
           "fpg": 4.804,
           "games_factor": 0.875,
           "gp": 10,
@@ -3357,7 +3310,7 @@
           "label": "last 30 days"
         },
         {
-          "base": 0.35,
+          "base": 0.5,
           "fpg": 4.787,
           "games_factor": 1.0,
           "gp": 46,
@@ -3374,7 +3327,7 @@
         },
         {
           "base": 0.0,
-          "fpg": 1.316,
+          "fpg": 1.249,
           "games_factor": 1.0,
           "gp": 140,
           "kind": "history",
@@ -3384,17 +3337,15 @@
       "position": "LW",
       "pro_team": "SJ",
       "remaining_games": 8,
-      "ros": 33.6,
+      "ros": 28.1,
       "rostered": true,
       "source": "current",
-      "value": 4.5
+      "value": 3.766
     },
     "202700116": {
-      "adjustments": [
-        "+starter"
-      ],
+      "adjustments": [],
       "age": 24,
-      "base": 4.056,
+      "base": 3.511,
       "durability": {
         "basis": "100% of starts (last season)",
         "iron_man": true,
@@ -3409,13 +3360,13 @@
       "fantasy_team_id": 2,
       "group": "G",
       "injury_status": null,
-      "mult": 1.05,
+      "mult": 1.0,
       "name": "Richard Castillo",
       "nhl_id": 8470015,
       "nhl_team": "FLA",
       "parts": [
         {
-          "base": 0.1,
+          "base": 0.05,
           "fpg": 5.014,
           "games_factor": 0.367,
           "gp": 1,
@@ -3423,7 +3374,7 @@
           "label": "last 7 days"
         },
         {
-          "base": 0.15,
+          "base": 0.075,
           "fpg": 5.176,
           "games_factor": 0.383,
           "gp": 2,
@@ -3431,7 +3382,7 @@
           "label": "last 15 days"
         },
         {
-          "base": 0.15,
+          "base": 0.075,
           "fpg": 5.047,
           "games_factor": 0.308,
           "gp": 3,
@@ -3439,9 +3390,9 @@
           "label": "last 30 days"
         },
         {
-          "base": 0.35,
+          "base": 0.5,
           "fpg": 5.065,
-          "games_factor": 0.52,
+          "games_factor": 0.325,
           "gp": 13,
           "kind": "season",
           "label": "this season"
@@ -3457,7 +3408,7 @@
         {
           "base": 0.0,
           "fpg": 0.955,
-          "games_factor": 0.6,
+          "games_factor": 0.9,
           "gp": 72,
           "kind": "history",
           "label": "NHL history, age-adjusted (1 season, 72 GP)"
@@ -3466,17 +3417,15 @@
       "position": "G",
       "pro_team": "FLA",
       "remaining_games": 4,
-      "ros": 17.0,
+      "ros": 14.0,
       "rostered": true,
       "source": "current",
-      "value": 4.259
+      "value": 3.511
     },
     "202700117": {
-      "adjustments": [
-        "\u2212splitting starts"
-      ],
+      "adjustments": [],
       "age": 26,
-      "base": 4.072,
+      "base": 4.043,
       "durability": {
         "basis": "50% of starts (last season)",
         "iron_man": false,
@@ -3491,13 +3440,13 @@
       "fantasy_team_id": 2,
       "group": "G",
       "injury_status": null,
-      "mult": 0.94,
+      "mult": 1.0,
       "name": "Patrick Lewis",
       "nhl_id": 8470016,
       "nhl_team": "LAK",
       "parts": [
         {
-          "base": 0.1,
+          "base": 0.05,
           "fpg": 4.607,
           "games_factor": 1.0,
           "gp": 4,
@@ -3505,7 +3454,7 @@
           "label": "last 7 days"
         },
         {
-          "base": 0.15,
+          "base": 0.075,
           "fpg": 4.542,
           "games_factor": 1.0,
           "gp": 8,
@@ -3513,7 +3462,7 @@
           "label": "last 15 days"
         },
         {
-          "base": 0.15,
+          "base": 0.075,
           "fpg": 4.501,
           "games_factor": 0.908,
           "gp": 10,
@@ -3521,7 +3470,7 @@
           "label": "last 30 days"
         },
         {
-          "base": 0.35,
+          "base": 0.5,
           "fpg": 4.557,
           "games_factor": 1.0,
           "gp": 45,
@@ -3538,7 +3487,7 @@
         },
         {
           "base": 0.0,
-          "fpg": 2.721,
+          "fpg": 2.781,
           "games_factor": 1.0,
           "gp": 197,
           "kind": "history",
@@ -3548,18 +3497,15 @@
       "position": "G",
       "pro_team": "LA",
       "remaining_games": 5,
-      "ros": 9.6,
+      "ros": 10.2,
       "rostered": true,
       "source": "current",
-      "value": 3.828
+      "value": 4.043
     },
     "202700118": {
-      "adjustments": [
-        "+top line",
-        "+PP2"
-      ],
+      "adjustments": [],
       "age": 25,
-      "base": 4.968,
+      "base": 4.903,
       "durability": {
         "basis": "ESPN projects 78 GP; played 61, 62, 46 GP in recent seasons",
         "iron_man": false,
@@ -3574,13 +3520,13 @@
       "fantasy_team_id": 2,
       "group": "F",
       "injury_status": "DOUBTFUL",
-      "mult": 1.08,
+      "mult": 1.0,
       "name": "Randy Anderson",
       "nhl_id": 8470017,
       "nhl_team": "NYI",
       "parts": [
         {
-          "base": 0.1,
+          "base": 0.05,
           "fpg": 5.398,
           "games_factor": 1.0,
           "gp": 6,
@@ -3588,7 +3534,7 @@
           "label": "last 7 days"
         },
         {
-          "base": 0.15,
+          "base": 0.075,
           "fpg": 5.332,
           "games_factor": 1.0,
           "gp": 7,
@@ -3596,7 +3542,7 @@
           "label": "last 15 days"
         },
         {
-          "base": 0.15,
+          "base": 0.075,
           "fpg": 5.378,
           "games_factor": 1.0,
           "gp": 21,
@@ -3604,7 +3550,7 @@
           "label": "last 30 days"
         },
         {
-          "base": 0.35,
+          "base": 0.5,
           "fpg": 5.367,
           "games_factor": 1.0,
           "gp": 64,
@@ -3621,7 +3567,7 @@
         },
         {
           "base": 0.0,
-          "fpg": 3.84,
+          "fpg": 3.759,
           "games_factor": 1.0,
           "gp": 169,
           "kind": "history",
@@ -3631,17 +3577,15 @@
       "position": "LW",
       "pro_team": "NYI",
       "remaining_games": 8,
-      "ros": 38.0,
+      "ros": 34.8,
       "rostered": true,
       "source": "current",
-      "value": 5.365
+      "value": 4.903
     },
     "202700119": {
-      "adjustments": [
-        "\u2212splitting starts"
-      ],
+      "adjustments": [],
       "age": 31,
-      "base": 3.18,
+      "base": 3.263,
       "durability": {
         "basis": "50% of starts (last season)",
         "iron_man": false,
@@ -3656,13 +3600,13 @@
       "fantasy_team_id": 2,
       "group": "G",
       "injury_status": null,
-      "mult": 0.94,
+      "mult": 1.0,
       "name": "Daniel Hernandez",
       "nhl_id": 8470018,
       "nhl_team": "EDM",
       "parts": [
         {
-          "base": 0.1,
+          "base": 0.05,
           "fpg": 3.066,
           "games_factor": 0.733,
           "gp": 2,
@@ -3670,7 +3614,7 @@
           "label": "last 7 days"
         },
         {
-          "base": 0.15,
+          "base": 0.075,
           "fpg": 2.902,
           "games_factor": 0.467,
           "gp": 2,
@@ -3678,7 +3622,7 @@
           "label": "last 15 days"
         },
         {
-          "base": 0.15,
+          "base": 0.075,
           "fpg": 2.982,
           "games_factor": 0.583,
           "gp": 7,
@@ -3686,9 +3630,9 @@
           "label": "last 30 days"
         },
         {
-          "base": 0.35,
+          "base": 0.5,
           "fpg": 2.957,
-          "games_factor": 0.92,
+          "games_factor": 0.575,
           "gp": 23,
           "kind": "season",
           "label": "this season"
@@ -3703,7 +3647,7 @@
         },
         {
           "base": 0.0,
-          "fpg": 3.715,
+          "fpg": 3.825,
           "games_factor": 1.0,
           "gp": 147,
           "kind": "history",
@@ -3713,18 +3657,15 @@
       "position": "G",
       "pro_team": "EDM",
       "remaining_games": 2,
-      "ros": 3.0,
+      "ros": 3.3,
       "rostered": true,
       "source": "current",
-      "value": 2.989
+      "value": 3.263
     },
     "202700120": {
-      "adjustments": [
-        "+top line",
-        "+PP1"
-      ],
+      "adjustments": [],
       "age": 32,
-      "base": 5.753,
+      "base": 5.66,
       "durability": {
         "basis": "ESPN projects 78 GP; played 55, 81 GP in recent seasons",
         "iron_man": false,
@@ -3739,13 +3680,13 @@
       "fantasy_team_id": 2,
       "group": "F",
       "injury_status": "ACTIVE",
-      "mult": 1.16,
+      "mult": 1.0,
       "name": "Zachary Green",
       "nhl_id": 8470019,
       "nhl_team": "UTA",
       "parts": [
         {
-          "base": 0.1,
+          "base": 0.05,
           "fpg": 6.974,
           "games_factor": 1.0,
           "gp": 4,
@@ -3753,7 +3694,7 @@
           "label": "last 7 days"
         },
         {
-          "base": 0.15,
+          "base": 0.075,
           "fpg": 6.834,
           "games_factor": 0.983,
           "gp": 5,
@@ -3761,7 +3702,7 @@
           "label": "last 15 days"
         },
         {
-          "base": 0.15,
+          "base": 0.075,
           "fpg": 6.905,
           "games_factor": 1.0,
           "gp": 14,
@@ -3769,7 +3710,7 @@
           "label": "last 30 days"
         },
         {
-          "base": 0.35,
+          "base": 0.5,
           "fpg": 6.898,
           "games_factor": 1.0,
           "gp": 44,
@@ -3786,7 +3727,7 @@
         },
         {
           "base": 0.0,
-          "fpg": 2.513,
+          "fpg": 2.605,
           "games_factor": 1.0,
           "gp": 136,
           "kind": "history",
@@ -3796,18 +3737,15 @@
       "position": "C",
       "pro_team": "UTA",
       "remaining_games": 5,
-      "ros": 29.9,
+      "ros": 25.3,
       "rostered": true,
       "source": "current",
-      "value": 6.673
+      "value": 5.66
     },
     "202700121": {
-      "adjustments": [
-        "+top line",
-        "+PP1"
-      ],
+      "adjustments": [],
       "age": 28,
-      "base": 3.881,
+      "base": 3.976,
       "durability": {
         "basis": "played 38, 30 GP in recent seasons",
         "iron_man": false,
@@ -3818,13 +3756,13 @@
       "fantasy_team_id": 2,
       "group": "F",
       "injury_status": null,
-      "mult": 1.16,
+      "mult": 1.0,
       "name": "Kyle Gonzalez",
       "nhl_id": 8470020,
       "nhl_team": "CGY",
       "parts": [
         {
-          "base": 0.1,
+          "base": 0.05,
           "fpg": 3.66,
           "games_factor": 1.0,
           "gp": 5,
@@ -3832,7 +3770,7 @@
           "label": "last 7 days"
         },
         {
-          "base": 0.15,
+          "base": 0.075,
           "fpg": 3.663,
           "games_factor": 1.0,
           "gp": 12,
@@ -3840,7 +3778,7 @@
           "label": "last 15 days"
         },
         {
-          "base": 0.15,
+          "base": 0.075,
           "fpg": 3.653,
           "games_factor": 1.0,
           "gp": 19,
@@ -3848,7 +3786,7 @@
           "label": "last 30 days"
         },
         {
-          "base": 0.35,
+          "base": 0.5,
           "fpg": 3.648,
           "games_factor": 1.0,
           "gp": 75,
@@ -3857,8 +3795,8 @@
         },
         {
           "base": 0.0,
-          "fpg": 4.62,
-          "games_factor": 0.567,
+          "fpg": 4.541,
+          "games_factor": 0.85,
           "gp": 68,
           "kind": "history",
           "label": "NHL history, age-adjusted (2 seasons, 68 GP)"
@@ -3867,17 +3805,15 @@
       "position": "C",
       "pro_team": "CGY",
       "remaining_games": 4,
-      "ros": 11.1,
+      "ros": 9.8,
       "rostered": true,
       "source": "current",
-      "value": 4.502
+      "value": 3.976
     },
     "202700122": {
-      "adjustments": [
-        "+starter"
-      ],
+      "adjustments": [],
       "age": 23,
-      "base": 3.455,
+      "base": 3.252,
       "durability": {
         "basis": "100% of starts (last season)",
         "iron_man": true,
@@ -3892,13 +3828,13 @@
       "fantasy_team_id": 2,
       "group": "G",
       "injury_status": null,
-      "mult": 1.05,
+      "mult": 1.0,
       "name": "Ethan Richardson",
       "nhl_id": 8470021,
       "nhl_team": "NSH",
       "parts": [
         {
-          "base": 0.1,
+          "base": 0.05,
           "fpg": 3.808,
           "games_factor": 1.0,
           "gp": 5,
@@ -3906,7 +3842,7 @@
           "label": "last 7 days"
         },
         {
-          "base": 0.15,
+          "base": 0.075,
           "fpg": 3.825,
           "games_factor": 1.0,
           "gp": 10,
@@ -3914,7 +3850,7 @@
           "label": "last 15 days"
         },
         {
-          "base": 0.15,
+          "base": 0.075,
           "fpg": 3.832,
           "games_factor": 1.0,
           "gp": 21,
@@ -3922,7 +3858,7 @@
           "label": "last 30 days"
         },
         {
-          "base": 0.35,
+          "base": 0.5,
           "fpg": 3.826,
           "games_factor": 1.0,
           "gp": 61,
@@ -3939,8 +3875,8 @@
         },
         {
           "base": 0.0,
-          "fpg": 1.867,
-          "games_factor": 0.658,
+          "fpg": 1.825,
+          "games_factor": 0.988,
           "gp": 79,
           "kind": "history",
           "label": "NHL history, age-adjusted (2 seasons, 79 GP)"
@@ -3949,15 +3885,15 @@
       "position": "G",
       "pro_team": "NSH",
       "remaining_games": 4,
-      "ros": 14.5,
+      "ros": 13.0,
       "rostered": true,
       "source": "current",
-      "value": 3.628
+      "value": 3.252
     },
     "202700123": {
       "adjustments": [],
       "age": 32,
-      "base": 4.501,
+      "base": 4.541,
       "durability": {
         "basis": "ESPN projects 78 GP",
         "iron_man": true,
@@ -3978,7 +3914,7 @@
       "nhl_team": "FLA",
       "parts": [
         {
-          "base": 0.1,
+          "base": 0.05,
           "fpg": 5.163,
           "games_factor": 1.0,
           "gp": 5,
@@ -3986,7 +3922,7 @@
           "label": "last 7 days"
         },
         {
-          "base": 0.15,
+          "base": 0.075,
           "fpg": 5.123,
           "games_factor": 1.0,
           "gp": 8,
@@ -3994,7 +3930,7 @@
           "label": "last 15 days"
         },
         {
-          "base": 0.15,
+          "base": 0.075,
           "fpg": 5.114,
           "games_factor": 1.0,
           "gp": 15,
@@ -4002,7 +3938,7 @@
           "label": "last 30 days"
         },
         {
-          "base": 0.35,
+          "base": 0.5,
           "fpg": 5.107,
           "games_factor": 1.0,
           "gp": 57,
@@ -4029,17 +3965,15 @@
       "position": "RW",
       "pro_team": "FLA",
       "remaining_games": 4,
-      "ros": 17.1,
+      "ros": 17.3,
       "rostered": true,
       "source": "rookie_playing",
-      "value": 4.501
+      "value": 4.541
     },
     "202700124": {
-      "adjustments": [
-        "\u2212backup"
-      ],
+      "adjustments": [],
       "age": 32,
-      "base": 3.778,
+      "base": 3.755,
       "durability": {
         "basis": "30% of starts (last season)",
         "iron_man": false,
@@ -4054,13 +3988,13 @@
       "fantasy_team_id": 2,
       "group": "G",
       "injury_status": "OUT",
-      "mult": 0.75,
+      "mult": 1.0,
       "name": "Keith Williams",
       "nhl_id": 8470023,
       "nhl_team": "SJS",
       "parts": [
         {
-          "base": 0.1,
+          "base": 0.05,
           "fpg": 3.757,
           "games_factor": 0.667,
           "gp": 2,
@@ -4068,7 +4002,7 @@
           "label": "last 7 days"
         },
         {
-          "base": 0.15,
+          "base": 0.075,
           "fpg": 3.853,
           "games_factor": 0.517,
           "gp": 3,
@@ -4076,7 +4010,7 @@
           "label": "last 15 days"
         },
         {
-          "base": 0.15,
+          "base": 0.075,
           "fpg": 3.836,
           "games_factor": 0.642,
           "gp": 7,
@@ -4084,9 +4018,9 @@
           "label": "last 30 days"
         },
         {
-          "base": 0.35,
+          "base": 0.5,
           "fpg": 3.812,
-          "games_factor": 1.0,
+          "games_factor": 0.65,
           "gp": 26,
           "kind": "season",
           "label": "this season"
@@ -4101,7 +4035,7 @@
         },
         {
           "base": 0.0,
-          "fpg": 3.691,
+          "fpg": 3.648,
           "games_factor": 1.0,
           "gp": 157,
           "kind": "history",
@@ -4111,17 +4045,15 @@
       "position": "G",
       "pro_team": "SJ",
       "remaining_games": 8,
-      "ros": 6.9,
+      "ros": 9.1,
       "rostered": true,
       "source": "current",
-      "value": 2.833
+      "value": 3.755
     },
     "202700125": {
-      "adjustments": [
-        "+starter"
-      ],
+      "adjustments": [],
       "age": 24,
-      "base": 4.109,
+      "base": 4.071,
       "durability": {
         "basis": "100% of starts (last season)",
         "iron_man": true,
@@ -4136,13 +4068,13 @@
       "fantasy_team_id": 2,
       "group": "G",
       "injury_status": "QUESTIONABLE",
-      "mult": 1.05,
+      "mult": 1.0,
       "name": "Jose Johnson",
       "nhl_id": 8470024,
       "nhl_team": "WSH",
       "parts": [
         {
-          "base": 0.1,
+          "base": 0.05,
           "fpg": 4.668,
           "games_factor": 0.933,
           "gp": 2,
@@ -4150,7 +4082,7 @@
           "label": "last 7 days"
         },
         {
-          "base": 0.15,
+          "base": 0.075,
           "fpg": 4.397,
           "games_factor": 0.75,
           "gp": 4,
@@ -4158,7 +4090,7 @@
           "label": "last 15 days"
         },
         {
-          "base": 0.15,
+          "base": 0.075,
           "fpg": 4.428,
           "games_factor": 0.917,
           "gp": 11,
@@ -4166,9 +4098,9 @@
           "label": "last 30 days"
         },
         {
-          "base": 0.35,
+          "base": 0.5,
           "fpg": 4.449,
-          "games_factor": 1.0,
+          "games_factor": 0.925,
           "gp": 37,
           "kind": "season",
           "label": "this season"
@@ -4183,7 +4115,7 @@
         },
         {
           "base": 0.0,
-          "fpg": 3.163,
+          "fpg": 3.184,
           "games_factor": 1.0,
           "gp": 172,
           "kind": "history",
@@ -4193,15 +4125,15 @@
       "position": "G",
       "pro_team": "WSH",
       "remaining_games": 2,
-      "ros": 8.6,
+      "ros": 8.1,
       "rostered": true,
       "source": "current",
-      "value": 4.314
+      "value": 4.071
     },
     "202700126": {
       "adjustments": [],
       "age": 25,
-      "base": 4.842,
+      "base": 4.799,
       "durability": {
         "basis": "ESPN projects 78 GP",
         "iron_man": true,
@@ -4222,7 +4154,7 @@
       "nhl_team": "DET",
       "parts": [
         {
-          "base": 0.1,
+          "base": 0.05,
           "fpg": 4.944,
           "games_factor": 1.0,
           "gp": 3,
@@ -4230,7 +4162,7 @@
           "label": "last 7 days"
         },
         {
-          "base": 0.15,
+          "base": 0.075,
           "fpg": 4.916,
           "games_factor": 1.0,
           "gp": 6,
@@ -4238,7 +4170,7 @@
           "label": "last 15 days"
         },
         {
-          "base": 0.15,
+          "base": 0.075,
           "fpg": 4.925,
           "games_factor": 0.925,
           "gp": 11,
@@ -4246,7 +4178,7 @@
           "label": "last 30 days"
         },
         {
-          "base": 0.35,
+          "base": 0.5,
           "fpg": 4.907,
           "games_factor": 1.0,
           "gp": 43,
@@ -4264,7 +4196,7 @@
         {
           "base": 0.0,
           "fpg": 4.298,
-          "games_factor": 0.358,
+          "games_factor": 0.537,
           "gp": 43,
           "kind": "history",
           "label": "NHL history, age-adjusted (1 season, 43 GP)"
@@ -4273,18 +4205,15 @@
       "position": "C",
       "pro_team": "DET",
       "remaining_games": 5,
-      "ros": 23.0,
+      "ros": 22.8,
       "rostered": true,
       "source": "current",
-      "value": 4.842
+      "value": 4.799
     },
     "202700127": {
-      "adjustments": [
-        "+top pair",
-        "\u2212no PP time"
-      ],
+      "adjustments": [],
       "age": 32,
-      "base": 4.396,
+      "base": 4.353,
       "durability": {
         "basis": "ESPN projects 78 GP; played 33, 72 GP in recent seasons",
         "iron_man": false,
@@ -4299,13 +4228,13 @@
       "fantasy_team_id": 2,
       "group": "D",
       "injury_status": null,
-      "mult": 0.99,
+      "mult": 1.0,
       "name": "Ethan Roberts",
       "nhl_id": 8470026,
       "nhl_team": "STL",
       "parts": [
         {
-          "base": 0.1,
+          "base": 0.05,
           "fpg": 4.818,
           "games_factor": 1.0,
           "gp": 3,
@@ -4313,7 +4242,7 @@
           "label": "last 7 days"
         },
         {
-          "base": 0.15,
+          "base": 0.075,
           "fpg": 4.836,
           "games_factor": 1.0,
           "gp": 10,
@@ -4321,7 +4250,7 @@
           "label": "last 15 days"
         },
         {
-          "base": 0.15,
+          "base": 0.075,
           "fpg": 4.841,
           "games_factor": 1.0,
           "gp": 14,
@@ -4329,7 +4258,7 @@
           "label": "last 30 days"
         },
         {
-          "base": 0.35,
+          "base": 0.5,
           "fpg": 4.841,
           "games_factor": 1.0,
           "gp": 54,
@@ -4346,8 +4275,8 @@
         },
         {
           "base": 0.0,
-          "fpg": 2.965,
-          "games_factor": 0.875,
+          "fpg": 3.152,
+          "games_factor": 1.0,
           "gp": 105,
           "kind": "history",
           "label": "NHL history, age-adjusted (2 seasons, 105 GP)"
@@ -4359,15 +4288,12 @@
       "ros": 29.3,
       "rostered": true,
       "source": "current",
-      "value": 4.352
+      "value": 4.353
     },
     "202700201": {
-      "adjustments": [
-        "+top line",
-        "+PP1"
-      ],
+      "adjustments": [],
       "age": 30,
-      "base": 4.139,
+      "base": 4.055,
       "durability": {
         "basis": "ESPN projects 78 GP; played 82, 76, 56 GP in recent seasons",
         "iron_man": false,
@@ -4382,13 +4308,13 @@
       "fantasy_team_id": 3,
       "group": "F",
       "injury_status": null,
-      "mult": 1.16,
+      "mult": 1.0,
       "name": "Roger Gomez",
       "nhl_id": 8470054,
       "nhl_team": "CBJ",
       "parts": [
         {
-          "base": 0.1,
+          "base": 0.05,
           "fpg": 4.866,
           "games_factor": 1.0,
           "gp": 5,
@@ -4396,7 +4322,7 @@
           "label": "last 7 days"
         },
         {
-          "base": 0.15,
+          "base": 0.075,
           "fpg": 4.77,
           "games_factor": 1.0,
           "gp": 7,
@@ -4404,7 +4330,7 @@
           "label": "last 15 days"
         },
         {
-          "base": 0.15,
+          "base": 0.075,
           "fpg": 4.787,
           "games_factor": 1.0,
           "gp": 16,
@@ -4412,7 +4338,7 @@
           "label": "last 30 days"
         },
         {
-          "base": 0.35,
+          "base": 0.5,
           "fpg": 4.796,
           "games_factor": 1.0,
           "gp": 57,
@@ -4429,7 +4355,7 @@
         },
         {
           "base": 0.0,
-          "fpg": 2.277,
+          "fpg": 2.228,
           "games_factor": 1.0,
           "gp": 214,
           "kind": "history",
@@ -4439,18 +4365,15 @@
       "position": "RW",
       "pro_team": "CBJ",
       "remaining_games": 5,
-      "ros": 22.5,
+      "ros": 19.0,
       "rostered": true,
       "source": "current",
-      "value": 4.801
+      "value": 4.055
     },
     "202700202": {
-      "adjustments": [
-        "+top line",
-        "+PP2"
-      ],
+      "adjustments": [],
       "age": 23,
-      "base": 3.825,
+      "base": 3.772,
       "durability": {
         "basis": "ESPN projects 78 GP; played 72, 41, 67 GP in recent seasons",
         "iron_man": false,
@@ -4465,13 +4388,13 @@
       "fantasy_team_id": 3,
       "group": "F",
       "injury_status": "ACTIVE",
-      "mult": 1.08,
+      "mult": 1.0,
       "name": "Kevin Miller",
       "nhl_id": 8470055,
       "nhl_team": "TOR",
       "parts": [
         {
-          "base": 0.1,
+          "base": 0.05,
           "fpg": 4.18,
           "games_factor": 1.0,
           "gp": 5,
@@ -4479,7 +4402,7 @@
           "label": "last 7 days"
         },
         {
-          "base": 0.15,
+          "base": 0.075,
           "fpg": 4.197,
           "games_factor": 1.0,
           "gp": 7,
@@ -4487,7 +4410,7 @@
           "label": "last 15 days"
         },
         {
-          "base": 0.15,
+          "base": 0.075,
           "fpg": 4.153,
           "games_factor": 1.0,
           "gp": 13,
@@ -4495,7 +4418,7 @@
           "label": "last 30 days"
         },
         {
-          "base": 0.35,
+          "base": 0.5,
           "fpg": 4.173,
           "games_factor": 1.0,
           "gp": 55,
@@ -4512,7 +4435,7 @@
         },
         {
           "base": 0.0,
-          "fpg": 2.835,
+          "fpg": 2.783,
           "games_factor": 1.0,
           "gp": 180,
           "kind": "history",
@@ -4522,18 +4445,15 @@
       "position": "RW",
       "pro_team": "TOR",
       "remaining_games": 2,
-      "ros": 7.4,
+      "ros": 6.8,
       "rostered": true,
       "source": "current",
-      "value": 4.131
+      "value": 3.772
     },
     "202700203": {
-      "adjustments": [
-        "+top line",
-        "+PP2"
-      ],
+      "adjustments": [],
       "age": 25,
-      "base": 4.037,
+      "base": 4.07,
       "durability": {
         "basis": "ESPN projects 78 GP; played 51, 52 GP in recent seasons",
         "iron_man": false,
@@ -4548,13 +4468,13 @@
       "fantasy_team_id": 3,
       "group": "F",
       "injury_status": null,
-      "mult": 1.08,
+      "mult": 1.0,
       "name": "Nathan Hall",
       "nhl_id": 8470056,
       "nhl_team": "EDM",
       "parts": [
         {
-          "base": 0.1,
+          "base": 0.05,
           "fpg": 3.867,
           "games_factor": 1.0,
           "gp": 4,
@@ -4562,7 +4482,7 @@
           "label": "last 7 days"
         },
         {
-          "base": 0.15,
+          "base": 0.075,
           "fpg": 3.93,
           "games_factor": 1.0,
           "gp": 9,
@@ -4570,7 +4490,7 @@
           "label": "last 15 days"
         },
         {
-          "base": 0.15,
+          "base": 0.075,
           "fpg": 3.915,
           "games_factor": 1.0,
           "gp": 26,
@@ -4578,7 +4498,7 @@
           "label": "last 30 days"
         },
         {
-          "base": 0.35,
+          "base": 0.5,
           "fpg": 3.914,
           "games_factor": 1.0,
           "gp": 72,
@@ -4595,8 +4515,8 @@
         },
         {
           "base": 0.0,
-          "fpg": 4.445,
-          "games_factor": 0.858,
+          "fpg": 4.453,
+          "games_factor": 1.0,
           "gp": 103,
           "kind": "history",
           "label": "NHL history, age-adjusted (2 seasons, 103 GP)"
@@ -4605,18 +4525,15 @@
       "position": "RW",
       "pro_team": "EDM",
       "remaining_games": 2,
-      "ros": 7.5,
+      "ros": 7.0,
       "rostered": true,
       "source": "current",
-      "value": 4.36
+      "value": 4.07
     },
     "202700204": {
-      "adjustments": [
-        "+top-6",
-        "+PP1"
-      ],
+      "adjustments": [],
       "age": 26,
-      "base": 3.419,
+      "base": 3.385,
       "durability": {
         "basis": "ESPN projects 78 GP; played 62, 53, 55 GP in recent seasons",
         "iron_man": false,
@@ -4631,13 +4548,13 @@
       "fantasy_team_id": 3,
       "group": "F",
       "injury_status": null,
-      "mult": 1.13,
+      "mult": 1.0,
       "name": "Michael Edwards",
       "nhl_id": 8470057,
       "nhl_team": "CBJ",
       "parts": [
         {
-          "base": 0.1,
+          "base": 0.05,
           "fpg": 3.602,
           "games_factor": 1.0,
           "gp": 4,
@@ -4645,7 +4562,7 @@
           "label": "last 7 days"
         },
         {
-          "base": 0.15,
+          "base": 0.075,
           "fpg": 3.597,
           "games_factor": 1.0,
           "gp": 10,
@@ -4653,7 +4570,7 @@
           "label": "last 15 days"
         },
         {
-          "base": 0.15,
+          "base": 0.075,
           "fpg": 3.597,
           "games_factor": 1.0,
           "gp": 21,
@@ -4661,7 +4578,7 @@
           "label": "last 30 days"
         },
         {
-          "base": 0.35,
+          "base": 0.5,
           "fpg": 3.6,
           "games_factor": 1.0,
           "gp": 70,
@@ -4678,7 +4595,7 @@
         },
         {
           "base": 0.0,
-          "fpg": 2.906,
+          "fpg": 2.853,
           "games_factor": 1.0,
           "gp": 170,
           "kind": "history",
@@ -4688,15 +4605,15 @@
       "position": "C",
       "pro_team": "CBJ",
       "remaining_games": 5,
-      "ros": 17.1,
+      "ros": 15.0,
       "rostered": true,
       "source": "current",
-      "value": 3.863
+      "value": 3.385
     },
     "202700205": {
       "adjustments": [],
       "age": 26,
-      "base": 4.852,
+      "base": 4.898,
       "durability": {
         "basis": "ESPN projects 78 GP",
         "iron_man": true,
@@ -4717,7 +4634,7 @@
       "nhl_team": "PHI",
       "parts": [
         {
-          "base": 0.1,
+          "base": 0.05,
           "fpg": 5.54,
           "games_factor": 1.0,
           "gp": 4,
@@ -4725,7 +4642,7 @@
           "label": "last 7 days"
         },
         {
-          "base": 0.15,
+          "base": 0.075,
           "fpg": 5.536,
           "games_factor": 1.0,
           "gp": 8,
@@ -4733,7 +4650,7 @@
           "label": "last 15 days"
         },
         {
-          "base": 0.15,
+          "base": 0.075,
           "fpg": 5.524,
           "games_factor": 1.0,
           "gp": 12,
@@ -4741,7 +4658,7 @@
           "label": "last 30 days"
         },
         {
-          "base": 0.35,
+          "base": 0.5,
           "fpg": 5.523,
           "games_factor": 1.0,
           "gp": 48,
@@ -4768,15 +4685,15 @@
       "position": "C",
       "pro_team": "PHI",
       "remaining_games": 6,
-      "ros": 27.7,
+      "ros": 27.9,
       "rostered": true,
       "source": "rookie_playing",
-      "value": 4.852
+      "value": 4.898
     },
     "202700206": {
       "adjustments": [],
       "age": 24,
-      "base": 3.007,
+      "base": 3.023,
       "durability": {
         "basis": "ESPN projects 78 GP; played 63, 75, 30 GP in recent seasons",
         "iron_man": false,
@@ -4797,7 +4714,7 @@
       "nhl_team": "CAR",
       "parts": [
         {
-          "base": 0.1,
+          "base": 0.05,
           "fpg": 2.585,
           "games_factor": 1.0,
           "gp": 5,
@@ -4805,7 +4722,7 @@
           "label": "last 7 days"
         },
         {
-          "base": 0.15,
+          "base": 0.075,
           "fpg": 2.619,
           "games_factor": 1.0,
           "gp": 16,
@@ -4813,7 +4730,7 @@
           "label": "last 15 days"
         },
         {
-          "base": 0.15,
+          "base": 0.075,
           "fpg": 2.597,
           "games_factor": 1.0,
           "gp": 21,
@@ -4821,7 +4738,7 @@
           "label": "last 30 days"
         },
         {
-          "base": 0.35,
+          "base": 0.5,
           "fpg": 2.599,
           "games_factor": 1.0,
           "gp": 81,
@@ -4838,7 +4755,7 @@
         },
         {
           "base": 0.0,
-          "fpg": 4.163,
+          "fpg": 4.07,
           "games_factor": 1.0,
           "gp": 168,
           "kind": "history",
@@ -4848,18 +4765,15 @@
       "position": "RW",
       "pro_team": "CAR",
       "remaining_games": 4,
-      "ros": 10.7,
+      "ros": 10.8,
       "rostered": true,
       "source": "current",
-      "value": 3.007
+      "value": 3.023
     },
     "202700207": {
-      "adjustments": [
-        "+top line",
-        "+PP2"
-      ],
+      "adjustments": [],
       "age": 23,
-      "base": 3.967,
+      "base": 3.95,
       "durability": {
         "basis": "ESPN projects 78 GP; played 36, 53, 61 GP in recent seasons",
         "iron_man": false,
@@ -4874,13 +4788,13 @@
       "fantasy_team_id": 3,
       "group": "F",
       "injury_status": null,
-      "mult": 1.08,
+      "mult": 1.0,
       "name": "Christopher Richardson",
       "nhl_id": 8470060,
       "nhl_team": "PIT",
       "parts": [
         {
-          "base": 0.1,
+          "base": 0.05,
           "fpg": 4.12,
           "games_factor": 1.0,
           "gp": 4,
@@ -4888,7 +4802,7 @@
           "label": "last 7 days"
         },
         {
-          "base": 0.15,
+          "base": 0.075,
           "fpg": 4.18,
           "games_factor": 1.0,
           "gp": 11,
@@ -4896,7 +4810,7 @@
           "label": "last 15 days"
         },
         {
-          "base": 0.15,
+          "base": 0.075,
           "fpg": 4.152,
           "games_factor": 1.0,
           "gp": 22,
@@ -4904,7 +4818,7 @@
           "label": "last 30 days"
         },
         {
-          "base": 0.35,
+          "base": 0.5,
           "fpg": 4.147,
           "games_factor": 1.0,
           "gp": 62,
@@ -4921,7 +4835,7 @@
         },
         {
           "base": 0.0,
-          "fpg": 3.452,
+          "fpg": 3.463,
           "games_factor": 1.0,
           "gp": 150,
           "kind": "history",
@@ -4931,18 +4845,15 @@
       "position": "LW",
       "pro_team": "PIT",
       "remaining_games": 5,
-      "ros": 18.2,
+      "ros": 16.8,
       "rostered": true,
       "source": "current",
-      "value": 4.284
+      "value": 3.95
     },
     "202700208": {
-      "adjustments": [
-        "+top line",
-        "\u2212no PP time"
-      ],
+      "adjustments": [],
       "age": 31,
-      "base": 5.96,
+      "base": 5.936,
       "durability": {
         "basis": "ESPN projects 78 GP; played 60, 32, 70 GP in recent seasons",
         "iron_man": false,
@@ -4957,13 +4868,13 @@
       "fantasy_team_id": 3,
       "group": "F",
       "injury_status": null,
-      "mult": 1.01,
+      "mult": 1.0,
       "name": "Jesse Allen",
       "nhl_id": 8470061,
       "nhl_team": "CGY",
       "parts": [
         {
-          "base": 0.1,
+          "base": 0.05,
           "fpg": 6.421,
           "games_factor": 1.0,
           "gp": 4,
@@ -4971,7 +4882,7 @@
           "label": "last 7 days"
         },
         {
-          "base": 0.15,
+          "base": 0.075,
           "fpg": 6.477,
           "games_factor": 1.0,
           "gp": 6,
@@ -4979,7 +4890,7 @@
           "label": "last 15 days"
         },
         {
-          "base": 0.15,
+          "base": 0.075,
           "fpg": 6.386,
           "games_factor": 1.0,
           "gp": 17,
@@ -4987,7 +4898,7 @@
           "label": "last 30 days"
         },
         {
-          "base": 0.35,
+          "base": 0.5,
           "fpg": 6.404,
           "games_factor": 1.0,
           "gp": 48,
@@ -5004,7 +4915,7 @@
         },
         {
           "base": 0.0,
-          "fpg": 4.687,
+          "fpg": 4.781,
           "games_factor": 1.0,
           "gp": 162,
           "kind": "history",
@@ -5014,18 +4925,15 @@
       "position": "LW",
       "pro_team": "CGY",
       "remaining_games": 4,
-      "ros": 20.9,
+      "ros": 20.7,
       "rostered": true,
       "source": "current",
-      "value": 6.02
+      "value": 5.936
     },
     "202700209": {
-      "adjustments": [
-        "+top line",
-        "+PP2"
-      ],
+      "adjustments": [],
       "age": 24,
-      "base": 4.581,
+      "base": 4.738,
       "durability": {
         "basis": "ESPN projects 78 GP; played 34, 58, 76 GP in recent seasons",
         "iron_man": false,
@@ -5040,13 +4948,13 @@
       "fantasy_team_id": 3,
       "group": "F",
       "injury_status": "QUESTIONABLE",
-      "mult": 1.08,
+      "mult": 1.0,
       "name": "John Garcia",
       "nhl_id": 8470062,
       "nhl_team": "VGK",
       "parts": [
         {
-          "base": 0.1,
+          "base": 0.05,
           "fpg": 4.307,
           "games_factor": 1.0,
           "gp": 4,
@@ -5054,7 +4962,7 @@
           "label": "last 7 days"
         },
         {
-          "base": 0.15,
+          "base": 0.075,
           "fpg": 4.266,
           "games_factor": 1.0,
           "gp": 8,
@@ -5062,7 +4970,7 @@
           "label": "last 15 days"
         },
         {
-          "base": 0.15,
+          "base": 0.075,
           "fpg": 4.261,
           "games_factor": 1.0,
           "gp": 16,
@@ -5070,7 +4978,7 @@
           "label": "last 30 days"
         },
         {
-          "base": 0.35,
+          "base": 0.5,
           "fpg": 4.268,
           "games_factor": 1.0,
           "gp": 62,
@@ -5087,7 +4995,7 @@
         },
         {
           "base": 0.0,
-          "fpg": 5.463,
+          "fpg": 5.896,
           "games_factor": 1.0,
           "gp": 168,
           "kind": "history",
@@ -5097,17 +5005,15 @@
       "position": "RW",
       "pro_team": "VGK",
       "remaining_games": 6,
-      "ros": 25.5,
+      "ros": 24.4,
       "rostered": true,
       "source": "current",
-      "value": 4.947
+      "value": 4.738
     },
     "202700210": {
-      "adjustments": [
-        "+PP1"
-      ],
+      "adjustments": [],
       "age": 34,
-      "base": 3.742,
+      "base": 3.73,
       "durability": {
         "basis": "ESPN projects 78 GP; played 35, 70, 49 GP in recent seasons",
         "iron_man": false,
@@ -5122,13 +5028,13 @@
       "fantasy_team_id": 3,
       "group": "D",
       "injury_status": null,
-      "mult": 1.1,
+      "mult": 1.0,
       "name": "Wayne Campbell",
       "nhl_id": 8470063,
       "nhl_team": "MTL",
       "parts": [
         {
-          "base": 0.1,
+          "base": 0.05,
           "fpg": 4.087,
           "games_factor": 1.0,
           "gp": 4,
@@ -5136,7 +5042,7 @@
           "label": "last 7 days"
         },
         {
-          "base": 0.15,
+          "base": 0.075,
           "fpg": 4.044,
           "games_factor": 1.0,
           "gp": 10,
@@ -5144,7 +5050,7 @@
           "label": "last 15 days"
         },
         {
-          "base": 0.15,
+          "base": 0.075,
           "fpg": 4.042,
           "games_factor": 1.0,
           "gp": 17,
@@ -5152,7 +5058,7 @@
           "label": "last 30 days"
         },
         {
-          "base": 0.35,
+          "base": 0.5,
           "fpg": 4.054,
           "games_factor": 1.0,
           "gp": 63,
@@ -5169,7 +5075,7 @@
         },
         {
           "base": 0.0,
-          "fpg": 2.86,
+          "fpg": 2.931,
           "games_factor": 1.0,
           "gp": 154,
           "kind": "history",
@@ -5179,17 +5085,15 @@
       "position": "D",
       "pro_team": "MTL",
       "remaining_games": 6,
-      "ros": 21.1,
+      "ros": 19.2,
       "rostered": true,
       "source": "current",
-      "value": 4.116
+      "value": 3.73
     },
     "202700211": {
-      "adjustments": [
-        "\u2212no PP time"
-      ],
+      "adjustments": [],
       "age": 34,
-      "base": 3.019,
+      "base": 2.962,
       "durability": {
         "basis": "ESPN projects 78 GP; played 69, 57 GP in recent seasons",
         "iron_man": false,
@@ -5204,13 +5108,13 @@
       "fantasy_team_id": 3,
       "group": "D",
       "injury_status": "DOUBTFUL",
-      "mult": 0.95,
+      "mult": 1.0,
       "name": "Paul Gomez",
       "nhl_id": 8470064,
       "nhl_team": "OTT",
       "parts": [
         {
-          "base": 0.1,
+          "base": 0.05,
           "fpg": 3.506,
           "games_factor": 1.0,
           "gp": 6,
@@ -5218,7 +5122,7 @@
           "label": "last 7 days"
         },
         {
-          "base": 0.15,
+          "base": 0.075,
           "fpg": 3.482,
           "games_factor": 1.0,
           "gp": 12,
@@ -5226,7 +5130,7 @@
           "label": "last 15 days"
         },
         {
-          "base": 0.15,
+          "base": 0.075,
           "fpg": 3.469,
           "games_factor": 1.0,
           "gp": 24,
@@ -5234,7 +5138,7 @@
           "label": "last 30 days"
         },
         {
-          "base": 0.35,
+          "base": 0.5,
           "fpg": 3.466,
           "games_factor": 1.0,
           "gp": 76,
@@ -5251,7 +5155,7 @@
         },
         {
           "base": 0.0,
-          "fpg": 1.744,
+          "fpg": 1.717,
           "games_factor": 1.0,
           "gp": 126,
           "kind": "history",
@@ -5261,18 +5165,15 @@
       "position": "D",
       "pro_team": "OTT",
       "remaining_games": 4,
-      "ros": 10.4,
+      "ros": 10.7,
       "rostered": true,
       "source": "current",
-      "value": 2.868
+      "value": 2.962
     },
     "202700212": {
-      "adjustments": [
-        "+top pair",
-        "+PP1"
-      ],
+      "adjustments": [],
       "age": 24,
-      "base": 3.208,
+      "base": 3.047,
       "durability": {
         "basis": "played 58, 74, 36 GP in recent seasons",
         "iron_man": false,
@@ -5283,13 +5184,13 @@
       "fantasy_team_id": 3,
       "group": "D",
       "injury_status": null,
-      "mult": 1.14,
+      "mult": 1.0,
       "name": "Scott Miller",
       "nhl_id": 8470065,
       "nhl_team": "UTA",
       "parts": [
         {
-          "base": 0.1,
+          "base": 0.05,
           "fpg": 3.87,
           "games_factor": 1.0,
           "gp": 6,
@@ -5297,7 +5198,7 @@
           "label": "last 7 days"
         },
         {
-          "base": 0.15,
+          "base": 0.075,
           "fpg": 3.889,
           "games_factor": 1.0,
           "gp": 9,
@@ -5305,7 +5206,7 @@
           "label": "last 15 days"
         },
         {
-          "base": 0.15,
+          "base": 0.075,
           "fpg": 3.88,
           "games_factor": 1.0,
           "gp": 24,
@@ -5313,7 +5214,7 @@
           "label": "last 30 days"
         },
         {
-          "base": 0.35,
+          "base": 0.5,
           "fpg": 3.88,
           "games_factor": 1.0,
           "gp": 65,
@@ -5322,7 +5223,7 @@
         },
         {
           "base": 0.0,
-          "fpg": 1.975,
+          "fpg": 1.826,
           "games_factor": 1.0,
           "gp": 168,
           "kind": "history",
@@ -5332,18 +5233,15 @@
       "position": "D",
       "pro_team": "UTA",
       "remaining_games": 5,
-      "ros": 14.5,
+      "ros": 12.1,
       "rostered": true,
       "source": "current",
-      "value": 3.657
+      "value": 3.047
     },
     "202700213": {
-      "adjustments": [
-        "+top pair",
-        "+PP1"
-      ],
+      "adjustments": [],
       "age": 28,
-      "base": 3.812,
+      "base": 3.716,
       "durability": {
         "basis": "ESPN projects 78 GP; played 81, 41, 58 GP in recent seasons",
         "iron_man": false,
@@ -5358,13 +5256,13 @@
       "fantasy_team_id": 3,
       "group": "D",
       "injury_status": "OUT",
-      "mult": 1.14,
+      "mult": 1.0,
       "name": "Bradley Kelly",
       "nhl_id": 8470066,
       "nhl_team": "PIT",
       "parts": [
         {
-          "base": 0.1,
+          "base": 0.05,
           "fpg": 4.457,
           "games_factor": 1.0,
           "gp": 4,
@@ -5372,7 +5270,7 @@
           "label": "last 7 days"
         },
         {
-          "base": 0.15,
+          "base": 0.075,
           "fpg": 4.407,
           "games_factor": 1.0,
           "gp": 8,
@@ -5380,7 +5278,7 @@
           "label": "last 15 days"
         },
         {
-          "base": 0.15,
+          "base": 0.075,
           "fpg": 4.418,
           "games_factor": 1.0,
           "gp": 13,
@@ -5388,7 +5286,7 @@
           "label": "last 30 days"
         },
         {
-          "base": 0.35,
+          "base": 0.5,
           "fpg": 4.419,
           "games_factor": 1.0,
           "gp": 48,
@@ -5405,7 +5303,7 @@
         },
         {
           "base": 0.0,
-          "fpg": 2.091,
+          "fpg": 1.983,
           "games_factor": 1.0,
           "gp": 180,
           "kind": "history",
@@ -5415,15 +5313,15 @@
       "position": "D",
       "pro_team": "PIT",
       "remaining_games": 5,
-      "ros": 19.6,
+      "ros": 16.8,
       "rostered": true,
       "source": "current",
-      "value": 4.346
+      "value": 3.716
     },
     "202700214": {
       "adjustments": [],
       "age": 30,
-      "base": 2.723,
+      "base": 2.721,
       "durability": {
         "basis": "ESPN projects 78 GP",
         "iron_man": true,
@@ -5444,7 +5342,7 @@
       "nhl_team": "FLA",
       "parts": [
         {
-          "base": 0.1,
+          "base": 0.05,
           "fpg": 3.018,
           "games_factor": 1.0,
           "gp": 6,
@@ -5452,7 +5350,7 @@
           "label": "last 7 days"
         },
         {
-          "base": 0.15,
+          "base": 0.075,
           "fpg": 3.041,
           "games_factor": 1.0,
           "gp": 12,
@@ -5460,7 +5358,7 @@
           "label": "last 15 days"
         },
         {
-          "base": 0.15,
+          "base": 0.075,
           "fpg": 3.017,
           "games_factor": 1.0,
           "gp": 30,
@@ -5468,7 +5366,7 @@
           "label": "last 30 days"
         },
         {
-          "base": 0.35,
+          "base": 0.5,
           "fpg": 3.018,
           "games_factor": 1.0,
           "gp": 82,
@@ -5490,15 +5388,12 @@
       "ros": 10.4,
       "rostered": true,
       "source": "rookie_playing",
-      "value": 2.723
+      "value": 2.721
     },
     "202700215": {
-      "adjustments": [
-        "+top line",
-        "+PP1"
-      ],
+      "adjustments": [],
       "age": 26,
-      "base": 3.917,
+      "base": 3.878,
       "durability": {
         "basis": "ESPN projects 78 GP; played 58, 51, 75 GP in recent seasons",
         "iron_man": false,
@@ -5513,13 +5408,13 @@
       "fantasy_team_id": 3,
       "group": "F",
       "injury_status": "ACTIVE",
-      "mult": 1.16,
+      "mult": 1.0,
       "name": "Wayne Scott",
       "nhl_id": 8470068,
       "nhl_team": "PIT",
       "parts": [
         {
-          "base": 0.1,
+          "base": 0.05,
           "fpg": 4.182,
           "games_factor": 1.0,
           "gp": 6,
@@ -5527,7 +5422,7 @@
           "label": "last 7 days"
         },
         {
-          "base": 0.15,
+          "base": 0.075,
           "fpg": 4.136,
           "games_factor": 1.0,
           "gp": 12,
@@ -5535,7 +5430,7 @@
           "label": "last 15 days"
         },
         {
-          "base": 0.15,
+          "base": 0.075,
           "fpg": 4.145,
           "games_factor": 1.0,
           "gp": 22,
@@ -5543,7 +5438,7 @@
           "label": "last 30 days"
         },
         {
-          "base": 0.35,
+          "base": 0.5,
           "fpg": 4.149,
           "games_factor": 1.0,
           "gp": 77,
@@ -5560,7 +5455,7 @@
         },
         {
           "base": 0.0,
-          "fpg": 3.257,
+          "fpg": 3.209,
           "games_factor": 1.0,
           "gp": 184,
           "kind": "history",
@@ -5570,17 +5465,15 @@
       "position": "RW",
       "pro_team": "PIT",
       "remaining_games": 5,
-      "ros": 20.2,
+      "ros": 17.2,
       "rostered": true,
       "source": "current",
-      "value": 4.544
+      "value": 3.878
     },
     "202700216": {
-      "adjustments": [
-        "\u2212splitting starts"
-      ],
+      "adjustments": [],
       "age": 31,
-      "base": 3.11,
+      "base": 3.113,
       "durability": {
         "basis": "50% of starts (last season)",
         "iron_man": false,
@@ -5595,13 +5488,13 @@
       "fantasy_team_id": 3,
       "group": "G",
       "injury_status": null,
-      "mult": 0.94,
+      "mult": 1.0,
       "name": "Andrew Bennett",
       "nhl_id": 8470069,
       "nhl_team": "EDM",
       "parts": [
         {
-          "base": 0.1,
+          "base": 0.05,
           "fpg": 3.15,
           "games_factor": 1.0,
           "gp": 3,
@@ -5609,7 +5502,7 @@
           "label": "last 7 days"
         },
         {
-          "base": 0.15,
+          "base": 0.075,
           "fpg": 3.158,
           "games_factor": 1.0,
           "gp": 7,
@@ -5617,7 +5510,7 @@
           "label": "last 15 days"
         },
         {
-          "base": 0.15,
+          "base": 0.075,
           "fpg": 3.168,
           "games_factor": 1.0,
           "gp": 17,
@@ -5625,7 +5518,7 @@
           "label": "last 30 days"
         },
         {
-          "base": 0.35,
+          "base": 0.5,
           "fpg": 3.165,
           "games_factor": 1.0,
           "gp": 47,
@@ -5642,7 +5535,7 @@
         },
         {
           "base": 0.0,
-          "fpg": 2.96,
+          "fpg": 2.988,
           "games_factor": 1.0,
           "gp": 131,
           "kind": "history",
@@ -5652,15 +5545,13 @@
       "position": "G",
       "pro_team": "EDM",
       "remaining_games": 2,
-      "ros": 2.9,
+      "ros": 3.1,
       "rostered": true,
       "source": "current",
-      "value": 2.923
+      "value": 3.113
     },
     "202700217": {
-      "adjustments": [
-        "\u2212splitting starts"
-      ],
+      "adjustments": [],
       "age": 34,
       "base": 2.853,
       "durability": {
@@ -5677,13 +5568,13 @@
       "fantasy_team_id": 3,
       "group": "G",
       "injury_status": null,
-      "mult": 0.94,
+      "mult": 1.0,
       "name": "Henry Green",
       "nhl_id": 8470070,
       "nhl_team": "CHI",
       "parts": [
         {
-          "base": 0.1,
+          "base": 0.05,
           "fpg": 3.056,
           "games_factor": 0.833,
           "gp": 2,
@@ -5691,7 +5582,7 @@
           "label": "last 7 days"
         },
         {
-          "base": 0.15,
+          "base": 0.075,
           "fpg": 2.953,
           "games_factor": 1.0,
           "gp": 6,
@@ -5699,7 +5590,7 @@
           "label": "last 15 days"
         },
         {
-          "base": 0.15,
+          "base": 0.075,
           "fpg": 3.017,
           "games_factor": 0.867,
           "gp": 10,
@@ -5707,9 +5598,9 @@
           "label": "last 30 days"
         },
         {
-          "base": 0.35,
+          "base": 0.5,
           "fpg": 3.015,
-          "games_factor": 1.0,
+          "games_factor": 0.975,
           "gp": 39,
           "kind": "season",
           "label": "this season"
@@ -5724,7 +5615,7 @@
         },
         {
           "base": 0.0,
-          "fpg": 2.415,
+          "fpg": 2.464,
           "games_factor": 1.0,
           "gp": 147,
           "kind": "history",
@@ -5734,18 +5625,15 @@
       "position": "G",
       "pro_team": "CHI",
       "remaining_games": 6,
-      "ros": 7.0,
+      "ros": 7.5,
       "rostered": true,
       "source": "current",
-      "value": 2.682
+      "value": 2.853
     },
     "202700218": {
-      "adjustments": [
-        "+top pair",
-        "+PP1"
-      ],
+      "adjustments": [],
       "age": 25,
-      "base": 3.055,
+      "base": 2.943,
       "durability": {
         "basis": "ESPN projects 78 GP; played 45, 38 GP in recent seasons",
         "iron_man": false,
@@ -5760,13 +5648,13 @@
       "fantasy_team_id": 3,
       "group": "D",
       "injury_status": null,
-      "mult": 1.14,
+      "mult": 1.0,
       "name": "Noah Wright",
       "nhl_id": 8470071,
       "nhl_team": "NJD",
       "parts": [
         {
-          "base": 0.1,
+          "base": 0.05,
           "fpg": 3.235,
           "games_factor": 1.0,
           "gp": 5,
@@ -5774,7 +5662,7 @@
           "label": "last 7 days"
         },
         {
-          "base": 0.15,
+          "base": 0.075,
           "fpg": 3.239,
           "games_factor": 1.0,
           "gp": 8,
@@ -5782,7 +5670,7 @@
           "label": "last 15 days"
         },
         {
-          "base": 0.15,
+          "base": 0.075,
           "fpg": 3.255,
           "games_factor": 1.0,
           "gp": 18,
@@ -5790,7 +5678,7 @@
           "label": "last 30 days"
         },
         {
-          "base": 0.35,
+          "base": 0.5,
           "fpg": 3.248,
           "games_factor": 1.0,
           "gp": 65,
@@ -5807,8 +5695,8 @@
         },
         {
           "base": 0.0,
-          "fpg": 2.269,
-          "games_factor": 0.692,
+          "fpg": 2.192,
+          "games_factor": 1.0,
           "gp": 83,
           "kind": "history",
           "label": "NHL history, age-adjusted (2 seasons, 83 GP)"
@@ -5817,18 +5705,15 @@
       "position": "D",
       "pro_team": "NJ",
       "remaining_games": 7,
-      "ros": 20.5,
+      "ros": 17.3,
       "rostered": true,
       "source": "current",
-      "value": 3.483
+      "value": 2.943
     },
     "202700219": {
-      "adjustments": [
-        "+top line",
-        "+PP2"
-      ],
+      "adjustments": [],
       "age": 34,
-      "base": 3.185,
+      "base": 3.113,
       "durability": {
         "basis": "ESPN projects 78 GP; played 63, 76 GP in recent seasons",
         "iron_man": false,
@@ -5843,13 +5728,13 @@
       "fantasy_team_id": 3,
       "group": "F",
       "injury_status": null,
-      "mult": 1.08,
+      "mult": 1.0,
       "name": "Eric Davis",
       "nhl_id": 8470072,
       "nhl_team": "WPG",
       "parts": [
         {
-          "base": 0.1,
+          "base": 0.05,
           "fpg": 3.907,
           "games_factor": 1.0,
           "gp": 4,
@@ -5857,7 +5742,7 @@
           "label": "last 7 days"
         },
         {
-          "base": 0.15,
+          "base": 0.075,
           "fpg": 3.877,
           "games_factor": 1.0,
           "gp": 8,
@@ -5865,7 +5750,7 @@
           "label": "last 15 days"
         },
         {
-          "base": 0.15,
+          "base": 0.075,
           "fpg": 3.864,
           "games_factor": 1.0,
           "gp": 22,
@@ -5873,7 +5758,7 @@
           "label": "last 30 days"
         },
         {
-          "base": 0.35,
+          "base": 0.5,
           "fpg": 3.87,
           "games_factor": 1.0,
           "gp": 61,
@@ -5890,7 +5775,7 @@
         },
         {
           "base": 0.0,
-          "fpg": 1.236,
+          "fpg": 1.242,
           "games_factor": 1.0,
           "gp": 139,
           "kind": "history",
@@ -5900,17 +5785,15 @@
       "position": "C",
       "pro_team": "WPG",
       "remaining_games": 7,
-      "ros": 21.9,
+      "ros": 19.8,
       "rostered": true,
       "source": "current",
-      "value": 3.44
+      "value": 3.113
     },
     "202700220": {
-      "adjustments": [
-        "+starter"
-      ],
+      "adjustments": [],
       "age": 27,
-      "base": 2.439,
+      "base": 2.451,
       "durability": {
         "basis": "100% of starts (last season)",
         "iron_man": true,
@@ -5925,13 +5808,13 @@
       "fantasy_team_id": 3,
       "group": "G",
       "injury_status": null,
-      "mult": 1.05,
+      "mult": 1.0,
       "name": "Nicholas Walker",
       "nhl_id": 8470073,
       "nhl_team": "UTA",
       "parts": [
         {
-          "base": 0.1,
+          "base": 0.05,
           "fpg": 2.279,
           "games_factor": 1.0,
           "gp": 5,
@@ -5939,7 +5822,7 @@
           "label": "last 7 days"
         },
         {
-          "base": 0.15,
+          "base": 0.075,
           "fpg": 2.29,
           "games_factor": 1.0,
           "gp": 9,
@@ -5947,7 +5830,7 @@
           "label": "last 15 days"
         },
         {
-          "base": 0.15,
+          "base": 0.075,
           "fpg": 2.279,
           "games_factor": 1.0,
           "gp": 20,
@@ -5955,7 +5838,7 @@
           "label": "last 30 days"
         },
         {
-          "base": 0.35,
+          "base": 0.5,
           "fpg": 2.291,
           "games_factor": 1.0,
           "gp": 58,
@@ -5972,7 +5855,7 @@
         },
         {
           "base": 0.0,
-          "fpg": 2.863,
+          "fpg": 2.847,
           "games_factor": 1.0,
           "gp": 127,
           "kind": "history",
@@ -5982,18 +5865,15 @@
       "position": "G",
       "pro_team": "UTA",
       "remaining_games": 5,
-      "ros": 12.8,
+      "ros": 12.3,
       "rostered": true,
       "source": "current",
-      "value": 2.561
+      "value": 2.451
     },
     "202700221": {
-      "adjustments": [
-        "+top pair",
-        "+PP2"
-      ],
+      "adjustments": [],
       "age": 33,
-      "base": 3.903,
+      "base": 3.892,
       "durability": {
         "basis": "ESPN projects 78 GP; played 46, 60, 60 GP in recent seasons",
         "iron_man": false,
@@ -6008,13 +5888,13 @@
       "fantasy_team_id": 3,
       "group": "D",
       "injury_status": null,
-      "mult": 1.06,
+      "mult": 1.0,
       "name": "Walter James",
       "nhl_id": 8470074,
       "nhl_team": "OTT",
       "parts": [
         {
-          "base": 0.1,
+          "base": 0.05,
           "fpg": 4.271,
           "games_factor": 1.0,
           "gp": 4,
@@ -6022,7 +5902,7 @@
           "label": "last 7 days"
         },
         {
-          "base": 0.15,
+          "base": 0.075,
           "fpg": 4.285,
           "games_factor": 1.0,
           "gp": 9,
@@ -6030,7 +5910,7 @@
           "label": "last 15 days"
         },
         {
-          "base": 0.15,
+          "base": 0.075,
           "fpg": 4.315,
           "games_factor": 1.0,
           "gp": 22,
@@ -6038,7 +5918,7 @@
           "label": "last 30 days"
         },
         {
-          "base": 0.35,
+          "base": 0.5,
           "fpg": 4.303,
           "games_factor": 1.0,
           "gp": 62,
@@ -6055,7 +5935,7 @@
         },
         {
           "base": 0.0,
-          "fpg": 2.777,
+          "fpg": 2.881,
           "games_factor": 1.0,
           "gp": 166,
           "kind": "history",
@@ -6065,18 +5945,15 @@
       "position": "D",
       "pro_team": "OTT",
       "remaining_games": 4,
-      "ros": 14.4,
+      "ros": 13.5,
       "rostered": true,
       "source": "current",
-      "value": 4.137
+      "value": 3.892
     },
     "202700222": {
-      "adjustments": [
-        "+top pair",
-        "+PP2"
-      ],
+      "adjustments": [],
       "age": 22,
-      "base": 5.71,
+      "base": 5.637,
       "durability": {
         "basis": "ESPN projects 78 GP; played 38, 66, 59 GP in recent seasons",
         "iron_man": false,
@@ -6091,13 +5968,13 @@
       "fantasy_team_id": 3,
       "group": "D",
       "injury_status": null,
-      "mult": 1.06,
+      "mult": 1.0,
       "name": "Eugene Ross",
       "nhl_id": 8470075,
       "nhl_team": "PHI",
       "parts": [
         {
-          "base": 0.1,
+          "base": 0.05,
           "fpg": 6.727,
           "games_factor": 1.0,
           "gp": 3,
@@ -6105,7 +5982,7 @@
           "label": "last 7 days"
         },
         {
-          "base": 0.15,
+          "base": 0.075,
           "fpg": 6.62,
           "games_factor": 1.0,
           "gp": 6,
@@ -6113,7 +5990,7 @@
           "label": "last 15 days"
         },
         {
-          "base": 0.15,
+          "base": 0.075,
           "fpg": 6.619,
           "games_factor": 1.0,
           "gp": 12,
@@ -6121,7 +5998,7 @@
           "label": "last 30 days"
         },
         {
-          "base": 0.35,
+          "base": 0.5,
           "fpg": 6.642,
           "games_factor": 1.0,
           "gp": 43,
@@ -6138,7 +6015,7 @@
         },
         {
           "base": 0.0,
-          "fpg": 3.066,
+          "fpg": 3.158,
           "games_factor": 1.0,
           "gp": 163,
           "kind": "history",
@@ -6148,15 +6025,15 @@
       "position": "D",
       "pro_team": "PHI",
       "remaining_games": 6,
-      "ros": 31.3,
+      "ros": 29.2,
       "rostered": true,
       "source": "current",
-      "value": 6.053
+      "value": 5.637
     },
     "202700223": {
       "adjustments": [],
       "age": 24,
-      "base": 2.924,
+      "base": 2.941,
       "durability": {
         "basis": "ESPN projects 78 GP",
         "iron_man": true,
@@ -6177,7 +6054,7 @@
       "nhl_team": "WPG",
       "parts": [
         {
-          "base": 0.1,
+          "base": 0.05,
           "fpg": 3.339,
           "games_factor": 1.0,
           "gp": 3,
@@ -6185,7 +6062,7 @@
           "label": "last 7 days"
         },
         {
-          "base": 0.15,
+          "base": 0.075,
           "fpg": 3.254,
           "games_factor": 1.0,
           "gp": 8,
@@ -6193,7 +6070,7 @@
           "label": "last 15 days"
         },
         {
-          "base": 0.15,
+          "base": 0.075,
           "fpg": 3.229,
           "games_factor": 1.0,
           "gp": 16,
@@ -6201,7 +6078,7 @@
           "label": "last 30 days"
         },
         {
-          "base": 0.35,
+          "base": 0.5,
           "fpg": 3.234,
           "games_factor": 1.0,
           "gp": 47,
@@ -6228,18 +6105,15 @@
       "position": "C",
       "pro_team": "WPG",
       "remaining_games": 7,
-      "ros": 19.5,
+      "ros": 19.6,
       "rostered": true,
       "source": "rookie_playing",
-      "value": 2.924
+      "value": 2.941
     },
     "202700224": {
-      "adjustments": [
-        "+top line",
-        "+PP1"
-      ],
+      "adjustments": [],
       "age": 27,
-      "base": 5.301,
+      "base": 5.313,
       "durability": {
         "basis": "ESPN projects 78 GP; played 37, 70, 47 GP in recent seasons",
         "iron_man": false,
@@ -6254,13 +6128,13 @@
       "fantasy_team_id": 3,
       "group": "F",
       "injury_status": null,
-      "mult": 1.16,
+      "mult": 1.0,
       "name": "Philip Kelly",
       "nhl_id": 8470077,
       "nhl_team": "CBJ",
       "parts": [
         {
-          "base": 0.1,
+          "base": 0.05,
           "fpg": 5.897,
           "games_factor": 1.0,
           "gp": 3,
@@ -6268,7 +6142,7 @@
           "label": "last 7 days"
         },
         {
-          "base": 0.15,
+          "base": 0.075,
           "fpg": 5.893,
           "games_factor": 0.95,
           "gp": 5,
@@ -6276,7 +6150,7 @@
           "label": "last 15 days"
         },
         {
-          "base": 0.15,
+          "base": 0.075,
           "fpg": 5.918,
           "games_factor": 1.0,
           "gp": 16,
@@ -6284,7 +6158,7 @@
           "label": "last 30 days"
         },
         {
-          "base": 0.35,
+          "base": 0.5,
           "fpg": 5.907,
           "games_factor": 1.0,
           "gp": 46,
@@ -6301,7 +6175,7 @@
         },
         {
           "base": 0.0,
-          "fpg": 3.594,
+          "fpg": 3.849,
           "games_factor": 1.0,
           "gp": 154,
           "kind": "history",
@@ -6311,18 +6185,15 @@
       "position": "C",
       "pro_team": "CBJ",
       "remaining_games": 5,
-      "ros": 26.4,
+      "ros": 22.8,
       "rostered": true,
       "source": "current",
-      "value": 6.149
+      "value": 5.313
     },
     "202700225": {
-      "adjustments": [
-        "+top pair",
-        "+PP2"
-      ],
+      "adjustments": [],
       "age": 20,
-      "base": 2.631,
+      "base": 2.732,
       "durability": {
         "basis": "played 45, 30 GP in recent seasons",
         "iron_man": false,
@@ -6333,13 +6204,13 @@
       "fantasy_team_id": 3,
       "group": "D",
       "injury_status": "DOUBTFUL",
-      "mult": 1.06,
+      "mult": 1.0,
       "name": "Thomas Nelson",
       "nhl_id": 8470078,
       "nhl_team": "PIT",
       "parts": [
         {
-          "base": 0.1,
+          "base": 0.05,
           "fpg": 2.357,
           "games_factor": 1.0,
           "gp": 6,
@@ -6347,7 +6218,7 @@
           "label": "last 7 days"
         },
         {
-          "base": 0.15,
+          "base": 0.075,
           "fpg": 2.341,
           "games_factor": 1.0,
           "gp": 12,
@@ -6355,7 +6226,7 @@
           "label": "last 15 days"
         },
         {
-          "base": 0.15,
+          "base": 0.075,
           "fpg": 2.338,
           "games_factor": 1.0,
           "gp": 26,
@@ -6363,7 +6234,7 @@
           "label": "last 30 days"
         },
         {
-          "base": 0.35,
+          "base": 0.5,
           "fpg": 2.339,
           "games_factor": 1.0,
           "gp": 75,
@@ -6372,8 +6243,8 @@
         },
         {
           "base": 0.0,
-          "fpg": 3.481,
-          "games_factor": 0.625,
+          "fpg": 3.347,
+          "games_factor": 0.938,
           "gp": 75,
           "kind": "history",
           "label": "NHL history, age-adjusted (2 seasons, 75 GP)"
@@ -6382,18 +6253,15 @@
       "position": "D",
       "pro_team": "PIT",
       "remaining_games": 5,
-      "ros": 9.2,
+      "ros": 9.0,
       "rostered": true,
       "source": "current",
-      "value": 2.789
+      "value": 2.732
     },
     "202700226": {
-      "adjustments": [
-        "+top pair",
-        "+PP1"
-      ],
+      "adjustments": [],
       "age": 34,
-      "base": 3.855,
+      "base": 3.806,
       "durability": {
         "basis": "ESPN projects 78 GP; played 61, 71, 68 GP in recent seasons",
         "iron_man": false,
@@ -6408,13 +6276,13 @@
       "fantasy_team_id": 3,
       "group": "D",
       "injury_status": "ACTIVE",
-      "mult": 1.14,
+      "mult": 1.0,
       "name": "Kevin Wright",
       "nhl_id": 8470079,
       "nhl_team": "TOR",
       "parts": [
         {
-          "base": 0.1,
+          "base": 0.05,
           "fpg": 4.433,
           "games_factor": 1.0,
           "gp": 4,
@@ -6422,7 +6290,7 @@
           "label": "last 7 days"
         },
         {
-          "base": 0.15,
+          "base": 0.075,
           "fpg": 4.429,
           "games_factor": 1.0,
           "gp": 12,
@@ -6430,7 +6298,7 @@
           "label": "last 15 days"
         },
         {
-          "base": 0.15,
+          "base": 0.075,
           "fpg": 4.422,
           "games_factor": 1.0,
           "gp": 16,
@@ -6438,7 +6306,7 @@
           "label": "last 30 days"
         },
         {
-          "base": 0.35,
+          "base": 0.5,
           "fpg": 4.433,
           "games_factor": 1.0,
           "gp": 64,
@@ -6455,7 +6323,7 @@
         },
         {
           "base": 0.0,
-          "fpg": 2.22,
+          "fpg": 2.259,
           "games_factor": 1.0,
           "gp": 200,
           "kind": "history",
@@ -6465,18 +6333,15 @@
       "position": "D",
       "pro_team": "TOR",
       "remaining_games": 2,
-      "ros": 8.0,
+      "ros": 6.9,
       "rostered": true,
       "source": "current",
-      "value": 4.395
+      "value": 3.806
     },
     "202700227": {
-      "adjustments": [
-        "+top pair",
-        "+PP1"
-      ],
+      "adjustments": [],
       "age": 28,
-      "base": 4.12,
+      "base": 4.026,
       "durability": {
         "basis": "ESPN projects 78 GP; played 63, 78 GP in recent seasons",
         "iron_man": false,
@@ -6491,13 +6356,13 @@
       "fantasy_team_id": 3,
       "group": "D",
       "injury_status": null,
-      "mult": 1.14,
+      "mult": 1.0,
       "name": "Jordan Green",
       "nhl_id": 8470080,
       "nhl_team": "CHI",
       "parts": [
         {
-          "base": 0.1,
+          "base": 0.05,
           "fpg": 5.058,
           "games_factor": 1.0,
           "gp": 4,
@@ -6505,7 +6370,7 @@
           "label": "last 7 days"
         },
         {
-          "base": 0.15,
+          "base": 0.075,
           "fpg": 5.067,
           "games_factor": 1.0,
           "gp": 9,
@@ -6513,7 +6378,7 @@
           "label": "last 15 days"
         },
         {
-          "base": 0.15,
+          "base": 0.075,
           "fpg": 5.04,
           "games_factor": 1.0,
           "gp": 17,
@@ -6521,7 +6386,7 @@
           "label": "last 30 days"
         },
         {
-          "base": 0.35,
+          "base": 0.5,
           "fpg": 5.041,
           "games_factor": 1.0,
           "gp": 51,
@@ -6538,7 +6403,7 @@
         },
         {
           "base": 0.0,
-          "fpg": 1.501,
+          "fpg": 1.522,
           "games_factor": 1.0,
           "gp": 141,
           "kind": "history",
@@ -6548,18 +6413,15 @@
       "position": "D",
       "pro_team": "CHI",
       "remaining_games": 6,
-      "ros": 25.8,
+      "ros": 22.1,
       "rostered": true,
       "source": "current",
-      "value": 4.697
+      "value": 4.026
     },
     "202750000": {
-      "adjustments": [
-        "+top line",
-        "\u2212no PP time"
-      ],
+      "adjustments": [],
       "age": 31,
-      "base": 2.689,
+      "base": 2.697,
       "durability": {
         "basis": "ESPN projects 78 GP; played 51, 61, 74 GP in recent seasons",
         "iron_man": false,
@@ -6574,13 +6436,13 @@
       "fantasy_team_id": null,
       "group": "F",
       "injury_status": "ACTIVE",
-      "mult": 1.01,
+      "mult": 1.0,
       "name": "Andrew Kim",
       "nhl_id": 8470082,
       "nhl_team": "BOS",
       "parts": [
         {
-          "base": 0.1,
+          "base": 0.05,
           "fpg": 2.8,
           "games_factor": 1.0,
           "gp": 7,
@@ -6588,7 +6450,7 @@
           "label": "last 7 days"
         },
         {
-          "base": 0.15,
+          "base": 0.075,
           "fpg": 2.777,
           "games_factor": 1.0,
           "gp": 14,
@@ -6596,7 +6458,7 @@
           "label": "last 15 days"
         },
         {
-          "base": 0.15,
+          "base": 0.075,
           "fpg": 2.802,
           "games_factor": 1.0,
           "gp": 28,
@@ -6604,7 +6466,7 @@
           "label": "last 30 days"
         },
         {
-          "base": 0.35,
+          "base": 0.5,
           "fpg": 2.795,
           "games_factor": 1.0,
           "gp": 78,
@@ -6621,7 +6483,7 @@
         },
         {
           "base": 0.0,
-          "fpg": 2.391,
+          "fpg": 2.454,
           "games_factor": 1.0,
           "gp": 186,
           "kind": "history",
@@ -6631,18 +6493,15 @@
       "position": "RW",
       "pro_team": "BOS",
       "remaining_games": 4,
-      "ros": 9.6,
+      "ros": 9.5,
       "rostered": false,
       "source": "current",
-      "value": 2.716
+      "value": 2.697
     },
     "202750001": {
-      "adjustments": [
-        "+top pair",
-        "+PP1"
-      ],
+      "adjustments": [],
       "age": 23,
-      "base": 5.248,
+      "base": 5.216,
       "durability": {
         "basis": "ESPN projects 78 GP; played 53, 36, 58 GP in recent seasons",
         "iron_man": false,
@@ -6657,13 +6516,13 @@
       "fantasy_team_id": null,
       "group": "D",
       "injury_status": null,
-      "mult": 1.14,
+      "mult": 1.0,
       "name": "Steven Mendoza",
       "nhl_id": 8470095,
       "nhl_team": "OTT",
       "parts": [
         {
-          "base": 0.1,
+          "base": 0.05,
           "fpg": 5.878,
           "games_factor": 1.0,
           "gp": 3,
@@ -6671,7 +6530,7 @@
           "label": "last 7 days"
         },
         {
-          "base": 0.15,
+          "base": 0.075,
           "fpg": 5.803,
           "games_factor": 1.0,
           "gp": 7,
@@ -6679,7 +6538,7 @@
           "label": "last 15 days"
         },
         {
-          "base": 0.15,
+          "base": 0.075,
           "fpg": 5.776,
           "games_factor": 1.0,
           "gp": 12,
@@ -6687,7 +6546,7 @@
           "label": "last 30 days"
         },
         {
-          "base": 0.35,
+          "base": 0.5,
           "fpg": 5.807,
           "games_factor": 1.0,
           "gp": 45,
@@ -6704,7 +6563,7 @@
         },
         {
           "base": 0.0,
-          "fpg": 3.66,
+          "fpg": 3.756,
           "games_factor": 1.0,
           "gp": 147,
           "kind": "history",
@@ -6714,15 +6573,15 @@
       "position": "D",
       "pro_team": "OTT",
       "remaining_games": 4,
-      "ros": 20.5,
+      "ros": 17.9,
       "rostered": false,
       "source": "current",
-      "value": 5.983
+      "value": 5.216
     },
     "202750002": {
       "adjustments": [],
       "age": null,
-      "base": 2.989,
+      "base": 2.987,
       "durability": {
         "basis": "no durability history; assuming 90% of games",
         "iron_man": false,
@@ -6739,7 +6598,7 @@
       "nhl_team": "CAR",
       "parts": [
         {
-          "base": 0.1,
+          "base": 0.05,
           "fpg": 2.997,
           "games_factor": 1.0,
           "gp": 7,
@@ -6747,7 +6606,7 @@
           "label": "last 7 days"
         },
         {
-          "base": 0.15,
+          "base": 0.075,
           "fpg": 2.987,
           "games_factor": 1.0,
           "gp": 13,
@@ -6755,7 +6614,7 @@
           "label": "last 15 days"
         },
         {
-          "base": 0.15,
+          "base": 0.075,
           "fpg": 2.993,
           "games_factor": 1.0,
           "gp": 17,
@@ -6763,7 +6622,7 @@
           "label": "last 30 days"
         },
         {
-          "base": 0.35,
+          "base": 0.5,
           "fpg": 2.987,
           "games_factor": 1.0,
           "gp": 78,
@@ -6777,15 +6636,12 @@
       "ros": 10.8,
       "rostered": false,
       "source": "current",
-      "value": 2.989
+      "value": 2.987
     },
     "202750003": {
-      "adjustments": [
-        "+top line",
-        "+PP2"
-      ],
+      "adjustments": [],
       "age": 32,
-      "base": 2.375,
+      "base": 2.322,
       "durability": {
         "basis": "ESPN projects 78 GP; played 59, 46, 40 GP in recent seasons",
         "iron_man": false,
@@ -6800,13 +6656,13 @@
       "fantasy_team_id": null,
       "group": "F",
       "injury_status": null,
-      "mult": 1.08,
+      "mult": 1.0,
       "name": "Jeremy Hernandez",
       "nhl_id": 8470097,
       "nhl_team": "ANA",
       "parts": [
         {
-          "base": 0.1,
+          "base": 0.05,
           "fpg": 2.375,
           "games_factor": 1.0,
           "gp": 8,
@@ -6814,7 +6670,7 @@
           "label": "last 7 days"
         },
         {
-          "base": 0.15,
+          "base": 0.075,
           "fpg": 2.357,
           "games_factor": 1.0,
           "gp": 14,
@@ -6822,7 +6678,7 @@
           "label": "last 15 days"
         },
         {
-          "base": 0.15,
+          "base": 0.075,
           "fpg": 2.347,
           "games_factor": 1.0,
           "gp": 22,
@@ -6830,7 +6686,7 @@
           "label": "last 30 days"
         },
         {
-          "base": 0.35,
+          "base": 0.5,
           "fpg": 2.354,
           "games_factor": 1.0,
           "gp": 82,
@@ -6847,7 +6703,7 @@
         },
         {
           "base": 0.0,
-          "fpg": 2.431,
+          "fpg": 2.242,
           "games_factor": 1.0,
           "gp": 145,
           "kind": "history",
@@ -6857,18 +6713,15 @@
       "position": "RW",
       "pro_team": "ANA",
       "remaining_games": 1,
-      "ros": 2.2,
+      "ros": 2.0,
       "rostered": false,
       "source": "current",
-      "value": 2.565
+      "value": 2.322
     },
     "202750004": {
-      "adjustments": [
-        "+top line",
-        "+PP1"
-      ],
+      "adjustments": [],
       "age": 20,
-      "base": 5.437,
+      "base": 5.204,
       "durability": {
         "basis": "ESPN projects 78 GP; played 69, 31 GP in recent seasons",
         "iron_man": false,
@@ -6883,13 +6736,13 @@
       "fantasy_team_id": null,
       "group": "F",
       "injury_status": "DOUBTFUL",
-      "mult": 1.16,
+      "mult": 1.0,
       "name": "Henry Lee",
       "nhl_id": 8470092,
       "nhl_team": "CHI",
       "parts": [
         {
-          "base": 0.1,
+          "base": 0.05,
           "fpg": 6.216,
           "games_factor": 1.0,
           "gp": 3,
@@ -6897,7 +6750,7 @@
           "label": "last 7 days"
         },
         {
-          "base": 0.15,
+          "base": 0.075,
           "fpg": 6.176,
           "games_factor": 1.0,
           "gp": 6,
@@ -6905,7 +6758,7 @@
           "label": "last 15 days"
         },
         {
-          "base": 0.15,
+          "base": 0.075,
           "fpg": 6.184,
           "games_factor": 1.0,
           "gp": 17,
@@ -6913,7 +6766,7 @@
           "label": "last 30 days"
         },
         {
-          "base": 0.35,
+          "base": 0.5,
           "fpg": 6.159,
           "games_factor": 1.0,
           "gp": 49,
@@ -6930,8 +6783,8 @@
         },
         {
           "base": 0.0,
-          "fpg": 2.958,
-          "games_factor": 0.833,
+          "fpg": 2.844,
+          "games_factor": 1.0,
           "gp": 100,
           "kind": "history",
           "label": "NHL history, age-adjusted (2 seasons, 100 GP)"
@@ -6940,10 +6793,10 @@
       "position": "C",
       "pro_team": "CHI",
       "remaining_games": 6,
-      "ros": 33.1,
+      "ros": 27.3,
       "rostered": false,
       "source": "current",
-      "value": 6.307
+      "value": 5.204
     },
     "202750005": {
       "adjustments": [],
@@ -6969,7 +6822,7 @@
       "nhl_team": "CBJ",
       "parts": [
         {
-          "base": 0.1,
+          "base": 0.05,
           "fpg": 4.1,
           "games_factor": 1.0,
           "gp": 5,
@@ -6977,7 +6830,7 @@
           "label": "last 7 days"
         },
         {
-          "base": 0.15,
+          "base": 0.075,
           "fpg": 4.139,
           "games_factor": 1.0,
           "gp": 14,
@@ -6985,7 +6838,7 @@
           "label": "last 15 days"
         },
         {
-          "base": 0.15,
+          "base": 0.075,
           "fpg": 4.115,
           "games_factor": 1.0,
           "gp": 18,
@@ -6993,7 +6846,7 @@
           "label": "last 30 days"
         },
         {
-          "base": 0.35,
+          "base": 0.5,
           "fpg": 4.122,
           "games_factor": 1.0,
           "gp": 73,
@@ -7018,12 +6871,9 @@
       "value": 4.122
     },
     "202750006": {
-      "adjustments": [
-        "+top line",
-        "\u2212no PP time"
-      ],
+      "adjustments": [],
       "age": 25,
-      "base": 4.389,
+      "base": 4.358,
       "durability": {
         "basis": "ESPN projects 78 GP; played 54, 60 GP in recent seasons",
         "iron_man": false,
@@ -7038,13 +6888,13 @@
       "fantasy_team_id": null,
       "group": "F",
       "injury_status": null,
-      "mult": 1.01,
+      "mult": 1.0,
       "name": "Nicholas Sanders",
       "nhl_id": 8470098,
       "nhl_team": "CAR",
       "parts": [
         {
-          "base": 0.1,
+          "base": 0.05,
           "fpg": 4.652,
           "games_factor": 1.0,
           "gp": 5,
@@ -7052,7 +6902,7 @@
           "label": "last 7 days"
         },
         {
-          "base": 0.15,
+          "base": 0.075,
           "fpg": 4.621,
           "games_factor": 1.0,
           "gp": 14,
@@ -7060,7 +6910,7 @@
           "label": "last 15 days"
         },
         {
-          "base": 0.15,
+          "base": 0.075,
           "fpg": 4.627,
           "games_factor": 1.0,
           "gp": 27,
@@ -7068,7 +6918,7 @@
           "label": "last 30 days"
         },
         {
-          "base": 0.35,
+          "base": 0.5,
           "fpg": 4.629,
           "games_factor": 1.0,
           "gp": 79,
@@ -7085,8 +6935,8 @@
         },
         {
           "base": 0.0,
-          "fpg": 3.67,
-          "games_factor": 0.95,
+          "fpg": 3.687,
+          "games_factor": 1.0,
           "gp": 114,
           "kind": "history",
           "label": "NHL history, age-adjusted (2 seasons, 114 GP)"
@@ -7095,15 +6945,15 @@
       "position": "RW",
       "pro_team": "CAR",
       "remaining_games": 4,
-      "ros": 15.6,
+      "ros": 15.3,
       "rostered": false,
       "source": "current",
-      "value": 4.433
+      "value": 4.358
     },
     "202750007": {
       "adjustments": [],
       "age": 34,
-      "base": 3.278,
+      "base": 3.276,
       "durability": {
         "basis": "ESPN projects 78 GP",
         "iron_man": true,
@@ -7124,7 +6974,7 @@
       "nhl_team": "TBL",
       "parts": [
         {
-          "base": 0.1,
+          "base": 0.05,
           "fpg": 3.772,
           "games_factor": 1.0,
           "gp": 6,
@@ -7132,7 +6982,7 @@
           "label": "last 7 days"
         },
         {
-          "base": 0.15,
+          "base": 0.075,
           "fpg": 3.734,
           "games_factor": 1.0,
           "gp": 13,
@@ -7140,7 +6990,7 @@
           "label": "last 15 days"
         },
         {
-          "base": 0.15,
+          "base": 0.075,
           "fpg": 3.741,
           "games_factor": 1.0,
           "gp": 22,
@@ -7148,7 +6998,7 @@
           "label": "last 30 days"
         },
         {
-          "base": 0.35,
+          "base": 0.5,
           "fpg": 3.738,
           "games_factor": 1.0,
           "gp": 79,
@@ -7170,14 +7020,12 @@
       "ros": 15.6,
       "rostered": false,
       "source": "rookie_playing",
-      "value": 3.278
+      "value": 3.276
     },
     "202750008": {
-      "adjustments": [
-        "+starter"
-      ],
+      "adjustments": [],
       "age": 29,
-      "base": 4.216,
+      "base": 4.178,
       "durability": {
         "basis": "56% of starts (last season)",
         "iron_man": false,
@@ -7192,13 +7040,13 @@
       "fantasy_team_id": null,
       "group": "G",
       "injury_status": null,
-      "mult": 1.05,
+      "mult": 1.0,
       "name": "Alexander Foster",
       "nhl_id": 8470100,
       "nhl_team": "CHI",
       "parts": [
         {
-          "base": 0.1,
+          "base": 0.05,
           "fpg": 4.746,
           "games_factor": 1.0,
           "gp": 3,
@@ -7206,7 +7054,7 @@
           "label": "last 7 days"
         },
         {
-          "base": 0.15,
+          "base": 0.075,
           "fpg": 4.695,
           "games_factor": 0.967,
           "gp": 5,
@@ -7214,7 +7062,7 @@
           "label": "last 15 days"
         },
         {
-          "base": 0.15,
+          "base": 0.075,
           "fpg": 4.599,
           "games_factor": 1.0,
           "gp": 14,
@@ -7222,7 +7070,7 @@
           "label": "last 30 days"
         },
         {
-          "base": 0.35,
+          "base": 0.5,
           "fpg": 4.623,
           "games_factor": 1.0,
           "gp": 45,
@@ -7239,7 +7087,7 @@
         },
         {
           "base": 0.0,
-          "fpg": 3.039,
+          "fpg": 3.08,
           "games_factor": 1.0,
           "gp": 181,
           "kind": "history",
@@ -7249,17 +7097,15 @@
       "position": "G",
       "pro_team": "CHI",
       "remaining_games": 6,
-      "ros": 15.0,
+      "ros": 14.1,
       "rostered": false,
       "source": "current",
-      "value": 4.427
+      "value": 4.178
     },
     "202750009": {
-      "adjustments": [
-        "+starter"
-      ],
+      "adjustments": [],
       "age": 27,
-      "base": 3.303,
+      "base": 3.145,
       "durability": {
         "basis": "100% of starts (last season)",
         "iron_man": true,
@@ -7274,13 +7120,13 @@
       "fantasy_team_id": null,
       "group": "G",
       "injury_status": "INJURY_RESERVE",
-      "mult": 1.05,
+      "mult": 1.0,
       "name": "Jeffrey Stewart",
       "nhl_id": 8470096,
       "nhl_team": "PIT",
       "parts": [
         {
-          "base": 0.1,
+          "base": 0.05,
           "fpg": 3.61,
           "games_factor": 0.8,
           "gp": 2,
@@ -7288,7 +7134,7 @@
           "label": "last 7 days"
         },
         {
-          "base": 0.15,
+          "base": 0.075,
           "fpg": 3.631,
           "games_factor": 0.783,
           "gp": 4,
@@ -7296,7 +7142,7 @@
           "label": "last 15 days"
         },
         {
-          "base": 0.15,
+          "base": 0.075,
           "fpg": 3.622,
           "games_factor": 0.542,
           "gp": 6,
@@ -7304,9 +7150,9 @@
           "label": "last 30 days"
         },
         {
-          "base": 0.35,
+          "base": 0.5,
           "fpg": 3.625,
-          "games_factor": 0.96,
+          "games_factor": 0.6,
           "gp": 24,
           "kind": "season",
           "label": "this season"
@@ -7321,8 +7167,8 @@
         },
         {
           "base": 0.0,
-          "fpg": 2.245,
-          "games_factor": 0.783,
+          "fpg": 2.241,
+          "games_factor": 1.0,
           "gp": 94,
           "kind": "history",
           "label": "NHL history, age-adjusted (2 seasons, 94 GP)"
@@ -7331,17 +7177,15 @@
       "position": "G",
       "pro_team": "PIT",
       "remaining_games": 5,
-      "ros": 17.3,
+      "ros": 15.7,
       "rostered": false,
       "source": "current",
-      "value": 3.468
+      "value": 3.145
     },
     "202750010": {
-      "adjustments": [
-        "\u2212splitting starts"
-      ],
+      "adjustments": [],
       "age": 33,
-      "base": 3.461,
+      "base": 3.429,
       "durability": {
         "basis": "50% of starts (last season)",
         "iron_man": false,
@@ -7356,13 +7200,13 @@
       "fantasy_team_id": null,
       "group": "G",
       "injury_status": null,
-      "mult": 0.94,
+      "mult": 1.0,
       "name": "Ethan Williams",
       "nhl_id": 8470083,
       "nhl_team": "LAK",
       "parts": [
         {
-          "base": 0.1,
+          "base": 0.05,
           "fpg": 3.942,
           "games_factor": 0.433,
           "gp": 1,
@@ -7370,7 +7214,7 @@
           "label": "last 7 days"
         },
         {
-          "base": 0.15,
+          "base": 0.075,
           "fpg": 3.843,
           "games_factor": 0.467,
           "gp": 2,
@@ -7378,7 +7222,7 @@
           "label": "last 15 days"
         },
         {
-          "base": 0.15,
+          "base": 0.075,
           "fpg": 3.856,
           "games_factor": 0.492,
           "gp": 5,
@@ -7386,9 +7230,9 @@
           "label": "last 30 days"
         },
         {
-          "base": 0.35,
+          "base": 0.5,
           "fpg": 3.845,
-          "games_factor": 0.76,
+          "games_factor": 0.475,
           "gp": 19,
           "kind": "season",
           "label": "this season"
@@ -7403,7 +7247,7 @@
         },
         {
           "base": 0.0,
-          "fpg": 2.608,
+          "fpg": 2.721,
           "games_factor": 1.0,
           "gp": 175,
           "kind": "history",
@@ -7413,18 +7257,15 @@
       "position": "G",
       "pro_team": "LA",
       "remaining_games": 5,
-      "ros": 8.1,
+      "ros": 8.5,
       "rostered": false,
       "source": "current",
-      "value": 3.253
+      "value": 3.429
     },
     "202750011": {
-      "adjustments": [
-        "+top pair",
-        "\u2212no PP time"
-      ],
+      "adjustments": [],
       "age": 25,
-      "base": 5.294,
+      "base": 5.124,
       "durability": {
         "basis": "ESPN projects 78 GP; played 59, 51 GP in recent seasons",
         "iron_man": false,
@@ -7439,13 +7280,13 @@
       "fantasy_team_id": null,
       "group": "D",
       "injury_status": "QUESTIONABLE",
-      "mult": 0.99,
+      "mult": 1.0,
       "name": "Charles Ramos",
       "nhl_id": 8470089,
       "nhl_team": "EDM",
       "parts": [
         {
-          "base": 0.1,
+          "base": 0.05,
           "fpg": 6.355,
           "games_factor": 0.967,
           "gp": 2,
@@ -7453,7 +7294,7 @@
           "label": "last 7 days"
         },
         {
-          "base": 0.15,
+          "base": 0.075,
           "fpg": 6.252,
           "games_factor": 0.967,
           "gp": 5,
@@ -7461,7 +7302,7 @@
           "label": "last 15 days"
         },
         {
-          "base": 0.15,
+          "base": 0.075,
           "fpg": 6.318,
           "games_factor": 0.892,
           "gp": 10,
@@ -7469,7 +7310,7 @@
           "label": "last 30 days"
         },
         {
-          "base": 0.35,
+          "base": 0.5,
           "fpg": 6.294,
           "games_factor": 1.0,
           "gp": 47,
@@ -7486,8 +7327,8 @@
         },
         {
           "base": 0.0,
-          "fpg": 2.244,
-          "games_factor": 0.917,
+          "fpg": 2.247,
+          "games_factor": 1.0,
           "gp": 110,
           "kind": "history",
           "label": "NHL history, age-adjusted (2 seasons, 110 GP)"
@@ -7496,18 +7337,15 @@
       "position": "D",
       "pro_team": "EDM",
       "remaining_games": 2,
-      "ros": 9.2,
+      "ros": 9.0,
       "rostered": false,
       "source": "current",
-      "value": 5.241
+      "value": 5.124
     },
     "202750012": {
-      "adjustments": [
-        "+top pair",
-        "\u2212no PP time"
-      ],
+      "adjustments": [],
       "age": 26,
-      "base": 5.418,
+      "base": 5.239,
       "durability": {
         "basis": "ESPN projects 78 GP",
         "iron_man": true,
@@ -7522,13 +7360,13 @@
       "fantasy_team_id": null,
       "group": "D",
       "injury_status": null,
-      "mult": 0.99,
+      "mult": 1.0,
       "name": "Joseph Alvarez",
       "nhl_id": 8470090,
       "nhl_team": "MTL",
       "parts": [
         {
-          "base": 0.1,
+          "base": 0.05,
           "fpg": 5.687,
           "games_factor": 1.0,
           "gp": 4,
@@ -7536,7 +7374,7 @@
           "label": "last 7 days"
         },
         {
-          "base": 0.15,
+          "base": 0.075,
           "fpg": 5.697,
           "games_factor": 1.0,
           "gp": 12,
@@ -7544,7 +7382,7 @@
           "label": "last 15 days"
         },
         {
-          "base": 0.15,
+          "base": 0.075,
           "fpg": 5.72,
           "games_factor": 1.0,
           "gp": 17,
@@ -7552,7 +7390,7 @@
           "label": "last 30 days"
         },
         {
-          "base": 0.35,
+          "base": 0.5,
           "fpg": 5.714,
           "games_factor": 1.0,
           "gp": 65,
@@ -7570,7 +7408,7 @@
         {
           "base": 0.0,
           "fpg": 2.567,
-          "games_factor": 0.292,
+          "games_factor": 0.438,
           "gp": 35,
           "kind": "history",
           "label": "NHL history, age-adjusted (1 season, 35 GP)"
@@ -7579,18 +7417,15 @@
       "position": "D",
       "pro_team": "MTL",
       "remaining_games": 6,
-      "ros": 30.6,
+      "ros": 29.9,
       "rostered": false,
       "source": "current",
-      "value": 5.364
+      "value": 5.239
     },
     "202750013": {
-      "adjustments": [
-        "+top line",
-        "+PP1"
-      ],
+      "adjustments": [],
       "age": 25,
-      "base": 5.774,
+      "base": 5.685,
       "durability": {
         "basis": "ESPN projects 78 GP; played 69, 32, 58 GP in recent seasons",
         "iron_man": false,
@@ -7605,13 +7440,13 @@
       "fantasy_team_id": null,
       "group": "F",
       "injury_status": null,
-      "mult": 1.16,
+      "mult": 1.0,
       "name": "Charles Clark",
       "nhl_id": 8470088,
       "nhl_team": "BOS",
       "parts": [
         {
-          "base": 0.1,
+          "base": 0.05,
           "fpg": 6.711,
           "games_factor": 1.0,
           "gp": 4,
@@ -7619,7 +7454,7 @@
           "label": "last 7 days"
         },
         {
-          "base": 0.15,
+          "base": 0.075,
           "fpg": 6.561,
           "games_factor": 1.0,
           "gp": 7,
@@ -7627,7 +7462,7 @@
           "label": "last 15 days"
         },
         {
-          "base": 0.15,
+          "base": 0.075,
           "fpg": 6.608,
           "games_factor": 1.0,
           "gp": 15,
@@ -7635,7 +7470,7 @@
           "label": "last 30 days"
         },
         {
-          "base": 0.35,
+          "base": 0.5,
           "fpg": 6.611,
           "games_factor": 1.0,
           "gp": 55,
@@ -7662,15 +7497,15 @@
       "position": "RW",
       "pro_team": "BOS",
       "remaining_games": 4,
-      "ros": 23.5,
+      "ros": 20.0,
       "rostered": false,
       "source": "current",
-      "value": 6.698
+      "value": 5.685
     },
     "202750014": {
       "adjustments": [],
       "age": 29,
-      "base": 4.969,
+      "base": 4.973,
       "durability": {
         "basis": "no start share yet; assuming 90% of games",
         "iron_man": false,
@@ -7691,7 +7526,7 @@
       "nhl_team": "OTT",
       "parts": [
         {
-          "base": 0.1,
+          "base": 0.05,
           "fpg": 4.944,
           "games_factor": 1.0,
           "gp": 4,
@@ -7699,7 +7534,7 @@
           "label": "last 7 days"
         },
         {
-          "base": 0.15,
+          "base": 0.075,
           "fpg": 4.968,
           "games_factor": 1.0,
           "gp": 8,
@@ -7707,7 +7542,7 @@
           "label": "last 15 days"
         },
         {
-          "base": 0.15,
+          "base": 0.075,
           "fpg": 4.942,
           "games_factor": 1.0,
           "gp": 17,
@@ -7715,7 +7550,7 @@
           "label": "last 30 days"
         },
         {
-          "base": 0.35,
+          "base": 0.5,
           "fpg": 4.975,
           "games_factor": 1.0,
           "gp": 48,
@@ -7737,15 +7572,12 @@
       "ros": 17.9,
       "rostered": false,
       "source": "rookie_playing",
-      "value": 4.969
+      "value": 4.973
     },
     "202750015": {
-      "adjustments": [
-        "+top line",
-        "+PP1"
-      ],
+      "adjustments": [],
       "age": 27,
-      "base": 3.277,
+      "base": 3.251,
       "durability": {
         "basis": "played 75, 39, 35 GP in recent seasons",
         "iron_man": false,
@@ -7756,13 +7588,13 @@
       "fantasy_team_id": null,
       "group": "F",
       "injury_status": null,
-      "mult": 1.16,
+      "mult": 1.0,
       "name": "Juan Nguyen",
       "nhl_id": 8470086,
       "nhl_team": "WPG",
       "parts": [
         {
-          "base": 0.1,
+          "base": 0.05,
           "fpg": 2.923,
           "games_factor": 1.0,
           "gp": 5,
@@ -7770,7 +7602,7 @@
           "label": "last 7 days"
         },
         {
-          "base": 0.15,
+          "base": 0.075,
           "fpg": 2.907,
           "games_factor": 1.0,
           "gp": 10,
@@ -7778,7 +7610,7 @@
           "label": "last 15 days"
         },
         {
-          "base": 0.15,
+          "base": 0.075,
           "fpg": 2.923,
           "games_factor": 1.0,
           "gp": 26,
@@ -7786,7 +7618,7 @@
           "label": "last 30 days"
         },
         {
-          "base": 0.35,
+          "base": 0.5,
           "fpg": 2.918,
           "games_factor": 1.0,
           "gp": 76,
@@ -7795,7 +7627,7 @@
         },
         {
           "base": 0.0,
-          "fpg": 3.935,
+          "fpg": 3.739,
           "games_factor": 1.0,
           "gp": 149,
           "kind": "history",
@@ -7805,17 +7637,15 @@
       "position": "LW",
       "pro_team": "WPG",
       "remaining_games": 7,
-      "ros": 20.6,
+      "ros": 17.6,
       "rostered": false,
       "source": "current",
-      "value": 3.801
+      "value": 3.251
     },
     "202750016": {
-      "adjustments": [
-        "\u2212splitting starts"
-      ],
+      "adjustments": [],
       "age": 21,
-      "base": 4.179,
+      "base": 4.202,
       "durability": {
         "basis": "42% of starts (last season)",
         "iron_man": false,
@@ -7830,13 +7660,13 @@
       "fantasy_team_id": null,
       "group": "G",
       "injury_status": null,
-      "mult": 0.94,
+      "mult": 1.0,
       "name": "Juan Cooper",
       "nhl_id": 8470099,
       "nhl_team": "SJS",
       "parts": [
         {
-          "base": 0.1,
+          "base": 0.05,
           "fpg": 4.123,
           "games_factor": 1.0,
           "gp": 3,
@@ -7844,7 +7674,7 @@
           "label": "last 7 days"
         },
         {
-          "base": 0.15,
+          "base": 0.075,
           "fpg": 4.098,
           "games_factor": 1.0,
           "gp": 8,
@@ -7852,7 +7682,7 @@
           "label": "last 15 days"
         },
         {
-          "base": 0.15,
+          "base": 0.075,
           "fpg": 4.099,
           "games_factor": 1.0,
           "gp": 14,
@@ -7860,7 +7690,7 @@
           "label": "last 30 days"
         },
         {
-          "base": 0.35,
+          "base": 0.5,
           "fpg": 4.084,
           "games_factor": 1.0,
           "gp": 45,
@@ -7877,8 +7707,8 @@
         },
         {
           "base": 0.0,
-          "fpg": 4.471,
-          "games_factor": 0.867,
+          "fpg": 4.488,
+          "games_factor": 1.0,
           "gp": 104,
           "kind": "history",
           "label": "NHL history, age-adjusted (2 seasons, 104 GP)"
@@ -7887,18 +7717,15 @@
       "position": "G",
       "pro_team": "SJ",
       "remaining_games": 8,
-      "ros": 13.2,
+      "ros": 14.2,
       "rostered": false,
       "source": "current",
-      "value": 3.928
+      "value": 4.202
     },
     "202750017": {
-      "adjustments": [
-        "+top line",
-        "+PP1"
-      ],
+      "adjustments": [],
       "age": 32,
-      "base": 3.854,
+      "base": 3.963,
       "durability": {
         "basis": "ESPN projects 78 GP; played 46, 31 GP in recent seasons",
         "iron_man": false,
@@ -7913,13 +7740,13 @@
       "fantasy_team_id": null,
       "group": "F",
       "injury_status": "QUESTIONABLE",
-      "mult": 1.16,
+      "mult": 1.0,
       "name": "Stephen Gutierrez",
       "nhl_id": 8470084,
       "nhl_team": "CBJ",
       "parts": [
         {
-          "base": 0.1,
+          "base": 0.05,
           "fpg": 3.676,
           "games_factor": 1.0,
           "gp": 4,
@@ -7927,7 +7754,7 @@
           "label": "last 7 days"
         },
         {
-          "base": 0.15,
+          "base": 0.075,
           "fpg": 3.651,
           "games_factor": 1.0,
           "gp": 11,
@@ -7935,7 +7762,7 @@
           "label": "last 15 days"
         },
         {
-          "base": 0.15,
+          "base": 0.075,
           "fpg": 3.654,
           "games_factor": 1.0,
           "gp": 19,
@@ -7943,7 +7770,7 @@
           "label": "last 30 days"
         },
         {
-          "base": 0.35,
+          "base": 0.5,
           "fpg": 3.653,
           "games_factor": 1.0,
           "gp": 62,
@@ -7960,8 +7787,8 @@
         },
         {
           "base": 0.0,
-          "fpg": 4.731,
-          "games_factor": 0.642,
+          "fpg": 4.756,
+          "games_factor": 0.963,
           "gp": 77,
           "kind": "history",
           "label": "NHL history, age-adjusted (2 seasons, 77 GP)"
@@ -7970,18 +7797,15 @@
       "position": "C",
       "pro_team": "CBJ",
       "remaining_games": 5,
-      "ros": 18.7,
+      "ros": 16.6,
       "rostered": false,
       "source": "current",
-      "value": 4.471
+      "value": 3.963
     },
     "202750018": {
-      "adjustments": [
-        "+top line",
-        "+PP1"
-      ],
+      "adjustments": [],
       "age": 20,
-      "base": 3.24,
+      "base": 3.063,
       "durability": {
         "basis": "ESPN projects 78 GP; played 73, 31 GP in recent seasons",
         "iron_man": false,
@@ -7996,13 +7820,13 @@
       "fantasy_team_id": null,
       "group": "F",
       "injury_status": null,
-      "mult": 1.16,
+      "mult": 1.0,
       "name": "Douglas Taylor",
       "nhl_id": 8470091,
       "nhl_team": "UTA",
       "parts": [
         {
-          "base": 0.1,
+          "base": 0.05,
           "fpg": 3.561,
           "games_factor": 1.0,
           "gp": 6,
@@ -8010,7 +7834,7 @@
           "label": "last 7 days"
         },
         {
-          "base": 0.15,
+          "base": 0.075,
           "fpg": 3.524,
           "games_factor": 1.0,
           "gp": 14,
@@ -8018,7 +7842,7 @@
           "label": "last 15 days"
         },
         {
-          "base": 0.15,
+          "base": 0.075,
           "fpg": 3.535,
           "games_factor": 1.0,
           "gp": 20,
@@ -8026,7 +7850,7 @@
           "label": "last 30 days"
         },
         {
-          "base": 0.35,
+          "base": 0.5,
           "fpg": 3.536,
           "games_factor": 1.0,
           "gp": 74,
@@ -8043,8 +7867,8 @@
         },
         {
           "base": 0.0,
-          "fpg": 2.272,
-          "games_factor": 0.867,
+          "fpg": 1.897,
+          "games_factor": 1.0,
           "gp": 104,
           "kind": "history",
           "label": "NHL history, age-adjusted (2 seasons, 104 GP)"
@@ -8053,18 +7877,15 @@
       "position": "LW",
       "pro_team": "UTA",
       "remaining_games": 5,
-      "ros": 16.9,
+      "ros": 13.7,
       "rostered": false,
       "source": "current",
-      "value": 3.758
+      "value": 3.063
     },
     "202750019": {
-      "adjustments": [
-        "+top line",
-        "+PP1"
-      ],
+      "adjustments": [],
       "age": 20,
-      "base": 4.656,
+      "base": 4.575,
       "durability": {
         "basis": "ESPN projects 78 GP; played 67, 30 GP in recent seasons",
         "iron_man": false,
@@ -8079,13 +7900,13 @@
       "fantasy_team_id": null,
       "group": "F",
       "injury_status": null,
-      "mult": 1.16,
+      "mult": 1.0,
       "name": "Jacob Rodriguez",
       "nhl_id": 8470081,
       "nhl_team": "WSH",
       "parts": [
         {
-          "base": 0.1,
+          "base": 0.05,
           "fpg": 4.66,
           "games_factor": 1.0,
           "gp": 6,
@@ -8093,7 +7914,7 @@
           "label": "last 7 days"
         },
         {
-          "base": 0.15,
+          "base": 0.075,
           "fpg": 4.705,
           "games_factor": 1.0,
           "gp": 11,
@@ -8101,7 +7922,7 @@
           "label": "last 15 days"
         },
         {
-          "base": 0.15,
+          "base": 0.075,
           "fpg": 4.695,
           "games_factor": 1.0,
           "gp": 18,
@@ -8109,7 +7930,7 @@
           "label": "last 30 days"
         },
         {
-          "base": 0.35,
+          "base": 0.5,
           "fpg": 4.697,
           "games_factor": 1.0,
           "gp": 66,
@@ -8126,8 +7947,8 @@
         },
         {
           "base": 0.0,
-          "fpg": 4.517,
-          "games_factor": 0.808,
+          "fpg": 4.275,
+          "games_factor": 1.0,
           "gp": 97,
           "kind": "history",
           "label": "NHL history, age-adjusted (2 seasons, 97 GP)"
@@ -8136,16 +7957,17 @@
       "position": "C",
       "pro_team": "WSH",
       "remaining_games": 2,
-      "ros": 9.5,
+      "ros": 8.1,
       "rostered": false,
       "source": "current",
-      "value": 5.401
+      "value": 4.575
     }
   },
-  "recent_default": 0.5,
+  "recent_default": 0.25,
   "schema_version": 1,
   "scoring_source": "espn",
   "season": 2027,
+  "season_games": 82,
   "sport": "hockey",
   "weights": {
     "A": 1.0,

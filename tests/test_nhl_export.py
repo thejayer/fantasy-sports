@@ -43,6 +43,9 @@ def canned_fetch(url: str, params: dict | None = None):
         raise RuntimeError("boom")
     if url.startswith(f"{WEB}/roster/"):
         return {}
+    if url == f"{STATS}/season":
+        return {"data": [{"id": 20262027, "numberOfGames": 84, "startDate": "2026-10-06T00:00:00",
+                          "regularSeasonEndDate": "2027-04-15T00:00:00"}]}
     if url.startswith(STATS):
         kind, report = url[len(STATS) + 1:].split("/")
         cay = params.get("cayenneExp", "")

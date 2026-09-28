@@ -563,6 +563,8 @@ test.describe("hub smoke", () => {
     }
     const firstValue = page.locator('td[data-label="Value"]').first();
     await expect(firstValue).toHaveText(/^\d+\.\d{2}$/);
+    // H2b: the board states how accurate the model was on past seasons.
+    await expect(page.locator(".hockey-backtest-line")).toContainText(/Backtested on 2022–23/);
     // Expandable inputs per player (one row at a time keeps the page light).
     await page.getByRole("link", { name: "Inputs", exact: true }).first().click();
     await expect(page).toHaveURL(/open=\d+/);

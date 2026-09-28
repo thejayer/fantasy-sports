@@ -172,6 +172,34 @@ judgment, never measured. Port the `ffa backtest` pattern: project each past
 season from strictly prior data and report MAE, Spearman, and bias by position
 and tier. Tune the weights from that.
 
+**H2b landed as:** `src/nhl/backtest.py` + `sj nhl-backtest` (report in
+[HOCKEY-BACKTEST.md](HOCKEY-BACKTEST.md)). Replays 2022–23 … 2025–26 at
+preseason / Dec 1 / Feb 1 with only data available then (NHL stats API date
+ranges; responses cached under `data/nhl_cache`) for every NHL player with
+enough games, and scores FP per game under SJ rules. Tuning is coordinate
+descent over `nhl.value.ValueConfig`, judged leave-one-season-out; a config is
+adopted only with a 2%+ held-out gain in 3 of 4 seasons. Result: **adopted**,
+−15% error, better in all four held-out seasons:
+
+- recent-form default 0.5 → 0.25 and trailing-window weights halved (streaks
+  predict less than assumed);
+- this season base 0.35 → 0.5, fully trusted at 40 GP (was 25);
+- NHL history decay 1.0/0.6/0.35 → 1.0/0.5/0.25, fully trusted at 80 GP (was 120);
+- **role adjustment off** — line/PP boosts double-counted what the stats
+  already show (the code stays; `role_adjust=True` turns it back on, and H4's
+  Daily Faceoff roles are a reason to re-test);
+- aging, prospect weight, and the durability pull (0.4) held up.
+
+Caveats: the ESPN-projection weight cannot be measured (no historical ESPN
+projections); goalies stay the weak spot (rank correlation ~0.34, and the tuned
+blend is more optimistic for them — H5's goalie start model is the real fix);
+top-50 ranking dipped slightly while 51–150 (the waiver range) improved a lot.
+In-season roles use each player's team for that season (the stats API gives no
+team inside a date range). `configs/hockey_backtest.json` holds the shipped
+model's accuracy; `build_values` copies it into `values.json` and the
+projections board states it. Seasons now carry their real length (2026–27 is
+84 games) for durability and ROS.
+
 ### H3: durability — LANDED
 
 Expected share of remaining games = blend of ESPN projected GP (weight 1.5) and

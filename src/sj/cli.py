@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import json
 from pathlib import Path
 
 import typer
@@ -358,6 +359,79 @@ def nhl_cmd(
         typer.echo(f"hub revalidate: {notify_hub_revalidate()}")
     if failed:
         raise typer.Exit(code=1)
+
+
+@app.command("nhl-backtest")
+def nhl_backtest_cmd(
+    season: list[str] | None = typer.Option(
+        None, "--season", "-s", help="NHL season id to hold out, e.g. 20242025 (repeatable)."
+    ),
+    cache_dir: Path = typer.Option(
+        Path("data/nhl_cache"), help="Cache for NHL API responses (past seasons never change)."
+    ),
+    out: Path = typer.Option(Path("HOCKEY-BACKTEST.md"), help="Markdown report path."),
+    json_out: Path = typer.Option(
+        Path("data/nhl_backtest.json"), help="Full JSON report path."
+    ),
+    league: str = typer.Option("hockey-main", help="Hockey league whose scoring to use."),
+    store_dir: Path | None = typer.Option(
+        None, help="Read the league snapshot from this directory instead of the store."
+    ),
+    summary_out: Path | None = typer.Option(
+        None,
+        help="Accuracy summary for the hub (default configs/hockey_backtest.json; "
+        "copied into values.json at sync). Pass --no-summary to skip.",
+    ),
+    summary: bool = typer.Option(True, help="Write the accuracy summary."),
+    registry: Path | None = typer.Option(None, help="Path to leagues.yaml"),
+) -> None:
+    """Backtest the hockey value model against past NHL seasons (HOCKEY-PORT.md H2b).
+
+    Calls the public NHL API (cached under ``--cache-dir``), replays each
+    season at preseason / Dec 1 / Feb 1 with only data available then, and
+    reports error, bias and rank correlation plus a leave-one-season-out tuning
+    check. Offline pytest never runs this.
+    """
+    from nhl.backtest import (
+        DEFAULT_SEASONS,
+        CachedFetch,
+        hub_summary,
+        report_markdown,
+        run_backtest,
+    )
+    from nhl.nhl_api import NHLClient
+    from nhl.scoring import resolve_scoring
+    from nhl.value import BACKTEST_SUMMARY
+    from sj.store import read_snapshot
+
+    spec = load_registry(registry).by_id(league)
+    try:
+        snapshot = read_snapshot(spec.id, spec.current_season, store_dir=store_dir)
+    except FileNotFoundError:
+        snapshot = None
+    scoring = resolve_scoring(snapshot)
+    typer.echo(f"scoring: {scoring.source} ({len(scoring.weights)} weights)")
+    fetch = CachedFetch(cache_dir)
+    report = run_backtest(
+        NHLClient(fetch=fetch),
+        scoring.weights,
+        season or DEFAULT_SEASONS,
+        on_event=typer.echo,
+    )
+    typer.echo(f"NHL API: {fetch.misses} fetched, {fetch.hits} from cache")
+    out.write_text(report_markdown(report), encoding="utf-8")
+    json_out.parent.mkdir(parents=True, exist_ok=True)
+    json_out.write_text(json.dumps(report, indent=2), encoding="utf-8")
+    typer.echo(f"wrote {out} and {json_out}")
+    if summary:
+        target = summary_out or BACKTEST_SUMMARY
+        target.write_text(json.dumps(hub_summary(report), indent=2) + "\n", encoding="utf-8")
+        typer.echo(f"wrote {target} (next sync / regenerate-fixtures copies it into values.json)")
+    decision = report["decision"]
+    typer.echo(
+        f"decision: {'adopt tuned config' if decision['adopt'] else 'keep defaults'} "
+        f"(avg held-out gain {decision.get('avg_gain', 0):.1%})"
+    )
 
 
 @app.command("regenerate-fixtures")
