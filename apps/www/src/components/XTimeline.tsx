@@ -1,69 +1,45 @@
-"use client";
-
-import { useEffect } from "react";
-
+import { xProfileUrl } from "@/lib/people";
 import type { TimelineAccount } from "@/lib/ai-news";
 
-declare global {
-  interface Window {
-    twttr?: {
-      widgets?: {
-        load: (element?: HTMLElement | null) => void;
-      };
-    };
-  }
-}
-
-const WIDGET_SRC = "https://platform.twitter.com/widgets.js";
-
-function ensureWidgetsScript(): void {
-  if (typeof document === "undefined") return;
-  if (document.querySelector(`script[src="${WIDGET_SRC}"]`)) {
-    window.twttr?.widgets?.load();
-    return;
-  }
-  const script = document.createElement("script");
-  script.src = WIDGET_SRC;
-  script.async = true;
-  script.charset = "utf-8";
-  script.onload = () => window.twttr?.widgets?.load();
-  document.body.appendChild(script);
+function accountInitials(label: string): string {
+  const parts = label.trim().split(/\s+/).filter(Boolean);
+  if (parts.length === 0) return "?";
+  if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
+  return `${parts[0][0]}${parts[parts.length - 1][0]}`.toUpperCase();
 }
 
 /**
- * Official X timeline embeds. No API key — X may throttle or restyle widgets.
- * Each column links out to the live profile if the widget fails to paint.
+ * Compact X profile cards. Official widgets.js embeds stay blank when the
+ * third-party script or cookies are blocked — link out instead.
  */
 export function XTimelineGrid({ accounts }: { accounts: TimelineAccount[] }) {
-  useEffect(() => {
-    ensureWidgetsScript();
-  }, [accounts]);
-
   return (
     <div className="timeline-grid">
-      {accounts.map((account) => (
-        <div key={account.id} className="timeline-card">
-          <div className="timeline-card-head">
-            <h3>{account.label}</h3>
+      {accounts.map((account) => {
+        const href = xProfileUrl(account.handle);
+        return (
+          <article key={account.id} className="timeline-card">
+            <div className="timeline-card-head">
+              <span className="timeline-monogram" aria-hidden="true">
+                {accountInitials(account.label)}
+              </span>
+              <div className="timeline-card-identity">
+                <h3>{account.label}</h3>
+                <p className="timeline-handle-text">@{account.handle}</p>
+              </div>
+            </div>
+            {account.blurb ? <p className="timeline-blurb">{account.blurb}</p> : null}
             <a
-              href={`https://x.com/${account.handle}`}
+              href={href}
               rel="noopener noreferrer"
-              className="timeline-handle"
+              className="timeline-open"
+              aria-label={`Open ${account.label} on X`}
             >
-              @{account.handle} →
+              Open on X →
             </a>
-          </div>
-          <a
-            className="twitter-timeline"
-            data-height="420"
-            data-chrome="noheader nofooter noborders transparent"
-            data-theme="light"
-            href={`https://twitter.com/${account.handle}?ref_src=twsrc%5Etfw`}
-          >
-            Tweets by @{account.handle}
-          </a>
-        </div>
-      ))}
+          </article>
+        );
+      })}
     </div>
   );
 }

@@ -34,7 +34,7 @@ export type RecapFacts = {
   season: number;
   period: number;
   periodLabel: string;
-  sport: "football" | "baseball";
+  sport: "football" | "baseball" | "hockey";
   awards: DigestAward[];
   rankings: PowerRankingRow[];
   games: RecapGameFact[];
@@ -50,7 +50,7 @@ export type RecapArticle = {
   league_id: string;
   season: number;
   period: number;
-  sport: "football" | "baseball";
+  sport: "football" | "baseball" | "hockey";
   generated_at: string;
   /** Model id, or `template` / `fixture`. */
   model: string;
@@ -64,8 +64,10 @@ export type RecapArticle = {
 
 export function recapSport(
   sport: string,
-): "football" | "baseball" | null {
-  if (sport === "football" || sport === "baseball") return sport;
+): "football" | "baseball" | "hockey" | null {
+  if (sport === "football" || sport === "baseball" || sport === "hockey") {
+    return sport;
+  }
   return null;
 }
 
@@ -155,7 +157,12 @@ export function parseRecapArticle(raw: unknown): RecapArticle | null {
   if (doc.schema_version !== RECAP_SCHEMA_VERSION) return null;
   if (typeof doc.league_id !== "string" || !doc.league_id) return null;
   if (!Number.isInteger(doc.season) || !Number.isInteger(doc.period)) return null;
-  if (doc.sport !== "football" && doc.sport !== "baseball") return null;
+  if (
+    doc.sport !== "football" &&
+    doc.sport !== "baseball" &&
+    doc.sport !== "hockey"
+  )
+    return null;
   if (typeof doc.headline !== "string" || typeof doc.dek !== "string") return null;
   if (!Array.isArray(doc.body) || !Array.isArray(doc.ranking_copy)) return null;
   const body = doc.body.filter((p): p is string => typeof p === "string" && p.trim().length > 0);

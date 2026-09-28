@@ -156,6 +156,32 @@ function setupEventListeners() {
     showToast("Today panel refreshed");
   });
 
+  const openHomeSession = (sessionId) => {
+    activeSessionId = sessionId;
+    renderSessions();
+    setView("log", { focus: true });
+    document
+      .querySelector("#sessionDetailPanel")
+      ?.scrollIntoView({ behavior: "smooth", block: "start" });
+  };
+
+  document.querySelector("#homeRecentSessions")?.addEventListener("click", (event) => {
+    const openCard = event.target.closest("[data-today-open]");
+    if (openCard) {
+      openHomeSession(openCard.dataset.todayOpen);
+    }
+  });
+
+  document.querySelector("#homeSportChips")?.addEventListener("click", (event) => {
+    const chip = event.target.closest("[data-home-sport]");
+    if (!chip) return;
+    const filter = document.querySelector("#historyFilter");
+    if (filter) filter.value = chip.dataset.homeSport;
+    renderSessions();
+    setView("log", { focus: true });
+    document.querySelector("#sessionList")?.scrollIntoView({ behavior: "smooth", block: "start" });
+  });
+
   document.querySelector("#todayGrid").addEventListener("click", (event) => {
     const completeButton = event.target.closest("[data-today-complete]");
     const openButton = event.target.closest("[data-today-open]");
@@ -605,6 +631,60 @@ function setupEventListeners() {
       .join("\n");
     downloadTextFile("athlete-log-sessions.csv", csv, "text/csv");
     showToast("CSV export prepared");
+  });
+
+  const applyHevyCsvImport = (csvText) => {
+    const status = document.querySelector("#hevyImportStatus");
+    if (!isSignedInFitnessMember(window.__sjFitness)) {
+      const message = "Sign in to import Hevy workouts into your log.";
+      if (status) status.textContent = message;
+      showToast(message);
+      return;
+    }
+    let workouts;
+    try {
+      workouts = parseHevyCsv(csvText);
+    } catch (error) {
+      const message = error?.message || "Could not parse Hevy CSV";
+      if (status) status.textContent = message;
+      showToast(message);
+      return;
+    }
+    const incoming = hevyWorkoutsToSessions(workouts).map((session) => normalizeSession(session));
+    const result = mergeHevySessions(store.getState().sessions, incoming);
+    if (result.imported > 0) {
+      activeSessionId = result.sessions[0]?.id || activeSessionId;
+      store.updateSessions(() => result.sessions);
+    }
+    const summary = `${result.imported} workout${result.imported === 1 ? "" : "s"} imported, ${result.skipped} skipped`;
+    if (status) status.textContent = summary;
+    showToast(summary);
+    if (result.imported > 0) {
+      setView("log", { focus: true });
+      document.querySelector("#sessionList")?.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+  };
+
+  document.querySelector("#hevyCsvFile").addEventListener("change", (event) => {
+    const file = event.target.files && event.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      document.querySelector("#hevyCsvText").value = String(reader.result || "");
+    };
+    reader.onerror = () => {
+      showToast("Could not read that Hevy CSV file");
+    };
+    reader.readAsText(file);
+  });
+
+  document.querySelector("#importHevy").addEventListener("click", () => {
+    const csvText = document.querySelector("#hevyCsvText").value.trim();
+    if (!csvText) {
+      showToast("Paste a Hevy CSV or choose a file first");
+      return;
+    }
+    applyHevyCsvImport(csvText);
   });
 
   document.querySelector("#importJson").addEventListener("click", () => {

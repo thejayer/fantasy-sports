@@ -256,6 +256,20 @@ describe("buildLeagueCard", () => {
     );
     expect(card.actions.some((a) => a.id.startsWith("stale-"))).toBe(false);
   });
+
+  it("flags ESPN season-points leagues for FP chrome", () => {
+    const card = buildLeagueCard(
+      football({
+        sport: "baseball",
+        scoring_type: "TOTAL_SEASON_POINTS",
+        settings: { scoring_type: "TOTAL_SEASON_POINTS" },
+      } as Partial<LeagueSnapshot>),
+      1,
+      { now },
+    );
+    expect(card.seasonPoints).toBe(true);
+    expect(card.scoringType).toBe("TOTAL_SEASON_POINTS");
+  });
 });
 
 describe("golfLineupAction", () => {
@@ -429,6 +443,24 @@ describe("home season filter", () => {
     expect(resolveHomeSeason([2026, 2024], 2019)).toBe(2026);
     expect(resolveHomeSeason([2026, 2024], undefined)).toBe(2026);
     expect(resolveHomeSeason([], 2024)).toBeNull();
+  });
+
+  it("defaults to the densest year when hockey ESPN year runs ahead", () => {
+    const mixed = [
+      ...index,
+      indexRow({
+        league_id: "hockey-main",
+        name: "Hockey",
+        sport: "hockey",
+        season: 2027,
+      }),
+    ];
+    const years = homeAvailableSeasons(mixed);
+    expect(years).toEqual([2027, 2026, 2024]);
+    // 2026 has football + baseball; 2027 is hockey-only.
+    expect(resolveHomeSeason(years, undefined, mixed)).toBe(2026);
+    expect(resolveHomeSeason(years, 2027, mixed)).toBe(2027);
+    expect(resolveHomeSeason(years, undefined)).toBe(2027);
   });
 
   it("keeps only leagues that have that season", () => {

@@ -24,6 +24,8 @@ describe("LeagueView unification", () => {
     expect(pageSource).not.toMatch(/BaseballLeagueView/);
     expect(pageSource).not.toMatch(/function record\(/);
     expect(pageSource).toMatch(/getProSchedule/);
+    expect(pageSource).toMatch(/getBaseballAnalysis/);
+    expect(pageSource).toMatch(/sport === "hockey"/);
   });
 
   it("shared view includes season chips, win%, and sport-gated standings", () => {
@@ -63,6 +65,9 @@ describe("LeagueView unification", () => {
     expect(viewSource).toMatch(/projection-free by design/);
     expect(viewSource).toMatch(/Baseball stays projection-free by design/);
     expect(viewSource).toMatch(/BaseballToolsPanel/);
+    expect(viewSource).toMatch(/HOCKEY_TABS/);
+    expect(viewSource).toMatch(/HockeyToolsPanel/);
+    expect(viewSource).toMatch(/Hockey stays projection-free by design/);
     expect(viewSource).not.toMatch(/Decision tools are football-only by design/);
     expect(viewSource).not.toMatch(/until roadmap 4\.6/);
     // Roadmap 6.4a–c: golf lane — settings, draft, lineup panel.
@@ -70,6 +75,18 @@ describe("LeagueView unification", () => {
     expect(viewSource).toMatch(/GolfSettingsPanel/);
     expect(viewSource).toMatch(/GolfLineupPanel/);
     expect(viewSource).toMatch(/GolfScoreboardPanel/);
+    expect(viewSource).toMatch(/ScoringSandboxPanel/);
+    expect(viewSource).toMatch(/"sandbox"/);
+    expect(viewSource).toMatch(/HallOfShamePanel/);
+    expect(viewSource).toMatch(/"drops"/);
+    expect(viewSource).toMatch(/BaseballAnalysisPanel/);
+    expect(viewSource).toMatch(/"analysis"/);
+    expect(
+      readFileSync(
+        path.join(process.cwd(), "src/components/BaseballAnalysisPanel.tsx"),
+        "utf8",
+      ),
+    ).toMatch(/^["']use client["']/m);
     expect(viewSource).toMatch(/isGolf/);
     expect(viewSource).not.toMatch(/Snake draft comes in 6\.4b/);
     expect(viewSource).not.toMatch(/Weekly lineups come in 6\.4c/);

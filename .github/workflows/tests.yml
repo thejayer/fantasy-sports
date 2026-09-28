@@ -208,6 +208,8 @@ jobs:
         run: npm run build
         env:
           SITE_URL: https://fitness.strictlyjayers.com
+          AUTH_URL: https://fitness.strictlyjayers.com
+          AUTH_SECRET: ci-fitness-secret
           COMMUNITY_SITE_URL: https://strictlyjayers.com
           FANTASY_HUB_URL: https://fantasy.strictlyjayers.com
 
@@ -224,6 +226,20 @@ jobs:
         run: npm run test:e2e
         env:
           SITE_URL: http://127.0.0.1:3003
+          AUTH_URL: http://127.0.0.1:3003
+          AUTH_SECRET: ci-fitness-secret
+          AUTH_DEV_BYPASS: "1"
+          SJ_DEV_VIEWER_EMAIL: demo@example.com
+          COMMUNITY_SITE_URL: https://strictlyjayers.com
+          FANTASY_HUB_URL: https://fantasy.strictlyjayers.com
+
+      - name: Fitness auth wall
+        run: npm run test:e2e:auth
+        env:
+          SITE_URL: http://127.0.0.1:3004
+          AUTH_URL: http://127.0.0.1:3004
+          AUTH_SECRET: ci-fitness-secret
+          AUTH_DEV_BYPASS: "0"
           COMMUNITY_SITE_URL: https://strictlyjayers.com
           FANTASY_HUB_URL: https://fantasy.strictlyjayers.com
 

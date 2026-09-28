@@ -25,6 +25,9 @@ test.describe("hub smoke", () => {
       page.getByRole("link", { name: /Strictly Jayers Baseball/ }),
     ).toBeVisible();
     await expect(
+      page.getByRole("link", { name: /Strictly Jayers Hockey/ }),
+    ).toBeVisible();
+    await expect(
       page.getByRole("link", { name: /Strictly Jayers Golf/ }),
     ).toBeVisible();
     await expect(
@@ -374,10 +377,13 @@ test.describe("hub smoke", () => {
       ).toBeVisible();
 
       // Link a franchise in each remaining league so the portfolio strip
-      // covers the four-sport set (roadmap 9.4).
+      // covers every sport (roadmap 9.4). Hockey's ESPN year can sit one
+      // ahead of football/baseball/golf; home still defaults to the densest
+      // year, but 2027 must also have a linked franchise.
       for (const label of [
         /Team for Strictly Jayers Football Dynasty/i,
         /Team for Strictly Jayers Baseball/i,
+        /Team for Strictly Jayers Hockey/i,
         /Team for Strictly Jayers Golf/i,
       ]) {
         const select = page.getByLabel(label);
@@ -505,6 +511,51 @@ test.describe("hub smoke", () => {
     await expect(page.getByText(/As ESPN reports them/i)).toBeVisible();
     await expect(page.getByRole("heading", { name: "Roster", exact: true })).toBeVisible();
     await expect(page.getByText(/Slots/i).first()).toBeVisible();
+  });
+
+  test("football scoring lab flips a week 14 matchup when PPR turns on (roadmap 8.4)", async ({
+    page,
+  }) => {
+    await page.goto("/leagues/football-main?tab=sandbox&week=14");
+    await expect(page.getByText(/Scoring lab/i).first()).toBeVisible();
+    await expect(page.getByRole("heading", { name: /Team totals/i })).toBeVisible();
+    await page.getByRole("button", { name: /week 14/i }).click();
+    const rec = page.getByLabel("Receptions (PPR) value");
+    await expect(rec).toBeVisible();
+    const official = await rec.inputValue();
+    await rec.fill(String(Number(official) + 1));
+    await expect(page.getByText(/W → L|L → W/)).toBeVisible();
+  });
+
+  test("baseball scoring lab reweights HR (roadmap 8.4)", async ({ page }) => {
+    await page.goto("/leagues/baseball-dynasty?tab=sandbox");
+    await expect(page.getByText(/Season Points/i).first()).toBeVisible();
+    const hr = page.getByLabel("HR value");
+    await expect(hr).toBeVisible();
+    await hr.fill("10");
+    await expect(page.locator("td.is-delta, .is-delta").first()).toBeVisible();
+  });
+
+  test("hockey league opens standings and scoring lab from fixtures", async ({
+    page,
+  }) => {
+    await page.goto("/leagues/hockey-main");
+    await expect(
+      page.getByRole("heading", { name: /Strictly Jayers Hockey/i }),
+    ).toBeVisible();
+    await expect(page.getByText(/projection-free by design/i)).toBeVisible();
+    await expect(page.getByText(/Hockey · Redraft/i)).toBeVisible();
+    await page.goto("/leagues/hockey-main?tab=sandbox");
+    await expect(page.getByText(/Scoring lab/i).first()).toBeVisible();
+    // "G value" is a substring of "PPG value" / "SOG value" — match exact.
+    const goals = page.getByRole("spinbutton", { name: "G value", exact: true });
+    await expect(goals).toBeVisible();
+    await goals.fill("6");
+    await expect(page.locator("td.is-delta, .is-delta").first()).toBeVisible();
+    await page.goto("/leagues/hockey-main?tab=projections");
+    await expect(
+      page.getByText(/Hockey stays projection-free by design/i),
+    ).toBeVisible();
   });
 
   test("secondary tabs live behind the More disclosure (roadmap 7.5)", async ({
@@ -684,6 +735,58 @@ test.describe("hub smoke", () => {
     ).toBeVisible();
   });
 
+  test("baseball analysis tab shows slot table and chart (roadmap 8.5)", async ({
+    page,
+  }) => {
+    await page.goto("/leagues/baseball-dynasty?tab=analysis");
+    await expect(page.getByRole("heading", { name: "Analysis" })).toBeVisible();
+    await expect(
+      page.getByRole("heading", { name: "Points by lineup slot" }),
+    ).toBeVisible();
+    await expect(page.getByRole("columnheader", { name: "Starters" }).first()).toBeVisible();
+    await expect(page.getByText("Bat Flip Bandits").first()).toBeVisible();
+    await expect(
+      page.getByRole("heading", { name: "Batters vs pitchers" }),
+    ).toBeVisible();
+    await expect(page.getByRole("img", { name: /Season points by team/i })).toBeVisible();
+    await page.getByRole("link", { name: "Daily" }).click();
+    await expect(page).toHaveURL(/series=daily/);
+  });
+
+  test("hockey analysis tab shows slot table and skater/goalie split (roadmap 8.5)", async ({
+    page,
+  }) => {
+    await page.goto("/leagues/hockey-main?tab=analysis");
+    await expect(page.getByRole("heading", { name: "Analysis" }).first()).toBeVisible();
+    await expect(
+      page.getByRole("heading", { name: "Points by lineup slot" }),
+    ).toBeVisible();
+    await expect(
+      page.getByRole("columnheader", { name: "Forward" }).first(),
+    ).toBeVisible();
+    await expect(
+      page.getByRole("heading", { name: "Skaters vs goalies" }),
+    ).toBeVisible();
+    await expect(page.getByRole("img", { name: /Season points by team/i })).toBeVisible();
+    await page.getByRole("link", { name: "Daily" }).click();
+    await expect(page).toHaveURL(/series=daily/);
+  });
+
+  test("baseball hall of shame ranks fixture drop by season FP (roadmap 9.5)", async ({
+    page,
+  }) => {
+    await page.goto("/leagues/baseball-dynasty?tab=drops");
+    await expect(page.getByRole("heading", { name: /Hall of Shame/i })).toBeVisible();
+    await expect(page.getByText(/worst drops this season/i)).toBeVisible();
+    await expect(
+      page.getByRole("columnheader", { name: "Season FP" }).first(),
+    ).toBeVisible();
+    await expect(page.getByRole("link", { name: "Daniel Moore" }).first()).toBeVisible();
+    await expect(page.getByText("541.5").first()).toBeVisible();
+    await expect(page.getByText("Diamond Dogs").first()).toBeVisible();
+    await expect(page.getByText(/Bruce Green/).first()).toBeVisible();
+  });
+
   test("baseball Season Points standings show points without H2H record", async ({
     page,
   }) => {
@@ -692,7 +795,9 @@ test.describe("hub smoke", () => {
     await expect(
       page.getByText(/standings by cumulative fantasy points/i),
     ).toBeVisible();
-    await expect(page.getByRole("columnheader", { name: "Points" })).toBeVisible();
+    await expect(
+      page.getByRole("columnheader", { name: "Season FP" }),
+    ).toBeVisible();
     await expect(page.getByRole("columnheader", { name: "Record" })).toHaveCount(
       0,
     );

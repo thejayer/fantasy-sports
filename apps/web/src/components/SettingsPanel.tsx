@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { EmptyState } from "@/components/EmptyState";
 import type { LeagueSnapshot } from "@/lib/data";
 import { espnSettingsUrl } from "@/lib/espn-links";
@@ -68,6 +69,38 @@ export function SettingsPanel({ league }: { league: LeagueSnapshot }) {
             Edit on ESPN ↗
           </a>{" "}
           — commissioner tools live there, not here.
+        </p>
+      ) : null}
+      <p className="muted">
+        <Link
+          href={`/leagues/${league.league_id}?season=${league.season}&tab=sandbox`}
+        >
+          Open the Scoring lab
+        </Link>{" "}
+        to clone these weights and see standings or week W/L move. The hub
+        does not write ESPN.
+      </p>
+      {league.sport !== "golf" ? (
+        <p className="muted">
+          <Link
+            href={`/leagues/${league.league_id}?season=${league.season}&tab=drops`}
+          >
+            Hall of Shame
+          </Link>{" "}
+          ranks this season&apos;s worst drops by the cut player&apos;s season
+          FP. Read-only over synced activity.
+        </p>
+      ) : null}
+      {(league.sport === "baseball" || league.sport === "hockey") ? (
+        <p className="muted">
+          <Link
+            href={`/leagues/${league.league_id}?season=${league.season}&tab=analysis`}
+          >
+            Analysis
+          </Link>{" "}
+          shows season-points by lineup slot and a cumulative points chart.
+          Needs a synced <code>analysis/</code> sidecar — the hub does not
+          call ESPN from this page.
         </p>
       ) : null}
     </div>

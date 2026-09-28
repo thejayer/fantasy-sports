@@ -37,6 +37,41 @@
     document.documentElement.style.setProperty("--color-accent", hex);
   }
 
+  function renderAccount(user) {
+    const wrap = document.getElementById("sjAccount");
+    const name = document.getElementById("sjAccountName");
+    const signOut = document.getElementById("sjSignOut");
+    if (!wrap || !name || !signOut || !user) return;
+    name.textContent = user.name || user.email || "Member";
+    wrap.hidden = false;
+    signOut.addEventListener("click", async () => {
+      try {
+        const csrfRes = await fetch("/api/auth/csrf", { credentials: "same-origin" });
+        const csrf = csrfRes.ok ? await csrfRes.json() : {};
+        const body = new URLSearchParams();
+        if (csrf.csrfToken) body.set("csrfToken", csrf.csrfToken);
+        body.set("callbackUrl", "/login");
+        await fetch("/api/auth/signout", {
+          method: "POST",
+          credentials: "same-origin",
+          headers: { "content-type": "application/x-www-form-urlencoded" },
+          body,
+        });
+      } catch {
+        /* still leave */
+      }
+      location.replace("/login");
+    });
+  }
+
+  if (window.__sjFitness?.user) {
+    renderAccount(window.__sjFitness.user);
+  } else {
+    window.addEventListener("sj-fitness-ready", () => {
+      renderAccount(window.__sjFitness && window.__sjFitness.user);
+    });
+  }
+
   const picker = document.getElementById("accentPicker");
   if (!picker) return;
   const current = readAccent();

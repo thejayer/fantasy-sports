@@ -5,8 +5,13 @@ const getSportCounts = () =>
     return counts;
   }, {});
 
+const emptyRecoveryFlag = { area: "None", score: 0, trend: "Same" };
+
 const getHighestRecoveryFlag = () =>
-  recovery.reduce((highest, item) => (item.score > highest.score ? item : highest), recovery[0]);
+  recovery.reduce(
+    (highest, item) => (item && item.score > highest.score ? item : highest),
+    recovery[0] || emptyRecoveryFlag
+  );
 
 const getTodayCheckin = () =>
   readinessCheckins.find((checkin) => checkin.date === getToday()) || null;
@@ -71,7 +76,8 @@ const getSportRecovery = (profile) => {
 };
 
 const getSportReadiness = (profile, sportSessions) => {
-  const recoveryFlag = getSportRecovery(profile);
+  const recoveryFlag = getSportRecovery(profile) || emptyRecoveryFlag;
+  const flagScore = Number(recoveryFlag.score) || 0;
   const averageEffort = sportSessions.length
     ? sportSessions.reduce((sum, session) => sum + getSessionEffort(session), 0) /
       sportSessions.length
@@ -81,7 +87,7 @@ const getSportReadiness = (profile, sportSessions) => {
     Math.min(
       96,
       Math.round(
-        92 - recoveryFlag.score * 4 - Math.max(0, averageEffort - 6) * 4 + sportSessions.length * 2
+        92 - flagScore * 4 - Math.max(0, averageEffort - 6) * 4 + sportSessions.length * 2
       )
     )
   );

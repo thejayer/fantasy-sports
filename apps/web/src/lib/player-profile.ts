@@ -131,6 +131,16 @@ export function playerStatLines(
     push("WHIP", num(stats.WHIP, 2));
   }
 
+  if (sport === "hockey") {
+    const stats = player.season_stats ?? {};
+    push("G", num(stats.G, 0));
+    push("A", num(stats.A, 0));
+    push("PPP", num(stats.PPP, 0));
+    push("SOG", num(stats.SOG, 0));
+    push("W", num(stats.W, 0));
+    push("SV%", num(stats["SV%"], 3));
+  }
+
   if (sport === "golf" && player.season_stats?.OWGR != null) {
     push("OWGR", num(player.season_stats.OWGR, 0));
   }

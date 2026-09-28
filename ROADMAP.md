@@ -182,7 +182,7 @@ GitHub Actions on a weekly cadence. After a Dependabot bump to
 ### 1.6 Baseline observability — LANDED
 Public `GET /api/health` (middleware allowlisted, session-free) reports
 per-league `synced_at` age for the latest season of each league. HTTP 200 when
-fresh, 503 when empty or past `SJ_HEALTH_STALE_SECONDS` (default 2h). Route-level
+fresh, 503 when empty or past `SJ_HEALTH_STALE_SECONDS` (default 26h). Route-level
 `error.tsx` / `not-found.tsx` log to stderr for Cloud Logging / Error Reporting.
 
 `scripts/setup-sync-alerting.sh` creates a Cloud Monitoring email alert on
@@ -191,7 +191,7 @@ alert trustworthy. Optional uptime check on `/api/health` is documented in
 HUB.md (console click; needs the live hub URL).
 
 ### 1.7 Next.js 16 and the ESLint CLI — LANDED
-`apps/web` is on `next` / `eslint-config-next` 16.2.x. Lint is the ESLint CLI
+`apps/web` is on `next` / `eslint-config-next` 16.3.x. Lint is the ESLint CLI
 (`eslint .`) via the codemod flat config (`eslint-config-next/core-web-vitals` +
 `typescript`). `next-auth@5.0.0-beta.32` already peers `^16`.
 
@@ -204,6 +204,7 @@ Compatibility notes kept in-tree:
   `app-build-manifest.json` is absent (Turbopack is the default `next build`).
 - Overrides revisited: `next` still pins `postcss` 8.4.31 / `sharp` ^0.34.5;
   advisory-clean `brace-expansion@5` needs `minimatch@^10` alongside it.
+  Aug 2026 RCE advisories: `next@16.3.4`, `sharp@^0.35.4`, `js-yaml@^4.3.2`.
 
 ---
 
@@ -256,8 +257,10 @@ Shipped the high-leverage slice without ballooning snapshot size:
   ESPN request; this is what makes `format: dynasty` mean something on disk.
 - **Transactions / trades** via paged `recent_activity` (both sports; empty
   before 2019) → `transactions.json` (fills the 2.2 stub). Default 200 pages ×
-  25 topics (`SJ_ACTIVITY_MAX_PAGES`, max 400). Sync replaces the file; it
-  does not merge with a prior pull.
+  25 topics (`SJ_ACTIVITY_MAX_PAGES`, max 400). Historical seasons fall back
+  to `mTransactions2` by scoring period when the communication view is empty
+  or raises `ESPNInvalidLeague`. Sync replaces the file; it does not merge
+  with a prior pull.
 - **Free agents / waivers** via `league.free_agents` (both sports; empty before
   2019; size-capped, default 50, `SJ_FREE_AGENT_SIZE` up to 150) →
   `free_agents.json`. Hub Waivers tab prefers this list (joined to season
@@ -655,7 +658,8 @@ against ESPN, Yahoo, Sleeper, and FantasyPros. That audit's finding: phases 0–
 built a very good reference library. Opening it does nothing.
 
 **Status: 7.1–7.11 have landed**, including the deferred Δ playoff-odds pricing
-(7.8) and golf tee-time reminders (7.7). Phase 8 is next. Measured results are
+(7.8) and golf tee-time reminders (7.7). Phase 8.1–8.3 landed; **8.4** is the
+LM scoring sandbox. Measured results are
 in "What done looks like" at the end.
 
 **Nine of its thirteen findings are blocked on nothing** — they are ordering,
@@ -986,6 +990,28 @@ tooling needs no model — it is scheduling and roster arithmetic:
 
 Hub: `BaseballToolsPanel` + `lib/baseball-tools.ts`. Keep projections EmptyState.
 
+### 8.5 Season-points Analysis (baseball + hockey) — LANDING
+Season Points (`TOTAL_SEASON_POINTS`) leagues — `baseball-dynasty` and
+`hockey-main` — have no stored daily lineups. Analysis is snapshot arithmetic
+from a sync-time ESPN period walk, not projections and not a Next.js ESPN
+fan-out.
+
+- **Sync:** `sj sync` / `sj backfill` / `sj analysis` write
+  `{league}/{season}/analysis/slot_points.json` and
+  `points_timeseries.json` via `sync_season_points_analysis`. Each scoring
+  period: `view=mRoster`, credit `player.stats` `appliedTotal`
+  (`statSourceId=0`, `statSplitTypeId=5`) to `lineupSlotId`. Never
+  `ppe.appliedStatTotal`. Incremental reuse of completed `period_slots`;
+  throttle via `SJ_TXN_PERIOD_THROTTLE`.
+- **Hub:** `?tab=analysis` (primary on season-points baseball and hockey) —
+  slot table, bats vs pitchers **or** skaters vs goalies, multi-team
+  cumulative chart (`?series=`). `getBaseballAnalysis` (sport-aware) +
+  EmptyState when missing / H2H category.
+- **Hockey slots:** Forward / Defense / Goalie / Util. NHL opening-night
+  calendar (ESPN 2027 = 2026–27).
+- **Fixtures:** synthetic sample next to `baseball-dynasty/2026` and
+  `hockey-main/2027`. Live slot totals need a cookie sync.
+
 ### 8.3 Golf: close the week-to-week loop — LANDED (offline)
 Golf is the one sport where the hub *is* the system of record, so every gap is
 ours:
@@ -1010,13 +1036,33 @@ ours:
 
 Live in-round scoring stays out — it needs a durable PGAT feed (risk 6.6).
 
+### 8.4 League Manager scoring sandbox — LANDING
+Read-only ESPN / hub-native settings already render (7.9). This is the
+commissioner *what-if*: clone the league's scoring items, tweak weights
+(or baseball cats / golf keep-N), and see every team's totals and weekly
+W/L move — without writing ESPN or the live settings file.
+
+- **Hub:** `?tab=sandbox` (Scoring lab) on football, baseball, and golf.
+  Starts from `settings.scoring_format` / `categories` / `settings.golf`.
+  Extra box-stat keys (PPR `REC`) appear at weight 0 when the snapshot
+  has the line. Optional sessionStorage draft for the tab.
+- **Football:** stored `weeks/{N}.json` starter `stats` × tweaked weights,
+  residual against ESPN `home_score` / `away_score`. Matchup table shows
+  Won → Lost. Fixtures: football-main weeks 13–14 with named stat lines.
+- **Baseball:** Season Points reweights roster `season_stats` (HR, R, …);
+  H2H cats show rank / cat-win flips, not a fake FP total. No `ffa` MLB.
+- **Golf:** re-keep scoreboard slot points (`thu_fri_count`, drop-worst,
+  multipliers) when the snapshot has events.
+- **Auth:** same hub allowlist as every league tab. Sandbox is ephemeral,
+  so any member can open it (admin-only stays on tools that write).
+
 ---
 
 ## Phase 9 — Optional, and only if members ask
 
 Named so they are not accidentally treated as roadmap:
 
-- **Live scoring.** Requires a real-time feed and a push channel; the 30-minute
+- **Live scoring.** Requires a real-time feed and a push channel; the daily
   batch sync is a deliberate architecture. Tighten sync cadence on game days
   before considering it.
 - **Side games.** Survivor/knockout (ESPN shipped Knockout for 2026, Yahoo
@@ -1031,6 +1077,12 @@ Named so they are not accidentally treated as roadmap:
   `playoff_odds` exists. Cards below keep matchup detail and actions.
   Shared year filter (`?season=` + `SeasonSwitcher`) switches all league
   cards/portfolio rows at once; leagues without that season are omitted.
+- ~~**Hall of Shame / worst drops**~~ — **LANDED** as `?tab=drops` on ESPN
+  sports (roadmap 9.5): first `DROPPED` / `WAIVER DROPPED` per team–player,
+  ranked by the cut player's ESPN-applied season FP from roster /
+  `free_agents` / `players`. Claimed-after via later `FA ADDED` /
+  `WAIVER ADDED`; same-team re-add noted. Empty ledger → EmptyState.
+  Sandbox / read-only.
 - **Native/PWA install.** `manifest.ts` already exists; a real app shell is a
   separate project.
 
@@ -1129,10 +1181,11 @@ fantasy stays on `fantasy.strictlyjayers.com`. Docs: [PORTAL.md](PORTAL.md).
 - Hero atmosphere imagery under the Signal Red plane; intentional home motion
   (brand settle, CTA lift, destination hover) with `prefers-reduced-motion`.
 
-### P.2 Content and destinations — LANDED (Palworld pending)
+### P.2 Content and destinations — LANDED
 - Discord invite live (default in `lib/site.ts`; optional `DISCORD_INVITE_URL`).
-- Palworld stays a **“Details soon”** tile until `PALWORLD_INFO_URL` is set on
-  `sj-www` — intentional, not a missing destination.
+- Palworld is a real `/palworld` room (P.10); home tile links there. Soon only
+  if join copy is emptied. Optional `PALWORLD_STATUS` / `PALWORLD_INFO_URL`
+  — never IPs or passwords.
 - Home destinations answer “why go here now”; Coming up event strip + Meet the
   crew deep-links to hub `/u/{handle}` (handles edited in `lib/content.ts`).
 - Reciprocal **Community** link in hub chrome (header + mobile nav) →
@@ -1165,9 +1218,9 @@ jump voice” CTAs, YouTube / hub cross-links, and a “how we use this” room
 section. Fail-soft when the feed is down (embed stays).
 
 ### P.7 Portal smoke — LANDED (light)
-Vitest on portal content helpers + Playwright smoke (home CTAs, `/watch`
-embed + tonight’s pick, `/ai` editor picks, `/people` X links). Wired into the
-`www` CI job.
+Vitest on portal content helpers + Playwright smoke (home pulse + rooms,
+`/watch` player + queue, `/ai` Must read, `/people` X links, `/palworld`).
+Wired into the `www` CI job.
 
 ### P.8 People directory — LANDING
 - `/people` on `apps/www`: bank-style leadership cards (portrait, 2–3 sentence
@@ -1180,12 +1233,31 @@ embed + tonight’s pick, `/ai` editor picks, `/people` X links). Wired into the
 ### P.9 Fitness training log — LANDING
 - Sibling Cloud Run app `apps/fitness` → `sj-fitness` → intended
   `fitness.strictlyjayers.com` (not a www route; SW would intercept the apex).
-- Athlete-log product behavior (sports logging, localStorage / IDB, PWA)
-  restyled onto Modernist tokens. Portal nav / People / destinations deep-link
-  via `FITNESS_URL`. Docs: [FITNESS.md](FITNESS.md).
+- Athlete-log product behavior (sports logging, PWA) restyled onto Modernist
+  tokens. Portal nav / People / destinations deep-link via `FITNESS_URL`.
+  Docs: [FITNESS.md](FITNESS.md).
+- **Per-member identity:** Auth.js + the same Google client and
+  `ALLOWED_EMAILS` ∪ `hub_members.json` allowlist as Fantasy. `/api/me`
+  persists `{SJ_FITNESS_DIR}/users/{hash}/athlete.json` (GCS mount, not
+  Firestore). Guests hit a sign-in wall. Anonymous `athleteLog.*` migrates
+  once into that signed-in profile. Local cache is `athleteLog.{userKey}.*`.
 - Deploy: `.github/workflows/deploy-fitness.yml` +
   `./scripts/setup-fitness-domain.sh` (ops maps DNS; PR does not require a
-  Spaceship click).
+  Spaceship click). Add the fitness origin/redirect to the existing Google
+  OAuth client.
+
+### P.10 Living rooms + portal pulse — LANDING
+Phase E of the sitewide UX pass (A–D shipped in #153).
+- Home **pulse strip** under the hero: next dated event, Watch feed title/count
+  (only when the playlist RSS returns items), Discord voice CTA. No invented
+  numbers.
+- `/watch` player + queue (HoneyBook / ClickUp): featured embed ~2/3, sidebar
+  queue ~1/3 with thumbnails and Playing. `?v=` stays on youtube-nocookie +
+  the same playlist. Discord / YouTube CTAs kept.
+- `/ai` editorial desk: Must read hero + editor-picks sidebar, Top stories
+  card grid for RSS. Same hourly-ish feed plumbing.
+- `/palworld` room + sitemap. Nav More and room pages cross-link Watch ↔ AI ↔
+  People ↔ Palworld.
 
 ---
 
@@ -1262,7 +1334,9 @@ football box scores + player week game logs; 8.2 baseball projection-free
 toolkit (category board + period boxes, trailing, schedule/two-starts/locks,
 IP/GS caps); 8.3 golf depth (projected week totals, golfer pages, segment
 start limits, auto-pick, optional drop-worst — offline / EOD; not live
-hole-by-hole); 9.4 multi-league portfolio table on `/`.
+hole-by-hole); 8.5 season-points Analysis (`?tab=analysis`, baseball + hockey
+slot table + cumulative chart from sync `mRoster` walk); 9.4 multi-league
+portfolio table on `/`; 9.5 Hall of Shame worst drops (`?tab=drops`).
 Open: remaining Phase 9 items only if members ask (live scoring, side games,
 dues, PWA).
 Postponed: 7.7 scheduled Discord auto-send / email fallback.

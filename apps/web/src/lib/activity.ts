@@ -48,6 +48,19 @@ export function isDropAction(action: string | null | undefined): boolean {
   return (action ?? "").toUpperCase().includes("DROP");
 }
 
+/** ESPN `FA ADDED` / `WAIVER ADDED` (not drops, not trades). */
+export function isAddAction(action: string | null | undefined): boolean {
+  const text = (action ?? "").toUpperCase();
+  if (!text || text.includes("DROP") || text.includes("TRADE")) return false;
+  return (
+    text === "FA ADDED" ||
+    text === "WAIVER ADDED" ||
+    text.includes("FA ADDED") ||
+    text.includes("WAIVER ADDED") ||
+    text.includes("ADD")
+  );
+}
+
 /** One unique player a franchise dropped this season (roadmap 7.4). */
 export type DroppedPlayerSummary = {
   key: string;

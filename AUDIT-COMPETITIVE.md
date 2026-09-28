@@ -97,7 +97,7 @@ Legend: ● shipped · ◐ partial · ○ absent
 
 | | Hub | ESPN | Yahoo | Sleeper |
 |---|---|---|---|---|
-| Live scoring | ○ (30-min sync) | ● FantasyCast | ● StatTracker | ● GameDay |
+| Live scoring | ○ (daily sync) | ● FantasyCast | ● StatTracker | ● GameDay |
 | Live in-game projections | ○ | ● | ● | ● |
 | Win probability | ○ | ● | ● | ○ |
 | Play-by-play feed | ○ | ◐ | ● Fantasy Feed | ● |
@@ -226,7 +226,7 @@ Two of these are cheap and two are gated on data the sync does not keep:
 - **Manager page** — buildable today from `getLeagueHistoryArchive`.
 - **Box score** — needs per-player weekly stats, deferred in roadmap 2.4.
 - **Play-by-play / live scoring** — needs a live feed, out of scope for a
-  30-minute batch sync.
+  daily batch sync.
 
 Also dead: `Team.logo_url` is fetched and persisted by the sync and **rendered
 nowhere**. Every team in the app, on every screen, is a text string. ESPN
@@ -461,7 +461,7 @@ chat. ESPN emails an **Instant Draft Grade** to every manager. FantasyPros sends
 Auto-Pilot lineup alerts. Pro Tour Fantasy Golf sends configurable lineup
 reminders.
 
-The hub runs a sync every 30 minutes, exports projections nightly, and scores
+The hub runs a sync once daily (6:00 America/Chicago), exports projections nightly, and scores
 golf weeks — and no member ever hears about any of it. It is a pull-only product
 competing with push products, in a group that already has a Discord.
 

@@ -1899,16 +1899,52 @@
     "reg_season_count": 14,
     "scoring_format": [
       {
+        "abbr": "PY",
+        "id": 4,
+        "label": "Passing Yards",
+        "points": 0.04
+      },
+      {
         "abbr": "PTD",
         "id": 3,
         "label": "Passing TD",
         "points": 4.0
       },
       {
+        "abbr": "INT",
+        "id": 20,
+        "label": "Interceptions",
+        "points": -2.0
+      },
+      {
+        "abbr": "RY",
+        "id": 25,
+        "label": "Rushing Yards",
+        "points": 0.1
+      },
+      {
         "abbr": "RTD",
         "id": 24,
         "label": "Rushing TD",
         "points": 6.0
+      },
+      {
+        "abbr": "REY",
+        "id": 41,
+        "label": "Receiving Yards",
+        "points": 0.1
+      },
+      {
+        "abbr": "RETD",
+        "id": 42,
+        "label": "Receiving TD",
+        "points": 6.0
+      },
+      {
+        "abbr": "FUML",
+        "id": 72,
+        "label": "Fumbles Lost",
+        "points": -2.0
       }
     ],
     "scoring_type": "H2H_POINTS",

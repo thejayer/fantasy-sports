@@ -3,13 +3,16 @@ import type { HistoryView } from "@/components/HistoryPanel";
 import { LeagueView } from "@/components/LeagueView";
 import type { MatchupsView } from "@/components/MatchupsPanel";
 import type { ToolsView } from "@/components/ToolsPanel";
+import { parseAnalysisSeriesMode } from "@/lib/baseball-analysis";
 import { parseBaseballToolsView, parseTrailingWindow } from "@/lib/baseball-tools";
+import { parseHockeyToolsView } from "@/lib/hockey-tools";
 import type { ActivityView } from "@/lib/activity";
 import {
   getDraftSimSnapshot,
   getLeagueHistoryArchive,
   getLeagueSeasons,
   getLeagueSnapshot,
+  getBaseballAnalysis,
   getPlayerMap,
   getPlayoffOddsSamples,
   getPlayoffOddsSnapshot,
@@ -18,6 +21,7 @@ import {
   getWeekBoxScore,
   getWeeklyProjectionSnapshot,
   listDraftSimSlots,
+  listWeekBoxScoreWeeks,
   type DraftSimSnapshot,
   type PlayerMapSnapshot,
   type PlayoffOddsSamples,
@@ -35,6 +39,7 @@ import {
 import { resolveGolfActingScope } from "@/lib/franchise-acl";
 import { getViewerTeamId } from "@/lib/viewer";
 import { parsePlayerTableQuery } from "@/lib/player-table";
+import { buildScoringSandboxModel } from "@/lib/scoring-sandbox";
 
 // See app/page.tsx. Already dynamic today, but declared so adding
 // generateStaticParams later cannot silently freeze snapshot data.
@@ -62,6 +67,7 @@ type Props = {
     dp?: string;
     box?: string;
     window?: string;
+    series?: string;
   }>;
 };
 
@@ -107,6 +113,7 @@ export default async function LeagueDetailPage({ params, searchParams }: Props) 
     dp: draftPageParam,
     box: boxParam,
     window: windowParam,
+    series: seriesParam,
   } = await searchParams;
   const seasons = await getLeagueSeasons(leagueId);
   const season = seasonParam ? Number(seasonParam) : undefined;
@@ -158,6 +165,8 @@ export default async function LeagueDetailPage({ params, searchParams }: Props) 
   ) as ToolsView;
   const baseballToolsView = parseBaseballToolsView(viewParam);
   const baseballTrailingWindow = parseTrailingWindow(windowParam);
+  const hockeyToolsView = parseHockeyToolsView(viewParam);
+  const analysisSeriesMode = parseAnalysisSeriesMode(seriesParam);
 
   const historyArchive =
     tab === "history" ? await getLeagueHistoryArchive(leagueId) : null;
@@ -165,6 +174,12 @@ export default async function LeagueDetailPage({ params, searchParams }: Props) 
   const proSchedule: ProScheduleSnapshot | null =
     league.sport === "baseball" && tab === "tools"
       ? await getProSchedule(league.league_id, league.season)
+      : null;
+
+  const baseballAnalysis =
+    (league.sport === "baseball" || league.sport === "hockey") &&
+    tab === "analysis"
+      ? await getBaseballAnalysis(league.league_id, league.season)
       : null;
 
   const wantsProjections =
@@ -272,7 +287,9 @@ export default async function LeagueDetailPage({ params, searchParams }: Props) 
   }
 
   const boxPair =
-    (league.sport === "football" || league.sport === "baseball") &&
+    (league.sport === "football" ||
+      league.sport === "baseball" ||
+      league.sport === "hockey") &&
     tab === "matchups"
       ? parseBoxPair(boxParam)
       : null;
@@ -307,6 +324,23 @@ export default async function LeagueDetailPage({ params, searchParams }: Props) 
 
   // Only meaningful when the franchise is in this season's snapshot — a member
   // linked to a team that did not exist in 2016 must not highlight team_id 4.
+  let scoringSandbox = null;
+  if (tab === "sandbox") {
+    const weekNums = await listWeekBoxScoreWeeks(
+      league.league_id,
+      league.season,
+    );
+    const weekDocs = await Promise.all(
+      weekNums.map((n) =>
+        getWeekBoxScore(league.league_id, league.season, n),
+      ),
+    );
+    scoringSandbox = buildScoringSandboxModel(
+      league,
+      weekDocs.filter((doc): doc is WeekBoxScoreSnapshot => doc != null),
+    );
+  }
+
   const linkedTeamId = await getViewerTeamId(leagueId);
   const viewerTeamId = league.teams.some((t) => t.team_id === linkedTeamId)
     ? linkedTeamId
@@ -367,6 +401,7 @@ export default async function LeagueDetailPage({ params, searchParams }: Props) 
       toolsView={toolsView}
       baseballToolsView={baseballToolsView}
       baseballTrailingWindow={baseballTrailingWindow}
+      hockeyToolsView={hockeyToolsView}
       proSchedule={proSchedule}
       toolsTeamA={a != null && !Number.isNaN(a) ? a : undefined}
       toolsTeamB={b != null && !Number.isNaN(b) ? b : undefined}
@@ -384,6 +419,9 @@ export default async function LeagueDetailPage({ params, searchParams }: Props) 
       boxPair={boxPair}
       weekBoxScore={weekBoxScore}
       viewerTeamId={viewerTeamId}
+      scoringSandbox={scoringSandbox}
+      baseballAnalysis={baseballAnalysis}
+      analysisSeriesMode={analysisSeriesMode}
     />
   );
 }

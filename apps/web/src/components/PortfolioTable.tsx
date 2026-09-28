@@ -27,7 +27,7 @@ export function PortfolioTable({
         ) : null}
       </h3>
       <p className="league-meta portfolio-lede">
-        Record and standing across every league
+        Standing, next matchup, and season FP across every league
         {season != null ? ` for ${season}` : ""}
         {" — "}
         open a row for the full card below.

@@ -31,7 +31,7 @@ export type HealthReport = {
   leagues: HealthLeague[];
 };
 
-const DEFAULT_STALE_AFTER_SECONDS = 2 * 60 * 60; // two hours — four missed 30m syncs
+const DEFAULT_STALE_AFTER_SECONDS = 26 * 60 * 60; // 26h — one missed daily sync plus 2h slack
 
 /** ESPN / synced snapshot roots only — hub-native golf (`SJ_HUB_DIR`) is excluded
  * so a quiet golf league cannot mark the uptime probe stale. */

@@ -1,0 +1,149 @@
+{
+  "0": {
+    "transactions": []
+  },
+  "1": {
+    "transactions": [
+      {
+        "id": "trade-accept-1",
+        "type": "TRADE_ACCEPT",
+        "status": "EXECUTED",
+        "teamId": 2,
+        "bidAmount": 0,
+        "processDate": 1710000000000,
+        "proposedDate": 1709900000000,
+        "scoringPeriodId": 1,
+        "isPending": false,
+        "items": [
+          {
+            "playerId": 123,
+            "fromTeamId": 1,
+            "toTeamId": 2,
+            "type": "TRADE"
+          },
+          {
+            "playerId": 456,
+            "fromTeamId": 2,
+            "toTeamId": 1,
+            "type": "TRADE"
+          }
+        ]
+      },
+      {
+        "id": "fa-1",
+        "type": "FREEAGENT",
+        "status": "EXECUTED",
+        "teamId": 3,
+        "bidAmount": 0,
+        "processDate": 1710100000000,
+        "items": [
+          {
+            "playerId": 789,
+            "fromTeamId": 0,
+            "toTeamId": 3,
+            "type": "ADD"
+          },
+          {
+            "playerId": 321,
+            "fromTeamId": 3,
+            "toTeamId": 0,
+            "type": "DROP"
+          }
+        ]
+      }
+    ]
+  },
+  "2": {
+    "transactions": [
+      {
+        "id": "trade-accept-1",
+        "type": "TRADE_ACCEPT",
+        "status": "EXECUTED",
+        "teamId": 2,
+        "bidAmount": 0,
+        "processDate": 1710000000000,
+        "scoringPeriodId": 2,
+        "items": [
+          {
+            "playerId": 123,
+            "fromTeamId": 1,
+            "toTeamId": 2,
+            "type": "TRADE"
+          },
+          {
+            "playerId": 456,
+            "fromTeamId": 2,
+            "toTeamId": 1,
+            "type": "TRADE"
+          }
+        ]
+      },
+      {
+        "id": "waiver-1",
+        "type": "WAIVER",
+        "status": "EXECUTED",
+        "teamId": 4,
+        "bidAmount": 12,
+        "processDate": 1710200000000,
+        "items": [
+          {
+            "playerId": 555,
+            "fromTeamId": 0,
+            "toTeamId": 4,
+            "type": "ADD"
+          }
+        ]
+      },
+      {
+        "id": "uphold-1",
+        "type": "TRADE_UPHOLD",
+        "status": "EXECUTED",
+        "teamId": 5,
+        "processDate": 1710150000000,
+        "items": [
+          {
+            "playerId": 777,
+            "fromTeamId": 5,
+            "toTeamId": 6,
+            "type": "TRADE"
+          }
+        ]
+      }
+    ]
+  },
+  "3": {
+    "transactions": [
+      {
+        "id": "proposal-1",
+        "type": "TRADE_PROPOSAL",
+        "status": "PENDING",
+        "isPending": true,
+        "teamId": 1,
+        "processDate": 1710300000000,
+        "items": [
+          {
+            "playerId": 888,
+            "fromTeamId": 1,
+            "toTeamId": 2,
+            "type": "TRADE"
+          }
+        ]
+      },
+      {
+        "id": "draft-1",
+        "type": "DRAFT",
+        "status": "EXECUTED",
+        "teamId": 1,
+        "processDate": 1705000000000,
+        "items": [
+          {
+            "playerId": 999,
+            "fromTeamId": 0,
+            "toTeamId": 1,
+            "type": "DRAFT"
+          }
+        ]
+      }
+    ]
+  }
+}

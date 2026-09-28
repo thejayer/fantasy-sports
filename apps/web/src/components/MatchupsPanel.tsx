@@ -267,11 +267,15 @@ export function MatchupsPanel({
   const regSeasonCount = league.settings?.reg_season_count;
   const playoffTeamCount = league.settings?.playoff_team_count;
   const baseballSeasonPoints =
-    league.sport === "baseball" && isSeasonPointsScoring(league.scoring_type);
+    (league.sport === "baseball" || league.sport === "hockey") &&
+    isSeasonPointsScoring(league.scoring_type);
   const baseballCategory =
-    league.sport === "baseball" && isCategoryScoring(league.scoring_type);
+    (league.sport === "baseball" || league.sport === "hockey") &&
+    isCategoryScoring(league.scoring_type);
   const showWeekBox =
-    (league.sport === "football" || baseballCategory) &&
+    (league.sport === "football" ||
+      league.sport === "hockey" ||
+      baseballCategory) &&
     boxPair != null &&
     activeView === "week";
 
@@ -290,7 +294,8 @@ export function MatchupsPanel({
   if (showWeekBox && boxPair) {
     return (
       <div className="matchups-panel">
-        {league.sport === "baseball" ? (
+        {league.sport === "baseball" ||
+        (league.sport === "hockey" && baseballCategory) ? (
           <CategoryBoxPanel
             league={league}
             week={activeWeek}
@@ -344,7 +349,9 @@ export function MatchupsPanel({
               periodLabel={periodLabel}
               viewerTeamId={viewerTeamId}
               showBoxLink={
-                league.sport === "football" || baseballCategory
+                league.sport === "football" ||
+                league.sport === "hockey" ||
+                baseballCategory
               }
               boxLinkLabel={
                 baseballCategory ? "Category box" : "Box score"

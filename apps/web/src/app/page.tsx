@@ -40,7 +40,7 @@ function Hero({ firstLeagueId }: { firstLeagueId?: string }) {
         <h1>Leagues, teams, and players in one place.</h1>
         <p>
           The member hub for Strictly Jayers fantasy sports — football, baseball,
-          golf, and the seasons that built the group.
+          hockey, golf, and the seasons that built the group.
         </p>
         <div className="cta-row">
           <Link className="button" href="/leagues">
@@ -70,6 +70,7 @@ export default async function HomePage({ searchParams }: Props) {
   const season = resolveHomeSeason(
     seasons,
     requested != null && Number.isFinite(requested) ? requested : undefined,
+    index,
   );
   const leagues = season != null ? leaguesAtSeason(index, season) : [];
   const viewer = await getViewer();

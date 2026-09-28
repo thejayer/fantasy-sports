@@ -1,6 +1,11 @@
 import { describe, expect, it } from "vitest";
 
-import { splitTabs, tabLabel, type LeagueTab } from "@/components/LeagueTabs";
+import {
+  SEASON_POINTS_PRIMARY,
+  splitTabs,
+  tabLabel,
+  type LeagueTab,
+} from "@/components/LeagueTabs";
 import { visibleSeasons } from "@/components/SeasonSwitcher";
 
 function tabs(...ids: string[]): LeagueTab[] {
@@ -19,6 +24,8 @@ const FOOTBALL = tabs(
   "projections",
   "tools",
   "settings",
+  "sandbox",
+  "drops",
 );
 
 describe("tabLabel (roadmap 7.5)", () => {
@@ -28,6 +35,9 @@ describe("tabLabel (roadmap 7.5)", () => {
     expect(tabLabel("recap")).toBe("Recap");
     expect(tabLabel("start-sit")).toBe("Start-sit");
     expect(tabLabel("scoreboard")).toBe("Scoreboard");
+    expect(tabLabel("sandbox")).toBe("Scoring lab");
+    expect(tabLabel("drops")).toBe("Hall of Shame");
+    expect(tabLabel("analysis")).toBe("Analysis");
   });
 
   it("title-cases an unknown id rather than dropping it", () => {
@@ -43,15 +53,17 @@ describe("splitTabs", () => {
       "teams",
       "players",
       "matchups",
-      "activity",
       "tools",
+      "sandbox",
     ]);
     expect(hidden.map((t) => t.id)).toEqual([
       "draft",
+      "activity",
       "recap",
       "history",
       "projections",
       "settings",
+      "drops",
     ]);
   });
 
@@ -74,8 +86,8 @@ describe("splitTabs", () => {
       "players",
       "matchups",
       "draft",
-      "activity",
       "tools",
+      "sandbox",
     ]);
   });
 
@@ -90,6 +102,7 @@ describe("splitTabs", () => {
       "standings",
       "teams",
       "settings",
+      "sandbox",
       "schedule",
       "lineup",
       "scoreboard",
@@ -101,10 +114,31 @@ describe("splitTabs", () => {
     expect(shown.map((t) => t.id)).toEqual([
       "standings",
       "teams",
+      "sandbox",
       "schedule",
       "lineup",
       "scoreboard",
     ]);
+  });
+
+  it("keeps matchups out of the everyday row for season-points leagues", () => {
+    const { shown, hidden } = splitTabs(
+      tabs(
+        "standings",
+        "teams",
+        "players",
+        "matchups",
+        "tools",
+        "sandbox",
+        "drops",
+      ),
+      "standings",
+      SEASON_POINTS_PRIMARY,
+    );
+    expect(shown.map((t) => t.id)).not.toContain("matchups");
+    expect(hidden.map((t) => t.id)).toContain("matchups");
+    expect(shown.map((t) => t.id)).toContain("sandbox");
+    expect(shown.map((t) => t.id)).toContain("drops");
   });
 });
 

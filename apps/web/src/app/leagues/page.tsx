@@ -37,8 +37,8 @@ export default async function LeaguesPage() {
         <div>
           <h2>Leagues</h2>
           <p className="lede">
-            Strictly Jayers leagues — ESPN football/baseball snapshots plus
-            hub-native golf. Open one for standings, history, and rosters.
+            Strictly Jayers leagues — ESPN football/baseball/hockey snapshots
+            plus hub-native golf. Open one for standings, history, and rosters.
           </p>
         </div>
         <Link className="button" href="/leagues/new">

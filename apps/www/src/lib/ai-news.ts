@@ -1,8 +1,8 @@
 /**
  * AI News sources for the apex portal (roadmap P.4).
  *
- * Headlines come from RSS (official + maintained mirrors). Timeline slots use
- * public X profile embeds — no paid X API. Editor picks are curated locally.
+ * Headlines come from RSS (official + maintained mirrors). Timeline slots are
+ * compact X profile cards (no widgets.js embeds). Editor picks are curated locally.
  */
 
 import {
@@ -26,6 +26,8 @@ export type TimelineAccount = {
   label: string;
   /** X / Twitter handle without @. */
   handle: string;
+  /** One-line why we follow this account. */
+  blurb: string;
 };
 
 export type EditorPick = {
@@ -72,11 +74,26 @@ export const AI_RSS_SOURCES: RssSource[] = [
   },
 ];
 
-/** Public X timelines — rendered via platform.twitter.com widgets. */
+/** Public X profiles — rendered as link-out cards (embeds stay blank too often). */
 export const AI_TIMELINE_ACCOUNTS: TimelineAccount[] = [
-  { id: "openai", label: "OpenAI", handle: "OpenAI" },
-  { id: "anthropic", label: "Anthropic", handle: "AnthropicAI" },
-  { id: "cursor", label: "Cursor", handle: "cursor_ai" },
+  {
+    id: "openai",
+    label: "OpenAI",
+    handle: "OpenAI",
+    blurb: "Official news, research, and product notes.",
+  },
+  {
+    id: "anthropic",
+    label: "Anthropic",
+    handle: "AnthropicAI",
+    blurb: "Claude, safety research, and lab updates.",
+  },
+  {
+    id: "cursor",
+    label: "Cursor",
+    handle: "cursor_ai",
+    blurb: "The editor the crew actually ships in.",
+  },
 ];
 
 /**

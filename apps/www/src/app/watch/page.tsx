@@ -1,9 +1,14 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 
+import { RoomCrossLinks } from "@/components/RoomCrossLinks";
 import { formatFeedDate } from "@/lib/ai-news";
 import { getSiteConfig } from "@/lib/site";
-import { loadWatchPlaylist } from "@/lib/watch";
+import {
+  resolveWatchVideoId,
+  youtubePlaylistEmbedUrl,
+  loadWatchPlaylist,
+} from "@/lib/watch";
 
 export const metadata: Metadata = {
   title: "Watch",
@@ -13,10 +18,21 @@ export const metadata: Metadata = {
 
 export const revalidate = 1800;
 
-export default async function WatchPage() {
+export default async function WatchPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ v?: string }>;
+}) {
+  const { v } = await searchParams;
   const { fantasyHubUrl, fitnessUrl, discordInviteUrl } = getSiteConfig();
   const playlist = await loadWatchPlaylist(12);
-  const tonight = playlist.items[0] ?? null;
+  const featuredId = resolveWatchVideoId(v, playlist.items);
+  const embedUrl = youtubePlaylistEmbedUrl(playlist.playlistId, featuredId);
+  const featuredIndex = featuredId
+    ? playlist.items.findIndex((item) => item.videoId === featuredId)
+    : 0;
+  const playingIndex = featuredIndex >= 0 ? featuredIndex : 0;
+  const tonight = playlist.items[playingIndex] ?? playlist.items[0] ?? null;
 
   return (
     <main className="watch-page">
@@ -38,151 +54,162 @@ export default async function WatchPage() {
         </p>
       </section>
 
-      {tonight ? (
-        <section
-          className="section tonight-pick"
-          aria-labelledby="tonight-heading"
-        >
-          <div className="section-head">
-            <div>
-              <h2 id="tonight-heading">Tonight’s pick</h2>
-              <p>Top of the shared playlist feed — start here.</p>
+      <section className="section watch-stage-section" aria-label="Now playing">
+        <div className="watch-stage">
+          <div className="watch-stage-player">
+            <div className="watch-player">
+              <iframe
+                src={embedUrl}
+                title="Strictly Jayers YouTube playlist"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                allowFullScreen
+                loading="lazy"
+                referrerPolicy="strict-origin-when-cross-origin"
+              />
             </div>
-            <div className="section-marker">NOW</div>
+            {tonight ? (
+              <div className="watch-now-copy">
+                <p className="watch-now-kicker">Tonight’s pick</p>
+                <h2>{tonight.title}</h2>
+                <p>
+                  {formatFeedDate(tonight.publishedAt)}
+                  {playlist.feedOk ? (
+                    <>
+                      {" · "}
+                      <time dateTime={playlist.fetchedAt}>
+                        feed {formatFeedDate(playlist.fetchedAt)} UTC
+                      </time>
+                    </>
+                  ) : null}
+                </p>
+              </div>
+            ) : (
+              <p className="watch-hint">
+                Use the playlist panel in the player to jump between videos.
+                Anyone with edit access on YouTube can add or remove clips.
+              </p>
+            )}
           </div>
-          <a
-            className="tonight-card"
-            href={tonight.url}
-            rel="noopener noreferrer"
-          >
-            <div className="story-meta">
-              <span>Featured</span>
-              <span>{formatFeedDate(tonight.publishedAt)}</span>
-            </div>
-            <h3>{tonight.title}</h3>
-            <span className="story-action">Play on YouTube →</span>
-          </a>
-          <p className="cta-row watch-cta-row">
-            {discordInviteUrl ? (
-              <>
-                <a
-                  className="cta cta-on-light"
-                  href={discordInviteUrl}
-                  rel="noopener noreferrer"
-                >
-                  Drop a clip in Discord →
-                </a>
-                <a
-                  className="cta cta-ghost"
-                  href={discordInviteUrl}
-                  rel="noopener noreferrer"
-                >
-                  Jump voice →
-                </a>
-              </>
-            ) : null}
-            <a
-              className="cta cta-ghost"
-              href={playlist.playlistUrl}
-              rel="noopener noreferrer"
-            >
-              Open full playlist →
-            </a>
-          </p>
-        </section>
-      ) : null}
 
-      <section className="section watch-player-section" aria-label="Playlist player">
-        <div className="section-head">
-          <div>
-            <h2>Now playing</h2>
-            <p>Use the playlist panel in the player to jump between videos.</p>
-          </div>
-          <div className="section-marker">LIVE</div>
+          <aside className="watch-queue-panel" aria-labelledby="queue-heading">
+            <div className="watch-queue-head">
+              <h2 id="queue-heading">Video playlist</h2>
+              <p>
+                {playlist.items.length > 0
+                  ? `${playingIndex + 1}/${playlist.items.length} videos`
+                  : "Queue"}
+              </p>
+            </div>
+            {playlist.items.length === 0 ? (
+              <p className="empty-note">
+                Titles are unavailable right now. Use the player or{" "}
+                <a href={playlist.playlistUrl} rel="noopener noreferrer">
+                  open the playlist on YouTube
+                </a>
+                .
+              </p>
+            ) : (
+              <ol className="watch-queue">
+                {playlist.items.map((item, index) => {
+                  const active =
+                    (item.videoId && item.videoId === featuredId) ||
+                    (!featuredId && index === 0);
+                  const href = item.videoId
+                    ? `/watch?v=${encodeURIComponent(item.videoId)}`
+                    : item.url;
+                  const inner = (
+                    <>
+                      <span className="watch-queue-index">{index + 1}</span>
+                      <span className="watch-queue-thumb">
+                        {item.thumbnailUrl ? (
+                          // eslint-disable-next-line @next/next/no-img-element
+                          <img
+                            src={item.thumbnailUrl}
+                            alt=""
+                            width={128}
+                            height={72}
+                          />
+                        ) : (
+                          <span className="watch-queue-thumb-fallback" />
+                        )}
+                        {active ? (
+                          <span className="watch-queue-playing">Playing</span>
+                        ) : null}
+                      </span>
+                      <span className="watch-queue-meta">
+                        <span className="watch-queue-title">{item.title}</span>
+                        <span className="watch-queue-date">
+                          {formatFeedDate(item.publishedAt)}
+                        </span>
+                      </span>
+                    </>
+                  );
+                  return (
+                    <li key={item.url}>
+                      {item.videoId ? (
+                        <Link
+                          className={
+                            active
+                              ? "watch-queue-row is-active"
+                              : "watch-queue-row"
+                          }
+                          href={href}
+                          aria-current={active ? "true" : undefined}
+                        >
+                          {inner}
+                        </Link>
+                      ) : (
+                        <a
+                          className={
+                            active
+                              ? "watch-queue-row is-active"
+                              : "watch-queue-row"
+                          }
+                          href={item.url}
+                          rel="noopener noreferrer"
+                        >
+                          {inner}
+                        </a>
+                      )}
+                    </li>
+                  );
+                })}
+              </ol>
+            )}
+          </aside>
         </div>
-        <div className="watch-player">
-          <iframe
-            src={playlist.embedUrl}
-            title="Strictly Jayers YouTube playlist"
-            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-            allowFullScreen
-            loading="lazy"
-            referrerPolicy="strict-origin-when-cross-origin"
-          />
-        </div>
+
         <p className="watch-hint">
           Anyone with edit access on YouTube can add or remove clips — this page
           stays in sync. Feed list refreshes about every 30 minutes.
-          {playlist.feedOk ? (
-            <>
-              {" "}
-              Pulled{" "}
-              <time dateTime={playlist.fetchedAt}>
-                {formatFeedDate(playlist.fetchedAt)} UTC
-              </time>
-              .
-            </>
-          ) : null}
         </p>
         <p className="cta-row watch-cta-row">
+          {discordInviteUrl ? (
+            <>
+              <a
+                className="cta cta-on-light"
+                href={discordInviteUrl}
+                rel="noopener noreferrer"
+              >
+                Drop a clip in Discord →
+              </a>
+              <a
+                className="cta cta-ghost"
+                href={discordInviteUrl}
+                rel="noopener noreferrer"
+              >
+                Jump voice →
+              </a>
+            </>
+          ) : null}
           <a
-            className="cta cta-on-light"
+            className="cta cta-ghost"
             href={playlist.playlistUrl}
             rel="noopener noreferrer"
           >
-            Open playlist →
+            Open full playlist →
           </a>
-          {discordInviteUrl ? (
-            <a
-              className="cta cta-ghost"
-              href={discordInviteUrl}
-              rel="noopener noreferrer"
-            >
-              Discord voice →
-            </a>
-          ) : null}
         </p>
-      </section>
-
-      <section className="section" aria-labelledby="queue-heading">
-        <div className="section-head">
-          <div>
-            <h2 id="queue-heading">On the list</h2>
-            <p>
-              Recent titles from the public playlist feed — tap to open on
-              YouTube.
-            </p>
-          </div>
-          <div className="section-marker">QUEUE</div>
-        </div>
-        {playlist.items.length === 0 ? (
-          <p className="empty-note">
-            Titles are unavailable right now. Use the player above or{" "}
-            <a href={playlist.playlistUrl} rel="noopener noreferrer">
-              open the playlist on YouTube
-            </a>
-            .
-          </p>
-        ) : (
-          <ul className="headline-list watch-queue">
-            {playlist.items.map((item, index) => (
-              <li key={item.url}>
-                <a
-                  className="headline-row"
-                  href={item.url}
-                  rel="noopener noreferrer"
-                >
-                  <div className="story-meta">
-                    <span>#{index + 1}</span>
-                    <span>{formatFeedDate(item.publishedAt)}</span>
-                  </div>
-                  <h3>{item.title}</h3>
-                  <span className="story-action">Watch on YouTube →</span>
-                </a>
-              </li>
-            ))}
-          </ul>
-        )}
       </section>
 
       <section className="section" aria-labelledby="room-heading">
@@ -210,14 +237,10 @@ export default async function WatchPage() {
               </a>
             </li>
           ) : null}
-          <li>
-            <Link href="/ai">AI News →</Link>
-          </li>
-          <li>
-            <Link href="/people">People →</Link>
-          </li>
         </ul>
       </section>
+
+      <RoomCrossLinks current="watch" />
 
       <footer className="site-footer">
         <Link href="/">← Strictly Jayers</Link>
