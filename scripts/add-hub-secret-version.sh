@@ -21,6 +21,8 @@ if [[ -z "${NAME}" ]]; then
   echo "  sj-allowed-emails" >&2
   echo "  sj-espn-s2" >&2
   echo "  sj-espn-swid" >&2
+  echo "  openai-api-key" >&2
+  echo "  ffa-dashboard-password" >&2
   exit 1
 fi
 

@@ -199,6 +199,42 @@ export function projectedFirstRound(seeds: Team[]): MatchupGame[] {
   return games;
 }
 
+/** True when either side of a game is the viewer's franchise. */
+export function isViewerGame(
+  game: MatchupGame,
+  viewerTeamId: number | null | undefined,
+): boolean {
+  if (viewerTeamId == null) return false;
+  return game.left.teamId === viewerTeamId || game.right.teamId === viewerTeamId;
+}
+
+/**
+ * Move the viewer's game to the front of the grid (roadmap 7.1) and put their
+ * team on the left of it, so "your matchup" reads left-to-right like every
+ * other product. Ordering is otherwise untouched, and an unlinked viewer gets
+ * the list back unchanged.
+ */
+export function promoteViewerGame(
+  games: MatchupGame[],
+  viewerTeamId: number | null | undefined,
+): MatchupGame[] {
+  if (viewerTeamId == null) return games;
+  const mine: MatchupGame[] = [];
+  const rest: MatchupGame[] = [];
+  for (const game of games) {
+    if (!isViewerGame(game, viewerTeamId)) {
+      rest.push(game);
+      continue;
+    }
+    mine.push(
+      game.right.teamId === viewerTeamId
+        ? { ...game, left: game.right, right: game.left }
+        : game,
+    );
+  }
+  return [...mine, ...rest];
+}
+
 export function formatMatchupScore(score: number | null | undefined): string {
   if (score == null || Number.isNaN(score)) return "—";
   return Number.isInteger(score) ? String(score) : score.toFixed(1);

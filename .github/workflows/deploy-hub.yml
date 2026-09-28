@@ -2,17 +2,29 @@ name: deploy hub
 
 # Deploy the Strictly Jayers Next.js hub to Cloud Run.
 #
-# One-time setup (see HUB.md):
+# Auth: Workload Identity Federation (no JSON key). Pool/provider + SA binding
+# are one-time GCP setup — see scripts/setup-github-deployer.sh and HUB.md.
+#
+# Also needed:
 #   - Secret Manager secrets populated (scripts/create-hub-secrets.sh + add versions)
 #   - Runtime SA can read them (scripts/grant-hub-secret-access.sh)
 #   - Snapshot bucket + scheduled sync job (scripts/setup-sync-infra.sh)
-#   - GitHub secret GCP_SA_KEY (scripts/setup-github-deployer.sh)
 #
-# The hub mounts the snapshot bucket read-only; the "deploy sync job" workflow
-# owns writing to it. After the first deploy, add the printed URL to the Google
-# OAuth client's authorized origins + redirect URIs (/api/auth/callback/google).
+# Deploys on merge to main (branch protection is the CI gate) and on manual
+# workflow_dispatch (rollback / first-time). After the first deploy, add the
+# printed URL to the Google OAuth client's authorized origins + redirect URIs.
 
 on:
+  push:
+    branches: [main]
+    paths:
+      - "apps/web/**"
+      - "src/sj/**"
+      - "fixtures/sj/**"
+      - "configs/**"
+      - "requirements-lock.txt"
+      - "apps/web/Dockerfile"
+      - ".github/workflows/deploy-hub.yml"
   workflow_dispatch:
     inputs:
       project_id:
@@ -28,22 +40,52 @@ on:
         required: true
         default: "sj-hub"
       bucket:
-        description: "Snapshot bucket to mount (blank to serve baked fixtures)"
+        description: "GCS bucket RW at /app/data/sj (ESPN + golf). Blank on manual = leave mounts; push CD defaults to …-sj-data"
         required: false
-        default: "fantasy-sports-analytics-sj-data"
+        default: ""
+      hub_bucket:
+        description: "(Deprecated) Ignored — dual GCS FUSE mounts failed Cloud Run PORT probes; hub shares the ESPN bucket"
+        required: false
+        default: ""
+      min_instances:
+        description: "Cloud Run min instances (0=scale-to-zero; 1=always warm)"
+        required: true
+        default: "0"
+      auth_url:
+        description: "Public Auth.js URL (blank = keep existing custom domain, else Cloud Run URL)"
+        required: false
+        default: ""
 
 permissions:
   contents: read
+  id-token: write
+
+env:
+  # WIF — pool `github`, provider `github`, SA `ffa-deployer`.
+  GCP_WORKLOAD_IDENTITY_PROVIDER: projects/1047753647109/locations/global/workloadIdentityPools/github/providers/github
+  GCP_SERVICE_ACCOUNT: ffa-deployer@fantasy-sports-analytics.iam.gserviceaccount.com
+  # Used only for first-create AUTH_URL fallback (avoids gcloud projects.describe /
+  # Cloud Resource Manager API on the deployer SA).
+  GCP_PROJECT_NUMBER: "1047753647109"
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
     timeout-minutes: 40
     env:
-      PROJECT_ID: ${{ inputs.project_id }}
-      REGION: ${{ inputs.region }}
-      SERVICE: ${{ inputs.service }}
-      BUCKET: ${{ inputs.bucket }}
+      PROJECT_ID: ${{ github.event.inputs.project_id || 'fantasy-sports-analytics' }}
+      REGION: ${{ github.event.inputs.region || 'us-central1' }}
+      SERVICE: ${{ github.event.inputs.service || 'sj-hub' }}
+      # Push CD remounts the known prod bucket (single RW). Manual dispatch with
+      # blank bucket leaves volumes unchanged (rollback image-only).
+      BUCKET: ${{ github.event.inputs.bucket || '' }}
+      HUB_BUCKET: ${{ github.event.inputs.hub_bucket || '' }}
+      MIN_INSTANCES: ${{ github.event.inputs.min_instances || '0' }}
+      EVENT_NAME: ${{ github.event_name }}
+      DEFAULT_BUCKET: fantasy-sports-analytics-sj-data
+      AUTH_URL_INPUT: ${{ github.event.inputs.auth_url || '' }}
+      # Preferred public host after ./scripts/setup-hub-domain.sh --cutover
+      PREFERRED_AUTH_HOST: fantasy.strictlyjayers.com
     steps:
       - name: Validate inputs
         run: |
@@ -56,37 +98,34 @@ jobs:
                 exit 1 ;;
             esac
           done
-          case "$BUCKET" in
-            ""|*[!A-Za-z0-9_.-]*)
-              if [ -n "$BUCKET" ]; then
-                echo "Invalid bucket name: $BUCKET" >&2
-                exit 1
-              fi ;;
+          for pair in "bucket=$BUCKET" "hub_bucket=$HUB_BUCKET"; do
+            name=${pair%%=*}
+            value=${pair#*=}
+            case "$value" in
+              ""|*[!A-Za-z0-9_.-]*)
+                if [ -n "$value" ]; then
+                  echo "Invalid $name: $value" >&2
+                  exit 1
+                fi ;;
+            esac
+          done
+          case "$MIN_INSTANCES" in
+            ""|*[!0-9]*)
+              echo "Invalid min_instances: must be a non-negative integer." >&2
+              exit 1 ;;
           esac
 
       - uses: actions/checkout@v4
         with:
           persist-credentials: false
 
-      - name: Require GCP_SA_KEY secret
-        env:
-          GCP_SA_KEY: ${{ secrets.GCP_SA_KEY }}
-        run: |
-          if [ -z "$GCP_SA_KEY" ]; then
-            echo "::error::GitHub secret GCP_SA_KEY is missing or empty."
-            echo "Cloud Shell fix:"
-            echo "  ./scripts/setup-github-deployer.sh"
-            echo "Then paste key.json into repo Settings → Secrets → Actions → GCP_SA_KEY"
-            echo "See HUB.md (Production → GitHub Actions deploy key)."
-            exit 1
-          fi
-
       - id: auth
         uses: google-github-actions/auth@v2
         with:
-          credentials_json: ${{ secrets.GCP_SA_KEY }}
+          workload_identity_provider: ${{ env.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ env.GCP_SERVICE_ACCOUNT }}
 
-      - uses: google-github-actions/setup-gcloud@v2
+      - uses: google-github-actions/setup-gcloud@v3
 
       - name: Enable required APIs
         run: |
@@ -94,6 +133,7 @@ jobs:
             run.googleapis.com \
             artifactregistry.googleapis.com \
             secretmanager.googleapis.com \
+            iamcredentials.googleapis.com \
             --project "$PROJECT_ID"
 
       - name: Ensure Artifact Registry repo
@@ -112,8 +152,38 @@ jobs:
           docker build -f apps/web/Dockerfile -t "$IMAGE" .
           docker push "$IMAGE"
 
-      - name: Deploy to Cloud Run
+      - name: Resolve AUTH_URL and deploy
         run: |
+          # AUTH_URL priority:
+          #   1) workflow_dispatch auth_url input
+          #   2) existing service AUTH_URL if custom (not *.run.app) — survives CD
+          #   3) Cloud Run status.url / first-create regional form
+          # Do not clobber fantasy.strictlyjayers.com after domain cutover.
+          RUN_URL="$(gcloud run services describe "$SERVICE" \
+            --project "$PROJECT_ID" --region "$REGION" \
+            --format='value(status.url)' 2>/dev/null || true)"
+          if [ -z "$RUN_URL" ]; then
+            RUN_URL="https://${SERVICE}-${GCP_PROJECT_NUMBER}.${REGION}.run.app"
+          fi
+          CURRENT_AUTH="$(gcloud run services describe "$SERVICE" \
+            --project "$PROJECT_ID" --region "$REGION" \
+            --format='yaml(spec.template.spec.containers[0].env)' 2>/dev/null \
+            | awk '/name: AUTH_URL/{getline; if ($1=="value:") {print $2; exit}}' \
+            || true)"
+          if [ -n "$AUTH_URL_INPUT" ]; then
+            AUTH_URL="$AUTH_URL_INPUT"
+            echo "Using AUTH_URL from workflow input"
+          elif [ -n "$CURRENT_AUTH" ] && [[ "$CURRENT_AUTH" != *".run.app"* ]]; then
+            AUTH_URL="$CURRENT_AUTH"
+            echo "Keeping existing custom AUTH_URL"
+          else
+            AUTH_URL="$RUN_URL"
+          fi
+          echo "Using AUTH_URL=$AUTH_URL (Cloud Run URL: $RUN_URL)"
+
+          # Hub-native golf/members share the ESPN store path. Dual GCS FUSE
+          # mounts (RO ESPN + RW hub bucket) failed Cloud Run PORT probes.
+          # Sync skips platform:hub and refuses sport=golf overwrite.
           ARGS=(
             --project "$PROJECT_ID"
             --region "$REGION"
@@ -122,46 +192,65 @@ jobs:
             --allow-unauthenticated
             --memory 1Gi --cpu 1 --port 8080
             --timeout 300
-            --set-env-vars "SJ_SYNC_ON_START=0,AUTH_TRUST_HOST=true,SJ_DATA_DIR=/app/data/sj"
-            --set-secrets "AUTH_SECRET=sj-auth-secret:latest,AUTH_GOOGLE_ID=sj-auth-google-id:latest,AUTH_GOOGLE_SECRET=sj-auth-google-secret:latest,ALLOWED_EMAILS=sj-allowed-emails:latest"
+            --min-instances "$MIN_INSTANCES"
+            --max-instances 5
+            --cpu-boost
+            --set-env-vars "SJ_SYNC_ON_START=0,AUTH_TRUST_HOST=true,SJ_DATA_DIR=/app/data/sj,SJ_HUB_DIR=/app/data/sj,AUTH_URL=$AUTH_URL,SJ_RECAP_MODEL=gpt-5.6-luna"
+            --set-secrets "AUTH_SECRET=sj-auth-secret:latest,AUTH_GOOGLE_ID=sj-auth-google-id:latest,AUTH_GOOGLE_SECRET=sj-auth-google-secret:latest,ALLOWED_EMAILS=sj-allowed-emails:latest,OPENAI_API_KEY=openai-api-key:latest"
           )
+          if [ -n "$HUB_BUCKET" ]; then
+            echo "Note: hub_bucket=$HUB_BUCKET is ignored (dual FUSE disabled; hub shares ESPN bucket)"
+          fi
+          # Failed dual-mount deploys can leave a broken volume template on the
+          # service. Push CD must clear + remount single RW or PORT probes fail.
+          if [ -z "$BUCKET" ] && [ "$EVENT_NAME" = "push" ]; then
+            BUCKET="$DEFAULT_BUCKET"
+            echo "Push CD: defaulting bucket to $BUCKET"
+          fi
           if [ -n "$BUCKET" ]; then
-            # The scheduled sync job owns writes; the hub only reads snapshots.
+            echo "Mounting gs://$BUCKET RW at /app/data/sj (ESPN + hub golf/members)"
+            # uid/gid must match non-root sjhub (1001). gcloud mount-options use
+            # semicolons (commas are parsed as separate volume keys).
             ARGS+=(
-              --add-volume "name=sjdata,type=cloud-storage,bucket=$BUCKET,readonly=true"
+              --clear-volumes
+              --clear-volume-mounts
+              --add-volume "name=sjdata,type=cloud-storage,bucket=$BUCKET,readonly=false,mount-options=uid=1001;gid=1001"
               --add-volume-mount "volume=sjdata,mount-path=/app/data/sj"
             )
           else
-            ARGS+=(--clear-volumes)
+            echo "No bucket input — leaving Cloud Run volumes unchanged"
           fi
           gcloud run deploy "$SERVICE" "${ARGS[@]}"
 
-      - name: Set AUTH_URL to the public service URL
-        run: |
-          # HOSTNAME=0.0.0.0 is required for the Node bind address inside the
-          # container. Without AUTH_URL, Auth.js builds redirects to 0.0.0.0:8080.
-          URL="$(gcloud run services describe "$SERVICE" \
+          LIVE_URL="$(gcloud run services describe "$SERVICE" \
             --project "$PROJECT_ID" --region "$REGION" \
-            --format 'value(status.url)')"
-          gcloud run services update "$SERVICE" \
-            --project "$PROJECT_ID" \
-            --region "$REGION" \
-            --update-env-vars "AUTH_URL=$URL,AUTH_TRUST_HOST=true"
-          echo "AUTH_URL=$URL" >> "$GITHUB_ENV"
-          echo "SERVICE_URL=$URL" >> "$GITHUB_ENV"
+            --format='value(status.url)')"
+          # Only reconcile when we intended a *.run.app AUTH_URL (never overwrite
+          # fantasy.strictlyjayers.com / other custom hosts with the run.app URL).
+          if [[ "$AUTH_URL" == *".run.app"* ]] && [ -n "$LIVE_URL" ] && [ "$LIVE_URL" != "$AUTH_URL" ]; then
+            echo "Reconciling AUTH_URL: $AUTH_URL → $LIVE_URL"
+            gcloud run services update "$SERVICE" \
+              --project "$PROJECT_ID" \
+              --region "$REGION" \
+              --update-env-vars "AUTH_URL=$LIVE_URL,AUTH_TRUST_HOST=true"
+            AUTH_URL="$LIVE_URL"
+          fi
+          echo "AUTH_URL=$AUTH_URL" >> "$GITHUB_ENV"
+          echo "SERVICE_URL=$AUTH_URL" >> "$GITHUB_ENV"
+          echo "RUN_URL=$LIVE_URL" >> "$GITHUB_ENV"
 
       - name: Print the live URL
         run: |
           echo "Deployed to: $SERVICE_URL"
+          echo "Cloud Run URL: $RUN_URL"
           echo
           echo "Add these to the Google OAuth client (APIs & Services → Credentials):"
           echo "  Authorized JavaScript origin:  $SERVICE_URL"
           echo "  Authorized redirect URI:       $SERVICE_URL/api/auth/callback/google"
-          # Cloud Run also exposes a *.us-central1.run.app form; add both if Google
-          # shows redirect_uri_mismatch.
-          ALT="$(gcloud run services describe "$SERVICE" \
-            --project "$PROJECT_ID" --region "$REGION" \
-            --format 'value(status.address.url)' 2>/dev/null || true)"
-          if [ -n "$ALT" ] && [ "$ALT" != "$SERVICE_URL" ]; then
-            echo "  Also add origin/redirect for:   $ALT"
+          if [ -n "$RUN_URL" ] && [ "$RUN_URL" != "$SERVICE_URL" ]; then
+            echo "  Also keep origin/redirect for:  $RUN_URL"
+            echo "  Also keep redirect URI:         $RUN_URL/api/auth/callback/google"
           fi
+          echo
+          echo "Custom domain (Spaceship): ./scripts/setup-hub-domain.sh"
+          echo "  Preferred host: https://$PREFERRED_AUTH_HOST"

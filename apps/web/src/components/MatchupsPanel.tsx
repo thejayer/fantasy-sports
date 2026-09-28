@@ -1,19 +1,27 @@
 import Link from "next/link";
-import type { LeagueSnapshot } from "@/lib/data";
+import { BoxScorePanel } from "@/components/BoxScorePanel";
+import { CategoryBoxPanel } from "@/components/CategoryBoxPanel";
+import { EmptyState } from "@/components/EmptyState";
+import { ViewerBadge } from "@/components/ViewerBadge";
+import type { LeagueSnapshot, WeekBoxScoreSnapshot } from "@/lib/data";
+import { boxPairKey } from "@/lib/box-score";
 import {
   formatMatchupScore,
   gamesForPeriod,
+  isViewerGame,
   outcomeTone,
   periodCount,
   playoffPeriods,
   playoffSeeds,
   projectedFirstRound,
+  promoteViewerGame,
   resolvePeriod,
   seasonSchedule,
   type MatchupGame,
   type MatchupSide,
   type PeriodBundle,
 } from "@/lib/matchups";
+import { isCategoryScoring, isSeasonPointsScoring } from "@/lib/scoring-type";
 
 export type MatchupsView = "week" | "schedule" | "playoffs";
 
@@ -28,11 +36,13 @@ function TeamLine({
   leagueId,
   season,
   align = "left",
+  isViewer = false,
 }: {
   side: MatchupSide;
   leagueId: string;
   season: number;
   align?: "left" | "right";
+  isViewer?: boolean;
 }) {
   return (
     <div className={`matchup-team matchup-team-${align}`}>
@@ -43,6 +53,7 @@ function TeamLine({
         <Link href={`/leagues/${leagueId}/teams/${side.teamId}?season=${season}`}>
           {side.name}
         </Link>
+        {isViewer ? <ViewerBadge /> : null}
         <OutcomePill outcome={side.outcome} />
       </div>
       <div className="matchup-score">{formatMatchupScore(side.score)}</div>
@@ -54,18 +65,52 @@ function MatchupCard({
   game,
   leagueId,
   season,
+  viewerTeamId,
+  showBoxLink = false,
+  boxLinkLabel = "Box score",
 }: {
   game: MatchupGame;
   leagueId: string;
   season: number;
+  viewerTeamId?: number;
+  showBoxLink?: boolean;
+  boxLinkLabel?: string;
 }) {
+  const mine = isViewerGame(game, viewerTeamId);
+  const boxHref =
+    showBoxLink && !game.projected
+      ? `/leagues/${leagueId}?season=${season}&tab=matchups&view=week&week=${game.period}&box=${boxPairKey(game.left.teamId, game.right.teamId)}`
+      : null;
   return (
-    <article className={`matchup-card${game.projected ? " projected" : ""}`}>
-      <TeamLine side={game.left} leagueId={leagueId} season={season} align="left" />
+    <article
+      className={
+        `matchup-card${game.projected ? " projected" : ""}` +
+        (mine ? " is-viewer" : "")
+      }
+    >
+      {mine ? <p className="matchup-card-flag">Your matchup</p> : null}
+      <TeamLine
+        side={game.left}
+        leagueId={leagueId}
+        season={season}
+        align="left"
+        isViewer={game.left.teamId === viewerTeamId}
+      />
       <div className="matchup-vs" aria-hidden>
         vs
       </div>
-      <TeamLine side={game.right} leagueId={leagueId} season={season} align="right" />
+      <TeamLine
+        side={game.right}
+        leagueId={leagueId}
+        season={season}
+        align="right"
+        isViewer={game.right.teamId === viewerTeamId}
+      />
+      {boxHref ? (
+        <p className="league-meta" style={{ margin: "0.5rem 0 0" }}>
+          <Link href={boxHref}>{boxLinkLabel}</Link>
+        </p>
+      ) : null}
     </article>
   );
 }
@@ -154,28 +199,38 @@ function PeriodSection({
   season,
   periodLabel,
   heading,
+  viewerTeamId,
+  showBoxLink = false,
+  boxLinkLabel = "Box score",
 }: {
   bundle: PeriodBundle;
   leagueId: string;
   season: number;
   periodLabel: string;
   heading?: string;
+  viewerTeamId?: number;
+  showBoxLink?: boolean;
+  boxLinkLabel?: string;
 }) {
+  const games = promoteViewerGame(bundle.games, viewerTeamId);
   return (
     <section className="matchup-period">
       <h3 className="matchup-period-title">
         {heading ?? `${periodLabel} ${bundle.period}`}
       </h3>
-      {bundle.games.length === 0 && bundle.byes.length === 0 ? (
+      {games.length === 0 && bundle.byes.length === 0 ? (
         <p className="league-meta">No matchups for this {periodLabel}.</p>
       ) : (
         <div className="matchup-grid">
-          {bundle.games.map((game) => (
+          {games.map((game) => (
             <MatchupCard
               key={`${game.period}-${game.left.teamId}-${game.right.teamId}`}
               game={game}
               leagueId={leagueId}
               season={season}
+              viewerTeamId={viewerTeamId}
+              showBoxLink={showBoxLink}
+              boxLinkLabel={boxLinkLabel}
             />
           ))}
         </div>
@@ -189,10 +244,18 @@ export function MatchupsPanel({
   league,
   week,
   view = "week",
+  viewerTeamId,
+  boxPair = null,
+  weekBoxScore = null,
 }: {
   league: LeagueSnapshot;
   week?: number;
   view?: MatchupsView;
+  /** Signed-in member's franchise in this league (roadmap 7.1). */
+  viewerTeamId?: number;
+  /** ``?box=1-2`` — football lineup box or baseball category box. */
+  boxPair?: { a: number; b: number } | null;
+  weekBoxScore?: WeekBoxScoreSnapshot | null;
 }) {
   const leagueId = league.league_id;
   const periodLabel = league.period_label || (league.sport === "baseball" ? "period" : "week");
@@ -203,6 +266,55 @@ export function MatchupsPanel({
     : "week";
   const regSeasonCount = league.settings?.reg_season_count;
   const playoffTeamCount = league.settings?.playoff_team_count;
+  const baseballSeasonPoints =
+    (league.sport === "baseball" || league.sport === "hockey") &&
+    isSeasonPointsScoring(league.scoring_type);
+  const baseballCategory =
+    (league.sport === "baseball" || league.sport === "hockey") &&
+    isCategoryScoring(league.scoring_type);
+  const showWeekBox =
+    (league.sport === "football" ||
+      league.sport === "hockey" ||
+      baseballCategory) &&
+    boxPair != null &&
+    activeView === "week";
+
+  if (baseballSeasonPoints) {
+    return (
+      <div className="matchups-panel">
+        <EmptyState title="No head-to-head matchups">
+          This league uses ESPN Season Points — standings are cumulative fantasy
+          points for the season, not weekly H2H results. Open Standings for the
+          points race and Settings for scoring weights.
+        </EmptyState>
+      </div>
+    );
+  }
+
+  if (showWeekBox && boxPair) {
+    return (
+      <div className="matchups-panel">
+        {league.sport === "baseball" ||
+        (league.sport === "hockey" && baseballCategory) ? (
+          <CategoryBoxPanel
+            league={league}
+            week={activeWeek}
+            teamA={boxPair.a}
+            teamB={boxPair.b}
+            snapshot={weekBoxScore}
+          />
+        ) : (
+          <BoxScorePanel
+            league={league}
+            week={activeWeek}
+            teamA={boxPair.a}
+            teamB={boxPair.b}
+            snapshot={weekBoxScore}
+          />
+        )}
+      </div>
+    );
+  }
 
   return (
     <div className="matchups-panel">
@@ -235,6 +347,15 @@ export function MatchupsPanel({
               leagueId={leagueId}
               season={league.season}
               periodLabel={periodLabel}
+              viewerTeamId={viewerTeamId}
+              showBoxLink={
+                league.sport === "football" ||
+                league.sport === "hockey" ||
+                baseballCategory
+              }
+              boxLinkLabel={
+                baseballCategory ? "Category box" : "Box score"
+              }
             />
           )}
         </>
@@ -252,6 +373,7 @@ export function MatchupsPanel({
                 leagueId={leagueId}
                 season={league.season}
                 periodLabel={periodLabel}
+                viewerTeamId={viewerTeamId}
                 heading={
                   regSeasonCount != null && bundle.period > regSeasonCount
                     ? `Playoffs · ${periodLabel} ${bundle.period}`
@@ -270,6 +392,7 @@ export function MatchupsPanel({
           regSeasonCount={regSeasonCount}
           playoffTeamCount={playoffTeamCount}
           max={max}
+          viewerTeamId={viewerTeamId}
         />
       ) : null}
     </div>
@@ -282,12 +405,14 @@ function PlayoffsView({
   regSeasonCount,
   playoffTeamCount,
   max,
+  viewerTeamId,
 }: {
   league: LeagueSnapshot;
   periodLabel: string;
   regSeasonCount: number | null | undefined;
   playoffTeamCount: number | null | undefined;
   max: number;
+  viewerTeamId?: number;
 }) {
   const seeds = playoffSeeds(league.teams, playoffTeamCount);
   const poPeriods = playoffPeriods(regSeasonCount, max);
@@ -302,7 +427,11 @@ function PlayoffsView({
           {league.settings?.playoff_matchup_period_length
             ? ` · ${league.settings.playoff_matchup_period_length}-${periodLabel} rounds`
             : ""}
-          . Box scores are not synced yet.
+          {league.sport === "football"
+            ? ". Open a week matchup for the box score when synced."
+            : league.sport === "baseball" && isCategoryScoring(league.scoring_type)
+              ? ". Open a period matchup for the category box when synced."
+              : "."}
         </p>
       </div>
 
@@ -320,7 +449,10 @@ function PlayoffsView({
               </thead>
               <tbody>
                 {seeds.map((team) => (
-                  <tr key={team.team_id}>
+                  <tr
+                    key={team.team_id}
+                    className={team.team_id === viewerTeamId ? "is-viewer" : undefined}
+                  >
                     <td>{team.standing ?? "—"}</td>
                     <td>
                       <Link
@@ -328,6 +460,7 @@ function PlayoffsView({
                       >
                         {team.name}
                       </Link>
+                      {team.team_id === viewerTeamId ? <ViewerBadge /> : null}
                     </td>
                     <td>
                       {team.ties
@@ -355,6 +488,7 @@ function PlayoffsView({
               leagueId={league.league_id}
               season={league.season}
               periodLabel={periodLabel}
+              viewerTeamId={viewerTeamId}
               heading={`Playoffs · ${periodLabel} ${period}`}
             />
           ))}
@@ -367,12 +501,13 @@ function PlayoffsView({
             1 vs {seeds.length}, 2 vs {seeds.length - 1}, …
           </p>
           <div className="matchup-grid">
-            {projected.map((game) => (
+            {promoteViewerGame(projected, viewerTeamId).map((game) => (
               <MatchupCard
                 key={`proj-${game.left.teamId}-${game.right.teamId}`}
                 game={game}
                 leagueId={league.league_id}
                 season={league.season}
+                viewerTeamId={viewerTeamId}
               />
             ))}
           </div>

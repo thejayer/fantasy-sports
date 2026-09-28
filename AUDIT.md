@@ -7,6 +7,13 @@ reading code alone. The plan that follows from it is in [ROADMAP.md](ROADMAP.md)
 
 Audited at commit `fde0613` (merge of #22).
 
+> **This audit asked "is it correct and safe?" and its findings are now largely
+> closed.** The follow-up audit —
+> [AUDIT-COMPETITIVE.md](AUDIT-COMPETITIVE.md) — asks "is it *good*?", measured
+> against ESPN / Yahoo / Sleeper / FantasyPros, and drives ROADMAP phase 7. Read
+> that one for the current product gaps; read this one for the security,
+> correctness, and engineering-practice baseline they sit on.
+
 > **Status: findings 1–5 (all P0) are fixed** as of #26, and finding 11 as of
 > #28 — see the summary table at the end for the current state of each finding.
 > They are kept here in full, with their reproductions, because the evidence is
@@ -106,29 +113,22 @@ data**. So this is latent risk from running behind on patches, not a
 demonstrated live hole. It should be treated as urgent anyway, because the
 app has no second layer to fall back on.
 
-### 4. Deployment credentials and container hardening — MOSTLY FIXED in #26
+### 4. Deployment credentials and container hardening — FIXED (WIF in 1.3)
 
-- All three deploy workflows authenticate with a long-lived service-account JSON
-  key (`secrets.GCP_SA_KEY`) rather than Workload Identity Federation.
-  `scripts/setup-github-deployer.sh` generates and prints a downloadable
-  `key.json`.
-- That deployer SA is granted project-level `run.admin`,
+- ~~All three deploy workflows authenticate with a long-lived service-account JSON
+  key (`secrets.GCP_SA_KEY`) rather than Workload Identity Federation.~~
+  Deploy workflows use WIF (`github` pool/provider → `ffa-deployer`);
+  `setup-github-deployer.sh` prints WIF commands and does not mint keys.
+- ~~That deployer SA is granted project-level `run.admin`,
   `artifactregistry.admin`, `serviceusage.serviceUsageAdmin`, and
-  `secretmanager.secretAccessor`. The script also grants the **deployer** read
-  access to all six hub secrets, which deployment does not need — only the
-  runtime SA does.
-- `scripts/setup-sync-infra.sh` grants the default Compute Engine SA
-  `roles/storage.objectAdmin` on the snapshot bucket (read/write/delete) where
-  `objectViewer` plus a narrow writer for the sync job would do.
-- No `USER` directive in `Dockerfile`, `Dockerfile.sync`, or
-  `apps/web/Dockerfile` — **all three containers run as root**.
-- `deploy.yml` passes `DASHBOARD_PASSWORD` via `--set-env-vars`, so it is
-  readable by anyone with `run.services.get`, instead of via Secret Manager.
+  `secretmanager.secretAccessor`.~~ Narrowed to `artifactregistry.writer` +
+  `secretmanager.viewer` (no secretAccessor on the deployer).
+- ~~`scripts/setup-sync-infra.sh` grants the default Compute Engine SA
+  `roles/storage.objectAdmin`~~ → `objectUser` / `objectViewer` split.
+- ~~No `USER` directive~~ — containers run as uid 1001.
+- ~~`deploy.yml` passes `DASHBOARD_PASSWORD` via `--set-env-vars`~~ → Secret Manager.
 
-Resolved in #26 except the first bullet: containers run as uid 1001, the
-deployer and bucket roles are narrowed, and the dashboard password moved to
-Secret Manager. **The long-lived `GCP_SA_KEY` is still in use** — Workload
-Identity Federation rewrites all three deploy workflows, so it is roadmap 1.3.
+Fully resolved: containers + IAM in #26; JSON key replaced by WIF in roadmap 1.3.
 
 ---
 
@@ -211,11 +211,13 @@ diverges further.
 
 ### 9. The hub is missing almost everything a league hub is for
 
-**Partly fixed.** Snapshots now persist draft, matchups, settings, and
-transactions (roadmap 2.1 / 2.4); Matchups tab (3.4) and History tab (3.5 —
-all-time standings, champions, record book, H2H) are in the hub. Still absent
-from the product: **box scores, draft-results pages, transaction/waiver UI,
-free agents, franchise/manager career pages, per-week player stats.**
+**Partly fixed.** Snapshots persist draft, matchups, settings, transactions,
+and free agents (roadmap 2.1 / 2.4). Hub surfaces Matchups (3.4), History (3.5),
+ESPN **draft results** (`?tab=draft`), **activity** (`?tab=activity`), football
+Tools → Waivers, and baseball **Waivers** (`?tab=waivers`, projection-free).
+Still absent: **box scores, franchise/manager career pages, per-week player
+stats**, and a first-class Settings tab. Multi-season history needs live
+`sj backfill` (fixtures stay current-season only).
 
 Also missing: `format: dynasty` is a declaration in `configs/leagues.yaml`, not
 something derived from ESPN keeper settings, so nothing in the product actually
@@ -238,8 +240,8 @@ caching it as missing. create-next-app SVGs removed; `robots.ts`,
 `.github/workflows/tests.yml` runs `ruff` and `pytest`. It never enters
 `apps/web`. There is no `tsc --noEmit`, no `eslint`, no `next build`, and no
 frontend test of any kind in CI — **1,609 lines of TypeScript with zero
-automated gate.** `npm run lint` also still uses `next lint`, which prints
-`deprecated and will be removed in Next.js 16`.
+automated gate.** (`npm run lint` later moved off `next lint` onto the ESLint
+CLI in roadmap 1.7.)
 
 Both checks pass today when run by hand, which is exactly why this is worth
 wiring up now, while it is free.
@@ -291,9 +293,10 @@ leaves a window where OAuth can redirect to the container's bind address.
 
 Public `/api/health` reports per-league `synced_at` age (HTTP 503 when empty or
 stale). `scripts/setup-sync-alerting.sh` wires a Cloud Monitoring email alert on
-`sj-sync` job failure. Route-level `error.tsx` / `not-found.tsx` log to stderr
-for Cloud Logging. Still open from the original finding: uptime check on the
-live hub URL (console), `min-instances`, and retiring unused `refresh.yml`.
+`sj-sync` job failure and creates an HTTPS uptime check on `/api/health`.
+Route-level `error.tsx` / `not-found.tsx` log to stderr for Cloud Logging.
+`deploy-hub` exposes `--min-instances` (default 0) + `--cpu-boost`.
+(`refresh.yml` is the active projection producer — do not retire it.)
 
 ---
 
@@ -321,10 +324,9 @@ hub, which is the thing members actually visit, is a read-only ESPN mirror that
 tells them nothing ESPN's own site doesn't.
 
 The engine is also NFL-only, while `baseball-dynasty` is the league with the
-richest UI. `LevelModel` is reachable from the CLI via `--conditioned-level`
-(roadmap 4.1). Projection snapshots land via `ffa export-projections` +
-`getProjectionSnapshot` (4.2). ESPN↔nflverse join lands via
-`ffa export-player-map` + `getPlayerMap` (4.3); hub projection UI is 4.4.
+richest UI. Season projections + decision tools are in for football (4.1–4.5).
+Baseball stays ESPN data-rich but projection-free by design (4.6). Optional
+football follow-ups: draft-sim / playoff-odds exporters.
 
 ### 16. Storage layout will not extend to weekly data
 
@@ -337,13 +339,13 @@ Separately, `FileStore._rewrite_index()` / `GcsStore._rewrite_index()` rebuild
 the index by re-reading **every** snapshot on **every** write, so a backfill is
 quadratic in snapshot count. Fine at 24; not fine once weekly snapshots exist.
 
-### 17. The hub container installs the entire analytics stack
+### 17. The hub container installs the entire analytics stack — fixed (Phase 5)
 
-`apps/web/Dockerfile` runs `pip install -e .` in the runtime stage, pulling
-duckdb, scikit-learn, and pandas into an image whose job is to serve Next.js.
-`deploy-hub.yml` sets `SJ_SYNC_ON_START=0`, so the `sj` CLI it is installing for
-is never invoked in production. Fixtures are copied twice, and there is no
-non-root final stage.
+Runtime installs **sj-only** deps (espn-api / pydantic / pyyaml / typer / gcs),
+not `pip install -e .`. `images` CI asserts duckdb / sklearn / nflreadpy / pulp
+are absent and `sj.cli` still imports. Fixtures are copied once; non-root
+(`USER sjhub`) and multi-stage Node build were already in. Optional startup
+sync uses `python -m sj.cli` via `PYTHONPATH`.
 
 ### 18. Version skew between CI and production
 
@@ -360,21 +362,21 @@ time. `@types/node` is `^20` against a Node 22 runtime. No Dependabot or Renovat
 |---|---|---|---|
 | 1 | Open redirect on `/login` (confirmed) | P0 | Fixed (#26, roadmap 0.1) |
 | 2 | Auth enforced only in middleware | P0 | Fixed (#26, roadmap 0.4) |
-| 3 | 14 dependency advisories; `next-auth` on prerelease | P0 | Advisories cleared (#26, roadmap 0.3); prerelease remains, roadmap 1.7 |
-| 4 | Long-lived SA key, over-broad IAM, root containers | P0 | Containers + IAM fixed (#26, roadmap 0.5); SA key → WIF, roadmap 1.3 |
+| 3 | 14 dependency advisories; `next-auth` on prerelease | P0 | Advisories cleared (#26, roadmap 0.3); Next 16 / eslint-cli landed (1.7); `next-auth` still beta |
+| 4 | Long-lived SA key, over-broad IAM, root containers | P0 | Fixed (#26 IAM/containers; 1.3 WIF, no `GCP_SA_KEY`) |
 | 5 | `/` and `/leagues` frozen at build-time fixtures | P0 | Fixed (#26, roadmap 0.2) |
 | 6 | Football history unreachable (12 seasons, no switcher) | P1 | Fixed — roadmap 3.1 (league) + 3.2 (team pages) |
 | 7 | Player tables: no search/sort/filter/pagination | P1 | Fixed — roadmap 3.3 (`DataTable`) |
 | 8 | Football and baseball views diverged | P1 | Fixed — roadmap 3.1 (`LeagueView`) |
-| 9 | No matchups, draft, transactions, or history | P1 | Partly — matchups (3.4) + history/records/H2H (3.5) in; draft/tx pages and box scores still open |
+| 9 | No matchups, draft, transactions, or history | P1 | Partly — matchups (3.4) + history (3.5) + draft results/activity tabs + FA boards in; box scores / career pages / settings tab still open |
 | 10 | No loading/error/empty states | P1 | Fixed — roadmap 3.6 (loading/empty/corrupt reads/robots/manifest/OG) |
 | 11 | Zero CI for `apps/web` | P1 | Fixed (#28, roadmap 1.1); branch protection requires `python` / `web` / `images` |
 | 12 | `sync.py` at 0% coverage | P1 | Fixed — 100% + loud exits + `SYNC_SUMMARY` (roadmap 1.4) |
 | 13 | All deploys manual | P1 | Open — roadmap 1.3 |
-| 14 | No observability or alerting | P1 | Baseline fixed (roadmap 1.6); uptime check + min-instances still open |
-| 15 | `ffa` engine disconnected from the hub | P2 | Partly — 4.1–4.3 landed (CLI + projection + ID map); UI still 4.4 |
+| 14 | No observability or alerting | P1 | Fixed (1.6 health/alerts; Phase 5 uptime check + min-instances/cpu-boost) |
+| 15 | `ffa` engine disconnected from the hub | P2 | Closed for football season surfaces (4.1–4.5); baseball deliberately out of engine scope (4.6) |
 | 16 | Storage layout won't extend to weekly data | P2 | Open — roadmap 2.2, 2.3 |
-| 17 | Hub image carries the analytics stack | P2 | Open — roadmap phase 5 |
+| 17 | Hub image carries the analytics stack | P2 | Fixed — Phase 5 hub slim (sj-only runtime) |
 | 18 | CI/production version skew, no lockfile | P2 | Open — roadmap 1.5 |
 
 The through-line at audit time: the engineering that exists is careful and

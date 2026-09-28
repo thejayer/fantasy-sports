@@ -53,6 +53,21 @@ def _monolith() -> dict:
                 ],
             }
         ],
+        "free_agents": [
+            {
+                "id": 99,
+                "name": "Wire Guy",
+                "position": "WR",
+                "slot": "FA",
+                "pro_team": "DAL",
+                "injury_status": "ACTIVE",
+                "status": "FREEAGENT",
+                "percent_owned": 12.5,
+                "total_points": 20.0,
+                "projected_total_points": 30.0,
+                "avg_points": 2.0,
+            }
+        ],
         "teams": [
             {
                 "team_id": 1,
@@ -133,12 +148,16 @@ def test_split_round_trip_preserves_monolith_fields():
         "draft.json",
         "settings.json",
         "transactions.json",
+        "free_agents.json",
+        "lineups.json",
+        "scoreboard.json",
     }
     assert parts["manifest.json"]["schema_version"] == SCHEMA_VERSION
     assert parts["settings.json"]["settings"]["faab"] is True
     assert parts["transactions.json"]["transactions"][0]["actions"][0]["action"] == (
         "FA ADDED"
     )
+    assert parts["free_agents.json"]["free_agents"][0]["name"] == "Wire Guy"
     assert "roster" not in parts["standings.json"]["teams"][0]
     assert parts["rosters.json"]["teams"]["1"][0]["name"] == "Star"
     assert parts["matchups.json"]["teams"]["1"]["outcomes"] == ["W", "L", "U"]
@@ -148,6 +167,45 @@ def test_split_round_trip_preserves_monolith_fields():
     for key, value in original.items():
         assert reassembled[key] == value
     assert reassembled["schema_version"] == SCHEMA_VERSION
+    # Empty ESPN lineups shell must not appear on the monolith.
+    assert "lineups" not in reassembled
+    assert parts["lineups.json"]["events"] == []
+    assert parts["lineups.json"]["teams"] == {}
+    assert "scoreboard" not in reassembled
+    assert parts["scoreboard.json"]["events"] == []
+
+
+def test_assemble_attaches_filled_golf_lineups():
+    original = _monolith()
+    original["lineups"] = {
+        "period_label": "event",
+        "current_event_id": "2026-players",
+        "events": [{"id": "2026-players", "name": "THE PLAYERS"}],
+        "teams": {"1": {"starters": [10], "captain": 10}},
+    }
+    parts = split_snapshot(original)
+    reassembled = assemble_snapshot(parts)
+    assert reassembled["lineups"]["current_event_id"] == "2026-players"
+    assert reassembled["lineups"]["teams"]["1"]["captain"] == 10
+
+
+def test_assemble_attaches_filled_golf_scoreboard():
+    original = _monolith()
+    original["scoreboard"] = {
+        "period_label": "event",
+        "current_event_id": "2026-players",
+        "events": [
+            {
+                "event_id": "2026-players",
+                "multiplier": 1.5,
+                "teams": {"1": {"week_total": 12.0}},
+                "pairings": [],
+            }
+        ],
+    }
+    parts = split_snapshot(original)
+    reassembled = assemble_snapshot(parts)
+    assert reassembled["scoreboard"]["events"][0]["multiplier"] == 1.5
 
 
 def test_assemble_accepts_concern_name_keys():
@@ -169,6 +227,7 @@ def test_assemble_tolerates_missing_settings_and_transactions():
     parts = split_snapshot(_monolith())
     del parts["settings.json"]
     del parts["transactions.json"]
+    del parts["free_agents.json"]
     by_name = {
         "manifest": parts["manifest.json"],
         "standings": parts["standings.json"],
@@ -179,3 +238,4 @@ def test_assemble_tolerates_missing_settings_and_transactions():
     snap = assemble_snapshot(by_name)
     assert snap["settings"] == {}
     assert snap["transactions"] == []
+    assert snap["free_agents"] == []

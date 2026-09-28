@@ -13,9 +13,10 @@ import json
 from pathlib import Path
 from typing import Any
 
+from sj.jsonutil import dumps_snapshot
 from sj.registry import LeagueSpec, load_registry
-from sj.sample import sample_snapshot
-from sj.store import FIXTURES_DIR, INDEX_NAME, monolith_rel
+from sj.sample import sample_pro_schedule_for_snapshot, sample_snapshot
+from sj.store import FIXTURES_DIR, INDEX_NAME, FileStore, monolith_rel
 
 # Stable stamp so regenerating fixtures is a pure function of the serializer +
 # registry — no wall-clock noise in git diffs.
@@ -26,6 +27,8 @@ FIXTURE_TEAM_COUNTS: dict[str, int] = {
     "football-main": 4,
     "football-dynasty": 3,
     "baseball-dynasty": 3,
+    "hockey-main": 3,
+    "golf-main": 8,
 }
 
 
@@ -36,12 +39,27 @@ def fixture_team_count(spec: LeagueSpec) -> int:
 def expected_fixture_snapshot(spec: LeagueSpec, season: int | None = None) -> dict[str, Any]:
     """Build the snapshot that should be committed for one league-season."""
     target = spec.current_season if season is None else season
+    if spec.sport == "golf":
+        from sg.snapshot import build_golf_snapshot, golf_settings_from_registry
+
+        # Pass FIXED_TIMESTAMP into the builder so lineup saved_at / lock stamps
+        # stay deterministic (not wall-clock).
+        return build_golf_snapshot(
+            league_id=spec.id,
+            name=spec.name,
+            short_name=spec.short_name,
+            season=target,
+            format=spec.format,
+            team_count=int(spec.team_count or fixture_team_count(spec)),
+            golf=golf_settings_from_registry(spec),
+            synced_at=FIXED_TIMESTAMP,
+        )
     snapshot = sample_snapshot(spec, target, teams=fixture_team_count(spec))
     return {**snapshot, "synced_at": FIXED_TIMESTAMP}
 
 
 def _dump(payload: dict[str, Any]) -> str:
-    return json.dumps(payload, indent=2, sort_keys=True) + "\n"
+    return dumps_snapshot(payload)
 
 
 def regenerate_fixtures(
@@ -82,6 +100,101 @@ def regenerate_fixtures(
         rel = monolith_rel(spec.id, season)
         path = root / rel
         path.write_text(_dump(snapshot), encoding="utf-8")
+        if spec.sport == "baseball":
+            # Side concerns (not validated against monolith equality).
+            store = FileStore(root)
+            store.write_pro_schedule(sample_pro_schedule_for_snapshot(snapshot))
+            emit(f"wrote {spec.id}/{season}/pro_schedule.json")
+        if spec.sport in {"baseball", "hockey"}:
+            store = FileStore(root)
+            from sj.season_points_analysis import sample_analysis_for_snapshot
+            from sj.serialize import is_season_points_scoring
+
+            if is_season_points_scoring(
+                snapshot.get("scoring_type")
+                if isinstance(snapshot.get("scoring_type"), str)
+                else None
+            ):
+                slot_doc, series_doc = sample_analysis_for_snapshot(snapshot)
+                store.write_analysis(slot_doc, "slot_points")
+                store.write_analysis(series_doc, "points_timeseries")
+                emit(f"wrote {spec.id}/{season}/analysis/slot_points.json")
+                emit(f"wrote {spec.id}/{season}/analysis/points_timeseries.json")
+        if spec.sport == "baseball":
+            store = FileStore(root)
+            week = int(snapshot.get("current_week") or 1)
+            teams = snapshot.get("teams") or []
+            if len(teams) >= 2:
+                from sj.serialize import (
+                    build_week_category_document,
+                    is_season_points_scoring,
+                )
+
+                class _CatBox:
+                    def __init__(self, home: dict, away: dict):
+                        self.home_team = home["team_id"]
+                        self.away_team = away["team_id"]
+                        self.home_wins, self.home_losses, self.home_ties = 6, 3, 1
+                        self.away_wins, self.away_losses, self.away_ties = 3, 6, 1
+                        cats = ["R", "HR", "RBI", "SB", "AVG", "W", "SV", "K", "ERA", "WHIP"]
+                        self.home_stats = {
+                            c: {"value": 10.0 + i, "result": "WIN" if i % 2 == 0 else "LOSS"}
+                            for i, c in enumerate(cats)
+                        }
+                        self.away_stats = {
+                            c: {"value": 9.0 + i, "result": "LOSS" if i % 2 == 0 else "WIN"}
+                            for i, c in enumerate(cats)
+                        }
+
+                pitcher_ip: list[dict] = []
+                for team in teams[:4]:
+                    team_id = team.get("team_id")
+                    for player in team.get("roster") or []:
+                        if player.get("role") != "pitcher" and str(
+                            player.get("position") or ""
+                        ).upper() not in {"P", "SP", "RP"}:
+                            continue
+                        outs = float(
+                            (player.get("season_stats") or {}).get("OUTS") or 0
+                        )
+                        # Scale season outs down to a plausible weekly line.
+                        week_outs = round(max(3.0, outs / 26.0), 1)
+                        pitcher_ip.append(
+                            {
+                                "player_id": player.get("id"),
+                                "name": player.get("name"),
+                                "team_id": team_id,
+                                "outs": week_outs,
+                                "ip": round(week_outs / 3.0, 1),
+                            }
+                        )
+                        if len(pitcher_ip) >= 8:
+                            break
+                    if len(pitcher_ip) >= 8:
+                        break
+                season_points = is_season_points_scoring(
+                    snapshot.get("scoring_type")
+                    if isinstance(snapshot.get("scoring_type"), str)
+                    else None
+                )
+                # Season Points: period IP for Usage Caps only (no H2H category matrix).
+                boxes = (
+                    []
+                    if season_points
+                    else [_CatBox(teams[0], teams[1])]
+                )
+                if boxes or pitcher_ip:
+                    doc = build_week_category_document(
+                        league_id=spec.id,
+                        season=season,
+                        week=week,
+                        box_scores=boxes,
+                        synced_at=FIXED_TIMESTAMP,
+                        period_label="period",
+                        pitcher_ip=pitcher_ip or None,
+                    )
+                    store.write_week_box_scores(doc)
+                    emit(f"wrote {spec.id}/{season}/weeks/{week}.json")
         written.append((spec.id, season, str(path)))
         index_leagues.append(
             {

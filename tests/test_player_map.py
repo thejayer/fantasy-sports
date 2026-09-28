@@ -136,9 +136,17 @@ def test_extract_and_collect_from_sj_store(tmp_path):
         "players": [
             {"id": "4262921", "name": "Justin Jefferson", "position": "WR"},
         ],
+        "free_agents": [
+            {"id": 3916387, "name": "Wire Guy", "position": "TE"},
+        ],
     }
     players = extract_espn_players_from_snapshot(snap)
-    assert {p["espn_id"] for p in players} == {"3139477", "3117251", "4262921"}
+    assert {p["espn_id"] for p in players} == {
+        "3139477",
+        "3117251",
+        "4262921",
+        "3916387",
+    }
 
     # Minimal FileStore-compatible tree (v1 monolith + index).
     league_dir = tmp_path / "football-main"
@@ -179,7 +187,12 @@ def test_extract_and_collect_from_sj_store(tmp_path):
     )
 
     hub = collect_hub_espn_players(tmp_path)
-    assert {p["espn_id"] for p in hub} == {"3139477", "3117251", "4262921"}
+    assert {p["espn_id"] for p in hub} == {
+        "3139477",
+        "3117251",
+        "4262921",
+        "3916387",
+    }
 
 
 def test_write_player_map_roundtrip(tmp_path):

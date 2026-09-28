@@ -20,6 +20,7 @@ On-disk layout (schema_version 2, roadmap 2.2)::
         draft.json
         settings.json
         transactions.json
+        free_agents.json
 
 Legacy schema_version 1 monoliths (``{league_id}/{season}.json``) remain
 readable — committed fixtures still use that shape. Writers only emit v2.
@@ -33,14 +34,18 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Protocol
 
+from sj.jsonutil import dumps_snapshot
 from sj.snapshot_layout import (
     CONCERN_FILES,
     MANIFEST_NAME,
+    analysis_rel,
     assemble_snapshot,
     manifest_rel,
     monolith_rel,
+    pro_schedule_rel,
     season_dir_rel,
     split_snapshot,
+    week_box_score_rel,
 )
 
 DEFAULT_STORE_DIR = Path(__file__).resolve().parents[2] / "data" / "sj"
@@ -77,7 +82,7 @@ def _stamp(snapshot: dict[str, Any]) -> dict[str, Any]:
 
 
 def _dump(payload: dict[str, Any]) -> str:
-    return json.dumps(payload, indent=2, sort_keys=True) + "\n"
+    return dumps_snapshot(payload)
 
 
 def _is_v1_monolith_rel(rel: str) -> bool:
@@ -118,6 +123,25 @@ def _index_document(leagues: list[dict[str, Any]]) -> dict[str, Any]:
     }
 
 
+def _refuse_espn_overwrite_of_golf(
+    existing: dict[str, Any] | None,
+    incoming: dict[str, Any],
+) -> None:
+    """Block sync from clobbering a hub-native golf season in a shared store.
+
+    Golf should live under ``SJ_HUB_DIR`` / a separate hub bucket; this guard is
+    belt-and-suspenders if files ever share a root with ESPN sync.
+    """
+    if not existing:
+        return
+    if existing.get("sport") == "golf" and incoming.get("sport") != "golf":
+        raise ValueError(
+            f"refusing to overwrite hub-native golf league "
+            f"{existing.get('league_id')} {existing.get('season')} with "
+            f"sport={incoming.get('sport')!r}"
+        )
+
+
 class SnapshotStore(Protocol):
     """Read/write league-season snapshots."""
 
@@ -126,6 +150,24 @@ class SnapshotStore(Protocol):
     def read(self, league_id: str, season: int) -> dict[str, Any] | None: ...
 
     def list(self) -> list[dict[str, Any]]: ...
+
+    def write_week_box_scores(self, document: dict[str, Any]) -> str: ...
+
+    def read_week_box_scores(
+        self, league_id: str, season: int, week: int
+    ) -> dict[str, Any] | None: ...
+
+    def write_pro_schedule(self, document: dict[str, Any]) -> str: ...
+
+    def read_pro_schedule(
+        self, league_id: str, season: int
+    ) -> dict[str, Any] | None: ...
+
+    def write_analysis(self, document: dict[str, Any], name: str) -> str: ...
+
+    def read_analysis(
+        self, league_id: str, season: int, name: str
+    ) -> dict[str, Any] | None: ...
 
 
 class FileStore:
@@ -138,6 +180,7 @@ class FileStore:
         payload = _stamp(snapshot)
         league_id = payload["league_id"]
         season = int(payload["season"])
+        _refuse_espn_overwrite_of_golf(self.read(league_id, season), payload)
         parts = split_snapshot(payload)
         directory = self.root / season_dir_rel(league_id, season)
         directory.mkdir(parents=True, exist_ok=True)
@@ -158,6 +201,60 @@ class FileStore:
         entry = _index_entry(parts[MANIFEST_NAME], manifest_rel(league_id, season))
         self._upsert_index(entry)
         return str(manifest_path)
+
+    def write_week_box_scores(self, document: dict[str, Any]) -> str:
+        """Write ``weeks/{N}.json`` without touching ``index.json`` (roadmap 8.1)."""
+        league_id = str(document["league_id"])
+        season = int(document["season"])
+        week = int(document["week"])
+        rel = week_box_score_rel(league_id, season, week)
+        path = self.root / rel
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(_dump(document), encoding="utf-8")
+        return str(path)
+
+    def read_week_box_scores(
+        self, league_id: str, season: int, week: int
+    ) -> dict[str, Any] | None:
+        path = self.root / week_box_score_rel(league_id, season, week)
+        if not path.exists():
+            return None
+        return json.loads(path.read_text(encoding="utf-8"))
+
+    def write_pro_schedule(self, document: dict[str, Any]) -> str:
+        """Write ``pro_schedule.json`` without touching ``index.json`` (roadmap 8.2)."""
+        league_id = str(document["league_id"])
+        season = int(document["season"])
+        path = self.root / pro_schedule_rel(league_id, season)
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(_dump(document), encoding="utf-8")
+        return str(path)
+
+    def read_pro_schedule(
+        self, league_id: str, season: int
+    ) -> dict[str, Any] | None:
+        path = self.root / pro_schedule_rel(league_id, season)
+        if not path.exists():
+            return None
+        return json.loads(path.read_text(encoding="utf-8"))
+
+    def write_analysis(self, document: dict[str, Any], name: str) -> str:
+        """Write ``analysis/{name}.json`` without touching ``index.json`` (roadmap 8.5)."""
+        league_id = str(document["league_id"])
+        season = int(document["season"])
+        rel = analysis_rel(league_id, season, name)
+        path = self.root / rel
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(_dump(document), encoding="utf-8")
+        return str(path)
+
+    def read_analysis(
+        self, league_id: str, season: int, name: str
+    ) -> dict[str, Any] | None:
+        path = self.root / analysis_rel(league_id, season, name)
+        if not path.exists():
+            return None
+        return json.loads(path.read_text(encoding="utf-8"))
 
     def read(self, league_id: str, season: int) -> dict[str, Any] | None:
         assembled = self._read_v2(league_id, season)
@@ -254,6 +351,7 @@ class GcsStore:
         payload = _stamp(snapshot)
         league_id = payload["league_id"]
         season = int(payload["season"])
+        _refuse_espn_overwrite_of_golf(self.read(league_id, season), payload)
         parts = split_snapshot(payload)
         bucket = self._get_bucket()
         directory = season_dir_rel(league_id, season)
@@ -277,6 +375,65 @@ class GcsStore:
         entry = _index_entry(parts[MANIFEST_NAME], manifest_rel(league_id, season))
         self._upsert_index(entry)
         return f"gs://{self.bucket_name}/{manifest_key}"
+
+    def write_week_box_scores(self, document: dict[str, Any]) -> str:
+        """Write ``weeks/{N}.json`` without touching ``index.json`` (roadmap 8.1)."""
+        league_id = str(document["league_id"])
+        season = int(document["season"])
+        week = int(document["week"])
+        key = self._key(week_box_score_rel(league_id, season, week))
+        blob = self._get_bucket().blob(key)
+        blob.cache_control = "no-cache"
+        blob.upload_from_string(_dump(document), content_type="application/json")
+        return f"gs://{self.bucket_name}/{key}"
+
+    def read_week_box_scores(
+        self, league_id: str, season: int, week: int
+    ) -> dict[str, Any] | None:
+        blob = self._get_bucket().blob(
+            self._key(week_box_score_rel(league_id, season, week))
+        )
+        if not blob.exists():
+            return None
+        return json.loads(blob.download_as_text())
+
+    def write_pro_schedule(self, document: dict[str, Any]) -> str:
+        """Write ``pro_schedule.json`` without touching ``index.json`` (roadmap 8.2)."""
+        league_id = str(document["league_id"])
+        season = int(document["season"])
+        key = self._key(pro_schedule_rel(league_id, season))
+        blob = self._get_bucket().blob(key)
+        blob.cache_control = "no-cache"
+        blob.upload_from_string(_dump(document), content_type="application/json")
+        return f"gs://{self.bucket_name}/{key}"
+
+    def read_pro_schedule(
+        self, league_id: str, season: int
+    ) -> dict[str, Any] | None:
+        blob = self._get_bucket().blob(self._key(pro_schedule_rel(league_id, season)))
+        if not blob.exists():
+            return None
+        return json.loads(blob.download_as_text())
+
+    def write_analysis(self, document: dict[str, Any], name: str) -> str:
+        """Write ``analysis/{name}.json`` without touching ``index.json`` (roadmap 8.5)."""
+        league_id = str(document["league_id"])
+        season = int(document["season"])
+        key = self._key(analysis_rel(league_id, season, name))
+        blob = self._get_bucket().blob(key)
+        blob.cache_control = "no-cache"
+        blob.upload_from_string(_dump(document), content_type="application/json")
+        return f"gs://{self.bucket_name}/{key}"
+
+    def read_analysis(
+        self, league_id: str, season: int, name: str
+    ) -> dict[str, Any] | None:
+        blob = self._get_bucket().blob(
+            self._key(analysis_rel(league_id, season, name))
+        )
+        if not blob.exists():
+            return None
+        return json.loads(blob.download_as_text())
 
     def read(self, league_id: str, season: int) -> dict[str, Any] | None:
         assembled = self._read_v2(league_id, season)
@@ -385,6 +542,60 @@ def write_snapshot(
 ) -> str:
     """Persist one league-season snapshot; returns the location written."""
     return resolve_store(store_dir).write(snapshot)
+
+
+def write_week_box_scores(
+    document: dict[str, Any],
+    store_dir: Path | str | None = None,
+) -> str:
+    """Persist one football week box-score file (no index upsert)."""
+    return resolve_store(store_dir).write_week_box_scores(document)
+
+
+def read_week_box_scores(
+    league_id: str,
+    season: int,
+    week: int,
+    store_dir: Path | str | None = None,
+) -> dict[str, Any] | None:
+    """Read ``weeks/{N}.json`` from the active store (no fixture fallback)."""
+    return resolve_store(store_dir).read_week_box_scores(league_id, season, week)
+
+
+def write_pro_schedule(
+    document: dict[str, Any],
+    store_dir: Path | str | None = None,
+) -> str:
+    """Persist ``pro_schedule.json`` (no index upsert)."""
+    return resolve_store(store_dir).write_pro_schedule(document)
+
+
+def read_pro_schedule(
+    league_id: str,
+    season: int,
+    store_dir: Path | str | None = None,
+) -> dict[str, Any] | None:
+    """Read ``pro_schedule.json`` from the active store (no fixture fallback)."""
+    return resolve_store(store_dir).read_pro_schedule(league_id, season)
+
+
+def write_analysis(
+    document: dict[str, Any],
+    name: str,
+    store_dir: Path | str | None = None,
+) -> str:
+    """Persist one season-points analysis sidecar (no index upsert)."""
+    return resolve_store(store_dir).write_analysis(document, name)
+
+
+def read_analysis(
+    league_id: str,
+    season: int,
+    name: str,
+    store_dir: Path | str | None = None,
+) -> dict[str, Any] | None:
+    """Read ``analysis/{name}.json`` from the active store (no fixture fallback)."""
+    return resolve_store(store_dir).read_analysis(league_id, season, name)
 
 
 def read_snapshot(

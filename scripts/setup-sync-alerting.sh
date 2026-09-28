@@ -6,7 +6,8 @@
 #   - You can receive alert email (or pass an existing channel id)
 #
 # Run in Cloud Shell:
-#   NOTIFY_EMAIL=you@example.com ./scripts/setup-sync-alerting.sh
+#   ./scripts/setup-sync-alerting.sh
+#   # or override: NOTIFY_EMAIL=other@example.com ./scripts/setup-sync-alerting.sh
 #
 # Optional:
 #   NOTIFICATION_CHANNEL=projects/.../notificationChannels/123   # reuse one
@@ -20,9 +21,10 @@ REGION="${GCP_REGION:-us-central1}"
 JOB="${SJ_JOB:-sj-sync}"
 POLICY_DISPLAY="${SJ_ALERT_POLICY:-Strictly Jayers sync job failed}"
 CHANNEL_DISPLAY="${SJ_CHANNEL_DISPLAY:-Strictly Jayers sync alerts}"
+NOTIFY_EMAIL="${NOTIFY_EMAIL:-austincwiley@gmail.com}"
 
-if [[ -z "${NOTIFY_EMAIL:-}" && -z "${NOTIFICATION_CHANNEL:-}" ]]; then
-  echo "Set NOTIFY_EMAIL=you@example.com or NOTIFICATION_CHANNEL=projects/.../notificationChannels/ID" >&2
+if [[ -z "${NOTIFY_EMAIL}" && -z "${NOTIFICATION_CHANNEL:-}" ]]; then
+  echo "Set NOTIFY_EMAIL=… or NOTIFICATION_CHANNEL=projects/.../notificationChannels/ID" >&2
   exit 1
 fi
 
@@ -133,6 +135,45 @@ else
   echo "created alert policy ${CREATED}"
 fi
 
+# --- Uptime check on hub /api/health (optional but recommended) ------------
+HUB_HOST="${SJ_HUB_HOST:-}"
+if [[ -z "${HUB_HOST}" ]]; then
+  HUB_HOST="$(
+    gcloud run services describe sj-hub \
+      --project="${PROJECT}" --region="${REGION}" \
+      --format='value(status.url)' 2>/dev/null | sed 's|^https://||' || true
+  )"
+fi
+
+UPTIME_NAME="${SJ_UPTIME_CHECK:-sj-hub-health}"
+if [[ -n "${HUB_HOST}" ]]; then
+  EXISTING_UPTIME="$(
+    gcloud monitoring uptime list-configs \
+      --project="${PROJECT}" \
+      --filter="displayName=\"${UPTIME_NAME}\"" \
+      --format='value(name)' 2>/dev/null | head -n1 || true
+  )"
+  if [[ -z "${EXISTING_UPTIME}" ]]; then
+    # Path probe — 503 from stale snapshots pages freshness, not only process death.
+    gcloud monitoring uptime create "${UPTIME_NAME}" \
+      --project="${PROJECT}" \
+      --resource-type=uptime-url \
+      --resource-labels="host=${HUB_HOST},project_id=${PROJECT}" \
+      --protocol=https \
+      --path="/api/health" \
+      --port=443 \
+      --period=300 \
+      --timeout=10 \
+      --status-codes=200 \
+      --quiet >/dev/null
+    echo "created uptime check ${UPTIME_NAME} → https://${HUB_HOST}/api/health"
+  else
+    echo "uptime check already exists: ${EXISTING_UPTIME}"
+  fi
+else
+  echo "note: could not resolve sj-hub URL — set SJ_HUB_HOST=sj-hub-….run.app to create uptime check"
+fi
+
 cat <<EOF
 
 ================================================================
@@ -141,13 +182,12 @@ Sync alerting ready.
 You will get mail at ${NOTIFY_EMAIL:-the channel you passed} when ${JOB}
 fails. Confirm the channel from the email Google sends on first create.
 
-Optional — page on stale snapshots too (after the hub is deployed):
+Uptime: HTTPS check \`${UPTIME_NAME}\` on /api/health (when hub URL is known).
+Wire the check to the same notification channel in Cloud Monitoring → Alerting
+if the console does not attach it automatically.
 
-  # Cloud Monitoring → Uptime checks → create HTTPS check
-  #   URL: https://<sj-hub-host>/api/health
-  #   Expected: HTTP 200
-  #   Alert on check failure → same notification channel
-
-Freshness threshold is SJ_HEALTH_STALE_SECONDS on the hub (default 7200).
+Freshness threshold is SJ_HEALTH_STALE_SECONDS on the hub (default 93600 / 26h).
+Prefer a GCS-mounted hub so sync keeps synced_at fresh — fixture-only deploys
+can 503 the probe when baked timestamps look stale.
 ================================================================
 EOF

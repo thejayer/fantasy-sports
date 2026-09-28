@@ -19,9 +19,13 @@ describe("LeagueView unification", () => {
   it("league page renders LeagueView for every sport", () => {
     expect(pageSource).toMatch(/import \{ LeagueView \} from "@\/components\/LeagueView"/);
     expect(pageSource).toMatch(/<LeagueView/);
-    expect(pageSource).not.toMatch(/sport === "baseball"/);
+    // Sport-specific *data* loads are fine (football projections, baseball
+    // pro_schedule for 8.2 tools) — parallel BaseballLeagueView is not.
     expect(pageSource).not.toMatch(/BaseballLeagueView/);
     expect(pageSource).not.toMatch(/function record\(/);
+    expect(pageSource).toMatch(/getProSchedule/);
+    expect(pageSource).toMatch(/getBaseballAnalysis/);
+    expect(pageSource).toMatch(/sport === "hockey"/);
   });
 
   it("shared view includes season chips, win%, and sport-gated standings", () => {
@@ -33,12 +37,67 @@ describe("LeagueView unification", () => {
     expect(viewSource).toMatch(/"PF"/);
     expect(viewSource).toMatch(/<th>PA<\/th>/);
     expect(viewSource).toMatch(/RoleSwitcher/);
-    expect(viewSource).toMatch(/PlayersDataTable/);
+    expect(viewSource).toMatch(/PlayersBoard/);
     // Roadmap 3.4: matchups tab on the unified view.
     expect(viewSource).toMatch(/MatchupsPanel/);
     expect(viewSource).toMatch(/"matchups"/);
     // Roadmap 3.5: history tab aggregates multi-season archives.
     expect(viewSource).toMatch(/HistoryPanel/);
     expect(viewSource).toMatch(/"history"/);
+    // Roadmap 4.4: football projections tab (VOR / floor / median / ceiling).
+    expect(viewSource).toMatch(/ProjectionsBoard/);
+    expect(viewSource).toMatch(/"projections"/);
+    expect(viewSource).toMatch(/showProjections/);
+    // Roadmap 4.5: decision tools tab (trade / waivers / strength).
+    expect(viewSource).toMatch(/ToolsPanel/);
+    expect(viewSource).toMatch(/"tools"/);
+    // ESPN draft results + activity ledger (both sports); baseball FA board.
+    expect(viewSource).toMatch(/DraftResultsPanel/);
+    expect(viewSource).toMatch(/ActivityPanel/);
+    expect(viewSource).toMatch(/"draft"/);
+    expect(viewSource).toMatch(/"activity"/);
+    expect(viewSource).toMatch(/RecapPanel/);
+    expect(viewSource).toMatch(/"recap"/);
+    expect(viewSource).toMatch(/FreeAgentsBoard/);
+    expect(viewSource).toMatch(/"waivers"/);
+    // Roadmap 4.6: baseball stays projection-free; 8.2 fills tools with arithmetic.
+    expect(viewSource).toMatch(/BASEBALL_TABS/);
+    expect(viewSource).toMatch(/projection-free by design/);
+    expect(viewSource).toMatch(/Baseball stays projection-free by design/);
+    expect(viewSource).toMatch(/BaseballToolsPanel/);
+    expect(viewSource).toMatch(/HOCKEY_TABS/);
+    expect(viewSource).toMatch(/HockeyToolsPanel/);
+    expect(viewSource).toMatch(/Hockey stays projection-free by design/);
+    expect(viewSource).not.toMatch(/Decision tools are football-only by design/);
+    expect(viewSource).not.toMatch(/until roadmap 4\.6/);
+    // Roadmap 6.4a–c: golf lane — settings, draft, lineup panel.
+    expect(viewSource).toMatch(/GOLF_TABS/);
+    expect(viewSource).toMatch(/GolfSettingsPanel/);
+    expect(viewSource).toMatch(/GolfLineupPanel/);
+    expect(viewSource).toMatch(/GolfScoreboardPanel/);
+    expect(viewSource).toMatch(/ScoringSandboxPanel/);
+    expect(viewSource).toMatch(/"sandbox"/);
+    expect(viewSource).toMatch(/HallOfShamePanel/);
+    expect(viewSource).toMatch(/"drops"/);
+    expect(viewSource).toMatch(/BaseballAnalysisPanel/);
+    expect(viewSource).toMatch(/"analysis"/);
+    expect(
+      readFileSync(
+        path.join(process.cwd(), "src/components/BaseballAnalysisPanel.tsx"),
+        "utf8",
+      ),
+    ).toMatch(/^["']use client["']/m);
+    expect(viewSource).toMatch(/isGolf/);
+    expect(viewSource).not.toMatch(/Snake draft comes in 6\.4b/);
+    expect(viewSource).not.toMatch(/Weekly lineups come in 6\.4c/);
+    expect(viewSource).not.toMatch(/^["']use client["']/m);
+  });
+
+  it("league page loads projection snapshots for football tabs", () => {
+    expect(pageSource).toMatch(/getProjectionSnapshot/);
+    expect(pageSource).toMatch(/getPlayerMap/);
+    expect(pageSource).toMatch(/scoringSlugFromLeague/);
+    expect(pageSource).toMatch(/tab === "tools"/);
+    expect(pageSource).toMatch(/league\.sport === "football"/);
   });
 });

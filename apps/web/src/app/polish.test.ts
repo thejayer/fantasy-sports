@@ -26,6 +26,16 @@ describe("roadmap 3.6 polish surface", () => {
     expect(existsSync(path.join(APP_DIR, "opengraph-image.tsx"))).toBe(true);
   });
 
+  it("keeps opengraph and icon routes outside the auth matcher", () => {
+    const middleware = readFileSync(
+      path.join(APP_DIR, "../middleware.ts"),
+      "utf8",
+    );
+    expect(middleware).toMatch(/isPublicMetadataPath/);
+    expect(middleware).toMatch(/opengraph-image/);
+    expect(middleware).toMatch(/twitter-image/);
+  });
+
   it("removes create-next-app boilerplate SVGs", () => {
     // Keep public/ present (Docker COPY needs the directory) via .gitkeep only.
     const names = existsSync(PUBLIC_DIR) ? readdirSync(PUBLIC_DIR) : [];
@@ -38,5 +48,33 @@ describe("roadmap 3.6 polish surface", () => {
     expect(data).toMatch(/CorruptSnapshotError/);
     expect(data).toMatch(/parseSnapshotJson/);
     expect(data).toMatch(/isNotFoundFsError/);
+  });
+
+  it("uses Next Data Cache tags instead of a process-local Map", () => {
+    const data = readFileSync(path.join(APP_DIR, "../lib/data.ts"), "utf8");
+    expect(data).toMatch(/unstable_cache/);
+    expect(data).toMatch(/SJ_SNAPSHOTS_CACHE_TAG/);
+    expect(data).not.toMatch(/\bfileCache\b/);
+    expect(existsSync(path.join(APP_DIR, "api/revalidate/route.ts"))).toBe(true);
+  });
+
+  it("ships a post-build client bundle budget check", () => {
+    const pkg = JSON.parse(
+      readFileSync(path.join(WEB_ROOT, "package.json"), "utf8"),
+    );
+    expect(pkg.scripts["verify:bundle-budget"]).toMatch(/check-bundle-budget/);
+    expect(
+      existsSync(path.join(WEB_ROOT, "scripts/check-bundle-budget.mjs")),
+    ).toBe(true);
+  });
+
+  it("ships a post-build HTML document budget check (roadmap 7.11)", () => {
+    const pkg = JSON.parse(
+      readFileSync(path.join(WEB_ROOT, "package.json"), "utf8"),
+    );
+    expect(pkg.scripts["verify:html-budget"]).toMatch(/check-html-budget/);
+    expect(
+      existsSync(path.join(WEB_ROOT, "scripts/check-html-budget.mjs")),
+    ).toBe(true);
   });
 });

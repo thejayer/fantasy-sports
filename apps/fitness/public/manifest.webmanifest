@@ -1,0 +1,17 @@
+{
+  "name": "Strictly Jayers Fitness",
+  "short_name": "Fitness",
+  "description": "Training log for golf, tennis, pickleball, lifting, and endurance.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#f3f2f2",
+  "theme_color": "#ec3013",
+  "icons": [
+    {
+      "src": "assets/app-icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

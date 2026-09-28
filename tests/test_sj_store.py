@@ -7,6 +7,7 @@ from sj.snapshot_layout import MANIFEST_NAME, SCHEMA_VERSION
 from sj.store import (
     FileStore,
     GcsStore,
+    _dump,
     describe_store,
     list_snapshots,
     read_snapshot,
@@ -78,6 +79,7 @@ def test_write_emits_v2_layout_and_lists(tmp_path: Path):
     assert (season_dir / "draft.json").exists()
     assert (season_dir / "settings.json").exists()
     assert (season_dir / "transactions.json").exists()
+    assert (season_dir / "free_agents.json").exists()
     # Writers must not leave a v1 monolith behind.
     assert not (tmp_path / "football-main" / "2025.json").exists()
 
@@ -146,6 +148,36 @@ def test_upsert_replaces_same_season_entry(tmp_path: Path):
     assert len(items) == 1
     assert items[0]["season"] == 2025
     assert items[0]["synced_at"] != first
+
+
+def test_espn_write_preserves_sibling_golf_index_row(tmp_path: Path):
+    """Sync upsert must not drop a hub-native golf row already in index.json."""
+    store = FileStore(tmp_path)
+    golf = snapshot(2026)
+    golf["league_id"] = "golf-main"
+    golf["sport"] = "golf"
+    golf["espn_league_id"] = None
+    store.write(golf)
+
+    store.write(snapshot(2026))  # football-main
+
+    leagues = {(row["league_id"], row["season"], row["sport"]) for row in store.list()}
+    assert ("golf-main", 2026, "golf") in leagues
+    assert ("football-main", 2026, "football") in leagues
+
+
+def test_espn_write_refuses_to_overwrite_golf_season(tmp_path: Path):
+    store = FileStore(tmp_path)
+    golf = snapshot(2026)
+    golf["league_id"] = "shared-id"
+    golf["sport"] = "golf"
+    golf["espn_league_id"] = None
+    store.write(golf)
+
+    espn = snapshot(2026)
+    espn["league_id"] = "shared-id"
+    with pytest.raises(ValueError, match="hub-native golf"):
+        store.write(espn)
 
 
 def test_missing_index_falls_back_to_full_rebuild(tmp_path: Path):
@@ -232,6 +264,15 @@ def test_gcs_store_round_trip(monkeypatch):
     # Concern objects landed too.
     assert "snapshots/football-main/2025/standings.json" in bucket.objects
 
+    analysis_loc = store.write_analysis(
+        {"league_id": "baseball-dynasty", "season": 2026, "teams": []},
+        "slot_points",
+    )
+    assert analysis_loc.endswith("baseball-dynasty/2026/analysis/slot_points.json")
+    assert store.read_analysis("baseball-dynasty", 2026, "slot_points")["season"] == 2026
+    # Side concern — index unchanged.
+    assert len(json.loads(bucket.objects["snapshots/index.json"])["leagues"]) == 2
+
 
 def test_gcs_write_upserts_without_listing_bucket(monkeypatch):
     bucket = FakeBucket()
@@ -251,3 +292,42 @@ def test_gcs_write_upserts_without_listing_bucket(monkeypatch):
     )
     store.write(snapshot(2025))
     assert {item["season"] for item in store.list()} == {2024, 2025}
+
+
+def test_write_round_trip_never_emits_infinity_or_nan(tmp_path: Path):
+    """Production incident: free_agents ERA Infinity crashed hub JSON.parse."""
+    payload = snapshot(2026)
+    payload["league_id"] = "baseball-dynasty"
+    payload["sport"] = "baseball"
+    payload["free_agents"] = [
+        {
+            "id": 700373770,
+            "name": "Zero IP Reliever",
+            "trailing_stats": {
+                "7": {
+                    "ERA": float("inf"),
+                    "WHIP": float("-inf"),
+                    "AVG": float("nan"),
+                    "K": 0.0,
+                }
+            },
+        }
+    ]
+    dumped = _dump({"ERA": float("inf"), "WHIP": float("nan")})
+    assert "Infinity" not in dumped
+    assert "NaN" not in dumped
+
+    write_snapshot(payload, store_dir=tmp_path)
+    fa_path = tmp_path / "baseball-dynasty" / "2026" / "free_agents.json"
+    text = fa_path.read_text(encoding="utf-8")
+    assert "Infinity" not in text
+    assert "NaN" not in text
+    loaded = json.loads(text)
+    stats = loaded["free_agents"][0]["trailing_stats"]["7"]
+    assert stats["ERA"] is None
+    assert stats["WHIP"] is None
+    assert stats["AVG"] is None
+    assert stats["K"] == 0.0
+    # Round-trip through the store reader stays parseable.
+    snap = read_snapshot("baseball-dynasty", 2026, store_dir=tmp_path)
+    assert snap["free_agents"][0]["trailing_stats"]["7"]["ERA"] is None
