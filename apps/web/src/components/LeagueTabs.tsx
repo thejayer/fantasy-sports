@@ -16,13 +16,27 @@ export type LeagueTab = {
 };
 
 /** Tabs worth a permanent slot; everything else goes to the overflow. */
-const PRIMARY = new Set([
+export const PRIMARY = new Set([
   "standings",
   "matchups",
   "teams",
   "players",
-  "activity",
   "tools",
+  "sandbox",
+  "lineup",
+  "scoreboard",
+  "schedule",
+]);
+
+/** Season-points leagues skip H2H matchups in the everyday row. */
+export const SEASON_POINTS_PRIMARY = new Set([
+  "standings",
+  "teams",
+  "players",
+  "tools",
+  "sandbox",
+  "drops",
+  "analysis",
   "lineup",
   "scoreboard",
   "schedule",
@@ -35,11 +49,15 @@ const LABELS: Record<string, string> = {
   matchups: "Matchups",
   draft: "Draft",
   activity: "Feed",
+  recap: "Recap",
   waivers: "Waivers",
   history: "History",
   projections: "Projections",
   tools: "Tools",
   settings: "Settings",
+  sandbox: "Scoring lab",
+  drops: "Hall of Shame",
+  analysis: "Analysis",
   schedule: "Schedule",
   lineup: "Lineup",
   scoreboard: "Scoreboard",
@@ -58,11 +76,12 @@ export function tabLabel(id: string): string {
 export function splitTabs(
   tabs: LeagueTab[],
   active: string,
+  primary: Set<string> = PRIMARY,
 ): { shown: LeagueTab[]; hidden: LeagueTab[] } {
   const shown: LeagueTab[] = [];
   const hidden: LeagueTab[] = [];
   for (const tab of tabs) {
-    if (PRIMARY.has(tab.id) || tab.id === active) shown.push(tab);
+    if (primary.has(tab.id) || tab.id === active) shown.push(tab);
     else hidden.push(tab);
   }
   return { shown, hidden };
@@ -71,11 +90,13 @@ export function splitTabs(
 export function LeagueTabs({
   tabs,
   active,
+  primary,
 }: {
   tabs: LeagueTab[];
   active: string;
+  primary?: Set<string>;
 }) {
-  const { shown, hidden } = splitTabs(tabs, active);
+  const { shown, hidden } = splitTabs(tabs, active, primary);
   return (
     <nav className="tabs league-tabs" aria-label="League sections">
       {shown.map((tab) => (

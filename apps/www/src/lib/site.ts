@@ -5,8 +5,11 @@
 export type SiteConfig = {
   siteUrl: string;
   fantasyHubUrl: string;
+  fitnessUrl: string;
   discordInviteUrl: string | null;
   palworldInfoUrl: string | null;
+  /** Public world line only — never put IPs or passwords here. */
+  palworldStatus: string | null;
 };
 
 /** Crew Discord invite — override with DISCORD_INVITE_URL on sj-www if rotated. */
@@ -31,8 +34,12 @@ export function getSiteConfig(): SiteConfig {
       process.env.FANTASY_HUB_URL?.trim() ||
         "https://fantasy.strictlyjayers.com",
     ),
+    fitnessUrl: trimTrailingSlash(
+      process.env.FITNESS_URL?.trim() || "https://fitness.strictlyjayers.com",
+    ),
     discordInviteUrl:
       optionalUrl(process.env.DISCORD_INVITE_URL) || DEFAULT_DISCORD_INVITE_URL,
     palworldInfoUrl: optionalUrl(process.env.PALWORLD_INFO_URL),
+    palworldStatus: process.env.PALWORLD_STATUS?.trim() || null,
   };
 }

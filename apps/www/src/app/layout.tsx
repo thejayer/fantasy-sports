@@ -1,19 +1,34 @@
-import type { Metadata } from "next";
-import { Archivo } from "next/font/google";
 import Link from "next/link";
 
-import {
-  ACCENT_INIT_SCRIPT,
-  AccentPicker,
-} from "@/components/AccentPicker";
+import { PortalNav } from "@/components/PortalNav";
+import { ACCENT_INIT_SCRIPT } from "@/components/AccentPicker";
 import { portalCopy } from "@/lib/content";
 import { getSiteConfig } from "@/lib/site";
+import localFont from "next/font/local";
+import type { Metadata } from "next";
 import "./globals.css";
 
-const archivo = Archivo({
-  subsets: ["latin"],
-  weight: ["400", "600", "800"],
+/** Self-hosted so Docker/CI builds do not fetch Google Fonts at compile time. */
+const archivo = localFont({
+  src: [
+    {
+      path: "../fonts/Archivo-latin-400.woff2",
+      weight: "400",
+      style: "normal",
+    },
+    {
+      path: "../fonts/Archivo-latin-600.woff2",
+      weight: "600",
+      style: "normal",
+    },
+    {
+      path: "../fonts/Archivo-latin-800.woff2",
+      weight: "800",
+      style: "normal",
+    },
+  ],
   variable: "--font-archivo",
+  display: "swap",
 });
 
 export function generateMetadata(): Metadata {
@@ -48,7 +63,7 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const { fantasyHubUrl, discordInviteUrl } = getSiteConfig();
+  const { fantasyHubUrl, fitnessUrl, discordInviteUrl } = getSiteConfig();
 
   return (
     <html lang="en" className={archivo.variable}>
@@ -61,22 +76,11 @@ export default function RootLayout({
             <Link href="/" className="brand-mark">
               Strictly Jayers
             </Link>
-            <nav className="nav-links" aria-label="Primary">
-              <Link href="/#destinations">Places</Link>
-              <Link href="/ai">AI News</Link>
-              <Link href="/watch">Watch</Link>
-              {discordInviteUrl ? (
-                <a href={discordInviteUrl} rel="noopener noreferrer">
-                  Discord
-                </a>
-              ) : (
-                <Link href="/#destinations">Discord</Link>
-              )}
-              <a href={fantasyHubUrl} rel="noopener noreferrer">
-                Fantasy
-              </a>
-              <AccentPicker />
-            </nav>
+            <PortalNav
+              fantasyHubUrl={fantasyHubUrl}
+              fitnessUrl={fitnessUrl}
+              discordInviteUrl={discordInviteUrl}
+            />
           </header>
           {children}
         </div>

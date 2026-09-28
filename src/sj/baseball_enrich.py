@@ -44,7 +44,7 @@ def _iso_from_ms(ms: Any) -> str | None:
     return datetime.fromtimestamp(value, tz=timezone.utc).isoformat()
 
 
-def _breakdown_from_raw_stats(stats_entry: dict[str, Any]) -> dict[str, float]:
+def _breakdown_from_raw_stats(stats_entry: dict[str, Any]) -> dict[str, float | None]:
     stats_map = _baseball_stats_map()
     raw = stats_entry.get("stats") or stats_entry.get("appliedStats") or {}
     named: dict[str, Any] = {}
@@ -59,9 +59,11 @@ def _breakdown_from_raw_stats(stats_entry: dict[str, Any]) -> dict[str, float]:
     return extract_baseball_stat_breakdown(named)
 
 
-def parse_trailing_from_player_card(players_payload: list[Any]) -> dict[int, dict[str, dict[str, float]]]:
+def parse_trailing_from_player_card(
+    players_payload: list[Any],
+) -> dict[int, dict[str, dict[str, float | None]]]:
     """Map espn player id → ``{"7": stats, "15": …, "30": …}``."""
-    out: dict[int, dict[str, dict[str, float]]] = {}
+    out: dict[int, dict[str, dict[str, float | None]]] = {}
     for row in players_payload:
         if not isinstance(row, dict):
             continue
@@ -72,7 +74,7 @@ def parse_trailing_from_player_card(players_payload: list[Any]) -> dict[int, dic
             pid = int(player.get("id"))
         except (TypeError, ValueError):
             continue
-        windows: dict[str, dict[str, float]] = {}
+        windows: dict[str, dict[str, float | None]] = {}
         for stats in player.get("stats") or []:
             if not isinstance(stats, dict):
                 continue
@@ -90,7 +92,7 @@ def parse_trailing_from_player_card(players_payload: list[Any]) -> dict[int, dic
 
 def fetch_trailing_stats_for_ids(
     league: Any, player_ids: list[int]
-) -> dict[int, dict[str, dict[str, float]]]:
+) -> dict[int, dict[str, dict[str, float | None]]]:
     """Batch ``get_player_card`` with L7/L15/L30 filters."""
     request = getattr(league, "espn_request", None)
     if request is None or not callable(getattr(request, "get_player_card", None)):
@@ -104,7 +106,7 @@ def fetch_trailing_stats_for_ids(
         or 200
     )
     filters = [f"01{year}", f"02{year}", f"03{year}"]
-    merged: dict[int, dict[str, dict[str, float]]] = {}
+    merged: dict[int, dict[str, dict[str, float | None]]] = {}
     for start in range(0, len(player_ids), _PLAYER_CARD_BATCH):
         batch = player_ids[start : start + _PLAYER_CARD_BATCH]
         if not batch:
@@ -132,7 +134,7 @@ def fetch_trailing_stats_for_ids(
 
 def apply_trailing_stats_to_snapshot(
     snapshot: dict[str, Any],
-    trailing_by_id: dict[int, dict[str, dict[str, float]]],
+    trailing_by_id: dict[int, dict[str, dict[str, float | None]]],
 ) -> int:
     """Mutate roster / players / FA rows in place. Returns rows updated."""
     if not trailing_by_id:
@@ -188,11 +190,12 @@ def enrich_baseball_trailing_stats(league: Any, snapshot: dict[str, Any]) -> int
     return apply_trailing_stats_to_snapshot(snapshot, trailing)
 
 
-def _attach_team_season_points(league: Any, teams_payload: list[Any]) -> int:
+def attach_team_season_points(league: Any, teams_payload: list[Any]) -> int:
     """Map ESPN ``teams[].points`` → ``team.points_for`` (Season Points standings).
 
-    espn-api baseball ``Team`` never sets ``points_for``; ``record.overall.pointsFor``
-    is 0 for ``TOTAL_SEASON_POINTS``. Official standings use top-level ``points``.
+    espn-api baseball/hockey ``Team`` never sets ``points_for``;
+    ``record.overall.pointsFor`` is 0 for ``TOTAL_SEASON_POINTS``. Official
+    standings use top-level ``points``.
     """
     by_id: dict[int, dict[str, Any]] = {}
     for row in teams_payload:
@@ -224,6 +227,25 @@ def _attach_team_season_points(league: Any, teams_payload: list[Any]) -> int:
     return attached
 
 
+def attach_espn_team_season_points(league: Any) -> int:
+    """Fetch ``get_league()`` and attach ESPN team season points (hockey/baseball)."""
+    request = getattr(league, "espn_request", None)
+    if request is None or not callable(getattr(request, "get_league", None)):
+        return 0
+    try:
+        from sj.sync import espn_call
+
+        data = espn_call(lambda: request.get_league(), label="team_points")
+    except Exception:  # noqa: BLE001 — optional PF attach
+        return 0
+    if not isinstance(data, dict):
+        return 0
+    teams_payload = data.get("teams")
+    if not isinstance(teams_payload, list):
+        return 0
+    return attach_team_season_points(league, teams_payload)
+
+
 def attach_baseball_roster_limits(league: Any) -> bool:
     """Stash roster GS caps and Season Points team totals from raw ESPN payload."""
     settings = getattr(league, "settings", None)
@@ -248,7 +270,7 @@ def attach_baseball_roster_limits(league: Any) -> bool:
             already = True
     teams_payload = data.get("teams")
     if isinstance(teams_payload, list):
-        _attach_team_season_points(league, teams_payload)
+        attach_team_season_points(league, teams_payload)
     return already
 
 

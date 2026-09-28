@@ -13,6 +13,7 @@ import json
 from pathlib import Path
 from typing import Any
 
+from sj.jsonutil import dumps_snapshot
 from sj.registry import LeagueSpec, load_registry
 from sj.sample import sample_pro_schedule_for_snapshot, sample_snapshot
 from sj.store import FIXTURES_DIR, INDEX_NAME, FileStore, monolith_rel
@@ -26,6 +27,7 @@ FIXTURE_TEAM_COUNTS: dict[str, int] = {
     "football-main": 4,
     "football-dynasty": 3,
     "baseball-dynasty": 3,
+    "hockey-main": 3,
     "golf-main": 8,
 }
 
@@ -57,7 +59,7 @@ def expected_fixture_snapshot(spec: LeagueSpec, season: int | None = None) -> di
 
 
 def _dump(payload: dict[str, Any]) -> str:
-    return json.dumps(payload, indent=2, sort_keys=True) + "\n"
+    return dumps_snapshot(payload)
 
 
 def regenerate_fixtures(
@@ -103,6 +105,23 @@ def regenerate_fixtures(
             store = FileStore(root)
             store.write_pro_schedule(sample_pro_schedule_for_snapshot(snapshot))
             emit(f"wrote {spec.id}/{season}/pro_schedule.json")
+        if spec.sport in {"baseball", "hockey"}:
+            store = FileStore(root)
+            from sj.season_points_analysis import sample_analysis_for_snapshot
+            from sj.serialize import is_season_points_scoring
+
+            if is_season_points_scoring(
+                snapshot.get("scoring_type")
+                if isinstance(snapshot.get("scoring_type"), str)
+                else None
+            ):
+                slot_doc, series_doc = sample_analysis_for_snapshot(snapshot)
+                store.write_analysis(slot_doc, "slot_points")
+                store.write_analysis(series_doc, "points_timeseries")
+                emit(f"wrote {spec.id}/{season}/analysis/slot_points.json")
+                emit(f"wrote {spec.id}/{season}/analysis/points_timeseries.json")
+        if spec.sport == "baseball":
+            store = FileStore(root)
             week = int(snapshot.get("current_week") or 1)
             teams = snapshot.get("teams") or []
             if len(teams) >= 2:

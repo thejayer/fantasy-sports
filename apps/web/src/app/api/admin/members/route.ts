@@ -13,7 +13,7 @@ import {
 } from "@/lib/hub-members";
 import {
   readHubMembers,
-  writeHubMembers,
+  updateHubMembers,
 } from "@/lib/hub-members-store";
 import { requireAdmin } from "@/lib/session";
 
@@ -59,13 +59,13 @@ export async function POST(request: Request) {
   }
   const email = String(body.email ?? "");
   try {
-    const file = await readHubMembers();
-    const next = upsertMember(file, {
-      email,
-      role: body.role === "admin" ? "admin" : "member",
-      teams: body.teams,
-    });
-    const written = await writeHubMembers(next);
+    const written = await updateHubMembers((file) =>
+      upsertMember(file, {
+        email,
+        role: body.role === "admin" ? "admin" : "member",
+        teams: body.teams,
+      }),
+    );
     return NextResponse.json({ members: written.members }, { status: 201 });
   } catch (err) {
     return NextResponse.json(
@@ -85,14 +85,17 @@ export async function PATCH(request: Request) {
   }
   const email = String(body.email ?? "");
   try {
-    let file = await readHubMembers();
-    if (body.role) {
-      file = upsertMember(file, { email, role: body.role });
+    if (!body.role && !body.teams) {
+      return NextResponse.json(
+        { error: "role or teams required" },
+        { status: 400 },
+      );
     }
+    let enriched: HubMemberTeamLink[] | undefined;
     if (body.teams) {
-      // Enrich labels from current snapshots when possible.
+      // Enrich labels from current snapshots before the serialized write.
       const leagues = await getLatestLeagues();
-      const enriched: HubMemberTeamLink[] = [];
+      enriched = [];
       for (const link of body.teams) {
         const meta = leagues.find((l) => l.league_id === link.league_id);
         const snap = meta
@@ -106,16 +109,17 @@ export async function PATCH(request: Request) {
           league_name: meta?.name ?? link.league_name,
         });
       }
-      file = setMemberTeams(file, email, enriched);
-    } else if (body.role) {
-      // already upserted
-    } else {
-      return NextResponse.json(
-        { error: "role or teams required" },
-        { status: 400 },
-      );
     }
-    const written = await writeHubMembers(file);
+    const written = await updateHubMembers((file) => {
+      let next = file;
+      if (body.role) {
+        next = upsertMember(next, { email, role: body.role });
+      }
+      if (enriched) {
+        next = setMemberTeams(next, email, enriched);
+      }
+      return next;
+    });
     return NextResponse.json({ members: written.members });
   } catch (err) {
     return NextResponse.json(
@@ -130,9 +134,7 @@ export async function DELETE(request: Request) {
   const url = new URL(request.url);
   const email = url.searchParams.get("email") || "";
   try {
-    const file = await readHubMembers();
-    const next = removeMember(file, email);
-    const written = await writeHubMembers(next);
+    const written = await updateHubMembers((file) => removeMember(file, email));
     return NextResponse.json({ members: written.members });
   } catch (err) {
     return NextResponse.json(

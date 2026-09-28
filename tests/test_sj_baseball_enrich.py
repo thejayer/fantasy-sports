@@ -5,8 +5,8 @@ from __future__ import annotations
 from types import SimpleNamespace
 
 from sj.baseball_enrich import (
-    _attach_team_season_points,
     apply_trailing_stats_to_snapshot,
+    attach_team_season_points,
     enrich_pro_schedule_with_probables,
     parse_pitcher_ip_from_raw_schedule,
     parse_site_scoreboard_probables,
@@ -321,7 +321,7 @@ def test_extract_trailing_from_stub_player():
 def test_attach_team_season_points_from_espn_payload():
     team = SimpleNamespace(team_id=4, points_for=None)
     league = SimpleNamespace(teams=[team])
-    n = _attach_team_season_points(
+    n = attach_team_season_points(
         league, [{"id": 4, "points": 6040.0, "pointsLive": 6040.0}]
     )
     assert n == 1

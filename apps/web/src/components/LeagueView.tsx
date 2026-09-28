@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { ActivityPanel } from "@/components/ActivityPanel";
+import { RecapPanel } from "@/components/RecapPanel";
 import { DraftResultsPanel } from "@/components/DraftResultsPanel";
 import { EmptyState } from "@/components/EmptyState";
 import { FreeAgentsBoard } from "@/components/FreeAgentsBoard";
@@ -9,7 +10,11 @@ import { GolfSchedulePanel } from "@/components/GolfSchedulePanel";
 import { GolfScoreboardPanel } from "@/components/GolfScoreboardPanel";
 import { GolfSettingsPanel } from "@/components/GolfSettingsPanel";
 import { HistoryPanel, type HistoryView } from "@/components/HistoryPanel";
-import { LeagueTabs, tabLabel } from "@/components/LeagueTabs";
+import {
+  LeagueTabs,
+  SEASON_POINTS_PRIMARY,
+  tabLabel,
+} from "@/components/LeagueTabs";
 import { MatchupsPanel, type MatchupsView } from "@/components/MatchupsPanel";
 import { PlayersBoard } from "@/components/PlayersBoard";
 import { ProjectionsBoard } from "@/components/ProjectionsBoard";
@@ -18,10 +23,15 @@ import {
   isSeasonPointsScoring,
   scoringTypeLabel,
 } from "@/lib/scoring-type";
+import { ScoringSandboxPanel } from "@/components/ScoringSandboxPanel";
+import { HallOfShamePanel } from "@/components/HallOfShamePanel";
+import { BaseballAnalysisPanel } from "@/components/BaseballAnalysisPanel";
 import { SettingsPanel } from "@/components/SettingsPanel";
 import { BaseballToolsPanel } from "@/components/BaseballToolsPanel";
+import { HockeyToolsPanel } from "@/components/HockeyToolsPanel";
 import { ToolsPanel, type ToolsView } from "@/components/ToolsPanel";
 import type { BaseballToolsView, TrailingWindow } from "@/lib/baseball-tools";
+import type { HockeyToolsView } from "@/lib/hockey-tools";
 import { TeamIdentity } from "@/components/TeamAvatar";
 import { ViewerBadge } from "@/components/ViewerBadge";
 import type {
@@ -55,6 +65,11 @@ import {
 } from "@/lib/projection-join";
 import { StatusLegend } from "@/components/StatusLegend";
 import type { GolfActingScope } from "@/lib/hub-members";
+import type { ScoringSandboxModel } from "@/lib/scoring-sandbox";
+import type {
+  AnalysisSeriesMode,
+  BaseballAnalysisSnapshot,
+} from "@/lib/baseball-analysis";
 
 function RoleSwitcher({
   leagueId,
@@ -99,9 +114,11 @@ function StandingsTable({
   const isFootball = league.sport === "football";
   const isGolf = league.sport === "golf";
   const isBaseball = league.sport === "baseball";
+  const isHockey = league.sport === "hockey";
   const golfSeasonPoints = isGolf && league.format === "season_points";
   const baseballSeasonPoints = isBaseball && isSeasonPointsScoring(league.scoring_type);
-  const seasonPoints = golfSeasonPoints || baseballSeasonPoints;
+  const hockeySeasonPoints = isHockey && isSeasonPointsScoring(league.scoring_type);
+  const seasonPoints = golfSeasonPoints || baseballSeasonPoints || hockeySeasonPoints;
   const showRecord = !seasonPoints;
   const showPoints =
     isFootball ||
@@ -109,8 +126,11 @@ function StandingsTable({
     baseballSeasonPoints ||
     league.teams.some((team) => team.points_for != null);
   const showAgainst = isFootball || (isGolf && !golfSeasonPoints);
-  const pointsLabel =
-    isFootball || (isGolf && !golfSeasonPoints) ? "PF" : "Points";
+  const pointsLabel = seasonPoints
+    ? "Season FP"
+    : isFootball || (isGolf && !golfSeasonPoints)
+      ? "PF"
+      : "Points";
 
   if (!league.teams.length) {
     return (
@@ -139,7 +159,7 @@ function StandingsTable({
             : "H2H record from scored event weeks (roadmap 6.4e)."}
         </p>
       ) : null}
-      {baseballSeasonPoints ? (
+      {baseballSeasonPoints || hockeySeasonPoints ? (
         <p className="league-meta" style={{ margin: "0.75rem 1rem 0" }}>
           Season Points — standings by cumulative fantasy points (ESPN applied
           totals). Point weights are on the Settings tab.
@@ -275,10 +295,13 @@ const FOOTBALL_TABS = [
   "matchups",
   "draft",
   "activity",
+  "recap",
   "history",
   "projections",
   "tools",
   "settings",
+  "sandbox",
+  "drops",
 ] as const;
 
 const BASEBALL_TABS = [
@@ -288,11 +311,33 @@ const BASEBALL_TABS = [
   "matchups",
   "draft",
   "activity",
+  "recap",
   "waivers",
   "history",
   "projections",
   "tools",
   "settings",
+  "sandbox",
+  "analysis",
+  "drops",
+] as const;
+
+const HOCKEY_TABS = [
+  "standings",
+  "teams",
+  "players",
+  "matchups",
+  "draft",
+  "activity",
+  "recap",
+  "waivers",
+  "history",
+  "projections",
+  "tools",
+  "settings",
+  "sandbox",
+  "analysis",
+  "drops",
 ] as const;
 
 /** Golf lane (roadmap 6.4a–e + 6.5 + live auction). */
@@ -300,6 +345,7 @@ const GOLF_TABS = [
   "standings",
   "teams",
   "settings",
+  "sandbox",
   "schedule",
   "lineup",
   "scoreboard",
@@ -332,6 +378,7 @@ export function LeagueView({
   toolsView = "home",
   baseballToolsView = "home",
   baseballTrailingWindow = "7",
+  hockeyToolsView = "home",
   proSchedule = null,
   toolsTeamA,
   toolsTeamB,
@@ -345,6 +392,9 @@ export function LeagueView({
   boxPair = null,
   weekBoxScore = null,
   viewerTeamId,
+  scoringSandbox = null,
+  baseballAnalysis = null,
+  analysisSeriesMode = "cumulative",
 }: {
   league: LeagueSnapshot;
   seasons: number[];
@@ -377,6 +427,8 @@ export function LeagueView({
   baseballToolsView?: BaseballToolsView;
   /** Baseball trailing split (`?tab=tools&view=trailing&window=7|15|30`). */
   baseballTrailingWindow?: TrailingWindow;
+  /** Hockey tools view (`?tab=tools&view=`). */
+  hockeyToolsView?: HockeyToolsView;
   /** Baseball pro schedule sidecar (`pro_schedule.json`). */
   proSchedule?: ProScheduleSnapshot | null;
   /** Trade side A (`?a=`). */
@@ -396,15 +448,31 @@ export function LeagueView({
   weekBoxScore?: WeekBoxScoreSnapshot | null;
   /** Signed-in member's franchise in this league (roadmap 7.1). */
   viewerTeamId?: number;
+  /** Compact LM scoring sandbox payload (roadmap 8.4). */
+  scoringSandbox?: ScoringSandboxModel | null;
+  /** Baseball season-points analysis sidecars (roadmap 8.5). */
+  baseballAnalysis?: BaseballAnalysisSnapshot | null;
+  analysisSeriesMode?: AnalysisSeriesMode;
 }) {
   const leagueId = league.league_id;
   const isBaseball = league.sport === "baseball";
+  const isHockey = league.sport === "hockey";
   const isGolf = league.sport === "golf";
   const isFootball = league.sport === "football";
+  const isProjectionFree = isBaseball || isHockey;
+  const seasonPoints =
+    (isGolf && league.format === "season_points") ||
+    ((isBaseball || isHockey) && isSeasonPointsScoring(league.scoring_type));
   const period =
     league.period_label ||
     (isGolf ? "event" : isBaseball ? "period" : "week");
-  const tabs = isGolf ? GOLF_TABS : isBaseball ? BASEBALL_TABS : FOOTBALL_TABS;
+  const tabs = isGolf
+    ? GOLF_TABS
+    : isHockey
+      ? HOCKEY_TABS
+      : isBaseball
+        ? BASEBALL_TABS
+        : FOOTBALL_TABS;
   const active = (tabs as readonly string[]).includes(tab) ? tab : "standings";
   const activeRole = isBaseball ? role : undefined;
   const halfPprFallback = usesHalfPprScoringFallback(league);
@@ -419,6 +487,9 @@ export function LeagueView({
           ? `&window=${baseballTrailingWindow}`
           : "")
       );
+    }
+    if (isHockey) {
+      return `&view=${hockeyToolsView}`;
     }
     if (toolsView === "draft") return `&view=draft&slot=${draftSlot}`;
     if (toolsView === "start-sit") {
@@ -479,13 +550,19 @@ export function LeagueView({
                 ? auctionQuery
                 : active === "activity"
                   ? `&view=${activityView}`
+                : active === "recap"
+                  ? week != null
+                    ? `&week=${week}`
+                    : ""
                   : active === "history"
                     ? `&view=${historyView}${historyPair}`
                     : active === "projections"
                       ? scoringQuery
                       : active === "tools"
                         ? toolsPair
-                        : "";
+                        : active === "analysis"
+                          ? `&series=${analysisSeriesMode}`
+                          : "";
 
   const players = isBaseball
     ? league.players.filter((player) => {
@@ -518,7 +595,7 @@ export function LeagueView({
           {league.scoring_type
             ? ` · ${scoringTypeLabel(league.scoring_type) ?? league.scoring_type}`
             : ""}
-          {isBaseball ? " · ESPN data · no engine projections" : ""}
+          {isProjectionFree ? " · ESPN data · no engine projections" : ""}
           {isGolf ? " · hub golf · no tour feed yet" : ""}
         </span>
       </div>
@@ -533,7 +610,7 @@ export function LeagueView({
         {syncedLabel(league.synced_at) ? ` · synced ${syncedLabel(league.synced_at)}` : ""}
         {isGolf
           ? " · hub-native PGA Tour counting league"
-          : isBaseball
+          : isProjectionFree
             ? " · projection-free by design"
             : ""}
       </p>
@@ -548,6 +625,7 @@ export function LeagueView({
 
       <LeagueTabs
         active={active}
+        primary={seasonPoints ? SEASON_POINTS_PRIMARY : undefined}
         tabs={tabs.map((name) => ({
           id: name,
           label: tabLabel(name),
@@ -565,11 +643,13 @@ export function LeagueView({
                 (golfLineupTeamId != null ? `&team=${golfLineupTeamId}` : "")
               : "") +
             (name === "activity" ? `&view=${activityView}` : "") +
+            (name === "recap" && week != null ? `&week=${week}` : "") +
             (name === "history" ? `&view=${historyView}${historyPair}` : "") +
             (name === "projections" && projectionScoring
               ? `&scoring=${projectionScoring}`
               : "") +
-            (name === "tools" ? toolsPair : ""),
+            (name === "tools" ? toolsPair : "") +
+            (name === "analysis" ? `&series=${analysisSeriesMode}` : ""),
         }))}
       />
 
@@ -595,6 +675,33 @@ export function LeagueView({
         ) : (
           <SettingsPanel league={league} />
         )
+      ) : null}
+
+      {active === "sandbox" && scoringSandbox ? (
+        scoringSandbox.items.length ||
+        scoringSandbox.baseball ||
+        scoringSandbox.hockey ? (
+          <ScoringSandboxPanel model={scoringSandbox} />
+        ) : (
+          <EmptyState title="No scoring items on this snapshot">
+            Scoring lab needs <code>settings.scoring_format</code> / categories
+            or roster <code>season_stats</code>. Empty ESPN concerns stay empty
+            — the hub will not invent fantasy points.
+          </EmptyState>
+        )
+      ) : null}
+
+      {active === "drops" ? (
+        <HallOfShamePanel league={league} viewerTeamId={viewerTeamId} />
+      ) : null}
+
+      {active === "analysis" ? (
+        <BaseballAnalysisPanel
+          league={league}
+          analysis={baseballAnalysis}
+          seriesMode={analysisSeriesMode}
+          viewerTeamId={viewerTeamId}
+        />
       ) : null}
 
       {active === "schedule" && isGolf ? (
@@ -678,6 +785,8 @@ export function LeagueView({
         <ActivityPanel league={league} view={activityView} />
       ) : null}
 
+      {active === "recap" ? <RecapPanel league={league} week={week} /> : null}
+
       {active === "waivers" ? (
         <FreeAgentsBoard
           agents={league.free_agents ?? []}
@@ -698,13 +807,21 @@ export function LeagueView({
       ) : null}
 
       {active === "projections" ? (
-        isBaseball ? (
-          <EmptyState title="Baseball stays projection-free by design">
+        isProjectionFree ? (
+          <EmptyState
+            title={
+              isHockey
+                ? "Hockey stays projection-free by design"
+                : "Baseball stays projection-free by design"
+            }
+          >
             The <code>ffa</code> engine is NFL-only (nflverse weekly stats, GSIS
-            ids, football scoring). Baseball-dynasty keeps the richest ESPN hub
-            UI — standings, matchups, history, batter/pitcher boards — without a
-            half-built MLB model. Extending projections to baseball is a future
-            product decision, not a missing tab.
+            ids, football scoring).{" "}
+            {isHockey
+              ? "Hockey keeps ESPN standings, matchups, history, and Scoring lab without an NHL model."
+              : "Baseball-dynasty keeps the richest ESPN hub UI — standings, matchups, history, batter/pitcher boards — without a half-built MLB model."}{" "}
+            Extending projections is a future product decision, not a missing
+            tab.
           </EmptyState>
         ) : (
           <>
@@ -737,6 +854,8 @@ export function LeagueView({
             weekBoxScore={weekBoxScore}
             trailingWindow={baseballTrailingWindow}
           />
+        ) : isHockey ? (
+          <HockeyToolsPanel league={league} view={hockeyToolsView} />
         ) : (
           <ToolsPanel
             league={league}

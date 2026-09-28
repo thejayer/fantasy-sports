@@ -4,6 +4,7 @@ Shared visual language for Strictly Jayers:
 
 - Apex portal — `apps/www`
 - Fantasy hub — `apps/web`
+- Fitness log — `apps/fitness` (PWA tokens in `public/styles.css`)
 
 Source of truth: [`styles.css`](styles.css).
 

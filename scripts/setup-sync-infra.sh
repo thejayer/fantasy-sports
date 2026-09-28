@@ -17,14 +17,16 @@ REGION="${GCP_REGION:-us-central1}"
 BUCKET="${SJ_BUCKET:-${PROJECT}-sj-data}"
 HUB_BUCKET="${SJ_HUB_BUCKET:-${PROJECT}-sj-hub}"
 JOB="${SJ_JOB:-sj-sync}"
-SCHEDULE="${SJ_SCHEDULE:-*/30 * * * *}"
+# Daily 6:00 America/Chicago (matches live sj-sync-trigger). Override with SJ_SCHEDULE.
+SCHEDULE="${SJ_SCHEDULE:-0 6 * * *}"
+TIME_ZONE="${SJ_TIMEZONE:-America/Chicago}"
 SCHEDULER_JOB="${SJ_SCHEDULER_JOB:-sj-sync-trigger}"
 
 echo "Project:     ${PROJECT}"
 echo "Region:      ${REGION}"
 echo "ESPN bucket: gs://${BUCKET}"
 echo "Hub bucket:  gs://${HUB_BUCKET}"
-echo "Schedule:    ${SCHEDULE}"
+echo "Schedule:    ${SCHEDULE} (${TIME_ZONE})"
 echo
 
 gcloud config set project "${PROJECT}" >/dev/null
@@ -114,6 +116,7 @@ if gcloud scheduler jobs describe "${SCHEDULER_JOB}" \
     --project="${PROJECT}" \
     --location="${REGION}" \
     --schedule="${SCHEDULE}" \
+    --time-zone="${TIME_ZONE}" \
     --uri="${RUN_JOB_URI}" \
     --http-method=POST \
     --oauth-service-account-email="${SCHEDULER_SA}"
@@ -123,6 +126,7 @@ else
     --project="${PROJECT}" \
     --location="${REGION}" \
     --schedule="${SCHEDULE}" \
+    --time-zone="${TIME_ZONE}" \
     --uri="${RUN_JOB_URI}" \
     --http-method=POST \
     --oauth-service-account-email="${SCHEDULER_SA}"
@@ -144,8 +148,9 @@ Next:
        gcloud run jobs execute ${JOB} --args=backfill \\
          --region=${REGION} --project=${PROJECT}
 
-The scheduler runs "${SCHEDULE}". Change it with:
+The scheduler runs "${SCHEDULE}" (${TIME_ZONE}). Override with SJ_SCHEDULE
+(and optional SJ_TIMEZONE), or:
   gcloud scheduler jobs update http ${SCHEDULER_JOB} \\
-    --location=${REGION} --schedule="0 * * * *"
+    --location=${REGION} --schedule="0 6 * * *" --time-zone=${TIME_ZONE}
 ================================================================
 EOF

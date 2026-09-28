@@ -3,12 +3,14 @@ import { describe, expect, it } from "vitest";
 import type { LeagueHistoryArchive } from "@/lib/data";
 import {
   allTimeStandings,
+  archiveHasPlayoffChampions,
   buildRecordBook,
   championsBySeason,
   defaultH2HPair,
   formatWinPct,
   franchiseCareer,
   headToHead,
+  playoffChampionsBySeason,
   seasonCountLabel,
 } from "@/lib/history";
 
@@ -34,6 +36,7 @@ function archive(): LeagueHistoryArchive {
             points_for: 1400,
             points_against: 1200,
             standing: 1,
+            final_standing: 2,
             schedule: [2, 2],
             scores: [120, 90],
             outcomes: ["W", "L"],
@@ -49,6 +52,7 @@ function archive(): LeagueHistoryArchive {
             points_for: 1100,
             points_against: 1300,
             standing: 2,
+            final_standing: 1,
             schedule: [1, 1],
             scores: [100, 110],
             outcomes: ["L", "W"],
@@ -70,6 +74,7 @@ function archive(): LeagueHistoryArchive {
             points_for: 1300,
             points_against: 1250,
             standing: 2,
+            final_standing: 2,
             schedule: [2],
             scores: [150],
             outcomes: ["W"],
@@ -85,6 +90,7 @@ function archive(): LeagueHistoryArchive {
             points_for: 1600,
             points_against: 1100,
             standing: 1,
+            final_standing: 1,
             schedule: [1],
             scores: [80],
             outcomes: ["L"],
@@ -102,17 +108,30 @@ describe("history aggregators", () => {
     expect(rows[0].teamId).toBe(1);
     expect(rows[0].wins).toBe(18);
     expect(rows[0].championships).toBe(1);
+    expect(rows[0].playoffChampionships).toBe(0);
     expect(rows[0].name).toBe("Alpha FC");
     expect(rows[0].seasons).toBe(2);
     expect(formatWinPct(rows[0].winPct)).toBe(".643");
+    const bravo = rows.find((r) => r.teamId === 2)!;
+    expect(bravo.playoffChampionships).toBe(2);
     expect(seasonCountLabel(archive())).toBe("2 seasons (2024–2025)");
   });
 
-  it("lists champions by season", () => {
+  it("lists seed #1 and playoff champions separately", () => {
     const champs = championsBySeason(archive());
     expect(champs.map((c) => c.season)).toEqual([2025, 2024]);
     expect(champs[0].name).toBe("Bravo");
     expect(champs[1].teamId).toBe(1);
+
+    const titles = playoffChampionsBySeason(archive());
+    expect(archiveHasPlayoffChampions(archive())).toBe(true);
+    expect(titles.map((c) => `${c.season}:${c.teamId}`)).toEqual([
+      "2025:2",
+      "2024:2",
+    ]);
+    // 2024: seed #1 (Alpha) ≠ playoff champ (Bravo).
+    expect(champs.find((c) => c.season === 2024)?.teamId).toBe(1);
+    expect(titles.find((c) => c.season === 2024)?.teamId).toBe(2);
   });
 
   it("builds a record book from season and weekly scores", () => {
@@ -123,6 +142,7 @@ describe("history aggregators", () => {
     expect(labels).toContain("Highest weekly score");
     expect(labels).toContain("Lowest weekly score");
     expect(labels).toContain("Most #1 finishes");
+    expect(labels).toContain("Most playoff titles");
     const high = book.find((e) => e.label === "Highest weekly score");
     expect(high?.value).toBe("150");
     expect(high?.season).toBe(2025);

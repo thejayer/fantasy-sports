@@ -3,6 +3,11 @@ import path from "path";
 import { unstable_cache } from "next/cache";
 import { cache } from "react";
 
+import type {
+  BaseballAnalysisSnapshot,
+  PointsTimeseriesSnapshot,
+  SlotPointsSnapshot,
+} from "@/lib/baseball-analysis";
 import { SJ_SNAPSHOTS_CACHE_TAG } from "@/lib/cache-tags";
 import { dataRoots } from "@/lib/hub-paths";
 import { requireSession } from "@/lib/session";
@@ -40,6 +45,22 @@ export type SeasonStats = {
   GS?: number;
   /** Synthetic OWGR rank on golf roster rows (roadmap 6.4b). */
   OWGR?: number;
+  /** Hockey counting stats from espn-api ``Total YYYY`` / STATS_MAP. */
+  G?: number;
+  A?: number;
+  PPP?: number;
+  PPG?: number;
+  PPA?: number;
+  SOG?: number;
+  HIT?: number;
+  BLK?: number;
+  PIM?: number;
+  SO?: number;
+  GA?: number;
+  SA?: number;
+  GAA?: number;
+  "SV%"?: number;
+  "+/-"?: number;
 };
 
 export type Player = {
@@ -244,6 +265,11 @@ export type BoxScorePlayer = {
   projected_points?: number | null;
   injury_status?: string | null;
   game_played?: number | null;
+  /**
+   * Named counting stats for the LM scoring sandbox (roadmap 8.4).
+   * Never display these as the score — ``points`` stays ESPN-applied.
+   */
+  stats?: Record<string, number | null>;
 };
 
 /** One category cell on a baseball H2H category box (roadmap 8.2). */
@@ -325,6 +351,12 @@ export type ProScheduleSnapshot = {
   games: ProScheduleGame[];
 };
 
+export type {
+  BaseballAnalysisSnapshot,
+  PointsTimeseriesSnapshot,
+  SlotPointsSnapshot,
+};
+
 /** Compact FP draws for hub trade Δ (`ffa export-playoff-odds --write-samples`). */
 export type PlayoffOddsSamples = {
   schema_version: number;
@@ -389,7 +421,13 @@ export type Team = {
   win_pct?: number | null;
   points_for: number | null;
   points_against: number | null;
+  /** Regular-season / playoff seed rank (ESPN playoffSeed). */
   standing: number | null;
+  /**
+   * Post-season ladder rank (ESPN rankCalculatedFinal). `1` = playoff champion
+   * after the season ends; null/absent mid-season or on older snapshots.
+   */
+  final_standing?: number | null;
   division: string;
   schedule?: number[];
   scores?: Array<number | null>;
@@ -545,6 +583,7 @@ export type HistoryTeam = {
   points_for: number | null;
   points_against: number | null;
   standing: number | null;
+  final_standing?: number | null;
   schedule: number[];
   scores: Array<number | null>;
   outcomes: string[];
@@ -857,6 +896,7 @@ async function loadHistorySliceFromRoot(
         points_for: team.points_for,
         points_against: team.points_against,
         standing: team.standing,
+        final_standing: team.final_standing ?? null,
         schedule: team.schedule ?? [],
         scores: team.scores ?? [],
         outcomes: (team.outcomes ?? []).map(String),
@@ -891,6 +931,7 @@ async function loadHistorySliceFromRoot(
         points_for: team.points_for,
         points_against: team.points_against,
         standing: team.standing,
+        final_standing: team.final_standing ?? null,
         schedule: m.schedule ?? [],
         scores: m.scores ?? [],
         outcomes: (m.outcomes ?? []).map(String),
@@ -1118,6 +1159,63 @@ export const getProSchedule = cache(
 );
 
 /**
+ * Season-points analysis under ``{league}/{season}/analysis/``.
+ * Side concern — never assembled into getLeagueSnapshot. Session-gated.
+ * Baseball and hockey Season Points both write the same sidecar names.
+ */
+export const getBaseballAnalysis = cache(
+  async (
+    leagueId: string,
+    season: number,
+  ): Promise<BaseballAnalysisSnapshot> => {
+    await requireSession();
+    const empty: BaseballAnalysisSnapshot = {
+      slotPoints: null,
+      timeseries: null,
+    };
+    const index = await getLeagueIndex();
+    const match = index.find(
+      (item) => item.league_id === leagueId && item.season === season,
+    );
+    if (!match) return empty;
+
+    let slotPoints: SlotPointsSnapshot | null = null;
+    let timeseries: PointsTimeseriesSnapshot | null = null;
+    for (const root of dataRoots()) {
+      const dir = weekBoxScoreDir(match.path);
+      if (!slotPoints) {
+        const doc = await readJson<SlotPointsSnapshot>(
+          path.join(root, dir, "analysis", "slot_points.json"),
+        );
+        if (
+          doc?.league_id === leagueId &&
+          doc.season === season &&
+          (doc.sport === "baseball" || doc.sport === "hockey") &&
+          Array.isArray(doc.teams)
+        ) {
+          slotPoints = doc;
+        }
+      }
+      if (!timeseries) {
+        const doc = await readJson<PointsTimeseriesSnapshot>(
+          path.join(root, dir, "analysis", "points_timeseries.json"),
+        );
+        if (
+          doc?.league_id === leagueId &&
+          doc.season === season &&
+          (doc.sport === "baseball" || doc.sport === "hockey") &&
+          Array.isArray(doc.teams)
+        ) {
+          timeseries = doc;
+        }
+      }
+      if (slotPoints && timeseries) break;
+    }
+    return { slotPoints, timeseries };
+  },
+);
+
+/**
  * Week numbers that have an on-disk ``weeks/{N}.json`` for this league-season.
  * Union across data roots (like ``listDraftSimSlots``). Session-gated.
  * Player game logs list these then call ``getWeekBoxScore`` per week.
@@ -1294,8 +1392,10 @@ export const getPlayerMap = cache(
 );
 
 /**
- * Load one team without pulling matchups/draft/transactions when the season is
- * on the v2 layout — the point of the schema split (AUDIT #16).
+ * Load one team without pulling draft/free-agents/the full player board when
+ * the season is on the v2 layout — the point of the schema split (AUDIT #16).
+ * Matchups (roadmap 7.4) and transactions (manager drops) are small concerns
+ * and are read here so the team page can show the season.
  */
 export async function getTeam(
   leagueId: string,
@@ -1360,10 +1460,15 @@ async function loadTeamSelective(
   }
   // A team page with no results on it is the one thing a team page is for
   // (roadmap 7.4). matchups.json is the smallest concern in the split — no
-  // rosters, no draft, no transactions — so read it here rather than leaving
+  // rosters, no draft — so read it here rather than leaving
   // schedule/scores/outcomes empty as the original 2.2 fast path did.
   const matchups = manifest.files.matchups
     ? await readJson<MatchupsFile>(path.join(directory, manifest.files.matchups))
+    : null;
+  const transactions = manifest.files.transactions
+    ? await readJson<TransactionsFile>(
+        path.join(directory, manifest.files.transactions),
+      )
     : null;
   const mine = matchups?.teams?.[key] ?? {};
   const team: Team = {
@@ -1402,6 +1507,7 @@ async function loadTeamSelective(
     synced_at: manifest.synced_at,
     schema_version: manifest.schema_version,
     draft: [],
+    transactions: transactions?.transactions ?? [],
     teams: [team, ...opponents],
     players: [],
   };

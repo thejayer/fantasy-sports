@@ -25,6 +25,9 @@ test.describe("hub smoke", () => {
       page.getByRole("link", { name: /Strictly Jayers Baseball/ }),
     ).toBeVisible();
     await expect(
+      page.getByRole("link", { name: /Strictly Jayers Hockey/ }),
+    ).toBeVisible();
+    await expect(
       page.getByRole("link", { name: /Strictly Jayers Golf/ }),
     ).toBeVisible();
     await expect(
@@ -240,10 +243,14 @@ test.describe("hub smoke", () => {
     await expect(page.getByRole("link", { name: "All-time" })).toBeVisible();
   });
 
-  test("history trophies view shows trophy case (7.13)", async ({ page }) => {
+  test("history trophies view shows playoff and seed champions (7.13)", async ({
+    page,
+  }) => {
     await page.goto("/leagues/football-main?tab=history&view=trophies");
     await expect(page.getByRole("link", { name: "Trophies" })).toBeVisible();
     await expect(page.getByRole("heading", { name: "Trophy case" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Playoff champions" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Regular-season #1" })).toBeVisible();
     await expect(page.getByText(/Only one season is on disk/i)).toBeVisible();
     await expect(page.getByRole("heading", { name: "Record shelf" })).toBeVisible();
   });
@@ -256,9 +263,14 @@ test.describe("hub smoke", () => {
     await expect(page.getByText(/Alt1/i).first()).toBeVisible();
   });
 
-  test("member profile page resolves unique username (7.12)", async ({ page }) => {
+  test("member profile shows trophy chips and feed activity (7.12)", async ({
+    page,
+  }) => {
     const membersPath = path.join(HUB_DIR, "hub_members.json");
+    const feedDir = path.join(HUB_DIR, "football-main", "2026");
+    const feedPath = path.join(feedDir, "feed.json");
     fs.mkdirSync(HUB_DIR, { recursive: true });
+    fs.mkdirSync(feedDir, { recursive: true });
     fs.writeFileSync(
       membersPath,
       `${JSON.stringify(
@@ -270,11 +282,13 @@ test.describe("hub smoke", () => {
               email: "profile.demo@example.com",
               role: "member",
               display_name: "Trophy Case",
+              bio: "Always drafting RBs.",
               teams: [
                 {
+                  // Standing #1 in football-main fixtures → trophy chip.
                   league_id: "football-main",
-                  team_id: 1,
-                  team_name: "Demo Squad",
+                  team_id: 4,
+                  team_name: "Hail Mary Heroes",
                   league_name: "Strictly Jayers Football",
                 },
               ],
@@ -287,16 +301,47 @@ test.describe("hub smoke", () => {
         2,
       )}\n`,
     );
+    fs.writeFileSync(
+      feedPath,
+      `${JSON.stringify(
+        {
+          schema_version: 1,
+          league_id: "football-main",
+          season: 2026,
+          updated_at: new Date().toISOString(),
+          revision: 1,
+          comments: [
+            {
+              id: "c-profile-demo",
+              target_id: "league",
+              body: "Trophy shelf check.",
+              author_email: "profile.demo@example.com",
+              author_name: "Trophy Case",
+              team_id: 4,
+              created_at: "2026-08-01T12:00:00.000Z",
+              deleted_at: null,
+            },
+          ],
+          reactions: [],
+          polls: [],
+        },
+        null,
+        2,
+      )}\n`,
+    );
     try {
       await page.goto("/u/trophy-case");
       await expect(page.getByRole("heading", { name: "Trophy Case" })).toBeVisible();
       await expect(page.getByText("@trophy-case")).toBeVisible();
-      await expect(
-        page.getByRole("link", { name: /Strictly Jayers Football/i }).first(),
-      ).toBeVisible();
+      await expect(page.getByText("Always drafting RBs.")).toBeVisible();
+      await expect(page.getByRole("heading", { name: "Trophy shelf" })).toBeVisible();
+      await expect(page.getByRole("link", { name: /1× #1/i })).toBeVisible();
       await expect(page.getByRole("heading", { name: "Franchises" })).toBeVisible();
+      await expect(page.getByRole("heading", { name: "Recent activity" })).toBeVisible();
+      await expect(page.getByText("Trophy shelf check.")).toBeVisible();
     } finally {
       fs.rmSync(membersPath, { force: true });
+      fs.rmSync(feedPath, { force: true });
     }
   });
 
@@ -332,10 +377,13 @@ test.describe("hub smoke", () => {
       ).toBeVisible();
 
       // Link a franchise in each remaining league so the portfolio strip
-      // covers the four-sport set (roadmap 9.4).
+      // covers every sport (roadmap 9.4). Hockey's ESPN year can sit one
+      // ahead of football/baseball/golf; home still defaults to the densest
+      // year, but 2027 must also have a linked franchise.
       for (const label of [
         /Team for Strictly Jayers Football Dynasty/i,
         /Team for Strictly Jayers Baseball/i,
+        /Team for Strictly Jayers Hockey/i,
         /Team for Strictly Jayers Golf/i,
       ]) {
         const select = page.getByLabel(label);
@@ -358,6 +406,11 @@ test.describe("hub smoke", () => {
       await expect(
         page.getByRole("columnheader", { name: "Standing" }),
       ).toBeVisible();
+      // Track Q 7.14 — frozen clock (SJ_ON_THIS_DAY_NOW) lands on Week 1's Sep 8.
+      await expect(
+        page.getByRole("heading", { name: /This day in SJ/i }),
+      ).toBeVisible();
+      await expect(page.getByText(/Week 1 · 2026/i).first()).toBeVisible();
       await expect(
         page.getByRole("link", { name: /Strictly Jayers Football(?! Dynasty)/i }).first(),
       ).toBeVisible();
@@ -435,6 +488,22 @@ test.describe("hub smoke", () => {
     await expect(page.getByRole("columnheader", { name: "Opponent" })).toBeVisible();
   });
 
+  test("baseball team page lists players the manager dropped (roadmap 7.4)", async ({
+    page,
+  }) => {
+    await page.goto("/leagues/baseball-dynasty/teams/1");
+    await expect(
+      page.getByRole("heading", { name: /Diamond Dogs/i }),
+    ).toBeVisible();
+    await expect(
+      page.getByRole("heading", { name: /Dropped this season/i }),
+    ).toBeVisible();
+    await expect(page.getByRole("link", { name: "Daniel Moore" })).toBeVisible();
+    await expect(
+      page.getByRole("link", { name: /League adds \/ drops/i }),
+    ).toBeVisible();
+  });
+
   test("football settings tab renders synced ESPN settings (roadmap 7.9)", async ({
     page,
   }) => {
@@ -442,6 +511,51 @@ test.describe("hub smoke", () => {
     await expect(page.getByText(/As ESPN reports them/i)).toBeVisible();
     await expect(page.getByRole("heading", { name: "Roster", exact: true })).toBeVisible();
     await expect(page.getByText(/Slots/i).first()).toBeVisible();
+  });
+
+  test("football scoring lab flips a week 14 matchup when PPR turns on (roadmap 8.4)", async ({
+    page,
+  }) => {
+    await page.goto("/leagues/football-main?tab=sandbox&week=14");
+    await expect(page.getByText(/Scoring lab/i).first()).toBeVisible();
+    await expect(page.getByRole("heading", { name: /Team totals/i })).toBeVisible();
+    await page.getByRole("button", { name: /week 14/i }).click();
+    const rec = page.getByLabel("Receptions (PPR) value");
+    await expect(rec).toBeVisible();
+    const official = await rec.inputValue();
+    await rec.fill(String(Number(official) + 1));
+    await expect(page.getByText(/W → L|L → W/)).toBeVisible();
+  });
+
+  test("baseball scoring lab reweights HR (roadmap 8.4)", async ({ page }) => {
+    await page.goto("/leagues/baseball-dynasty?tab=sandbox");
+    await expect(page.getByText(/Season Points/i).first()).toBeVisible();
+    const hr = page.getByLabel("HR value");
+    await expect(hr).toBeVisible();
+    await hr.fill("10");
+    await expect(page.locator("td.is-delta, .is-delta").first()).toBeVisible();
+  });
+
+  test("hockey league opens standings and scoring lab from fixtures", async ({
+    page,
+  }) => {
+    await page.goto("/leagues/hockey-main");
+    await expect(
+      page.getByRole("heading", { name: /Strictly Jayers Hockey/i }),
+    ).toBeVisible();
+    await expect(page.getByText(/projection-free by design/i)).toBeVisible();
+    await expect(page.getByText(/Hockey · Redraft/i)).toBeVisible();
+    await page.goto("/leagues/hockey-main?tab=sandbox");
+    await expect(page.getByText(/Scoring lab/i).first()).toBeVisible();
+    // "G value" is a substring of "PPG value" / "SOG value" — match exact.
+    const goals = page.getByRole("spinbutton", { name: "G value", exact: true });
+    await expect(goals).toBeVisible();
+    await goals.fill("6");
+    await expect(page.locator("td.is-delta, .is-delta").first()).toBeVisible();
+    await page.goto("/leagues/hockey-main?tab=projections");
+    await expect(
+      page.getByText(/Hockey stays projection-free by design/i),
+    ).toBeVisible();
   });
 
   test("secondary tabs live behind the More disclosure (roadmap 7.5)", async ({
@@ -487,7 +601,9 @@ test.describe("hub smoke", () => {
     await page.goto("/leagues/football-main/teams/1");
     await expect(page.getByRole("heading", { name: "Gridiron Goons" })).toBeVisible();
     // First roster player on team_id 1 in committed football-main/2026.json.
-    await expect(page.getByText("Juan Phillips")).toBeVisible();
+    // Dropped this season also names him (fixture add then drop), so the
+    // roster cell is not the only match.
+    await expect(page.getByText("Juan Phillips").first()).toBeVisible();
   });
 
   test("unknown league and team return the not-found panel", async ({
@@ -560,7 +676,8 @@ test.describe("hub smoke", () => {
 
   test("dynasty roster and draft show keeper badges (7.9b)", async ({ page }) => {
     await page.goto("/leagues/football-dynasty/teams/1");
-    await expect(page.getByText("Gregory Rivera")).toBeVisible();
+    // Same name can appear in Dropped this season and on the roster.
+    await expect(page.getByText("Gregory Rivera").first()).toBeVisible();
     await expect(page.getByText("Keeper", { exact: true }).first()).toBeVisible();
     await page.goto("/leagues/football-dynasty?tab=draft");
     await expect(page.getByRole("columnheader", { name: "Keeper", exact: true })).toBeVisible();
@@ -578,6 +695,18 @@ test.describe("hub smoke", () => {
     await expect(page.getByRole("link", { name: "Oldest first" })).toBeVisible();
     await expect(page.getByLabel("Feed from date")).toBeVisible();
     await expect(page.getByLabel("Feed to date")).toBeVisible();
+  });
+
+  test("recap tab shows the weekly power-rankings column", async ({ page }) => {
+    await page.goto("/leagues/football-main?tab=recap&week=14");
+    await expect(page.getByRole("heading", { name: /Weekly recap/i })).toBeVisible();
+    await expect(
+      page.getByRole("heading", {
+        name: /Enforcers cash a 56-point apology tour/i,
+      }),
+    ).toBeVisible();
+    await expect(page.getByText(/End Zone Enforcers drop 130.3/i)).toBeVisible();
+    await expect(page.getByRole("link", { name: /week 13/i })).toBeVisible();
   });
 
   test("tools landing cards name each decision tool", async ({ page }) => {
@@ -606,6 +735,58 @@ test.describe("hub smoke", () => {
     ).toBeVisible();
   });
 
+  test("baseball analysis tab shows slot table and chart (roadmap 8.5)", async ({
+    page,
+  }) => {
+    await page.goto("/leagues/baseball-dynasty?tab=analysis");
+    await expect(page.getByRole("heading", { name: "Analysis" })).toBeVisible();
+    await expect(
+      page.getByRole("heading", { name: "Points by lineup slot" }),
+    ).toBeVisible();
+    await expect(page.getByRole("columnheader", { name: "Starters" }).first()).toBeVisible();
+    await expect(page.getByText("Bat Flip Bandits").first()).toBeVisible();
+    await expect(
+      page.getByRole("heading", { name: "Batters vs pitchers" }),
+    ).toBeVisible();
+    await expect(page.getByRole("img", { name: /Season points by team/i })).toBeVisible();
+    await page.getByRole("link", { name: "Daily" }).click();
+    await expect(page).toHaveURL(/series=daily/);
+  });
+
+  test("hockey analysis tab shows slot table and skater/goalie split (roadmap 8.5)", async ({
+    page,
+  }) => {
+    await page.goto("/leagues/hockey-main?tab=analysis");
+    await expect(page.getByRole("heading", { name: "Analysis" }).first()).toBeVisible();
+    await expect(
+      page.getByRole("heading", { name: "Points by lineup slot" }),
+    ).toBeVisible();
+    await expect(
+      page.getByRole("columnheader", { name: "Forward" }).first(),
+    ).toBeVisible();
+    await expect(
+      page.getByRole("heading", { name: "Skaters vs goalies" }),
+    ).toBeVisible();
+    await expect(page.getByRole("img", { name: /Season points by team/i })).toBeVisible();
+    await page.getByRole("link", { name: "Daily" }).click();
+    await expect(page).toHaveURL(/series=daily/);
+  });
+
+  test("baseball hall of shame ranks fixture drop by season FP (roadmap 9.5)", async ({
+    page,
+  }) => {
+    await page.goto("/leagues/baseball-dynasty?tab=drops");
+    await expect(page.getByRole("heading", { name: /Hall of Shame/i })).toBeVisible();
+    await expect(page.getByText(/worst drops this season/i)).toBeVisible();
+    await expect(
+      page.getByRole("columnheader", { name: "Season FP" }).first(),
+    ).toBeVisible();
+    await expect(page.getByRole("link", { name: "Daniel Moore" }).first()).toBeVisible();
+    await expect(page.getByText("541.5").first()).toBeVisible();
+    await expect(page.getByText("Diamond Dogs").first()).toBeVisible();
+    await expect(page.getByText(/Bruce Green/).first()).toBeVisible();
+  });
+
   test("baseball Season Points standings show points without H2H record", async ({
     page,
   }) => {
@@ -614,7 +795,9 @@ test.describe("hub smoke", () => {
     await expect(
       page.getByText(/standings by cumulative fantasy points/i),
     ).toBeVisible();
-    await expect(page.getByRole("columnheader", { name: "Points" })).toBeVisible();
+    await expect(
+      page.getByRole("columnheader", { name: "Season FP" }),
+    ).toBeVisible();
     await expect(page.getByRole("columnheader", { name: "Record" })).toHaveCount(
       0,
     );

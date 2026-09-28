@@ -58,3 +58,27 @@ export async function writeHubMembers(
   await atomicWrite(hubMembersPath(), next);
   return next;
 }
+
+/**
+ * Serialize read-modify-write of hub_members.json within this process so
+ * overlapping profile/admin/auth updates cannot clobber each other.
+ */
+let membersMutationChain: Promise<unknown> = Promise.resolve();
+
+export async function updateHubMembers(
+  mutator: (file: HubMembersFile) => HubMembersFile,
+): Promise<HubMembersFile> {
+  const run = membersMutationChain.then(async () => {
+    const file = await readHubMembers();
+    const next = mutator(file);
+    // Same-object no-op (e.g. unchanged avatar on sign-in) skips the write.
+    if (next === file) return file;
+    return writeHubMembers(next);
+  });
+  // Keep the chain alive after failures so later writers still queue.
+  membersMutationChain = run.then(
+    () => undefined,
+    () => undefined,
+  );
+  return run;
+}

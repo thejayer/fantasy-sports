@@ -165,15 +165,18 @@ if [ "${CUTOVER}" = "1" ]; then
   gcloud run services update "${SERVICE}" \
     --project="${PROJECT}" \
     --region="${REGION}" \
-    --update-env-vars="SITE_URL=${PUBLIC_URL},FANTASY_HUB_URL=https://fantasy.${BASE_DOMAIN}"
+    --update-env-vars="SITE_URL=${PUBLIC_URL},FANTASY_HUB_URL=https://fantasy.${BASE_DOMAIN},FITNESS_URL=https://fitness.${BASE_DOMAIN}"
   echo "SITE_URL updated. Portal metadata and absolute links use ${PUBLIC_URL}."
 else
   echo "When DNS + TLS look good, cut SITE_URL over with:"
   echo "  ./scripts/setup-portal-domain.sh --cutover"
   echo
-  echo "Deploy CD will preserve a non-*.run.app SITE_URL once set."
+  echo "Production already uses SITE_URL=https://strictlyjayers.com when the"
+  echo "custom domain is Ready — deploy CD preserves a non-*.run.app value."
+  echo "Portal middleware 308s www → apex once SITE_URL is set."
 fi
 
 echo
 echo "Fantasy hub domain (separate): ./scripts/setup-hub-domain.sh"
+echo "Fitness log domain (separate): ./scripts/setup-fitness-domain.sh"
 echo "Done."

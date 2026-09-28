@@ -5,7 +5,8 @@ import { EmptyState } from "@/components/EmptyState";
 import type { Player } from "@/lib/data";
 
 function columns(sport: string): DataTableColumn<Player>[] {
-  const teamHeader = sport === "baseball" ? "MLB" : "NFL";
+  const teamHeader =
+    sport === "baseball" ? "MLB" : sport === "hockey" ? "NHL" : "NFL";
   return [
     {
       id: "position",

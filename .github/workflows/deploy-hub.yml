@@ -195,8 +195,8 @@ jobs:
             --min-instances "$MIN_INSTANCES"
             --max-instances 5
             --cpu-boost
-            --set-env-vars "SJ_SYNC_ON_START=0,AUTH_TRUST_HOST=true,SJ_DATA_DIR=/app/data/sj,SJ_HUB_DIR=/app/data/sj,AUTH_URL=$AUTH_URL"
-            --set-secrets "AUTH_SECRET=sj-auth-secret:latest,AUTH_GOOGLE_ID=sj-auth-google-id:latest,AUTH_GOOGLE_SECRET=sj-auth-google-secret:latest,ALLOWED_EMAILS=sj-allowed-emails:latest"
+            --set-env-vars "SJ_SYNC_ON_START=0,AUTH_TRUST_HOST=true,SJ_DATA_DIR=/app/data/sj,SJ_HUB_DIR=/app/data/sj,AUTH_URL=$AUTH_URL,SJ_RECAP_MODEL=gpt-5.6-luna"
+            --set-secrets "AUTH_SECRET=sj-auth-secret:latest,AUTH_GOOGLE_ID=sj-auth-google-id:latest,AUTH_GOOGLE_SECRET=sj-auth-google-secret:latest,ALLOWED_EMAILS=sj-allowed-emails:latest,OPENAI_API_KEY=openai-api-key:latest"
           )
           if [ -n "$HUB_BUCKET" ]; then
             echo "Note: hub_bucket=$HUB_BUCKET is ignored (dual FUSE disabled; hub shares ESPN bucket)"

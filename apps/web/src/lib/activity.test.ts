@@ -4,7 +4,11 @@ import type { Team, Transaction } from "@/lib/data";
 import {
   activityRowsForLeague,
   classifyAction,
+  droppedPlayersForTeam,
+  droppedRowsForTeam,
   formatActivityDate,
+  isAddAction,
+  isDropAction,
   parseEspnActivityDate,
 } from "@/lib/activity";
 
@@ -68,6 +72,22 @@ describe("activity helpers", () => {
     expect(classifyAction("MOVED")).toBe("other");
   });
 
+  it("detects ESPN drop action strings", () => {
+    expect(isDropAction("DROPPED")).toBe(true);
+    expect(isDropAction("WAIVER DROPPED")).toBe(true);
+    expect(isDropAction("FA ADDED")).toBe(false);
+    expect(isDropAction("TRADED")).toBe(false);
+  });
+
+  it("detects ESPN add action strings", () => {
+    expect(isAddAction("FA ADDED")).toBe(true);
+    expect(isAddAction("WAIVER ADDED")).toBe(true);
+    expect(isAddAction("DROPPED")).toBe(false);
+    expect(isAddAction("WAIVER DROPPED")).toBe(false);
+    expect(isAddAction("TRADED")).toBe(false);
+    expect(isAddAction("TRADE_RECEIVED")).toBe(false);
+  });
+
   it("flattens and filters league transactions newest-first", () => {
     const all = activityRowsForLeague({ transactions, teams }, "all");
     expect(all).toHaveLength(2);
@@ -79,5 +99,56 @@ describe("activity helpers", () => {
     expect(
       activityRowsForLeague({ transactions, teams }, "waivers"),
     ).toHaveLength(1);
+  });
+
+  it("lists unique players a manager dropped this season", () => {
+    const withDrops: Transaction[] = [
+      ...transactions,
+      {
+        date: "20260910120000",
+        actions: [
+          {
+            team_id: 1,
+            action: "DROPPED",
+            player_id: 12,
+            player_name: "First Cut",
+            bid_amount: 0,
+          },
+        ],
+      },
+      {
+        date: "20260920120000",
+        actions: [
+          {
+            team_id: 1,
+            action: "WAIVER DROPPED",
+            player_id: 12,
+            player_name: "First Cut",
+            bid_amount: 0,
+          },
+        ],
+      },
+      {
+        date: "20260915120000",
+        actions: [
+          {
+            team_id: 2,
+            action: "DROPPED",
+            player_id: 99,
+            player_name: "Other Team",
+            bid_amount: 0,
+          },
+        ],
+      },
+    ];
+    const league = { transactions: withDrops, teams };
+    expect(droppedRowsForTeam(league, 1)).toHaveLength(2);
+    const unique = droppedPlayersForTeam(league, 1);
+    expect(unique).toHaveLength(1);
+    expect(unique[0].playerName).toBe("First Cut");
+    expect(unique[0].dropCount).toBe(2);
+    expect(unique[0].lastDateLabel).toMatch(/2026/);
+    expect(droppedPlayersForTeam(league, 2)).toHaveLength(1);
+    expect(droppedPlayersForTeam(league, 2)[0].playerName).toBe("Other Team");
   });
 });

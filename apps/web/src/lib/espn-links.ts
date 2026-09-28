@@ -10,6 +10,7 @@
 const SPORT_PATH: Record<string, string> = {
   football: "football",
   baseball: "baseball",
+  hockey: "hockey",
 };
 
 export type EspnLinkContext = {
@@ -20,7 +21,7 @@ export type EspnLinkContext = {
 
 function base(ctx: EspnLinkContext): string | null {
   const sport = SPORT_PATH[ctx.sport];
-  if (!sport || ctx.espnLeagueId == null) return null;
+  if (!sport || ctx.espnLeagueId == null || ctx.espnLeagueId <= 0) return null;
   return `https://fantasy.espn.com/${sport}/`;
 }
 
@@ -78,7 +79,14 @@ export function espnPlayerUrl(
   if (playerId == null) return null;
   const id = String(playerId).trim();
   if (!id || !/^\d+$/.test(id)) return null;
-  const path = sport === "baseball" ? "mlb" : sport === "football" ? "nfl" : null;
+  const path =
+    sport === "baseball"
+      ? "mlb"
+      : sport === "football"
+        ? "nfl"
+        : sport === "hockey"
+          ? "nhl"
+          : null;
   if (!path) return null;
   return `https://www.espn.com/${path}/player/_/id/${id}`;
 }

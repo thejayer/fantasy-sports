@@ -2,9 +2,11 @@ import Link from "next/link";
 
 import { MemberDashboard } from "@/components/MemberDashboard";
 import {
+  getLeagueHistoryArchive,
   getLeagueIndex,
   getLeagueSnapshot,
   getPlayoffOddsSnapshot,
+  type LeagueSnapshot,
 } from "@/lib/data";
 import {
   buildLeagueCard,
@@ -13,6 +15,11 @@ import {
   resolveHomeSeason,
   type HomeLeagueCard,
 } from "@/lib/member-home";
+import {
+  collectOnThisDay,
+  formatMonthDay,
+  onThisDayClock,
+} from "@/lib/on-this-day";
 import { withPlayoffOdds } from "@/lib/portfolio";
 import { getViewer } from "@/lib/viewer";
 
@@ -33,7 +40,7 @@ function Hero({ firstLeagueId }: { firstLeagueId?: string }) {
         <h1>Leagues, teams, and players in one place.</h1>
         <p>
           The member hub for Strictly Jayers fantasy sports — football, baseball,
-          golf, and the seasons that built the group.
+          hockey, golf, and the seasons that built the group.
         </p>
         <div className="cta-row">
           <Link className="button" href="/leagues">
@@ -63,6 +70,7 @@ export default async function HomePage({ searchParams }: Props) {
   const season = resolveHomeSeason(
     seasons,
     requested != null && Number.isFinite(requested) ? requested : undefined,
+    index,
   );
   const leagues = season != null ? leaguesAtSeason(index, season) : [];
   const viewer = await getViewer();
@@ -74,9 +82,11 @@ export default async function HomePage({ searchParams }: Props) {
   }
 
   const cards: HomeLeagueCard[] = [];
+  const snapshotsByLeague = new Map<string, LeagueSnapshot>();
   for (const item of leagues) {
     const league = await getLeagueSnapshot(item.league_id, item.season);
     if (!league) continue;
+    snapshotsByLeague.set(item.league_id, league);
     const link = viewer.franchises.find(
       (franchise) => franchise.league_id === item.league_id,
     );
@@ -101,6 +111,27 @@ export default async function HomePage({ searchParams }: Props) {
     return a.sport.localeCompare(b.sport) || a.name.localeCompare(b.name);
   });
 
+  const now = onThisDayClock();
+  const linkedLeagueIds = [
+    ...new Set(viewer.franchises.map((f) => f.league_id)),
+  ];
+  const onThisDayInputs = await Promise.all(
+    linkedLeagueIds.map(async (leagueId) => {
+      const archive = await getLeagueHistoryArchive(leagueId);
+      const snap = snapshotsByLeague.get(leagueId);
+      return {
+        archive,
+        snapshots: snap ? [snap] : [],
+      };
+    }),
+  );
+  const onThisDay = collectOnThisDay(onThisDayInputs, now);
+  const onThisDayLabel = now.toLocaleDateString("en-US", {
+    month: "long",
+    day: "numeric",
+    timeZone: "UTC",
+  });
+
   return (
     <MemberDashboard
       cards={cards}
@@ -111,6 +142,8 @@ export default async function HomePage({ searchParams }: Props) {
         viewer.name?.split("@")[0] ??
         null
       }
+      onThisDay={onThisDay}
+      onThisDayLabel={onThisDayLabel || formatMonthDay(now)}
     />
   );
 }

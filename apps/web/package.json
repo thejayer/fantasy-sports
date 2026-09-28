@@ -16,7 +16,7 @@
     "verify:html-budget": "node scripts/check-html-budget.mjs"
   },
   "dependencies": {
-    "next": "^16.2.12",
+    "next": "^16.3.4",
     "next-auth": "^5.0.0-beta.32",
     "react": "^19.0.0",
     "react-dom": "^19.0.0"
@@ -30,22 +30,25 @@
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "eslint": "^9",
-    "eslint-config-next": "^16.2.12",
+    "eslint-config-next": "^16.3.4",
     "jsdom": "^29.1.1",
     "typescript": "^5",
-    "vitest": "^4.1.10"
+    "vitest": "^4.1.11"
   },
   "_overrides_note": [
-    "Revisited under Next 16.2 (roadmap 1.7): next still pins postcss 8.4.31",
-    "and sharp ^0.34.5; npm advisory for brace-expansion only clears at 5.0.8,",
-    "which breaks minimatch@3 — so minimatch is overridden to ^10.2.6 as well.",
+    "Revisited under Next 16.3.4 (Aug 2026 RCE patches GHSA-p293-qw3h-jr36 /",
+    "GHSA-2xp9-vwfh-vxw4). next still pins postcss 8.4.31 and sharp ^0.34.5;",
+    "npm advisory for brace-expansion only clears at 5.0.8, which breaks",
+    "minimatch@3 — so minimatch is overridden to ^10.2.6 as well.",
     "postcss: next pins 8.4.31; 8.5.x fixes XSS + sourceMappingURL path traversal.",
-    "sharp: next allows ^0.34.5; 0.35.x picks up the patched libvips."
+    "sharp: 0.35.4 picks up the patched libvips / libheif (AVIF).",
+    "js-yaml: 4.3.2 clears the !!omap quadratic CPU advisory (GHSA-5p4m-2wfm-xmqj)."
   ],
   "overrides": {
     "brace-expansion": "^5.0.8",
+    "js-yaml": "^4.3.2",
     "minimatch": "^10.2.6",
     "postcss": "^8.5.23",
-    "sharp": "^0.35.3"
+    "sharp": "^0.35.4"
   }
 }

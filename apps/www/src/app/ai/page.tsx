@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 
+import { RoomCrossLinks } from "@/components/RoomCrossLinks";
 import { XTimelineGrid } from "@/components/XTimeline";
 import {
   AI_EDITOR_PICKS,
@@ -20,17 +21,18 @@ export const metadata: Metadata = {
 export const revalidate = 1800;
 
 export default async function AiNewsPage() {
-  const { fantasyHubUrl } = getSiteConfig();
+  const { fantasyHubUrl, fitnessUrl } = getSiteConfig();
   const { items, sourcesOk, sourcesTotal, fetchedAt } = await loadAiHeadlines(28);
+  const [featured, ...morePicks] = AI_EDITOR_PICKS;
 
   return (
     <main className="ai-news">
       <section className="page-hero" aria-label="AI News">
-        <p className="hero-kicker">Stay sharp</p>
+        <p className="hero-kicker">Editor desk</p>
         <h1>AI News</h1>
         <p>
-          Company posts, lab notes, and live timelines from the shops that
-          shape how we build — OpenAI, Anthropic, Cursor, and more.
+          Hand-picked stories first, then the RSS firehose and live timelines
+          from OpenAI, Anthropic, Cursor, and Google AI.
         </p>
         <p className="page-hero-meta">
           Feeds refreshed about every 30 minutes
@@ -44,41 +46,72 @@ export default async function AiNewsPage() {
         </p>
       </section>
 
-      <section className="section" aria-labelledby="picks-heading">
-        <div className="section-head">
+      <section className="section news-desk" aria-labelledby="picks-heading">
+        <div className="news-desk-grid">
           <div>
-            <h2 id="picks-heading">Big stories</h2>
-            <p>Editor desk — the rooms worth bookmarking when something ships.</p>
-          </div>
-          <div className="section-marker">PICKS</div>
-        </div>
-        <ul className="story-list">
-          {AI_EDITOR_PICKS.map((pick) => (
-            <li key={pick.url}>
+            <div className="section-head">
+              <div>
+                <h2 id="picks-heading">Must read</h2>
+                <p>
+                  Editor desk — dated pieces worth opening before you scroll the
+                  firehose.
+                </p>
+              </div>
+              <div className="section-marker">PICKS</div>
+            </div>
+            {featured ? (
               <a
-                className="story-row"
-                href={pick.url}
+                className="must-read-hero"
+                href={featured.url}
                 rel="noopener noreferrer"
               >
                 <div className="story-meta">
-                  <span>{pick.source}</span>
-                  <span>{pick.date}</span>
+                  <span>{featured.source}</span>
+                  <span>{featured.date}</span>
                 </div>
-                <h3>{pick.title}</h3>
-                <p>{pick.blurb}</p>
+                <h3>{featured.title}</h3>
+                <p>{featured.blurb}</p>
                 <span className="story-action">Read →</span>
               </a>
-            </li>
-          ))}
-        </ul>
+            ) : null}
+          </div>
+          <div className="editor-sidebar">
+            <div className="section-head">
+              <div>
+                <h2>Editor picks</h2>
+                <p>The rest of the desk wall.</p>
+              </div>
+              <div className="section-marker">DESK</div>
+            </div>
+            <ul className="editor-pick-list">
+              {morePicks.map((pick) => (
+                <li key={pick.url}>
+                  <a
+                    className="editor-pick-row"
+                    href={pick.url}
+                    rel="noopener noreferrer"
+                  >
+                    <div className="story-meta">
+                      <span>{pick.source}</span>
+                      <span>{pick.date}</span>
+                    </div>
+                    <h3>{pick.title}</h3>
+                    <p>{pick.blurb}</p>
+                    <span className="story-action">Read →</span>
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </div>
       </section>
 
       <section className="section" aria-labelledby="headlines-heading">
         <div className="section-head">
           <div>
-            <h2 id="headlines-heading">Latest headlines</h2>
+            <h2 id="headlines-heading">Top stories</h2>
             <p>
-              Merged from{" "}
+              Firehose merged from{" "}
               {AI_RSS_SOURCES.map((s) => s.label).join(", ")}.
             </p>
           </div>
@@ -90,11 +123,11 @@ export default async function AiNewsPage() {
             a source below.
           </p>
         ) : (
-          <ul className="headline-list">
+          <ul className="news-card-grid">
             {items.map((item) => (
               <li key={`${item.sourceId}-${item.url}`}>
                 <a
-                  className="headline-row"
+                  className="news-card"
                   href={item.url}
                   rel="noopener noreferrer"
                 >
@@ -108,6 +141,7 @@ export default async function AiNewsPage() {
                   </div>
                   <h3>{item.title}</h3>
                   {item.summary ? <p>{item.summary}</p> : null}
+                  <span className="news-card-read">Read →</span>
                 </a>
               </li>
             ))}
@@ -129,8 +163,7 @@ export default async function AiNewsPage() {
           <div>
             <h2 id="timelines-heading">Timelines</h2>
             <p>
-              Live X profiles via official embeds — open the handle if a widget
-              stays blank.
+              Official X profiles — open the handle for the live timeline.
             </p>
           </div>
           <div className="section-marker">X</div>
@@ -138,11 +171,19 @@ export default async function AiNewsPage() {
         <XTimelineGrid accounts={AI_TIMELINE_ACCOUNTS} />
       </section>
 
+      <RoomCrossLinks current="ai" />
+
       <footer className="site-footer">
         <Link href="/">← Strictly Jayers</Link>
-        <a href={fantasyHubUrl} rel="noopener noreferrer">
-          Fantasy hub →
-        </a>
+        <span>
+          <a href={fitnessUrl} rel="noopener noreferrer">
+            Fitness →
+          </a>
+          {" · "}
+          <a href={fantasyHubUrl} rel="noopener noreferrer">
+            Fantasy hub →
+          </a>
+        </span>
       </footer>
     </main>
   );

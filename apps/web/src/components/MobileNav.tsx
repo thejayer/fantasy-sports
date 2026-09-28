@@ -10,14 +10,19 @@ import Link from "next/link";
 export function MobileNav({
   showAdmin,
   showProfile = false,
+  communityUrl = "https://strictlyjayers.com",
 }: {
   showAdmin: boolean;
   showProfile?: boolean;
+  communityUrl?: string;
 }) {
   return (
     <nav className="mobile-nav" aria-label="Primary">
       <Link href="/">Home</Link>
       <Link href="/leagues">Leagues</Link>
+      <a href={communityUrl} rel="noopener noreferrer">
+        Community
+      </a>
       {showAdmin ? <Link href="/admin">Admin</Link> : null}
       {showProfile ? <Link href="/settings">Profile</Link> : null}
     </nav>

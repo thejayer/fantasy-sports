@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Archivo } from "next/font/google";
+import localFont from "next/font/local";
 import Link from "next/link";
 import { auth, signOut } from "@/auth";
 import { ACCENT_INIT_SCRIPT } from "@/components/AccentPicker";
@@ -15,10 +15,27 @@ import { readHubMembers } from "@/lib/hub-members-store";
 import { devBypassEnabled } from "@/lib/session";
 import "./globals.css";
 
-const archivo = Archivo({
+/** Self-hosted so Docker/CI builds do not fetch Google Fonts at compile time. */
+const archivo = localFont({
+  src: [
+    {
+      path: "../fonts/Archivo-latin-400.woff2",
+      weight: "400",
+      style: "normal",
+    },
+    {
+      path: "../fonts/Archivo-latin-600.woff2",
+      weight: "600",
+      style: "normal",
+    },
+    {
+      path: "../fonts/Archivo-latin-800.woff2",
+      weight: "800",
+      style: "normal",
+    },
+  ],
   variable: "--font-archivo",
-  subsets: ["latin"],
-  weight: ["400", "600", "800"],
+  display: "swap",
 });
 
 const siteDescription = "Fantasy leagues and member hub for Strictly Jayers.";
@@ -81,6 +98,9 @@ export default async function RootLayout({
     memberRow?.image_url?.trim() ||
     session?.user?.image?.trim() ||
     null;
+  const communityUrl =
+    process.env.COMMUNITY_SITE_URL?.replace(/\/$/, "") ||
+    "https://strictlyjayers.com";
 
   return (
     <html lang="en" className={archivo.variable} suppressHydrationWarning>
@@ -99,6 +119,9 @@ export default async function RootLayout({
             <nav className="nav-links">
               <Link href="/">Home</Link>
               <Link href="/leagues">Leagues</Link>
+              <a href={communityUrl} rel="noopener noreferrer">
+                Community
+              </a>
               {showAdmin ? <Link href="/admin">Admin</Link> : null}
               {profileLabel ? (
                 <>
@@ -132,7 +155,11 @@ export default async function RootLayout({
           </header>
           {children}
         </div>
-        <MobileNav showAdmin={showAdmin} showProfile={Boolean(profileLabel)} />
+        <MobileNav
+          showAdmin={showAdmin}
+          showProfile={Boolean(profileLabel)}
+          communityUrl={communityUrl}
+        />
       </body>
     </html>
   );

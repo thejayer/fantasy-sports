@@ -36,6 +36,10 @@ on:
         description: "Absolute FANTASY_HUB_URL"
         required: true
         default: "https://fantasy.strictlyjayers.com"
+      fitness_url:
+        description: "Absolute FITNESS_URL"
+        required: true
+        default: "https://fitness.strictlyjayers.com"
       min_instances:
         description: "Cloud Run min instances (0=scale-to-zero)"
         required: true
@@ -61,6 +65,7 @@ jobs:
       MIN_INSTANCES: ${{ github.event.inputs.min_instances || '0' }}
       SITE_URL_INPUT: ${{ github.event.inputs.site_url || '' }}
       FANTASY_HUB_URL: ${{ github.event.inputs.fantasy_hub_url || 'https://fantasy.strictlyjayers.com' }}
+      FITNESS_URL: ${{ github.event.inputs.fitness_url || 'https://fitness.strictlyjayers.com' }}
       PREFERRED_SITE_HOST: strictlyjayers.com
     steps:
       - name: Validate inputs
@@ -83,6 +88,12 @@ jobs:
             https://*) ;;
             *)
               echo "Invalid fantasy_hub_url: must be https://..." >&2
+              exit 1 ;;
+          esac
+          case "$FITNESS_URL" in
+            https://*) ;;
+            *)
+              echo "Invalid fitness_url: must be https://..." >&2
               exit 1 ;;
           esac
 
@@ -159,7 +170,7 @@ jobs:
             --min-instances "$MIN_INSTANCES" \
             --max-instances 3 \
             --cpu-boost \
-            --update-env-vars "SITE_URL=$SITE_URL,FANTASY_HUB_URL=$FANTASY_HUB_URL"
+            --update-env-vars "SITE_URL=$SITE_URL,FANTASY_HUB_URL=$FANTASY_HUB_URL,FITNESS_URL=$FITNESS_URL"
 
           LIVE_URL="$(gcloud run services describe "$SERVICE" \
             --project "$PROJECT_ID" --region "$REGION" \
@@ -181,6 +192,7 @@ jobs:
           echo "Deployed portal to: $SERVICE_URL"
           echo "Cloud Run URL: $RUN_URL"
           echo "Fantasy handoff: $FANTASY_HUB_URL"
+          echo "Fitness handoff: $FITNESS_URL"
           echo
           echo "Custom domain (Spaceship): ./scripts/setup-portal-domain.sh"
           echo "  Preferred host: https://$PREFERRED_SITE_HOST"

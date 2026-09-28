@@ -127,6 +127,30 @@ describe("portfolio helpers (roadmap 9.4)", () => {
     expect(rows[1]?.teamHref).toBeNull();
     expect(rows[1]?.record).toBeNull();
     expect(rows[1]?.matchup).toBe("—");
+    expect(rows[0]?.seasonPoints).toBe(false);
+  });
+
+  it("surfaces season FP instead of H2H chrome", () => {
+    const rows = buildPortfolioRows([
+      card({
+        leagueId: "baseball-dynasty",
+        sport: "baseball",
+        seasonPoints: true,
+        team: {
+          teamId: 1,
+          name: "Alpha",
+          record: "0-0",
+          winPct: ".000",
+          standing: 2,
+          teamCount: 10,
+          pointsFor: 812.4,
+        },
+      }),
+    ]);
+    expect(rows[0]?.seasonPoints).toBe(true);
+    expect(rows[0]?.record).toBeNull();
+    expect(rows[0]?.matchup).toBe("812.4 FP");
+    expect(rows[0]?.next).toBeNull();
   });
 
   it("leaves odds alone when snapshot missing or team unlinked", () => {

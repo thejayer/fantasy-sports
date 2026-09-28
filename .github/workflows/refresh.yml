@@ -59,10 +59,14 @@ jobs:
         with:
           python-version: "3.11"
           cache: "pip"
-          cache-dependency-path: pyproject.toml
+          cache-dependency-path: |
+            pyproject.toml
+            requirements-lock.txt
 
-      - name: Install
-        run: pip install -e .
+      - name: Install from the lockfile
+        run: |
+          pip install -r requirements-lock.txt
+          pip install -e . --no-deps
 
       - name: Compute season and lookback
         id: cfg

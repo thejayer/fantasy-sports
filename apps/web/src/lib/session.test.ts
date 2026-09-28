@@ -84,6 +84,7 @@ const SESSION_GATED_READERS = [
   "getPlayoffOddsSamples",
   "getWeekBoxScore",
   "getProSchedule",
+  "getBaseballAnalysis",
   "listWeekBoxScoreWeeks",
   "getDraftSimSnapshot",
   "listDraftSimSlots",

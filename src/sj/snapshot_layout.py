@@ -28,6 +28,7 @@ _STANDINGS_TEAM_KEYS = (
     "points_for",
     "points_against",
     "standing",
+    "final_standing",
     "division",
 )
 
@@ -61,6 +62,16 @@ def pro_schedule_rel(league_id: str, season: int) -> str:
     return f"{season_dir_rel(league_id, season)}/pro_schedule.json"
 
 
+def analysis_rel(league_id: str, season: int, name: str) -> str:
+    """Side-concern season-points analysis JSON (roadmap 8.5).
+
+    ``name`` is ``slot_points`` or ``points_timeseries``. Not listed in
+    ``manifest.files`` — season assemble must never load these.
+    """
+    safe = str(name).strip().replace("..", "")
+    return f"{season_dir_rel(league_id, season)}/analysis/{safe}.json"
+
+
 def manifest_rel(league_id: str, season: int) -> str:
     return f"{season_dir_rel(league_id, season)}/{MANIFEST_NAME}"
 
@@ -80,7 +91,16 @@ def split_snapshot(snapshot: dict[str, Any]) -> dict[str, dict[str, Any]]:
     for team in teams:
         team_id = team.get("team_id")
         key = str(team_id)
-        standings_teams.append({k: team.get(k) for k in _STANDINGS_TEAM_KEYS})
+        standings_row = {
+            k: team.get(k)
+            for k in _STANDINGS_TEAM_KEYS
+            if k != "final_standing"
+        }
+        # Optional post-season ladder — omit when unset so round-trips match
+        # mid-season / baseball / golf snapshots (roadmap 7.13).
+        if team.get("final_standing") is not None:
+            standings_row["final_standing"] = team.get("final_standing")
+        standings_teams.append(standings_row)
         roster_by_id[key] = list(team.get("roster") or [])
         matchup_by_id[key] = {
             "schedule": list(team.get("schedule") or []),
