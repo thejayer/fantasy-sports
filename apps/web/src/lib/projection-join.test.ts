@@ -12,6 +12,7 @@ import {
   projectionSeasonCandidates,
   receptionPoints,
   scoringSlugFromLeague,
+  usesHalfPprScoringFallback,
 } from "@/lib/projection-join";
 
 function loadJson<T>(relative: string): T {
@@ -35,6 +36,9 @@ describe("projection-join (roadmap 4.4)", () => {
     expect(mahomes?.player_name).toBe("Patrick Mahomes");
     expect(mahomes?.floor).toBeLessThanOrEqual(mahomes!.median!);
     expect(mahomes?.median).toBeLessThanOrEqual(mahomes!.ceiling!);
+    // fixture_overlay: synthetic football-main roster id → same GSIS
+    const overlay = projectionForEspnId("202600301", espnToGsis, byGsis);
+    expect(overlay?.player_name).toBe("Patrick Mahomes");
     expect(projectionForEspnId("99999999", espnToGsis, byGsis)).toBeNull();
     expect(normalizeEspnId("3139477.0")).toBe("3139477");
   });
@@ -43,7 +47,7 @@ describe("projection-join (roadmap 4.4)", () => {
     const rows = attachPlayerProjections(
       [
         { id: 3139477, name: "Patrick Mahomes", position: "QB", slot: "QB", pro_team: "KC", injury_status: null, total_points: 10, projected_total_points: null, avg_points: null },
-        { id: 202600001, name: "Synthetic", position: "RB", slot: "RB", pro_team: "FA", injury_status: null, total_points: 1, projected_total_points: null, avg_points: null },
+        { id: 999000001, name: "Synthetic", position: "RB", slot: "RB", pro_team: "FA", injury_status: null, total_points: 1, projected_total_points: null, avg_points: null },
       ],
       indexPlayerMap(map),
       indexProjections(snap),
@@ -69,6 +73,24 @@ describe("projection-join (roadmap 4.4)", () => {
     expect(
       scoringSlugFromLeague({ sport: "football", settings: {} }),
     ).toBe("ppr");
+    expect(
+      scoringSlugFromLeague({
+        sport: "football",
+        settings: { scoring_format: [{ abbr: "REC", points: 0.5 }] },
+      }),
+    ).toBe("ppr");
+    expect(
+      usesHalfPprScoringFallback({
+        sport: "football",
+        settings: { scoring_format: [{ abbr: "REC", points: 0.5 }] },
+      }),
+    ).toBe(true);
+    expect(
+      usesHalfPprScoringFallback({
+        sport: "football",
+        settings: { scoring_format: [{ abbr: "REC", points: 1 }] },
+      }),
+    ).toBe(false);
     expect(receptionPoints({ scoring_format: [{ label: "Each Reception", points: 0.5 }] })).toBe(0.5);
   });
 

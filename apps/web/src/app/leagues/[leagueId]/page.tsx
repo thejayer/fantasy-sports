@@ -3,19 +3,43 @@ import type { HistoryView } from "@/components/HistoryPanel";
 import { LeagueView } from "@/components/LeagueView";
 import type { MatchupsView } from "@/components/MatchupsPanel";
 import type { ToolsView } from "@/components/ToolsPanel";
+import { parseAnalysisSeriesMode } from "@/lib/baseball-analysis";
+import { parseBaseballToolsView, parseTrailingWindow } from "@/lib/baseball-tools";
+import { parseHockeyToolsView } from "@/lib/hockey-tools";
+import type { ActivityView } from "@/lib/activity";
 import {
+  getDraftSimSnapshot,
   getLeagueHistoryArchive,
   getLeagueSeasons,
   getLeagueSnapshot,
+  getBaseballAnalysis,
   getPlayerMap,
+  getPlayoffOddsSamples,
+  getPlayoffOddsSnapshot,
+  getProSchedule,
   getProjectionSnapshot,
+  getWeekBoxScore,
+  getWeeklyProjectionSnapshot,
+  listDraftSimSlots,
+  listWeekBoxScoreWeeks,
+  type DraftSimSnapshot,
   type PlayerMapSnapshot,
+  type PlayoffOddsSamples,
+  type PlayoffOddsSnapshot,
+  type ProScheduleSnapshot,
   type ProjectionSnapshot,
+  type WeekBoxScoreSnapshot,
+  type WeeklyProjectionSnapshot,
 } from "@/lib/data";
+import { parseBoxPair } from "@/lib/box-score";
 import {
   projectionSeasonCandidates,
   scoringSlugFromLeague,
 } from "@/lib/projection-join";
+import { resolveGolfActingScope } from "@/lib/franchise-acl";
+import { getViewerTeamId } from "@/lib/viewer";
+import { parsePlayerTableQuery } from "@/lib/player-table";
+import { buildScoringSandboxModel } from "@/lib/scoring-sandbox";
 
 // See app/page.tsx. Already dynamic today, but declared so adding
 // generateStaticParams later cannot silently freeze snapshot data.
@@ -31,7 +55,19 @@ type Props = {
     view?: string;
     a?: string;
     b?: string;
+    team?: string;
     scoring?: string;
+    slot?: string;
+    event?: string;
+    q?: string;
+    pos?: string;
+    sort?: string;
+    dir?: string;
+    p?: string;
+    dp?: string;
+    box?: string;
+    window?: string;
+    series?: string;
   }>;
 };
 
@@ -65,13 +101,27 @@ export default async function LeagueDetailPage({ params, searchParams }: Props) 
     view: viewParam,
     a: aParam,
     b: bParam,
+    team: teamParam,
     scoring: scoringParam,
+    slot: slotParam,
+    event: eventParam,
+    q: qParam,
+    pos: posParam,
+    sort: sortParam,
+    dir: dirParam,
+    p: pageParam,
+    dp: draftPageParam,
+    box: boxParam,
+    window: windowParam,
+    series: seriesParam,
   } = await searchParams;
   const seasons = await getLeagueSeasons(leagueId);
   const season = seasonParam ? Number(seasonParam) : undefined;
   const week = weekParam ? Number(weekParam) : undefined;
   const a = aParam ? Number(aParam) : undefined;
   const b = bParam ? Number(bParam) : undefined;
+  const team = teamParam ? Number(teamParam) : undefined;
+  const requestedSlot = slotParam ? Number(slotParam) : undefined;
 
   const matchupsView = (
     ["week", "schedule", "playoffs"].includes(viewParam ?? "")
@@ -79,16 +129,19 @@ export default async function LeagueDetailPage({ params, searchParams }: Props) 
       : "week"
   ) as MatchupsView;
   const historyView = (
-    ["standings", "champions", "records", "h2h"].includes(viewParam ?? "")
+    ["standings", "trophies", "champions", "records", "h2h"].includes(
+      viewParam ?? "",
+    )
       ? viewParam
       : "standings"
   ) as HistoryView;
-  const toolsView = (
-    ["trade", "waivers", "strength", "deferred"].includes(viewParam ?? "")
+  const activityView = (
+    ["all", "trades", "waivers", "results", "draft", "talk"].includes(
+      viewParam ?? "",
+    )
       ? viewParam
-      : "trade"
-  ) as ToolsView;
-
+      : "all"
+  ) as ActivityView;
   const league = await getLeagueSnapshot(
     leagueId,
     season && !Number.isNaN(season) ? season : undefined,
@@ -97,8 +150,37 @@ export default async function LeagueDetailPage({ params, searchParams }: Props) 
     notFound();
   }
 
+  const toolsView = (
+    [
+      "home",
+      "trade",
+      "waivers",
+      "strength",
+      "draft",
+      "start-sit",
+      "playoff-odds",
+    ].includes(viewParam ?? "")
+      ? viewParam
+      : "home"
+  ) as ToolsView;
+  const baseballToolsView = parseBaseballToolsView(viewParam);
+  const baseballTrailingWindow = parseTrailingWindow(windowParam);
+  const hockeyToolsView = parseHockeyToolsView(viewParam);
+  const analysisSeriesMode = parseAnalysisSeriesMode(seriesParam);
+
   const historyArchive =
     tab === "history" ? await getLeagueHistoryArchive(leagueId) : null;
+
+  const proSchedule: ProScheduleSnapshot | null =
+    league.sport === "baseball" && tab === "tools"
+      ? await getProSchedule(league.league_id, league.season)
+      : null;
+
+  const baseballAnalysis =
+    (league.sport === "baseball" || league.sport === "hockey") &&
+    tab === "analysis"
+      ? await getBaseballAnalysis(league.league_id, league.season)
+      : null;
 
   const wantsProjections =
     league.sport === "football" &&
@@ -114,6 +196,172 @@ export default async function LeagueDetailPage({ params, searchParams }: Props) 
       )
     : { snapshot: null, playerMap: null, scoring: scoringOverride };
 
+  let draftSimSnapshot: DraftSimSnapshot | null = null;
+  let availableDraftSlots: number[] = [];
+  let draftSlot = 1;
+  if (
+    league.sport === "football" &&
+    tab === "tools" &&
+    toolsView === "draft"
+  ) {
+    const scoring = projectionBundle.scoring ?? scoringSlugFromLeague(league);
+    for (const year of projectionSeasonCandidates(league.season)) {
+      const slots = await listDraftSimSlots(scoring, year);
+      if (slots.length) {
+        availableDraftSlots = slots;
+        break;
+      }
+    }
+    const preferred =
+      requestedSlot != null &&
+      !Number.isNaN(requestedSlot) &&
+      requestedSlot >= 1
+        ? Math.trunc(requestedSlot)
+        : availableDraftSlots[0] ?? 1;
+    draftSlot = availableDraftSlots.includes(preferred)
+      ? preferred
+      : (availableDraftSlots[0] ?? preferred);
+    for (const year of projectionSeasonCandidates(league.season)) {
+      const snap = await getDraftSimSnapshot(scoring, year, draftSlot);
+      if (snap) {
+        draftSimSnapshot = snap;
+        break;
+      }
+    }
+  }
+
+  let weeklyProjectionSnapshot: WeeklyProjectionSnapshot | null = null;
+  if (
+    league.sport === "football" &&
+    tab === "tools" &&
+    toolsView === "start-sit"
+  ) {
+    const scoring = projectionBundle.scoring ?? scoringSlugFromLeague(league);
+    for (const year of projectionSeasonCandidates(league.season)) {
+      const snap = await getWeeklyProjectionSnapshot(scoring, year);
+      if (snap) {
+        weeklyProjectionSnapshot = snap;
+        break;
+      }
+    }
+  }
+
+  let playoffOddsSnapshot: PlayoffOddsSnapshot | null = null;
+  let playoffOddsSamples: PlayoffOddsSamples | null = null;
+  if (
+    league.sport === "football" &&
+    tab === "tools" &&
+    (toolsView === "playoff-odds" || toolsView === "trade")
+  ) {
+    if (toolsView === "playoff-odds") {
+      for (const year of projectionSeasonCandidates(league.season)) {
+        const snap = await getPlayoffOddsSnapshot(league.league_id, year);
+        if (snap) {
+          playoffOddsSnapshot = snap;
+          break;
+        }
+      }
+      // League season file is keyed by hub season; also try exact league.season.
+      if (!playoffOddsSnapshot) {
+        playoffOddsSnapshot = await getPlayoffOddsSnapshot(
+          league.league_id,
+          league.season,
+        );
+      }
+    }
+    if (toolsView === "trade") {
+      for (const year of projectionSeasonCandidates(league.season)) {
+        const samples = await getPlayoffOddsSamples(league.league_id, year);
+        if (samples) {
+          playoffOddsSamples = samples;
+          break;
+        }
+      }
+      if (!playoffOddsSamples) {
+        playoffOddsSamples = await getPlayoffOddsSamples(
+          league.league_id,
+          league.season,
+        );
+      }
+    }
+  }
+
+  const boxPair =
+    (league.sport === "football" ||
+      league.sport === "baseball" ||
+      league.sport === "hockey") &&
+    tab === "matchups"
+      ? parseBoxPair(boxParam)
+      : null;
+  let weekBoxScore: WeekBoxScoreSnapshot | null = null;
+  const baseballUsageWeek =
+    league.sport === "baseball" &&
+    tab === "tools" &&
+    baseballToolsView === "usage"
+      ? (league.current_week ?? 1)
+      : null;
+  if (boxPair || baseballUsageWeek != null) {
+    const boxWeek =
+      baseballUsageWeek != null
+        ? baseballUsageWeek
+        : week != null && !Number.isNaN(week)
+          ? week
+          : (league.current_week ?? 1);
+    weekBoxScore = await getWeekBoxScore(
+      league.league_id,
+      league.season,
+      boxWeek,
+    );
+  }
+
+  const golfActingScope =
+    league.sport === "golf" && (tab === "lineup" || tab === "auction")
+      ? await resolveGolfActingScope(
+          league.league_id,
+          league.teams.map((t) => t.team_id),
+        )
+      : undefined;
+
+  // Only meaningful when the franchise is in this season's snapshot — a member
+  // linked to a team that did not exist in 2016 must not highlight team_id 4.
+  let scoringSandbox = null;
+  if (tab === "sandbox") {
+    const weekNums = await listWeekBoxScoreWeeks(
+      league.league_id,
+      league.season,
+    );
+    const weekDocs = await Promise.all(
+      weekNums.map((n) =>
+        getWeekBoxScore(league.league_id, league.season, n),
+      ),
+    );
+    scoringSandbox = buildScoringSandboxModel(
+      league,
+      weekDocs.filter((doc): doc is WeekBoxScoreSnapshot => doc != null),
+    );
+  }
+
+  const linkedTeamId = await getViewerTeamId(leagueId);
+  const viewerTeamId = league.teams.some((t) => t.team_id === linkedTeamId)
+    ? linkedTeamId
+    : undefined;
+
+  const playersQuery = parsePlayerTableQuery({
+    q: qParam,
+    pos: posParam,
+    sort: sortParam,
+    dir: dirParam,
+    p: pageParam,
+    defaultSort:
+      league.sport === "football" && projectionBundle.snapshot
+        ? "vor"
+        : "fpts",
+  });
+  const draftPage = Math.max(
+    1,
+    Number.parseInt(draftPageParam ?? "1", 10) || 1,
+  );
+
   return (
     <LeagueView
       league={league}
@@ -126,10 +374,54 @@ export default async function LeagueDetailPage({ params, searchParams }: Props) 
       historyView={historyView}
       h2hA={a != null && !Number.isNaN(a) ? a : undefined}
       h2hB={b != null && !Number.isNaN(b) ? b : undefined}
+      activityView={activityView}
+      draftTeamId={
+        tab === "draft" && team != null && !Number.isNaN(team)
+          ? team
+          : undefined
+      }
+      draftPage={draftPage}
+      playersQuery={playersQuery}
+      golfEventId={
+        (tab === "lineup" || tab === "scoreboard") && eventParam
+          ? eventParam
+          : undefined
+      }
+      golfLineupTeamId={
+        (tab === "lineup" || tab === "auction") &&
+        team != null &&
+        !Number.isNaN(team)
+          ? team
+          : undefined
+      }
+      golfActingScope={golfActingScope}
       projectionSnapshot={projectionBundle.snapshot}
       playerMap={projectionBundle.playerMap}
       projectionScoring={projectionBundle.scoring}
       toolsView={toolsView}
+      baseballToolsView={baseballToolsView}
+      baseballTrailingWindow={baseballTrailingWindow}
+      hockeyToolsView={hockeyToolsView}
+      proSchedule={proSchedule}
+      toolsTeamA={a != null && !Number.isNaN(a) ? a : undefined}
+      toolsTeamB={b != null && !Number.isNaN(b) ? b : undefined}
+      toolsTeamId={
+        tab === "tools" && team != null && !Number.isNaN(team)
+          ? team
+          : undefined
+      }
+      draftSlot={draftSlot}
+      availableDraftSlots={availableDraftSlots}
+      draftSimSnapshot={draftSimSnapshot}
+      weeklyProjectionSnapshot={weeklyProjectionSnapshot}
+      playoffOddsSnapshot={playoffOddsSnapshot}
+      playoffOddsSamples={playoffOddsSamples}
+      boxPair={boxPair}
+      weekBoxScore={weekBoxScore}
+      viewerTeamId={viewerTeamId}
+      scoringSandbox={scoringSandbox}
+      baseballAnalysis={baseballAnalysis}
+      analysisSeriesMode={analysisSeriesMode}
     />
   );
 }

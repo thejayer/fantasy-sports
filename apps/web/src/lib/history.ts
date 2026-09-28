@@ -15,7 +15,10 @@ export type AllTimeStanding = {
   ties: number;
   pointsFor: number;
   pointsAgainst: number;
+  /** Regular-season / seed #1 finishes (`standing === 1`). */
   championships: number;
+  /** Playoff titles (`final_standing === 1`) when the field is on disk. */
+  playoffChampionships: number;
   winPct: number;
 };
 
@@ -111,6 +114,7 @@ export function allTimeStandings(archive: LeagueHistoryArchive): AllTimeStanding
           pointsFor: 0,
           pointsAgainst: 0,
           championships: 0,
+          playoffChampionships: 0,
           winPct: 0,
         } satisfies AllTimeStanding);
 
@@ -121,6 +125,7 @@ export function allTimeStandings(archive: LeagueHistoryArchive): AllTimeStanding
       row.pointsFor += team.points_for ?? 0;
       row.pointsAgainst += team.points_against ?? 0;
       if (team.standing === 1) row.championships += 1;
+      if (team.final_standing === 1) row.playoffChampionships += 1;
       // Keep newest identity as we walk seasons ascending.
       row.name = team.name;
       row.abbrev = team.abbrev;
@@ -142,7 +147,7 @@ export function allTimeStandings(archive: LeagueHistoryArchive): AllTimeStanding
     });
 }
 
-/** Regular-season #1 finishers by year (playoff champ not in snapshot). */
+/** Regular-season / seed #1 finishers by year (`standing === 1`). */
 export function championsBySeason(archive: LeagueHistoryArchive): ChampionRow[] {
   const rows: ChampionRow[] = [];
   for (const slice of archive.seasons) {
@@ -162,6 +167,37 @@ export function championsBySeason(archive: LeagueHistoryArchive): ChampionRow[] 
     });
   }
   return rows.sort((a, b) => b.season - a.season);
+}
+
+/** Playoff champions by year (`final_standing === 1`, ESPN rankCalculatedFinal). */
+export function playoffChampionsBySeason(
+  archive: LeagueHistoryArchive,
+): ChampionRow[] {
+  const rows: ChampionRow[] = [];
+  for (const slice of archive.seasons) {
+    const champ = slice.teams.find((team) => team.final_standing === 1);
+    if (!champ) continue;
+    rows.push({
+      season: slice.season,
+      teamId: champ.team_id,
+      name: champ.name,
+      owners: champ.owners,
+      wins: champ.wins,
+      losses: champ.losses,
+      ties: champ.ties,
+      pointsFor: champ.points_for,
+    });
+  }
+  return rows.sort((a, b) => b.season - a.season);
+}
+
+/** True when any season on disk carries a playoff title. */
+export function archiveHasPlayoffChampions(
+  archive: LeagueHistoryArchive,
+): boolean {
+  return archive.seasons.some((slice) =>
+    slice.teams.some((team) => team.final_standing === 1),
+  );
 }
 
 function pushBest(
@@ -276,6 +312,11 @@ export function buildRecordBook(archive: LeagueHistoryArchive): RecordEntry[] {
         row.championships > best.championships ? row : best,
       )
     : null;
+  const mostPlayoffTitles = titles[0]
+    ? titles.reduce((best, row) =>
+        row.playoffChampionships > best.playoffChampionships ? row : best,
+      )
+    : null;
 
   const entries: RecordEntry[] = [];
   if (bestSeasonWins) entries.push(bestSeasonWins);
@@ -288,6 +329,14 @@ export function buildRecordBook(archive: LeagueHistoryArchive): RecordEntry[] {
       value: String(mostTitles.championships),
       detail: mostTitles.name,
       teamId: mostTitles.teamId,
+    });
+  }
+  if (mostPlayoffTitles && mostPlayoffTitles.playoffChampionships > 0) {
+    entries.push({
+      label: "Most playoff titles",
+      value: String(mostPlayoffTitles.playoffChampionships),
+      detail: mostPlayoffTitles.name,
+      teamId: mostPlayoffTitles.teamId,
     });
   }
   return entries;
@@ -370,6 +419,115 @@ export function recordLabelFromCounts(
   ties: number,
 ): string {
   return formatRecord(wins, losses, ties);
+}
+
+export type FranchiseSeasonRow = {
+  season: number;
+  name: string;
+  owners: string[];
+  wins: number;
+  losses: number;
+  ties: number;
+  winPct: number;
+  pointsFor: number | null;
+  pointsAgainst: number | null;
+  standing: number | null;
+  /** Best and worst scored period that season. */
+  high: number | null;
+  low: number | null;
+};
+
+export type FranchiseCareer = {
+  teamId: number;
+  name: string;
+  abbrev: string | null;
+  owners: string[];
+  seasons: FranchiseSeasonRow[];
+  totals: AllTimeStanding | null;
+  /** Every other franchise this one has played, by series record. */
+  rivals: Array<HeadToHeadSummary & { name: string; winPct: number }>;
+};
+
+/**
+ * One franchise's career across every season on disk (roadmap 7.3).
+ * Keyed by `team_id` like the rest of phase 3.5 — owner names change.
+ */
+export function franchiseCareer(
+  archive: LeagueHistoryArchive,
+  teamId: number,
+): FranchiseCareer | null {
+  const appearances = archive.seasons.filter((slice) =>
+    slice.teams.some((team) => team.team_id === teamId),
+  );
+  if (!appearances.length) return null;
+
+  const seasons: FranchiseSeasonRow[] = appearances.map((slice) => {
+    const team = slice.teams.find((t) => t.team_id === teamId)!;
+    let high: number | null = null;
+    let low: number | null = null;
+    for (let i = 0; i < team.scores.length; i += 1) {
+      const score = team.scores[i];
+      if (score == null || Number.isNaN(score)) continue;
+      // Skip bye placeholders, same rule as the record book.
+      if (team.schedule[i] === team.team_id && score === 0) continue;
+      if (high == null || score > high) high = score;
+      if (low == null || score < low) low = score;
+    }
+    return {
+      season: slice.season,
+      name: team.name,
+      owners: team.owners,
+      wins: team.wins,
+      losses: team.losses,
+      ties: team.ties,
+      winPct: winPct(team.wins, team.losses, team.ties),
+      pointsFor: team.points_for,
+      pointsAgainst: team.points_against,
+      standing: team.standing,
+      high,
+      low,
+    };
+  });
+  seasons.sort((a, b) => b.season - a.season);
+
+  const identity = latestIdentity(archive, teamId);
+  const totals =
+    allTimeStandings(archive).find((row) => row.teamId === teamId) ?? null;
+
+  const opponentIds = new Set<number>();
+  for (const slice of archive.seasons) {
+    const team = slice.teams.find((t) => t.team_id === teamId);
+    if (!team) continue;
+    for (const opponentId of team.schedule) {
+      if (opponentId != null && opponentId !== teamId) {
+        opponentIds.add(opponentId);
+      }
+    }
+  }
+
+  const rivals = [...opponentIds]
+    .map((opponentId) => {
+      const summary = headToHead(archive, teamId, opponentId);
+      return {
+        ...summary,
+        name: latestIdentity(archive, opponentId).name,
+        winPct: winPct(summary.wins, summary.losses, summary.ties),
+      };
+    })
+    .filter((row) => row.games.length > 0)
+    .sort(
+      (a, b) => b.games.length - a.games.length || a.name.localeCompare(b.name),
+    );
+
+  return {
+    teamId,
+    name: identity.name,
+    abbrev: identity.abbrev,
+    owners: identity.owners,
+    seasons,
+    totals,
+    rivals,
+  };
 }
 
 export function seasonCountLabel(archive: LeagueHistoryArchive): string {

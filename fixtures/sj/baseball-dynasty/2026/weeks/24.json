@@ -1,0 +1,68 @@
+{
+  "league_id": "baseball-dynasty",
+  "matchups": [],
+  "period_label": "period",
+  "pitcher_ip": [
+    {
+      "ip": 5.4,
+      "name": "Jack Long",
+      "outs": 16.2,
+      "player_id": 202600111,
+      "team_id": 2
+    },
+    {
+      "ip": 1.6,
+      "name": "Philip Cook",
+      "outs": 4.9,
+      "player_id": 202600112,
+      "team_id": 2
+    },
+    {
+      "ip": 4.3,
+      "name": "James Hughes",
+      "outs": 12.8,
+      "player_id": 202600113,
+      "team_id": 2
+    },
+    {
+      "ip": 2.6,
+      "name": "Ethan Jackson",
+      "outs": 7.9,
+      "player_id": 202600114,
+      "team_id": 2
+    },
+    {
+      "ip": 5.0,
+      "name": "Brandon Watson",
+      "outs": 15.0,
+      "player_id": 202600115,
+      "team_id": 2
+    },
+    {
+      "ip": 5.4,
+      "name": "Sean James",
+      "outs": 16.2,
+      "player_id": 202600116,
+      "team_id": 2
+    },
+    {
+      "ip": 2.3,
+      "name": "Scott Parker",
+      "outs": 7.0,
+      "player_id": 202600117,
+      "team_id": 2
+    },
+    {
+      "ip": 1.6,
+      "name": "Ryan Walker",
+      "outs": 4.8,
+      "player_id": 202600119,
+      "team_id": 2
+    }
+  ],
+  "schema_version": 1,
+  "season": 2026,
+  "sport": "baseball",
+  "synced_at": "2026-07-27T00:00:00+00:00",
+  "week": 24
+}

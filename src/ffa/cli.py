@@ -7,6 +7,7 @@ Examples:
 
 from __future__ import annotations
 
+import json
 from pathlib import Path
 
 import typer
@@ -45,7 +46,7 @@ from ffa.projections import (
 from ffa.ranking import assign_tiers, compute_vor
 from ffa.rookies import augment_with_rookies
 from ffa.scoring import score_player_weeks
-from ffa.simulation import summarize_seasons
+from ffa.simulation import simulate_typical_weeks, summarize_seasons
 
 app = typer.Typer(add_completion=False, help="Fantasy football analytics pipeline.")
 
@@ -771,6 +772,500 @@ def export_projections(
     written = write_projection_snapshot(document, table, out_dir, fmt=fmt)  # type: ignore[arg-type]
     for path in written:
         typer.echo(f"Wrote {len(table):,} players -> {path}")
+
+
+@app.command("export-weekly-projections")
+def export_weekly_projections(
+    league: Path = typer.Option(Path("configs/ppr.yaml"), "--league"),
+    season: int = typer.Option(..., "--season"),
+    out_dir: Path = typer.Option(
+        Path("data/sj/weekly_projections"),
+        "--out-dir",
+        help="Store root for weekly_projections/{scoring}/{season}.json",
+    ),
+    samples: int = typer.Option(2000, "--samples"),
+    lookback: int = typer.Option(3, "--lookback"),
+    decay: float = typer.Option(0.5, "--decay"),
+    seed: int = typer.Option(0, "--seed"),
+    level_sd: float = typer.Option(0.0, "--level-sd"),
+    level_mean: float = typer.Option(1.0, "--level-mean"),
+    conditioned_level: bool = typer.Option(
+        True,
+        "--conditioned-level/--no-conditioned-level",
+        help="Default on: calibrated LevelModel path (roadmap 4.1).",
+    ),
+    n_tiers: int = typer.Option(5, "--tiers"),
+    db: Path = typer.Option(Path("data/ffa.duckdb"), "--db"),
+    raw_dir: Path = typer.Option(Path("data/raw"), "--raw-dir"),
+) -> None:
+    """Write hub-consumable typical-week posterior snapshots.
+
+    Bootstraps single historical game rows (not season totals) so the hub can
+    power start/sit without calling ``ffa`` at request time. Not schedule- or
+    opponent-adjusted — ``grain`` is ``typical_week``. Learned/quantile
+    season generators are intentionally out of scope here.
+    """
+    from ffa.weekly_export import (
+        GRAIN_TYPICAL_WEEK,
+        build_weekly_projection_table,
+        build_weekly_snapshot_document,
+        write_weekly_projection_snapshot,
+    )
+
+    cfg = load_league(league)
+    con = open_warehouse(db_path=db, raw_dir=raw_dir)
+    seasons = list(range(season - lookback, season))
+    placeholders = ",".join("?" for _ in seasons)
+    weekly = con.execute(
+        f"SELECT * FROM weekly WHERE season IN ({placeholders})", seasons
+    ).df()
+    if weekly.empty:
+        typer.echo(f"No weekly history for seasons {seasons}. Run `ffa ingest` first.")
+        raise typer.Exit(code=1)
+
+    player_level = None
+    if conditioned_level:
+        years_exp = _load_years_exp(con, [season])
+        if years_exp is None or years_exp.empty:
+            typer.echo(
+                "--conditioned-level: no rosters years_exp for season "
+                f"{season}; using tier-only LevelModel (experience = unknown)."
+            )
+        player_level = build_player_level(
+            weekly,
+            season,
+            cfg,
+            LevelModel(),
+            lookback=lookback,
+            years_exp=years_exp,
+        )
+        typer.echo(
+            f"--conditioned-level: LevelModel table for {len(player_level):,} players."
+        )
+
+    samples_df = simulate_typical_weeks(
+        weekly,
+        target_season=season,
+        n_samples=samples,
+        lookback=lookback,
+        decay=decay,
+        level_sd=level_sd,
+        level_mean=level_mean,
+        player_level=player_level,
+        seed=seed,
+    )
+    summary = summarize_seasons(samples_df, cfg)
+    table = build_weekly_projection_table(summary, cfg, n_tiers=n_tiers)
+    slug = scoring_slug(cfg)
+    document = build_weekly_snapshot_document(
+        table,
+        scoring=slug,
+        season=season,
+        n_sims=samples,
+        grain=GRAIN_TYPICAL_WEEK,
+        source={
+            "engine": "ffa",
+            "league": str(league),
+            "generator": "bootstrap_typical_week",
+            "lookback": lookback,
+            "decay": decay,
+            "conditioned_level": conditioned_level,
+            "level_sd": level_sd,
+            "level_mean": level_mean,
+            "seed": seed,
+            "tiers": n_tiers,
+        },
+    )
+    path = write_weekly_projection_snapshot(document, out_dir)
+    typer.echo(f"Wrote {len(table):,} players ({GRAIN_TYPICAL_WEEK}) -> {path}")
+
+
+@app.command("export-playoff-odds")
+def export_playoff_odds(
+    sj_root: Path = typer.Option(
+        Path("data/sj"),
+        "--sj-root",
+        help="Hub store root with league snapshots (falls back to fixtures via sj.store).",
+    ),
+    season: int = typer.Option(..., "--season"),
+    league_id: str | None = typer.Option(
+        None,
+        "--league-id",
+        help="One football league_id. Default: every football league for --season.",
+    ),
+    out_dir: Path = typer.Option(
+        Path("data/sj/playoff_odds"),
+        "--out-dir",
+        help="Store root for playoff_odds/{league_id}/{season}.json",
+    ),
+    league: Path = typer.Option(
+        Path("configs/ppr.yaml"),
+        "--league",
+        help="ffa scoring config used for weekly FP draws (ppr/standard).",
+    ),
+    n_sims: int = typer.Option(500, "--sims"),
+    samples: int = typer.Option(2000, "--samples"),
+    lookback: int = typer.Option(3, "--lookback"),
+    decay: float = typer.Option(0.5, "--decay"),
+    seed: int = typer.Option(0, "--seed"),
+    as_of_week: int | None = typer.Option(
+        None,
+        "--as-of-week",
+        help="Treat periods >= this week as undecided (midseason what-if).",
+    ),
+    write_samples: bool = typer.Option(
+        True,
+        "--write-samples/--no-write-samples",
+        help="Also write {season}.samples.json (ESPN-keyed FP draws for hub trade Δ).",
+    ),
+    hub_samples: int = typer.Option(
+        300,
+        "--hub-samples",
+        help="Columns kept in the samples sidecar (subsample of --samples).",
+    ),
+    level_sd: float = typer.Option(0.0, "--level-sd"),
+    level_mean: float = typer.Option(1.0, "--level-mean"),
+    conditioned_level: bool = typer.Option(
+        True,
+        "--conditioned-level/--no-conditioned-level",
+        help="Default on: calibrated LevelModel path.",
+    ),
+    player_map: Path | None = typer.Option(
+        None,
+        "--player-map",
+        help="Optional player_map JSON (default: {sj-root}/player_map/{season}.json).",
+    ),
+    db: Path = typer.Option(Path("data/ffa.duckdb"), "--db"),
+    raw_dir: Path = typer.Option(Path("data/raw"), "--raw-dir"),
+) -> None:
+    """Write hub-consumable playoff-odds snapshots (football).
+
+    Offline Monte Carlo over remaining regular-season H2H games using
+    independent typical-week bootstrap draws + greedy skill lineups. Does not
+    invent odds from season/weekly quantile boards. Hub reads the JSON only.
+    With --write-samples (default), also writes a compact samples sidecar so
+    the Trade Desk can price packages in Δ make-playoffs without calling ffa.
+    """
+    import numpy as np
+
+    from ffa.player_map import load_player_map
+    from ffa.playoff_export import (
+        attach_prior_make_playoffs,
+        build_playoff_odds_document,
+        build_playoff_samples_document,
+        load_playoff_odds_snapshot,
+        playoff_odds_path,
+        simulate_playoff_odds,
+        write_playoff_odds_snapshot,
+        write_playoff_samples_snapshot,
+    )
+    from ffa.projections import scoring_slug
+    from ffa.scoring import score_player_weeks
+    from sj.store import list_snapshots, read_snapshot
+
+    cfg = load_league(league)
+    slug = scoring_slug(cfg)
+
+    map_path = player_map
+    if map_path is None:
+        for year in (season, season - 1):
+            candidate = sj_root / "player_map" / f"{year}.json"
+            if candidate.is_file():
+                map_path = candidate
+                break
+    espn_to_gsis: dict[str, str] = {}
+    if map_path and map_path.is_file():
+        doc = load_player_map(map_path)
+        for row in doc.get("mappings") or []:
+            espn = str(row.get("espn_id") or "").strip()
+            gsis = str(row.get("player_id") or "").strip()
+            if espn and gsis:
+                espn_to_gsis[espn] = gsis
+        typer.echo(f"Player map: {len(espn_to_gsis):,} ESPN→GSIS from {map_path}")
+    else:
+        typer.echo("No player map found; mapped roster counts will be 0.")
+
+    # Typical-week joint samples (ephemeral — not written to the hub store).
+    con = open_warehouse(db_path=db, raw_dir=raw_dir)
+    seasons = list(range(season - lookback, season))
+    placeholders = ",".join("?" for _ in seasons)
+    weekly = con.execute(
+        f"SELECT * FROM weekly WHERE season IN ({placeholders})", seasons
+    ).df()
+    if weekly.empty:
+        typer.echo(f"No weekly history for seasons {seasons}. Run `ffa ingest` first.")
+        raise typer.Exit(code=1)
+
+    player_level = None
+    if conditioned_level:
+        years_exp = _load_years_exp(con, [season])
+        player_level = build_player_level(
+            weekly,
+            season,
+            cfg,
+            LevelModel(),
+            lookback=lookback,
+            years_exp=years_exp,
+        )
+
+    samples_df = simulate_typical_weeks(
+        weekly,
+        target_season=season,
+        n_samples=samples,
+        lookback=lookback,
+        decay=decay,
+        level_sd=level_sd,
+        level_mean=level_mean,
+        player_level=player_level,
+        seed=seed,
+    )
+    if samples_df.empty:
+        typer.echo("No typical-week samples produced.")
+        raise typer.Exit(code=1)
+
+    scored = samples_df.copy()
+    scored["fantasy_points"] = score_player_weeks(scored, cfg)
+    points_by_key: dict[str, np.ndarray] = {}
+    for pid, grp in scored.groupby("player_id", sort=False):
+        points_by_key[str(pid)] = grp.sort_values("sample_idx")["fantasy_points"].to_numpy(
+            dtype=float
+        )
+    typer.echo(f"Weekly FP matrix: {len(points_by_key):,} players × {samples} samples")
+
+    store_arg = sj_root if sj_root.is_dir() else None
+    try:
+        available = list_snapshots(store_arg)
+    except Exception:  # noqa: BLE001
+        available = []
+    targets = [
+        item
+        for item in available
+        if item.get("sport") == "football" and int(item.get("season") or 0) == season
+    ]
+    if league_id:
+        targets = [t for t in targets if t.get("league_id") == league_id]
+        if not targets:
+            # Still try a direct read (fixtures / partial index).
+            targets = [{"league_id": league_id, "season": season, "sport": "football"}]
+
+    if not targets:
+        typer.echo(f"No football leagues for season {season} under {sj_root}.")
+        raise typer.Exit(code=1)
+
+    written = 0
+    for item in targets:
+        lid = str(item["league_id"])
+        try:
+            snap = read_snapshot(lid, season, store_arg)
+        except FileNotFoundError:
+            typer.echo(f"Skip {lid}: snapshot not found")
+            continue
+        if snap.get("sport") and snap.get("sport") != "football":
+            continue
+        sim = simulate_playoff_odds(
+            snap,
+            points_by_key,
+            espn_to_gsis,
+            n_sims=n_sims,
+            seed=seed,
+            as_of_week=as_of_week,
+        )
+        source = {
+            "engine": "ffa",
+            "sj_root": str(sj_root),
+            "generator": "playoff_mc_v1",
+            "league_config": str(league),
+            "conditioned_level": conditioned_level,
+            "lookback": lookback,
+            "decay": decay,
+            "samples": samples,
+            "seed": seed,
+            "as_of_week": as_of_week,
+        }
+        document = build_playoff_odds_document(
+            snap,
+            sim,
+            scoring=slug,
+            n_sims=n_sims,
+            assumptions={
+                "player_draws": "independent_bootstrap_typical_week",
+                "lineup": "greedy_skill_positions",
+                "k_dst": "omitted",
+                "rosters": "fixed_at_export",
+                "schedule_adjusted": False,
+                "median_scoring": False,
+                "metric": "make_playoffs_regular_season_only",
+                "trade_delta": "hub_samples_sidecar" if write_samples else "unavailable",
+            },
+            source=source,
+        )
+        prior_path = playoff_odds_path(out_dir, lid, season)
+        prior_doc = None
+        if prior_path.is_file():
+            try:
+                prior_doc = load_playoff_odds_snapshot(prior_path)
+            except (OSError, json.JSONDecodeError, ValueError, TypeError):
+                prior_doc = None
+        document = attach_prior_make_playoffs(document, prior_doc)
+        path = write_playoff_odds_snapshot(document, out_dir)
+        written += 1
+        typer.echo(
+            f"Wrote {lid} ({sim['n_matchups']} matchups, "
+            f"{len(sim['periods_simulated'])} periods) -> {path}"
+        )
+        if write_samples:
+            samples_doc = build_playoff_samples_document(
+                snap,
+                points_by_key,
+                espn_to_gsis,
+                scoring=slug,
+                n_sims=n_sims,
+                seed=seed,
+                hub_samples=hub_samples,
+                source=source,
+            )
+            samples_path = write_playoff_samples_snapshot(samples_doc, out_dir)
+            typer.echo(
+                f"Wrote samples ({len(samples_doc['points_by_espn'])} players × "
+                f"{samples_doc['n_samples']}) -> {samples_path}"
+            )
+
+    if written == 0:
+        typer.echo("No playoff-odds files written.")
+        raise typer.Exit(code=1)
+
+
+@app.command("export-draft-sim")
+def export_draft_sim(
+    league: Path = typer.Option(Path("configs/ppr.yaml"), "--league"),
+    season: int = typer.Option(..., "--season"),
+    out_dir: Path = typer.Option(
+        Path("data/sj/draft_sim"),
+        "--out-dir",
+        help="Store root for draft_sim/{scoring}/{season}/slot_{N}.json",
+    ),
+    slots: str = typer.Option(
+        "all",
+        "--slots",
+        help="Comma-separated 1-indexed slots, or 'all' for every roster slot.",
+    ),
+    n_sims: int = typer.Option(500, "--sims"),
+    opponent_noise: float = typer.Option(0.25, "--opponent-noise"),
+    samples: int = typer.Option(2000, "--samples"),
+    lookback: int = typer.Option(3, "--lookback"),
+    decay: float = typer.Option(0.5, "--decay"),
+    expected_games: float = typer.Option(17.0, "--expected-games"),
+    seed: int = typer.Option(0, "--seed"),
+    generator: str = typer.Option("bootstrap", "--generator"),
+    games_model: str = typer.Option("fixed", "--games-model"),
+    level_sd: float = typer.Option(0.0, "--level-sd"),
+    level_mean: float = typer.Option(1.0, "--level-mean"),
+    conditioned_level: bool = typer.Option(
+        True,
+        "--conditioned-level/--no-conditioned-level",
+        help="Default on: calibrated LevelModel path (roadmap 4.1).",
+    ),
+    include_rookies: bool = typer.Option(False, "--include-rookies"),
+    pick_rate_top: int = typer.Option(40, "--pick-rate-top"),
+    availability_top: int = typer.Option(80, "--availability-top"),
+    db: Path = typer.Option(Path("data/ffa.duckdb"), "--db"),
+    raw_dir: Path = typer.Option(Path("data/raw"), "--raw-dir"),
+) -> None:
+    """Write hub-consumable draft-sim snapshots (roadmap 4.5).
+
+    Runs the same Monte Carlo snake draft as ``draft-sim`` for one or more
+    slots and writes ``{out_dir}/{scoring}/{season}/slot_{N}.json``. Defaults
+    to ``--conditioned-level``. The hub reads these files; it never invokes
+    this CLI at request time.
+    """
+    from ffa.draft_export import build_draft_sim_document, write_draft_sim_snapshot
+    from ffa.projections import scoring_slug
+
+    cfg, summary = _load_simulation_summary(
+        league,
+        season,
+        samples,
+        lookback,
+        decay,
+        expected_games,
+        seed,
+        db,
+        raw_dir,
+        generator=generator,
+        games_model=games_model,
+        level_sd=level_sd,
+        level_mean=level_mean,
+        conditioned_level=conditioned_level,
+        include_rookies=include_rookies,
+    )
+    ranked = compute_vor(summary, cfg.roster)
+    slug = scoring_slug(cfg)
+    teams = int(cfg.roster.teams)
+    from ffa.draft import _slot_needs
+
+    rounds = int(sum(_slot_needs(cfg.roster).values()))
+
+    if slots.strip().lower() == "all":
+        slot_list = list(range(1, teams + 1))
+    else:
+        try:
+            slot_list = [int(part.strip()) for part in slots.split(",") if part.strip()]
+        except ValueError:
+            typer.echo(f"Invalid --slots {slots!r}; use 'all' or comma-separated ints.")
+            raise typer.Exit(code=2)
+    if not slot_list:
+        typer.echo("--slots produced an empty list.")
+        raise typer.Exit(code=2)
+    for slot in slot_list:
+        if slot < 1 or slot > teams:
+            typer.echo(f"Slot {slot} out of range for {teams}-team league.")
+            raise typer.Exit(code=2)
+
+    source = {
+        "engine": "ffa",
+        "league": str(league),
+        "generator": generator,
+        "games_model": games_model,
+        "lookback": lookback,
+        "decay": decay,
+        "expected_games": expected_games,
+        "conditioned_level": conditioned_level,
+        "level_sd": level_sd,
+        "level_mean": level_mean,
+        "include_rookies": include_rookies,
+        "seed": seed,
+        "sims": n_sims,
+        "opponent_noise": opponent_noise,
+        "samples": samples,
+    }
+
+    for slot in slot_list:
+        result = simulate_draft(
+            ranked,
+            cfg.roster,
+            user_slot=slot,
+            n_sims=n_sims,
+            opponent_noise=opponent_noise,
+            seed=seed + slot,
+        )
+        document = build_draft_sim_document(
+            result,
+            ranked,
+            scoring=slug,
+            season=season,
+            user_slot=slot,
+            n_sims=n_sims,
+            teams=teams,
+            rounds=rounds,
+            source=source,
+            pick_rate_top=pick_rate_top,
+            availability_top=availability_top,
+        )
+        path = write_draft_sim_snapshot(document, out_dir)
+        typer.echo(
+            f"Wrote slot {slot}: {len(document['pick_rates'])} pick-rates, "
+            f"{len(document['availability'])} availability rows -> {path}"
+        )
 
 
 @app.command("export-player-map")

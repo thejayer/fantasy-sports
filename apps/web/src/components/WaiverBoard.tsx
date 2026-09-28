@@ -104,7 +104,7 @@ export function WaiverBoard({ board }: { board: WaiverBoardData }) {
 
   const lede =
     source === "espn"
-      ? `ESPN free agents / waivers (${rows.length} players, size-capped at sync). Season projection quantiles join through the player map when available; unmapped rows still show % owned.`
+      ? `ESPN free agents from free_agents.json (${rows.length} players, size-capped at sync — see SJ_FREE_AGENT_SIZE). Season projection quantiles join through the player map when available; unmapped rows still show % owned.`
       : `Unrostered season projections ranked by VOR (${rows.length} players). Fallback used because this snapshot has no ESPN free_agents list — re-sync the current season to load the wire.`;
 
   return (

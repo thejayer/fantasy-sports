@@ -20,7 +20,11 @@ describe("player map (roadmap 4.3)", () => {
     expect(byEspn["3139477"]).toBe("00-0033873"); // Mahomes
     expect(byEspn["3117251"]).toBe("00-0033280"); // CMC
     expect(byEspn["4262921"]).toBe("00-0036322"); // Jefferson
-
+    // Synthetic hub roster ids (fixture_overlay) so offline joins aren't blank.
+    expect(byEspn["202600301"]).toBe("00-0033873");
+    expect(doc.mappings.some((m) => (m as { method?: string }).method === "fixture_overlay")).toBe(
+      true,
+    );
     const projections = JSON.parse(
       readFileSync(
         path.resolve(__dirname, "../../../../fixtures/sj/projections/ppr/2025.json"),

@@ -71,6 +71,18 @@ export function scoringSlugFromLeague(
   return "ppr";
 }
 
+/**
+ * True when the league scores fractional receptions (typically 0.5) but the store
+ * only has full-PPR / standard exports — UI should disclose the PPR fallback.
+ */
+export function usesHalfPprScoringFallback(
+  league: Pick<LeagueSnapshot, "sport" | "settings" | "scoring_type">,
+): boolean {
+  if (league.sport !== "football") return false;
+  const rec = receptionPoints(league.settings);
+  return rec != null && rec > 0 && rec < 1;
+}
+
 /** Hub fantasy seasons can lead the NFL calendar; try current then prior. */
 export function projectionSeasonCandidates(leagueSeason: number): number[] {
   if (!Number.isFinite(leagueSeason)) return [];
@@ -130,4 +142,26 @@ export function formatProjectionPoints(
 ): string {
   if (value == null || Number.isNaN(value)) return "—";
   return value.toFixed(digits);
+}
+
+export type ProjectionCoverage = {
+  mapped: number;
+  total: number;
+  rate: number;
+};
+
+/**
+ * How many rows on a board actually joined a projection (roadmap 7.10).
+ *
+ * The players board rendered four columns of em dashes per row when the join
+ * missed, with nothing saying why, so a member could not tell "no projection for
+ * this player" from "this feature is broken" (AUDIT-COMPETITIVE #6). The team
+ * page already disclosed its rate; this lets every board do the same.
+ */
+export function projectionCoverage(
+  players: PlayerWithProjection[],
+): ProjectionCoverage {
+  const total = players.length;
+  const mapped = players.filter((player) => player.projection).length;
+  return { mapped, total, rate: total ? mapped / total : 0 };
 }

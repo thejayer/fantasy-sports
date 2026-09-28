@@ -1,0 +1,106 @@
+import { expect, test } from "@playwright/test";
+
+/**
+ * Portal smoke (roadmap P.7 / P.8 / P.10): home pulse, Watch stage, AI desk, People, Palworld.
+ */
+
+test.describe("portal smoke", () => {
+  test("home CTAs and destinations", async ({ page }) => {
+    await page.goto("/");
+    await expect(
+      page.getByRole("link", { name: /Open fantasy hub/i }).first(),
+    ).toBeVisible();
+    await expect(
+      page.getByRole("heading", { name: /Where to go/i }),
+    ).toBeVisible();
+    await expect(page.getByRole("link", { name: /^Fantasy/i }).first()).toBeVisible();
+    await expect(page.getByRole("link", { name: /People/i }).first()).toBeVisible();
+    await expect(page.getByRole("link", { name: /Fitness/i }).first()).toBeVisible();
+    await expect(page.getByRole("region", { name: /Crew pulse/i })).toBeVisible();
+    const palworld = page.locator(".room-compact").filter({ hasText: "Palworld" });
+    await expect(palworld).toHaveAttribute("href", "/palworld");
+    await expect(palworld.getByText(/^Soon$/i)).toHaveCount(0);
+    await expect(
+      page.getByRole("heading", { name: /Coming up/i }),
+    ).toBeVisible();
+    await expect(
+      page.getByRole("heading", { name: /Meet the crew/i }),
+    ).toBeVisible();
+  });
+
+  test("watch embed and tonight framing", async ({ page }) => {
+    await page.goto("/watch");
+    await expect(page.getByRole("heading", { name: /^Watch$/i })).toBeVisible();
+    await expect(
+      page.locator('iframe[title="Strictly Jayers YouTube playlist"]'),
+    ).toBeVisible();
+    await expect(
+      page.getByRole("heading", { name: /Video playlist/i }),
+    ).toBeVisible();
+    await expect(
+      page.getByRole("link", { name: /Drop a clip in Discord/i }),
+    ).toBeVisible();
+    await expect(
+      page.getByRole("link", { name: /Discord voice/i }).first(),
+    ).toBeVisible();
+  });
+
+  test("ai editor picks desk", async ({ page }) => {
+    await page.goto("/ai");
+    await expect(
+      page.getByRole("heading", { name: "AI News", exact: true }),
+    ).toBeVisible();
+    const picks = page.locator("section").filter({
+      has: page.getByRole("heading", { name: /Must read/i }),
+    });
+    await expect(picks.getByText(/Editor desk/i)).toBeVisible();
+    await expect(
+      picks.getByRole("link", { name: /AMIE tries real-time/i }),
+    ).toBeVisible();
+    await expect(
+      picks.getByRole("link", { name: /Testing ads in ChatGPT/i }),
+    ).toBeVisible();
+    await expect(
+      page.getByRole("heading", { name: /Top stories/i }),
+    ).toBeVisible();
+    await expect(page.locator(".twitter-timeline")).toHaveCount(0);
+    await expect(
+      page.getByRole("link", { name: "Open OpenAI on X" }),
+    ).toHaveAttribute("href", "https://x.com/OpenAI");
+    await expect(
+      page.getByRole("link", { name: "Open Anthropic on X" }),
+    ).toHaveAttribute("href", "https://x.com/AnthropicAI");
+    await expect(
+      page.getByRole("link", { name: "Open Cursor on X" }),
+    ).toHaveAttribute("href", "https://x.com/cursor_ai");
+  });
+
+  test("people directory links to X", async ({ page }) => {
+    await page.goto("/people");
+    await expect(
+      page.getByRole("heading", { name: "People", exact: true }),
+    ).toBeVisible();
+    const elon = page.getByRole("link", { name: "Follow Elon Musk on X" });
+    await expect(elon).toBeVisible();
+    await expect(elon).toHaveAttribute("href", "https://x.com/elonmusk");
+    const jensen = page.getByRole("link", { name: "Follow Jensen Huang on X" });
+    await expect(jensen).toBeVisible();
+    await expect(jensen).toHaveAttribute("href", "https://x.com/JensenHuang");
+    const elonCard = page.locator(".people-card").filter({ hasText: "Elon Musk" });
+    await expect(elonCard.locator("img")).toBeVisible();
+    await expect(page.getByRole("link", { name: /Fitness/i }).first()).toBeVisible();
+  });
+
+  test("palworld room and join details", async ({ page }) => {
+    await page.goto("/palworld");
+    await expect(
+      page.getByRole("heading", { name: "Palworld", exact: true }),
+    ).toBeVisible();
+    await expect(
+      page.getByRole("link", { name: /Open Discord for join details/i }),
+    ).toBeVisible();
+    await expect(page.getByRole("link", { name: /^Watch/i }).first()).toBeVisible();
+    await expect(page.getByRole("link", { name: /AI News/i }).first()).toBeVisible();
+    await expect(page.getByRole("link", { name: /^People/i }).first()).toBeVisible();
+  });
+});

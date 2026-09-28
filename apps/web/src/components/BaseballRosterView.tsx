@@ -1,6 +1,10 @@
 import Link from "next/link";
+import { DroppedPlayersPanel } from "@/components/DroppedPlayersPanel";
 import { EmptyState } from "@/components/EmptyState";
+import { GameLogPanel } from "@/components/GameLogPanel";
+import { KeeperBadge } from "@/components/KeeperBadge";
 import { SeasonSwitcher } from "@/components/SeasonSwitcher";
+import { ViewerBadge } from "@/components/ViewerBadge";
 import type { LeagueSnapshot, Player } from "@/lib/data";
 import {
   formatStat,
@@ -10,6 +14,10 @@ import {
   stat,
   winPctLabel,
 } from "@/lib/baseball";
+import {
+  isKeeperPlayer,
+  keeperPlayerIds,
+} from "@/lib/draft-results";
 import { injuryTone } from "@/lib/league";
 
 function StatusDot({ player }: { player: Player }) {
@@ -22,14 +30,18 @@ export function BaseballRosterView({
   league,
   team,
   seasons,
+  isViewerTeam = false,
 }: {
   league: LeagueSnapshot;
   team: LeagueSnapshot["teams"][number];
   seasons: number[];
+  /** Signed-in member's own franchise (roadmap 7.1). */
+  isViewerTeam?: boolean;
 }) {
   const roster = sortRoster(team.roster);
   const batters = roster.filter((player) => !isPitcher(player));
   const pitchers = roster.filter((player) => isPitcher(player));
+  const keepers = keeperPlayerIds(league.draft, team.team_id);
 
   return (
     <main className="section league-view sport-baseball">
@@ -39,7 +51,10 @@ export function BaseballRosterView({
         </Link>
         <span className="league-meta">season {league.season}</span>
       </div>
-      <h2>{team.name}</h2>
+      <h2>
+        {team.name}
+        {isViewerTeam ? <ViewerBadge label="Your team" /> : null}
+      </h2>
       <p className="lede">
         {team.owners.join(", ") || "Owner TBD"} · {recordLabel(team)} (
         {winPctLabel(team)}) · {team.roster.length} rostered
@@ -53,6 +68,10 @@ export function BaseballRosterView({
         }
       />
 
+      <GameLogPanel league={league} team={team} />
+
+      <DroppedPlayersPanel league={league} team={team} />
+
       {!team.roster.length ? (
         <EmptyState title="No roster players in this snapshot">
           Rosters appear after sync when ESPN returns lineup data for this
@@ -60,8 +79,18 @@ export function BaseballRosterView({
         </EmptyState>
       ) : (
         <>
-          <RosterGroup title="Batters" players={batters} kind="batter" />
-          <RosterGroup title="Pitchers" players={pitchers} kind="pitcher" />
+          <RosterGroup
+            title="Batters"
+            players={batters}
+            kind="batter"
+            keepers={keepers}
+          />
+          <RosterGroup
+            title="Pitchers"
+            players={pitchers}
+            kind="pitcher"
+            keepers={keepers}
+          />
         </>
       )}
     </main>
@@ -72,10 +101,12 @@ function RosterGroup({
   title,
   players,
   kind,
+  keepers,
 }: {
   title: string;
   players: Player[];
   kind: "batter" | "pitcher";
+  keepers: Set<string>;
 }) {
   if (!players.length) {
     return (
@@ -112,7 +143,10 @@ function RosterGroup({
                   <StatusDot player={player} />
                 </td>
                 <td data-label="Slot">{player.slot ?? "—"}</td>
-                <td data-label="Player">{player.name}</td>
+                <td data-label="Player">
+                  {player.name}
+                  {isKeeperPlayer(player.id, keepers) ? <KeeperBadge /> : null}
+                </td>
                 <td data-label="Pos">{player.position ?? "—"}</td>
                 <td data-label="Pro">{player.pro_team ?? "—"}</td>
                 {kind === "batter" ? (

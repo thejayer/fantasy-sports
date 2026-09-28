@@ -3,7 +3,13 @@ import path from "path";
 import { unstable_cache } from "next/cache";
 import { cache } from "react";
 
+import type {
+  BaseballAnalysisSnapshot,
+  PointsTimeseriesSnapshot,
+  SlotPointsSnapshot,
+} from "@/lib/baseball-analysis";
 import { SJ_SNAPSHOTS_CACHE_TAG } from "@/lib/cache-tags";
+import { dataRoots } from "@/lib/hub-paths";
 import { requireSession } from "@/lib/session";
 import {
   CorruptSnapshotError,
@@ -13,6 +19,7 @@ import {
 
 export { CorruptSnapshotError } from "@/lib/snapshot-json";
 export { SJ_SNAPSHOTS_CACHE_TAG } from "@/lib/cache-tags";
+export { dataRoots, hubDataRoot, snapshotDataRoots } from "@/lib/hub-paths";
 
 export type SeasonStats = {
   AB?: number;
@@ -34,6 +41,26 @@ export type SeasonStats = {
   WHIP?: number;
   OUTS?: number;
   IP?: number;
+  /** Games started (pitchers) — season GS caps / usage (roadmap 8.2). */
+  GS?: number;
+  /** Synthetic OWGR rank on golf roster rows (roadmap 6.4b). */
+  OWGR?: number;
+  /** Hockey counting stats from espn-api ``Total YYYY`` / STATS_MAP. */
+  G?: number;
+  A?: number;
+  PPP?: number;
+  PPG?: number;
+  PPA?: number;
+  SOG?: number;
+  HIT?: number;
+  BLK?: number;
+  PIM?: number;
+  SO?: number;
+  GA?: number;
+  SA?: number;
+  GAA?: number;
+  "SV%"?: number;
+  "+/-"?: number;
 };
 
 export type Player = {
@@ -53,6 +80,7 @@ export type Player = {
   avg_points: number | null;
   fantasy_team?: string | null;
   season_stats?: SeasonStats;
+  trailing_stats?: Record<string, SeasonStats>;
   role?: "batter" | "pitcher" | string;
 };
 
@@ -74,6 +102,45 @@ export type ScoringFormatRow = {
   points?: number | null;
 };
 
+export type LeagueCategoryRow = {
+  id: number | string | null;
+  abbr: string | null;
+  label: string | null;
+  points?: number | null;
+};
+
+/** Nested golf knobs under ``settings.golf`` (roadmap 6.1 / 8.3). */
+export type GolfLeagueSettings = {
+  draft?: {
+    style?: string;
+    keepers?: boolean;
+    keeper_slots?: number;
+    budget?: number;
+  };
+  roster?: { starters?: number; bench?: number };
+  captain_tiebreaker?: boolean;
+  missed_cut?: { mode?: string };
+  starts?: { max_per_segment?: number | null };
+  missed_deadline?: { auto_pick?: boolean };
+  schedule?: {
+    source?: string;
+    include?: string[];
+    exclude?: string[];
+  };
+  multipliers?: {
+    regular?: number;
+    signature?: number;
+    major?: number;
+  };
+  scoring?: {
+    grain?: string;
+    player_points?: string;
+    thu_fri_count?: number;
+    sat_sun_count?: number;
+    drop_worst_golfer?: boolean;
+  };
+};
+
 export type LeagueSettings = {
   scoring_type?: string | null;
   reg_season_count?: number | null;
@@ -92,6 +159,21 @@ export type LeagueSettings = {
   division_map?: Record<string, string>;
   position_slot_counts?: Record<string, number | null>;
   scoring_format?: ScoringFormatRow[];
+  categories?: LeagueCategoryRow[];
+  matchup_periods?: Record<string, number[]>;
+  /** Optional season team IP ceiling (baseball usage caps). */
+  season_ip_max?: number;
+  /** Yahoo-style minimum weekly IP when period lines exist. */
+  min_weekly_ip?: number;
+  /** Season GS ceiling from ESPN lineupSlotStatLimits (P/SP/RP). */
+  season_gs_max?: number;
+  lineup_slot_stat_limits?: Array<{
+    slot: string;
+    stat: string;
+    limit: number;
+  }>;
+  /** Present on hub-native golf leagues (roadmap 6.4a). */
+  golf?: GolfLeagueSettings;
 };
 
 export type TransactionAction = {
@@ -127,6 +209,201 @@ export type ProjectionSnapshot = {
   players: ProjectionPlayer[];
 };
 
+/** Typical-week posterior from `ffa export-weekly-projections` (grain=typical_week). */
+export type WeeklyProjectionSnapshot = ProjectionSnapshot & {
+  grain: "typical_week" | string;
+};
+
+/** Offline playoff-odds MC from `ffa export-playoff-odds`. */
+export type PlayoffOddsTeam = {
+  team_id: number;
+  name: string | null;
+  standing_now: number | null;
+  wins_now: number | null;
+  losses_now: number | null;
+  ties_now?: number | null;
+  make_playoffs: number | null;
+  /** Prior export make% when nightly rewrite attached week-over-week Δ. */
+  make_playoffs_prior?: number | null;
+  /** make_playoffs − make_playoffs_prior. */
+  delta_make?: number | null;
+  seed_probs: Record<string, number | null>;
+  avg_wins: number | null;
+  mapped_roster: number | null;
+  rostered: number | null;
+};
+
+export type PlayoffOddsSnapshot = {
+  schema_version: number;
+  generated_at: string;
+  league_id: string;
+  espn_league_id?: number | null;
+  season: number;
+  scoring: string;
+  n_sims: number;
+  as_of_week?: number | null;
+  reg_season_count?: number | null;
+  playoff_team_count?: number | null;
+  periods_simulated?: number[];
+  prior_generated_at?: string | null;
+  assumptions?: Record<string, unknown>;
+  source?: Record<string, unknown>;
+  teams: PlayoffOddsTeam[];
+};
+
+/** One player line in a football week box score (roadmap 8.1). */
+export type BoxScorePlayer = {
+  id: number | string | null;
+  name: string | null;
+  position: string | null;
+  slot: string | null;
+  pro_team?: string | null;
+  pro_opponent?: string | null;
+  on_bye_week?: boolean;
+  /** League-applied fantasy points (ESPN appliedTotal) — display this. */
+  points: number | null;
+  projected_points?: number | null;
+  injury_status?: string | null;
+  game_played?: number | null;
+  /**
+   * Named counting stats for the LM scoring sandbox (roadmap 8.4).
+   * Never display these as the score — ``points`` stays ESPN-applied.
+   */
+  stats?: Record<string, number | null>;
+};
+
+/** One category cell on a baseball H2H category box (roadmap 8.2). */
+export type CategoryStatCell = {
+  value: number | null;
+  result?: string | null;
+};
+
+export type BoxScoreMatchup = {
+  home_team_id: number | null;
+  away_team_id: number | null;
+  home_score?: number | null;
+  away_score?: number | null;
+  home_projected?: number | null;
+  away_projected?: number | null;
+  is_playoff?: boolean;
+  matchup_type?: string | null;
+  /** Football player lines — absent on baseball category boxes. */
+  home_lineup?: BoxScorePlayer[];
+  away_lineup?: BoxScorePlayer[];
+  /** Baseball H2H category matrix (ESPN period box). */
+  home_stats?: Record<string, CategoryStatCell>;
+  away_stats?: Record<string, CategoryStatCell>;
+  home_wins?: number | null;
+  home_losses?: number | null;
+  home_ties?: number | null;
+  away_wins?: number | null;
+  away_losses?: number | null;
+  away_ties?: number | null;
+};
+
+/** Period pitcher IP line on baseball ``weeks/{N}.json`` (roadmap 8.2 leftovers). */
+export type PitcherPeriodIp = {
+  player_id: number | string | null;
+  name: string | null;
+  team_id: number | null;
+  outs?: number | null;
+  ip?: number | null;
+};
+
+/** Side concern ``weeks/{N}.json`` — never loaded by getLeagueSnapshot. */
+export type WeekBoxScoreSnapshot = {
+  schema_version: number;
+  league_id: string;
+  season: number;
+  week: number;
+  sport: string;
+  period_label?: string;
+  synced_at?: string;
+  matchups: BoxScoreMatchup[];
+  /** Baseball only — period pitcher outs/IP when ESPN roster lines exist. */
+  pitcher_ip?: PitcherPeriodIp[];
+};
+
+export type ProbableStarter = {
+  id: number | string | null;
+  name: string | null;
+};
+
+export type ProScheduleGame = {
+  away_pro_team: string | null;
+  away_pro_team_id?: number | string | null;
+  home_pro_team: string | null;
+  home_pro_team_id?: number | string | null;
+  scoring_period_id: number | null;
+  start_time: string;
+  probable_away?: ProbableStarter | null;
+  probable_home?: ProbableStarter | null;
+};
+
+/** Side concern ``pro_schedule.json`` for baseball tools (roadmap 8.2). */
+export type ProScheduleSnapshot = {
+  schema_version?: number;
+  league_id: string;
+  season: number;
+  sport: "baseball" | string;
+  synced_at?: string;
+  matchup_periods?: Record<string, number[]>;
+  games: ProScheduleGame[];
+};
+
+export type {
+  BaseballAnalysisSnapshot,
+  PointsTimeseriesSnapshot,
+  SlotPointsSnapshot,
+};
+
+/** Compact FP draws for hub trade Δ (`ffa export-playoff-odds --write-samples`). */
+export type PlayoffOddsSamples = {
+  schema_version: number;
+  generated_at: string;
+  league_id: string;
+  season: number;
+  scoring: string;
+  n_sims_default: number;
+  n_samples: number;
+  seed: number;
+  points_by_espn: Record<string, number[]>;
+};
+
+/** One row from `ffa export-draft-sim` pick_rates (roadmap 4.5). */
+export type DraftSimPickRate = {
+  player_id: string;
+  player_name: string | null;
+  position: string | null;
+  pick_rate: number | null;
+  avg_round: number | null;
+  avg_value: number | null;
+  vor: number | null;
+};
+
+/** Availability row: round_N = P(still on board at user's Nth pick). */
+export type DraftSimAvailability = {
+  player_id: string;
+  player_name: string | null;
+  position: string | null;
+  vor: number | null;
+  [roundKey: string]: string | number | null | undefined;
+};
+
+export type DraftSimSnapshot = {
+  schema_version: number;
+  generated_at: string;
+  scoring: string;
+  season: number;
+  user_slot: number;
+  n_sims: number;
+  teams: number;
+  rounds: number;
+  source?: Record<string, unknown>;
+  pick_rates: DraftSimPickRate[];
+  availability: DraftSimAvailability[];
+};
+
 export type Transaction = {
   date: string | number | null;
   actions: TransactionAction[];
@@ -144,7 +421,13 @@ export type Team = {
   win_pct?: number | null;
   points_for: number | null;
   points_against: number | null;
+  /** Regular-season / playoff seed rank (ESPN playoffSeed). */
   standing: number | null;
+  /**
+   * Post-season ladder rank (ESPN rankCalculatedFinal). `1` = playoff champion
+   * after the season ends; null/absent mid-season or on older snapshots.
+   */
+  final_standing?: number | null;
   division: string;
   schedule?: number[];
   scores?: Array<number | null>;
@@ -152,10 +435,107 @@ export type Team = {
   roster: Player[];
 };
 
+/** Golf weekly lineups concern (roadmap 6.4c). */
+export type GolfLineupsSnapshot = {
+  period_label?: string;
+  current_event_id: string | null;
+  events: Array<{
+    event_id: string;
+    name: string;
+    week: number;
+    starts_at: string;
+    multiplier_tier: string;
+    segment_id?: string | null;
+    through_round?: number | null;
+    tee_times?: Record<string, string>;
+  }>;
+  teams: Record<
+    string,
+    Record<
+      string,
+      {
+        starters: number[];
+        captain: number;
+        alt1?: number | null;
+        alt2?: number | null;
+        saved_at: string;
+        locked_at?: string | null;
+        locks?: Record<string, string>;
+        source?: "manual" | "auto_pick" | "seed" | string;
+      }
+    >
+  >;
+};
+
+/** Golf EOD scoreboard concern (roadmap 6.4d). */
+export type GolfScoreboardRound = {
+  round: number;
+  label: string;
+  points: number;
+  counted_player_ids: number[];
+  dropped_player_ids: number[];
+  slots: Array<{
+    player_id: number;
+    starter_id: number;
+    source: string;
+    status: string;
+    to_par: number | null;
+    points: number;
+  }>;
+};
+
+export type GolfScoreboardTeamWeek = {
+  starters: number[];
+  captain: number;
+  alt1?: number | null;
+  alt2?: number | null;
+  week_raw: number;
+  week_total: number;
+  /** Through-round + remaining-round average heuristic (roadmap 8.3). */
+  week_projected?: number;
+  captain_week: number;
+  multiplier: number;
+  through_round?: number;
+  status?: "final" | "in_progress" | string;
+  dropped_worst_player_id?: number | null;
+  by_round: Record<string, GolfScoreboardRound>;
+};
+
+export type GolfScoreboardEvent = {
+  event_id: string;
+  name?: string | null;
+  week?: number | null;
+  segment_id?: string | null;
+  multiplier_tier: string;
+  multiplier: number;
+  through_round?: number;
+  status?: "final" | "in_progress" | string;
+  scored_at: string;
+  teams: Record<string, GolfScoreboardTeamWeek>;
+  pairings: Array<{
+    home_team_id: number;
+    away_team_id: number;
+    home_name?: string | null;
+    away_name?: string | null;
+    home_total: number;
+    away_total: number;
+    home_captain_week?: number;
+    away_captain_week?: number;
+    outcome: "W" | "L" | "T" | string;
+  }>;
+};
+
+export type GolfScoreboardSnapshot = {
+  period_label?: string;
+  current_event_id: string | null;
+  events: GolfScoreboardEvent[];
+};
+
 export type LeagueSnapshot = {
   league_id: string;
   short_name?: string;
-  espn_league_id: number;
+  /** Null for hub-native sports (golf). */
+  espn_league_id: number | null;
   sport: string;
   format: string;
   season: number;
@@ -171,13 +551,17 @@ export type LeagueSnapshot = {
   transactions?: Transaction[];
   /** ESPN FREEAGENT + WAIVERS pool (size-capped at sync); empty before 2019. */
   free_agents?: Player[];
+  /** Present on hub-native golf leagues after 6.4c. */
+  lineups?: GolfLineupsSnapshot;
+  /** Present on hub-native golf leagues after 6.4d. */
+  scoreboard?: GolfScoreboardSnapshot;
   teams: Team[];
   players: Player[];
 };
 
 export type LeagueIndexItem = {
   league_id: string;
-  espn_league_id: number;
+  espn_league_id: number | null;
   name: string;
   sport: string;
   format: string;
@@ -199,6 +583,7 @@ export type HistoryTeam = {
   points_for: number | null;
   points_against: number | null;
   standing: number | null;
+  final_standing?: number | null;
   schedule: number[];
   scores: Array<number | null>;
   outcomes: string[];
@@ -222,7 +607,7 @@ export type LeagueHistoryArchive = {
 type SeasonManifest = {
   schema_version: number;
   league_id: string;
-  espn_league_id: number;
+  espn_league_id: number | null;
   sport: string;
   format: string;
   season: number;
@@ -274,19 +659,13 @@ type FreeAgentsFile = {
   free_agents: Player[];
 };
 
-function dataRoots(): string[] {
-  const roots = [
-    process.env.SJ_DATA_DIR,
-    path.resolve(process.cwd(), "../../data/sj"),
-    path.resolve(process.cwd(), "../../fixtures/sj"),
-    path.resolve(process.cwd(), "fixtures/sj"),
-  ].filter((value): value is string => Boolean(value));
-  return [...new Set(roots)];
-}
+type LineupsFile = GolfLineupsSnapshot;
+type ScoreboardFile = GolfScoreboardSnapshot;
 
 /**
- * Snapshots live on a read-only Cloud Storage mount refreshed by the sj-sync
- * job. Reads go through Next's Data Cache (`unstable_cache`) with TTL from
+ * Snapshots live on a Cloud Storage mount refreshed by the sj-sync job.
+ * Hub-native golf uses `SJ_HUB_DIR` (prod: same path as `SJ_DATA_DIR`).
+ * Reads go through Next's Data Cache (`unstable_cache`) with TTL from
  * `SJ_CACHE_TTL_MS` (default 60s) and tag `sj-snapshots` for explicit
  * revalidation via `POST /api/revalidate` after sync.
  */
@@ -344,6 +723,8 @@ function assembleFromParts(
   settings: SettingsFile | null,
   transactions: TransactionsFile | null,
   freeAgents: FreeAgentsFile | null,
+  lineups: LineupsFile | null,
+  scoreboard: ScoreboardFile | null,
 ): LeagueSnapshot {
   const matchupById = matchups?.teams ?? {};
   const rosterById = rosters.teams ?? {};
@@ -376,6 +757,8 @@ function assembleFromParts(
     draft: draft?.draft ?? [],
     transactions: transactions?.transactions ?? [],
     free_agents: freeAgents?.free_agents ?? [],
+    lineups: lineups ?? undefined,
+    scoreboard: scoreboard ?? undefined,
     teams,
     players: rosters.players ?? [],
   };
@@ -425,6 +808,14 @@ async function loadSnapshotFromRoot(
         path.join(directory, manifest.files.free_agents),
       )
     : null;
+  const lineups = manifest.files.lineups
+    ? await readJson<LineupsFile>(path.join(directory, manifest.files.lineups))
+    : null;
+  const scoreboard = manifest.files.scoreboard
+    ? await readJson<ScoreboardFile>(
+        path.join(directory, manifest.files.scoreboard),
+      )
+    : null;
   return assembleFromParts(
     manifest,
     standings,
@@ -434,6 +825,8 @@ async function loadSnapshotFromRoot(
     settings,
     transactions,
     freeAgents,
+    lineups,
+    scoreboard,
   );
 }
 
@@ -444,13 +837,22 @@ async function loadSnapshotFromRoot(
  */
 export const getLeagueIndex = cache(async (): Promise<LeagueIndexItem[]> => {
   await requireSession();
-  for (const root of dataRoots()) {
-    const index = await readJson<{ leagues: LeagueIndexItem[] }>(path.join(root, "index.json"));
-    if (index?.leagues?.length) {
-      return index.leagues;
+  // Merge every root's index. Later roots win on (league_id, season) so the
+  // hub-native root (listed first in dataRoots) is overlaid by ESPN only when
+  // keys collide — we reverse-merge so hub/golf wins collisions.
+  const byKey = new Map<string, LeagueIndexItem>();
+  for (const root of [...dataRoots()].reverse()) {
+    const index = await readJson<{ leagues: LeagueIndexItem[] }>(
+      path.join(root, "index.json"),
+    );
+    for (const row of index?.leagues ?? []) {
+      byKey.set(`${row.league_id}:${row.season}`, row);
     }
   }
-  return [];
+  return [...byKey.values()].sort(
+    (a, b) =>
+      a.league_id.localeCompare(b.league_id) || b.season - a.season,
+  );
 });
 
 export async function getLatestLeagues(): Promise<LeagueIndexItem[]> {
@@ -494,6 +896,7 @@ async function loadHistorySliceFromRoot(
         points_for: team.points_for,
         points_against: team.points_against,
         standing: team.standing,
+        final_standing: team.final_standing ?? null,
         schedule: team.schedule ?? [],
         scores: team.scores ?? [],
         outcomes: (team.outcomes ?? []).map(String),
@@ -528,6 +931,7 @@ async function loadHistorySliceFromRoot(
         points_for: team.points_for,
         points_against: team.points_against,
         standing: team.standing,
+        final_standing: team.final_standing ?? null,
         schedule: m.schedule ?? [],
         scores: m.scores ?? [],
         outcomes: (m.outcomes ?? []).map(String),
@@ -615,6 +1019,329 @@ export const getProjectionSnapshot = cache(
   },
 );
 
+/**
+ * Read a typical-week posterior under
+ * ``weekly_projections/{scoring}/{season}.json``. Session-gated; hub never
+ * invokes ``ffa``. Not schedule-adjusted — use for start/sit, not playoff odds.
+ */
+export const getWeeklyProjectionSnapshot = cache(
+  async (
+    scoring: string,
+    season: number,
+  ): Promise<WeeklyProjectionSnapshot | null> => {
+    await requireSession();
+    const slug = scoring.trim().toLowerCase();
+    const relative = path.join("weekly_projections", slug, `${season}.json`);
+    for (const root of dataRoots()) {
+      const doc = await readJson<WeeklyProjectionSnapshot>(
+        path.join(root, relative),
+      );
+      if (
+        doc?.players?.length &&
+        doc.season === season &&
+        doc.grain === "typical_week"
+      ) {
+        return doc;
+      }
+    }
+    return null;
+  },
+);
+
+/**
+ * Read playoff-odds MC under ``playoff_odds/{league_id}/{season}.json``.
+ * Session-gated; produced offline by ``ffa export-playoff-odds``.
+ */
+export const getPlayoffOddsSnapshot = cache(
+  async (
+    leagueId: string,
+    season: number,
+  ): Promise<PlayoffOddsSnapshot | null> => {
+    await requireSession();
+    const relative = path.join("playoff_odds", leagueId, `${season}.json`);
+    for (const root of dataRoots()) {
+      const doc = await readJson<PlayoffOddsSnapshot>(path.join(root, relative));
+      if (doc?.teams?.length && doc.season === season) {
+        return doc;
+      }
+    }
+    return null;
+  },
+);
+
+/**
+ * Resolve the on-disk directory that holds ``weeks/`` for a league-season.
+ * v2: ``{league}/{season}/`` beside manifest; v1 fixtures: ``{league}/{season}/``
+ * beside the monolith ``{league}/{season}.json``.
+ */
+function weekBoxScoreDir(indexPath: string): string {
+  if (
+    indexPath.endsWith("/manifest.json") ||
+    indexPath.endsWith("manifest.json")
+  ) {
+    return path.dirname(indexPath);
+  }
+  if (indexPath.endsWith(".json")) {
+    // football-main/2026.json → football-main/2026/
+    return indexPath.slice(0, -".json".length);
+  }
+  return indexPath;
+}
+
+/**
+ * Football/baseball week box scores under ``{league}/{season}/weeks/{N}.json``.
+ * Session-gated; never called from standings/roster/history paths.
+ */
+export const getWeekBoxScore = cache(
+  async (
+    leagueId: string,
+    season: number,
+    week: number,
+  ): Promise<WeekBoxScoreSnapshot | null> => {
+    await requireSession();
+    if (!Number.isInteger(week) || week < 1) return null;
+    const index = await getLeagueIndex();
+    const match = index.find(
+      (item) => item.league_id === leagueId && item.season === season,
+    );
+    if (!match) return null;
+
+    for (const root of dataRoots()) {
+      const dir = weekBoxScoreDir(match.path);
+      const relative = path.join(dir, "weeks", `${week}.json`);
+      const doc = await readJson<WeekBoxScoreSnapshot>(
+        path.join(root, relative),
+      );
+      if (
+        Array.isArray(doc?.matchups) &&
+        doc.week === week &&
+        doc.season === season &&
+        (doc.sport === "football" || doc.sport === "baseball")
+      ) {
+        return doc;
+      }
+    }
+    return null;
+  },
+);
+
+/**
+ * Baseball pro schedule sidecar under ``{league}/{season}/pro_schedule.json``.
+ * Session-gated like week box scores; only loaded by baseball tools.
+ */
+export const getProSchedule = cache(
+  async (
+    leagueId: string,
+    season: number,
+  ): Promise<ProScheduleSnapshot | null> => {
+    await requireSession();
+    const index = await getLeagueIndex();
+    const match = index.find(
+      (item) => item.league_id === leagueId && item.season === season,
+    );
+    if (!match) return null;
+
+    for (const root of dataRoots()) {
+      const dir = weekBoxScoreDir(match.path);
+      const relative = path.join(dir, "pro_schedule.json");
+      const doc = await readJson<ProScheduleSnapshot>(path.join(root, relative));
+      if (
+        doc?.league_id === leagueId &&
+        doc.season === season &&
+        doc.sport === "baseball" &&
+        Array.isArray(doc.games)
+      ) {
+        return doc;
+      }
+    }
+    return null;
+  },
+);
+
+/**
+ * Season-points analysis under ``{league}/{season}/analysis/``.
+ * Side concern — never assembled into getLeagueSnapshot. Session-gated.
+ * Baseball and hockey Season Points both write the same sidecar names.
+ */
+export const getBaseballAnalysis = cache(
+  async (
+    leagueId: string,
+    season: number,
+  ): Promise<BaseballAnalysisSnapshot> => {
+    await requireSession();
+    const empty: BaseballAnalysisSnapshot = {
+      slotPoints: null,
+      timeseries: null,
+    };
+    const index = await getLeagueIndex();
+    const match = index.find(
+      (item) => item.league_id === leagueId && item.season === season,
+    );
+    if (!match) return empty;
+
+    let slotPoints: SlotPointsSnapshot | null = null;
+    let timeseries: PointsTimeseriesSnapshot | null = null;
+    for (const root of dataRoots()) {
+      const dir = weekBoxScoreDir(match.path);
+      if (!slotPoints) {
+        const doc = await readJson<SlotPointsSnapshot>(
+          path.join(root, dir, "analysis", "slot_points.json"),
+        );
+        if (
+          doc?.league_id === leagueId &&
+          doc.season === season &&
+          (doc.sport === "baseball" || doc.sport === "hockey") &&
+          Array.isArray(doc.teams)
+        ) {
+          slotPoints = doc;
+        }
+      }
+      if (!timeseries) {
+        const doc = await readJson<PointsTimeseriesSnapshot>(
+          path.join(root, dir, "analysis", "points_timeseries.json"),
+        );
+        if (
+          doc?.league_id === leagueId &&
+          doc.season === season &&
+          (doc.sport === "baseball" || doc.sport === "hockey") &&
+          Array.isArray(doc.teams)
+        ) {
+          timeseries = doc;
+        }
+      }
+      if (slotPoints && timeseries) break;
+    }
+    return { slotPoints, timeseries };
+  },
+);
+
+/**
+ * Week numbers that have an on-disk ``weeks/{N}.json`` for this league-season.
+ * Union across data roots (like ``listDraftSimSlots``). Session-gated.
+ * Player game logs list these then call ``getWeekBoxScore`` per week.
+ */
+export const listWeekBoxScoreWeeks = cache(
+  async (leagueId: string, season: number): Promise<number[]> => {
+    await requireSession();
+    const index = await getLeagueIndex();
+    const match = index.find(
+      (item) => item.league_id === leagueId && item.season === season,
+    );
+    if (!match) return [];
+
+    const found = new Set<number>();
+    const dirRel = path.join(weekBoxScoreDir(match.path), "weeks");
+    for (const root of dataRoots()) {
+      const dir = path.join(root, dirRel);
+      let entries: string[];
+      try {
+        entries = await fs.readdir(dir);
+      } catch (err) {
+        if (isNotFoundFsError(err)) continue;
+        throw err;
+      }
+      for (const name of entries) {
+        const m = /^(\d+)\.json$/.exec(name);
+        if (!m) continue;
+        const week = Number(m[1]);
+        if (Number.isInteger(week) && week >= 1) found.add(week);
+      }
+    }
+    return [...found].sort((a, b) => a - b);
+  },
+);
+
+/**
+ * Read playoff FP samples under ``playoff_odds/{league_id}/{season}.samples.json``
+ * for Trade Desk Δ make-playoffs (roadmap 7.8).
+ */
+export const getPlayoffOddsSamples = cache(
+  async (
+    leagueId: string,
+    season: number,
+  ): Promise<PlayoffOddsSamples | null> => {
+    await requireSession();
+    const relative = path.join(
+      "playoff_odds",
+      leagueId,
+      `${season}.samples.json`,
+    );
+    for (const root of dataRoots()) {
+      const doc = await readJson<PlayoffOddsSamples>(path.join(root, relative));
+      if (
+        doc?.points_by_espn &&
+        doc.season === season &&
+        Object.keys(doc.points_by_espn).length > 0
+      ) {
+        return doc;
+      }
+    }
+    return null;
+  },
+);
+
+/**
+ * Read an ffa draft-sim snapshot under
+ * ``draft_sim/{scoring}/{season}/slot_{N}.json`` (roadmap 4.5).
+ */
+export const getDraftSimSnapshot = cache(
+  async (
+    scoring: string,
+    season: number,
+    userSlot: number,
+  ): Promise<DraftSimSnapshot | null> => {
+    await requireSession();
+    if (!Number.isFinite(userSlot) || userSlot < 1) return null;
+    const slug = scoring.trim().toLowerCase();
+    const relative = path.join(
+      "draft_sim",
+      slug,
+      String(season),
+      `slot_${Math.trunc(userSlot)}.json`,
+    );
+    for (const root of dataRoots()) {
+      const doc = await readJson<DraftSimSnapshot>(path.join(root, relative));
+      if (
+        doc?.pick_rates &&
+        doc.season === season &&
+        doc.user_slot === Math.trunc(userSlot)
+      ) {
+        return doc;
+      }
+    }
+    return null;
+  },
+);
+
+/**
+ * List draft-sim slots that exist on disk for ``draft_sim/{scoring}/{season}/``.
+ * Hub UI should only offer these — fixtures often ship a subset (e.g. 1,6,7,12).
+ */
+export const listDraftSimSlots = cache(
+  async (scoring: string, season: number): Promise<number[]> => {
+    await requireSession();
+    const slug = scoring.trim().toLowerCase();
+    const found = new Set<number>();
+    for (const root of dataRoots()) {
+      const dir = path.join(root, "draft_sim", slug, String(season));
+      let entries: string[];
+      try {
+        entries = await fs.readdir(dir);
+      } catch (err) {
+        if (isNotFoundFsError(err)) continue;
+        throw err;
+      }
+      for (const name of entries) {
+        const match = /^slot_(\d+)\.json$/.exec(name);
+        if (!match) continue;
+        const slot = Number(match[1]);
+        if (Number.isFinite(slot) && slot >= 1) found.add(Math.trunc(slot));
+      }
+    }
+    return [...found].sort((a, b) => a - b);
+  },
+);
+
 /** One ESPN ↔ nflverse row from `ffa export-player-map` (roadmap 4.3). */
 export type PlayerMapEntry = {
   espn_id: string;
@@ -665,8 +1392,10 @@ export const getPlayerMap = cache(
 );
 
 /**
- * Load one team without pulling matchups/draft/transactions when the season is
- * on the v2 layout — the point of the schema split (AUDIT #16).
+ * Load one team without pulling draft/free-agents/the full player board when
+ * the season is on the v2 layout — the point of the schema split (AUDIT #16).
+ * Matchups (roadmap 7.4) and transactions (manager drops) are small concerns
+ * and are read here so the team page can show the season.
  */
 export async function getTeam(
   leagueId: string,
@@ -729,14 +1458,40 @@ async function loadTeamSelective(
   if (!standing) {
     return null;
   }
+  // A team page with no results on it is the one thing a team page is for
+  // (roadmap 7.4). matchups.json is the smallest concern in the split — no
+  // rosters, no draft — so read it here rather than leaving
+  // schedule/scores/outcomes empty as the original 2.2 fast path did.
+  const matchups = manifest.files.matchups
+    ? await readJson<MatchupsFile>(path.join(directory, manifest.files.matchups))
+    : null;
+  const transactions = manifest.files.transactions
+    ? await readJson<TransactionsFile>(
+        path.join(directory, manifest.files.transactions),
+      )
+    : null;
+  const mine = matchups?.teams?.[key] ?? {};
   const team: Team = {
     ...standing,
-    schedule: [],
-    scores: [],
-    outcomes: [],
+    schedule: mine.schedule ?? [],
+    scores: mine.scores ?? [],
+    outcomes: mine.outcomes ?? [],
     roster: rosters.teams?.[key] ?? [],
   };
-  // Minimal league façade for the team page header — no matchups/draft loaded.
+  // Opponent names for the game log come from standings, which is already
+  // loaded; their rosters are not, so they carry schedule/score arrays only.
+  const opponents: Team[] = (standings.teams ?? [])
+    .filter((item) => item.team_id !== teamId)
+    .map((item) => {
+      const other = matchups?.teams?.[String(item.team_id)] ?? {};
+      return {
+        ...item,
+        schedule: other.schedule ?? [],
+        scores: other.scores ?? [],
+        outcomes: other.outcomes ?? [],
+        roster: [],
+      };
+    });
   const league: LeagueSnapshot = {
     league_id: manifest.league_id,
     short_name: manifest.short_name,
@@ -748,11 +1503,12 @@ async function loadTeamSelective(
     scoring_type: standings.scoring_type,
     team_count: manifest.team_count,
     current_week: standings.current_week,
-    period_label: standings.period_label,
+    period_label: standings.period_label ?? matchups?.period_label,
     synced_at: manifest.synced_at,
     schema_version: manifest.schema_version,
     draft: [],
-    teams: [team],
+    transactions: transactions?.transactions ?? [],
+    teams: [team, ...opponents],
     players: [],
   };
   return { league, team };

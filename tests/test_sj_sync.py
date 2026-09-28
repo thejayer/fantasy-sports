@@ -20,10 +20,13 @@ from sj.registry import LeagueSpec, load_registry
 from sj.sample import sample_league
 from sj.sync import (
     ACTIVITY_MIN_SEASON,
+    DEFAULT_ACTIVITY_MAX_PAGES,
     FREE_AGENT_MIN_SEASON,
+    MAX_ACTIVITY_MAX_PAGES,
     SyncAllFailed,
     SyncFailure,
     SyncResult,
+    activity_max_pages,
     classify_sync_error,
     espn_call,
     espn_credentials,
@@ -165,6 +168,7 @@ def test_open_espn_league_requires_credentials(football_spec, monkeypatch):
         ("football", "espn_api.football.League"),
         ("baseball", "espn_api.baseball.League"),
         ("basketball", "espn_api.basketball.League"),
+        ("hockey", "espn_api.hockey.League"),
     ],
 )
 def test_open_espn_league_dispatches_by_sport(monkeypatch, sport, module_path):
@@ -185,6 +189,73 @@ def test_open_espn_league_dispatches_by_sport(monkeypatch, sport, module_path):
     opened = open_espn_league(spec, 2025)
     fake.assert_called_once_with(league_id=1, year=2025, espn_s2="s2", swid="{swid}")
     assert opened is fake.return_value
+
+
+def test_open_espn_league_refuses_placeholder_id(monkeypatch):
+    monkeypatch.setenv("ESPN_S2", "s2")
+    monkeypatch.setenv("ESPN_SWID", "{swid}")
+    spec = LeagueSpec(
+        id="hockey-pending",
+        name="Hockey",
+        short_name="Hockey",
+        sport="hockey",
+        format="redraft",
+        espn_league_id=0,
+        seasons=[2025],
+        current_season=2025,
+    )
+    with pytest.raises(ValueError, match="not set"):
+        open_espn_league(spec, 2025)
+
+
+def test_sync_registry_skips_placeholder_espn_id(tmp_path, monkeypatch):
+    path = tmp_path / "leagues.yaml"
+    path.write_text(
+        """\
+leagues:
+  - id: hockey-pending
+    name: Hockey
+    short_name: Hockey
+    sport: hockey
+    format: redraft
+    platform: espn
+    espn_league_id: 0
+    seasons: [2025]
+    current_season: 2025
+""",
+        encoding="utf-8",
+    )
+    events: list[str] = []
+    monkeypatch.setattr(
+        "sj.sync.sync_league_season",
+        lambda *args, **kwargs: (_ for _ in ()).throw(AssertionError("must skip")),
+    )
+    results, failures = sync_registry(
+        registry_path=path,
+        store_dir=tmp_path / "store",
+        on_event=events.append,
+    )
+    assert results == []
+    assert failures == []
+    assert any("placeholder" in event for event in events)
+
+
+def test_sync_registry_attempts_hockey_main(tmp_path, monkeypatch):
+    called: list[tuple[str, int | None, int]] = []
+
+    def fake(spec, season, store_dir=None):
+        called.append((spec.id, spec.espn_league_id, season))
+        return SyncResult(spec.id, season, f"{spec.id}/{season}.json", 3)
+
+    monkeypatch.setattr("sj.sync.sync_league_season", fake)
+    results, failures = sync_registry(
+        league_ids=["hockey-main"],
+        store_dir=tmp_path / "store",
+        current_only=True,
+    )
+    assert failures == []
+    assert [r.league_id for r in results] == ["hockey-main"]
+    assert called == [("hockey-main", 1023106173, 2027)]
 
 
 # ---------------------------------------------------------------------------
@@ -384,6 +455,48 @@ def test_fetch_recent_activity_pages_until_short(monkeypatch):
         "size": 2,
         "offset": 2,
     }
+
+
+def test_fetch_recent_activity_treats_invalid_league_as_empty():
+    """Historical activity endpoints often raise ESPNInvalidLeague falsely."""
+    league = MagicMock()
+    league.year = 2019
+    league.recent_activity.side_effect = ESPNInvalidLeague(
+        "League 39790 does not exist"
+    )
+    assert fetch_recent_activity(league) == []
+
+
+def test_fetch_recent_activity_stops_at_max_pages(monkeypatch):
+    monkeypatch.setattr("sj.sync.time.sleep", lambda *_a, **_k: None)
+    league = MagicMock()
+    league.year = 2025
+    league.recent_activity.side_effect = lambda **_kw: [MagicMock(), MagicMock()]
+    items = fetch_recent_activity(league, page_size=2, max_pages=3)
+    assert len(items) == 6
+    assert league.recent_activity.call_count == 3
+
+
+def test_activity_max_pages_from_env(monkeypatch):
+    monkeypatch.delenv("SJ_ACTIVITY_MAX_PAGES", raising=False)
+    assert activity_max_pages() == DEFAULT_ACTIVITY_MAX_PAGES
+    monkeypatch.setenv("SJ_ACTIVITY_MAX_PAGES", "12")
+    assert activity_max_pages() == 12
+    monkeypatch.setenv("SJ_ACTIVITY_MAX_PAGES", "9999")
+    assert activity_max_pages() == MAX_ACTIVITY_MAX_PAGES
+    monkeypatch.setenv("SJ_ACTIVITY_MAX_PAGES", "nope")
+    assert activity_max_pages() == DEFAULT_ACTIVITY_MAX_PAGES
+
+
+def test_fetch_recent_activity_uses_env_page_cap(monkeypatch):
+    monkeypatch.setattr("sj.sync.time.sleep", lambda *_a, **_k: None)
+    monkeypatch.setenv("SJ_ACTIVITY_MAX_PAGES", "2")
+    league = MagicMock()
+    league.year = 2025
+    league.recent_activity.side_effect = lambda **_kw: [MagicMock(), MagicMock()]
+    items = fetch_recent_activity(league, page_size=2)
+    assert len(items) == 4
+    assert league.recent_activity.call_count == 2
 
 
 def test_fetch_free_agents_empty_before_2019():

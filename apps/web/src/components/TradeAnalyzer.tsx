@@ -1,13 +1,20 @@
 "use client";
 
-import { useMemo, useState } from "react";
-import type { Team } from "@/lib/data";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { useEffect, useMemo, useState } from "react";
+import type { LeagueSnapshot, PlayoffOddsSamples, Team } from "@/lib/data";
 import {
   evaluateTrade,
+  findTwoForOneTrades,
   rosterWithProjections,
   sumRosterProjections,
   type RosterProjectionTotals,
 } from "@/lib/decision-tools";
+import {
+  formatMakeDelta,
+  tradePlayoffDelta,
+} from "@/lib/playoff-odds-sim";
+import { tradeVerdict } from "@/lib/trade-verdict";
 import {
   formatProjectionPoints,
   type PlayerWithProjection,
@@ -144,18 +151,30 @@ function RosterPicker({
 
 export function TradeAnalyzer({
   teams,
+  league,
   espnToGsisEntries,
   projectionEntries,
+  playoffOddsSamples = null,
   initialA,
   initialB,
+  leagueId,
+  season,
 }: {
   teams: Team[];
+  /** Full league snapshot for playoff Δ re-sim (schedule + settings). */
+  league: LeagueSnapshot;
   /** Serializable Map entries from the server. */
   espnToGsisEntries: Array<[string, string]>;
   projectionEntries: Array<[string, ProjectionPlayer]>;
+  playoffOddsSamples?: PlayoffOddsSamples | null;
   initialA: number;
   initialB: number;
+  leagueId: string;
+  season: number;
 }) {
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
   const espnToGsis = useMemo(
     () => new Map(espnToGsisEntries),
     [espnToGsisEntries],
@@ -169,6 +188,22 @@ export function TradeAnalyzer({
   const [teamBId, setTeamBId] = useState(initialB);
   const [give, setGive] = useState<Set<string>>(new Set());
   const [get, setGet] = useState<Set<string>>(new Set());
+
+  useEffect(() => {
+    const params = new URLSearchParams(searchParams.toString());
+    params.set("season", String(season));
+    params.set("tab", "tools");
+    params.set("view", "trade");
+    params.set("a", String(teamAId));
+    params.set("b", String(teamBId));
+    params.delete("team");
+    params.delete("slot");
+    const next = `${pathname}?${params.toString()}`;
+    const current = `${pathname}?${searchParams.toString()}`;
+    if (next !== current) {
+      router.replace(next, { scroll: false });
+    }
+  }, [teamAId, teamBId, leagueId, season, pathname, router, searchParams]);
 
   const teamA = teams.find((t) => t.team_id === teamAId) ?? teams[0];
   const teamB = teams.find((t) => t.team_id === teamBId) ?? teams[1] ?? teams[0];
@@ -193,6 +228,33 @@ export function TradeAnalyzer({
       byGsis,
     );
   }, [teamA, teamB, give, get, espnToGsis, byGsis]);
+
+  const verdict = useMemo(() => {
+    if (!result || !teamA || !teamB) return null;
+    if (give.size === 0 && get.size === 0) return null;
+    return tradeVerdict(result.sideA, result.sideB, teamA.name, teamB.name);
+  }, [result, teamA, teamB, give, get]);
+
+  const playoffDelta = useMemo(() => {
+    if (!teamA || !teamB) return null;
+    if (give.size === 0 && get.size === 0) return null;
+    return tradePlayoffDelta(
+      league,
+      playoffOddsSamples,
+      teamA.team_id,
+      teamB.team_id,
+      [...give],
+      [...get],
+    );
+  }, [league, playoffOddsSamples, teamA, teamB, give, get]);
+
+  const finderHits = useMemo(() => {
+    if (!teamA || !teamB) return [];
+    return findTwoForOneTrades(teamA, teamB, espnToGsis, byGsis, {
+      limit: 6,
+      maxCandidatesPerSide: 6,
+    });
+  }, [teamA, teamB, espnToGsis, byGsis]);
 
   const baselineA = useMemo(
     () => sumRosterProjections(rosterA),
@@ -223,9 +285,10 @@ export function TradeAnalyzer({
   return (
     <div className="trade-analyzer">
       <p className="lede" style={{ marginTop: "0.75rem" }}>
-        Compare season projection totals before and after a trade package.
-        Quantiles are summed independently (store has no joint sample matrix) —
-        useful for direction, not a full Monte Carlo trade net.
+        Trade Desk — compare season projection totals before and after a
+        package, then read a verdict. When a playoff samples sidecar is
+        present, packages are also priced in Δ make-playoffs (same MC as the
+        Playoff Odds board, re-run in the hub over exported draws).
       </p>
 
       <div
@@ -298,29 +361,60 @@ export function TradeAnalyzer({
       </div>
 
       {result && (give.size > 0 || get.size > 0) ? (
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))",
-            gap: "1rem",
-            marginTop: "1rem",
-          }}
-        >
-          <TotalsTable
-            label={`${teamA.name} after trade`}
-            before={result.sideA.before}
-            after={result.sideA.after}
-            deltaMedian={result.sideA.deltaMedian}
-            deltaVor={result.sideA.deltaVor}
-          />
-          <TotalsTable
-            label={`${teamB.name} after trade`}
-            before={result.sideB.before}
-            after={result.sideB.after}
-            deltaMedian={result.sideB.deltaMedian}
-            deltaVor={result.sideB.deltaVor}
-          />
-        </div>
+        <>
+          {verdict ? (
+            <div className="panel" style={{ marginTop: "1rem" }} data-testid="trade-verdict">
+              <h3 style={{ margin: "0 0 0.35rem", fontSize: "1.05rem" }}>
+                Verdict
+              </h3>
+              <p style={{ margin: "0 0 0.35rem" }}>{verdict.headline}</p>
+              {playoffDelta?.available ? (
+                <p style={{ margin: "0 0 0.35rem" }} data-testid="trade-playoff-delta">
+                  Make-playoffs: {teamA.name}{" "}
+                  <strong>{formatMakeDelta(playoffDelta.deltaA)}</strong>
+                  {" · "}
+                  {teamB.name}{" "}
+                  <strong>{formatMakeDelta(playoffDelta.deltaB)}</strong>
+                  <span className="league-meta">
+                    {" "}
+                    ({playoffDelta.nSims} sims · periods{" "}
+                    {playoffDelta.periodsSimulated.join(", ")})
+                  </span>
+                </p>
+              ) : playoffDelta?.reason ? (
+                <p className="league-meta" style={{ margin: "0 0 0.35rem" }}>
+                  Δ make-playoffs unavailable — {playoffDelta.reason}
+                </p>
+              ) : null}
+              <p className="league-meta" style={{ margin: 0 }}>
+                {verdict.uncertainty}
+              </p>
+            </div>
+          ) : null}
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))",
+              gap: "1rem",
+              marginTop: "1rem",
+            }}
+          >
+            <TotalsTable
+              label={`${teamA.name} after trade`}
+              before={result.sideA.before}
+              after={result.sideA.after}
+              deltaMedian={result.sideA.deltaMedian}
+              deltaVor={result.sideA.deltaVor}
+            />
+            <TotalsTable
+              label={`${teamB.name} after trade`}
+              before={result.sideB.before}
+              after={result.sideB.after}
+              deltaMedian={result.sideB.deltaMedian}
+              deltaVor={result.sideB.deltaVor}
+            />
+          </div>
+        </>
       ) : (
         <div
           style={{
@@ -352,6 +446,52 @@ export function TradeAnalyzer({
           </div>
         </div>
       )}
+
+      {finderHits.length ? (
+        <div className="panel" style={{ marginTop: "1rem" }} data-testid="trade-finder">
+          <h3 style={{ margin: "0 0 0.35rem", fontSize: "1.05rem" }}>
+            Trade Finder
+          </h3>
+          <p className="league-meta" style={{ marginTop: 0 }}>
+            Bounded 2-for-1 packages ranked by joint median improvement. Click
+            Apply to load a package into the desk.
+          </p>
+          <ul style={{ listStyle: "none", padding: 0, margin: "0.5rem 0 0" }}>
+            {finderHits.map((hit) => (
+              <li
+                key={`${hit.giveIds.join("-")}_${hit.getIds.join("-")}`}
+                style={{
+                  display: "flex",
+                  flexWrap: "wrap",
+                  gap: "0.5rem",
+                  alignItems: "center",
+                  marginTop: "0.5rem",
+                }}
+              >
+                <span className="league-meta">
+                  {hit.giveNames.join(" + ")} → {hit.getNames.join(" + ")} ·
+                  joint {hit.jointMedian >= 0 ? "+" : ""}
+                  {hit.jointMedian.toFixed(1)} ({teamA.name}{" "}
+                  {hit.sideADeltaMedian >= 0 ? "+" : ""}
+                  {hit.sideADeltaMedian.toFixed(1)}, {teamB.name}{" "}
+                  {hit.sideBDeltaMedian >= 0 ? "+" : ""}
+                  {hit.sideBDeltaMedian.toFixed(1)})
+                </span>
+                <button
+                  type="button"
+                  className="button secondary"
+                  onClick={() => {
+                    setGive(new Set(hit.giveIds));
+                    setGet(new Set(hit.getIds));
+                  }}
+                >
+                  Apply
+                </button>
+              </li>
+            ))}
+          </ul>
+        </div>
+      ) : null}
     </div>
   );
 }

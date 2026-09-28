@@ -1,0 +1,113 @@
+{
+  "espn_league_id": 2499137,
+  "groups": {
+    "bats": [
+      "C",
+      "1B",
+      "2B",
+      "3B",
+      "SS",
+      "OF",
+      "DH",
+      "UTIL"
+    ],
+    "pitchers": [
+      "P",
+      "RP"
+    ]
+  },
+  "incremental": false,
+  "league_id": "baseball-dynasty",
+  "method": "player.stats appliedTotal (statSourceId=0, statSplitTypeId=5) attributed to that day's lineupSlotId",
+  "periods": {
+    "failed": [],
+    "first": 1,
+    "latest": 24,
+    "ok": 24
+  },
+  "schema_version": 1,
+  "scoring_type": "TOTAL_SEASON_POINTS",
+  "season": 2026,
+  "slots": [
+    "C",
+    "1B",
+    "2B",
+    "3B",
+    "SS",
+    "OF",
+    "DH",
+    "UTIL",
+    "P",
+    "RP"
+  ],
+  "sport": "baseball",
+  "synced_at": "2026-07-27T00:00:00+00:00",
+  "teams": [
+    {
+      "bats": 3336.5,
+      "bench_il": 1431.3,
+      "delta": -65.0,
+      "espn_points": 6505.8,
+      "name": "Bat Flip Bandits",
+      "pitchers": 3104.3,
+      "slots": {
+        "1B": 313.8,
+        "2B": 339.4,
+        "3B": 326.6,
+        "C": 371.4,
+        "DH": 345.8,
+        "OF": 999.0,
+        "P": 2754.4,
+        "RP": 350.0,
+        "SS": 345.8,
+        "UTIL": 294.6
+      },
+      "starters": 6440.8,
+      "team_id": 2
+    },
+    {
+      "bats": 2905.8,
+      "bench_il": 1261.1,
+      "delta": -57.4,
+      "espn_points": 5732.1,
+      "name": "Diamond Dogs",
+      "pitchers": 2768.9,
+      "slots": {
+        "1B": 273.3,
+        "2B": 295.6,
+        "3B": 284.4,
+        "C": 323.5,
+        "DH": 301.2,
+        "OF": 870.1,
+        "P": 2456.8,
+        "RP": 312.2,
+        "SS": 301.2,
+        "UTIL": 256.6
+      },
+      "starters": 5674.7,
+      "team_id": 1
+    },
+    {
+      "bats": 2702.6,
+      "bench_il": 1146.2,
+      "delta": -52.2,
+      "espn_points": 5210.1,
+      "name": "Curveball Crew",
+      "pitchers": 2455.3,
+      "slots": {
+        "1B": 254.2,
+        "2B": 274.9,
+        "3B": 264.6,
+        "C": 300.9,
+        "DH": 280.1,
+        "OF": 809.2,
+        "P": 2178.5,
+        "RP": 276.8,
+        "SS": 280.1,
+        "UTIL": 238.6
+      },
+      "starters": 5157.9,
+      "team_id": 3
+    }
+  ]
+}

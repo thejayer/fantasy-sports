@@ -7,6 +7,13 @@ reading code alone. The plan that follows from it is in [ROADMAP.md](ROADMAP.md)
 
 Audited at commit `fde0613` (merge of #22).
 
+> **This audit asked "is it correct and safe?" and its findings are now largely
+> closed.** The follow-up audit —
+> [AUDIT-COMPETITIVE.md](AUDIT-COMPETITIVE.md) — asks "is it *good*?", measured
+> against ESPN / Yahoo / Sleeper / FantasyPros, and drives ROADMAP phase 7. Read
+> that one for the current product gaps; read this one for the security,
+> correctness, and engineering-practice baseline they sit on.
+
 > **Status: findings 1–5 (all P0) are fixed** as of #26, and finding 11 as of
 > #28 — see the summary table at the end for the current state of each finding.
 > They are kept here in full, with their reproductions, because the evidence is
@@ -204,11 +211,13 @@ diverges further.
 
 ### 9. The hub is missing almost everything a league hub is for
 
-**Partly fixed.** Snapshots now persist draft, matchups, settings, and
-transactions (roadmap 2.1 / 2.4); Matchups tab (3.4) and History tab (3.5 —
-all-time standings, champions, record book, H2H) are in the hub. Still absent
-from the product: **box scores, draft-results pages, transaction/waiver UI,
-free agents, franchise/manager career pages, per-week player stats.**
+**Partly fixed.** Snapshots persist draft, matchups, settings, transactions,
+and free agents (roadmap 2.1 / 2.4). Hub surfaces Matchups (3.4), History (3.5),
+ESPN **draft results** (`?tab=draft`), **activity** (`?tab=activity`), football
+Tools → Waivers, and baseball **Waivers** (`?tab=waivers`, projection-free).
+Still absent: **box scores, franchise/manager career pages, per-week player
+stats**, and a first-class Settings tab. Multi-season history needs live
+`sj backfill` (fixtures stay current-season only).
 
 Also missing: `format: dynasty` is a declaration in `configs/leagues.yaml`, not
 something derived from ESPN keeper settings, so nothing in the product actually
@@ -359,7 +368,7 @@ time. `@types/node` is `^20` against a Node 22 runtime. No Dependabot or Renovat
 | 6 | Football history unreachable (12 seasons, no switcher) | P1 | Fixed — roadmap 3.1 (league) + 3.2 (team pages) |
 | 7 | Player tables: no search/sort/filter/pagination | P1 | Fixed — roadmap 3.3 (`DataTable`) |
 | 8 | Football and baseball views diverged | P1 | Fixed — roadmap 3.1 (`LeagueView`) |
-| 9 | No matchups, draft, transactions, or history | P1 | Partly — matchups (3.4) + history/records/H2H (3.5) in; FA wire synced (2.4 leftover) + Waivers UI; draft/tx pages and box scores still open |
+| 9 | No matchups, draft, transactions, or history | P1 | Partly — matchups (3.4) + history (3.5) + draft results/activity tabs + FA boards in; box scores / career pages / settings tab still open |
 | 10 | No loading/error/empty states | P1 | Fixed — roadmap 3.6 (loading/empty/corrupt reads/robots/manifest/OG) |
 | 11 | Zero CI for `apps/web` | P1 | Fixed (#28, roadmap 1.1); branch protection requires `python` / `web` / `images` |
 | 12 | `sync.py` at 0% coverage | P1 | Fixed — 100% + loud exits + `SYNC_SUMMARY` (roadmap 1.4) |

@@ -2,7 +2,26 @@
 
 from __future__ import annotations
 
+import math
+from datetime import datetime, timezone
 from typing import Any
+
+from sj.jsonutil import is_nonfinite_number
+
+# ESPN ``scoringSettings.scoringType`` for cumulative points leagues (UI: Season Points).
+SEASON_POINTS_SCORING_TYPES = frozenset({"TOTAL_SEASON_POINTS"})
+CATEGORY_SCORING_TYPES = frozenset(
+    {"H2H_CATEGORY", "H2H_MOST_CATEGORIES", "ROTO"}
+)
+
+
+def is_season_points_scoring(scoring_type: str | None) -> bool:
+    return (scoring_type or "") in SEASON_POINTS_SCORING_TYPES
+
+
+def is_category_scoring(scoring_type: str | None) -> bool:
+    return (scoring_type or "") in CATEGORY_SCORING_TYPES
+
 
 # Core counting stats we surface for baseball dynasty views.
 _BASEBALL_STAT_KEYS = (
@@ -20,14 +39,97 @@ _BASEBALL_STAT_KEYS = (
     "SV",
     "HLD",
     "QS",
+    "GS",
     "K",
     "ERA",
     "WHIP",
     "OUTS",
 )
 
+# ESPN ``statSplitTypeId`` → hub trailing window key (roadmap 8.2 follow-up).
+_TRAILING_SPLIT_IDS = {1: "7", 2: "15", 3: "30"}
+
 _PITCHER_SLOTS = {"P", "SP", "RP"}
 _PITCHER_POSITIONS = {"P", "SP", "RP"}
+
+# Core counting stats espn-api.hockey.constant.STATS_MAP actually names.
+# Skip digit placeholders ("5", "12") and "?" labels the package leaves blank.
+_HOCKEY_STAT_KEYS = (
+    "GS",
+    "W",
+    "L",
+    "SA",
+    "GA",
+    "SV",
+    "SO",
+    "OTL",
+    "GAA",
+    "SV%",
+    "G",
+    "A",
+    "+/-",
+    "PIM",
+    "PPG",
+    "PPA",
+    "SHG",
+    "SHA",
+    "GWG",
+    "FOW",
+    "FOL",
+    "ATOI",
+    "HAT",
+    "SOG",
+    "HIT",
+    "BLK",
+    "DEF",
+    "GP",
+    "STPG",
+    "STPA",
+    "STP",
+    "PPP",
+    "SHP",
+)
+_HOCKEY_GOALIE_POSITIONS = {"G", "GOALIE"}
+_HOCKEY_GOALIE_SLOTS = {"G", "GOALIE"}
+# Rate stats that must not be multiplied as counting FP when deriving totals.
+_HOCKEY_RATE_STATS = frozenset({"GAA", "SV%", "ATOI", "AVG", "ERA", "WHIP", "OBP", "OPS"})
+_HOCKEY_BENCH_SLOTS = frozenset({"BE", "BENCH", "IR", "IL"})
+
+
+def _baseball_stats_map() -> dict[int, str]:
+    try:
+        from espn_api.baseball.constant import STATS_MAP
+
+        return {int(k): str(v) for k, v in STATS_MAP.items()}
+    except ImportError:
+        return {}
+
+
+def _baseball_pro_team_map() -> dict[int, str]:
+    try:
+        from espn_api.baseball.constant import PRO_TEAM_MAP
+
+        return {int(k): str(v) for k, v in PRO_TEAM_MAP.items()}
+    except ImportError:
+        return {}
+
+
+def _hockey_stats_map() -> dict[int, str]:
+    try:
+        from espn_api.hockey.constant import STATS_MAP
+
+        out: dict[int, str] = {}
+        for key, value in STATS_MAP.items():
+            label = str(value)
+            if not label or label.isdigit() or "?" in label:
+                continue
+            try:
+                out[int(key)] = label
+            except (TypeError, ValueError):
+                continue
+        return out
+    except ImportError:
+        return {}
 
 
 def _owner_names(team: Any) -> list[str]:
@@ -51,21 +153,190 @@ def _season_stat_bucket(player: Any) -> dict[str, Any]:
     return bucket if isinstance(bucket, dict) else {}
 
 
-def extract_baseball_season_stats(player: Any) -> dict[str, float]:
-    """Pull named season counting stats + derived IP from a baseball Player."""
-    bucket = _season_stat_bucket(player)
-    breakdown = bucket.get("breakdown") or {}
-    out: dict[str, float] = {}
+def extract_baseball_stat_breakdown(breakdown: Any) -> dict[str, float | None]:
+    """Named counting stats + derived IP from one ESPN stats breakdown dict."""
+    if not isinstance(breakdown, dict):
+        return {}
+    out: dict[str, float | None] = {}
     for key in _BASEBALL_STAT_KEYS:
         if key in breakdown and breakdown[key] is not None:
-            num = _num(breakdown[key])
-            if num is not None:
-                out[key] = num
+            _put_named_stat(out, key, breakdown[key])
     outs = out.get("OUTS")
     if outs is not None:
-        # ESPN stores outs; fantasy UIs usually show innings pitched.
         out["IP"] = round(outs / 3.0, 1)
     return out
+
+
+def extract_baseball_season_stats(player: Any) -> dict[str, float | None]:
+    """Pull named season counting stats + derived IP from a baseball Player."""
+    bucket = _season_stat_bucket(player)
+    return extract_baseball_stat_breakdown(bucket.get("breakdown") or {})
+
+
+def extract_baseball_trailing_stats(player: Any) -> dict[str, dict[str, float | None]]:
+    """PR7 / PR15 / PR30 windows when present on the player.
+
+    Prefer an attached ``trailing_stats`` map (sample stubs + post-sync
+    enricher). espn-api's ``Player`` constructor drops ``statSplitTypeId`` 1/2/3,
+    so live sync must attach windows before serialize (or enrich the snapshot).
+    """
+    attached = getattr(player, "trailing_stats", None)
+    if isinstance(attached, dict) and attached:
+        out: dict[str, dict[str, float | None]] = {}
+        for key in ("7", "15", "30"):
+            raw = attached.get(key) or attached.get(int(key))
+            if isinstance(raw, dict):
+                # Already extracted (hub shape) or a raw breakdown.
+                if any(k in raw for k in _BASEBALL_STAT_KEYS):
+                    stats = extract_baseball_stat_breakdown(raw)
+                else:
+                    stats = extract_baseball_stat_breakdown(raw.get("breakdown") or raw)
+                if stats:
+                    out[key] = stats
+        return out
+    return {}
+
+
+def extract_hockey_stat_breakdown(breakdown: Any) -> dict[str, float | None]:
+    """Named hockey counting stats from one espn-api stats dict."""
+    if not isinstance(breakdown, dict):
+        return {}
+    out: dict[str, float | None] = {}
+    for key in _HOCKEY_STAT_KEYS:
+        if key in breakdown and breakdown[key] is not None:
+            _put_named_stat(out, key, breakdown[key])
+    return out
+
+
+def _hockey_total_bucket(player: Any) -> dict[str, Any]:
+    """espn-api hockey Player.stats is keyed ``Total 2025``, not period 0."""
+    stats = getattr(player, "stats", None) or {}
+    if not isinstance(stats, dict):
+        return {}
+    for key, bucket in stats.items():
+        if isinstance(key, str) and key.startswith("Total") and isinstance(bucket, dict):
+            return bucket
+    return _season_stat_bucket(player)
+
+
+def hockey_applied_total(player: Any) -> float | None:
+    """Season applied FP from a hockey Player when espn-api stored it.
+
+    espn-api 0.46 hockey ``Player`` does not set ``total_points``. Prefer an
+    attached applied total on the ``Total YYYY`` bucket when present.
+    """
+    attached = _num(
+        getattr(player, "applied_total", None) or getattr(player, "appliedTotal", None)
+    )
+    if attached is not None:
+        return attached
+    bucket = _hockey_total_bucket(player)
+    if not isinstance(bucket, dict):
+        return None
+    for source in (bucket, bucket.get("total") if isinstance(bucket.get("total"), dict) else {}):
+        if not isinstance(source, dict):
+            continue
+        for key in ("appliedTotal", "applied_total", "points"):
+            value = _num(source.get(key))
+            if value is not None:
+                return value
+    return None
+
+
+def hockey_points_from_season_stats(
+    stats: dict[str, float | None] | None,
+    scoring_format: Any,
+) -> float | None:
+    """Derive season FP as ``season_stats × scoring_format`` counting weights.
+
+    Skips rate stats (GAA, SV%, …). Returns None when no weighted counting
+    stats are present so callers can leave ``total_points`` null.
+    """
+    if not stats or not scoring_format:
+        return None
+    rows = scoring_format if isinstance(scoring_format, list) else []
+    total = 0.0
+    used = False
+    for row in rows:
+        if isinstance(row, dict):
+            abbr = row.get("abbr") or row.get("statCode")
+            weight = _num(row.get("points") or row.get("pointsOverride"))
+        else:
+            abbr = getattr(row, "abbr", None)
+            weight = _num(getattr(row, "points", None))
+        if not abbr or weight is None:
+            continue
+        key = str(abbr)
+        if key in _HOCKEY_RATE_STATS:
+            continue
+        count = _num(stats.get(key))
+        if count is None:
+            continue
+        total += count * weight
+        used = True
+    if not used:
+        return None
+    return round(total, 1)
+
+
+def extract_hockey_season_stats(player: Any) -> dict[str, float | None]:
+    """Season counting stats from a hockey Player (``Total YYYY`` or stub)."""
+    attached = getattr(player, "season_stats", None)
+    if isinstance(attached, dict) and attached:
+        return extract_hockey_stat_breakdown(attached)
+    bucket = _hockey_total_bucket(player)
+    if not bucket:
+        return {}
+    if any(k in bucket for k in _HOCKEY_STAT_KEYS):
+        return extract_hockey_stat_breakdown(bucket)
+    return extract_hockey_stat_breakdown(
+        bucket.get("total") or bucket.get("breakdown") or {}
+    )
+
+
+def extract_hockey_trailing_stats(player: Any) -> dict[str, dict[str, float | None]]:
+    """Last 7 / 15 / 30 windows when espn-api hockey attaches them."""
+    attached = getattr(player, "trailing_stats", None)
+    if isinstance(attached, dict) and attached:
+        out: dict[str, dict[str, float | None]] = {}
+        for key in ("7", "15", "30"):
+            raw = attached.get(key) or attached.get(int(key))
+            if isinstance(raw, dict):
+                stats = (
+                    extract_hockey_stat_breakdown(raw)
+                    if any(k in raw for k in _HOCKEY_STAT_KEYS)
+                    else extract_hockey_stat_breakdown(
+                        raw.get("total") or raw.get("breakdown") or raw
+                    )
+                )
+                if stats:
+                    out[key] = stats
+        return out
+    stats = getattr(player, "stats", None) or {}
+    if not isinstance(stats, dict):
+        return {}
+    prefixes = {"Last 7": "7", "Last 15": "15", "Last 30": "30"}
+    out: dict[str, dict[str, float | None]] = {}
+    for key, bucket in stats.items():
+        if not isinstance(key, str) or not isinstance(bucket, dict):
+            continue
+        for prefix, window in prefixes.items():
+            if key.startswith(prefix):
+                extracted = extract_hockey_stat_breakdown(
+                    bucket.get("total") or bucket.get("breakdown") or bucket
+                )
+                if extracted:
+                    out[window] = extracted
+                break
+    return out
+
+
+def _hockey_player_role(position: str | None, slot: str | None) -> str:
+    pos = (position or "").upper()
+    sl = (slot or "").upper()
+    if sl in _HOCKEY_GOALIE_SLOTS or pos in _HOCKEY_GOALIE_POSITIONS:
+        return "goalie"
+    return "skater"
 
 
 def _player_role(position: str | None, slot: str | None) -> str:
@@ -78,9 +349,185 @@ def _player_role(position: str | None, slot: str | None) -> str:
     return "batter"
 
 
-def serialize_player(player: Any, *, sport: str | None = None) -> dict[str, Any]:
+# ESPN football scoring-item ids → hub abbrs (roadmap 8.4 sandbox).
+# Names follow the same STATS_MAP abbreviations the settings tab already shows.
+_FOOTBALL_STAT_ABBR: dict[int, str] = {
+    3: "PTD",
+    4: "PY",
+    19: "INT",
+    20: "INT",
+    23: "RY",
+    24: "RTD",
+    25: "RY",
+    41: "REY",
+    42: "RETD",
+    43: "REC",
+    53: "FUM",
+    72: "FUML",
+}
+
+_FOOTBALL_STAT_NAME_ABBR: dict[str, str] = {
+    "PASSINGTOUCHDOWNS": "PTD",
+    "PASSINGTDS": "PTD",
+    "PTD": "PTD",
+    "PASSINGYARDS": "PY",
+    "PY": "PY",
+    "PASSINGINTS": "INT",
+    "PASSINGINTERCEPTIONS": "INT",
+    "INT": "INT",
+    "RUSHINGTOUCHDOWNS": "RTD",
+    "RUSHINGTDS": "RTD",
+    "RTD": "RTD",
+    "RUSHINGYARDS": "RY",
+    "RY": "RY",
+    "RECEIVINGYARDS": "REY",
+    "REY": "REY",
+    "RECEIVINGTOUCHDOWNS": "RETD",
+    "RECEIVINGTDS": "RETD",
+    "RETD": "RETD",
+    "RECEIVINGRECEPTIONS": "REC",
+    "RECEPTIONS": "REC",
+    "REC": "REC",
+    "FUMBLES": "FUM",
+    "FUM": "FUM",
+    "LOSTFUMBLES": "FUML",
+    "FUMBLESLOST": "FUML",
+    "FUML": "FUML",
+}
+
+
+def extract_box_player_stats(player: Any) -> dict[str, float]:
+    """Named counting stats for LM scoring sandbox (roadmap 8.4).
+
+    Display score stays ESPN ``points``. This side map is only for rescoring
+    from cloned weights — never a substitute for league-applied totals.
+    """
+    raw = (
+        getattr(player, "stats", None)
+        or getattr(player, "stat_line", None)
+        or getattr(player, "box_stats", None)
+        or getattr(player, "points_breakdown", None)
+        or getattr(player, "breakdown", None)
+    )
+    if isinstance(raw, dict) and raw:
+        nested = raw.get("breakdown") or raw.get("stats") or raw.get("appliedStats")
+        if isinstance(nested, dict) and nested:
+            raw = nested
+        out = _named_stat_map(raw)
+        if out:
+            return out
+    return {}
+
+
+def _named_stat_map(raw: dict[Any, Any]) -> dict[str, float]:
+    out: dict[str, float] = {}
+    for key, value in raw.items():
+        num = _num(value)
+        if num is None:
+            continue
+        abbr: str | None = None
+        if isinstance(key, int) or (isinstance(key, str) and key.isdigit()):
+            abbr = _FOOTBALL_STAT_ABBR.get(int(key))
+        if abbr is None:
+            token = str(key).replace(" ", "").replace("_", "").upper()
+            abbr = _FOOTBALL_STAT_NAME_ABBR.get(token)
+        if abbr is None and isinstance(key, str) and (
+            key in _HOCKEY_STAT_KEYS or key.isalpha()
+        ):
+            # Hockey box breakdowns are already STATS_MAP names (G, A, SV%, +/-).
+            abbr = key
+        if not abbr:
+            continue
+        out[abbr] = float(num)
+    return out
+
+
+def serialize_box_player(player: Any) -> dict[str, Any]:
+    """Serialize one espn-api ``BoxPlayer`` (league-applied fantasy points).
+
+    Roadmap 8.1: persist ESPN ``appliedTotal`` as ``points`` — never treat raw
+    yards/TDs as the primary score column (Sleeper lesson / golf ``sg.score``).
+    Roadmap 8.4: optional ``stats`` (named counts) so the hub can rescore
+    locally without calling ESPN.
+    """
+    payload: dict[str, Any] = {
+        "id": _player_id(player),
+        "name": getattr(player, "name", None),
+        "position": getattr(player, "position", None),
+        "slot": getattr(player, "slot_position", None)
+        or getattr(player, "lineupSlot", None),
+        "pro_team": getattr(player, "proTeam", None)
+        or getattr(player, "pro_team", None),
+        "pro_opponent": getattr(player, "pro_opponent", None),
+        "on_bye_week": bool(getattr(player, "on_bye_week", False)),
+        "points": _num(getattr(player, "points", None)),
+        "projected_points": _num(getattr(player, "projected_points", None)),
+        "injury_status": getattr(player, "injuryStatus", None)
+        or getattr(player, "injury_status", None),
+        "game_played": _num(getattr(player, "game_played", None)),
+    }
+    stats = extract_box_player_stats(player)
+    if stats:
+        payload["stats"] = stats
+    return payload
+
+
+def serialize_box_score(box: Any, *, week: int) -> dict[str, Any]:
+    """Serialize one espn-api football ``BoxScore`` into a JSON-friendly dict."""
+    home_lineup = [
+        serialize_box_player(p) for p in (getattr(box, "home_lineup", None) or [])
+    ]
+    away_lineup = [
+        serialize_box_player(p) for p in (getattr(box, "away_lineup", None) or [])
+    ]
+    return {
+        "home_team_id": _team_id(getattr(box, "home_team", None)),
+        "away_team_id": _team_id(getattr(box, "away_team", None)),
+        "home_score": _num(getattr(box, "home_score", None)),
+        "away_score": _num(getattr(box, "away_score", None)),
+        "home_projected": _num(getattr(box, "home_projected", None)),
+        "away_projected": _num(getattr(box, "away_projected", None)),
+        "is_playoff": bool(getattr(box, "is_playoff", False)),
+        "matchup_type": getattr(box, "matchup_type", None) or "NONE",
+        "week": int(week),
+        "home_lineup": home_lineup,
+        "away_lineup": away_lineup,
+    }
+
+
+def build_week_box_scores_document(
+    *,
+    league_id: str,
+    season: int,
+    week: int,
+    box_scores: list[Any],
+    synced_at: str | None = None,
+    period_label: str = "week",
+    sport: str = "football",
+) -> dict[str, Any]:
+    """Assemble ``weeks/{N}.json`` payload (side concern — not in manifest.files)."""
+    when = synced_at or datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
+    return {
+        "schema_version": 1,
+        "league_id": league_id,
+        "season": int(season),
+        "week": int(week),
+        "sport": sport,
+        "period_label": period_label,
+        "synced_at": when,
+        "matchups": [serialize_box_score(box, week=week) for box in box_scores],
+    }
+
+
+def serialize_player(
+    player: Any,
+    *,
+    sport: str | None = None,
+    scoring_format: Any = None,
+) -> dict[str, Any]:
     position = getattr(player, "position", None)
     slot = getattr(player, "lineupSlot", None) or getattr(player, "slot_position", None)
+    total_points = _num(getattr(player, "total_points", None))
     payload: dict[str, Any] = {
         "id": getattr(player, "playerId", None) or getattr(player, "player_id", None),
         "name": getattr(player, "name", None),
@@ -94,7 +541,7 @@ def serialize_player(player: Any, *, sport: str | None = None) -> dict[str, Any]
         "eligible_slots": list(getattr(player, "eligibleSlots", None) or []),
         "acquisition_type": getattr(player, "acquisitionType", None),
         "percent_owned": _num(getattr(player, "percent_owned", None)),
-        "total_points": _num(getattr(player, "total_points", None)),
+        "total_points": total_points,
         "projected_total_points": _num(
             getattr(player, "projected_total_points", None)
             or getattr(player, "projected_points", None)
@@ -105,6 +552,24 @@ def serialize_player(player: Any, *, sport: str | None = None) -> dict[str, Any]
         season_stats = extract_baseball_season_stats(player)
         payload["season_stats"] = season_stats
         payload["role"] = _player_role(position, slot)
+        trailing = extract_baseball_trailing_stats(player)
+        if trailing:
+            payload["trailing_stats"] = trailing
+    elif sport == "hockey":
+        season_stats = extract_hockey_season_stats(player)
+        payload["season_stats"] = season_stats
+        payload["role"] = _hockey_player_role(position, slot)
+        trailing = extract_hockey_trailing_stats(player)
+        if trailing:
+            payload["trailing_stats"] = trailing
+        # espn-api hockey Player never sets total_points. Prefer a stored
+        # appliedTotal, else counting stats × league weights (Hall of Shame).
+        if payload["total_points"] is None:
+            payload["total_points"] = hockey_applied_total(player)
+        if payload["total_points"] is None:
+            payload["total_points"] = hockey_points_from_season_stats(
+                season_stats, scoring_format
+            )
     return payload
 
 
@@ -131,21 +596,51 @@ def serialize_draft(league: Any) -> list[dict[str, Any]]:
     return [serialize_draft_pick(pick) for pick in (getattr(league, "draft", None) or [])]
 
 
-def serialize_team(team: Any, *, sport: str | None = None) -> dict[str, Any]:
-    roster = [serialize_player(p, sport=sport) for p in (getattr(team, "roster", None) or [])]
+def serialize_team(
+    team: Any,
+    *,
+    sport: str | None = None,
+    scoring_type: str | None = None,
+    scoring_format: Any = None,
+) -> dict[str, Any]:
+    roster = [
+        serialize_player(p, sport=sport, scoring_format=scoring_format)
+        for p in (getattr(team, "roster", None) or [])
+    ]
     wins = _int(getattr(team, "wins", 0)) or 0
     losses = _int(getattr(team, "losses", 0)) or 0
     ties = _int(getattr(team, "ties", 0)) or 0
     games = wins + losses + ties
     win_pct = round((wins + 0.5 * ties) / games, 3) if games else None
+    # Prefer official season totals. espn-api baseball/hockey Team omits
+    # points_for; sync attaches ESPN ``teams[].points`` as points_for / points.
     points_for = _num(getattr(team, "points_for", None))
-    # Baseball H2H often has no points_for on the Team object — fall back to roster totals.
+    if points_for is None:
+        points_for = _num(getattr(team, "points", None))
+    if points_for is None:
+        points_for = _num(getattr(team, "points_live", None))
+    # Roster-sum fallback is wrong for TOTAL_SEASON_POINTS (bench/IL inflate vs
+    # ESPN standings). Keep it only for H2H-shaped baseball where PF is absent.
+    # Hockey espn-api also omits PF: sum non-bench slots after player FP is
+    # derived so Hall of Shame / standings are not all-null.
     if points_for is None and roster:
-        roster_points = [p.get("total_points") for p in roster if p.get("total_points") is not None]
-        if roster_points:
-            points_for = round(sum(roster_points), 1)
+        if sport == "hockey" and is_season_points_scoring(scoring_type):
+            starter_points = [
+                p.get("total_points")
+                for p in roster
+                if p.get("total_points") is not None
+                and str(p.get("slot") or "").upper() not in _HOCKEY_BENCH_SLOTS
+            ]
+            if starter_points:
+                points_for = round(sum(starter_points), 1)
+        elif not is_season_points_scoring(scoring_type):
+            roster_points = [
+                p.get("total_points") for p in roster if p.get("total_points") is not None
+            ]
+            if roster_points:
+                points_for = round(sum(roster_points), 1)
     schedule, scores, outcomes = _team_matchup_arrays(team)
-    return {
+    row = {
         "team_id": getattr(team, "team_id", None),
         "name": getattr(team, "team_name", None),
         "abbrev": getattr(team, "team_abbrev", None),
@@ -157,7 +652,10 @@ def serialize_team(team: Any, *, sport: str | None = None) -> dict[str, Any]:
         "win_pct": win_pct,
         "points_for": points_for,
         "points_against": _num(getattr(team, "points_against", None)),
-        "standing": _int(getattr(team, "standing", None) or getattr(team, "final_standing", None)),
+        # ESPN: standing ← playoffSeed; final_standing ← rankCalculatedFinal
+        # (1 = playoff champ after the season). Keep them separate so the trophy
+        # case can distinguish seed #1 from the title (roadmap 7.13).
+        "standing": _int(getattr(team, "standing", None)),
         "division": getattr(team, "division_name", None) or "",
         # Parallel arrays already populated by espn-api's mMatchup fetch
         # (football) or normalized from Matchup objects (baseball). Index i is
@@ -167,9 +665,14 @@ def serialize_team(team: Any, *, sport: str | None = None) -> dict[str, Any]:
         "outcomes": outcomes,
         "roster": roster,
     }
+    final = _final_standing(team)
+    if final is not None:
+        # Omit mid-season / unset (ESPN uses 0) so older snapshots stay comparable.
+        row["final_standing"] = final
+    return row
 
 
-def serialize_settings(league: Any) -> dict[str, Any]:
+def serialize_settings(league: Any, *, sport: str | None = None) -> dict[str, Any]:
     """Persist league settings already loaded via ``mSettings`` (roadmap 2.4).
 
     No extra ESPN request. Football exposes roster slots / scoring format;
@@ -208,7 +711,166 @@ def serialize_settings(league: Any) -> dict[str, Any]:
     scoring_format = getattr(settings, "scoring_format", None)
     if scoring_format:
         payload["scoring_format"] = _serialize_scoring_format(scoring_format)
+    categories = extract_scoring_categories(settings, sport=sport)
+    if categories:
+        payload["categories"] = categories
+        # Season Points / H2H Points weight lists land in ``categories`` from
+        # raw scoringItems; mirror non-null weights into scoring_format so the
+        # Settings tab (which reads scoring_format) shows HR=5, RBI=1, etc.
+        if not payload.get("scoring_format"):
+            weighted = [row for row in categories if row.get("points") is not None]
+            if weighted:
+                payload["scoring_format"] = weighted
+    matchup_periods = getattr(settings, "matchup_periods", None)
+    if isinstance(matchup_periods, dict) and matchup_periods:
+        payload["matchup_periods"] = {
+            str(k): list(v) if isinstance(v, (list, tuple)) else v
+            for k, v in matchup_periods.items()
+        }
+    limits = extract_lineup_slot_stat_limits(settings)
+    if limits:
+        payload["lineup_slot_stat_limits"] = limits
+        gs_max = season_gs_max_from_limits(limits)
+        if gs_max is not None:
+            payload["season_gs_max"] = gs_max
+    season_ip_max = _num(getattr(settings, "season_ip_max", None))
+    if season_ip_max is not None and season_ip_max > 0:
+        payload["season_ip_max"] = season_ip_max
+    min_weekly_ip = _num(getattr(settings, "min_weekly_ip", None))
+    if min_weekly_ip is not None and min_weekly_ip > 0:
+        payload["min_weekly_ip"] = min_weekly_ip
     return payload
+
+
+def extract_lineup_slot_stat_limits(settings: Any) -> list[dict[str, Any]]:
+    """ESPN ``rosterSettings.lineupSlotStatLimits`` → hub rows (roadmap 8.2).
+
+    Typical baseball dynasty: slot ``P`` (13) capped on ``GS`` (stat 33).
+    Accepts pre-normalized lists on sample stubs or raw ESPN maps via
+    ``_raw_roster_settings`` / ``lineup_slot_stat_limits``.
+    """
+    if settings is None:
+        return []
+    attached = getattr(settings, "lineup_slot_stat_limits", None)
+    if isinstance(attached, list) and attached:
+        rows: list[dict[str, Any]] = []
+        for item in attached:
+            if not isinstance(item, dict):
+                continue
+            slot = item.get("slot") or item.get("lineup_slot")
+            stat = item.get("stat") or item.get("stat_abbr")
+            limit = _num(item.get("limit") or item.get("max"))
+            if slot and stat and limit is not None and limit > 0:
+                rows.append(
+                    {
+                        "slot": str(slot),
+                        "stat": str(stat),
+                        "limit": limit,
+                    }
+                )
+        if rows:
+            return rows
+    raw = getattr(settings, "_raw_roster_settings", None) or {}
+    if not isinstance(raw, dict):
+        return []
+    limits = raw.get("lineupSlotStatLimits") or {}
+    if not isinstance(limits, dict):
+        return []
+    try:
+        from espn_api.baseball.constant import POSITION_MAP, STATS_MAP
+    except ImportError:
+        POSITION_MAP, STATS_MAP = {}, {}
+    rows = []
+    for slot_key, stat_map in limits.items():
+        if not isinstance(stat_map, dict):
+            continue
+        try:
+            slot_id = int(slot_key)
+        except (TypeError, ValueError):
+            slot_name = str(slot_key)
+        else:
+            slot_name = str(POSITION_MAP.get(slot_id, slot_id))
+        for stat_key, limit_raw in stat_map.items():
+            limit = _num(limit_raw)
+            if limit is None or limit <= 0:
+                continue
+            try:
+                sid = int(stat_key)
+            except (TypeError, ValueError):
+                stat_name = str(stat_key)
+            else:
+                stat_name = str(STATS_MAP.get(sid, sid))
+            rows.append({"slot": slot_name, "stat": stat_name, "limit": limit})
+    rows.sort(key=lambda r: (r["slot"], r["stat"]))
+    return rows
+
+
+def season_gs_max_from_limits(limits: list[dict[str, Any]]) -> float | None:
+    """Prefer combined ``P`` GS cap; else max of SP/RP GS caps."""
+    by_slot = {
+        str(row.get("slot")): float(row["limit"])
+        for row in limits
+        if str(row.get("stat")) == "GS" and row.get("limit") is not None
+    }
+    if "P" in by_slot:
+        return by_slot["P"]
+    values = [by_slot[s] for s in ("SP", "RP") if s in by_slot]
+    return max(values) if values else None
+
+
+def extract_baseball_scoring_categories(settings: Any) -> list[dict[str, Any]]:
+    """Official baseball H2H-cat / Season Points list from ESPN scoringItems."""
+    return extract_scoring_categories(settings, sport="baseball")
+
+
+def extract_scoring_categories(
+    settings: Any, *, sport: str | None = None
+) -> list[dict[str, Any]]:
+    """Official cat / weight list from ESPN ``scoringItems`` (or sample stubs)."""
+    if settings is None:
+        return []
+    raw = getattr(settings, "_raw_scoring_settings", None) or {}
+    items = raw.get("scoringItems") if isinstance(raw, dict) else None
+    if sport == "hockey":
+        stats_map = _hockey_stats_map()
+        whitelist = set(_HOCKEY_STAT_KEYS)
+        known_rates = {"GAA", "SV%"}
+    else:
+        stats_map = _baseball_stats_map()
+        whitelist = set(_BASEBALL_STAT_KEYS)
+        known_rates = {"AVG", "ERA", "WHIP", "OBP", "OPS"}
+    rows: list[dict[str, Any]] = []
+    if isinstance(items, list) and items:
+        for item in items:
+            if not isinstance(item, dict):
+                continue
+            sid = _int(item.get("statId"))
+            if sid is None:
+                continue
+            abbr = stats_map.get(sid) or str(item.get("statCode") or sid)
+            # Skip obscure ids unless named in our whitelist or STATS_MAP.
+            if abbr not in whitelist and abbr not in known_rates and sid not in stats_map:
+                continue
+            rows.append(
+                {
+                    "id": sid,
+                    "abbr": abbr,
+                    "label": str(item.get("statName") or abbr),
+                    "points": _num(item.get("points")),
+                }
+            )
+    if rows:
+        return rows
+    # Sample / football-shaped stubs may already set scoring_format categories.
+    scoring_format = getattr(settings, "scoring_format", None)
+    scoring_type = getattr(settings, "scoring_type", None)
+    if scoring_format and (
+        is_category_scoring(scoring_type)
+        or is_season_points_scoring(scoring_type)
+        or sport == "hockey"
+    ):
+        return _serialize_scoring_format(scoring_format)
+    return []
 
 
 def serialize_activity(activity: Any) -> dict[str, Any]:
@@ -240,13 +902,47 @@ def serialize_transactions(activities: list[Any] | None) -> list[dict[str, Any]]
     return [serialize_activity(activity) for activity in (activities or [])]
 
 
-def serialize_free_agent(player: Any) -> dict[str, Any]:
-    """Compact FA row — skip baseball season_stats bloat (wire is id + ownership)."""
-    return serialize_player(player, sport=None)
+def serialize_free_agent(
+    player: Any,
+    *,
+    sport: str | None = None,
+    scoring_format: Any = None,
+) -> dict[str, Any]:
+    """Compact FA row — skip season_stats bloat; keep trailing windows for 8.2."""
+    if sport == "hockey":
+        payload = serialize_player(
+            player, sport="hockey", scoring_format=scoring_format
+        )
+        payload.pop("season_stats", None)
+        trailing = extract_hockey_trailing_stats(player)
+        if trailing:
+            payload["trailing_stats"] = trailing
+        if payload.get("role") is None:
+            payload["role"] = _hockey_player_role(
+                payload.get("position"), payload.get("slot")
+            )
+        return payload
+    payload = serialize_player(player, sport=None)
+    if sport == "baseball":
+        trailing = extract_baseball_trailing_stats(player)
+        if trailing:
+            payload["trailing_stats"] = trailing
+            payload["role"] = _player_role(
+                payload.get("position"), payload.get("slot")
+            )
+    return payload
 
 
-def serialize_free_agents(players: list[Any] | None) -> list[dict[str, Any]]:
-    rows = [serialize_free_agent(player) for player in (players or [])]
+def serialize_free_agents(
+    players: list[Any] | None,
+    *,
+    sport: str | None = None,
+    scoring_format: Any = None,
+) -> list[dict[str, Any]]:
+    rows = [
+        serialize_free_agent(player, sport=sport, scoring_format=scoring_format)
+        for player in (players or [])
+    ]
     rows.sort(
         key=lambda row: (
             -(row.get("percent_owned") or 0.0),
@@ -263,12 +959,25 @@ def serialize_league(
     sport: str,
     format: str,
     season: int,
-    espn_league_id: int,
+    espn_league_id: int | None,
     transactions: list[Any] | None = None,
     free_agents: list[Any] | None = None,
 ) -> dict[str, Any]:
     settings = getattr(league, "settings", None)
-    teams = [serialize_team(t, sport=sport) for t in (getattr(league, "teams", None) or [])]
+    scoring_type = getattr(settings, "scoring_type", None) or getattr(
+        league, "scoring_type", None
+    )
+    settings_payload = serialize_settings(league, sport=sport)
+    scoring_format = settings_payload.get("scoring_format")
+    teams = [
+        serialize_team(
+            t,
+            sport=sport,
+            scoring_type=scoring_type,
+            scoring_format=scoring_format,
+        )
+        for t in (getattr(league, "teams", None) or [])
+    ]
     teams.sort(
         key=lambda t: (
             t["standing"] is None,
@@ -276,9 +985,6 @@ def serialize_league(
             -(t["win_pct"] or 0),
             -(t["points_for"] or 0),
         )
-    )
-    scoring_type = getattr(settings, "scoring_type", None) or getattr(
-        league, "scoring_type", None
     )
     return {
         "league_id": league_id,
@@ -293,13 +999,91 @@ def serialize_league(
         or getattr(league, "scoringPeriodId", None)
         or getattr(league, "current_matchday", None),
         "period_label": "period" if sport == "baseball" else "week",
-        "settings": serialize_settings(league),
+        "settings": settings_payload,
         "draft": serialize_draft(league),
         "transactions": serialize_transactions(transactions),
-        "free_agents": serialize_free_agents(free_agents),
+        "free_agents": serialize_free_agents(
+            free_agents, sport=sport, scoring_format=scoring_format
+        ),
         "teams": teams,
         "players": _unique_players(teams),
     }
+
+
+def build_pro_schedule_document(
+    *,
+    league_id: str,
+    season: int,
+    sport: str,
+    games: list[dict[str, Any]],
+    matchup_periods: dict[str, Any] | None = None,
+    synced_at: str | None = None,
+) -> dict[str, Any]:
+    """Side concern ``pro_schedule.json`` (roadmap 8.2) — not in manifest.files."""
+    return {
+        "schema_version": 1,
+        "league_id": league_id,
+        "season": season,
+        "sport": sport,
+        "synced_at": synced_at,
+        "matchup_periods": matchup_periods or {},
+        "games": games,
+    }
+
+
+def serialize_category_box_score(box: Any) -> dict[str, Any]:
+    """Serialize baseball ``H2HCategoryBoxScore`` home/away cat matrices."""
+    def _side_stats(raw: Any) -> dict[str, Any]:
+        out: dict[str, Any] = {}
+        if not isinstance(raw, dict):
+            return out
+        for key, payload in raw.items():
+            if not isinstance(payload, dict):
+                continue
+            out[str(key)] = {
+                "value": _num(payload.get("value") or payload.get("score")),
+                "result": payload.get("result"),
+            }
+        return out
+
+    return {
+        "home_team_id": _team_id(getattr(box, "home_team", None)),
+        "away_team_id": _team_id(getattr(box, "away_team", None)),
+        "home_wins": _int(getattr(box, "home_wins", None)),
+        "home_losses": _int(getattr(box, "home_losses", None)),
+        "home_ties": _int(getattr(box, "home_ties", None)),
+        "away_wins": _int(getattr(box, "away_wins", None)),
+        "away_losses": _int(getattr(box, "away_losses", None)),
+        "away_ties": _int(getattr(box, "away_ties", None)),
+        "home_stats": _side_stats(getattr(box, "home_stats", None)),
+        "away_stats": _side_stats(getattr(box, "away_stats", None)),
+    }
+
+
+def build_week_category_document(
+    *,
+    league_id: str,
+    season: int,
+    week: int,
+    box_scores: list[Any],
+    synced_at: str | None = None,
+    period_label: str = "period",
+    pitcher_ip: list[dict[str, Any]] | None = None,
+) -> dict[str, Any]:
+    """Baseball period category boxes under ``weeks/{N}.json`` (sport=baseball)."""
+    doc: dict[str, Any] = {
+        "schema_version": 1,
+        "league_id": league_id,
+        "season": season,
+        "week": week,
+        "sport": "baseball",
+        "period_label": period_label,
+        "synced_at": synced_at,
+        "matchups": [serialize_category_box_score(box) for box in box_scores],
+    }
+    if pitcher_ip:
+        doc["pitcher_ip"] = pitcher_ip
+    return doc
 
 
 def _team_id(value: Any) -> int | None:
@@ -339,8 +1123,9 @@ def _team_matchup_arrays(
 
 
 def _looks_like_matchup(item: Any) -> bool:
+    """True for espn-api Matchup-shaped objects (winner may be missing)."""
     return hasattr(item, "home_final_score") or (
-        hasattr(item, "home_team") and hasattr(item, "away_team") and hasattr(item, "winner")
+        hasattr(item, "home_team") and hasattr(item, "away_team")
     )
 
 
@@ -406,13 +1191,25 @@ def _unique_players(teams: list[dict[str, Any]]) -> list[dict[str, Any]]:
     return players
 
 
+def _put_named_stat(out: dict[str, float | None], key: str, raw: Any) -> None:
+    """Store a finite number, or ``None`` when ESPN sent NaN / ±Infinity."""
+    num = _num(raw)
+    if num is not None:
+        out[key] = num
+    elif is_nonfinite_number(raw):
+        out[key] = None
+
+
 def _num(value: Any) -> float | None:
     if value is None:
         return None
     try:
-        return float(value)
+        num = float(value)
     except (TypeError, ValueError):
         return None
+    if math.isnan(num) or math.isinf(num):
+        return None
+    return num
 
 
 def _int(value: Any) -> int | None:
@@ -422,6 +1219,14 @@ def _int(value: Any) -> int | None:
         return int(value)
     except (TypeError, ValueError):
         return None
+
+
+def _final_standing(team: Any) -> int | None:
+    """ESPN ``rankCalculatedFinal`` — 0 mid-season means unset, not a rank."""
+    value = _int(getattr(team, "final_standing", None))
+    if value is None or value <= 0:
+        return None
+    return value
 
 
 def _player_id(player: Any) -> int | None:

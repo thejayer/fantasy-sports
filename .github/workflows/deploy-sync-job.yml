@@ -5,7 +5,9 @@ name: deploy sync job
 # Auth: Workload Identity Federation (see scripts/setup-github-deployer.sh).
 # One-time infra: scripts/setup-sync-infra.sh (bucket, IAM, Cloud Scheduler).
 #
-# Cloud Scheduler triggers this job on a cadence; run a backfill manually with
+# Cloud Scheduler triggers this job on a cadence; one-click history load:
+#   Actions → backfill sync → Run workflow (mode=backfill)
+# Or from a laptop:
 #   gcloud run jobs execute sj-sync --args=backfill --region=us-central1
 
 on:

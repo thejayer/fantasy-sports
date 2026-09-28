@@ -7,8 +7,8 @@ describe("DataTable (roadmap 3.3)", () => {
     path.join(process.cwd(), "src/components/DataTable.tsx"),
     "utf8",
   );
-  const playersTable = readFileSync(
-    path.join(process.cwd(), "src/components/PlayersDataTable.tsx"),
+  const playersBoard = readFileSync(
+    path.join(process.cwd(), "src/components/PlayersBoard.tsx"),
     "utf8",
   );
   const leagueView = readFileSync(
@@ -26,13 +26,14 @@ describe("DataTable (roadmap 3.3)", () => {
     expect(dataTable).toMatch(/Next/);
   });
 
-  it("players tab uses PlayersDataTable instead of inline sport tables", () => {
-    expect(playersTable.startsWith('"use client"')).toBe(true);
-    expect(playersTable).toMatch(/export function PlayersDataTable/);
+  it("players tab uses a server PlayersBoard (roadmap 7.11 HTML budget)", () => {
+    expect(playersBoard.startsWith('"use client"')).toBe(false);
+    expect(playersBoard).toMatch(/export function PlayersBoard/);
+    expect(playersBoard).toMatch(/queryPlayerTable/);
     expect(leagueView).toMatch(
-      /import \{ PlayersDataTable \} from "@\/components\/PlayersDataTable"/,
+      /import \{ PlayersBoard \} from "@\/components\/PlayersBoard"/,
     );
-    expect(leagueView).toMatch(/<PlayersDataTable/);
+    expect(leagueView).toMatch(/<PlayersBoard/);
     expect(leagueView).not.toMatch(/FootballPlayersTable/);
     expect(leagueView).not.toMatch(/BaseballPlayersTable/);
     // LeagueView itself stays a server component.

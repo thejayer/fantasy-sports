@@ -28,6 +28,7 @@ _STANDINGS_TEAM_KEYS = (
     "points_for",
     "points_against",
     "standing",
+    "final_standing",
     "division",
 )
 
@@ -39,11 +40,36 @@ CONCERN_FILES = (
     "settings.json",
     "transactions.json",
     "free_agents.json",
+    "lineups.json",
+    "scoreboard.json",
 )
 
 
 def season_dir_rel(league_id: str, season: int) -> str:
     return f"{league_id}/{season}"
+
+
+def week_box_score_rel(league_id: str, season: int, week: int) -> str:
+    """Side-concern path for football/baseball week boxes (roadmap 8.1 / 8.2).
+
+    Not listed in ``manifest.files`` — season assemble must never load these.
+    """
+    return f"{season_dir_rel(league_id, season)}/weeks/{int(week)}.json"
+
+
+def pro_schedule_rel(league_id: str, season: int) -> str:
+    """Side-concern MLB/NFL pro schedule for locks + games/period (roadmap 8.2)."""
+    return f"{season_dir_rel(league_id, season)}/pro_schedule.json"
+
+
+def analysis_rel(league_id: str, season: int, name: str) -> str:
+    """Side-concern season-points analysis JSON (roadmap 8.5).
+
+    ``name`` is ``slot_points`` or ``points_timeseries``. Not listed in
+    ``manifest.files`` — season assemble must never load these.
+    """
+    safe = str(name).strip().replace("..", "")
+    return f"{season_dir_rel(league_id, season)}/analysis/{safe}.json"
 
 
 def manifest_rel(league_id: str, season: int) -> str:
@@ -65,7 +91,16 @@ def split_snapshot(snapshot: dict[str, Any]) -> dict[str, dict[str, Any]]:
     for team in teams:
         team_id = team.get("team_id")
         key = str(team_id)
-        standings_teams.append({k: team.get(k) for k in _STANDINGS_TEAM_KEYS})
+        standings_row = {
+            k: team.get(k)
+            for k in _STANDINGS_TEAM_KEYS
+            if k != "final_standing"
+        }
+        # Optional post-season ladder — omit when unset so round-trips match
+        # mid-season / baseball / golf snapshots (roadmap 7.13).
+        if team.get("final_standing") is not None:
+            standings_row["final_standing"] = team.get("final_standing")
+        standings_teams.append(standings_row)
         roster_by_id[key] = list(team.get("roster") or [])
         matchup_by_id[key] = {
             "schedule": list(team.get("schedule") or []),
@@ -81,6 +116,8 @@ def split_snapshot(snapshot: dict[str, Any]) -> dict[str, dict[str, Any]]:
         "settings": "settings.json",
         "transactions": "transactions.json",
         "free_agents": "free_agents.json",
+        "lineups": "lineups.json",
+        "scoreboard": "scoreboard.json",
     }
     manifest = {
         "schema_version": SCHEMA_VERSION,
@@ -122,6 +159,23 @@ def split_snapshot(snapshot: dict[str, Any]) -> dict[str, dict[str, Any]]:
         "free_agents.json": {
             "free_agents": list(snapshot.get("free_agents") or [])
         },
+        # Golf weekly lineups (roadmap 6.4c); empty shell for ESPN sports.
+        "lineups.json": snapshot.get("lineups")
+        if isinstance(snapshot.get("lineups"), dict)
+        else {
+            "period_label": snapshot.get("period_label"),
+            "current_event_id": None,
+            "events": [],
+            "teams": {},
+        },
+        # Golf EOD scoreboard (roadmap 6.4d); empty shell for ESPN sports.
+        "scoreboard.json": snapshot.get("scoreboard")
+        if isinstance(snapshot.get("scoreboard"), dict)
+        else {
+            "period_label": snapshot.get("period_label"),
+            "current_event_id": None,
+            "events": [],
+        },
     }
 
 
@@ -141,6 +195,8 @@ def assemble_snapshot(parts: dict[str, dict[str, Any]]) -> dict[str, Any]:
     settings_part = _optional_part(parts, "settings", "settings.json") or {}
     transactions_part = _optional_part(parts, "transactions", "transactions.json") or {}
     free_agents_part = _optional_part(parts, "free_agents", "free_agents.json") or {}
+    lineups_part = _optional_part(parts, "lineups", "lineups.json") or {}
+    scoreboard_part = _optional_part(parts, "scoreboard", "scoreboard.json") or {}
 
     roster_by_id = rosters.get("teams") or {}
     matchup_by_id = matchups.get("teams") or {}
@@ -162,7 +218,7 @@ def assemble_snapshot(parts: dict[str, dict[str, Any]]) -> dict[str, Any]:
     if not isinstance(settings, dict):
         settings = {}
 
-    return {
+    payload = {
         "league_id": manifest["league_id"],
         "espn_league_id": manifest.get("espn_league_id"),
         "sport": manifest.get("sport"),
@@ -183,6 +239,39 @@ def assemble_snapshot(parts: dict[str, dict[str, Any]]) -> dict[str, Any]:
         "teams": teams,
         "players": list(rosters.get("players") or []),
     }
+    if lineups_part:
+        # Concern file may be the lineups object itself (not nested).
+        nested = lineups_part.get("lineups")
+        candidate = (
+            nested
+            if isinstance(nested, dict)
+            else lineups_part
+            if "teams" in lineups_part or "events" in lineups_part
+            else None
+        )
+        # ESPN sports keep an empty on-disk shell for layout parity; only attach
+        # a top-level `lineups` key when golf (or another writer) filled it in.
+        if isinstance(candidate, dict) and (
+            bool(candidate.get("teams"))
+            or bool(candidate.get("events"))
+            or candidate.get("current_event_id") is not None
+        ):
+            payload["lineups"] = candidate
+    if scoreboard_part:
+        nested = scoreboard_part.get("scoreboard")
+        candidate = (
+            nested
+            if isinstance(nested, dict)
+            else scoreboard_part
+            if "events" in scoreboard_part or "teams" in scoreboard_part
+            else None
+        )
+        if isinstance(candidate, dict) and (
+            bool(candidate.get("events"))
+            or candidate.get("current_event_id") is not None
+        ):
+            payload["scoreboard"] = candidate
+    return payload
 
 
 def _part(

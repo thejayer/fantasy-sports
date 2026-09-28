@@ -1,21 +1,102 @@
 import Link from "next/link";
+import { Suspense } from "react";
+import { DraftBoard } from "@/components/DraftBoard";
 import { EmptyState } from "@/components/EmptyState";
+import { PlayoffOddsBoard } from "@/components/PlayoffOddsBoard";
+import { StartSitBoard } from "@/components/StartSitBoard";
 import { TradeAnalyzer } from "@/components/TradeAnalyzer";
 import { WaiverBoard } from "@/components/WaiverBoard";
 import type {
+  DraftSimSnapshot,
   LeagueSnapshot,
   PlayerMapSnapshot,
+  PlayoffOddsSamples,
+  PlayoffOddsSnapshot,
   ProjectionSnapshot,
+  WeeklyProjectionSnapshot,
 } from "@/lib/data";
 import {
   defaultToolsPair,
+  defaultToolsTeam,
   projectionIndexes,
   teamStrengthRows,
   waiverBoardRows,
 } from "@/lib/decision-tools";
-import { formatProjectionPoints } from "@/lib/projection-join";
+import { ViewerBadge } from "@/components/ViewerBadge";
+import {
+  formatProjectionPoints,
+  indexPlayerMap,
+  indexProjections,
+} from "@/lib/projection-join";
 
-export type ToolsView = "trade" | "waivers" | "strength" | "deferred";
+export type ToolsView =
+  | "home"
+  | "trade"
+  | "waivers"
+  | "strength"
+  | "draft"
+  | "start-sit"
+  | "playoff-odds";
+
+/** Proper nouns + one-line promises (roadmap 7.8). URL ids stay stable. */
+export const TOOL_CARDS: Array<{
+  id: Exclude<ToolsView, "home">;
+  name: string;
+  promise: string;
+}> = [
+  {
+    id: "trade",
+    name: "Trade Desk",
+    promise: "See which side gains season points — and by how much.",
+  },
+  {
+    id: "waivers",
+    name: "Wire Watch",
+    promise: "Rank free agents by floor, median, ceiling, and VOR.",
+  },
+  {
+    id: "strength",
+    name: "Roster Power",
+    promise: "League-wide season strength from calibrated projections.",
+  },
+  {
+    id: "draft",
+    name: "Draft Board",
+    promise: "Pick rates and ADP from offline Monte Carlo draft sims.",
+  },
+  {
+    id: "start-sit",
+    name: "Start / Sit",
+    promise: "Typical-week posteriors for the tough lineup calls.",
+  },
+  {
+    id: "playoff-odds",
+    name: "Playoff Odds",
+    promise: "Make-playoffs probability from the remaining H2H slate.",
+  },
+];
+
+function toolsHref(
+  leagueId: string,
+  season: number,
+  view: ToolsView,
+  opts: { a?: number; b?: number; team?: number; slot?: number },
+): string {
+  const query = new URLSearchParams({
+    season: String(season),
+    tab: "tools",
+    view,
+  });
+  if (view === "trade") {
+    if (opts.a != null) query.set("a", String(opts.a));
+    if (opts.b != null) query.set("b", String(opts.b));
+  } else if (view === "start-sit") {
+    if (opts.team != null) query.set("team", String(opts.team));
+  } else if (view === "draft" && opts.slot != null) {
+    query.set("slot", String(opts.slot));
+  }
+  return `/leagues/${leagueId}?${query.toString()}`;
+}
 
 function ViewSwitcher({
   leagueId,
@@ -23,26 +104,27 @@ function ViewSwitcher({
   view,
   a,
   b,
+  team,
+  slot,
 }: {
   leagueId: string;
   season: number;
   view: ToolsView;
   a?: number;
   b?: number;
+  team?: number;
+  slot?: number;
 }) {
   const views: Array<{ id: ToolsView; label: string }> = [
-    { id: "trade", label: "Trade" },
-    { id: "waivers", label: "Waivers" },
-    { id: "strength", label: "Strength" },
-    { id: "deferred", label: "More" },
+    { id: "home", label: "Tools" },
+    ...TOOL_CARDS.map((card) => ({ id: card.id as ToolsView, label: card.name })),
   ];
-  const pair = a != null && b != null ? `&a=${a}&b=${b}` : "";
   return (
     <div className="tabs" style={{ marginTop: "0.5rem" }}>
       {views.map((item) => (
         <Link
           key={item.id}
-          href={`/leagues/${leagueId}?season=${season}&tab=tools&view=${item.id}${pair}`}
+          href={toolsHref(leagueId, season, item.id, { a, b, team, slot })}
           className={`tab${view === item.id ? " active" : ""}`}
         >
           {item.label}
@@ -52,14 +134,67 @@ function ViewSwitcher({
   );
 }
 
+function ToolsLanding({
+  leagueId,
+  season,
+  a,
+  b,
+  team,
+  slot,
+}: {
+  leagueId: string;
+  season: number;
+  a?: number;
+  b?: number;
+  team?: number;
+  slot?: number;
+}) {
+  return (
+    <div style={{ marginTop: "0.75rem" }}>
+      <p className="lede">
+        Decision tools over calibrated projections — each one defaults to your
+        roster when you are linked. Trade Desk prices packages in Δ
+        make-playoffs when a playoff samples sidecar is present.
+      </p>
+      <div
+        className="tools-landing"
+        style={{
+          display: "grid",
+          gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
+          gap: "0.75rem",
+          marginTop: "0.75rem",
+        }}
+      >
+        {TOOL_CARDS.map((card) => (
+          <Link
+            key={card.id}
+            href={toolsHref(leagueId, season, card.id, { a, b, team, slot })}
+            className="panel"
+            style={{ textDecoration: "none", color: "inherit" }}
+          >
+            <h3 style={{ margin: "0 0 0.35rem", fontSize: "1.05rem" }}>
+              {card.name}
+            </h3>
+            <p className="league-meta" style={{ margin: 0 }}>
+              {card.promise}
+            </p>
+          </Link>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 function StrengthTable({
   league,
   playerMap,
   snapshot,
+  viewerTeamId,
 }: {
   league: LeagueSnapshot;
   playerMap: PlayerMapSnapshot | null;
   snapshot: ProjectionSnapshot | null;
+  viewerTeamId?: number;
 }) {
   const { espnToGsis, byGsis } = projectionIndexes(playerMap, snapshot);
   const rows = teamStrengthRows(league, espnToGsis, byGsis);
@@ -90,7 +225,10 @@ function StrengthTable({
         </thead>
         <tbody>
           {rows.map((row, index) => (
-            <tr key={row.teamId}>
+            <tr
+              key={row.teamId}
+              className={row.teamId === viewerTeamId ? "is-viewer" : undefined}
+            >
               <td data-label="#">{index + 1}</td>
               <td data-label="Team">
                 <Link
@@ -98,6 +236,7 @@ function StrengthTable({
                 >
                   {row.name}
                 </Link>
+                {row.teamId === viewerTeamId ? <ViewerBadge /> : null}
                 {row.owners.length ? (
                   <div className="league-meta">{row.owners.join(", ")}</div>
                 ) : null}
@@ -130,20 +269,49 @@ export function ToolsPanel({
   view,
   a,
   b,
+  team,
+  slot = 1,
+  availableDraftSlots = [],
   projectionSnapshot,
   playerMap,
+  draftSimSnapshot,
+  weeklyProjectionSnapshot,
+  playoffOddsSnapshot,
+  playoffOddsSamples = null,
+  halfPprFallback = false,
+  viewerTeamId,
 }: {
   league: LeagueSnapshot;
   view: ToolsView;
   a?: number;
   b?: number;
+  team?: number;
+  slot?: number;
+  availableDraftSlots?: number[];
   projectionSnapshot: ProjectionSnapshot | null;
   playerMap: PlayerMapSnapshot | null;
+  draftSimSnapshot?: DraftSimSnapshot | null;
+  weeklyProjectionSnapshot?: WeeklyProjectionSnapshot | null;
+  playoffOddsSnapshot?: PlayoffOddsSnapshot | null;
+  playoffOddsSamples?: PlayoffOddsSamples | null;
+  halfPprFallback?: boolean;
+  /** Signed-in member's franchise — every tool opens on it (roadmap 7.1). */
+  viewerTeamId?: number;
 }) {
-  const pair = defaultToolsPair(league);
+  const pair = defaultToolsPair(league, viewerTeamId);
   const teamA = a ?? pair?.a;
   const teamB = b ?? pair?.b;
   const { espnToGsis, byGsis } = projectionIndexes(playerMap, projectionSnapshot);
+  const weeklyByGsis = indexProjections(weeklyProjectionSnapshot ?? null);
+  const espnMap = indexPlayerMap(playerMap);
+  const startSitTeamId =
+    team ?? defaultToolsTeam(league, viewerTeamId) ?? 1;
+  const seasonFallback =
+    projectionSnapshot != null &&
+    projectionSnapshot.season !== league.season;
+  const weeklySeasonFallback =
+    weeklyProjectionSnapshot != null &&
+    weeklyProjectionSnapshot.season !== league.season;
 
   return (
     <div className="tools-panel">
@@ -153,7 +321,34 @@ export function ToolsPanel({
         view={view}
         a={teamA}
         b={teamB}
+        team={startSitTeamId}
+        slot={slot}
       />
+
+      {halfPprFallback || seasonFallback || weeklySeasonFallback ? (
+        <p className="muted" style={{ marginTop: "0.75rem" }}>
+          {halfPprFallback
+            ? "This league scores half-PPR; tools use the PPR export until a dedicated half-PPR snapshot exists. "
+            : null}
+          {seasonFallback
+            ? `Hub season ${league.season}; season boards use NFL ${projectionSnapshot!.season} (nearest available export). `
+            : null}
+          {weeklySeasonFallback && !seasonFallback
+            ? `Hub season ${league.season}; weekly boards use NFL ${weeklyProjectionSnapshot!.season} (nearest available export). `
+            : null}
+        </p>
+      ) : null}
+
+      {view === "home" ? (
+        <ToolsLanding
+          leagueId={league.league_id}
+          season={league.season}
+          a={teamA}
+          b={teamB}
+          team={startSitTeamId}
+          slot={slot}
+        />
+      ) : null}
 
       {view === "trade" ? (
         !projectionSnapshot?.players?.length ? (
@@ -166,13 +361,19 @@ export function ToolsPanel({
             This league snapshot does not have enough teams to compare.
           </EmptyState>
         ) : (
-          <TradeAnalyzer
-            teams={league.teams}
-            espnToGsisEntries={[...espnToGsis.entries()]}
-            projectionEntries={[...byGsis.entries()]}
-            initialA={teamA}
-            initialB={teamB}
-          />
+          <Suspense fallback={<p className="muted">Loading trade tool…</p>}>
+            <TradeAnalyzer
+              teams={league.teams}
+              league={league}
+              espnToGsisEntries={[...espnToGsis.entries()]}
+              projectionEntries={[...byGsis.entries()]}
+              playoffOddsSamples={playoffOddsSamples}
+              initialA={teamA}
+              initialB={teamB}
+              leagueId={league.league_id}
+              season={league.season}
+            />
+          </Suspense>
         )
       ) : null}
 
@@ -187,31 +388,46 @@ export function ToolsPanel({
           league={league}
           playerMap={playerMap}
           snapshot={projectionSnapshot}
+          viewerTeamId={viewerTeamId}
         />
       ) : null}
 
-      {view === "deferred" ? (
-        <EmptyState title="Draft assistant & playoff odds need more data">
-          <ul style={{ margin: "0.5rem 0 0", paddingLeft: "1.25rem" }}>
-            <li>
-              <strong>Draft assistant</strong> — use{" "}
-              <code>ffa draft-sim</code> today; hub needs an offline{" "}
-              <code>export-draft-sim</code> snapshot (slot × sims) before it can
-              render without calling Python at request time.
-            </li>
-            <li>
-              <strong>Playoff odds</strong> — season projection totals are not
-              weekly team scores. True Monte Carlo odds need weekly posteriors
-              (same blocker as start/sit).
-            </li>
-            <li>
-              <strong>ESPN free agents</strong> — synced into{" "}
-              <code>free_agents.json</code> (size-capped). The Waivers view uses
-              that list when present; otherwise it falls back to unrostered
-              projections.
-            </li>
-          </ul>
-        </EmptyState>
+      {view === "draft" ? (
+        <DraftBoard
+          snapshot={draftSimSnapshot ?? null}
+          leagueId={league.league_id}
+          season={league.season}
+          slot={slot}
+          availableSlots={availableDraftSlots}
+        />
+      ) : null}
+
+      {view === "start-sit" ? (
+        !weeklyProjectionSnapshot?.players?.length ? (
+          <EmptyState title="No weekly projection snapshot">
+            Run <code>ffa export-weekly-projections</code> into the hub store
+            (typical-week grain). Season totals under{" "}
+            <code>export-projections</code> are not used for start/sit.
+          </EmptyState>
+        ) : (
+          <Suspense fallback={<p className="muted">Loading start/sit…</p>}>
+            <StartSitBoard
+              teams={league.teams}
+              espnToGsisEntries={[...espnMap.entries()]}
+              weeklyEntries={[...weeklyByGsis.entries()]}
+              initialTeamId={startSitTeamId}
+              leagueId={league.league_id}
+              season={league.season}
+            />
+          </Suspense>
+        )
+      ) : null}
+
+      {view === "playoff-odds" ? (
+        <PlayoffOddsBoard
+          snapshot={playoffOddsSnapshot ?? null}
+          viewerTeamId={viewerTeamId}
+        />
       ) : null}
     </div>
   );

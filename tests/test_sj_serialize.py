@@ -2,8 +2,12 @@ from types import SimpleNamespace
 
 from sj.serialize import (
     extract_baseball_season_stats,
+    extract_baseball_stat_breakdown,
+    extract_baseball_trailing_stats,
+    hockey_points_from_season_stats,
     serialize_activity,
     serialize_draft,
+    serialize_free_agent,
     serialize_free_agents,
     serialize_league,
     serialize_player,
@@ -96,6 +100,9 @@ def test_serialize_team_and_league():
     assert snapshot["team_count"] == 1
     assert snapshot["teams"][0]["owners"] == ["A B"]
     assert snapshot["teams"][0]["win_pct"] == 0.75
+    # Seed vs final stay separate (final_standing 0 omitted mid-season).
+    assert snapshot["teams"][0]["standing"] == 1
+    assert "final_standing" not in snapshot["teams"][0]
     assert snapshot["teams"][0]["roster"][0]["name"] == "Test Player"
     assert snapshot["players"][0]["fantasy_team"] == "Unit Testers"
     assert snapshot["period_label"] == "week"
@@ -124,6 +131,32 @@ def test_serialize_team_and_league():
             "nominating_team_id": None,
         }
     ]
+
+
+def test_serialize_team_keeps_playoff_champ_separate_from_seed():
+    """ESPN seed #1 ≠ final_standing 1 — do not collapse them (roadmap 7.13)."""
+    team = SimpleNamespace(
+        team_id=3,
+        team_name="Dark Horse",
+        team_abbrev="DRK",
+        owners=[],
+        logo_url=None,
+        wins=8,
+        losses=6,
+        ties=0,
+        points_for=1100.0,
+        points_against=1050.0,
+        standing=3,
+        final_standing=1,
+        division_name="West",
+        schedule=[],
+        scores=[],
+        outcomes=[],
+        roster=[],
+    )
+    row = serialize_team(team)
+    assert row["standing"] == 3
+    assert row["final_standing"] == 1
 
 
 def test_serialize_settings_and_activity_shapes():
@@ -266,6 +299,45 @@ def test_baseball_matchups_normalize_to_parallel_arrays():
     assert payload["outcomes"] == ["W", "W"]
 
 
+def test_hockey_matchup_missing_winner_is_undecided():
+    """Preseason / BYE Matchup objects omit winner — do not KeyError."""
+    team = SimpleNamespace(
+        team_id=1,
+        team_name="Five Hole",
+        team_abbrev="FH",
+        owners=["A"],
+        logo_url="",
+        wins=0,
+        losses=0,
+        ties=0,
+        points_for=0.0,
+        points_against=0.0,
+        standing=1,
+        final_standing=0,
+        division_name="",
+        schedule=[
+            SimpleNamespace(
+                home_team=1,
+                away_team=4,
+                home_final_score=0.0,
+                away_final_score=0.0,
+            ),
+            SimpleNamespace(
+                home_team=2,
+                away_team=1,
+                home_final_score=3.0,
+                away_final_score=1.0,
+                winner="AWAY",
+            ),
+        ],
+        roster=[],
+    )
+    payload = serialize_team(team, sport="hockey")
+    assert payload["schedule"] == [4, 2]
+    assert payload["scores"] == [0.0, 1.0]
+    assert payload["outcomes"] == ["U", "W"]
+
+
 def test_baseball_player_season_stats_and_role():
     hitter = SimpleNamespace(
         playerId=2,
@@ -371,3 +443,388 @@ def test_baseball_player_season_stats_and_role():
     assert snapshot["teams"][0]["points_for"] == 400.0  # 220 + 180 roster fallback
     assert snapshot["players"][0]["name"] == "Slugger"
     assert snapshot["players"][0]["season_stats"]["HR"] == 30
+
+
+def test_serialize_season_points_prefers_team_points_not_roster_sum():
+    """TOTAL_SEASON_POINTS must not invent PF from roster player totals."""
+    from sj.serialize import serialize_league
+
+    hitter = SimpleNamespace(
+        playerId=1,
+        name="Slugger",
+        position="OF",
+        lineupSlot="OF",
+        proTeam="NYY",
+        injuryStatus="ACTIVE",
+        status="ONTEAM",
+        injured=False,
+        eligibleSlots=["OF"],
+        acquisitionType=None,
+        percent_owned=99.0,
+        total_points=900.0,
+        projected_total_points=900.0,
+        avg_points=9.0,
+        stats={0: {"breakdown": {"HR": 30, "AB": 400, "H": 120, "AVG": 0.3}}},
+    )
+    team = SimpleNamespace(
+        team_id=1,
+        team_name="Okiro",
+        team_abbrev="OKI",
+        owners=["Pat"],
+        logo_url="",
+        wins=0,
+        losses=0,
+        ties=0,
+        points_for=None,
+        points=6040.0,
+        points_against=None,
+        standing=1,
+        final_standing=0,
+        division_name="",
+        roster=[hitter],
+    )
+    settings = SimpleNamespace(
+        name="SJ - Baseball",
+        scoring_type="TOTAL_SEASON_POINTS",
+        _raw_scoring_settings={
+            "scoringType": "TOTAL_SEASON_POINTS",
+            "scoringItems": [
+                {"statId": 5, "statName": "Home Runs", "points": 5.0},
+                {"statId": 20, "statName": "Runs", "points": 1.0},
+            ],
+        },
+    )
+    league = SimpleNamespace(
+        settings=settings,
+        teams=[team],
+        current_week=129,
+        scoring_type="TOTAL_SEASON_POINTS",
+    )
+    snapshot = serialize_league(
+        league,
+        league_id="baseball-dynasty",
+        sport="baseball",
+        format="dynasty",
+        season=2026,
+        espn_league_id=2499137,
+    )
+    assert snapshot["scoring_type"] == "TOTAL_SEASON_POINTS"
+    assert snapshot["teams"][0]["points_for"] == 6040.0
+    assert snapshot["settings"]["scoring_format"][0]["points"] == 5.0
+    assert snapshot["settings"]["categories"][0]["abbr"] == "HR"
+
+
+def test_serialize_season_points_without_team_points_leaves_pf_none():
+    from sj.serialize import serialize_league
+
+    player = SimpleNamespace(
+        playerId=1,
+        name="X",
+        position="OF",
+        lineupSlot="OF",
+        proTeam="NYY",
+        injuryStatus="ACTIVE",
+        status="ONTEAM",
+        injured=False,
+        eligibleSlots=["OF"],
+        acquisitionType=None,
+        percent_owned=1.0,
+        total_points=500.0,
+        projected_total_points=500.0,
+        avg_points=5.0,
+        stats={0: {"breakdown": {}}},
+    )
+    team = SimpleNamespace(
+        team_id=1,
+        team_name="Unset",
+        team_abbrev="UN",
+        owners=[],
+        logo_url="",
+        wins=0,
+        losses=0,
+        ties=0,
+        points_for=None,
+        points_against=None,
+        standing=1,
+        roster=[player],
+    )
+    league = SimpleNamespace(
+        settings=SimpleNamespace(name="BB", scoring_type="TOTAL_SEASON_POINTS"),
+        teams=[team],
+        current_week=1,
+        scoring_type="TOTAL_SEASON_POINTS",
+    )
+    snapshot = serialize_league(
+        league,
+        league_id="baseball-dynasty",
+        sport="baseball",
+        format="dynasty",
+        season=2026,
+        espn_league_id=1,
+    )
+    assert snapshot["teams"][0]["points_for"] is None
+
+
+def test_hockey_player_season_stats_from_total_key():
+    from sj.serialize import extract_hockey_season_stats, extract_hockey_trailing_stats
+
+    skater = SimpleNamespace(
+        playerId=99,
+        name="Sniper",
+        position="C",
+        lineupSlot="C",
+        proTeam="BOS",
+        injuryStatus="ACTIVE",
+        status="ACTIVE",
+        injured=False,
+        eligibleSlots=["C", "F"],
+        acquisitionType="DRAFT",
+        percent_owned=80.0,
+        total_points=140.0,
+        projected_total_points=130.0,
+        avg_points=1.7,
+        stats={
+            "Total 2025": {
+                "total": {"G": 32.0, "A": 48.0, "PPP": 22.0, "SOG": 210.0, "HIT": 40.0}
+            },
+            "Last 7 2025": {"total": {"G": 3.0, "A": 4.0}},
+        },
+    )
+    goalie = SimpleNamespace(
+        playerId=100,
+        name="Wall",
+        position="Goalie",
+        lineupSlot="G",
+        proTeam="NYR",
+        injuryStatus="ACTIVE",
+        status="ACTIVE",
+        injured=False,
+        eligibleSlots=["G"],
+        acquisitionType="DRAFT",
+        percent_owned=70.0,
+        total_points=90.0,
+        projected_total_points=88.0,
+        avg_points=2.0,
+        stats={"Total 2025": {"total": {"W": 28.0, "SV": 1200.0, "SO": 4.0, "GAA": 2.31}}},
+    )
+    assert extract_hockey_season_stats(skater)["G"] == 32.0
+    assert extract_hockey_trailing_stats(skater)["7"]["G"] == 3.0
+    s_payload = serialize_player(skater, sport="hockey")
+    g_payload = serialize_player(goalie, sport="hockey")
+    assert s_payload["role"] == "skater"
+    assert s_payload["season_stats"]["A"] == 48.0
+    assert g_payload["role"] == "goalie"
+    assert g_payload["season_stats"]["W"] == 28.0
+
+    settings = SimpleNamespace(
+        name="Hockey",
+        scoring_type="H2H_POINTS",
+        scoring_format=[
+            {"id": 13, "abbr": "G", "label": "Goals", "points": 3.0},
+        ],
+        _raw_scoring_settings={
+            "scoringType": "H2H_POINTS",
+            "scoringItems": [
+                {"statId": 13, "statName": "Goals", "points": 3.0},
+                {"statId": 14, "statName": "Assists", "points": 2.0},
+            ],
+        },
+    )
+    team = SimpleNamespace(
+        team_id=1,
+        team_name="Five Hole",
+        team_abbrev="FH",
+        owners=["A"],
+        wins=8,
+        losses=4,
+        ties=0,
+        points_for=410.0,
+        points_against=380.0,
+        standing=1,
+        roster=[skater],
+        schedule=[2],
+        scores=[42.0],
+        outcomes=["W"],
+    )
+    league = SimpleNamespace(
+        settings=settings,
+        teams=[team],
+        current_week=12,
+        scoring_type="H2H_POINTS",
+    )
+    snapshot = serialize_league(
+        league,
+        league_id="hockey-main",
+        sport="hockey",
+        format="redraft",
+        season=2025,
+        espn_league_id=0,
+    )
+    assert snapshot["sport"] == "hockey"
+    assert snapshot["espn_league_id"] == 0
+    assert snapshot["period_label"] == "week"
+    assert snapshot["settings"]["scoring_format"][0]["abbr"] == "G"
+    assert snapshot["settings"]["categories"][0]["abbr"] == "G"
+
+
+def test_baseball_nonfinite_era_whip_serialize_to_null():
+    """0-IP pitchers emit ERA/WHIP as null, not IEEE Infinity (hub crash)."""
+    breakdown = extract_baseball_stat_breakdown(
+        {
+            "OUTS": 0,
+            "K": 0,
+            "ERA": float("inf"),
+            "WHIP": float("-inf"),
+            "AVG": float("nan"),
+        }
+    )
+    assert breakdown["ERA"] is None
+    assert breakdown["WHIP"] is None
+    assert breakdown["AVG"] is None
+    assert breakdown["IP"] == 0.0
+    assert breakdown["K"] == 0.0
+
+    pitcher = SimpleNamespace(
+        playerId=99,
+        name="Zero IP Reliever",
+        position="RP",
+        lineupSlot="FA",
+        proTeam="BOS",
+        injuryStatus="ACTIVE",
+        status="FREEAGENT",
+        injured=False,
+        eligibleSlots=["P", "RP"],
+        acquisitionType=None,
+        percent_owned=0.4,
+        total_points=0.0,
+        projected_total_points=1.0,
+        avg_points=0.0,
+        stats={
+            0: {
+                "breakdown": {
+                    "OUTS": 0,
+                    "ERA": float("inf"),
+                    "WHIP": float("inf"),
+                    "K": 0,
+                }
+            }
+        },
+        trailing_stats={
+            "7": {
+                "OUTS": 0,
+                "ERA": float("inf"),
+                "WHIP": float("nan"),
+                "K": 1,
+            }
+        },
+    )
+    season = extract_baseball_season_stats(pitcher)
+    assert season["ERA"] is None
+    assert season["WHIP"] is None
+    trailing = extract_baseball_trailing_stats(pitcher)
+    assert trailing["7"]["ERA"] is None
+    assert trailing["7"]["WHIP"] is None
+    assert trailing["7"]["K"] == 1.0
+
+    row = serialize_free_agent(pitcher, sport="baseball")
+    assert row["trailing_stats"]["7"]["ERA"] is None
+    assert row["trailing_stats"]["7"]["WHIP"] is None
+    roster = serialize_player(pitcher, sport="baseball")
+    assert roster["season_stats"]["ERA"] is None
+    assert roster["season_stats"]["WHIP"] is None
+
+
+def test_hockey_derives_total_points_from_season_stats_when_espn_omits():
+    """espn-api hockey Player has no total_points — count stats × weights."""
+    scoring = [
+        {"abbr": "G", "points": 3.0},
+        {"abbr": "A", "points": 2.0},
+        {"abbr": "PPP", "points": 1.0},
+        {"abbr": "SOG", "points": 0.2},
+        {"abbr": "GAA", "points": -1.0},  # rate — must not be multiplied
+    ]
+    skater = SimpleNamespace(
+        playerId=97,
+        name="McDavid",
+        position="C",
+        lineupSlot="Forward",
+        proTeam="EDM",
+        injuryStatus="ACTIVE",
+        status="ACTIVE",
+        injured=False,
+        eligibleSlots=["C", "F"],
+        acquisitionType="DRAFT",
+        percent_owned=99.0,
+        total_points=None,
+        projected_total_points=None,
+        avg_points=None,
+        stats={
+            "Total 2026": {
+                "total": {
+                    "G": 26.0,
+                    "A": 74.0,
+                    "PPP": 32.0,
+                    "SOG": 194.0,
+                    "GAA": 2.31,
+                }
+            }
+        },
+    )
+    row = serialize_player(skater, sport="hockey", scoring_format=scoring)
+    # 26*3 + 74*2 + 32*1 + 194*0.2 = 78 + 148 + 32 + 38.8 = 296.8
+    assert row["total_points"] == 296.8
+    assert hockey_points_from_season_stats(row["season_stats"], scoring) == 296.8
+
+    bench = SimpleNamespace(
+        playerId=98,
+        name="Spare",
+        position="D",
+        lineupSlot="BE",
+        proTeam="BOS",
+        injuryStatus="ACTIVE",
+        status="ACTIVE",
+        injured=False,
+        eligibleSlots=["D"],
+        acquisitionType="WAIVERS",
+        percent_owned=1.0,
+        total_points=None,
+        projected_total_points=None,
+        avg_points=None,
+        stats={"Total 2026": {"total": {"G": 4.0, "A": 10.0}}},
+    )
+    team = SimpleNamespace(
+        team_id=1,
+        team_name="Oil",
+        team_abbrev="OIL",
+        owners=["A"],
+        wins=0,
+        losses=0,
+        ties=0,
+        points_for=None,
+        points_against=None,
+        standing=1,
+        roster=[skater, bench],
+    )
+    settings = SimpleNamespace(
+        name="Hockey",
+        scoring_type="TOTAL_SEASON_POINTS",
+        scoring_format=scoring,
+        _raw_scoring_settings={"scoringType": "TOTAL_SEASON_POINTS", "scoringItems": []},
+    )
+    snapshot = serialize_league(
+        SimpleNamespace(settings=settings, teams=[team], current_week=10),
+        league_id="hockey-main",
+        sport="hockey",
+        format="redraft",
+        season=2027,
+        espn_league_id=1023106173,
+        free_agents=[skater],
+    )
+    assert snapshot["scoring_type"] == "TOTAL_SEASON_POINTS"
+    assert snapshot["teams"][0]["roster"][0]["total_points"] == 296.8
+    # Bench is excluded from the season-points PF fallback.
+    assert snapshot["teams"][0]["points_for"] == 296.8
+    fa = snapshot["free_agents"][0]
+    assert fa["total_points"] == 296.8
+    assert "season_stats" not in fa
+

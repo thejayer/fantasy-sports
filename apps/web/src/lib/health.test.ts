@@ -30,9 +30,9 @@ describe("staleAfterSeconds", () => {
     delete process.env.SJ_HEALTH_STALE_SECONDS;
   });
 
-  it("defaults to two hours", () => {
+  it("defaults to 26 hours", () => {
     delete process.env.SJ_HEALTH_STALE_SECONDS;
-    expect(staleAfterSeconds()).toBe(7200);
+    expect(staleAfterSeconds()).toBe(26 * 60 * 60);
   });
 
   it("honours SJ_HEALTH_STALE_SECONDS", () => {
@@ -42,7 +42,7 @@ describe("staleAfterSeconds", () => {
 
   it("falls back when the env value is junk", () => {
     process.env.SJ_HEALTH_STALE_SECONDS = "nope";
-    expect(staleAfterSeconds()).toBe(7200);
+    expect(staleAfterSeconds()).toBe(26 * 60 * 60);
   });
 });
 
@@ -127,6 +127,45 @@ describe("buildHealthReport", () => {
     expect(report.stale_count).toBe(1);
     expect(report.leagues[0]?.stale).toBe(true);
     expect(report.oldest_age_seconds).toBe(10 * 60 * 60);
+  });
+
+  it("does not mark a 24h-old snapshot stale under the daily-sync default", async () => {
+    delete process.env.SJ_HEALTH_STALE_SECONDS;
+    await writeIndex(tmp, [
+      {
+        league_id: "football-main",
+        name: "Football",
+        sport: "football",
+        season: 2025,
+        synced_at: "2026-07-26T20:00:00.000Z", // 24h before FIXED_NOW
+      },
+    ]);
+
+    const report = await buildHealthReport(FIXED_NOW, [tmp]);
+    expect(report.stale_after_seconds).toBe(26 * 60 * 60);
+    expect(report.ok).toBe(true);
+    expect(report.status).toBe("ok");
+    expect(report.leagues[0]?.stale).toBe(false);
+    expect(report.leagues[0]?.age_seconds).toBe(24 * 60 * 60);
+  });
+
+  it("marks stale just past the 26h default", async () => {
+    delete process.env.SJ_HEALTH_STALE_SECONDS;
+    await writeIndex(tmp, [
+      {
+        league_id: "football-main",
+        name: "Football",
+        sport: "football",
+        season: 2025,
+        synced_at: "2026-07-26T17:00:00.000Z", // 27h before FIXED_NOW
+      },
+    ]);
+
+    const report = await buildHealthReport(FIXED_NOW, [tmp]);
+    expect(report.ok).toBe(false);
+    expect(report.status).toBe("stale");
+    expect(report.leagues[0]?.stale).toBe(true);
+    expect(report.oldest_age_seconds).toBe(27 * 60 * 60);
   });
 
   it("treats a missing synced_at as stale", async () => {

@@ -36,7 +36,7 @@
       "keeper": false,
       "nominating_team_id": null,
       "player_id": 202600301,
-      "player_name": "Roy Thompson",
+      "player_name": "Logan Baker",
       "round": 1,
       "round_pick": 4,
       "team_id": 4
@@ -46,7 +46,7 @@
       "keeper": false,
       "nominating_team_id": null,
       "player_id": 202600302,
-      "player_name": "Scott Sanders",
+      "player_name": "Zachary Rogers",
       "round": 2,
       "round_pick": 1,
       "team_id": 4
@@ -116,7 +116,7 @@
       "keeper": false,
       "nominating_team_id": null,
       "player_id": 202600303,
-      "player_name": "Randy Phillips",
+      "player_name": "Logan Scott",
       "round": 3,
       "round_pick": 4,
       "team_id": 4
@@ -574,6 +574,27 @@
     },
     {
       "acquisition_type": "DRAFT",
+      "avg_points": 19.5,
+      "eligible_slots": [
+        "QB",
+        "BE",
+        "IR"
+      ],
+      "fantasy_team": "Hail Mary Heroes",
+      "id": 202600301,
+      "injured": false,
+      "injury_status": "QUESTIONABLE",
+      "name": "Logan Baker",
+      "percent_owned": 83.6,
+      "position": "QB",
+      "pro_team": "BUF",
+      "projected_total_points": 382.3,
+      "slot": "QB",
+      "status": "ACTIVE",
+      "total_points": 331.8
+    },
+    {
+      "acquisition_type": "DRAFT",
       "avg_points": 17.8,
       "eligible_slots": [
         "RB",
@@ -783,25 +804,25 @@
       "total_points": 224.0
     },
     {
-      "acquisition_type": "DRAFT",
-      "avg_points": 12.9,
+      "acquisition_type": "WAIVER",
+      "avg_points": 13.1,
       "eligible_slots": [
-        "RB",
+        "WR",
         "BE",
         "IR"
       ],
       "fantasy_team": "Hail Mary Heroes",
-      "id": 202600303,
+      "id": 202600304,
       "injured": false,
-      "injury_status": null,
-      "name": "Randy Phillips",
-      "percent_owned": 29.8,
-      "position": "RB",
-      "pro_team": "NO",
-      "projected_total_points": 166.5,
-      "slot": "RB",
+      "injury_status": "OUT",
+      "name": "Logan Edwards",
+      "percent_owned": 36.0,
+      "position": "WR",
+      "pro_team": "NE",
+      "projected_total_points": 234.9,
+      "slot": "WR",
       "status": "ACTIVE",
-      "total_points": 218.9
+      "total_points": 222.6
     },
     {
       "acquisition_type": "WAIVER",
@@ -973,27 +994,6 @@
     },
     {
       "acquisition_type": "WAIVER",
-      "avg_points": 11.1,
-      "eligible_slots": [
-        "WR",
-        "BE",
-        "IR"
-      ],
-      "fantasy_team": "Hail Mary Heroes",
-      "id": 202600304,
-      "injured": false,
-      "injury_status": null,
-      "name": "Sean Ross",
-      "percent_owned": 36.0,
-      "position": "WR",
-      "pro_team": "SF",
-      "projected_total_points": 199.2,
-      "slot": "WR",
-      "status": "ACTIVE",
-      "total_points": 188.7
-    },
-    {
-      "acquisition_type": "WAIVER",
       "avg_points": 11.0,
       "eligible_slots": [
         "WR",
@@ -1117,6 +1117,27 @@
       "slot": "BE",
       "status": "ACTIVE",
       "total_points": 164.4
+    },
+    {
+      "acquisition_type": "DRAFT",
+      "avg_points": 9.5,
+      "eligible_slots": [
+        "RB",
+        "BE",
+        "IR"
+      ],
+      "fantasy_team": "Hail Mary Heroes",
+      "id": 202600303,
+      "injured": false,
+      "injury_status": null,
+      "name": "Logan Scott",
+      "percent_owned": -1.0,
+      "position": "RB",
+      "pro_team": "ATL",
+      "projected_total_points": 166.6,
+      "slot": "RB",
+      "status": "ACTIVE",
+      "total_points": 162.2
     },
     {
       "acquisition_type": "TRADE",
@@ -1266,6 +1287,27 @@
       "total_points": 125.5
     },
     {
+      "acquisition_type": "TRADE",
+      "avg_points": 7.3,
+      "eligible_slots": [
+        "RB",
+        "BE",
+        "IR"
+      ],
+      "fantasy_team": "Hail Mary Heroes",
+      "id": 202600302,
+      "injured": false,
+      "injury_status": "QUESTIONABLE",
+      "name": "Zachary Rogers",
+      "percent_owned": 20.8,
+      "position": "RB",
+      "pro_team": "CIN",
+      "projected_total_points": 121.3,
+      "slot": "RB",
+      "status": "ACTIVE",
+      "total_points": 124.7
+    },
+    {
       "acquisition_type": "WAIVER",
       "avg_points": 7.2,
       "eligible_slots": [
@@ -1392,27 +1434,6 @@
       "total_points": 105.2
     },
     {
-      "acquisition_type": "WAIVER",
-      "avg_points": 5.7,
-      "eligible_slots": [
-        "RB",
-        "BE",
-        "IR"
-      ],
-      "fantasy_team": "Hail Mary Heroes",
-      "id": 202600302,
-      "injured": false,
-      "injury_status": "DOUBTFUL",
-      "name": "Scott Sanders",
-      "percent_owned": 31.0,
-      "position": "RB",
-      "pro_team": "PHI",
-      "projected_total_points": 121.7,
-      "slot": "RB",
-      "status": "ACTIVE",
-      "total_points": 97.1
-    },
-    {
       "acquisition_type": "ADD",
       "avg_points": 5.6,
       "eligible_slots": [
@@ -1516,27 +1537,6 @@
       "slot": "TE",
       "status": "ACTIVE",
       "total_points": 86.6
-    },
-    {
-      "acquisition_type": "WAIVER",
-      "avg_points": 5.1,
-      "eligible_slots": [
-        "QB",
-        "BE",
-        "IR"
-      ],
-      "fantasy_team": "Hail Mary Heroes",
-      "id": 202600301,
-      "injured": false,
-      "injury_status": "OUT",
-      "name": "Roy Thompson",
-      "percent_owned": 12.1,
-      "position": "QB",
-      "pro_team": "LAC",
-      "projected_total_points": 66.9,
-      "slot": "QB",
-      "status": "ACTIVE",
-      "total_points": 86.5
     },
     {
       "acquisition_type": "DRAFT",
@@ -1899,16 +1899,52 @@
     "reg_season_count": 14,
     "scoring_format": [
       {
+        "abbr": "PY",
+        "id": 4,
+        "label": "Passing Yards",
+        "points": 0.04
+      },
+      {
         "abbr": "PTD",
         "id": 3,
         "label": "Passing TD",
         "points": 4.0
       },
       {
+        "abbr": "INT",
+        "id": 20,
+        "label": "Interceptions",
+        "points": -2.0
+      },
+      {
+        "abbr": "RY",
+        "id": 25,
+        "label": "Rushing Yards",
+        "points": 0.1
+      },
+      {
         "abbr": "RTD",
         "id": 24,
         "label": "Rushing TD",
         "points": 6.0
+      },
+      {
+        "abbr": "REY",
+        "id": 41,
+        "label": "Receiving Yards",
+        "points": 0.1
+      },
+      {
+        "abbr": "RETD",
+        "id": 42,
+        "label": "Receiving TD",
+        "points": 6.0
+      },
+      {
+        "abbr": "FUML",
+        "id": 72,
+        "label": "Fumbles Lost",
+        "points": -2.0
       }
     ],
     "scoring_type": "H2H_POINTS",
@@ -1923,10 +1959,399 @@
   "team_count": 4,
   "teams": [
     {
+      "abbrev": "HMH",
+      "division": "West",
+      "final_standing": 4,
+      "logo_url": null,
+      "losses": 6,
+      "name": "Hail Mary Heroes",
+      "outcomes": [
+        "W",
+        "L",
+        "L",
+        "W",
+        "W",
+        "L",
+        "L",
+        "W",
+        "W",
+        "L",
+        "W",
+        "W",
+        "W",
+        "L"
+      ],
+      "owners": [
+        "Samuel Turner"
+      ],
+      "points_against": 1139.3,
+      "points_for": 1737.3,
+      "roster": [
+        {
+          "acquisition_type": "DRAFT",
+          "avg_points": 19.5,
+          "eligible_slots": [
+            "QB",
+            "BE",
+            "IR"
+          ],
+          "id": 202600301,
+          "injured": false,
+          "injury_status": "QUESTIONABLE",
+          "name": "Logan Baker",
+          "percent_owned": 83.6,
+          "position": "QB",
+          "pro_team": "BUF",
+          "projected_total_points": 382.3,
+          "slot": "QB",
+          "status": "ACTIVE",
+          "total_points": 331.8
+        },
+        {
+          "acquisition_type": "TRADE",
+          "avg_points": 7.3,
+          "eligible_slots": [
+            "RB",
+            "BE",
+            "IR"
+          ],
+          "id": 202600302,
+          "injured": false,
+          "injury_status": "QUESTIONABLE",
+          "name": "Zachary Rogers",
+          "percent_owned": 20.8,
+          "position": "RB",
+          "pro_team": "CIN",
+          "projected_total_points": 121.3,
+          "slot": "RB",
+          "status": "ACTIVE",
+          "total_points": 124.7
+        },
+        {
+          "acquisition_type": "DRAFT",
+          "avg_points": 9.5,
+          "eligible_slots": [
+            "RB",
+            "BE",
+            "IR"
+          ],
+          "id": 202600303,
+          "injured": false,
+          "injury_status": null,
+          "name": "Logan Scott",
+          "percent_owned": -1.0,
+          "position": "RB",
+          "pro_team": "ATL",
+          "projected_total_points": 166.6,
+          "slot": "RB",
+          "status": "ACTIVE",
+          "total_points": 162.2
+        },
+        {
+          "acquisition_type": "WAIVER",
+          "avg_points": 13.1,
+          "eligible_slots": [
+            "WR",
+            "BE",
+            "IR"
+          ],
+          "id": 202600304,
+          "injured": false,
+          "injury_status": "OUT",
+          "name": "Logan Edwards",
+          "percent_owned": 36.0,
+          "position": "WR",
+          "pro_team": "NE",
+          "projected_total_points": 234.9,
+          "slot": "WR",
+          "status": "ACTIVE",
+          "total_points": 222.6
+        },
+        {
+          "acquisition_type": "DRAFT",
+          "avg_points": 11.2,
+          "eligible_slots": [
+            "WR",
+            "BE",
+            "IR"
+          ],
+          "id": 202600305,
+          "injured": false,
+          "injury_status": null,
+          "name": "Paul Ramirez",
+          "percent_owned": 18.3,
+          "position": "WR",
+          "pro_team": "DEN",
+          "projected_total_points": 165.0,
+          "slot": "WR",
+          "status": "ACTIVE",
+          "total_points": 189.9
+        },
+        {
+          "acquisition_type": "WAIVER",
+          "avg_points": 0.0,
+          "eligible_slots": [
+            "WR",
+            "BE",
+            "IR"
+          ],
+          "id": 202600306,
+          "injured": false,
+          "injury_status": null,
+          "name": "Aaron Allen",
+          "percent_owned": 62.5,
+          "position": "WR",
+          "pro_team": "CIN",
+          "projected_total_points": null,
+          "slot": "WR",
+          "status": "ACTIVE",
+          "total_points": 0.0
+        },
+        {
+          "acquisition_type": "TRADE",
+          "avg_points": 5.5,
+          "eligible_slots": [
+            "TE",
+            "BE",
+            "IR"
+          ],
+          "id": 202600307,
+          "injured": true,
+          "injury_status": "DOUBTFUL",
+          "name": "Sean Gutierrez",
+          "percent_owned": 17.0,
+          "position": "TE",
+          "pro_team": "NYG",
+          "projected_total_points": 110.2,
+          "slot": "TE",
+          "status": "ACTIVE",
+          "total_points": 93.4
+        },
+        {
+          "acquisition_type": "TRADE",
+          "avg_points": 4.2,
+          "eligible_slots": [
+            "TE",
+            "BE",
+            "IR"
+          ],
+          "id": 202600308,
+          "injured": false,
+          "injury_status": null,
+          "name": "Carl Reed",
+          "percent_owned": 47.1,
+          "position": "TE",
+          "pro_team": "NO",
+          "projected_total_points": 57.6,
+          "slot": "FLEX",
+          "status": "ACTIVE",
+          "total_points": 71.8
+        },
+        {
+          "acquisition_type": "WAIVER",
+          "avg_points": 2.8,
+          "eligible_slots": [
+            "D/ST",
+            "BE",
+            "IR"
+          ],
+          "id": 202600309,
+          "injured": true,
+          "injury_status": null,
+          "name": "TB D/ST",
+          "percent_owned": 25.6,
+          "position": "D/ST",
+          "pro_team": "LAC",
+          "projected_total_points": 36.6,
+          "slot": "D/ST",
+          "status": "ACTIVE",
+          "total_points": 47.4
+        },
+        {
+          "acquisition_type": "DRAFT",
+          "avg_points": 7.8,
+          "eligible_slots": [
+            "K",
+            "BE",
+            "IR"
+          ],
+          "id": 202600310,
+          "injured": false,
+          "injury_status": null,
+          "name": "Anthony King",
+          "percent_owned": 31.6,
+          "position": "K",
+          "pro_team": "CAR",
+          "projected_total_points": 115.3,
+          "slot": "K",
+          "status": "ACTIVE",
+          "total_points": 132.2
+        },
+        {
+          "acquisition_type": "DRAFT",
+          "avg_points": 17.8,
+          "eligible_slots": [
+            "RB",
+            "BE",
+            "IR"
+          ],
+          "id": 202600311,
+          "injured": false,
+          "injury_status": null,
+          "name": "Matthew Anderson",
+          "percent_owned": 67.1,
+          "position": "RB",
+          "pro_team": "IND",
+          "projected_total_points": 344.7,
+          "slot": "BE",
+          "status": "ACTIVE",
+          "total_points": 303.3
+        },
+        {
+          "acquisition_type": "ADD",
+          "avg_points": 6.4,
+          "eligible_slots": [
+            "TE",
+            "BE",
+            "IR"
+          ],
+          "id": 202600312,
+          "injured": false,
+          "injury_status": null,
+          "name": "Brian Ruiz",
+          "percent_owned": 50.5,
+          "position": "TE",
+          "pro_team": "ARI",
+          "projected_total_points": 85.8,
+          "slot": "BE",
+          "status": "ACTIVE",
+          "total_points": 108.4
+        },
+        {
+          "acquisition_type": "WAIVER",
+          "avg_points": 13.5,
+          "eligible_slots": [
+            "RB",
+            "BE",
+            "IR"
+          ],
+          "id": 202600313,
+          "injured": false,
+          "injury_status": null,
+          "name": "Jesse Martin",
+          "percent_owned": 99.6,
+          "position": "RB",
+          "pro_team": "TB",
+          "projected_total_points": 253.4,
+          "slot": "BE",
+          "status": "ACTIVE",
+          "total_points": 229.7
+        },
+        {
+          "acquisition_type": "ADD",
+          "avg_points": 20.8,
+          "eligible_slots": [
+            "QB",
+            "BE",
+            "IR"
+          ],
+          "id": 202600314,
+          "injured": false,
+          "injury_status": null,
+          "name": "Noah Alvarez",
+          "percent_owned": 49.5,
+          "position": "QB",
+          "pro_team": "CLE",
+          "projected_total_points": 271.0,
+          "slot": "BE",
+          "status": "ACTIVE",
+          "total_points": 354.2
+        },
+        {
+          "acquisition_type": "DRAFT",
+          "avg_points": 9.7,
+          "eligible_slots": [
+            "K",
+            "BE",
+            "IR"
+          ],
+          "id": 202600315,
+          "injured": true,
+          "injury_status": null,
+          "name": "Lawrence Torres",
+          "percent_owned": 11.0,
+          "position": "K",
+          "pro_team": "DET",
+          "projected_total_points": 163.2,
+          "slot": "BE",
+          "status": "ACTIVE",
+          "total_points": 164.4
+        },
+        {
+          "acquisition_type": "DRAFT",
+          "avg_points": 5.0,
+          "eligible_slots": [
+            "K",
+            "BE",
+            "IR"
+          ],
+          "id": 202600316,
+          "injured": false,
+          "injury_status": null,
+          "name": "Juan Martinez",
+          "percent_owned": 19.9,
+          "position": "K",
+          "pro_team": "ATL",
+          "projected_total_points": 66.1,
+          "slot": "BE",
+          "status": "ACTIVE",
+          "total_points": 85.0
+        }
+      ],
+      "schedule": [
+        1,
+        3,
+        2,
+        1,
+        3,
+        2,
+        1,
+        3,
+        2,
+        1,
+        3,
+        2,
+        1,
+        3
+      ],
+      "scores": [
+        134.0,
+        102.1,
+        115.9,
+        147.6,
+        122.2,
+        77.1,
+        126.4,
+        129.7,
+        142.5,
+        124.3,
+        158.4,
+        125.4,
+        158.0,
+        73.7
+      ],
+      "standing": 1,
+      "team_id": 4,
+      "ties": 0,
+      "win_pct": 0.571,
+      "wins": 8
+    },
+    {
       "abbrev": "EZE",
       "division": "East",
+      "final_standing": 3,
       "logo_url": null,
-      "losses": 0,
+      "losses": 6,
       "name": "End Zone Enforcers",
       "outcomes": [
         "L",
@@ -1947,8 +2372,8 @@
       "owners": [
         "Henry James"
       ],
-      "points_against": 1657.0,
-      "points_for": 1897.0,
+      "points_against": 1947.6,
+      "points_for": 1649.2,
       "roster": [
         {
           "acquisition_type": "DRAFT",
@@ -2303,404 +2728,18 @@
         144.7,
         130.3
       ],
-      "standing": 1,
+      "standing": 2,
       "team_id": 3,
       "ties": 0,
-      "win_pct": 1.0,
-      "wins": 14
-    },
-    {
-      "abbrev": "HMH",
-      "division": "West",
-      "logo_url": null,
-      "losses": 2,
-      "name": "Hail Mary Heroes",
-      "outcomes": [
-        "W",
-        "L",
-        "L",
-        "W",
-        "W",
-        "L",
-        "L",
-        "W",
-        "W",
-        "L",
-        "W",
-        "W",
-        "W",
-        "L"
-      ],
-      "owners": [
-        "Samuel Turner"
-      ],
-      "points_against": 1150.6,
-      "points_for": 1125.9,
-      "roster": [
-        {
-          "acquisition_type": "WAIVER",
-          "avg_points": 5.1,
-          "eligible_slots": [
-            "QB",
-            "BE",
-            "IR"
-          ],
-          "id": 202600301,
-          "injured": false,
-          "injury_status": "OUT",
-          "name": "Roy Thompson",
-          "percent_owned": 12.1,
-          "position": "QB",
-          "pro_team": "LAC",
-          "projected_total_points": 66.9,
-          "slot": "QB",
-          "status": "ACTIVE",
-          "total_points": 86.5
-        },
-        {
-          "acquisition_type": "WAIVER",
-          "avg_points": 5.7,
-          "eligible_slots": [
-            "RB",
-            "BE",
-            "IR"
-          ],
-          "id": 202600302,
-          "injured": false,
-          "injury_status": "DOUBTFUL",
-          "name": "Scott Sanders",
-          "percent_owned": 31.0,
-          "position": "RB",
-          "pro_team": "PHI",
-          "projected_total_points": 121.7,
-          "slot": "RB",
-          "status": "ACTIVE",
-          "total_points": 97.1
-        },
-        {
-          "acquisition_type": "DRAFT",
-          "avg_points": 12.9,
-          "eligible_slots": [
-            "RB",
-            "BE",
-            "IR"
-          ],
-          "id": 202600303,
-          "injured": false,
-          "injury_status": null,
-          "name": "Randy Phillips",
-          "percent_owned": 29.8,
-          "position": "RB",
-          "pro_team": "NO",
-          "projected_total_points": 166.5,
-          "slot": "RB",
-          "status": "ACTIVE",
-          "total_points": 218.9
-        },
-        {
-          "acquisition_type": "WAIVER",
-          "avg_points": 11.1,
-          "eligible_slots": [
-            "WR",
-            "BE",
-            "IR"
-          ],
-          "id": 202600304,
-          "injured": false,
-          "injury_status": null,
-          "name": "Sean Ross",
-          "percent_owned": 36.0,
-          "position": "WR",
-          "pro_team": "SF",
-          "projected_total_points": 199.2,
-          "slot": "WR",
-          "status": "ACTIVE",
-          "total_points": 188.7
-        },
-        {
-          "acquisition_type": "DRAFT",
-          "avg_points": 11.2,
-          "eligible_slots": [
-            "WR",
-            "BE",
-            "IR"
-          ],
-          "id": 202600305,
-          "injured": false,
-          "injury_status": null,
-          "name": "Paul Ramirez",
-          "percent_owned": 18.3,
-          "position": "WR",
-          "pro_team": "DEN",
-          "projected_total_points": 165.0,
-          "slot": "WR",
-          "status": "ACTIVE",
-          "total_points": 189.9
-        },
-        {
-          "acquisition_type": "WAIVER",
-          "avg_points": 0.0,
-          "eligible_slots": [
-            "WR",
-            "BE",
-            "IR"
-          ],
-          "id": 202600306,
-          "injured": false,
-          "injury_status": null,
-          "name": "Aaron Allen",
-          "percent_owned": 62.5,
-          "position": "WR",
-          "pro_team": "CIN",
-          "projected_total_points": null,
-          "slot": "WR",
-          "status": "ACTIVE",
-          "total_points": 0.0
-        },
-        {
-          "acquisition_type": "TRADE",
-          "avg_points": 5.5,
-          "eligible_slots": [
-            "TE",
-            "BE",
-            "IR"
-          ],
-          "id": 202600307,
-          "injured": true,
-          "injury_status": "DOUBTFUL",
-          "name": "Sean Gutierrez",
-          "percent_owned": 17.0,
-          "position": "TE",
-          "pro_team": "NYG",
-          "projected_total_points": 110.2,
-          "slot": "TE",
-          "status": "ACTIVE",
-          "total_points": 93.4
-        },
-        {
-          "acquisition_type": "TRADE",
-          "avg_points": 4.2,
-          "eligible_slots": [
-            "TE",
-            "BE",
-            "IR"
-          ],
-          "id": 202600308,
-          "injured": false,
-          "injury_status": null,
-          "name": "Carl Reed",
-          "percent_owned": 47.1,
-          "position": "TE",
-          "pro_team": "NO",
-          "projected_total_points": 57.6,
-          "slot": "FLEX",
-          "status": "ACTIVE",
-          "total_points": 71.8
-        },
-        {
-          "acquisition_type": "WAIVER",
-          "avg_points": 2.8,
-          "eligible_slots": [
-            "D/ST",
-            "BE",
-            "IR"
-          ],
-          "id": 202600309,
-          "injured": true,
-          "injury_status": null,
-          "name": "TB D/ST",
-          "percent_owned": 25.6,
-          "position": "D/ST",
-          "pro_team": "LAC",
-          "projected_total_points": 36.6,
-          "slot": "D/ST",
-          "status": "ACTIVE",
-          "total_points": 47.4
-        },
-        {
-          "acquisition_type": "DRAFT",
-          "avg_points": 7.8,
-          "eligible_slots": [
-            "K",
-            "BE",
-            "IR"
-          ],
-          "id": 202600310,
-          "injured": false,
-          "injury_status": null,
-          "name": "Anthony King",
-          "percent_owned": 31.6,
-          "position": "K",
-          "pro_team": "CAR",
-          "projected_total_points": 115.3,
-          "slot": "K",
-          "status": "ACTIVE",
-          "total_points": 132.2
-        },
-        {
-          "acquisition_type": "DRAFT",
-          "avg_points": 17.8,
-          "eligible_slots": [
-            "RB",
-            "BE",
-            "IR"
-          ],
-          "id": 202600311,
-          "injured": false,
-          "injury_status": null,
-          "name": "Matthew Anderson",
-          "percent_owned": 67.1,
-          "position": "RB",
-          "pro_team": "IND",
-          "projected_total_points": 344.7,
-          "slot": "BE",
-          "status": "ACTIVE",
-          "total_points": 303.3
-        },
-        {
-          "acquisition_type": "ADD",
-          "avg_points": 6.4,
-          "eligible_slots": [
-            "TE",
-            "BE",
-            "IR"
-          ],
-          "id": 202600312,
-          "injured": false,
-          "injury_status": null,
-          "name": "Brian Ruiz",
-          "percent_owned": 50.5,
-          "position": "TE",
-          "pro_team": "ARI",
-          "projected_total_points": 85.8,
-          "slot": "BE",
-          "status": "ACTIVE",
-          "total_points": 108.4
-        },
-        {
-          "acquisition_type": "WAIVER",
-          "avg_points": 13.5,
-          "eligible_slots": [
-            "RB",
-            "BE",
-            "IR"
-          ],
-          "id": 202600313,
-          "injured": false,
-          "injury_status": null,
-          "name": "Jesse Martin",
-          "percent_owned": 99.6,
-          "position": "RB",
-          "pro_team": "TB",
-          "projected_total_points": 253.4,
-          "slot": "BE",
-          "status": "ACTIVE",
-          "total_points": 229.7
-        },
-        {
-          "acquisition_type": "ADD",
-          "avg_points": 20.8,
-          "eligible_slots": [
-            "QB",
-            "BE",
-            "IR"
-          ],
-          "id": 202600314,
-          "injured": false,
-          "injury_status": null,
-          "name": "Noah Alvarez",
-          "percent_owned": 49.5,
-          "position": "QB",
-          "pro_team": "CLE",
-          "projected_total_points": 271.0,
-          "slot": "BE",
-          "status": "ACTIVE",
-          "total_points": 354.2
-        },
-        {
-          "acquisition_type": "DRAFT",
-          "avg_points": 9.7,
-          "eligible_slots": [
-            "K",
-            "BE",
-            "IR"
-          ],
-          "id": 202600315,
-          "injured": true,
-          "injury_status": null,
-          "name": "Lawrence Torres",
-          "percent_owned": 11.0,
-          "position": "K",
-          "pro_team": "DET",
-          "projected_total_points": 163.2,
-          "slot": "BE",
-          "status": "ACTIVE",
-          "total_points": 164.4
-        },
-        {
-          "acquisition_type": "DRAFT",
-          "avg_points": 5.0,
-          "eligible_slots": [
-            "K",
-            "BE",
-            "IR"
-          ],
-          "id": 202600316,
-          "injured": false,
-          "injury_status": null,
-          "name": "Juan Martinez",
-          "percent_owned": 19.9,
-          "position": "K",
-          "pro_team": "ATL",
-          "projected_total_points": 66.1,
-          "slot": "BE",
-          "status": "ACTIVE",
-          "total_points": 85.0
-        }
-      ],
-      "schedule": [
-        1,
-        3,
-        2,
-        1,
-        3,
-        2,
-        1,
-        3,
-        2,
-        1,
-        3,
-        2,
-        1,
-        3
-      ],
-      "scores": [
-        134.0,
-        102.1,
-        115.9,
-        147.6,
-        122.2,
-        77.1,
-        126.4,
-        129.7,
-        142.5,
-        124.3,
-        158.4,
-        125.4,
-        158.0,
-        73.7
-      ],
-      "standing": 2,
-      "team_id": 4,
-      "ties": 0,
-      "win_pct": 0.857,
-      "wins": 12
+      "win_pct": 0.571,
+      "wins": 8
     },
     {
       "abbrev": "TT",
       "division": "East",
+      "final_standing": 2,
       "logo_url": null,
-      "losses": 13,
+      "losses": 7,
       "name": "Turf Titans",
       "outcomes": [
         "W",
@@ -2719,10 +2758,10 @@
         "W"
       ],
       "owners": [
-        "Eric Morgan"
+        "Christopher Allen"
       ],
       "points_against": 1408.2,
-      "points_for": 1487.5,
+      "points_for": 1634.2,
       "roster": [
         {
           "acquisition_type": "DRAFT",
@@ -3080,14 +3119,15 @@
       "standing": 3,
       "team_id": 2,
       "ties": 0,
-      "win_pct": 0.071,
-      "wins": 1
+      "win_pct": 0.5,
+      "wins": 7
     },
     {
       "abbrev": "GG",
       "division": "East",
+      "final_standing": 1,
       "logo_url": null,
-      "losses": 14,
+      "losses": 9,
       "name": "Gridiron Goons",
       "outcomes": [
         "L",
@@ -3106,10 +3146,10 @@
         "L"
       ],
       "owners": [
-        "Nicholas Reed"
+        "James Young"
       ],
       "points_against": 1033.7,
-      "points_for": 1250.0,
+      "points_for": 1546.9,
       "roster": [
         {
           "acquisition_type": "ADD",
@@ -3467,8 +3507,8 @@
       "standing": 4,
       "team_id": 1,
       "ties": 0,
-      "win_pct": 0.0,
-      "wins": 0
+      "win_pct": 0.357,
+      "wins": 5
     }
   ],
   "transactions": [

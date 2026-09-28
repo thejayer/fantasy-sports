@@ -149,6 +149,8 @@ def test_split_round_trip_preserves_monolith_fields():
         "settings.json",
         "transactions.json",
         "free_agents.json",
+        "lineups.json",
+        "scoreboard.json",
     }
     assert parts["manifest.json"]["schema_version"] == SCHEMA_VERSION
     assert parts["settings.json"]["settings"]["faab"] is True
@@ -165,6 +167,45 @@ def test_split_round_trip_preserves_monolith_fields():
     for key, value in original.items():
         assert reassembled[key] == value
     assert reassembled["schema_version"] == SCHEMA_VERSION
+    # Empty ESPN lineups shell must not appear on the monolith.
+    assert "lineups" not in reassembled
+    assert parts["lineups.json"]["events"] == []
+    assert parts["lineups.json"]["teams"] == {}
+    assert "scoreboard" not in reassembled
+    assert parts["scoreboard.json"]["events"] == []
+
+
+def test_assemble_attaches_filled_golf_lineups():
+    original = _monolith()
+    original["lineups"] = {
+        "period_label": "event",
+        "current_event_id": "2026-players",
+        "events": [{"id": "2026-players", "name": "THE PLAYERS"}],
+        "teams": {"1": {"starters": [10], "captain": 10}},
+    }
+    parts = split_snapshot(original)
+    reassembled = assemble_snapshot(parts)
+    assert reassembled["lineups"]["current_event_id"] == "2026-players"
+    assert reassembled["lineups"]["teams"]["1"]["captain"] == 10
+
+
+def test_assemble_attaches_filled_golf_scoreboard():
+    original = _monolith()
+    original["scoreboard"] = {
+        "period_label": "event",
+        "current_event_id": "2026-players",
+        "events": [
+            {
+                "event_id": "2026-players",
+                "multiplier": 1.5,
+                "teams": {"1": {"week_total": 12.0}},
+                "pairings": [],
+            }
+        ],
+    }
+    parts = split_snapshot(original)
+    reassembled = assemble_snapshot(parts)
+    assert reassembled["scoreboard"]["events"][0]["multiplier"] == 1.5
 
 
 def test_assemble_accepts_concern_name_keys():
