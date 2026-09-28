@@ -1,0 +1,8 @@
+{
+  "games": [
+    {"gameType": 1, "gameDate": "2026-09-28", "homeTeam": {"abbrev": "TOR"}, "awayTeam": {"abbrev": "OTT"}, "startTimeUTC": "2026-09-28T23:00:00Z"},
+    {"gameType": 2, "gameDate": "2026-10-09", "homeTeam": {"abbrev": "MTL"}, "awayTeam": {"abbrev": "TOR"}, "startTimeUTC": "2026-10-09T23:00:00Z"},
+    {"gameType": 2, "gameDate": "2026-10-07", "homeTeam": {"abbrev": "TOR"}, "awayTeam": {"abbrev": "BOS"}, "startTimeUTC": "2026-10-07T23:00:00Z"},
+    {"gameType": 2, "gameDate": "2026-10-10", "homeTeam": {"abbrev": "TOR"}, "awayTeam": {"abbrev": "DET"}, "startTimeUTC": "2026-10-10T23:00:00Z"}
+  ]
+}

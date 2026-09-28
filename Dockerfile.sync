@@ -12,6 +12,8 @@ WORKDIR /app
 
 COPY pyproject.toml README.md requirements-lock.txt ./
 COPY src/sj ./src/sj
+# Hockey NHL data layer (HOCKEY-PORT.md H1): stdlib + pyyaml, no extra deps.
+COPY src/nhl ./src/nhl
 COPY configs ./configs
 
 # The sync job only needs the hub package, not the ffa analytics stack.

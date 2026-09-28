@@ -1,0 +1,1183 @@
+{
+  "errors": [],
+  "game_count": 79,
+  "generated_at": "2026-07-27T00:00:00+00:00",
+  "league_id": "hockey-main",
+  "nhl_season": "20262027",
+  "schema_version": 1,
+  "season": 2027,
+  "source": "api-web.nhle.com + api.nhle.com/stats",
+  "sport": "hockey",
+  "teams": {
+    "ANA": [
+      {
+        "b2b": false,
+        "date": "2026-10-14",
+        "home": true,
+        "opp": "NJD",
+        "start": "2026-10-14T23:00:00Z"
+      }
+    ],
+    "BOS": [
+      {
+        "b2b": false,
+        "date": "2026-10-08",
+        "home": false,
+        "opp": "EDM",
+        "start": "2026-10-08T23:00:00Z"
+      },
+      {
+        "b2b": false,
+        "date": "2026-10-14",
+        "home": true,
+        "opp": "CAR",
+        "start": "2026-10-14T23:00:00Z"
+      },
+      {
+        "b2b": false,
+        "date": "2026-10-17",
+        "home": false,
+        "opp": "PIT",
+        "start": "2026-10-17T23:00:00Z"
+      },
+      {
+        "b2b": false,
+        "date": "2026-10-19",
+        "home": false,
+        "opp": "NYR",
+        "start": "2026-10-19T23:00:00Z"
+      }
+    ],
+    "BUF": [
+      {
+        "b2b": false,
+        "date": "2026-10-08",
+        "home": false,
+        "opp": "CHI",
+        "start": "2026-10-08T23:00:00Z"
+      },
+      {
+        "b2b": false,
+        "date": "2026-10-11",
+        "home": true,
+        "opp": "NJD",
+        "start": "2026-10-11T23:00:00Z"
+      },
+      {
+        "b2b": true,
+        "date": "2026-10-14",
+        "home": false,
+        "opp": "FLA",
+        "start": "2026-10-14T23:00:00Z"
+      },
+      {
+        "b2b": true,
+        "date": "2026-10-15",
+        "home": true,
+        "opp": "NYI",
+        "start": "2026-10-15T23:00:00Z"
+      },
+      {
+        "b2b": true,
+        "date": "2026-10-19",
+        "home": true,
+        "opp": "TOR",
+        "start": "2026-10-19T23:00:00Z"
+      },
+      {
+        "b2b": true,
+        "date": "2026-10-20",
+        "home": false,
+        "opp": "EDM",
+        "start": "2026-10-20T23:00:00Z"
+      }
+    ],
+    "CAR": [
+      {
+        "b2b": false,
+        "date": "2026-10-12",
+        "home": true,
+        "opp": "VGK",
+        "start": "2026-10-12T23:00:00Z"
+      },
+      {
+        "b2b": true,
+        "date": "2026-10-14",
+        "home": false,
+        "opp": "BOS",
+        "start": "2026-10-14T23:00:00Z"
+      },
+      {
+        "b2b": true,
+        "date": "2026-10-15",
+        "home": false,
+        "opp": "PHI",
+        "start": "2026-10-15T23:00:00Z"
+      },
+      {
+        "b2b": true,
+        "date": "2026-10-16",
+        "home": false,
+        "opp": "PIT",
+        "start": "2026-10-16T23:00:00Z"
+      }
+    ],
+    "CBJ": [
+      {
+        "b2b": true,
+        "date": "2026-10-09",
+        "home": false,
+        "opp": "WPG",
+        "start": "2026-10-09T23:00:00Z"
+      },
+      {
+        "b2b": true,
+        "date": "2026-10-10",
+        "home": false,
+        "opp": "SEA",
+        "start": "2026-10-10T23:00:00Z"
+      },
+      {
+        "b2b": false,
+        "date": "2026-10-13",
+        "home": false,
+        "opp": "DAL",
+        "start": "2026-10-13T23:00:00Z"
+      },
+      {
+        "b2b": false,
+        "date": "2026-10-15",
+        "home": false,
+        "opp": "SEA",
+        "start": "2026-10-15T23:00:00Z"
+      }
+    ],
+    "CGY": [
+      {
+        "b2b": false,
+        "date": "2026-10-13",
+        "home": true,
+        "opp": "PIT",
+        "start": "2026-10-13T23:00:00Z"
+      },
+      {
+        "b2b": false,
+        "date": "2026-10-15",
+        "home": true,
+        "opp": "VGK",
+        "start": "2026-10-15T23:00:00Z"
+      },
+      {
+        "b2b": false,
+        "date": "2026-10-19",
+        "home": false,
+        "opp": "NYI",
+        "start": "2026-10-19T23:00:00Z"
+      }
+    ],
+    "CHI": [
+      {
+        "b2b": false,
+        "date": "2026-10-08",
+        "home": true,
+        "opp": "BUF",
+        "start": "2026-10-08T23:00:00Z"
+      },
+      {
+        "b2b": true,
+        "date": "2026-10-10",
+        "home": true,
+        "opp": "DAL",
+        "start": "2026-10-10T23:00:00Z"
+      },
+      {
+        "b2b": true,
+        "date": "2026-10-11",
+        "home": false,
+        "opp": "SEA",
+        "start": "2026-10-11T23:00:00Z"
+      },
+      {
+        "b2b": false,
+        "date": "2026-10-15",
+        "home": true,
+        "opp": "NJD",
+        "start": "2026-10-15T23:00:00Z"
+      },
+      {
+        "b2b": false,
+        "date": "2026-10-20",
+        "home": false,
+        "opp": "DET",
+        "start": "2026-10-20T23:00:00Z"
+      }
+    ],
+    "COL": [
+      {
+        "b2b": true,
+        "date": "2026-10-11",
+        "home": true,
+        "opp": "SJS",
+        "start": "2026-10-11T23:00:00Z"
+      },
+      {
+        "b2b": true,
+        "date": "2026-10-12",
+        "home": false,
+        "opp": "LAK",
+        "start": "2026-10-12T23:00:00Z"
+      },
+      {
+        "b2b": false,
+        "date": "2026-10-20",
+        "home": true,
+        "opp": "NSH",
+        "start": "2026-10-20T23:00:00Z"
+      }
+    ],
+    "DAL": [
+      {
+        "b2b": false,
+        "date": "2026-10-07",
+        "home": true,
+        "opp": "TBL",
+        "start": "2026-10-07T23:00:00Z"
+      },
+      {
+        "b2b": true,
+        "date": "2026-10-10",
+        "home": false,
+        "opp": "CHI",
+        "start": "2026-10-10T23:00:00Z"
+      },
+      {
+        "b2b": true,
+        "date": "2026-10-11",
+        "home": false,
+        "opp": "LAK",
+        "start": "2026-10-11T23:00:00Z"
+      },
+      {
+        "b2b": true,
+        "date": "2026-10-13",
+        "home": true,
+        "opp": "CBJ",
+        "start": "2026-10-13T23:00:00Z"
+      },
+      {
+        "b2b": true,
+        "date": "2026-10-14",
+        "home": true,
+        "opp": "WPG",
+        "start": "2026-10-14T23:00:00Z"
+      },
+      {
+        "b2b": true,
+        "date": "2026-10-15",
+        "home": false,
+        "opp": "MIN",
+        "start": "2026-10-15T23:00:00Z"
+      },
+      {
+        "b2b": true,
+        "date": "2026-10-17",
+        "home": true,
+        "opp": "LAK",
+        "start": "2026-10-17T23:00:00Z"
+      },
+      {
+        "b2b": true,
+        "date": "2026-10-18",
+        "home": true,
+        "opp": "NJD",
+        "start": "2026-10-18T23:00:00Z"
+      }
+    ],
+    "DET": [
+      {
+        "b2b": false,
+        "date": "2026-10-07",
+        "home": true,
+        "opp": "SJS",
+        "start": "2026-10-07T23:00:00Z"
+      },
+      {
+        "b2b": false,
+        "date": "2026-10-09",
+        "home": true,
+        "opp": "NJD",
+        "start": "2026-10-09T23:00:00Z"
+      },
+      {
+        "b2b": false,
+        "date": "2026-10-12",
+        "home": true,
+        "opp": "SEA",
+        "start": "2026-10-12T23:00:00Z"
+      },
+      {
+        "b2b": false,
+        "date": "2026-10-17",
+        "home": true,
+        "opp": "VAN",
+        "start": "2026-10-17T23:00:00Z"
+      },
+      {
+        "b2b": false,
+        "date": "2026-10-20",
+        "home": true,
+        "opp": "CHI",
+        "start": "2026-10-20T23:00:00Z"
+      }
+    ],
+    "EDM": [
+      {
+        "b2b": false,
+        "date": "2026-10-08",
+        "home": true,
+        "opp": "BOS",
+        "start": "2026-10-08T23:00:00Z"
+      },
+      {
+        "b2b": false,
+        "date": "2026-10-17",
+        "home": false,
+        "opp": "MTL",
+        "start": "2026-10-17T23:00:00Z"
+      },
+      {
+        "b2b": false,
+        "date": "2026-10-20",
+        "home": true,
+        "opp": "BUF",
+        "start": "2026-10-20T23:00:00Z"
+      }
+    ],
+    "FLA": [
+      {
+        "b2b": false,
+        "date": "2026-10-10",
+        "home": false,
+        "opp": "NJD",
+        "start": "2026-10-10T23:00:00Z"
+      },
+      {
+        "b2b": true,
+        "date": "2026-10-13",
+        "home": true,
+        "opp": "NSH",
+        "start": "2026-10-13T23:00:00Z"
+      },
+      {
+        "b2b": true,
+        "date": "2026-10-14",
+        "home": true,
+        "opp": "BUF",
+        "start": "2026-10-14T23:00:00Z"
+      },
+      {
+        "b2b": false,
+        "date": "2026-10-19",
+        "home": false,
+        "opp": "PHI",
+        "start": "2026-10-19T23:00:00Z"
+      }
+    ],
+    "LAK": [
+      {
+        "b2b": true,
+        "date": "2026-10-11",
+        "home": true,
+        "opp": "DAL",
+        "start": "2026-10-11T23:00:00Z"
+      },
+      {
+        "b2b": true,
+        "date": "2026-10-12",
+        "home": true,
+        "opp": "COL",
+        "start": "2026-10-12T23:00:00Z"
+      },
+      {
+        "b2b": true,
+        "date": "2026-10-16",
+        "home": false,
+        "opp": "WPG",
+        "start": "2026-10-16T23:00:00Z"
+      },
+      {
+        "b2b": true,
+        "date": "2026-10-17",
+        "home": false,
+        "opp": "DAL",
+        "start": "2026-10-17T23:00:00Z"
+      },
+      {
+        "b2b": true,
+        "date": "2026-10-18",
+        "home": false,
+        "opp": "NYR",
+        "start": "2026-10-18T23:00:00Z"
+      }
+    ],
+    "MIN": [
+      {
+        "b2b": false,
+        "date": "2026-10-07",
+        "home": true,
+        "opp": "NYI",
+        "start": "2026-10-07T23:00:00Z"
+      },
+      {
+        "b2b": false,
+        "date": "2026-10-10",
+        "home": true,
+        "opp": "TOR",
+        "start": "2026-10-10T23:00:00Z"
+      },
+      {
+        "b2b": true,
+        "date": "2026-10-15",
+        "home": true,
+        "opp": "DAL",
+        "start": "2026-10-15T23:00:00Z"
+      },
+      {
+        "b2b": true,
+        "date": "2026-10-16",
+        "home": true,
+        "opp": "TBL",
+        "start": "2026-10-16T23:00:00Z"
+      },
+      {
+        "b2b": false,
+        "date": "2026-10-18",
+        "home": false,
+        "opp": "NYI",
+        "start": "2026-10-18T23:00:00Z"
+      }
+    ],
+    "MTL": [
+      {
+        "b2b": true,
+        "date": "2026-10-11",
+        "home": true,
+        "opp": "NSH",
+        "start": "2026-10-11T23:00:00Z"
+      },
+      {
+        "b2b": true,
+        "date": "2026-10-12",
+        "home": false,
+        "opp": "NYR",
+        "start": "2026-10-12T23:00:00Z"
+      },
+      {
+        "b2b": true,
+        "date": "2026-10-14",
+        "home": true,
+        "opp": "NSH",
+        "start": "2026-10-14T23:00:00Z"
+      },
+      {
+        "b2b": true,
+        "date": "2026-10-15",
+        "home": false,
+        "opp": "OTT",
+        "start": "2026-10-15T23:00:00Z"
+      },
+      {
+        "b2b": false,
+        "date": "2026-10-17",
+        "home": true,
+        "opp": "EDM",
+        "start": "2026-10-17T23:00:00Z"
+      },
+      {
+        "b2b": false,
+        "date": "2026-10-19",
+        "home": true,
+        "opp": "UTA",
+        "start": "2026-10-19T23:00:00Z"
+      }
+    ],
+    "NJD": [
+      {
+        "b2b": true,
+        "date": "2026-10-09",
+        "home": false,
+        "opp": "DET",
+        "start": "2026-10-09T23:00:00Z"
+      },
+      {
+        "b2b": true,
+        "date": "2026-10-10",
+        "home": true,
+        "opp": "FLA",
+        "start": "2026-10-10T23:00:00Z"
+      },
+      {
+        "b2b": true,
+        "date": "2026-10-11",
+        "home": false,
+        "opp": "BUF",
+        "start": "2026-10-11T23:00:00Z"
+      },
+      {
+        "b2b": true,
+        "date": "2026-10-14",
+        "home": false,
+        "opp": "ANA",
+        "start": "2026-10-14T23:00:00Z"
+      },
+      {
+        "b2b": true,
+        "date": "2026-10-15",
+        "home": false,
+        "opp": "CHI",
+        "start": "2026-10-15T23:00:00Z"
+      },
+      {
+        "b2b": false,
+        "date": "2026-10-18",
+        "home": false,
+        "opp": "DAL",
+        "start": "2026-10-18T23:00:00Z"
+      },
+      {
+        "b2b": false,
+        "date": "2026-10-20",
+        "home": true,
+        "opp": "VGK",
+        "start": "2026-10-20T23:00:00Z"
+      }
+    ],
+    "NSH": [
+      {
+        "b2b": false,
+        "date": "2026-10-11",
+        "home": false,
+        "opp": "MTL",
+        "start": "2026-10-11T23:00:00Z"
+      },
+      {
+        "b2b": true,
+        "date": "2026-10-13",
+        "home": false,
+        "opp": "FLA",
+        "start": "2026-10-13T23:00:00Z"
+      },
+      {
+        "b2b": true,
+        "date": "2026-10-14",
+        "home": false,
+        "opp": "MTL",
+        "start": "2026-10-14T23:00:00Z"
+      },
+      {
+        "b2b": true,
+        "date": "2026-10-15",
+        "home": true,
+        "opp": "WPG",
+        "start": "2026-10-15T23:00:00Z"
+      },
+      {
+        "b2b": false,
+        "date": "2026-10-20",
+        "home": false,
+        "opp": "COL",
+        "start": "2026-10-20T23:00:00Z"
+      }
+    ],
+    "NYI": [
+      {
+        "b2b": false,
+        "date": "2026-10-07",
+        "home": false,
+        "opp": "MIN",
+        "start": "2026-10-07T23:00:00Z"
+      },
+      {
+        "b2b": true,
+        "date": "2026-10-09",
+        "home": true,
+        "opp": "TBL",
+        "start": "2026-10-09T23:00:00Z"
+      },
+      {
+        "b2b": true,
+        "date": "2026-10-10",
+        "home": false,
+        "opp": "SJS",
+        "start": "2026-10-10T23:00:00Z"
+      },
+      {
+        "b2b": true,
+        "date": "2026-10-14",
+        "home": true,
+        "opp": "UTA",
+        "start": "2026-10-14T23:00:00Z"
+      },
+      {
+        "b2b": true,
+        "date": "2026-10-15",
+        "home": false,
+        "opp": "BUF",
+        "start": "2026-10-15T23:00:00Z"
+      },
+      {
+        "b2b": true,
+        "date": "2026-10-17",
+        "home": false,
+        "opp": "OTT",
+        "start": "2026-10-17T23:00:00Z"
+      },
+      {
+        "b2b": true,
+        "date": "2026-10-18",
+        "home": true,
+        "opp": "MIN",
+        "start": "2026-10-18T23:00:00Z"
+      },
+      {
+        "b2b": true,
+        "date": "2026-10-19",
+        "home": true,
+        "opp": "CGY",
+        "start": "2026-10-19T23:00:00Z"
+      }
+    ],
+    "NYR": [
+      {
+        "b2b": false,
+        "date": "2026-10-12",
+        "home": true,
+        "opp": "MTL",
+        "start": "2026-10-12T23:00:00Z"
+      },
+      {
+        "b2b": true,
+        "date": "2026-10-18",
+        "home": true,
+        "opp": "LAK",
+        "start": "2026-10-18T23:00:00Z"
+      },
+      {
+        "b2b": true,
+        "date": "2026-10-19",
+        "home": true,
+        "opp": "BOS",
+        "start": "2026-10-19T23:00:00Z"
+      }
+    ],
+    "OTT": [
+      {
+        "b2b": false,
+        "date": "2026-10-15",
+        "home": true,
+        "opp": "MTL",
+        "start": "2026-10-15T23:00:00Z"
+      },
+      {
+        "b2b": true,
+        "date": "2026-10-17",
+        "home": true,
+        "opp": "NYI",
+        "start": "2026-10-17T23:00:00Z"
+      },
+      {
+        "b2b": true,
+        "date": "2026-10-18",
+        "home": true,
+        "opp": "VGK",
+        "start": "2026-10-18T23:00:00Z"
+      },
+      {
+        "b2b": true,
+        "date": "2026-10-19",
+        "home": true,
+        "opp": "SJS",
+        "start": "2026-10-19T23:00:00Z"
+      }
+    ],
+    "PHI": [
+      {
+        "b2b": true,
+        "date": "2026-10-08",
+        "home": false,
+        "opp": "PIT",
+        "start": "2026-10-08T23:00:00Z"
+      },
+      {
+        "b2b": true,
+        "date": "2026-10-09",
+        "home": true,
+        "opp": "VGK",
+        "start": "2026-10-09T23:00:00Z"
+      },
+      {
+        "b2b": false,
+        "date": "2026-10-12",
+        "home": false,
+        "opp": "STL",
+        "start": "2026-10-12T23:00:00Z"
+      },
+      {
+        "b2b": true,
+        "date": "2026-10-14",
+        "home": true,
+        "opp": "TBL",
+        "start": "2026-10-14T23:00:00Z"
+      },
+      {
+        "b2b": true,
+        "date": "2026-10-15",
+        "home": true,
+        "opp": "CAR",
+        "start": "2026-10-15T23:00:00Z"
+      },
+      {
+        "b2b": false,
+        "date": "2026-10-19",
+        "home": true,
+        "opp": "FLA",
+        "start": "2026-10-19T23:00:00Z"
+      }
+    ],
+    "PIT": [
+      {
+        "b2b": false,
+        "date": "2026-10-08",
+        "home": true,
+        "opp": "PHI",
+        "start": "2026-10-08T23:00:00Z"
+      },
+      {
+        "b2b": false,
+        "date": "2026-10-13",
+        "home": false,
+        "opp": "CGY",
+        "start": "2026-10-13T23:00:00Z"
+      },
+      {
+        "b2b": true,
+        "date": "2026-10-16",
+        "home": true,
+        "opp": "CAR",
+        "start": "2026-10-16T23:00:00Z"
+      },
+      {
+        "b2b": true,
+        "date": "2026-10-17",
+        "home": true,
+        "opp": "BOS",
+        "start": "2026-10-17T23:00:00Z"
+      },
+      {
+        "b2b": true,
+        "date": "2026-10-18",
+        "home": false,
+        "opp": "STL",
+        "start": "2026-10-18T23:00:00Z"
+      }
+    ],
+    "SEA": [
+      {
+        "b2b": true,
+        "date": "2026-10-07",
+        "home": false,
+        "opp": "WSH",
+        "start": "2026-10-07T23:00:00Z"
+      },
+      {
+        "b2b": true,
+        "date": "2026-10-08",
+        "home": true,
+        "opp": "WPG",
+        "start": "2026-10-08T23:00:00Z"
+      },
+      {
+        "b2b": true,
+        "date": "2026-10-10",
+        "home": true,
+        "opp": "CBJ",
+        "start": "2026-10-10T23:00:00Z"
+      },
+      {
+        "b2b": true,
+        "date": "2026-10-11",
+        "home": true,
+        "opp": "CHI",
+        "start": "2026-10-11T23:00:00Z"
+      },
+      {
+        "b2b": true,
+        "date": "2026-10-12",
+        "home": false,
+        "opp": "DET",
+        "start": "2026-10-12T23:00:00Z"
+      },
+      {
+        "b2b": false,
+        "date": "2026-10-15",
+        "home": true,
+        "opp": "CBJ",
+        "start": "2026-10-15T23:00:00Z"
+      },
+      {
+        "b2b": false,
+        "date": "2026-10-19",
+        "home": true,
+        "opp": "STL",
+        "start": "2026-10-19T23:00:00Z"
+      }
+    ],
+    "SJS": [
+      {
+        "b2b": true,
+        "date": "2026-10-07",
+        "home": false,
+        "opp": "DET",
+        "start": "2026-10-07T23:00:00Z"
+      },
+      {
+        "b2b": true,
+        "date": "2026-10-08",
+        "home": true,
+        "opp": "UTA",
+        "start": "2026-10-08T23:00:00Z"
+      },
+      {
+        "b2b": true,
+        "date": "2026-10-10",
+        "home": true,
+        "opp": "NYI",
+        "start": "2026-10-10T23:00:00Z"
+      },
+      {
+        "b2b": true,
+        "date": "2026-10-11",
+        "home": false,
+        "opp": "COL",
+        "start": "2026-10-11T23:00:00Z"
+      },
+      {
+        "b2b": true,
+        "date": "2026-10-13",
+        "home": true,
+        "opp": "UTA",
+        "start": "2026-10-13T23:00:00Z"
+      },
+      {
+        "b2b": true,
+        "date": "2026-10-14",
+        "home": false,
+        "opp": "VGK",
+        "start": "2026-10-14T23:00:00Z"
+      },
+      {
+        "b2b": false,
+        "date": "2026-10-16",
+        "home": true,
+        "opp": "STL",
+        "start": "2026-10-16T23:00:00Z"
+      },
+      {
+        "b2b": false,
+        "date": "2026-10-19",
+        "home": false,
+        "opp": "OTT",
+        "start": "2026-10-19T23:00:00Z"
+      }
+    ],
+    "STL": [
+      {
+        "b2b": false,
+        "date": "2026-10-07",
+        "home": false,
+        "opp": "VAN",
+        "start": "2026-10-07T23:00:00Z"
+      },
+      {
+        "b2b": false,
+        "date": "2026-10-09",
+        "home": true,
+        "opp": "VAN",
+        "start": "2026-10-09T23:00:00Z"
+      },
+      {
+        "b2b": true,
+        "date": "2026-10-12",
+        "home": true,
+        "opp": "PHI",
+        "start": "2026-10-12T23:00:00Z"
+      },
+      {
+        "b2b": true,
+        "date": "2026-10-13",
+        "home": true,
+        "opp": "VGK",
+        "start": "2026-10-13T23:00:00Z"
+      },
+      {
+        "b2b": false,
+        "date": "2026-10-16",
+        "home": false,
+        "opp": "SJS",
+        "start": "2026-10-16T23:00:00Z"
+      },
+      {
+        "b2b": true,
+        "date": "2026-10-18",
+        "home": true,
+        "opp": "PIT",
+        "start": "2026-10-18T23:00:00Z"
+      },
+      {
+        "b2b": true,
+        "date": "2026-10-19",
+        "home": false,
+        "opp": "SEA",
+        "start": "2026-10-19T23:00:00Z"
+      }
+    ],
+    "TBL": [
+      {
+        "b2b": false,
+        "date": "2026-10-07",
+        "home": false,
+        "opp": "DAL",
+        "start": "2026-10-07T23:00:00Z"
+      },
+      {
+        "b2b": false,
+        "date": "2026-10-09",
+        "home": false,
+        "opp": "NYI",
+        "start": "2026-10-09T23:00:00Z"
+      },
+      {
+        "b2b": false,
+        "date": "2026-10-14",
+        "home": false,
+        "opp": "PHI",
+        "start": "2026-10-14T23:00:00Z"
+      },
+      {
+        "b2b": false,
+        "date": "2026-10-16",
+        "home": false,
+        "opp": "MIN",
+        "start": "2026-10-16T23:00:00Z"
+      },
+      {
+        "b2b": false,
+        "date": "2026-10-19",
+        "home": false,
+        "opp": "WPG",
+        "start": "2026-10-19T23:00:00Z"
+      }
+    ],
+    "TOR": [
+      {
+        "b2b": false,
+        "date": "2026-10-10",
+        "home": false,
+        "opp": "MIN",
+        "start": "2026-10-10T23:00:00Z"
+      },
+      {
+        "b2b": false,
+        "date": "2026-10-19",
+        "home": false,
+        "opp": "BUF",
+        "start": "2026-10-19T23:00:00Z"
+      }
+    ],
+    "UTA": [
+      {
+        "b2b": false,
+        "date": "2026-10-08",
+        "home": false,
+        "opp": "SJS",
+        "start": "2026-10-08T23:00:00Z"
+      },
+      {
+        "b2b": true,
+        "date": "2026-10-13",
+        "home": false,
+        "opp": "SJS",
+        "start": "2026-10-13T23:00:00Z"
+      },
+      {
+        "b2b": true,
+        "date": "2026-10-14",
+        "home": false,
+        "opp": "NYI",
+        "start": "2026-10-14T23:00:00Z"
+      },
+      {
+        "b2b": false,
+        "date": "2026-10-17",
+        "home": false,
+        "opp": "WSH",
+        "start": "2026-10-17T23:00:00Z"
+      },
+      {
+        "b2b": false,
+        "date": "2026-10-19",
+        "home": false,
+        "opp": "MTL",
+        "start": "2026-10-19T23:00:00Z"
+      }
+    ],
+    "VAN": [
+      {
+        "b2b": false,
+        "date": "2026-10-07",
+        "home": true,
+        "opp": "STL",
+        "start": "2026-10-07T23:00:00Z"
+      },
+      {
+        "b2b": false,
+        "date": "2026-10-09",
+        "home": false,
+        "opp": "STL",
+        "start": "2026-10-09T23:00:00Z"
+      },
+      {
+        "b2b": false,
+        "date": "2026-10-12",
+        "home": true,
+        "opp": "WSH",
+        "start": "2026-10-12T23:00:00Z"
+      },
+      {
+        "b2b": false,
+        "date": "2026-10-17",
+        "home": false,
+        "opp": "DET",
+        "start": "2026-10-17T23:00:00Z"
+      }
+    ],
+    "VGK": [
+      {
+        "b2b": false,
+        "date": "2026-10-09",
+        "home": false,
+        "opp": "PHI",
+        "start": "2026-10-09T23:00:00Z"
+      },
+      {
+        "b2b": true,
+        "date": "2026-10-12",
+        "home": false,
+        "opp": "CAR",
+        "start": "2026-10-12T23:00:00Z"
+      },
+      {
+        "b2b": true,
+        "date": "2026-10-13",
+        "home": false,
+        "opp": "STL",
+        "start": "2026-10-13T23:00:00Z"
+      },
+      {
+        "b2b": true,
+        "date": "2026-10-14",
+        "home": true,
+        "opp": "SJS",
+        "start": "2026-10-14T23:00:00Z"
+      },
+      {
+        "b2b": true,
+        "date": "2026-10-15",
+        "home": false,
+        "opp": "CGY",
+        "start": "2026-10-15T23:00:00Z"
+      },
+      {
+        "b2b": false,
+        "date": "2026-10-18",
+        "home": false,
+        "opp": "OTT",
+        "start": "2026-10-18T23:00:00Z"
+      },
+      {
+        "b2b": false,
+        "date": "2026-10-20",
+        "home": false,
+        "opp": "NJD",
+        "start": "2026-10-20T23:00:00Z"
+      }
+    ],
+    "WPG": [
+      {
+        "b2b": true,
+        "date": "2026-10-08",
+        "home": false,
+        "opp": "SEA",
+        "start": "2026-10-08T23:00:00Z"
+      },
+      {
+        "b2b": true,
+        "date": "2026-10-09",
+        "home": true,
+        "opp": "CBJ",
+        "start": "2026-10-09T23:00:00Z"
+      },
+      {
+        "b2b": true,
+        "date": "2026-10-14",
+        "home": false,
+        "opp": "DAL",
+        "start": "2026-10-14T23:00:00Z"
+      },
+      {
+        "b2b": true,
+        "date": "2026-10-15",
+        "home": false,
+        "opp": "NSH",
+        "start": "2026-10-15T23:00:00Z"
+      },
+      {
+        "b2b": true,
+        "date": "2026-10-16",
+        "home": true,
+        "opp": "LAK",
+        "start": "2026-10-16T23:00:00Z"
+      },
+      {
+        "b2b": false,
+        "date": "2026-10-19",
+        "home": true,
+        "opp": "TBL",
+        "start": "2026-10-19T23:00:00Z"
+      }
+    ],
+    "WSH": [
+      {
+        "b2b": false,
+        "date": "2026-10-07",
+        "home": true,
+        "opp": "SEA",
+        "start": "2026-10-07T23:00:00Z"
+      },
+      {
+        "b2b": false,
+        "date": "2026-10-12",
+        "home": false,
+        "opp": "VAN",
+        "start": "2026-10-12T23:00:00Z"
+      },
+      {
+        "b2b": false,
+        "date": "2026-10-17",
+        "home": true,
+        "opp": "UTA",
+        "start": "2026-10-17T23:00:00Z"
+      }
+    ]
+  }
+}

@@ -1,0 +1,13 @@
+{
+  "forwards": [
+    {"id": 9000001, "firstName": {"default": "Alex"}, "lastName": {"default": "Sample"}, "positionCode": "C", "birthDate": "1998-03-15", "heightInInches": 73, "weightInPounds": 195},
+    {"id": 9000002, "firstName": {"default": "Jean-Luc"}, "lastName": {"default": "Tëstard"}, "positionCode": "L", "birthDate": "2005-11-02", "heightInInches": 76, "weightInPounds": 205}
+  ],
+  "defensemen": [
+    {"id": 9000003, "firstName": {"default": "Dana"}, "lastName": {"default": "Blueline"}, "positionCode": "D", "birthDate": "1994-06-30", "heightInInches": 75, "weightInPounds": 212}
+  ],
+  "goalies": [
+    {"id": 9000004, "firstName": {"default": "Gus"}, "lastName": {"default": "Crease"}, "positionCode": "G", "birthDate": "1996-01-20"},
+    {"id": 9000005, "firstName": {"default": "Bo"}, "lastName": {"default": "Backup"}, "positionCode": "G", "birthDate": "2000-09-09", "heightInInches": 74, "weightInPounds": 190}
+  ]
+}

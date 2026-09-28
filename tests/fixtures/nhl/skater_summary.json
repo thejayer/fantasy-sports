@@ -1,0 +1,7 @@
+{
+  "data": [
+    {"playerId": 9000001, "gamesPlayed": 80, "goals": 30, "assists": 40, "ppGoals": 10, "ppPoints": 25, "shGoals": 1, "shPoints": 3, "gameWinningGoals": 6, "shots": 240, "teamAbbrevs": "BOS"},
+    {"playerId": 9000003, "gamesPlayed": 70, "goals": 5, "assists": 20, "ppGoals": 0, "ppPoints": 2, "shGoals": 0, "shPoints": 0, "gameWinningGoals": 1, "shots": 110, "teamAbbrevs": "TOR"}
+  ],
+  "total": 2
+}

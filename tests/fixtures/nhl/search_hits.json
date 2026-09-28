@@ -1,0 +1,4 @@
+[
+  {"playerId": 9000010, "name": "Casey Unsigned", "positionCode": "C", "teamAbbrev": null, "lastTeamAbbrev": "VGK", "active": false, "birthDate": "1993-04-04", "heightInInches": 72, "weightInPounds": 190},
+  {"playerId": 9000011, "name": "Casey Unsigned", "positionCode": "D", "teamAbbrev": "SEA", "lastTeamAbbrev": "SEA", "active": true, "birthDate": "1999-02-02"}
+]

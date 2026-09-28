@@ -41,7 +41,8 @@ src/nhl/                     New package (not src/ffa)
   export.py                  Writes the artifacts below
 ```
 
-Artifacts, per league-season (`{SJ_DATA_DIR}/hockey/{league}/{season}/`):
+Artifacts, per league-season (`{SJ_DATA_DIR}/{league}/{season}/nhl/` — a side
+concern beside baseball's `analysis/`, not in `manifest.files`, no index upsert):
 
 | file                            | written by | contents                                              |
 | ------------------------------- | ---------- | ----------------------------------------------------- |
@@ -57,7 +58,7 @@ Artifacts, per league-season (`{SJ_DATA_DIR}/hockey/{league}/{season}/`):
 
 ## Phases
 
-### H0: prerequisites
+### H0: prerequisites — LANDED
 
 - Add the 2027 season (2026–27) for `hockey-main` in `configs/leagues.yaml`.
 - Scoring for SJ Hockey (season points): G 2, A 1, PPG +1, PPA +0.5, SHG +1,
@@ -66,7 +67,17 @@ Artifacts, per league-season (`{SJ_DATA_DIR}/hockey/{league}/{season}/`):
   D 475, UTIL 95, G 164. Read these from ESPN at sync; the list is for test
   fixtures.
 
-### H1: NHL data layer + player map
+**Landed as:** 2027 is `current_season`. Sync stashes ESPN `rosterSettings`
+(`attach_hockey_roster_settings`) so `settings.position_slot_counts` and
+`lineup_slot_stat_limits` (`GP`) come from the league; scoring was already
+synced into `settings.categories`. `configs/hockey_scoring.yaml` holds the list
+above; `nhl.scoring` (`league_scoring`, `resolve_scoring`, `score_line`) reads
+ESPN first and uses the YAML only as an override. The fixture league is built
+from the YAML and, like the real league, is Season Points
+(`TOTAL_SEASON_POINTS`): total points for the whole regular season, no weekly
+matchups, standings by cumulative points.
+
+### H1: NHL data layer + player map — LANDED
 
 - Bulk tables from `api.nhle.com/stats` (skater summary, realtime, timeonice;
   goalie summary; team summary) for the current and prior three seasons;
@@ -76,6 +87,28 @@ Artifacts, per league-season (`{SJ_DATA_DIR}/hockey/{league}/{season}/`):
   name; ties broken by ESPN team. Fallback: NHL player search (active, then
   inactive). Report coverage like `export-player-map` (target 98%+).
 - **UI:** roster and free-agent tables gain Age, Ht, Wt, Team, EV min, PP min.
+
+**Landed as:** `src/nhl/` — `nhl_api.py` (urllib, parsers split from fetch),
+`teams.py` (explicit ESPN → NHL code table instead of Rinkside's fuzzy team
+words), `match.py`, `export.py`, `scoring.py`, `sample.py` (synthetic NHL for
+fixtures/seed). `sj sync` runs it for the current hockey season
+(`SJ_NHL_SYNC=0` to skip; failures never fail the ESPN sync); `sj nhl
+[--fail-below 0.98]` rebuilds from the stored snapshot. Notes:
+
+- The first-initial fallback is stricter than Rinkside's: it also needs a
+  compatible first name (Mitch/Mitchell, J.T./JT) or the ESPN team to agree
+  (Mike/Michael). Same initial alone let an off-roster "Patrick Rogers" match
+  "Peter Rogers" (and would pair brothers like Jared/Jordan Staal).
+- Player landing pages are fetched only for players with no NHL line in the
+  fetched seasons (rookies/prospects) and search-only matches, capped by
+  `SJ_NHL_LANDING_MAX`. Search is capped by `SJ_NHL_SEARCH_MAX`.
+- Team strength uses the stats-API team summary (current + prior season) rather
+  than `standings/now`, which reports last season's final table in preseason.
+- TOI uses this season at 3+ GP, else last season at 10+ GP (flagged "other
+  team" when he moved). `HAT` is not in the NHL season tables, so history lines
+  omit it (null), never 0.
+- Committed fixtures under `fixtures/sj/hockey-main/{season}/nhl/` come from
+  `sj regenerate-fixtures`; a pytest checks they match the generator.
 
 ### H2: player values (fills the empty hockey projections tab)
 
@@ -220,3 +253,7 @@ color, 6'3"+ bold magenta name, 🦾 iron man.
 - Should hockey tools be member-only (franchise link required) or visible to
   everyone for every team?
 - Backtest before or after shipping the projections tab?
+- ~~Is SJ Hockey `TOTAL_SEASON_POINTS` or `H2H_POINTS` on ESPN?~~ Resolved:
+  Season Points — total points for the regular season, no weekly matchups.
+  H5's start/sit and streaming tools should optimize season totals under the
+  GP caps, not a weekly opponent.

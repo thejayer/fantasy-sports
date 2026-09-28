@@ -558,6 +558,26 @@ test.describe("hub smoke", () => {
     ).toBeVisible();
   });
 
+  test("hockey roster and waivers show NHL bio + ice time (HOCKEY-PORT H1)", async ({
+    page,
+  }) => {
+    await page.goto("/leagues/hockey-main/teams/1");
+    for (const header of ["Age", "Ht", "Wt", "Team", "EV min", "PP min"]) {
+      await expect(
+        page.getByRole("columnheader", { name: header, exact: true }),
+      ).toBeVisible();
+    }
+    // Hockey no longer borrows football's projection columns.
+    await expect(page.getByRole("columnheader", { name: "Floor" })).toHaveCount(0);
+    // Height renders from nhl_context.json (e.g. 6'1").
+    await expect(page.locator('td[data-label="Ht"]', { hasText: /\d'\d+"/ }).first()).toBeVisible();
+
+    await page.goto("/leagues/hockey-main?tab=waivers");
+    for (const header of ["Age", "EV min", "PP min"]) {
+      await expect(page.getByRole("columnheader", { name: header })).toBeVisible();
+    }
+  });
+
   test("secondary tabs live behind the More disclosure (roadmap 7.5)", async ({
     page,
   }) => {

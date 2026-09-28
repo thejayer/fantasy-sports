@@ -331,3 +331,14 @@ def test_write_round_trip_never_emits_infinity_or_nan(tmp_path: Path):
     # Round-trip through the store reader stays parseable.
     snap = read_snapshot("baseball-dynasty", 2026, store_dir=tmp_path)
     assert snap["free_agents"][0]["trailing_stats"]["7"]["ERA"] is None
+
+
+def test_nhl_sidecars_round_trip_without_index(tmp_path: Path):
+    """HOCKEY-PORT.md H1: nhl/{name}.json is a side concern like analysis/."""
+    store = FileStore(tmp_path)
+    doc = {"league_id": "hockey-main", "season": 2027, "sport": "hockey", "players": {}}
+    path = store.write_nhl(doc, "player_map")
+    assert Path(path) == tmp_path / "hockey-main" / "2027" / "nhl" / "player_map.json"
+    assert store.read_nhl("hockey-main", 2027, "player_map") == doc
+    assert store.read_nhl("hockey-main", 2027, "nhl_context") is None
+    assert not (tmp_path / "index.json").exists()

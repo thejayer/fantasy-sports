@@ -44,7 +44,7 @@ sj = "sj.cli:app"
 sg = "sg.cli:app"
 
 [tool.hatch.build.targets.wheel]
-packages = ["src/ffa", "src/sj", "src/sg"]
+packages = ["src/ffa", "src/sj", "src/sg", "src/nhl"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

@@ -156,7 +156,7 @@ describe("scoring sandbox math (roadmap 8.4)", () => {
     expect(model.sport).toBe("hockey");
     expect(model.hockey?.mode).toBe("season_points");
     const goals = model.items.find((i) => i.key === "G");
-    expect(goals?.official).toBe(3);
+    expect(goals?.official).toBe(2);
 
     const official = simulateHockey(model, defaultTweaks(model));
     const doubled = defaultTweaks(model);

@@ -1,0 +1,43 @@
+# SJ Hockey league rules (HOCKEY-PORT.md H0).
+#
+# ESPN is the source of truth: `sj sync` stores `settings.categories` from
+# `scoringSettings.scoringItems`, and `nhl.scoring.league_scoring` reads those.
+# This file is the override for tests, fixtures, and sandboxing only
+# (`nhl.scoring.load_scoring_override`). Keys are espn-api hockey STATS_MAP
+# abbreviations.
+
+scoring:
+  # skaters
+  G: 2
+  A: 1
+  PPG: 1        # bonus on top of G
+  PPA: 0.5      # bonus on top of A
+  SHG: 1
+  SHA: 0.5
+  SHP: 0.5
+  GWG: 1
+  HAT: 2
+  SOG: 0.5
+  HIT: 0.1
+  BLK: 0.5
+  # goalies
+  W: 4
+  L: -2
+  GA: -2
+  SV: 0.35
+  SO: 3
+
+lineup:
+  F: 9
+  D: 5
+  UTIL: 1
+  G: 2
+  BE: 7
+  IR: 3
+
+# Season games-played caps per lineup slot (ESPN lineupSlotStatLimits on GP).
+gp_caps:
+  F: 855
+  D: 475
+  UTIL: 95
+  G: 164

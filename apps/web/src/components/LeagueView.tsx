@@ -32,6 +32,7 @@ import { HockeyToolsPanel } from "@/components/HockeyToolsPanel";
 import { ToolsPanel, type ToolsView } from "@/components/ToolsPanel";
 import type { BaseballToolsView, TrailingWindow } from "@/lib/baseball-tools";
 import type { HockeyToolsView } from "@/lib/hockey-tools";
+import { hockeyBioIndex, type HockeyNhlSnapshot } from "@/lib/hockey-nhl";
 import { TeamIdentity } from "@/components/TeamAvatar";
 import { ViewerBadge } from "@/components/ViewerBadge";
 import type {
@@ -141,7 +142,7 @@ function StandingsTable({
   }
 
   const rows =
-    isGolf || baseballSeasonPoints
+    isGolf || baseballSeasonPoints || hockeySeasonPoints
       ? [...league.teams].sort(
           (a, b) =>
             (a.standing ?? 999) - (b.standing ?? 999) ||
@@ -395,6 +396,7 @@ export function LeagueView({
   scoringSandbox = null,
   baseballAnalysis = null,
   analysisSeriesMode = "cumulative",
+  hockeyNhl = null,
 }: {
   league: LeagueSnapshot;
   seasons: number[];
@@ -453,6 +455,8 @@ export function LeagueView({
   /** Baseball season-points analysis sidecars (roadmap 8.5). */
   baseballAnalysis?: BaseballAnalysisSnapshot | null;
   analysisSeriesMode?: AnalysisSeriesMode;
+  /** Hockey NHL sidecars (HOCKEY-PORT.md H1) for Waivers bio / TOI columns. */
+  hockeyNhl?: HockeyNhlSnapshot | null;
 }) {
   const leagueId = league.league_id;
   const isBaseball = league.sport === "baseball";
@@ -791,6 +795,14 @@ export function LeagueView({
         <FreeAgentsBoard
           agents={league.free_agents ?? []}
           sport={league.sport}
+          hockeyBios={
+            isHockey
+              ? hockeyBioIndex(
+                  hockeyNhl,
+                  (league.free_agents ?? []).map((p) => p.id),
+                )
+              : undefined
+          }
         />
       ) : null}
 

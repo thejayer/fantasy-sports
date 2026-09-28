@@ -8,11 +8,20 @@ import { GolfRosterView } from "@/components/GolfRosterView";
 import { KeeperBadge } from "@/components/KeeperBadge";
 import { SeasonSwitcher } from "@/components/SeasonSwitcher";
 import {
+  getHockeyNhl,
   getLeagueSeasons,
   getPlayerMap,
   getProjectionSnapshot,
   getTeam,
 } from "@/lib/data";
+import {
+  formatHeight,
+  formatMinutes,
+  formatWhole,
+  hockeyBioIndex,
+  teamLabel,
+  toiTitle,
+} from "@/lib/hockey-nhl";
 import { ViewerBadge } from "@/components/ViewerBadge";
 import {
   isKeeperPlayer,
@@ -79,10 +88,12 @@ export default async function TeamPage({ params, searchParams }: Props) {
     );
   }
 
+  const isHockey = league.sport === "hockey";
   let projectionSnapshot = null;
   let playerMap = null;
   const scoring = scoringSlugFromLeague(league);
-  for (const year of projectionSeasonCandidates(league.season)) {
+  // NFL projections are football-only; hockey reads its NHL sidecars instead.
+  for (const year of isHockey ? [] : projectionSeasonCandidates(league.season)) {
     const snap = await getProjectionSnapshot(scoring, year);
     const map = await getPlayerMap(year);
     if (map && !playerMap) playerMap = map;
@@ -92,6 +103,12 @@ export default async function TeamPage({ params, searchParams }: Props) {
       break;
     }
   }
+  const hockeyBios = isHockey
+    ? hockeyBioIndex(
+        await getHockeyNhl(league.league_id, league.season),
+        team.roster.map((p) => p.id),
+      )
+    : {};
   const roster = attachPlayerProjections(
     team.roster,
     indexPlayerMap(playerMap),
@@ -153,10 +170,23 @@ export default async function TeamPage({ params, searchParams }: Props) {
                 <th>Pro</th>
                 <th>Status</th>
                 <th>Points</th>
-                <th>Floor</th>
-                <th>Med</th>
-                <th>Ceil</th>
-                <th>Tier</th>
+                {isHockey ? (
+                  <>
+                    <th>Age</th>
+                    <th>Ht</th>
+                    <th>Wt</th>
+                    <th>Team</th>
+                    <th>EV min</th>
+                    <th>PP min</th>
+                  </>
+                ) : (
+                  <>
+                    <th>Floor</th>
+                    <th>Med</th>
+                    <th>Ceil</th>
+                    <th>Tier</th>
+                  </>
+                )}
               </tr>
             </thead>
             <tbody>
@@ -164,6 +194,9 @@ export default async function TeamPage({ params, searchParams }: Props) {
                 const label = player.injury_status || player.status || "OK";
                 const proj = player.projection;
                 const kept = isKeeperPlayer(player.id, keepers);
+                const bio =
+                  player.id != null ? hockeyBios[String(player.id)] : undefined;
+                const team = teamLabel(bio);
                 return (
                   <tr key={`${player.id}-${player.name}`}>
                     <td data-label="Status">
@@ -183,18 +216,37 @@ export default async function TeamPage({ params, searchParams }: Props) {
                     <td data-label="Points">
                       {player.total_points?.toFixed?.(1) ?? "—"}
                     </td>
-                    <td data-label="Floor">
-                      {formatProjectionPoints(proj?.floor)}
-                    </td>
-                    <td data-label="Med">
-                      {formatProjectionPoints(proj?.median)}
-                    </td>
-                    <td data-label="Ceil">
-                      {formatProjectionPoints(proj?.ceiling)}
-                    </td>
-                    <td data-label="Tier">
-                      {proj?.tier != null ? String(proj.tier) : "—"}
-                    </td>
+                    {isHockey ? (
+                      <>
+                        <td data-label="Age">{formatWhole(bio?.age)}</td>
+                        <td data-label="Ht">{formatHeight(bio?.heightIn)}</td>
+                        <td data-label="Wt">{formatWhole(bio?.weightLb)}</td>
+                        <td data-label="Team" title={team.title}>
+                          {team.text}
+                        </td>
+                        <td data-label="EV min" title={toiTitle(bio)}>
+                          {formatMinutes(bio?.evMin)}
+                        </td>
+                        <td data-label="PP min" title={toiTitle(bio)}>
+                          {formatMinutes(bio?.ppMin)}
+                        </td>
+                      </>
+                    ) : (
+                      <>
+                        <td data-label="Floor">
+                          {formatProjectionPoints(proj?.floor)}
+                        </td>
+                        <td data-label="Med">
+                          {formatProjectionPoints(proj?.median)}
+                        </td>
+                        <td data-label="Ceil">
+                          {formatProjectionPoints(proj?.ceiling)}
+                        </td>
+                        <td data-label="Tier">
+                          {proj?.tier != null ? String(proj.tier) : "—"}
+                        </td>
+                      </>
+                    )}
                   </tr>
                 );
               })}

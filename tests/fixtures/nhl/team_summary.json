@@ -1,0 +1,8 @@
+{
+  "data": [
+    {"teamFullName": "Toronto Maple Leafs", "gamesPlayed": 82, "goalsForPerGame": 3.4, "goalsAgainstPerGame": 2.8, "shotsForPerGame": 31.0, "shotsAgainstPerGame": 29.0, "penaltyKillPct": 0.8, "powerPlayPct": 0.24},
+    {"teamFullName": "Montréal Canadiens", "gamesPlayed": 82, "goalsForPerGame": 2.9, "goalsAgainstPerGame": 3.2, "shotsForPerGame": 28.0, "shotsAgainstPerGame": 32.0, "penaltyKillPct": 0.78, "powerPlayPct": null},
+    {"teamFullName": "Arizona Coyotes", "gamesPlayed": 82, "goalsForPerGame": 2.7, "goalsAgainstPerGame": 3.3}
+  ],
+  "total": 3
+}

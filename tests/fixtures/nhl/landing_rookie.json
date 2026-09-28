@@ -1,0 +1,15 @@
+{
+  "birthDate": "2005-11-02",
+  "heightInInches": 76,
+  "weightInPounds": 205,
+  "position": "L",
+  "currentTeamAbbrev": "TOR",
+  "draftDetails": {"year": 2024, "teamAbbrev": "TOR", "round": 1, "pickInRound": 7, "overallPick": 7},
+  "seasonTotals": [
+    {"season": 20232024, "gameTypeId": 2, "leagueAbbrev": "OHL", "teamName": {"default": "Sample Juniors"}, "gamesPlayed": 64, "goals": 38, "assists": 44, "points": 82},
+    {"season": 20242025, "gameTypeId": 2, "leagueAbbrev": "OHL", "teamName": {"default": "Sample Juniors"}, "gamesPlayed": 58, "goals": 45, "assists": 51, "points": 96},
+    {"season": 20242025, "gameTypeId": 3, "leagueAbbrev": "OHL", "teamName": {"default": "Sample Juniors"}, "gamesPlayed": 12, "goals": 9, "assists": 8, "points": 17},
+    {"season": 20252026, "gameTypeId": 2, "leagueAbbrev": "AHL", "teamName": {"default": "Sample Marlies"}, "gamesPlayed": 8, "goals": 2, "assists": 3, "points": 5},
+    {"season": 20252026, "gameTypeId": 2, "leagueAbbrev": "NHL", "teamName": {"default": "Toronto Maple Leafs"}, "gamesPlayed": 4, "goals": 0, "assists": 1, "points": 1}
+  ]
+}

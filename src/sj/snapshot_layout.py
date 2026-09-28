@@ -72,6 +72,17 @@ def analysis_rel(league_id: str, season: int, name: str) -> str:
     return f"{season_dir_rel(league_id, season)}/analysis/{safe}.json"
 
 
+def nhl_rel(league_id: str, season: int, name: str) -> str:
+    """Side-concern NHL data layer JSON (HOCKEY-PORT.md H1).
+
+    ``name`` is ``player_map``, ``nhl_context``, ``schedule`` or
+    ``team_strength``. Not listed in ``manifest.files`` — season assemble must
+    never load these.
+    """
+    safe = str(name).strip().replace("..", "")
+    return f"{season_dir_rel(league_id, season)}/nhl/{safe}.json"
+
+
 def manifest_rel(league_id: str, season: int) -> str:
     return f"{season_dir_rel(league_id, season)}/{MANIFEST_NAME}"
 

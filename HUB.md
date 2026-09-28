@@ -73,18 +73,41 @@ ship a synthetic sample; live numbers come from a cookie sync.
 
 ### Hockey scope
 
-**ESPN, projection-free.** `hockey-main` is ESPN `1023106173` for 2026
-(2025–26) and **2027** (2026–27, `current_season`). ESPN years 2024 and 2025
-do not exist for this id. `sj sync` / `sj backfill` pull listed seasons when
-ESPN cookies are set. `sj sync` still skips `espn_league_id <= 0` so other
-placeholders cannot call `League(0)`.
+**ESPN + the NHL data layer ([HOCKEY-PORT.md](HOCKEY-PORT.md)).** `hockey-main`
+is ESPN `1023106173`: hub 2026 (2025–26) and hub 2027 (2026–27, current,
+`current_season`). ESPN years 2024 and 2025 do not exist for this id. `sj sync`
+/ `sj backfill` pull listed seasons when ESPN cookies are set. `sj sync` still
+skips `espn_league_id <= 0` so other placeholders cannot call `League(0)`.
 
 Hockey reuses the ESPN snapshot layout (standings, rosters, matchups, draft,
 activity, free agents). espn-api hockey is closer to baseball (Matchup objects,
 optional category matrices) plus football-shaped `box_scores` with applied
 totals. The hub does **not** invent player week lines ESPN omitted, and does
-**not** add NHL code to `src/ffa`. Tools are Category Board (when
-`season_stats` exist) plus Scoring lab; `projections` stays EmptyState.
+**not** add NHL code to `src/ffa` — hockey has its own package, `src/nhl`.
+
+- **Season Points:** SJ Hockey is `TOTAL_SEASON_POINTS` — total points for the
+  whole regular season, no weekly matchups. Standings rank by cumulative points
+  (like season-points baseball); the committed fixture matches.
+- **H0 (landed):** league scoring, lineup slot counts, and per-slot GP caps are
+  read from ESPN at sync (`settings.categories`, `position_slot_counts`,
+  `lineup_slot_stat_limits` on `GP`). `configs/hockey_scoring.yaml` holds the
+  SJ Hockey rules as an override for tests/fixtures/sandboxing only
+  (`nhl.scoring`).
+- **H1 (landed):** after the current hockey season syncs, `sj sync` calls the
+  public NHL API and writes side concerns under `{league}/{season}/nhl/`
+  (not in `manifest.files`, no index upsert): `player_map.json` (ESPN id → NHL
+  id, match method, coverage), `nhl_context.json` (age, ht/wt, team, prior
+  team, EV/PP minutes, goalie start share, recent NHL stat lines, draft/minors
+  for rookies), `schedule.json` (club schedules + back-to-backs), and
+  `team_strength.json` (GF/GA/SF/SA, PK%, PP%, blended with last season until
+  15 GP). `sj nhl --league hockey-main [--fail-below 0.98]` rebuilds them from
+  the stored snapshot (no ESPN cookies). `SJ_NHL_SYNC=0` turns the post-sync
+  step off; NHL failures are reported and never fail the ESPN sync. The hub
+  reads them via `getHockeyNhl` — never the NHL from a request. Roster and
+  Waivers tables show **Age, Ht, Wt, Team, EV min, PP min** ("—" when missing).
+- Still **projection-free by design** until H2: `projections` stays
+  EmptyState. Tools are Category Board (when `season_stats` exist), Scoring
+  lab, and the season-points Analysis tab below.
 
 espn-api hockey `Player` omits `total_points`. Sync derives season FP from
 `season_stats × scoring_format` counting weights (skipping GAA/SV%) and
@@ -513,6 +536,7 @@ data, delete `data/sj/` and run `sj sync`.
 ```
 configs/leagues.yaml     League registry
 src/sj/                  Sync + store CLI (`sj`)
+src/nhl/                 Hockey NHL data layer (HOCKEY-PORT.md; `sj nhl`)
 scripts/                 Secret Manager, IAM, and infra helpers
 fixtures/sj/             Sample snapshots (fallback)
 data/sj/                 Local sync output (gitignored)
