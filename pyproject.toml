@@ -15,7 +15,9 @@ dependencies = [
     "nflreadpy>=0.1.5",
     "pandas>=2.1",
     "pulp>=2.8,<4",  # 4.0 removes PULP_CBC_CMD, which optimize.py uses
-    "pyarrow>=15.0",
+    # 25.0.0 segfaults when Arrow loads on a non-main thread (apache/arrow#50471);
+    # streamlit >=1.60 excludes it. 25.0.1 is the patched wheel.
+    "pyarrow>=15.0,!=25.0.0",
     "pydantic>=2.6",
     "pyyaml>=6.0",
     "scikit-learn>=1.4",
@@ -30,7 +32,7 @@ dev = [
 ]
 dashboard = [
     "altair>=5.0",
-    "streamlit>=1.30",
+    "streamlit>=1.60",
 ]
 gcs = [
     "google-cloud-storage>=2.16",
