@@ -154,6 +154,23 @@ class NHLClient:
             kind, report, f"seasonId={nhl_season} and gameTypeId=2", sort_prop
         )
 
+    def toi_window(self, start: dt.date, end: dt.date) -> dict[int, dict[str, Any]]:
+        """Per-game skater ice time between two dates (e.g. the last 14 days)."""
+        params = {
+            "isAggregate": "true",
+            "isGame": "true",
+            "start": 0,
+            "limit": -1,
+            "cayenneExp": (
+                f'gameDate<="{end.isoformat()} 23:59:59" and '
+                f'gameDate>="{start.isoformat()}" and gameTypeId=2'
+            ),
+            "sort": json.dumps([{"property": "playerId", "direction": "ASC"}]),
+        }
+        doc = self.get(f"{STATS}/skater/timeonice", params)
+        rows = doc.get("data") if isinstance(doc, dict) else None
+        return parse_toi_rows([r for r in rows or [] if isinstance(r, dict)])
+
     def roster(self, team: str) -> list[dict[str, Any]]:
         return parse_roster(self.get(f"{WEB}/roster/{team}/current"), team)
 

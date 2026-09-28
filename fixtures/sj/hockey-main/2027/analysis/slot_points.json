@@ -32,51 +32,51 @@
   "synced_at": "2026-07-27T00:00:00+00:00",
   "teams": [
     {
-      "bench_il": 676.6,
-      "delta": -30.7,
-      "espn_points": 3075.4,
-      "goalies": 533.2,
-      "name": "Five Hole Heroes",
-      "skaters": 2511.5,
-      "slots": {
-        "Defense": 817.0,
-        "Forward": 1452.5,
-        "Goalie": 533.2,
-        "Util": 242.1
-      },
-      "starters": 3044.7,
-      "team_id": 1
-    },
-    {
-      "bench_il": 565.8,
-      "delta": -25.6,
-      "espn_points": 2571.9,
-      "goalies": 437.2,
+      "bench_il": 631.2,
+      "delta": -28.7,
+      "espn_points": 2868.9,
+      "goalies": 487.6,
       "name": "Crease Crashers",
-      "skaters": 2109.1,
+      "skaters": 2352.6,
       "slots": {
-        "Defense": 686.1,
-        "Forward": 1219.7,
-        "Goalie": 437.2,
-        "Util": 203.3
+        "Defense": 765.3,
+        "Forward": 1360.5,
+        "Goalie": 487.6,
+        "Util": 226.8
       },
-      "starters": 2546.3,
+      "starters": 2840.2,
       "team_id": 2
     },
     {
-      "bench_il": 429.7,
-      "delta": -19.5,
-      "espn_points": 1953.3,
-      "goalies": 325.5,
-      "name": "Biscuit Bandits",
-      "skaters": 1608.3,
+      "bench_il": 629.9,
+      "delta": -28.7,
+      "espn_points": 2863.0,
+      "goalies": 496.3,
+      "name": "Five Hole Heroes",
+      "skaters": 2338.0,
       "slots": {
-        "Defense": 523.2,
-        "Forward": 930.1,
-        "Goalie": 325.5,
-        "Util": 155.0
+        "Defense": 760.6,
+        "Forward": 1352.1,
+        "Goalie": 496.3,
+        "Util": 225.4
       },
-      "starters": 1933.8,
+      "starters": 2834.3,
+      "team_id": 1
+    },
+    {
+      "bench_il": 547.4,
+      "delta": -24.8,
+      "espn_points": 2488.0,
+      "goalies": 414.6,
+      "name": "Biscuit Bandits",
+      "skaters": 2048.6,
+      "slots": {
+        "Defense": 666.4,
+        "Forward": 1184.7,
+        "Goalie": 414.6,
+        "Util": 197.5
+      },
+      "starters": 2463.2,
       "team_id": 3
     }
   ]

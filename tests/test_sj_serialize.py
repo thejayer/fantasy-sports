@@ -826,7 +826,8 @@ def test_hockey_derives_total_points_from_season_stats_when_espn_omits():
     assert snapshot["teams"][0]["points_for"] == 296.8
     fa = snapshot["free_agents"][0]
     assert fa["total_points"] == 296.8
-    assert "season_stats" not in fa
+    # H2 values need a free agent's own season line (HOCKEY-PORT.md).
+    assert fa["season_stats"]["G"] == 26.0
 
 
 
@@ -878,3 +879,36 @@ def test_hockey_settings_without_raw_roster_settings_omit_lineup():
 
 
 
+
+
+def test_hockey_projected_stats_and_newest_season_bucket():
+    """HOCKEY-PORT H2: keep ESPN's projected line; never mistake last season for this one."""
+    player = SimpleNamespace(
+        playerId=5,
+        name="Two Seasons",
+        position="Center",
+        lineupSlot="Forward",
+        proTeam="Toronto Maple Leafs",
+        injuryStatus="ACTIVE",
+        status="ACTIVE",
+        injured=False,
+        eligibleSlots=[],
+        acquisitionType="DRAFT",
+        percent_owned=50.0,
+        total_points=None,
+        projected_total_points=None,
+        avg_points=None,
+        stats={
+            # dict order puts this season second on purpose
+            "Total 2026": {"total": {"G": 30.0, "GP": 82.0}},
+            "Total 2027": {"total": {"G": 4.0, "GP": 6.0}},
+            "Projected 2027": {"total": {"G": 28.0, "A": 30.0, "GP": 78.0}},
+            "Projected 2026": {"total": {"G": 99.0}},
+        },
+    )
+    row = serialize_player(player, sport="hockey")
+    assert row["season_stats"] == {"G": 4.0, "GP": 6.0}
+    assert row["projected_stats"] == {"G": 28.0, "A": 30.0, "GP": 78.0}
+
+    football = serialize_player(player, sport="football")
+    assert "projected_stats" not in football

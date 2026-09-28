@@ -2827,3 +2827,42 @@ tr.is-upcoming td {
   height: 0.7rem;
   display: inline-block;
 }
+
+/* Hockey projections (HOCKEY-PORT.md H2): data-source tag + breakdown. */
+.value-source {
+  display: inline-block;
+  padding: 0.1rem 0.45rem;
+  border-radius: 999px;
+  font-size: 0.78rem;
+  white-space: nowrap;
+  border: 1px solid var(--line);
+}
+.value-source-current {
+  color: var(--good);
+  border-color: color-mix(in srgb, var(--good) 55%, transparent);
+}
+.value-source-history {
+  color: var(--caution);
+  border-color: color-mix(in srgb, var(--caution) 55%, transparent);
+}
+.value-source-rookie {
+  color: light-dark(#2f6fb3, #7fb2ea);
+  border-color: color-mix(in srgb, light-dark(#2f6fb3, #7fb2ea) 55%, transparent);
+}
+.value-source-rookie_playing {
+  color: light-dark(#7a4bb5, #b995ea);
+  border-color: color-mix(in srgb, light-dark(#7a4bb5, #b995ea) 55%, transparent);
+}
+.value-source-estimate {
+  color: color-mix(in srgb, var(--ink) 60%, transparent);
+  border-style: dashed;
+}
+.value-breakdown-toggle {
+  font-size: 0.78rem;
+  color: color-mix(in srgb, var(--ink) 65%, transparent);
+}
+.value-breakdown {
+  margin: 0.2rem 0;
+  padding-left: 1.1rem;
+  font-size: 0.85rem;
+}

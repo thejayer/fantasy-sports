@@ -14,6 +14,7 @@ import {
   getLeagueSnapshot,
   getBaseballAnalysis,
   getHockeyNhl,
+  getHockeyValues,
   getPlayerMap,
   getPlayoffOddsSamples,
   getPlayoffOddsSnapshot,
@@ -39,6 +40,7 @@ import {
 } from "@/lib/projection-join";
 import { resolveGolfActingScope } from "@/lib/franchise-acl";
 import { getViewerTeamId } from "@/lib/viewer";
+import { parseHockeyBoardQuery } from "@/lib/hockey-values";
 import { parsePlayerTableQuery } from "@/lib/player-table";
 import { buildScoringSandboxModel } from "@/lib/scoring-sandbox";
 
@@ -69,6 +71,9 @@ type Props = {
     box?: string;
     window?: string;
     series?: string;
+    who?: string;
+    recent?: string;
+    open?: string;
   }>;
 };
 
@@ -115,6 +120,9 @@ export default async function LeagueDetailPage({ params, searchParams }: Props) 
     box: boxParam,
     window: windowParam,
     series: seriesParam,
+    who: whoParam,
+    recent: recentParam,
+    open: openParam,
   } = await searchParams;
   const seasons = await getLeagueSeasons(leagueId);
   const season = seasonParam ? Number(seasonParam) : undefined;
@@ -188,6 +196,20 @@ export default async function LeagueDetailPage({ params, searchParams }: Props) 
     league.sport === "hockey" && tab === "waivers"
       ? await getHockeyNhl(league.league_id, league.season)
       : null;
+  // Hockey player values (H2/H3): projections board + Waivers value column.
+  const hockeyValues =
+    league.sport === "hockey" && (tab === "projections" || tab === "waivers")
+      ? await getHockeyValues(league.league_id, league.season)
+      : null;
+  const hockeyBoardQuery = parseHockeyBoardQuery({
+    pos: posParam,
+    who: whoParam,
+    sort: sortParam,
+    dir: dirParam,
+    p: pageParam,
+    recent: recentParam,
+    open: openParam,
+  });
 
   const wantsProjections =
     league.sport === "football" &&
@@ -430,6 +452,8 @@ export default async function LeagueDetailPage({ params, searchParams }: Props) 
       baseballAnalysis={baseballAnalysis}
       analysisSeriesMode={analysisSeriesMode}
       hockeyNhl={hockeyNhl}
+      hockeyValues={hockeyValues}
+      hockeyBoardQuery={hockeyBoardQuery}
     />
   );
 }

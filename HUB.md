@@ -105,9 +105,23 @@ totals. The hub does **not** invent player week lines ESPN omitted, and does
   step off; NHL failures are reported and never fail the ESPN sync. The hub
   reads them via `getHockeyNhl` — never the NHL from a request. Roster and
   Waivers tables show **Age, Ht, Wt, Team, EV min, PP min** ("—" when missing).
-- Still **projection-free by design** until H2: `projections` stays
-  EmptyState. Tools are Category Board (when `season_stats` exist), Scoring
-  lab, and the season-points Analysis tab below.
+- **H2 + H3 (landed): player values.** The same sync step writes
+  `nhl/values.json` for every rostered player and free agent (`src/nhl/value.py`,
+  `durability.py`, `aging.py`, `prospects.py`, `roles.py`). Per-game value is a
+  weighted blend — last 7/15/30 days, this season, ESPN's projected stat line
+  scored under league rules, age-adjusted NHL history (3 seasons,
+  1.0/0.6/0.35), a prospect estimate for rookies, or a flagged role estimate
+  when nothing else exists — times a role adjustment (line/pair and PP unit
+  from ice time, trend, goalie role; capped ±25%). ROS = value × remaining
+  team games × expected share played (H3 durability; goalies use start share).
+  Zero projections and zero past seasons are gaps; missing data is null.
+- The hockey **`projections` tab** is the values board: value, ROS, ESPN
+  per-game, share played, age, data-source tag, a recent-form setting
+  (`?recent=0…1`, re-blended from saved inputs in `lib/hockey-values.ts`),
+  position / rostered / free-agent filters, sort, 25-row pages, and one
+  expanded input breakdown at a time (`?open=`). Roster and Waivers gain Value
+  and ROS. Tools are Category Board (when `season_stats` exist), Scoring lab,
+  and the season-points Analysis tab below. Not backtested yet (H2b).
 
 espn-api hockey `Player` omits `total_points`. Sync derives season FP from
 `season_stats × scoring_format` counting weights (skipping GAA/SV%) and

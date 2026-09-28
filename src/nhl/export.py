@@ -17,6 +17,7 @@ document's ``errors`` instead of failing the ESPN sync.
 from __future__ import annotations
 
 import datetime as dt
+import math
 import os
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -34,9 +35,12 @@ from nhl.nhl_api import (
     season_id,
     summarize_landing,
 )
+from nhl.roles import skater_roles
+from nhl.scoring import resolve_scoring
 from nhl.teams import NHL_ABBREVS, NHL_NAMES, last_team
+from nhl.value import build_values
 
-ARTIFACTS = ("player_map", "nhl_context", "schedule", "team_strength")
+ARTIFACTS = ("player_map", "nhl_context", "schedule", "team_strength", "values")
 SCHEMA_VERSION = 1
 
 DEFAULT_SEARCH_MAX = 80
@@ -183,7 +187,7 @@ def team_strength(
     avg: dict[str, float | None] = {}
     for key in ("gf", "ga", "sf", "sa", "pk", "pp"):
         vals = [t[key] for t in teams.values() if t[key] is not None]
-        avg[key] = round(sum(vals) / len(vals), 4) if vals else None
+        avg[key] = round(math.fsum(vals) / len(vals), 4) if vals else None
     return teams, avg
 
 
@@ -251,6 +255,12 @@ def build_nhl_documents(
                 attempt(f"skater timeonice {sid}",
                         lambda sid=sid: client.season_report("skater", "timeonice", sid), [])
             )
+    recent_toi = attempt(
+        "skater timeonice last 14 days",
+        lambda: client.toi_window(as_of - dt.timedelta(days=14), as_of),
+        {},
+    )
+    roles = skater_roles(nhl_players, recent_toi, toi.get(cur_id, {}), toi.get(prior_ids[0], {}))
     team_now = parse_team_summary(
         attempt(f"team summary {cur_id}", lambda: client.season_report("team", "summary", cur_id), [])
     )
@@ -390,6 +400,13 @@ def build_nhl_documents(
             entry["toi"] = None
         else:
             entry["toi"] = toi_context(nid, team, toi.get(cur_id, {}), toi.get(prior_ids[0], {}))
+            role = roles.get(nid) or {}
+            entry["role"] = {
+                "line": role.get("line"),
+                "pp": role.get("pp"),
+                "basis": role.get("basis"),
+                "trend": role.get("trend") or [],
+            }
         if land:
             entry["prior_nhl_gp"] = land.get("prior_nhl_gp")
             entry["draft"] = land.get("draft")
@@ -443,6 +460,18 @@ def build_nhl_documents(
             "league_avg": league_avg,
         },
     }
+    # H2/H3: per-game values + durability + ROS from the documents above.
+    scoring = resolve_scoring(snapshot)
+    documents["values"] = build_values(
+        snapshot,
+        player_map=documents["player_map"],
+        context=documents["nhl_context"],
+        schedule=documents["schedule"],
+        weights=scoring.weights,
+        scoring_source=scoring.source,
+        as_of=as_of,
+        generated_at=generated_at,
+    )
     for doc in documents.values():
         doc["errors"] = list(errors)
     return NhlExport(

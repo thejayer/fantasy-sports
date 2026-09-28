@@ -11,6 +11,7 @@ import {
   toiTitle,
   type HockeyBioIndex,
 } from "@/lib/hockey-nhl";
+import { formatValue } from "@/lib/hockey-values";
 
 /** Age / Ht / Wt / Team / EV / PP from the synced NHL sidecars (HOCKEY-PORT H1). */
 function hockeyColumns(bios: HockeyBioIndex): DataTableColumn<Player>[] {
@@ -77,7 +78,38 @@ function hockeyColumns(bios: HockeyBioIndex): DataTableColumn<Player>[] {
   ];
 }
 
-function columns(sport: string, bios?: HockeyBioIndex): DataTableColumn<Player>[] {
+type HockeyValueCells = Record<string, { value: number | null; ros: number | null }>;
+
+/** Value + ROS from `nhl/values.json` (HOCKEY-PORT H2/H3). */
+function hockeyValueColumns(values: HockeyValueCells): DataTableColumn<Player>[] {
+  const cell = (row: Player) => (row.id != null ? values[String(row.id)] : undefined);
+  return [
+    {
+      id: "hk_value",
+      header: "Value",
+      sortable: true,
+      numeric: true,
+      defaultSortDirection: "desc",
+      sortValue: (row) => cell(row)?.value ?? null,
+      cell: (row) => formatValue(cell(row)?.value),
+    },
+    {
+      id: "hk_ros",
+      header: "ROS",
+      sortable: true,
+      numeric: true,
+      defaultSortDirection: "desc",
+      sortValue: (row) => cell(row)?.ros ?? null,
+      cell: (row) => formatValue(cell(row)?.ros, 1),
+    },
+  ];
+}
+
+function columns(
+  sport: string,
+  bios?: HockeyBioIndex,
+  values?: HockeyValueCells,
+): DataTableColumn<Player>[] {
   const teamHeader =
     sport === "baseball" ? "MLB" : sport === "hockey" ? "NHL" : "NFL";
   return [
@@ -104,6 +136,7 @@ function columns(sport: string, bios?: HockeyBioIndex): DataTableColumn<Player>[
       sortValue: (row) => row.pro_team,
       cell: (row) => row.pro_team ?? "—",
     },
+    ...(sport === "hockey" && values ? hockeyValueColumns(values) : []),
     ...(sport === "hockey" && bios ? hockeyColumns(bios) : []),
     {
       id: "status",
@@ -152,11 +185,14 @@ export function FreeAgentsBoard({
   agents,
   sport,
   hockeyBios,
+  hockeyValues,
 }: {
   agents: Player[];
   sport: string;
   /** ESPN id → NHL bio (hockey only; from `nhl/` sidecars, sliced to these agents). */
   hockeyBios?: HockeyBioIndex;
+  /** ESPN id → value / ROS (hockey only; from `nhl/values.json`). */
+  hockeyValues?: HockeyValueCells;
 }) {
   if (!agents.length) {
     return (
@@ -177,7 +213,7 @@ export function FreeAgentsBoard({
       </p>
       <DataTable
         rows={agents}
-        columns={columns(sport, hockeyBios)}
+        columns={columns(sport, hockeyBios, hockeyValues)}
         getRowKey={(row) => String(row.id ?? row.name ?? "fa")}
         searchPlaceholder="Search free agents…"
         searchText={(row) =>

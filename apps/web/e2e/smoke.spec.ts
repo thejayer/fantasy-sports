@@ -543,7 +543,7 @@ test.describe("hub smoke", () => {
     await expect(
       page.getByRole("heading", { name: /Strictly Jayers Hockey/i }),
     ).toBeVisible();
-    await expect(page.getByText(/projection-free by design/i)).toBeVisible();
+    await expect(page.getByText(/player values from ESPN \+ NHL data/i)).toBeVisible();
     await expect(page.getByText(/Hockey · Redraft/i)).toBeVisible();
     await page.goto("/leagues/hockey-main?tab=sandbox");
     await expect(page.getByText(/Scoring lab/i).first()).toBeVisible();
@@ -552,10 +552,40 @@ test.describe("hub smoke", () => {
     await expect(goals).toBeVisible();
     await goals.fill("6");
     await expect(page.locator("td.is-delta, .is-delta").first()).toBeVisible();
+  });
+
+  test("hockey projections board shows values, ROS, and a breakdown (HOCKEY-PORT H2/H3)", async ({
+    page,
+  }) => {
     await page.goto("/leagues/hockey-main?tab=projections");
-    await expect(
-      page.getByText(/Hockey stays projection-free by design/i),
-    ).toBeVisible();
+    for (const header of ["Value", "ROS", "ESPN /G", "Plays", "Source"]) {
+      await expect(page.getByRole("columnheader", { name: header })).toBeVisible();
+    }
+    const firstValue = page.locator('td[data-label="Value"]').first();
+    await expect(firstValue).toHaveText(/^\d+\.\d{2}$/);
+    // Expandable inputs per player (one row at a time keeps the page light).
+    await page.getByRole("link", { name: "Inputs", exact: true }).first().click();
+    await expect(page).toHaveURL(/open=\d+/);
+    const breakdown = page.locator("tr.value-breakdown-row");
+    await expect(breakdown.getByText(/of the blend/).first()).toBeVisible();
+    await expect(breakdown.getByText(/Plays \d+%/)).toBeVisible();
+    await page.getByRole("link", { name: "Hide inputs" }).click();
+    await expect(page.locator("tr.value-breakdown-row")).toHaveCount(0);
+
+    // Recent-form and position filters are server links.
+    await page.getByRole("link", { name: "Recent form", exact: true }).click();
+    await expect(page).toHaveURL(/recent=1/);
+    await page.getByRole("link", { name: "G", exact: true }).click();
+    await expect(page).toHaveURL(/pos=G/);
+    const positions = await page.locator('td[data-label="Pos"]').allTextContents();
+    expect(positions.length).toBeGreaterThan(0);
+    expect(positions.every((p) => p.trim() === "G")).toBe(true);
+
+    // Roster and Waivers carry the same value.
+    await page.goto("/leagues/hockey-main/teams/1");
+    await expect(page.getByRole("columnheader", { name: "Value", exact: true })).toBeVisible();
+    await page.goto("/leagues/hockey-main?tab=waivers");
+    await expect(page.getByRole("columnheader", { name: "ROS" })).toBeVisible();
   });
 
   test("hockey roster and waivers show NHL bio + ice time (HOCKEY-PORT H1)", async ({

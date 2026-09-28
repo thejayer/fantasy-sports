@@ -221,15 +221,49 @@ def extract_hockey_stat_breakdown(breakdown: Any) -> dict[str, float | None]:
     return out
 
 
-def _hockey_total_bucket(player: Any) -> dict[str, Any]:
-    """espn-api hockey Player.stats is keyed ``Total 2025``, not period 0."""
+def _hockey_latest_bucket(player: Any, prefix: str) -> dict[str, Any] | None:
+    """Newest ``{prefix} YYYY`` bucket from espn-api hockey ``Player.stats``.
+
+    ESPN can return both last season and this season (``Total 2026`` and
+    ``Total 2027``); dict order is not a season order, so pick the highest year.
+    """
     stats = getattr(player, "stats", None) or {}
     if not isinstance(stats, dict):
-        return {}
+        return None
+    best: tuple[int, dict[str, Any]] | None = None
     for key, bucket in stats.items():
-        if isinstance(key, str) and key.startswith("Total") and isinstance(bucket, dict):
-            return bucket
+        if not (isinstance(key, str) and key.startswith(prefix) and isinstance(bucket, dict)):
+            continue
+        year = _int(key[len(prefix):].strip()) or 0
+        if best is None or year > best[0]:
+            best = (year, bucket)
+    return best[1] if best else None
+
+
+def _hockey_total_bucket(player: Any) -> dict[str, Any]:
+    """espn-api hockey Player.stats is keyed ``Total 2025``, not period 0."""
+    bucket = _hockey_latest_bucket(player, "Total")
+    if bucket is not None:
+        return bucket
     return _season_stat_bucket(player)
+
+
+def extract_hockey_projected_stats(player: Any) -> dict[str, float | None]:
+    """ESPN's projected season stat line (``Projected YYYY``), HOCKEY-PORT H2.
+
+    espn-api hockey keeps only the stat line (no applied total), and ESPN often
+    leaves projected points at 0 while the line is filled — so the hub scores
+    this line under league rules instead of trusting a projected total.
+    """
+    attached = getattr(player, "projected_stats", None)
+    if isinstance(attached, dict) and attached:
+        return extract_hockey_stat_breakdown(attached)
+    bucket = _hockey_latest_bucket(player, "Projected")
+    if not bucket:
+        return {}
+    if any(k in bucket for k in _HOCKEY_STAT_KEYS):
+        return extract_hockey_stat_breakdown(bucket)
+    return extract_hockey_stat_breakdown(bucket.get("total") or bucket.get("breakdown") or {})
 
 
 def hockey_applied_total(player: Any) -> float | None:
@@ -575,6 +609,9 @@ def serialize_player(
         trailing = extract_hockey_trailing_stats(player)
         if trailing:
             payload["trailing_stats"] = trailing
+        projected = extract_hockey_projected_stats(player)
+        if projected:
+            payload["projected_stats"] = projected
         # espn-api hockey Player never sets total_points. Prefer a stored
         # appliedTotal, else counting stats × league weights (Hall of Shame).
         if payload["total_points"] is None:
@@ -956,12 +993,15 @@ def serialize_free_agent(
     sport: str | None = None,
     scoring_format: Any = None,
 ) -> dict[str, Any]:
-    """Compact FA row — skip season_stats bloat; keep trailing windows for 8.2."""
+    """Compact FA row — skip season_stats bloat; keep trailing windows for 8.2.
+
+    Hockey keeps ``season_stats`` (and ``projected_stats``): the H2 value model
+    needs a free agent's own season line to value waiver adds (HOCKEY-PORT.md).
+    """
     if sport == "hockey":
         payload = serialize_player(
             player, sport="hockey", scoring_format=scoring_format
         )
-        payload.pop("season_stats", None)
         trailing = extract_hockey_trailing_stats(player)
         if trailing:
             payload["trailing_stats"] = trailing
