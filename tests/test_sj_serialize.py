@@ -828,3 +828,53 @@ def test_hockey_derives_total_points_from_season_stats_when_espn_omits():
     assert fa["total_points"] == 296.8
     assert "season_stats" not in fa
 
+
+
+# ---------------------------------------------------------------------------
+# Hockey lineup + GP caps from raw rosterSettings (HOCKEY-PORT.md H0)
+# ---------------------------------------------------------------------------
+_SJ_HOCKEY_ROSTER_SETTINGS = {
+    # ESPN lineupSlotId: 3 F, 4 D, 5 G, 6 UTIL, 7 BE, 8 IR (C/LW/RW unused → 0)
+    "lineupSlotCounts": {"0": 0, "1": 0, "2": 0, "3": 9, "4": 5, "5": 2, "6": 1, "7": 7, "8": 3},
+    # GP (stat 34) caps per slot
+    "lineupSlotStatLimits": {"3": {"34": 855}, "4": {"34": 475}, "6": {"34": 95}, "5": {"34": 164}},
+}
+
+
+def _hockey_settings(**extra):
+    return SimpleNamespace(
+        scoring_type="H2H_POINTS",
+        reg_season_count=21,
+        playoff_team_count=4,
+        _raw_roster_settings=_SJ_HOCKEY_ROSTER_SETTINGS,
+        **extra,
+    )
+
+
+def test_hockey_settings_slot_counts_from_raw_roster_settings():
+    payload = serialize_settings(SimpleNamespace(settings=_hockey_settings()), sport="hockey")
+    assert payload["position_slot_counts"] == {
+        "F": 9, "D": 5, "G": 2, "UTIL": 1, "BE": 7, "IR": 3,
+    }
+
+
+def test_hockey_settings_gp_caps_use_hockey_slot_and_stat_maps():
+    payload = serialize_settings(SimpleNamespace(settings=_hockey_settings()), sport="hockey")
+    assert payload["lineup_slot_stat_limits"] == [
+        {"slot": "D", "stat": "GP", "limit": 475.0},
+        {"slot": "F", "stat": "GP", "limit": 855.0},
+        {"slot": "G", "stat": "GP", "limit": 164.0},
+        {"slot": "UTIL", "stat": "GP", "limit": 95.0},
+    ]
+    # GS-only baseball field stays absent for hockey.
+    assert "season_gs_max" not in payload
+
+
+def test_hockey_settings_without_raw_roster_settings_omit_lineup():
+    settings = SimpleNamespace(scoring_type="H2H_POINTS")
+    payload = serialize_settings(SimpleNamespace(settings=settings), sport="hockey")
+    assert "position_slot_counts" not in payload
+    assert "lineup_slot_stat_limits" not in payload
+
+
+

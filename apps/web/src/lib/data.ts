@@ -9,6 +9,11 @@ import type {
   SlotPointsSnapshot,
 } from "@/lib/baseball-analysis";
 import { SJ_SNAPSHOTS_CACHE_TAG } from "@/lib/cache-tags";
+import type {
+  HockeyNhlContextSnapshot,
+  HockeyNhlSnapshot,
+  HockeyPlayerMapSnapshot,
+} from "@/lib/hockey-nhl";
 import { dataRoots } from "@/lib/hub-paths";
 import { requireSession } from "@/lib/session";
 import {
@@ -1212,6 +1217,59 @@ export const getBaseballAnalysis = cache(
       if (slotPoints && timeseries) break;
     }
     return { slotPoints, timeseries };
+  },
+);
+
+/**
+ * Hockey NHL data layer under ``{league}/{season}/nhl/`` (HOCKEY-PORT.md H1):
+ * ``player_map.json`` + ``nhl_context.json``. Written by ``sj sync`` /
+ * ``sj nhl`` — never fetched from the NHL here. Side concern, session-gated.
+ */
+export const getHockeyNhl = cache(
+  async (leagueId: string, season: number): Promise<HockeyNhlSnapshot> => {
+    await requireSession();
+    const empty: HockeyNhlSnapshot = { playerMap: null, context: null };
+    const index = await getLeagueIndex();
+    const match = index.find(
+      (item) => item.league_id === leagueId && item.season === season,
+    );
+    if (!match) return empty;
+
+    let playerMap: HockeyPlayerMapSnapshot | null = null;
+    let context: HockeyNhlContextSnapshot | null = null;
+    for (const root of dataRoots()) {
+      const dir = weekBoxScoreDir(match.path);
+      if (!playerMap) {
+        const doc = await readJson<HockeyPlayerMapSnapshot>(
+          path.join(root, dir, "nhl", "player_map.json"),
+        );
+        if (
+          doc?.league_id === leagueId &&
+          doc.season === season &&
+          doc.sport === "hockey" &&
+          doc.players &&
+          typeof doc.players === "object"
+        ) {
+          playerMap = doc;
+        }
+      }
+      if (!context) {
+        const doc = await readJson<HockeyNhlContextSnapshot>(
+          path.join(root, dir, "nhl", "nhl_context.json"),
+        );
+        if (
+          doc?.league_id === leagueId &&
+          doc.season === season &&
+          doc.sport === "hockey" &&
+          doc.players &&
+          typeof doc.players === "object"
+        ) {
+          context = doc;
+        }
+      }
+      if (playerMap && context) break;
+    }
+    return { playerMap, context };
   },
 );
 

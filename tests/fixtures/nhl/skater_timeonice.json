@@ -1,0 +1,8 @@
+{
+  "data": [
+    {"playerId": 9000001, "gamesPlayed": 80, "timeOnIcePerGame": 1140, "evTimeOnIcePerGame": 900, "ppTimeOnIcePerGame": 180, "shTimeOnIcePerGame": 60, "teamAbbrevs": "BOS"},
+    {"playerId": 9000003, "gamesPlayed": 70, "timeOnIcePerGame": 1380, "evTimeOnIcePerGame": 1170, "ppTimeOnIcePerGame": 30, "shTimeOnIcePerGame": 180, "teamAbbrevs": "TOR"},
+    {"playerId": 9000009, "gamesPlayed": 0, "timeOnIcePerGame": 0, "teamAbbrevs": "TOR"}
+  ],
+  "total": 3
+}

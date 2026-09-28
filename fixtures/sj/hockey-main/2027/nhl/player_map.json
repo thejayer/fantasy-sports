@@ -1,0 +1,1034 @@
+{
+  "coverage": {
+    "all": {
+      "matched": 97,
+      "rate": 0.9604,
+      "total": 101
+    },
+    "by_method": {
+      "initial_last": 5,
+      "name": 87,
+      "search": 5
+    },
+    "free_agents": {
+      "matched": 18,
+      "rate": 0.9,
+      "total": 20
+    },
+    "rostered": {
+      "matched": 79,
+      "rate": 0.9753,
+      "total": 81
+    }
+  },
+  "errors": [],
+  "generated_at": "2026-07-27T00:00:00+00:00",
+  "league_id": "hockey-main",
+  "nhl_season": "20262027",
+  "players": {
+    "202700001": {
+      "espn_name": "Christian Hill",
+      "espn_team": "WSH",
+      "group": "F",
+      "method": "name",
+      "nhl_id": 8470000,
+      "nhl_name": "Christian Hill",
+      "nhl_team": "WSH",
+      "rostered": true
+    },
+    "202700002": {
+      "espn_name": "Peter Rogers",
+      "espn_team": "CGY",
+      "group": "F",
+      "method": "name",
+      "nhl_id": 8470001,
+      "nhl_name": "Peter Rogers",
+      "nhl_team": "CGY",
+      "rostered": true
+    },
+    "202700003": {
+      "espn_name": "Benjamin Long",
+      "espn_team": "PHI",
+      "group": "F",
+      "method": "name",
+      "nhl_id": 8470002,
+      "nhl_name": "Benjamin Long",
+      "nhl_team": "PHI",
+      "rostered": true
+    },
+    "202700004": {
+      "espn_name": "Gary Gonzalez",
+      "espn_team": "DAL",
+      "group": "F",
+      "method": "name",
+      "nhl_id": 8470003,
+      "nhl_name": "Gary Gonzalez",
+      "nhl_team": "DAL",
+      "rostered": true
+    },
+    "202700005": {
+      "espn_name": "Jordan Wood",
+      "espn_team": "VAN",
+      "group": "F",
+      "method": "name",
+      "nhl_id": 8470004,
+      "nhl_name": "Jordan Wood",
+      "nhl_team": "VAN",
+      "rostered": true
+    },
+    "202700006": {
+      "espn_name": "Jason Perez",
+      "espn_team": "VAN",
+      "group": "F",
+      "method": "initial_last",
+      "nhl_id": 8470005,
+      "nhl_name": "J. Perez",
+      "nhl_team": "VAN",
+      "rostered": true
+    },
+    "202700007": {
+      "espn_name": "Jason Murphy",
+      "espn_team": "MIN",
+      "group": "F",
+      "method": "name",
+      "nhl_id": 8470006,
+      "nhl_name": "Jason Murphy",
+      "nhl_team": "MIN",
+      "rostered": true
+    },
+    "202700008": {
+      "espn_name": "Elijah Martinez",
+      "espn_team": "LA",
+      "group": "F",
+      "method": "name",
+      "nhl_id": 8470007,
+      "nhl_name": "Elijah Martinez",
+      "nhl_team": "LAK",
+      "rostered": true
+    },
+    "202700009": {
+      "espn_name": "Patrick Rogers",
+      "espn_team": "EDM",
+      "group": "F",
+      "method": "search",
+      "nhl_id": 8470008,
+      "nhl_name": "Patrick Rogers",
+      "nhl_team": null,
+      "rostered": true
+    },
+    "202700010": {
+      "espn_name": "Paul Baker",
+      "espn_team": "STL",
+      "group": "D",
+      "method": "name",
+      "nhl_id": 8470009,
+      "nhl_name": "Paul Baker",
+      "nhl_team": "STL",
+      "rostered": true
+    },
+    "202700011": {
+      "espn_name": "Albert Miller",
+      "espn_team": "COL",
+      "group": "D",
+      "method": "name",
+      "nhl_id": 8470010,
+      "nhl_name": "Albert Miller",
+      "nhl_team": "COL",
+      "rostered": true
+    },
+    "202700012": {
+      "espn_name": "Randy Flores",
+      "espn_team": "NJ",
+      "group": "D",
+      "method": "name",
+      "nhl_id": 8470011,
+      "nhl_name": "Randy Flores",
+      "nhl_team": "NJD",
+      "rostered": true
+    },
+    "202700013": {
+      "espn_name": "Gabriel Sanchez",
+      "espn_team": "WSH",
+      "group": "D",
+      "method": "name",
+      "nhl_id": 8470012,
+      "nhl_name": "Gabriel Sanchez",
+      "nhl_team": "WSH",
+      "rostered": true
+    },
+    "202700015": {
+      "espn_name": "Russell Cooper",
+      "espn_team": "SJ",
+      "group": "F",
+      "method": "name",
+      "nhl_id": 8470014,
+      "nhl_name": "Russell Cooper",
+      "nhl_team": "SJS",
+      "rostered": true
+    },
+    "202700016": {
+      "espn_name": "Nicholas Flores",
+      "espn_team": "CHI",
+      "group": "G",
+      "method": "name",
+      "nhl_id": 8470015,
+      "nhl_name": "Nicholas Flores",
+      "nhl_team": "CHI",
+      "rostered": true
+    },
+    "202700017": {
+      "espn_name": "Zachary Phillips",
+      "espn_team": "WSH",
+      "group": "G",
+      "method": "initial_last",
+      "nhl_id": 8470016,
+      "nhl_name": "Z. Phillips",
+      "nhl_team": "WSH",
+      "rostered": true
+    },
+    "202700018": {
+      "espn_name": "Kenneth Flores",
+      "espn_team": "STL",
+      "group": "F",
+      "method": "name",
+      "nhl_id": 8470017,
+      "nhl_name": "Kenneth Flores",
+      "nhl_team": "STL",
+      "rostered": true
+    },
+    "202700019": {
+      "espn_name": "Sean Price",
+      "espn_team": "VGK",
+      "group": "D",
+      "method": "name",
+      "nhl_id": 8470018,
+      "nhl_name": "Sean Price",
+      "nhl_team": "VGK",
+      "rostered": true
+    },
+    "202700020": {
+      "espn_name": "Benjamin Richardson",
+      "espn_team": "TB",
+      "group": "D",
+      "method": "name",
+      "nhl_id": 8470019,
+      "nhl_name": "Benjamin Richardson",
+      "nhl_team": "TBL",
+      "rostered": true
+    },
+    "202700021": {
+      "espn_name": "Roger Mendoza",
+      "espn_team": "CBJ",
+      "group": "F",
+      "method": "name",
+      "nhl_id": 8470020,
+      "nhl_name": "Roger Mendoza",
+      "nhl_team": "CBJ",
+      "rostered": true
+    },
+    "202700022": {
+      "espn_name": "Kenneth Parker",
+      "espn_team": "SJ",
+      "group": "G",
+      "method": "name",
+      "nhl_id": 8470021,
+      "nhl_name": "Kenneth Parker",
+      "nhl_team": "SJS",
+      "rostered": true
+    },
+    "202700023": {
+      "espn_name": "Justin Kelly",
+      "espn_team": "WSH",
+      "group": "F",
+      "method": "name",
+      "nhl_id": 8470022,
+      "nhl_name": "Justin Kelly",
+      "nhl_team": "WSH",
+      "rostered": true
+    },
+    "202700024": {
+      "espn_name": "Nicholas Edwards",
+      "espn_team": "FLA",
+      "group": "D",
+      "method": "name",
+      "nhl_id": 8470023,
+      "nhl_name": "Nicholas Edwards",
+      "nhl_team": "FLA",
+      "rostered": true
+    },
+    "202700025": {
+      "espn_name": "Paul Reed",
+      "espn_team": "CAR",
+      "group": "G",
+      "method": "name",
+      "nhl_id": 8470024,
+      "nhl_name": "Paul Reed",
+      "nhl_team": "CAR",
+      "rostered": true
+    },
+    "202700026": {
+      "espn_name": "Jose Rogers",
+      "espn_team": "CBJ",
+      "group": "F",
+      "method": "search",
+      "nhl_id": 8470025,
+      "nhl_name": "Jose Rogers",
+      "nhl_team": null,
+      "rostered": true
+    },
+    "202700027": {
+      "espn_name": "Kyle Walker",
+      "espn_team": "OTT",
+      "group": "G",
+      "method": "name",
+      "nhl_id": 8470026,
+      "nhl_name": "Kyle Walker",
+      "nhl_team": "OTT",
+      "rostered": true
+    },
+    "202700101": {
+      "espn_name": "Albert Peterson",
+      "espn_team": "SEA",
+      "group": "F",
+      "method": "initial_last",
+      "nhl_id": 8470027,
+      "nhl_name": "A. Peterson",
+      "nhl_team": "SEA",
+      "rostered": true
+    },
+    "202700102": {
+      "espn_name": "Daniel Evans",
+      "espn_team": "OTT",
+      "group": "F",
+      "method": "name",
+      "nhl_id": 8470028,
+      "nhl_name": "Daniel Evans",
+      "nhl_team": "OTT",
+      "rostered": true
+    },
+    "202700103": {
+      "espn_name": "Peter Hughes",
+      "espn_team": "MTL",
+      "group": "F",
+      "method": "name",
+      "nhl_id": 8470029,
+      "nhl_name": "Peter Hughes",
+      "nhl_team": "MTL",
+      "rostered": true
+    },
+    "202700104": {
+      "espn_name": "Keith Richardson",
+      "espn_team": "PHI",
+      "group": "F",
+      "method": "name",
+      "nhl_id": 8470030,
+      "nhl_name": "Keith Richardson",
+      "nhl_team": "PHI",
+      "rostered": true
+    },
+    "202700105": {
+      "espn_name": "Gregory Davis",
+      "espn_team": "TB",
+      "group": "F",
+      "method": "name",
+      "nhl_id": 8470031,
+      "nhl_name": "Gregory Davis",
+      "nhl_team": "TBL",
+      "rostered": true
+    },
+    "202700106": {
+      "espn_name": "Scott Price",
+      "espn_team": "UTA",
+      "group": "F",
+      "method": "name",
+      "nhl_id": 8470032,
+      "nhl_name": "Scott Price",
+      "nhl_team": "UTA",
+      "rostered": true
+    },
+    "202700107": {
+      "espn_name": "Edward Ruiz",
+      "espn_team": "TOR",
+      "group": "F",
+      "method": "name",
+      "nhl_id": 8470033,
+      "nhl_name": "Edward Ruiz",
+      "nhl_team": "TOR",
+      "rostered": true
+    },
+    "202700108": {
+      "espn_name": "Samuel Thomas",
+      "espn_team": "VGK",
+      "group": "F",
+      "method": "name",
+      "nhl_id": 8470034,
+      "nhl_name": "Samuel Thomas",
+      "nhl_team": "VGK",
+      "rostered": true
+    },
+    "202700109": {
+      "espn_name": "Joseph Mitchell",
+      "espn_team": "FLA",
+      "group": "F",
+      "method": "name",
+      "nhl_id": 8470035,
+      "nhl_name": "Joseph Mitchell",
+      "nhl_team": "FLA",
+      "rostered": true
+    },
+    "202700110": {
+      "espn_name": "Alan Smith",
+      "espn_team": "TB",
+      "group": "D",
+      "method": "name",
+      "nhl_id": 8470036,
+      "nhl_name": "Alan Smith",
+      "nhl_team": "TBL",
+      "rostered": true
+    },
+    "202700111": {
+      "espn_name": "Logan Campbell",
+      "espn_team": "NYI",
+      "group": "D",
+      "method": "name",
+      "nhl_id": 8470037,
+      "nhl_name": "Logan Campbell",
+      "nhl_team": "NYI",
+      "rostered": true
+    },
+    "202700112": {
+      "espn_name": "Noah Williams",
+      "espn_team": "FLA",
+      "group": "D",
+      "method": "initial_last",
+      "nhl_id": 8470038,
+      "nhl_name": "N. Williams",
+      "nhl_team": "FLA",
+      "rostered": true
+    },
+    "202700113": {
+      "espn_name": "Kevin Allen",
+      "espn_team": "BUF",
+      "group": "D",
+      "method": "name",
+      "nhl_id": 8470039,
+      "nhl_name": "Kevin Allen",
+      "nhl_team": "BUF",
+      "rostered": true
+    },
+    "202700114": {
+      "espn_name": "Tyler Phillips",
+      "espn_team": "MIN",
+      "group": "D",
+      "method": "name",
+      "nhl_id": 8470040,
+      "nhl_name": "Tyler Phillips",
+      "nhl_team": "MIN",
+      "rostered": true
+    },
+    "202700115": {
+      "espn_name": "Adam Parker",
+      "espn_team": "PIT",
+      "group": "F",
+      "method": "name",
+      "nhl_id": 8470041,
+      "nhl_name": "Adam Parker",
+      "nhl_team": "PIT",
+      "rostered": true
+    },
+    "202700116": {
+      "espn_name": "Paul Clark",
+      "espn_team": "WSH",
+      "group": "G",
+      "method": "search",
+      "nhl_id": 8470042,
+      "nhl_name": "Paul Clark",
+      "nhl_team": null,
+      "rostered": true
+    },
+    "202700117": {
+      "espn_name": "Bruce Watson",
+      "espn_team": "BOS",
+      "group": "G",
+      "method": "name",
+      "nhl_id": 8470043,
+      "nhl_name": "Bruce Watson",
+      "nhl_team": "BOS",
+      "rostered": true
+    },
+    "202700118": {
+      "espn_name": "Nathan Turner",
+      "espn_team": "CAR",
+      "group": "F",
+      "method": "name",
+      "nhl_id": 8470044,
+      "nhl_name": "Nathan Turner",
+      "nhl_team": "CAR",
+      "rostered": true
+    },
+    "202700119": {
+      "espn_name": "Jordan Reyes",
+      "espn_team": "BUF",
+      "group": "F",
+      "method": "name",
+      "nhl_id": 8470045,
+      "nhl_name": "Jordan Reyes",
+      "nhl_team": "BUF",
+      "rostered": true
+    },
+    "202700120": {
+      "espn_name": "Bryan Diaz",
+      "espn_team": "CAR",
+      "group": "G",
+      "method": "name",
+      "nhl_id": 8470046,
+      "nhl_name": "Bryan Diaz",
+      "nhl_team": "CAR",
+      "rostered": true
+    },
+    "202700121": {
+      "espn_name": "Elijah Miller",
+      "espn_team": "CGY",
+      "group": "D",
+      "method": "name",
+      "nhl_id": 8470047,
+      "nhl_name": "Elijah Miller",
+      "nhl_team": "CGY",
+      "rostered": true
+    },
+    "202700122": {
+      "espn_name": "Lawrence Kelly",
+      "espn_team": "ANA",
+      "group": "F",
+      "method": "name",
+      "nhl_id": 8470048,
+      "nhl_name": "Lawrence Kelly",
+      "nhl_team": "ANA",
+      "rostered": true
+    },
+    "202700123": {
+      "espn_name": "Edward Ruiz",
+      "espn_team": "EDM",
+      "group": "D",
+      "method": "name",
+      "nhl_id": 8470033,
+      "nhl_name": "Edward Ruiz",
+      "nhl_team": "TOR",
+      "rostered": true
+    },
+    "202700125": {
+      "espn_name": "Jose Morales",
+      "espn_team": "DAL",
+      "group": "G",
+      "method": "name",
+      "nhl_id": 8470051,
+      "nhl_name": "Jose Morales",
+      "nhl_team": "DAL",
+      "rostered": true
+    },
+    "202700126": {
+      "espn_name": "Dennis Bailey",
+      "espn_team": "FLA",
+      "group": "D",
+      "method": "name",
+      "nhl_id": 8470052,
+      "nhl_name": "Dennis Bailey",
+      "nhl_team": "FLA",
+      "rostered": true
+    },
+    "202700127": {
+      "espn_name": "Aaron Phillips",
+      "espn_team": "UTA",
+      "group": "F",
+      "method": "name",
+      "nhl_id": 8470053,
+      "nhl_name": "Aaron Phillips",
+      "nhl_team": "UTA",
+      "rostered": true
+    },
+    "202700201": {
+      "espn_name": "Justin Rogers",
+      "espn_team": "BOS",
+      "group": "F",
+      "method": "name",
+      "nhl_id": 8470054,
+      "nhl_name": "Justin Rogers",
+      "nhl_team": "BOS",
+      "rostered": true
+    },
+    "202700202": {
+      "espn_name": "Alan Harris",
+      "espn_team": "FLA",
+      "group": "F",
+      "method": "name",
+      "nhl_id": 8470055,
+      "nhl_name": "Alan Harris",
+      "nhl_team": "FLA",
+      "rostered": true
+    },
+    "202700203": {
+      "espn_name": "Walter Reed",
+      "espn_team": "TOR",
+      "group": "F",
+      "method": "name",
+      "nhl_id": 8470056,
+      "nhl_name": "Walter Reed",
+      "nhl_team": "TOR",
+      "rostered": true
+    },
+    "202700204": {
+      "espn_name": "Juan Cooper",
+      "espn_team": "VAN",
+      "group": "F",
+      "method": "name",
+      "nhl_id": 8470057,
+      "nhl_name": "Juan Cooper",
+      "nhl_team": "VAN",
+      "rostered": true
+    },
+    "202700205": {
+      "espn_name": "Samuel Davis",
+      "espn_team": "COL",
+      "group": "F",
+      "method": "name",
+      "nhl_id": 8470058,
+      "nhl_name": "Samuel Davis",
+      "nhl_team": "COL",
+      "rostered": true
+    },
+    "202700206": {
+      "espn_name": "Christian Brown",
+      "espn_team": "DET",
+      "group": "F",
+      "method": "search",
+      "nhl_id": 8470059,
+      "nhl_name": "Christian Brown",
+      "nhl_team": null,
+      "rostered": true
+    },
+    "202700207": {
+      "espn_name": "Justin Kelly",
+      "espn_team": "UTA",
+      "group": "F",
+      "method": "name",
+      "nhl_id": 8470022,
+      "nhl_name": "Justin Kelly",
+      "nhl_team": "WSH",
+      "rostered": true
+    },
+    "202700208": {
+      "espn_name": "Jordan Kelly",
+      "espn_team": "OTT",
+      "group": "F",
+      "method": "name",
+      "nhl_id": 8470061,
+      "nhl_name": "Jordan Kelly",
+      "nhl_team": "OTT",
+      "rostered": true
+    },
+    "202700209": {
+      "espn_name": "Gregory Gutierrez",
+      "espn_team": "COL",
+      "group": "F",
+      "method": "name",
+      "nhl_id": 8470062,
+      "nhl_name": "Gregory Gutierrez",
+      "nhl_team": "COL",
+      "rostered": true
+    },
+    "202700210": {
+      "espn_name": "Juan Wood",
+      "espn_team": "DET",
+      "group": "D",
+      "method": "name",
+      "nhl_id": 8470063,
+      "nhl_name": "Juan Wood",
+      "nhl_team": "DET",
+      "rostered": true
+    },
+    "202700211": {
+      "espn_name": "Terry Wilson",
+      "espn_team": "MTL",
+      "group": "D",
+      "method": "name",
+      "nhl_id": 8470064,
+      "nhl_name": "Terry Wilson",
+      "nhl_team": "MTL",
+      "rostered": true
+    },
+    "202700212": {
+      "espn_name": "Elijah Wright",
+      "espn_team": "NYR",
+      "group": "D",
+      "method": "name",
+      "nhl_id": 8470065,
+      "nhl_name": "Elijah Wright",
+      "nhl_team": "NYR",
+      "rostered": true
+    },
+    "202700213": {
+      "espn_name": "Patrick Martin",
+      "espn_team": "STL",
+      "group": "D",
+      "method": "name",
+      "nhl_id": 8470066,
+      "nhl_name": "Patrick Martin",
+      "nhl_team": "STL",
+      "rostered": true
+    },
+    "202700214": {
+      "espn_name": "Nicholas Cruz",
+      "espn_team": "MTL",
+      "group": "D",
+      "method": "name",
+      "nhl_id": 8470067,
+      "nhl_name": "Nicholas Cruz",
+      "nhl_team": "MTL",
+      "rostered": true
+    },
+    "202700215": {
+      "espn_name": "Kyle Smith",
+      "espn_team": "MTL",
+      "group": "F",
+      "method": "name",
+      "nhl_id": 8470068,
+      "nhl_name": "Kyle Smith",
+      "nhl_team": "MTL",
+      "rostered": true
+    },
+    "202700216": {
+      "espn_name": "Kevin Jimenez",
+      "espn_team": "NYI",
+      "group": "G",
+      "method": "name",
+      "nhl_id": 8470069,
+      "nhl_name": "Kevin Jimenez",
+      "nhl_team": "NYI",
+      "rostered": true
+    },
+    "202700217": {
+      "espn_name": "Kenneth Gutierrez",
+      "espn_team": "NYR",
+      "group": "G",
+      "method": "name",
+      "nhl_id": 8470070,
+      "nhl_name": "Kenneth Gutierrez",
+      "nhl_team": "NYR",
+      "rostered": true
+    },
+    "202700218": {
+      "espn_name": "Russell Cooper",
+      "espn_team": "UTA",
+      "group": "D",
+      "method": "name",
+      "nhl_id": 8470014,
+      "nhl_name": "Russell Cooper",
+      "nhl_team": "SJS",
+      "rostered": true
+    },
+    "202700219": {
+      "espn_name": "Alan Smith",
+      "espn_team": "TOR",
+      "group": "D",
+      "method": "name",
+      "nhl_id": 8470072,
+      "nhl_name": "Alan Smith",
+      "nhl_team": "TOR",
+      "rostered": true
+    },
+    "202700220": {
+      "espn_name": "Sean Smith",
+      "espn_team": "ANA",
+      "group": "F",
+      "method": "name",
+      "nhl_id": 8470073,
+      "nhl_name": "Sean Smith",
+      "nhl_team": "ANA",
+      "rostered": true
+    },
+    "202700221": {
+      "espn_name": "Russell Mitchell",
+      "espn_team": "MTL",
+      "group": "G",
+      "method": "name",
+      "nhl_id": 8470074,
+      "nhl_name": "Russell Mitchell",
+      "nhl_team": "MTL",
+      "rostered": true
+    },
+    "202700222": {
+      "espn_name": "Richard Smith",
+      "espn_team": "SJ",
+      "group": "G",
+      "method": "name",
+      "nhl_id": 8470075,
+      "nhl_name": "Richard Smith",
+      "nhl_team": "SJS",
+      "rostered": true
+    },
+    "202700223": {
+      "espn_name": "Edward Reyes",
+      "espn_team": "DET",
+      "group": "G",
+      "method": "search",
+      "nhl_id": 8470076,
+      "nhl_name": "Edward Reyes",
+      "nhl_team": null,
+      "rostered": true
+    },
+    "202700224": {
+      "espn_name": "Jose Roberts",
+      "espn_team": "NJ",
+      "group": "D",
+      "method": "name",
+      "nhl_id": 8470077,
+      "nhl_name": "Jose Roberts",
+      "nhl_team": "NJD",
+      "rostered": true
+    },
+    "202700225": {
+      "espn_name": "James Brown",
+      "espn_team": "EDM",
+      "group": "F",
+      "method": "name",
+      "nhl_id": 8470078,
+      "nhl_name": "James Brown",
+      "nhl_team": "EDM",
+      "rostered": true
+    },
+    "202700226": {
+      "espn_name": "Gary Castillo",
+      "espn_team": "DAL",
+      "group": "F",
+      "method": "name",
+      "nhl_id": 8470079,
+      "nhl_name": "Gary Castillo",
+      "nhl_team": "DAL",
+      "rostered": true
+    },
+    "202700227": {
+      "espn_name": "Steven Mendoza",
+      "espn_team": "OTT",
+      "group": "F",
+      "method": "name",
+      "nhl_id": 8470080,
+      "nhl_name": "Steven Mendoza",
+      "nhl_team": "OTT",
+      "rostered": true
+    },
+    "202750000": {
+      "espn_name": "Daniel Robinson",
+      "espn_team": "CGY",
+      "group": "F",
+      "method": "name",
+      "nhl_id": 8470095,
+      "nhl_name": "Daniel Robinson",
+      "nhl_team": "CGY",
+      "rostered": false
+    },
+    "202750001": {
+      "espn_name": "Logan Castillo",
+      "espn_team": "TOR",
+      "group": "F",
+      "method": "name",
+      "nhl_id": 8470098,
+      "nhl_name": "Logan Castillo",
+      "nhl_team": "TOR",
+      "rostered": false
+    },
+    "202750002": {
+      "espn_name": "Brian Turner",
+      "espn_team": "PHI",
+      "group": "F",
+      "method": "name",
+      "nhl_id": 8470096,
+      "nhl_name": "Brian Turner",
+      "nhl_team": "PHI",
+      "rostered": false
+    },
+    "202750003": {
+      "espn_name": "Kyle Peterson",
+      "espn_team": "CBJ",
+      "group": "F",
+      "method": "name",
+      "nhl_id": 8470089,
+      "nhl_name": "Kyle Peterson",
+      "nhl_team": "CBJ",
+      "rostered": false
+    },
+    "202750004": {
+      "espn_name": "Jesse Davis",
+      "espn_team": "NJ",
+      "group": "D",
+      "method": "name",
+      "nhl_id": 8470084,
+      "nhl_name": "Jesse Davis",
+      "nhl_team": "NJD",
+      "rostered": false
+    },
+    "202750005": {
+      "espn_name": "Jordan Jones",
+      "espn_team": "WPG",
+      "group": "G",
+      "method": "name",
+      "nhl_id": 8470091,
+      "nhl_name": "Jordan Jones",
+      "nhl_team": "WPG",
+      "rostered": false
+    },
+    "202750006": {
+      "espn_name": "Jacob Alvarez",
+      "espn_team": "MIN",
+      "group": "F",
+      "method": "name",
+      "nhl_id": 8470094,
+      "nhl_name": "Jacob Alvarez",
+      "nhl_team": "MIN",
+      "rostered": false
+    },
+    "202750007": {
+      "espn_name": "Peter Torres",
+      "espn_team": "CAR",
+      "group": "F",
+      "method": "name",
+      "nhl_id": 8470097,
+      "nhl_name": "Peter Torres",
+      "nhl_team": "CAR",
+      "rostered": false
+    },
+    "202750008": {
+      "espn_name": "Joseph Morales",
+      "espn_team": "NJ",
+      "group": "D",
+      "method": "name",
+      "nhl_id": 8470099,
+      "nhl_name": "Joseph Morales",
+      "nhl_team": "NJD",
+      "rostered": false
+    },
+    "202750010": {
+      "espn_name": "Jose White",
+      "espn_team": "DET",
+      "group": "F",
+      "method": "name",
+      "nhl_id": 8470081,
+      "nhl_name": "Jose White",
+      "nhl_team": "DET",
+      "rostered": false
+    },
+    "202750011": {
+      "espn_name": "Mason Brown",
+      "espn_team": "WSH",
+      "group": "F",
+      "method": "name",
+      "nhl_id": 8470086,
+      "nhl_name": "Mason Brown",
+      "nhl_team": "WSH",
+      "rostered": false
+    },
+    "202750012": {
+      "espn_name": "Kyle Hill",
+      "espn_team": "STL",
+      "group": "F",
+      "method": "initial_last",
+      "nhl_id": 8470082,
+      "nhl_name": "K. Hill",
+      "nhl_team": "STL",
+      "rostered": false
+    },
+    "202750013": {
+      "espn_name": "Keith Parker",
+      "espn_team": "NSH",
+      "group": "F",
+      "method": "name",
+      "nhl_id": 8470085,
+      "nhl_name": "Keith Parker",
+      "nhl_team": "NSH",
+      "rostered": false
+    },
+    "202750014": {
+      "espn_name": "Dylan Parker",
+      "espn_team": "MIN",
+      "group": "F",
+      "method": "name",
+      "nhl_id": 8470090,
+      "nhl_name": "Dylan Parker",
+      "nhl_team": "MIN",
+      "rostered": false
+    },
+    "202750015": {
+      "espn_name": "David Jackson",
+      "espn_team": "BUF",
+      "group": "D",
+      "method": "name",
+      "nhl_id": 8470092,
+      "nhl_name": "David Jackson",
+      "nhl_team": "BUF",
+      "rostered": false
+    },
+    "202750016": {
+      "espn_name": "Kevin Johnson",
+      "espn_team": "SJ",
+      "group": "F",
+      "method": "name",
+      "nhl_id": 8470083,
+      "nhl_name": "Kevin Johnson",
+      "nhl_team": "SJS",
+      "rostered": false
+    },
+    "202750017": {
+      "espn_name": "Wayne Hill",
+      "espn_team": "WSH",
+      "group": "F",
+      "method": "name",
+      "nhl_id": 8470100,
+      "nhl_name": "Wayne Hill",
+      "nhl_team": "WSH",
+      "rostered": false
+    },
+    "202750018": {
+      "espn_name": "Benjamin Wilson",
+      "espn_team": "TOR",
+      "group": "F",
+      "method": "name",
+      "nhl_id": 8470088,
+      "nhl_name": "Benjamin Wilson",
+      "nhl_team": "TOR",
+      "rostered": false
+    }
+  },
+  "schema_version": 1,
+  "season": 2027,
+  "source": "api-web.nhle.com + api.nhle.com/stats",
+  "sport": "hockey",
+  "unmatched": [
+    {
+      "espn_id": 202700014,
+      "name": "Adam Brooks",
+      "position": "D",
+      "pro_team": "ANA",
+      "rostered": true
+    },
+    {
+      "espn_id": 202700124,
+      "name": "Roger Torres",
+      "position": "G",
+      "pro_team": "NJ",
+      "rostered": true
+    },
+    {
+      "espn_id": 202750009,
+      "name": "Harold Phillips",
+      "position": "LW",
+      "pro_team": "CHI",
+      "rostered": false
+    },
+    {
+      "espn_id": 202750019,
+      "name": "John Gomez",
+      "position": "D",
+      "pro_team": "WSH",
+      "rostered": false
+    }
+  ]
+}

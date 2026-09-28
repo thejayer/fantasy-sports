@@ -32,52 +32,52 @@
   "synced_at": "2026-07-27T00:00:00+00:00",
   "teams": [
     {
-      "bench_il": 339.9,
-      "delta": -15.4,
-      "espn_points": 1545.0,
-      "goalies": 257.5,
-      "name": "Biscuit Bandits",
-      "skaters": 1272.1,
+      "bench_il": 676.6,
+      "delta": -30.7,
+      "espn_points": 3075.4,
+      "goalies": 533.2,
+      "name": "Five Hole Heroes",
+      "skaters": 2511.5,
       "slots": {
-        "Defense": 413.8,
-        "Forward": 735.7,
-        "Goalie": 257.5,
-        "Util": 122.6
+        "Defense": 817.0,
+        "Forward": 1452.5,
+        "Goalie": 533.2,
+        "Util": 242.1
       },
-      "starters": 1529.6,
-      "team_id": 3
+      "starters": 3044.7,
+      "team_id": 1
     },
     {
-      "bench_il": 280.0,
-      "delta": -12.7,
-      "espn_points": 1272.6,
-      "goalies": 216.3,
+      "bench_il": 565.8,
+      "delta": -25.6,
+      "espn_points": 2571.9,
+      "goalies": 437.2,
       "name": "Crease Crashers",
-      "skaters": 1043.6,
+      "skaters": 2109.1,
       "slots": {
-        "Defense": 339.5,
-        "Forward": 603.5,
-        "Goalie": 216.3,
-        "Util": 100.6
+        "Defense": 686.1,
+        "Forward": 1219.7,
+        "Goalie": 437.2,
+        "Util": 203.3
       },
-      "starters": 1259.9,
+      "starters": 2546.3,
       "team_id": 2
     },
     {
-      "bench_il": 275.4,
-      "delta": -12.6,
-      "espn_points": 1251.9,
-      "goalies": 217.0,
-      "name": "Five Hole Heroes",
-      "skaters": 1022.3,
+      "bench_il": 429.7,
+      "delta": -19.5,
+      "espn_points": 1953.3,
+      "goalies": 325.5,
+      "name": "Biscuit Bandits",
+      "skaters": 1608.3,
       "slots": {
-        "Defense": 332.6,
-        "Forward": 591.2,
-        "Goalie": 217.0,
-        "Util": 98.5
+        "Defense": 523.2,
+        "Forward": 930.1,
+        "Goalie": 325.5,
+        "Util": 155.0
       },
-      "starters": 1239.3,
-      "team_id": 1
+      "starters": 1933.8,
+      "team_id": 3
     }
   ]
 }

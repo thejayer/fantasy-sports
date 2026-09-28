@@ -294,6 +294,72 @@ def analysis_cmd(
     typer.echo(f"done: {wrote} analysis files")
 
 
+@app.command("nhl")
+def nhl_cmd(
+    league: list[str] | None = typer.Option(
+        None, "--league", "-l", help="League id (repeatable). Default: hockey leagues."
+    ),
+    season: int | None = typer.Option(
+        None, "--season", "-s", help="Hub season. Default: each league's current_season."
+    ),
+    fail_below: float | None = typer.Option(
+        None,
+        "--fail-below",
+        help="Exit 1 when rostered ESPN → NHL coverage is below this (e.g. 0.98).",
+    ),
+    store_dir: Path | None = typer.Option(
+        None, help="Read/write this directory instead of the configured store."
+    ),
+    registry: Path | None = typer.Option(None, help="Path to leagues.yaml"),
+) -> None:
+    """Rebuild the hockey NHL data layer (HOCKEY-PORT.md H1).
+
+    Reads the synced ESPN snapshot from the store (no ESPN cookies needed),
+    calls the public NHL API, and writes ``nhl/player_map.json``,
+    ``nhl_context.json``, ``schedule.json`` and ``team_strength.json``.
+    ``sj sync`` already runs this for the current hockey season unless
+    ``SJ_NHL_SYNC=0``.
+    """
+    from nhl.export import export_nhl
+    from sj.store import read_snapshot
+
+    typer.echo(f"store: {describe_store(store_dir)}")
+    reg = load_registry(registry)
+    selected = [lg for lg in reg.leagues if lg.sport == "hockey"]
+    if league:
+        wanted = set(league)
+        selected = [lg for lg in selected if lg.id in wanted]
+        missing = wanted - {lg.id for lg in selected}
+        if missing:
+            typer.echo(f"error: unknown hockey league id(s): {sorted(missing)}", err=True)
+            raise typer.Exit(code=1)
+    failed = False
+    wrote = 0
+    for spec in selected:
+        year = season if season is not None else spec.current_season
+        try:
+            snapshot = read_snapshot(spec.id, year, store_dir=store_dir)
+            result = export_nhl(snapshot, store_dir=store_dir, fail_below=fail_below)
+        except Exception as exc:  # noqa: BLE001 - report per league
+            typer.echo(f"failed {spec.id} {year}: {exc}", err=True)
+            failed = True
+            continue
+        wrote += 1
+        cov = result.documents["player_map"]["coverage"]
+        typer.echo(
+            f"nhl {spec.id} {year}: rostered {cov['rostered']['matched']}/"
+            f"{cov['rostered']['total']} ({cov['rostered']['rate']}), "
+            f"{len(result.documents['player_map']['unmatched'])} unmatched, "
+            f"{len(result.errors)} errors"
+        )
+        for error in result.errors[:10]:
+            typer.echo(f"  warn: {error}", err=True)
+    if wrote:
+        typer.echo(f"hub revalidate: {notify_hub_revalidate()}")
+    if failed:
+        raise typer.Exit(code=1)
+
+
 @app.command("regenerate-fixtures")
 def regenerate_fixtures_cmd(
     fixtures_dir: Path | None = typer.Option(

@@ -149,9 +149,11 @@ _BASEBALL_PITCHER_SLOTS = ("SP", "SP", "SP", "SP", "RP", "RP", "RP")
 _FLEX_POSITIONS = ("RB", "WR", "TE")
 _FOOTBALL_BENCH_POSITIONS = ("QB", "RB", "RB", "WR", "WR", "TE", "K")
 _BASEBALL_FIELD_POSITIONS = ("C", "1B", "2B", "3B", "SS", "OF")
-_HOCKEY_SKATER_SLOTS = ("C", "C", "LW", "RW", "F", "D", "D", "D", "Util")
-_HOCKEY_GOALIE_SLOTS = ("G",)
-_HOCKEY_SKATER_POSITIONS = ("C", "LW", "RW", "F", "D")
+# SJ Hockey lineup (HOCKEY-PORT.md H0): 9 F / 5 D / 1 UTIL / 2 G, 7 BE, 3 IR.
+_HOCKEY_SKATER_SLOTS = ("F",) * 9 + ("D",) * 5 + ("Util",)
+_HOCKEY_GOALIE_SLOTS = ("G", "G")
+_HOCKEY_FORWARD_POSITIONS = ("C", "LW", "RW")
+_HOCKEY_SKATER_POSITIONS = ("C", "LW", "RW", "D")
 
 # Mean season fantasy points by position, used as the centre of a wide normal.
 _FOOTBALL_POINT_BASE = {"QB": 280.0, "RB": 170.0, "WR": 160.0, "TE": 110.0, "K": 120.0}
@@ -173,6 +175,9 @@ _INJURY_STATUSES = (
 )
 
 _ACQUISITION_TYPES = ("DRAFT", "ADD", "TRADE", "WAIVER")
+
+# ESPN TOTAL_SEASON_POINTS leagues (standings = cumulative points, no H2H).
+_SEASON_POINTS_SPORTS = frozenset({"baseball", "hockey"})
 
 
 class _Stub:
@@ -309,6 +314,9 @@ def _hockey_player(rng: random.Random, player_id: int, slot: str) -> _Stub:
 
     if slot in {"BE", "IR", "Util"}:
         position = "G" if goalie else rng.choice(_HOCKEY_SKATER_POSITIONS)
+    elif slot == "F":
+        # ESPN reports a real position (C / LW / RW) for players in F slots.
+        position = rng.choice(_HOCKEY_FORWARD_POSITIONS)
     else:
         position = slot
 
@@ -336,12 +344,17 @@ def _hockey_player(rng: random.Random, player_id: int, slot: str) -> _Stub:
             "PPG": float(rng.randint(0, 16)),
             "PPA": float(rng.randint(0, 24)),
             "PPP": float(rng.randint(0, 32)),
+            "SHG": float(rng.randint(0, 4)),
+            "SHA": float(rng.randint(0, 5)),
+            "GWG": float(rng.randint(0, 9)),
+            "HAT": float(rng.randint(0, 2)),
             "SOG": float(rng.randint(40, 320)),
             "HIT": float(rng.randint(8, 220)),
             "BLK": float(rng.randint(4, 160)),
             "GP": float(rng.randint(40, 82)),
         }
         breakdown["PPP"] = breakdown["PPG"] + breakdown["PPA"]
+        breakdown["SHP"] = breakdown["SHG"] + breakdown["SHA"]
         total = round(max(0.0, rng.gauss(210.0, 80.0)), 1)
 
     return _Stub(
@@ -407,8 +420,7 @@ def _roster_slots(spec: LeagueSpec) -> tuple[str, ...]:
         bench = ("BE",) * (10 if spec.format == "dynasty" else 6)
         return _BASEBALL_BATTER_SLOTS + _BASEBALL_PITCHER_SLOTS + bench + ("IL", "IL")
     if spec.sport == "hockey":
-        bench = ("BE",) * (6 if spec.format == "dynasty" else 4)
-        return _HOCKEY_SKATER_SLOTS + _HOCKEY_GOALIE_SLOTS + bench + ("IR",)
+        return _HOCKEY_SKATER_SLOTS + _HOCKEY_GOALIE_SLOTS + ("BE",) * 7 + ("IR",) * 3
     bench = ("BE",) * (12 if spec.format == "dynasty" else 6)
     return _FOOTBALL_STARTERS + bench
 
@@ -469,8 +481,8 @@ def _build_team(
             1,
         )
     elif spec.sport == "hockey":
-        # Season Points (TOTAL_SEASON_POINTS): ESPN standings use team.points,
-        # not a roster sum (bench/IR inflate) and not H2H W/L.
+        # SJ Hockey is Season Points too (no weekly matchups): standings use
+        # ESPN team.points, not W/L and not a roster sum including bench/IR.
         starter_like = roster[: len(_HOCKEY_SKATER_SLOTS) + len(_HOCKEY_GOALIE_SLOTS)]
         points_for = round(
             sum(float(p.total_points) for p in starter_like) * rng.uniform(0.62, 0.78),
@@ -525,14 +537,16 @@ def sample_league(
     # Schedule / scores / outcomes mirror what espn-api already attaches after
     # the mMatchup fetch. Draft mirrors league.draft from mDraftDetail. Both are
     # free data the live serializer now persists (roadmap 2.1).
-    # Baseball and hockey Strictly Jayers are Season Points — no H2H schedule tape.
-    if spec.sport not in {"baseball", "hockey"}:
+    # Strictly Jayers baseball and hockey are Season Points — total points for
+    # the whole regular season, no weekly matchups, so no H2H schedule tape.
+    season_points = spec.sport in _SEASON_POINTS_SPORTS
+    if not season_points:
         _assign_matchups(built, games=games, rng=rng)
         # Random pre-matchup W/L must not disagree with the schedule tape.
         _reconcile_records_from_matchups(built)
 
     # Standings: Season Points by cumulative PF; H2H by win pct then points.
-    if spec.sport in {"baseball", "hockey"}:
+    if season_points:
         ranked = sorted(built, key=lambda team: -(team.points_for or 0.0))
     else:
         ranked = sorted(
@@ -598,6 +612,13 @@ def sample_league(
 
 def _build_settings(spec: LeagueSpec, *, teams: int, games: int) -> _Stub:
     dynasty = spec.format == "dynasty"
+    # SJ Hockey rules (HOCKEY-PORT.md H0) from configs/hockey_scoring.yaml so
+    # fixtures and the nhl scoring override cannot drift apart.
+    hockey = None
+    if spec.sport == "hockey":
+        from nhl.scoring import load_scoring_override
+
+        hockey = load_scoring_override()
     # Live Strictly Jayers baseball is ESPN Season Points (TOTAL_SEASON_POINTS).
     baseball_scoring_items = [
         {"statId": 7, "statName": "Singles", "points": 1.0},
@@ -621,21 +642,16 @@ def _build_settings(spec: LeagueSpec, *, teams: int, games: int) -> _Stub:
         {"statId": 37, "statName": "Hits Allowed", "points": -1.0},
         {"statId": 39, "statName": "Walks Allowed", "points": -1.0},
     ]
+    season_points = spec.sport in _SEASON_POINTS_SPORTS
     return _Stub(
         name=spec.name,
-        scoring_type=(
-            "TOTAL_SEASON_POINTS"
-            if spec.sport in {"baseball", "hockey"}
-            else "H2H_POINTS"
-        ),
+        scoring_type="TOTAL_SEASON_POINTS" if season_points else "H2H_POINTS",
         # Season Points has no H2H schedule; keep scoring-period map for tools.
-        reg_season_count=games if spec.sport not in {"baseball", "hockey"} else None,
+        reg_season_count=None if season_points else games,
         playoff_team_count=(
-            0
-            if spec.sport in {"baseball", "hockey"}
-            else (4 if teams >= 6 else max(2, teams // 2))
+            0 if season_points else (4 if teams >= 6 else max(2, teams // 2))
         ),
-        playoff_matchup_period_length=1 if spec.sport not in {"baseball", "hockey"} else None,
+        playoff_matchup_period_length=None if season_points else 1,
         playoff_seed_tie_rule="TOTAL_POINTS_SCORED",
         playoff_tie_rule="NONE",
         tie_rule="NONE",
@@ -650,28 +666,14 @@ def _build_settings(spec: LeagueSpec, *, teams: int, games: int) -> _Stub:
         position_slot_counts=(
             {"QB": 1, "RB": 2, "WR": 2, "TE": 1, "FLEX": 1, "DST": 1, "K": 1, "BE": 6}
             if spec.sport == "football"
-            else (
-                {
-                    "C": 2,
-                    "LW": 1,
-                    "RW": 1,
-                    "F": 1,
-                    "D": 3,
-                    "Util": 1,
-                    "G": 1,
-                    "BE": 4,
-                    "IR": 1,
-                }
-                if spec.sport == "hockey"
-                else None
-            )
+            else (dict(hockey.lineup) if hockey is not None else None)
         ),
         # Baseball weights come from ``_raw_scoring_settings`` → categories /
         # scoring_format in serialize_settings (STATS_MAP abbrs like HR, RBI).
         # Football: typical ESPN items. REC is omitted (not 0) so
         # scoringSlugFromLeague stays the PPR default; the 8.4 sandbox still
         # exposes REC at weight 0 when box ``stats`` include receptions.
-        # Hockey fixtures are Season Points with named ESPN hockey weights.
+        # Hockey fixtures are Season Points with SJ Hockey's ESPN weights.
         scoring_format=(
             [
                 {"id": 4, "abbr": "PY", "label": "Passing Yards", "points": 0.04},
@@ -684,22 +686,7 @@ def _build_settings(spec: LeagueSpec, *, teams: int, games: int) -> _Stub:
                 {"id": 72, "abbr": "FUML", "label": "Fumbles Lost", "points": -2.0},
             ]
             if spec.sport == "football"
-            else (
-                [
-                    {"id": 13, "abbr": "G", "label": "Goals", "points": 3.0},
-                    {"id": 14, "abbr": "A", "label": "Assists", "points": 2.0},
-                    {"id": 18, "abbr": "PPG", "label": "Power-Play Goals", "points": 1.0},
-                    {"id": 38, "abbr": "PPP", "label": "Power-Play Points", "points": 1.0},
-                    {"id": 29, "abbr": "SOG", "label": "Shots on Goal", "points": 0.2},
-                    {"id": 31, "abbr": "HIT", "label": "Hits", "points": 0.1},
-                    {"id": 32, "abbr": "BLK", "label": "Blocks", "points": 0.2},
-                    {"id": 1, "abbr": "W", "label": "Wins", "points": 3.0},
-                    {"id": 6, "abbr": "SV", "label": "Saves", "points": 0.2},
-                    {"id": 7, "abbr": "SO", "label": "Shutouts", "points": 3.0},
-                ]
-                if spec.sport == "hockey"
-                else None
-            )
+            else (hockey.scoring_format() if hockey is not None else None)
         ),
         # Map scoring-period ids for Week Forecaster / locks (not H2H weeks).
         matchup_periods=(
@@ -716,28 +703,25 @@ def _build_settings(spec: LeagueSpec, *, teams: int, games: int) -> _Stub:
             else (
                 {
                     "scoringType": "TOTAL_SEASON_POINTS",
-                    "scoringItems": [
-                        {"statId": 13, "statName": "Goals", "points": 3.0},
-                        {"statId": 14, "statName": "Assists", "points": 2.0},
-                        {"statId": 18, "statName": "Power-Play Goals", "points": 1.0},
-                        {"statId": 38, "statName": "Power-Play Points", "points": 1.0},
-                        {"statId": 29, "statName": "Shots on Goal", "points": 0.2},
-                        {"statId": 31, "statName": "Hits", "points": 0.1},
-                        {"statId": 32, "statName": "Blocks", "points": 0.2},
-                        {"statId": 1, "statName": "Wins", "points": 3.0},
-                        {"statId": 6, "statName": "Saves", "points": 0.2},
-                        {"statId": 7, "statName": "Shutouts", "points": 3.0},
-                    ],
+                    "scoringItems": hockey.scoring_items(),
                 }
-                if spec.sport == "hockey"
+                if hockey is not None
                 else {}
             )
         ),
         # Season GS cap (ESPN dynasty shape) + Yahoo-style weekly IP floor for demos.
+        # Hockey: per-slot season GP caps (F 855 / D 475 / UTIL 95 / G 164).
         lineup_slot_stat_limits=(
             [{"slot": "P", "stat": "GS", "limit": 200.0}]
             if spec.sport == "baseball"
-            else None
+            else (
+                [
+                    {"slot": slot, "stat": "GP", "limit": float(limit)}
+                    for slot, limit in hockey.gp_caps.items()
+                ]
+                if hockey is not None
+                else None
+            )
         ),
         min_weekly_ip=20.0 if spec.sport == "baseball" else None,
         season_ip_max=1400.0 if spec.sport == "baseball" else None,
@@ -1106,6 +1090,17 @@ def seed_store(
             season_teams = int(spec.team_count) if spec.sport == "golf" and spec.team_count else teams
             snapshot = sample_snapshot(spec, season, teams=season_teams)
             location = store.write(snapshot)
+            if spec.sport == "hockey" and season == spec.current_season:
+                from datetime import datetime, timezone
+
+                from nhl.export import ARTIFACTS
+                from nhl.sample import sample_nhl_documents
+
+                # Season snapshots carry no synced_at until the store stamps a copy.
+                stamp = snapshot.get("synced_at") or datetime.now(timezone.utc).isoformat()
+                docs = sample_nhl_documents(snapshot, generated_at=str(stamp))
+                for name in ARTIFACTS:
+                    store.write_nhl(docs[name], name)
             if spec.sport == "baseball":
                 store.write_pro_schedule(sample_pro_schedule_for_snapshot(snapshot))
             if spec.sport in {"baseball", "hockey"}:

@@ -36,8 +36,9 @@ leagues:
     current_season: 2026
     espn_url: https://fantasy.espn.com/football/league?leagueId=94266
 
-  # ESPN hockey — 2026 (2025–26) + 2027 (2026–27). Projection-free.
+  # ESPN hockey — 2026 (2025–26) + 2027 (2026–27, current). Season Points.
   # This ESPN id does not exist for 2024 or 2025; do not add those years.
+  # NHL data layer (HOCKEY-PORT.md H1) writes {league}/{season}/nhl/ sidecars.
   - id: hockey-main
     name: Strictly Jayers Hockey
     short_name: Hockey Main

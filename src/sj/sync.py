@@ -5,6 +5,7 @@ from __future__ import annotations
 import inspect
 import json
 import os
+import sys
 import time
 from collections.abc import Callable
 from dataclasses import asdict, dataclass
@@ -649,6 +650,39 @@ def sync_hockey_week_boxes(
     return written
 
 
+def sync_hockey_nhl(
+    spec: LeagueSpec,
+    season: int,
+    snapshot: dict[str, Any],
+    store_dir: Path | str | None = None,
+) -> str:
+    """Write the NHL data layer sidecars (HOCKEY-PORT.md H1) after a hockey sync.
+
+    Current season only — NHL rosters are "now", so running this for a past
+    season would attach today's teams to old ESPN rosters. ``SJ_NHL_SYNC=0``
+    disables it. Any NHL failure is reported on stderr and never fails the
+    ESPN league-season (the snapshot is already written).
+    """
+    if spec.sport != "hockey" or season != spec.current_season:
+        return "skipped"
+    try:
+        from nhl.export import export_nhl, nhl_sync_enabled
+
+        if not nhl_sync_enabled():
+            return "disabled"
+        result = export_nhl(snapshot, store_dir=store_dir)
+    except Exception as exc:  # noqa: BLE001 - NHL is a side concern
+        print(f"nhl {spec.id} {season}: failed: {exc}", file=sys.stderr)
+        return f"failed: {exc}"
+    unmatched = len(result.documents["player_map"]["unmatched"])
+    print(
+        f"nhl {spec.id} {season}: coverage {result.coverage}, "
+        f"{unmatched} unmatched, {len(result.errors)} errors",
+        file=sys.stderr,
+    )
+    return "ok"
+
+
 def build_snapshot(league: Any, spec: LeagueSpec, season: int) -> dict[str, Any]:
     """Serialize an espn-api league object into a store-ready snapshot.
 
@@ -689,10 +723,11 @@ def sync_league_season(
 
         attach_baseball_roster_limits(league)
     elif spec.sport == "hockey":
-        # espn-api hockey Team omits points_for; attach ESPN teams[].points.
-        from sj.baseball_enrich import attach_espn_team_season_points
+        # One mSettings read: ESPN teams[].points (espn-api hockey Team omits
+        # points_for) plus rosterSettings — slot counts + GP caps (HOCKEY-PORT H0).
+        from sj.baseball_enrich import attach_baseball_roster_limits
 
-        attach_espn_team_season_points(league)
+        attach_baseball_roster_limits(league)
     snapshot = build_snapshot(league, spec, season)
     if spec.sport == "baseball":
         # Attach PR7/15/30 before the season write so monolith + v2 rosters
@@ -705,6 +740,7 @@ def sync_league_season(
     # write so a failed week pull never leaves a half-written manifest.
     sync_football_box_scores(league, spec, season, snapshot, store_dir=store_dir)
     sync_hockey_week_boxes(league, spec, season, snapshot, store_dir=store_dir)
+    sync_hockey_nhl(spec, season, snapshot, store_dir=store_dir)
     if spec.sport == "baseball":
         from sj.baseball_enrich import (
             sync_baseball_category_boxes,

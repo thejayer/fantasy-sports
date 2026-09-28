@@ -13,6 +13,7 @@ import {
   getLeagueSeasons,
   getLeagueSnapshot,
   getBaseballAnalysis,
+  getHockeyNhl,
   getPlayerMap,
   getPlayoffOddsSamples,
   getPlayoffOddsSnapshot,
@@ -180,6 +181,12 @@ export default async function LeagueDetailPage({ params, searchParams }: Props) 
     (league.sport === "baseball" || league.sport === "hockey") &&
     tab === "analysis"
       ? await getBaseballAnalysis(league.league_id, league.season)
+      : null;
+
+  // Hockey NHL sidecars (HOCKEY-PORT.md H1): only the Waivers board shows them.
+  const hockeyNhl =
+    league.sport === "hockey" && tab === "waivers"
+      ? await getHockeyNhl(league.league_id, league.season)
       : null;
 
   const wantsProjections =
@@ -422,6 +429,7 @@ export default async function LeagueDetailPage({ params, searchParams }: Props) 
       scoringSandbox={scoringSandbox}
       baseballAnalysis={baseballAnalysis}
       analysisSeriesMode={analysisSeriesMode}
+      hockeyNhl={hockeyNhl}
     />
   );
 }

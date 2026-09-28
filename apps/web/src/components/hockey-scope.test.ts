@@ -3,7 +3,7 @@ import path from "node:path";
 import { describe, expect, it } from "vitest";
 
 describe("hockey scope", () => {
-  it("documents projection-free ESPN hockey in HUB and AGENTS", () => {
+  it("documents ESPN hockey + the NHL data layer in HUB and AGENTS", () => {
     const hub = readFileSync(
       path.resolve(__dirname, "../../../../HUB.md"),
       "utf8",
@@ -18,11 +18,15 @@ describe("hockey scope", () => {
     expect(hub).toMatch(/1023106173/);
     expect(hub).toMatch(/`hockey-main` \| hockey \| redraft \| ESPN `1023106173` \| 2026–2027/);
     expect(hub).toMatch(/current_season/);
+    expect(hub).toMatch(/hub 2027 \(2026–27, current/);
+    expect(hub).toMatch(/HOCKEY-PORT\.md/);
+    expect(hub).toMatch(/\{league\}\/\{season\}\/nhl\//);
     expect(hub).not.toMatch(/Do not add 2026/);
     expect(agents).toMatch(/hockey-main/);
     expect(agents).toMatch(/1023106173/);
     expect(agents).toMatch(/projection-free/);
     expect(agents).toMatch(/2027 \/ 2026–27/);
+    expect(agents).toMatch(/SJ_NHL_SYNC=0/);
     expect(agents).not.toMatch(/Do not add 2026/);
   });
 

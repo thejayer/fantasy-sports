@@ -20,6 +20,7 @@ on:
     paths:
       - "apps/web/**"
       - "src/sj/**"
+      - "src/nhl/**"
       - "fixtures/sj/**"
       - "configs/**"
       - "requirements-lock.txt"

@@ -94,6 +94,19 @@ _HOCKEY_GOALIE_SLOTS = {"G", "GOALIE"}
 # Rate stats that must not be multiplied as counting FP when deriving totals.
 _HOCKEY_RATE_STATS = frozenset({"GAA", "SV%", "ATOI", "AVG", "ERA", "WHIP", "OBP", "OPS"})
 _HOCKEY_BENCH_SLOTS = frozenset({"BE", "BENCH", "IR", "IL"})
+# ESPN hockey lineupSlotId → short hub code (espn-api POSITION_MAP uses long
+# names like "Forward"; settings use the codes HOCKEY-PORT.md and ESPN show).
+_HOCKEY_SLOT_CODES = {
+    0: "C",
+    1: "LW",
+    2: "RW",
+    3: "F",
+    4: "D",
+    5: "G",
+    6: "UTIL",
+    7: "BE",
+    8: "IR",
+}
 
 
 def _baseball_stats_map() -> dict[int, str]:
@@ -704,6 +717,8 @@ def serialize_settings(league: Any, *, sport: str | None = None) -> dict[str, An
     if isinstance(division_map, dict) and division_map:
         payload["division_map"] = {str(k): v for k, v in division_map.items()}
     slot_counts = getattr(settings, "position_slot_counts", None)
+    if not (isinstance(slot_counts, dict) and slot_counts) and sport == "hockey":
+        slot_counts = extract_hockey_slot_counts(settings)
     if isinstance(slot_counts, dict) and slot_counts:
         payload["position_slot_counts"] = {
             str(k): _int(v) for k, v in slot_counts.items() if _int(v) is not None
@@ -727,7 +742,7 @@ def serialize_settings(league: Any, *, sport: str | None = None) -> dict[str, An
             str(k): list(v) if isinstance(v, (list, tuple)) else v
             for k, v in matchup_periods.items()
         }
-    limits = extract_lineup_slot_stat_limits(settings)
+    limits = extract_lineup_slot_stat_limits(settings, sport=sport)
     if limits:
         payload["lineup_slot_stat_limits"] = limits
         gs_max = season_gs_max_from_limits(limits)
@@ -742,12 +757,39 @@ def serialize_settings(league: Any, *, sport: str | None = None) -> dict[str, An
     return payload
 
 
-def extract_lineup_slot_stat_limits(settings: Any) -> list[dict[str, Any]]:
+def extract_hockey_slot_counts(settings: Any) -> dict[str, int]:
+    """ESPN hockey ``rosterSettings.lineupSlotCounts`` → ``{F: 9, D: 5, …}``.
+
+    espn-api hockey settings omit slot counts; sync stashes the raw roster
+    settings (:func:`sj.baseball_enrich.attach_baseball_roster_limits`). Zero-count
+    slots are dropped so the Settings tab only lists slots the league uses.
+    """
+    raw = getattr(settings, "_raw_roster_settings", None) or {}
+    counts = raw.get("lineupSlotCounts") if isinstance(raw, dict) else None
+    if not isinstance(counts, dict):
+        return {}
+    out: dict[str, int] = {}
+    for slot_key, count_raw in counts.items():
+        count = _int(count_raw)
+        if not count:
+            continue
+        try:
+            code = _HOCKEY_SLOT_CODES.get(int(slot_key), str(slot_key))
+        except (TypeError, ValueError):
+            code = str(slot_key)
+        out[code] = count
+    return out
+
+
+def extract_lineup_slot_stat_limits(
+    settings: Any, *, sport: str | None = None
+) -> list[dict[str, Any]]:
     """ESPN ``rosterSettings.lineupSlotStatLimits`` → hub rows (roadmap 8.2).
 
     Typical baseball dynasty: slot ``P`` (13) capped on ``GS`` (stat 33).
-    Accepts pre-normalized lists on sample stubs or raw ESPN maps via
-    ``_raw_roster_settings`` / ``lineup_slot_stat_limits``.
+    SJ Hockey caps games played per slot (``F`` / ``D`` / ``UTIL`` / ``G`` on
+    ``GP``, stat 34). Accepts pre-normalized lists on sample stubs or raw ESPN
+    maps via ``_raw_roster_settings`` / ``lineup_slot_stat_limits``.
     """
     if settings is None:
         return []
@@ -776,10 +818,16 @@ def extract_lineup_slot_stat_limits(settings: Any) -> list[dict[str, Any]]:
     limits = raw.get("lineupSlotStatLimits") or {}
     if not isinstance(limits, dict):
         return []
-    try:
-        from espn_api.baseball.constant import POSITION_MAP, STATS_MAP
-    except ImportError:
-        POSITION_MAP, STATS_MAP = {}, {}
+    POSITION_MAP: dict[Any, Any]
+    STATS_MAP: dict[Any, Any]
+    if sport == "hockey":
+        POSITION_MAP = dict(_HOCKEY_SLOT_CODES)
+        STATS_MAP = _hockey_stats_map()
+    else:
+        try:
+            from espn_api.baseball.constant import POSITION_MAP, STATS_MAP
+        except ImportError:
+            POSITION_MAP, STATS_MAP = {}, {}
     rows = []
     for slot_key, stat_map in limits.items():
         if not isinstance(stat_map, dict):

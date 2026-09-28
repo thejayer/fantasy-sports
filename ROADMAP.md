@@ -1056,6 +1056,24 @@ W/L move — without writing ESPN or the live settings file.
 - **Auth:** same hub allowlist as every league tab. Sandbox is ephemeral,
   so any member can open it (admin-only stays on tools that write).
 
+### 8.6 Hockey: Rinkside port — H0 + H1 LANDED
+Plan and phases live in [HOCKEY-PORT.md](HOCKEY-PORT.md) (H0–H8). This replaces
+"projection-free" for hockey one phase at a time; `src/ffa` stays NFL-only and
+hockey gets its own package, `src/nhl`.
+
+- ~~**H0 prerequisites**~~ — **LANDED**: `hockey-main` gains hub 2027
+  (2026–27, current). Scoring, lineup slot counts, and per-slot GP caps are read
+  from ESPN at sync; `configs/hockey_scoring.yaml` is the test/sandbox override
+  and drives the fixture league (SJ Hockey rules, 9 F / 5 D / 1 UTIL / 2 G).
+- ~~**H1 NHL data layer + player map**~~ — **LANDED**: `sj sync` (current hockey
+  season) and `sj nhl` write `nhl/player_map.json`, `nhl_context.json`,
+  `schedule.json`, `team_strength.json`. Matcher: full name + group, then
+  initial + last, ESPN team breaks ties, NHL search fallback; coverage report
+  with `--fail-below`. Roster + Waivers gain Age / Ht / Wt / Team / EV / PP.
+- **Next:** H2 player values (fills the hockey `projections` tab), H2b backtest,
+  H3 durability, then H4–H8 per HOCKEY-PORT.md. SJ Hockey is Season Points
+  (no weekly matchups); the fixture league matches.
+
 ---
 
 ## Phase 9 — Optional, and only if members ask
@@ -1148,7 +1166,7 @@ Everything else in phase 7 is independent and can land in any order: ~~7.3~~
 | I — Social | ~~7.6 → 7.7~~ | feed.json + digest + Discord + tee reminders |
 | J — Tools packaging | ~~7.8~~ | Trade Desk Δ make-% via samples sidecar |
 | K — Craft | ~~7.10~~, ~~7.11~~ | `globals.css`, HTML + JS CI budgets |
-| L — Sport depth | 8.1 · 8.2 · 8.3 | `src/sj` · `apps/web` · `src/sg` |
+| L — Sport depth | 8.1 · 8.2 · 8.3 · 8.6 (hockey H0/H1 landed) | `src/sj` · `apps/web` · `src/sg` · `src/nhl` |
 | Q — Shared memory | ~~7.10b~~ · ~~7.9b~~ · ~~7.12~~ · ~~7.13~~ · **7.14** · ~~P.6~~ | `hub_members`, rosters, `/u`, history, home, `apps/www` |
 
 G, H, and K barely overlap. I is the only track that introduces user-generated

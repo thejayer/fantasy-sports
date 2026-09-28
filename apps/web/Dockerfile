@@ -39,6 +39,8 @@ WORKDIR /app
 # pulls duckdb / pandas / sklearn / nflreadpy / pulp into the hub image).
 COPY requirements-lock.txt ./
 COPY src/sj ./src/sj
+# Hockey NHL data layer — `sj` imports it for hockey sync / seed (stdlib + pyyaml).
+COPY src/nhl ./src/nhl
 COPY configs ./configs
 RUN pip install --no-cache-dir --constraint requirements-lock.txt \
         "espn-api>=0.45.0" \

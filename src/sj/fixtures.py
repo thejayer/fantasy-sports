@@ -100,6 +100,17 @@ def regenerate_fixtures(
         rel = monolith_rel(spec.id, season)
         path = root / rel
         path.write_text(_dump(snapshot), encoding="utf-8")
+        if spec.sport == "hockey":
+            # NHL data layer sidecars (HOCKEY-PORT.md H1) from the synthetic
+            # NHL, through the live parsers / matcher / exporter.
+            from nhl.export import ARTIFACTS
+            from nhl.sample import sample_nhl_documents
+
+            store = FileStore(root)
+            docs = sample_nhl_documents(snapshot, generated_at=FIXED_TIMESTAMP)
+            for name in ARTIFACTS:
+                store.write_nhl(docs[name], name)
+                emit(f"wrote {spec.id}/{season}/nhl/{name}.json")
         if spec.sport == "baseball":
             # Side concerns (not validated against monolith equality).
             store = FileStore(root)

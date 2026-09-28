@@ -1,0 +1,8 @@
+{
+  "data": [
+    {"playerId": 9000001, "hits": 45, "blockedShots": 20},
+    {"playerId": 9000003, "hits": 150, "blockedShots": 130},
+    {"playerId": 9999999, "hits": 1, "blockedShots": 1}
+  ],
+  "total": 3
+}

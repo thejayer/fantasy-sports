@@ -1,0 +1,7 @@
+{
+  "data": [
+    {"playerId": 9000004, "gamesPlayed": 55, "gamesStarted": 52, "wins": 30, "losses": 15, "goalsAgainst": 140, "saves": 1400, "shutouts": 4, "teamAbbrevs": "TOR"},
+    {"playerId": 9000005, "gamesPlayed": 32, "gamesStarted": 30, "wins": 14, "losses": 12, "goalsAgainst": 90, "saves": 800, "shutouts": 1, "teamAbbrevs": "TOR"}
+  ],
+  "total": 2
+}
