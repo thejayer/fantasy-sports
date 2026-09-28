@@ -13,7 +13,7 @@ altair==6.2.2
     # via
     #   ffa (pyproject.toml)
     #   streamlit
-annotated-doc==0.0.4
+annotated-doc==0.0.5
     # via typer
 annotated-types==0.8.0
     # via pydantic
