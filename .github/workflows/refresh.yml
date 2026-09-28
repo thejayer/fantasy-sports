@@ -53,7 +53,7 @@ jobs:
       season: ${{ steps.cfg.outputs.season }}
       artifact: ffa-store-${{ steps.cfg.outputs.season }}-${{ github.run_id }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - uses: actions/setup-python@v5
         with:
