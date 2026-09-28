@@ -377,10 +377,13 @@ test.describe("hub smoke", () => {
       ).toBeVisible();
 
       // Link a franchise in each remaining league so the portfolio strip
-      // covers the four-sport set (roadmap 9.4).
+      // covers every sport (roadmap 9.4). Hockey's ESPN year can sit one
+      // ahead of football/baseball/golf; home still defaults to the densest
+      // year, but 2027 must also have a linked franchise.
       for (const label of [
         /Team for Strictly Jayers Football Dynasty/i,
         /Team for Strictly Jayers Baseball/i,
+        /Team for Strictly Jayers Hockey/i,
         /Team for Strictly Jayers Golf/i,
       ]) {
         const select = page.getByLabel(label);
@@ -744,6 +747,25 @@ test.describe("hub smoke", () => {
     await expect(page.getByText("Bat Flip Bandits").first()).toBeVisible();
     await expect(
       page.getByRole("heading", { name: "Batters vs pitchers" }),
+    ).toBeVisible();
+    await expect(page.getByRole("img", { name: /Season points by team/i })).toBeVisible();
+    await page.getByRole("link", { name: "Daily" }).click();
+    await expect(page).toHaveURL(/series=daily/);
+  });
+
+  test("hockey analysis tab shows slot table and skater/goalie split (roadmap 8.5)", async ({
+    page,
+  }) => {
+    await page.goto("/leagues/hockey-main?tab=analysis");
+    await expect(page.getByRole("heading", { name: "Analysis" }).first()).toBeVisible();
+    await expect(
+      page.getByRole("heading", { name: "Points by lineup slot" }),
+    ).toBeVisible();
+    await expect(
+      page.getByRole("columnheader", { name: "Forward" }).first(),
+    ).toBeVisible();
+    await expect(
+      page.getByRole("heading", { name: "Skaters vs goalies" }),
     ).toBeVisible();
     await expect(page.getByRole("img", { name: /Season points by team/i })).toBeVisible();
     await page.getByRole("link", { name: "Daily" }).click();

@@ -177,7 +177,8 @@ export default async function LeagueDetailPage({ params, searchParams }: Props) 
       : null;
 
   const baseballAnalysis =
-    league.sport === "baseball" && tab === "analysis"
+    (league.sport === "baseball" || league.sport === "hockey") &&
+    tab === "analysis"
       ? await getBaseballAnalysis(league.league_id, league.season)
       : null;
 

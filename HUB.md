@@ -20,7 +20,7 @@ Yahoo, Sleeper, and FantasyPros), and [ROADMAP.md](ROADMAP.md) (phases 0–9).
 | `baseball-dynasty` | baseball | dynasty | ESPN `2499137` | 2024–2026 |
 | `football-main` | football | redraft | ESPN `39790` | 2015–2026 |
 | `football-dynasty` | football | dynasty | ESPN `94266` | 2018–2026 |
-| `hockey-main` | hockey | redraft | ESPN `1023106173` | 2026 |
+| `hockey-main` | hockey | redraft | ESPN `1023106173` | 2026–2027 |
 | `golf-main` | golf | h2h | hub (no ESPN) | 2026 |
 
 Registry: [`configs/leagues.yaml`](configs/leagues.yaml)
@@ -48,36 +48,36 @@ modeling plan.
 
 ### Baseball Analysis (roadmap 8.5)
 
-`?tab=analysis` on baseball Season Points (`TOTAL_SEASON_POINTS`, especially
-`baseball-dynasty`). Three views on one page:
+`?tab=analysis` on baseball **and hockey** Season Points (`TOTAL_SEASON_POINTS`).
+Three views on one page:
 
-1. **Points by lineup slot** — C / 1B / 2B / 3B / SS / OF / DH / UTIL / P / RP
-   plus Starters, ESPN team pts, Bench+IL unused.
-2. **Batters vs pitchers** — Bats = C+1B+2B+3B+SS+OF+DH+UTIL; Pitchers = P+RP.
+1. **Points by lineup slot** — baseball C / 1B / … / P / RP; hockey
+   Forward / Defense / Goalie / Util — plus Starters, ESPN team pts, Bench unused.
+2. **Split** — baseball bats vs pitchers; hockey skaters vs goalies.
 3. **Season points chart** — one line per team of cumulative starter FP across
-   scoring periods (ESPN baseball `scoringPeriodId` ≈ calendar day). Toggle
+   scoring periods (ESPN `scoringPeriodId` ≈ calendar day). Toggle
    `?series=cumulative|daily|weekly` (cumulative default). Month ticks when
    dates exist.
 
 **How it is produced.** Not from `lineups.json` / `weeks/` (those are empty for
-season-points baseball). After the season snapshot, `sj sync` / `sj backfill`
-call `sync_baseball_analysis`: for each scoring period, `view=mRoster` and
-credit `player.stats[].appliedTotal` where `statSourceId=0` and
-`statSplitTypeId=5` to that day's `lineupSlotId`. Do **not** use
-`ppe.appliedStatTotal` (~1.7× high vs ESPN). Starter sum should land within
-~1% of ESPN team points. Incremental: completed periods in
-`analysis/slot_points.json` `period_slots` are reused; `--force` / `sj analysis --force`
-re-walks. Throttle matches the transactions fallback (`SJ_TXN_PERIOD_THROTTLE`).
-Missing analysis → EmptyState. Committed fixtures ship a synthetic 3-team
-sample; live 2026 dynasty numbers come from a cookie sync, not from those
-fixtures.
+season-points baseball/hockey). After the season snapshot, `sj sync` /
+`sj backfill` / `sj analysis` call `sync_season_points_analysis`: for each
+scoring period, `view=mRoster` and credit `player.stats[].appliedTotal` where
+`statSourceId=0` and `statSplitTypeId=5` to that day's `lineupSlotId`. Do
+**not** use `ppe.appliedStatTotal` (~1.7× high vs ESPN). Starter sum should
+land within ~1% of ESPN team points. Incremental: completed periods in
+`analysis/slot_points.json` `period_slots` are reused; `--force` /
+`sj analysis --force` re-walks. Throttle matches the transactions fallback
+(`SJ_TXN_PERIOD_THROTTLE`). Missing analysis → EmptyState. Committed fixtures
+ship a synthetic sample; live numbers come from a cookie sync.
 
 ### Hockey scope
 
-**ESPN, projection-free.** `hockey-main` is ESPN `1023106173` for the 2025–26 /
-hub 2026 season. ESPN years 2024 and 2025 do not exist for this id. `sj sync` /
-`sj backfill` pull that id when ESPN cookies are set. `sj sync` still skips
-`espn_league_id <= 0` so other placeholders cannot call `League(0)`.
+**ESPN, projection-free.** `hockey-main` is ESPN `1023106173` for 2026
+(2025–26) and **2027** (2026–27, `current_season`). ESPN years 2024 and 2025
+do not exist for this id. `sj sync` / `sj backfill` pull listed seasons when
+ESPN cookies are set. `sj sync` still skips `espn_league_id <= 0` so other
+placeholders cannot call `League(0)`.
 
 Hockey reuses the ESPN snapshot layout (standings, rosters, matchups, draft,
 activity, free agents). espn-api hockey is closer to baseball (Matchup objects,
@@ -85,6 +85,16 @@ optional category matrices) plus football-shaped `box_scores` with applied
 totals. The hub does **not** invent player week lines ESPN omitted, and does
 **not** add NHL code to `src/ffa`. Tools are Category Board (when
 `season_stats` exist) plus Scoring lab; `projections` stays EmptyState.
+
+espn-api hockey `Player` omits `total_points`. Sync derives season FP from
+`season_stats × scoring_format` counting weights (skipping GAA/SV%) and
+attaches ESPN `teams[].points` as `points_for` so Hall of Shame can rank drops.
+
+Season-points Analysis (`?tab=analysis`, roadmap 8.5 twin) is the baseball
+walk with hockey slots: Forward / Defense / Goalie / Util, skaters vs goalies,
+and a cumulative chart from `analysis/slot_points.json` +
+`analysis/points_timeseries.json`. `sj analysis --league hockey-main` (or
+`sj sync`) walks `mRoster` per scoring period; never `ppe.appliedStatTotal`.
 
 ### Golf scope (roadmap 6.4a–e + 6.5 + auction/keepers + live room + 8.3)
 

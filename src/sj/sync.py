@@ -688,6 +688,11 @@ def sync_league_season(
         from sj.baseball_enrich import attach_baseball_roster_limits
 
         attach_baseball_roster_limits(league)
+    elif spec.sport == "hockey":
+        # espn-api hockey Team omits points_for; attach ESPN teams[].points.
+        from sj.baseball_enrich import attach_espn_team_season_points
+
+        attach_espn_team_season_points(league)
     snapshot = build_snapshot(league, spec, season)
     if spec.sport == "baseball":
         # Attach PR7/15/30 before the season write so monolith + v2 rosters
@@ -701,7 +706,6 @@ def sync_league_season(
     sync_football_box_scores(league, spec, season, snapshot, store_dir=store_dir)
     sync_hockey_week_boxes(league, spec, season, snapshot, store_dir=store_dir)
     if spec.sport == "baseball":
-        from sj.baseball_analysis import sync_baseball_analysis
         from sj.baseball_enrich import (
             sync_baseball_category_boxes,
             sync_baseball_pro_schedule,
@@ -713,10 +717,13 @@ def sync_league_season(
         sync_baseball_category_boxes(
             league, spec, season, snapshot, store_dir=store_dir
         )
+    if spec.sport in ("baseball", "hockey"):
+        from sj.season_points_analysis import sync_season_points_analysis
+
         # Season-points slot / timeseries analysis (roadmap 8.5). Side
         # concern after the season write; period failures are recorded in
         # the JSON rather than failing the league-season.
-        sync_baseball_analysis(
+        sync_season_points_analysis(
             league, spec, season, snapshot, store_dir=store_dir
         )
     return SyncResult(

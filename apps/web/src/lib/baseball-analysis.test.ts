@@ -10,6 +10,7 @@ import {
   parseAnalysisSeriesMode,
   rollupWeekly,
   slotTableRows,
+  slotColumnsFor,
   type SlotPointsSnapshot,
   type PointsTimeseriesSnapshot,
 } from "@/lib/baseball-analysis";
@@ -61,6 +62,37 @@ describe("slot table derivation", () => {
     expect(derivePitchers(rows[0])).toBe(4005);
     expect(rows[0].bats + rows[0].pitchers).toBe(8360);
     expect(SLOT_COLUMNS).toContain("UTIL");
+  });
+
+  it("derives hockey skaters and goalies from Forward/Defense/Util vs Goalie", () => {
+    const snap: SlotPointsSnapshot = {
+      schema_version: 1,
+      league_id: "hockey-main",
+      season: 2027,
+      sport: "hockey",
+      scoring_type: "TOTAL_SEASON_POINTS",
+      slots: ["Forward", "Defense", "Goalie", "Util"],
+      teams: [
+        {
+          team_id: 1,
+          name: "Five Hole Heroes",
+          slots: { Forward: 100, Defense: 50, Goalie: 40, Util: 20 },
+          starters: 210,
+          bench_il: 30,
+          espn_points: 215,
+          delta: -5,
+        },
+      ],
+    };
+    const rows = slotTableRows(snap);
+    expect(rows[0].skaters).toBe(170);
+    expect(rows[0].goalies).toBe(40);
+    expect(slotColumnsFor(snap)).toEqual([
+      "Forward",
+      "Defense",
+      "Goalie",
+      "Util",
+    ]);
   });
 
   it("returns empty when analysis is missing", () => {

@@ -227,7 +227,7 @@ def status_cmd(
 @app.command("analysis")
 def analysis_cmd(
     league: list[str] | None = typer.Option(
-        None, "--league", "-l", help="League id (repeatable). Default: baseball leagues."
+        None, "--league", "-l", help="League id (repeatable). Default: baseball + hockey."
     ),
     season: list[int] | None = typer.Option(
         None, "--season", "-s", help="Season year (repeatable). Default: listed seasons."
@@ -243,26 +243,31 @@ def analysis_cmd(
     ),
     registry: Path | None = typer.Option(None, help="Path to leagues.yaml"),
 ) -> None:
-    """Rebuild baseball season-points analysis sidecars (roadmap 8.5).
+    """Rebuild season-points analysis sidecars (roadmap 8.5).
 
     Walks ESPN ``view=mRoster`` per scoring period and writes
     ``analysis/slot_points.json`` + ``analysis/points_timeseries.json``.
     Requires ESPN_S2 / ESPN_SWID. Incremental by default — completed
     periods are reused unless ``--force``. ``sj sync`` / ``sj backfill``
-    already run this for season-points baseball leagues.
+    already run this for season-points baseball and hockey leagues.
     """
-    from sj.baseball_analysis import sync_baseball_analysis
+    from sj.season_points_analysis import PROFILE_BY_SPORT, sync_season_points_analysis
     from sj.store import read_snapshot
 
     typer.echo(f"store: {describe_store(store_dir)}")
     reg = load_registry(registry)
-    selected = [lg for lg in reg.leagues if lg.is_espn() and lg.sport == "baseball"]
+    selected = [
+        lg for lg in reg.leagues if lg.is_espn() and lg.sport in PROFILE_BY_SPORT
+    ]
     if league:
         wanted = set(league)
         selected = [lg for lg in selected if lg.id in wanted]
         missing = wanted - {lg.id for lg in selected}
         if missing:
-            typer.echo(f"error: unknown baseball league id(s): {sorted(missing)}", err=True)
+            typer.echo(
+                f"error: unknown analysis league id(s): {sorted(missing)}",
+                err=True,
+            )
             raise typer.Exit(code=1)
     wrote = 0
     for spec in selected:
@@ -279,7 +284,7 @@ def analysis_cmd(
             except Exception as exc:  # noqa: BLE001
                 typer.echo(f"skip {spec.id} {year}: {exc}", err=True)
                 continue
-            n = sync_baseball_analysis(
+            n = sync_season_points_analysis(
                 espn, spec, year, snapshot, store_dir=store_dir, force=force
             )
             wrote += n

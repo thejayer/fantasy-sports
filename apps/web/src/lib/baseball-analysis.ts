@@ -33,6 +33,16 @@ export const BAT_SLOTS = [
 
 export const PITCH_SLOTS = ["P", "RP"] as const;
 
+export const HOCKEY_SLOT_COLUMNS = [
+  "Forward",
+  "Defense",
+  "Goalie",
+  "Util",
+] as const;
+
+export const SKATER_SLOTS = ["Forward", "Defense", "Util"] as const;
+export const GOALIE_SLOTS = ["Goalie"] as const;
+
 export type AnalysisSeriesMode = "cumulative" | "daily" | "weekly";
 
 export type SlotPointsTeam = {
@@ -42,6 +52,8 @@ export type SlotPointsTeam = {
   starters: number;
   bats?: number;
   pitchers?: number;
+  skaters?: number;
+  goalies?: number;
   bench_il: number;
   espn_points: number | null;
   delta: number | null;
@@ -64,6 +76,7 @@ export type SlotPointsSnapshot = {
     failed?: number[];
   };
   slots?: string[];
+  groups?: Record<string, string[]>;
   teams: SlotPointsTeam[];
 };
 
@@ -74,6 +87,8 @@ export type TimeseriesPoint = {
   cumulative_starters: number;
   daily_bats?: number;
   daily_pitchers?: number;
+  daily_skaters?: number;
+  daily_goalies?: number;
   espn_daily?: number;
 };
 
@@ -104,6 +119,8 @@ export type BaseballAnalysisSnapshot = {
 export type SlotTableRow = SlotPointsTeam & {
   bats: number;
   pitchers: number;
+  skaters: number;
+  goalies: number;
 };
 
 export type ChartLine = {
@@ -138,6 +155,15 @@ export function parseAnalysisSeriesMode(
   return "cumulative";
 }
 
+export function slotColumnsFor(
+  snapshot: SlotPointsSnapshot | null,
+  sport?: string,
+): string[] {
+  if (snapshot?.slots?.length) return snapshot.slots;
+  if ((snapshot?.sport || sport) === "hockey") return [...HOCKEY_SLOT_COLUMNS];
+  return [...SLOT_COLUMNS];
+}
+
 export function slotValue(row: SlotPointsTeam, slot: string): number {
   return Number(row.slots?.[slot] ?? 0);
 }
@@ -152,12 +178,24 @@ export function derivePitchers(row: SlotPointsTeam): number {
   return PITCH_SLOTS.reduce((sum, slot) => sum + slotValue(row, slot), 0);
 }
 
+export function deriveSkaters(row: SlotPointsTeam): number {
+  if (row.skaters != null && Number.isFinite(row.skaters)) return row.skaters;
+  return SKATER_SLOTS.reduce((sum, slot) => sum + slotValue(row, slot), 0);
+}
+
+export function deriveGoalies(row: SlotPointsTeam): number {
+  if (row.goalies != null && Number.isFinite(row.goalies)) return row.goalies;
+  return GOALIE_SLOTS.reduce((sum, slot) => sum + slotValue(row, slot), 0);
+}
+
 export function slotTableRows(snapshot: SlotPointsSnapshot | null): SlotTableRow[] {
   if (!snapshot?.teams?.length) return [];
   return snapshot.teams.map((team) => ({
     ...team,
     bats: deriveBats(team),
     pitchers: derivePitchers(team),
+    skaters: deriveSkaters(team),
+    goalies: deriveGoalies(team),
   }));
 }
 
@@ -197,6 +235,8 @@ export function rollupWeekly(points: TimeseriesPoint[]): TimeseriesPoint[] {
         cumulative_starters: point.cumulative_starters,
         daily_bats: point.daily_bats ?? 0,
         daily_pitchers: point.daily_pitchers ?? 0,
+        daily_skaters: point.daily_skaters ?? 0,
+        daily_goalies: point.daily_goalies ?? 0,
       });
       order.push(key);
       continue;
@@ -206,6 +246,10 @@ export function rollupWeekly(points: TimeseriesPoint[]): TimeseriesPoint[] {
     existing.daily_bats = (existing.daily_bats ?? 0) + (point.daily_bats ?? 0);
     existing.daily_pitchers =
       (existing.daily_pitchers ?? 0) + (point.daily_pitchers ?? 0);
+    existing.daily_skaters =
+      (existing.daily_skaters ?? 0) + (point.daily_skaters ?? 0);
+    existing.daily_goalies =
+      (existing.daily_goalies ?? 0) + (point.daily_goalies ?? 0);
     existing.date = point.date ?? existing.date;
     existing.period = point.period;
   }
@@ -219,6 +263,14 @@ export function rollupWeekly(points: TimeseriesPoint[]): TimeseriesPoint[] {
       daily_pitchers:
         row.daily_pitchers != null
           ? Math.round(row.daily_pitchers * 10) / 10
+          : undefined,
+      daily_skaters:
+        row.daily_skaters != null
+          ? Math.round(row.daily_skaters * 10) / 10
+          : undefined,
+      daily_goalies:
+        row.daily_goalies != null
+          ? Math.round(row.daily_goalies * 10) / 10
           : undefined,
     };
   });

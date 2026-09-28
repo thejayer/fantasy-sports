@@ -8,10 +8,10 @@ import { ViewerBadge } from "@/components/ViewerBadge";
 import { DataTable, type DataTableColumn } from "@/components/DataTable";
 import type { LeagueSnapshot } from "@/lib/data";
 import {
-  SLOT_COLUMNS,
   buildChartModel,
   fpLabel,
   linePath,
+  slotColumnsFor,
   slotTableRows,
   type AnalysisSeriesMode,
   type BaseballAnalysisSnapshot,
@@ -55,13 +55,15 @@ function SeriesSwitcher({
 function SlotTable({
   league,
   rows,
+  columns,
   viewerTeamId,
 }: {
   league: LeagueSnapshot;
   rows: SlotTableRow[];
+  columns: string[];
   viewerTeamId?: number;
 }) {
-  const columns: DataTableColumn<SlotTableRow>[] = [
+  const tableColumns: DataTableColumn<SlotTableRow>[] = [
     {
       id: "team",
       header: "Team",
@@ -79,7 +81,7 @@ function SlotTable({
         );
       },
     },
-    ...SLOT_COLUMNS.map((slot) => ({
+    ...columns.map((slot) => ({
       id: slot,
       header: slot,
       sortable: true,
@@ -108,7 +110,7 @@ function SlotTable({
     },
     {
       id: "bench",
-      header: "Bench+IL unused",
+      header: "Bench unused",
       sortable: true,
       numeric: true,
       defaultSortDirection: "desc",
@@ -119,7 +121,7 @@ function SlotTable({
   return (
     <DataTable
       rows={rows}
-      columns={columns}
+      columns={tableColumns}
       getRowKey={(row) => String(row.team_id)}
       searchText={(row) => row.name}
       searchPlaceholder="Search teams…"
@@ -134,11 +136,21 @@ function SplitTable({
   league,
   rows,
   viewerTeamId,
+  isHockey,
 }: {
   league: LeagueSnapshot;
   rows: SlotTableRow[];
   viewerTeamId?: number;
+  isHockey: boolean;
 }) {
+  const leftId = isHockey ? "skaters" : "bats";
+  const rightId = isHockey ? "goalies" : "pitchers";
+  const leftHeader = isHockey ? "Skaters" : "Bats";
+  const rightHeader = isHockey ? "Goalies" : "Pitchers";
+  const leftValue = (row: SlotTableRow) =>
+    isHockey ? row.skaters : row.bats;
+  const rightValue = (row: SlotTableRow) =>
+    isHockey ? row.goalies : row.pitchers;
   const columns: DataTableColumn<SlotTableRow>[] = [
     {
       id: "team",
@@ -158,22 +170,22 @@ function SplitTable({
       },
     },
     {
-      id: "bats",
-      header: "Bats",
+      id: leftId,
+      header: leftHeader,
       sortable: true,
       numeric: true,
       defaultSortDirection: "desc",
-      sortValue: (row) => row.bats,
-      cell: (row) => fpLabel(row.bats),
+      sortValue: leftValue,
+      cell: (row) => fpLabel(leftValue(row)),
     },
     {
-      id: "pitchers",
-      header: "Pitchers",
+      id: rightId,
+      header: rightHeader,
       sortable: true,
       numeric: true,
       defaultSortDirection: "desc",
-      sortValue: (row) => row.pitchers,
-      cell: (row) => fpLabel(row.pitchers),
+      sortValue: rightValue,
+      cell: (row) => fpLabel(rightValue(row)),
     },
     {
       id: "starters",
@@ -301,7 +313,7 @@ export function BaseballAnalysisPanel({
 }) {
   if (!isSeasonPointsScoring(league.scoring_type)) {
     return (
-      <EmptyState title="Analysis is for Season Points baseball">
+      <EmptyState title="Analysis is for Season Points leagues">
         Slot totals and the season-points chart need ESPN{" "}
         <code>TOTAL_SEASON_POINTS</code>. H2H category leagues stay on the
         Category Board and period boxes — the hub will not invent fantasy
@@ -310,7 +322,9 @@ export function BaseballAnalysisPanel({
     );
   }
 
+  const isHockey = league.sport === "hockey";
   const rows = slotTableRows(analysis?.slotPoints ?? null);
+  const columns = slotColumnsFor(analysis?.slotPoints ?? null, league.sport);
   const chart = buildChartModel(analysis?.timeseries ?? null, seriesMode);
   const periods = analysis?.slotPoints?.periods;
   const method = analysis?.slotPoints?.method;
@@ -349,29 +363,43 @@ export function BaseballAnalysisPanel({
           : ""}
         {method ? ` · ${method}` : ""}
         . Starter sum should land within ~1% of ESPN team points; leftover is
-        bench/IL plus missing days or pitcher caps.
+        bench/IR unused production plus missing days
+        {isHockey ? "." : " or pitcher caps."}
       </p>
 
       <section style={{ marginTop: "1rem" }}>
         <h3 className="roster-group-title">Points by lineup slot</h3>
-        <SlotTable league={league} rows={rows} viewerTeamId={viewerTeamId} />
+        <SlotTable
+          league={league}
+          rows={rows}
+          columns={columns}
+          viewerTeamId={viewerTeamId}
+        />
       </section>
 
       <section style={{ marginTop: "1.25rem" }}>
-        <h3 className="roster-group-title">Batters vs pitchers</h3>
+        <h3 className="roster-group-title">
+          {isHockey ? "Skaters vs goalies" : "Batters vs pitchers"}
+        </h3>
         <p className="league-meta">
-          Bats = C+1B+2B+3B+SS+OF+DH+UTIL. Pitchers = P+RP. Starters and ESPN
-          team points stay on the row for comparison.
+          {isHockey
+            ? "Skaters = Forward+Defense+Util. Goalies = Goalie. Starters and ESPN team points stay on the row for comparison."
+            : "Bats = C+1B+2B+3B+SS+OF+DH+UTIL. Pitchers = P+RP. Starters and ESPN team points stay on the row for comparison."}
         </p>
-        <SplitTable league={league} rows={rows} viewerTeamId={viewerTeamId} />
+        <SplitTable
+          league={league}
+          rows={rows}
+          viewerTeamId={viewerTeamId}
+          isHockey={isHockey}
+        />
       </section>
 
       <section style={{ marginTop: "1.25rem" }}>
         <h3 className="roster-group-title">Season points</h3>
         <p className="league-meta">
-          One line per team. X-axis is the ESPN baseball scoring period
-          (calendar day of the season). Cumulative starter points is the
-          default.
+          One line per team. X-axis is the ESPN scoring period (calendar day
+          of the {isHockey ? "NHL" : "MLB"} season). Cumulative starter points
+          is the default.
         </p>
         <SeriesSwitcher
           leagueId={league.league_id}

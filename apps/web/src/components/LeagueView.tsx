@@ -336,6 +336,7 @@ const HOCKEY_TABS = [
   "tools",
   "settings",
   "sandbox",
+  "analysis",
   "drops",
 ] as const;
 

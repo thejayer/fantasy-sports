@@ -25,6 +25,7 @@ describe("LeagueView unification", () => {
     expect(pageSource).not.toMatch(/function record\(/);
     expect(pageSource).toMatch(/getProSchedule/);
     expect(pageSource).toMatch(/getBaseballAnalysis/);
+    expect(pageSource).toMatch(/sport === "hockey"/);
   });
 
   it("shared view includes season chips, win%, and sport-gated standings", () => {
