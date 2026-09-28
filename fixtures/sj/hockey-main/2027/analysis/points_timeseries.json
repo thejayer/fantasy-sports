@@ -1,0 +1,536 @@
+{
+  "espn_league_id": 1023106173,
+  "grain": "scoring_period",
+  "league_id": "hockey-main",
+  "method": "player.stats appliedTotal (statSourceId=0, statSplitTypeId=5) attributed to that day's lineupSlotId",
+  "period_label": "day",
+  "schema_version": 1,
+  "scoring_type": "TOTAL_SEASON_POINTS",
+  "season": 2027,
+  "sport": "hockey",
+  "synced_at": "2026-07-27T00:00:00+00:00",
+  "teams": [
+    {
+      "name": "Five Hole Heroes",
+      "points": [
+        {
+          "cumulative_starters": 73.0,
+          "daily_goalies": 12.8,
+          "daily_skaters": 60.2,
+          "daily_starters": 73.0,
+          "date": "2026-10-07",
+          "period": 1
+        },
+        {
+          "cumulative_starters": 147.9,
+          "daily_goalies": 13.1,
+          "daily_skaters": 61.8,
+          "daily_starters": 74.9,
+          "date": "2026-10-08",
+          "period": 2
+        },
+        {
+          "cumulative_starters": 223.4,
+          "daily_goalies": 13.2,
+          "daily_skaters": 62.3,
+          "daily_starters": 75.5,
+          "date": "2026-10-09",
+          "period": 3
+        },
+        {
+          "cumulative_starters": 298.1,
+          "daily_goalies": 13.1,
+          "daily_skaters": 61.6,
+          "daily_starters": 74.7,
+          "date": "2026-10-10",
+          "period": 4
+        },
+        {
+          "cumulative_starters": 370.5,
+          "daily_goalies": 12.7,
+          "daily_skaters": 59.7,
+          "daily_starters": 72.4,
+          "date": "2026-10-11",
+          "period": 5
+        },
+        {
+          "cumulative_starters": 439.5,
+          "daily_goalies": 12.1,
+          "daily_skaters": 56.9,
+          "daily_starters": 69.0,
+          "date": "2026-10-12",
+          "period": 6
+        },
+        {
+          "cumulative_starters": 504.1,
+          "daily_goalies": 11.3,
+          "daily_skaters": 53.3,
+          "daily_starters": 64.6,
+          "date": "2026-10-13",
+          "period": 7
+        },
+        {
+          "cumulative_starters": 563.9,
+          "daily_goalies": 10.5,
+          "daily_skaters": 49.3,
+          "daily_starters": 59.8,
+          "date": "2026-10-14",
+          "period": 8
+        },
+        {
+          "cumulative_starters": 618.8,
+          "daily_goalies": 9.6,
+          "daily_skaters": 45.3,
+          "daily_starters": 54.9,
+          "date": "2026-10-15",
+          "period": 9
+        },
+        {
+          "cumulative_starters": 669.1,
+          "daily_goalies": 8.8,
+          "daily_skaters": 41.5,
+          "daily_starters": 50.3,
+          "date": "2026-10-16",
+          "period": 10
+        },
+        {
+          "cumulative_starters": 715.7,
+          "daily_goalies": 8.2,
+          "daily_skaters": 38.4,
+          "daily_starters": 46.6,
+          "date": "2026-10-17",
+          "period": 11
+        },
+        {
+          "cumulative_starters": 759.6,
+          "daily_goalies": 7.7,
+          "daily_skaters": 36.2,
+          "daily_starters": 43.9,
+          "date": "2026-10-18",
+          "period": 12
+        },
+        {
+          "cumulative_starters": 802.3,
+          "daily_goalies": 7.5,
+          "daily_skaters": 35.2,
+          "daily_starters": 42.7,
+          "date": "2026-10-19",
+          "period": 13
+        },
+        {
+          "cumulative_starters": 845.1,
+          "daily_goalies": 7.5,
+          "daily_skaters": 35.3,
+          "daily_starters": 42.8,
+          "date": "2026-10-20",
+          "period": 14
+        },
+        {
+          "cumulative_starters": 889.5,
+          "daily_goalies": 7.8,
+          "daily_skaters": 36.6,
+          "daily_starters": 44.4,
+          "date": "2026-10-21",
+          "period": 15
+        },
+        {
+          "cumulative_starters": 936.8,
+          "daily_goalies": 8.3,
+          "daily_skaters": 39.0,
+          "daily_starters": 47.3,
+          "date": "2026-10-22",
+          "period": 16
+        },
+        {
+          "cumulative_starters": 988.0,
+          "daily_goalies": 9.0,
+          "daily_skaters": 42.2,
+          "daily_starters": 51.2,
+          "date": "2026-10-23",
+          "period": 17
+        },
+        {
+          "cumulative_starters": 1043.8,
+          "daily_goalies": 9.8,
+          "daily_skaters": 46.0,
+          "daily_starters": 55.8,
+          "date": "2026-10-24",
+          "period": 18
+        },
+        {
+          "cumulative_starters": 1104.5,
+          "daily_goalies": 10.6,
+          "daily_skaters": 50.1,
+          "daily_starters": 60.7,
+          "date": "2026-10-25",
+          "period": 19
+        },
+        {
+          "cumulative_starters": 1170.0,
+          "daily_goalies": 11.5,
+          "daily_skaters": 54.0,
+          "daily_starters": 65.5,
+          "date": "2026-10-26",
+          "period": 20
+        },
+        {
+          "cumulative_starters": 1239.7,
+          "daily_goalies": 12.2,
+          "daily_skaters": 57.5,
+          "daily_starters": 69.7,
+          "date": "2026-10-27",
+          "period": 21
+        }
+      ],
+      "team_id": 1
+    },
+    {
+      "name": "Crease Crashers",
+      "points": [
+        {
+          "cumulative_starters": 75.2,
+          "daily_goalies": 12.9,
+          "daily_skaters": 62.3,
+          "daily_starters": 75.2,
+          "date": "2026-10-07",
+          "period": 1
+        },
+        {
+          "cumulative_starters": 147.8,
+          "daily_goalies": 12.5,
+          "daily_skaters": 60.1,
+          "daily_starters": 72.6,
+          "date": "2026-10-08",
+          "period": 2
+        },
+        {
+          "cumulative_starters": 216.5,
+          "daily_goalies": 11.8,
+          "daily_skaters": 56.9,
+          "daily_starters": 68.7,
+          "date": "2026-10-09",
+          "period": 3
+        },
+        {
+          "cumulative_starters": 280.6,
+          "daily_goalies": 11.0,
+          "daily_skaters": 53.1,
+          "daily_starters": 64.1,
+          "date": "2026-10-10",
+          "period": 4
+        },
+        {
+          "cumulative_starters": 339.6,
+          "daily_goalies": 10.1,
+          "daily_skaters": 48.9,
+          "daily_starters": 59.0,
+          "date": "2026-10-11",
+          "period": 5
+        },
+        {
+          "cumulative_starters": 393.8,
+          "daily_goalies": 9.3,
+          "daily_skaters": 44.9,
+          "daily_starters": 54.2,
+          "date": "2026-10-12",
+          "period": 6
+        },
+        {
+          "cumulative_starters": 443.5,
+          "daily_goalies": 8.5,
+          "daily_skaters": 41.2,
+          "daily_starters": 49.7,
+          "date": "2026-10-13",
+          "period": 7
+        },
+        {
+          "cumulative_starters": 489.8,
+          "daily_goalies": 7.9,
+          "daily_skaters": 38.4,
+          "daily_starters": 46.3,
+          "date": "2026-10-14",
+          "period": 8
+        },
+        {
+          "cumulative_starters": 533.9,
+          "daily_goalies": 7.6,
+          "daily_skaters": 36.5,
+          "daily_starters": 44.1,
+          "date": "2026-10-15",
+          "period": 9
+        },
+        {
+          "cumulative_starters": 577.1,
+          "daily_goalies": 7.4,
+          "daily_skaters": 35.8,
+          "daily_starters": 43.2,
+          "date": "2026-10-16",
+          "period": 10
+        },
+        {
+          "cumulative_starters": 620.9,
+          "daily_goalies": 7.5,
+          "daily_skaters": 36.3,
+          "daily_starters": 43.8,
+          "date": "2026-10-17",
+          "period": 11
+        },
+        {
+          "cumulative_starters": 666.8,
+          "daily_goalies": 7.9,
+          "daily_skaters": 38.0,
+          "daily_starters": 45.9,
+          "date": "2026-10-18",
+          "period": 12
+        },
+        {
+          "cumulative_starters": 716.1,
+          "daily_goalies": 8.5,
+          "daily_skaters": 40.8,
+          "daily_starters": 49.3,
+          "date": "2026-10-19",
+          "period": 13
+        },
+        {
+          "cumulative_starters": 769.7,
+          "daily_goalies": 9.2,
+          "daily_skaters": 44.4,
+          "daily_starters": 53.6,
+          "date": "2026-10-20",
+          "period": 14
+        },
+        {
+          "cumulative_starters": 828.1,
+          "daily_goalies": 10.0,
+          "daily_skaters": 48.4,
+          "daily_starters": 58.4,
+          "date": "2026-10-21",
+          "period": 15
+        },
+        {
+          "cumulative_starters": 891.5,
+          "daily_goalies": 10.9,
+          "daily_skaters": 52.5,
+          "daily_starters": 63.4,
+          "date": "2026-10-22",
+          "period": 16
+        },
+        {
+          "cumulative_starters": 959.6,
+          "daily_goalies": 11.7,
+          "daily_skaters": 56.4,
+          "daily_starters": 68.1,
+          "date": "2026-10-23",
+          "period": 17
+        },
+        {
+          "cumulative_starters": 1031.7,
+          "daily_goalies": 12.4,
+          "daily_skaters": 59.7,
+          "daily_starters": 72.1,
+          "date": "2026-10-24",
+          "period": 18
+        },
+        {
+          "cumulative_starters": 1106.7,
+          "daily_goalies": 12.9,
+          "daily_skaters": 62.1,
+          "daily_starters": 75.0,
+          "date": "2026-10-25",
+          "period": 19
+        },
+        {
+          "cumulative_starters": 1183.2,
+          "daily_goalies": 13.1,
+          "daily_skaters": 63.4,
+          "daily_starters": 76.5,
+          "date": "2026-10-26",
+          "period": 20
+        },
+        {
+          "cumulative_starters": 1259.9,
+          "daily_goalies": 13.2,
+          "daily_skaters": 63.5,
+          "daily_starters": 76.7,
+          "date": "2026-10-27",
+          "period": 21
+        }
+      ],
+      "team_id": 2
+    },
+    {
+      "name": "Biscuit Bandits",
+      "points": [
+        {
+          "cumulative_starters": 75.7,
+          "daily_goalies": 12.7,
+          "daily_skaters": 63.0,
+          "daily_starters": 75.7,
+          "date": "2026-10-07",
+          "period": 1
+        },
+        {
+          "cumulative_starters": 145.3,
+          "daily_goalies": 11.7,
+          "daily_skaters": 57.9,
+          "daily_starters": 69.6,
+          "date": "2026-10-08",
+          "period": 2
+        },
+        {
+          "cumulative_starters": 209.1,
+          "daily_goalies": 10.7,
+          "daily_skaters": 53.1,
+          "daily_starters": 63.8,
+          "date": "2026-10-09",
+          "period": 3
+        },
+        {
+          "cumulative_starters": 267.9,
+          "daily_goalies": 9.9,
+          "daily_skaters": 48.9,
+          "daily_starters": 58.8,
+          "date": "2026-10-10",
+          "period": 4
+        },
+        {
+          "cumulative_starters": 323.0,
+          "daily_goalies": 9.3,
+          "daily_skaters": 45.8,
+          "daily_starters": 55.1,
+          "date": "2026-10-11",
+          "period": 5
+        },
+        {
+          "cumulative_starters": 375.9,
+          "daily_goalies": 8.9,
+          "daily_skaters": 44.0,
+          "daily_starters": 52.9,
+          "date": "2026-10-12",
+          "period": 6
+        },
+        {
+          "cumulative_starters": 428.4,
+          "daily_goalies": 8.8,
+          "daily_skaters": 43.7,
+          "daily_starters": 52.5,
+          "date": "2026-10-13",
+          "period": 7
+        },
+        {
+          "cumulative_starters": 482.3,
+          "daily_goalies": 9.1,
+          "daily_skaters": 44.8,
+          "daily_starters": 53.9,
+          "date": "2026-10-14",
+          "period": 8
+        },
+        {
+          "cumulative_starters": 539.3,
+          "daily_goalies": 9.6,
+          "daily_skaters": 47.4,
+          "daily_starters": 57.0,
+          "date": "2026-10-15",
+          "period": 9
+        },
+        {
+          "cumulative_starters": 600.7,
+          "daily_goalies": 10.3,
+          "daily_skaters": 51.1,
+          "daily_starters": 61.4,
+          "date": "2026-10-16",
+          "period": 10
+        },
+        {
+          "cumulative_starters": 667.7,
+          "daily_goalies": 11.3,
+          "daily_skaters": 55.7,
+          "daily_starters": 67.0,
+          "date": "2026-10-17",
+          "period": 11
+        },
+        {
+          "cumulative_starters": 740.7,
+          "daily_goalies": 12.3,
+          "daily_skaters": 60.7,
+          "daily_starters": 73.0,
+          "date": "2026-10-18",
+          "period": 12
+        },
+        {
+          "cumulative_starters": 819.7,
+          "daily_goalies": 13.3,
+          "daily_skaters": 65.7,
+          "daily_starters": 79.0,
+          "date": "2026-10-19",
+          "period": 13
+        },
+        {
+          "cumulative_starters": 904.1,
+          "daily_goalies": 14.2,
+          "daily_skaters": 70.2,
+          "daily_starters": 84.4,
+          "date": "2026-10-20",
+          "period": 14
+        },
+        {
+          "cumulative_starters": 993.0,
+          "daily_goalies": 15.0,
+          "daily_skaters": 73.9,
+          "daily_starters": 88.9,
+          "date": "2026-10-21",
+          "period": 15
+        },
+        {
+          "cumulative_starters": 1084.9,
+          "daily_goalies": 15.5,
+          "daily_skaters": 76.4,
+          "daily_starters": 91.9,
+          "date": "2026-10-22",
+          "period": 16
+        },
+        {
+          "cumulative_starters": 1178.1,
+          "daily_goalies": 15.7,
+          "daily_skaters": 77.5,
+          "daily_starters": 93.2,
+          "date": "2026-10-23",
+          "period": 17
+        },
+        {
+          "cumulative_starters": 1270.8,
+          "daily_goalies": 15.6,
+          "daily_skaters": 77.1,
+          "daily_starters": 92.7,
+          "date": "2026-10-24",
+          "period": 18
+        },
+        {
+          "cumulative_starters": 1361.2,
+          "daily_goalies": 15.2,
+          "daily_skaters": 75.2,
+          "daily_starters": 90.4,
+          "date": "2026-10-25",
+          "period": 19
+        },
+        {
+          "cumulative_starters": 1447.8,
+          "daily_goalies": 14.6,
+          "daily_skaters": 72.0,
+          "daily_starters": 86.6,
+          "date": "2026-10-26",
+          "period": 20
+        },
+        {
+          "cumulative_starters": 1529.3,
+          "daily_goalies": 13.7,
+          "daily_skaters": 67.8,
+          "daily_starters": 81.5,
+          "date": "2026-10-27",
+          "period": 21
+        }
+      ],
+      "team_id": 3
+    }
+  ]
+}

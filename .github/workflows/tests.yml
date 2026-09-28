@@ -101,12 +101,204 @@ jobs:
       - name: Assert no content route was prerendered
         run: npm run verify:prerender
 
+      # Phase 5 — catch accidental client-bundle bloat (jsx-a11y already via lint).
+      - name: Assert client bundle budgets
+        run: npm run verify:bundle-budget
+
+      # Roadmap 7.11 — largest HTML document must stay under 100 KB (fixtures).
+      - name: Assert HTML document budgets
+        run: npm run verify:html-budget
+
       # The hub went from 14 advisories to 0; without a gate that silently
       # drifts back. Dependabot (roadmap 1.5) opens PRs when advisories land
       # against an untouched dependency so this stays actionable rather than
       # a surprise on an unrelated change.
       - name: Audit dependencies
         run: npm audit --audit-level=high
+
+  # Community portal (apex) — apps/www. Not a branch-protection gate yet.
+  www:
+    name: www
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    defaults:
+      run:
+        working-directory: apps/www
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: "npm"
+          cache-dependency-path: apps/www/package-lock.json
+
+      - name: Install from the lockfile
+        run: npm ci
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Unit tests
+        run: npm test
+
+      - name: Build
+        run: npm run build
+        env:
+          SITE_URL: https://strictlyjayers.com
+          FANTASY_HUB_URL: https://fantasy.strictlyjayers.com
+          FITNESS_URL: https://fitness.strictlyjayers.com
+
+      - name: Cache Playwright browsers
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-www-${{ runner.os }}-${{ hashFiles('apps/www/package-lock.json') }}
+
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: Portal smoke
+        run: npm run test:e2e
+        env:
+          SITE_URL: http://127.0.0.1:3002
+          FANTASY_HUB_URL: https://fantasy.strictlyjayers.com
+          FITNESS_URL: https://fitness.strictlyjayers.com
+          DISCORD_INVITE_URL: https://discord.gg/example
+
+      - name: Audit dependencies
+        run: npm audit --audit-level=high
+
+  # Fitness training log — apps/fitness. Sibling Cloud Run host.
+  fitness:
+    name: fitness
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    defaults:
+      run:
+        working-directory: apps/fitness
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: "npm"
+          cache-dependency-path: apps/fitness/package-lock.json
+
+      - name: Install from the lockfile
+        run: npm ci
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Syntax + static integrity
+        run: npm run check:js && npm run test:verify
+
+      - name: Unit tests
+        run: npm test
+
+      - name: Build
+        run: npm run build
+        env:
+          SITE_URL: https://fitness.strictlyjayers.com
+          AUTH_URL: https://fitness.strictlyjayers.com
+          AUTH_SECRET: ci-fitness-secret
+          COMMUNITY_SITE_URL: https://strictlyjayers.com
+          FANTASY_HUB_URL: https://fantasy.strictlyjayers.com
+
+      - name: Cache Playwright browsers
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-fitness-${{ runner.os }}-${{ hashFiles('apps/fitness/package-lock.json') }}
+
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: Fitness smoke
+        run: npm run test:e2e
+        env:
+          SITE_URL: http://127.0.0.1:3003
+          AUTH_URL: http://127.0.0.1:3003
+          AUTH_SECRET: ci-fitness-secret
+          AUTH_DEV_BYPASS: "1"
+          SJ_DEV_VIEWER_EMAIL: demo@example.com
+          COMMUNITY_SITE_URL: https://strictlyjayers.com
+          FANTASY_HUB_URL: https://fantasy.strictlyjayers.com
+
+      - name: Fitness auth wall
+        run: npm run test:e2e:auth
+        env:
+          SITE_URL: http://127.0.0.1:3004
+          AUTH_URL: http://127.0.0.1:3004
+          AUTH_SECRET: ci-fitness-secret
+          AUTH_DEV_BYPASS: "0"
+          COMMUNITY_SITE_URL: https://strictlyjayers.com
+          FANTASY_HUB_URL: https://fantasy.strictlyjayers.com
+
+      - name: Audit dependencies
+        run: npm audit --audit-level=high
+
+  # Roadmap 1.2 — Playwright smoke against next start + fixtures.
+  # Separate from `web` so Chromium install does not inflate the unit/build job.
+  # Not required by branch protection yet; enable once stable on main.
+  web-e2e:
+    name: web-e2e
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    defaults:
+      run:
+        working-directory: apps/web
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: "npm"
+          cache-dependency-path: apps/web/package-lock.json
+
+      - name: Install from the lockfile
+        run: npm ci
+
+      - name: Cache Playwright browsers
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ hashFiles('apps/web/package-lock.json') }}
+
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: Build hub
+        run: npm run build
+        env:
+          AUTH_DEV_BYPASS: "1"
+          AUTH_SECRET: ci-smoke-secret
+          AUTH_URL: http://127.0.0.1:3000
+
+      - name: Smoke (AUTH_DEV_BYPASS)
+        run: npm run test:e2e
+        env:
+          AUTH_DEV_BYPASS: "1"
+          AUTH_SECRET: ci-smoke-secret
+          AUTH_URL: http://127.0.0.1:3000
+          CI: "true"
+
+      - name: Auth redirect (no bypass)
+        run: npm run test:e2e:auth
+        env:
+          AUTH_DEV_BYPASS: "0"
+          AUTH_SECRET: ci-smoke-secret
+          AUTH_URL: http://127.0.0.1:3001
+          CI: "true"
 
   images:
     name: images
@@ -125,13 +317,19 @@ jobs:
       - name: Build hub image
         run: docker build -f apps/web/Dockerfile -t sj-hub:ci .
 
+      - name: Build portal image
+        run: docker build -f apps/www/Dockerfile -t sj-www:ci .
+
+      - name: Build fitness image
+        run: docker build -f apps/fitness/Dockerfile -t sj-fitness:ci .
+
       - name: Build sync image
         run: docker build -f Dockerfile.sync -t sj-sync:ci .
 
       - name: Assert images do not run as root
         run: |
           status=0
-          for image in sj-hub:ci sj-sync:ci; do
+          for image in sj-hub:ci sj-www:ci sj-fitness:ci sj-sync:ci; do
             uid="$(docker run --rm --entrypoint id "$image" -u)"
             if [ "$uid" = "0" ]; then
               echo "::error::$image runs as root (uid 0)"
@@ -141,3 +339,94 @@ jobs:
             fi
           done
           exit "$status"
+
+      # Phase 5 / AUDIT #17: hub must not ship the ffa analytics stack.
+      - name: Assert hub image excludes ffa analytics imports
+        run: |
+          status=0
+          for mod in duckdb sklearn nflreadpy pulp; do
+            if docker run --rm --entrypoint python sj-hub:ci -c "import $mod" 2>/dev/null; then
+              echo "::error::sj-hub image unexpectedly imports $mod"
+              status=1
+            else
+              echo "sj-hub correctly missing $mod"
+            fi
+          done
+          # sj CLI module must still be importable for optional startup sync.
+          if ! docker run --rm --entrypoint python sj-hub:ci -c "import sj.cli"; then
+            echo "::error::sj-hub cannot import sj.cli"
+            status=1
+          fi
+          exit "$status"
+
+      # Cloud Run injects HOSTNAME=<instance id>. Entrypoint must force
+      # HOSTNAME=0.0.0.0 or Next.js fails getaddrinfo and never listens on 8080.
+      - name: Smoke hub listens with Cloud Run-like HOSTNAME
+        run: |
+          cid="$(docker run -d \
+            -e PORT=8080 \
+            -e HOSTNAME=sj-hub-ci-fake-instance \
+            -e SJ_SYNC_ON_START=0 \
+            -e AUTH_URL=https://example.com \
+            -p 18080:8080 \
+            sj-hub:ci)"
+          cleanup() { docker rm -f "$cid" >/dev/null 2>&1 || true; }
+          trap cleanup EXIT
+          for i in $(seq 1 30); do
+            code="$(curl -sS -o /dev/null -w '%{http_code}' http://127.0.0.1:18080/login || true)"
+            if [ "$code" = "200" ] || [ "$code" = "307" ] || [ "$code" = "302" ]; then
+              echo "hub responded HTTP $code"
+              exit 0
+            fi
+            sleep 1
+          done
+          echo "::error::hub did not respond on :8080 with Cloud Run-like HOSTNAME"
+          docker logs "$cid" || true
+          exit 1
+
+      - name: Smoke portal listens with Cloud Run-like HOSTNAME
+        run: |
+          cid="$(docker run -d \
+            -e PORT=8080 \
+            -e HOSTNAME=sj-www-ci-fake-instance \
+            -e SITE_URL=https://strictlyjayers.com \
+            -e FANTASY_HUB_URL=https://fantasy.strictlyjayers.com \
+            -p 18081:8080 \
+            sj-www:ci)"
+          cleanup() { docker rm -f "$cid" >/dev/null 2>&1 || true; }
+          trap cleanup EXIT
+          for i in $(seq 1 30); do
+            code="$(curl -sS -o /dev/null -w '%{http_code}' http://127.0.0.1:18081/api/health || true)"
+            if [ "$code" = "200" ]; then
+              echo "portal health responded HTTP $code"
+              exit 0
+            fi
+            sleep 1
+          done
+          echo "::error::portal did not respond on :8080 with Cloud Run-like HOSTNAME"
+          docker logs "$cid" || true
+          exit 1
+
+      - name: Smoke fitness listens with Cloud Run-like HOSTNAME
+        run: |
+          cid="$(docker run -d \
+            -e PORT=8080 \
+            -e HOSTNAME=sj-fitness-ci-fake-instance \
+            -e SITE_URL=https://fitness.strictlyjayers.com \
+            -e COMMUNITY_SITE_URL=https://strictlyjayers.com \
+            -e FANTASY_HUB_URL=https://fantasy.strictlyjayers.com \
+            -p 18082:8080 \
+            sj-fitness:ci)"
+          cleanup() { docker rm -f "$cid" >/dev/null 2>&1 || true; }
+          trap cleanup EXIT
+          for i in $(seq 1 30); do
+            code="$(curl -sS -o /dev/null -w '%{http_code}' http://127.0.0.1:18082/api/health || true)"
+            if [ "$code" = "200" ]; then
+              echo "fitness health responded HTTP $code"
+              exit 0
+            fi
+            sleep 1
+          done
+          echo "::error::fitness did not respond on :8080 with Cloud Run-like HOSTNAME"
+          docker logs "$cid" || true
+          exit 1

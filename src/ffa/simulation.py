@@ -173,6 +173,91 @@ def simulate_seasons(
     return samples
 
 
+def simulate_typical_weeks(
+    weekly: pd.DataFrame,
+    target_season: int,
+    n_samples: int = 1000,
+    lookback: int = 3,
+    decay: float = 0.5,
+    min_history_games: int = 4,
+    stats: Iterable[str] = STAT_COLUMNS,
+    level_sd: float = 0.0,
+    level_mean: float = 1.0,
+    collapse_rate: float = 0.0,
+    player_level: dict | None = None,
+    seed: int | None = None,
+) -> pd.DataFrame:
+    """Bootstrap single-game samples (typical-week posteriors) per player.
+
+    Same history window, recency weights, and level jitter as
+    :func:`simulate_seasons`, but each sample is **one** historical game row
+    rather than a summed season. Use this for start/sit-style weekly
+    floor/median/ceiling — not schedule- or opponent-adjusted.
+
+    Returns the same long shape as :func:`simulate_seasons`
+    (``player_id``, ``sample_idx``, stats, metadata) so
+    :func:`summarize_seasons` can score it unchanged.
+    """
+    required = {"player_id", "season", "week"}
+    missing = required - set(weekly.columns)
+    if missing:
+        raise ValueError(f"weekly is missing required columns: {sorted(missing)}")
+
+    weekly = regular_season_only(weekly)
+    seasons = list(range(target_season - lookback, target_season))
+    history = weekly[weekly["season"].isin(seasons)]
+    stat_cols = _present(history, stats)
+    if history.empty or not stat_cols:
+        return pd.DataFrame(columns=["player_id", "sample_idx", *stat_cols])
+
+    rng = np.random.default_rng(seed)
+    # One game per sample — games_counts are all 1.
+    ones = np.ones(n_samples, dtype=int)
+
+    meta_cols = _present(history, _META_COLUMNS)
+    if meta_cols:
+        meta_lookup = (
+            history.sort_values(["player_id", "season", "week"])
+            .groupby("player_id", as_index=False)
+            .last()
+            .set_index("player_id")[meta_cols]
+        )
+    else:
+        meta_lookup = None
+
+    out_frames: list[pd.DataFrame] = []
+    for player_id, group in history.groupby("player_id", sort=False):
+        if len(group) < min_history_games:
+            continue
+        weights = np.exp(-decay * (target_season - group["season"].to_numpy(dtype=float)))
+        weights = weights / weights.sum()
+        stat_matrix = group[stat_cols].fillna(0).to_numpy(dtype=float)
+        game_totals = bootstrap_season_totals(
+            stat_matrix, n_samples, ones, rng, weights=weights
+        )
+        sd_p, mean_p, collapse_p = resolve_level(
+            player_id, player_level, level_sd, level_mean, collapse_rate
+        )
+        game_totals = apply_level_jitter(
+            game_totals, sd_p, rng, mean=mean_p, collapse_rate=collapse_p
+        )
+        frame = pd.DataFrame(game_totals, columns=stat_cols)
+        frame["player_id"] = player_id
+        frame["sample_idx"] = np.arange(n_samples, dtype=np.int32)
+        out_frames.append(frame)
+
+    if not out_frames:
+        return pd.DataFrame(columns=["player_id", "sample_idx", *stat_cols])
+
+    samples = pd.concat(out_frames, ignore_index=True)
+    samples = samples[["player_id", "sample_idx", *stat_cols]]
+
+    if meta_lookup is not None:
+        samples = samples.join(meta_lookup, on="player_id")
+
+    return samples
+
+
 def summarize_seasons(
     samples: pd.DataFrame,
     league: LeagueConfig,

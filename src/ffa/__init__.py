@@ -6,6 +6,7 @@ from ffa.backtest import (
     realized_season_totals,
     run_backtest,
     summarize_evaluation,
+    years_exp_from_rosters,
 )
 from ffa.calibration import (
     dispersion_decomposition,
@@ -84,4 +85,5 @@ __all__ = [
     "summarize_evaluation",
     "summarize_seasons",
     "summarize_user_picks",
+    "years_exp_from_rosters",
 ]

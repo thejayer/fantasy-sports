@@ -1,0 +1,29 @@
+{
+  "schema_version": 1,
+  "league_id": "football-dynasty",
+  "season": 2026,
+  "period": 14,
+  "sport": "football",
+  "generated_at": "2026-12-08T18:00:00.000Z",
+  "model": "fixture",
+  "headline": "Titans treat the Goons like a bye week with extra steps",
+  "dek": "Turf Titans 149.6, Gridiron Goons 107.5. End Zone Enforcers drew the actual bye and still somehow look busier.",
+  "body": [
+    "Dynasty week 14 had one real game and it was not close enough to narrate twice: Titans 149.6 over Goons 107.5. Enforcers sat this one out, which is the correct use of a bye if your season is already a group project.",
+    "Three-team leagues make every result feel personal. This one was."
+  ],
+  "ranking_copy": [
+    {
+      "team_id": 2,
+      "blurb": "Turf Titans, 5-2 on the H2H card after a 149-piece. If this were a bigger league they would still be annoying."
+    },
+    {
+      "team_id": 1,
+      "blurb": "Gridiron Goons at 7-7 with 1,644 PF — lots of points, not enough of them on Tuesday."
+    },
+    {
+      "team_id": 3,
+      "blurb": "End Zone Enforcers: bye. 2-5. The ranking is a participation ribbon and also a warning."
+    }
+  ]
+}

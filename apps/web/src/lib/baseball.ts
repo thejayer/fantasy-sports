@@ -1,17 +1,8 @@
-import type { Player, SeasonStats, Team } from "@/lib/data";
+import type { Player, SeasonStats } from "@/lib/data";
 
-export function recordLabel(team: Pick<Team, "wins" | "losses" | "ties">): string {
-  return team.ties ? `${team.wins}-${team.losses}-${team.ties}` : `${team.wins}-${team.losses}`;
-}
-
-export function winPctLabel(team: Team): string {
-  if (team.win_pct == null) {
-    const games = team.wins + team.losses + team.ties;
-    if (!games) return "—";
-    return ((team.wins + 0.5 * team.ties) / games).toFixed(3).replace(/^0/, "");
-  }
-  return team.win_pct.toFixed(3).replace(/^0/, "");
-}
+// Sport-agnostic labels live in league.ts; re-exported here so existing
+// baseball call sites keep a single import during the 3.1 rollout.
+export { injuryTone, recordLabel, winPctLabel } from "@/lib/league";
 
 export function formatStat(value: number | null | undefined, digits = 0): string {
   if (value == null || Number.isNaN(value)) return "—";
@@ -31,13 +22,6 @@ export function isPitcher(player: Player): boolean {
   const pos = (player.position || "").toUpperCase();
   const slot = (player.slot || "").toUpperCase();
   return ["P", "SP", "RP"].includes(pos) || ["P", "SP", "RP"].includes(slot);
-}
-
-export function injuryTone(player: Player): "ok" | "warn" | "bad" {
-  const status = (player.injury_status || player.status || "").toUpperCase();
-  if (player.injured || status.includes("OUT") || status === "IR" || status === "IL") return "bad";
-  if (status.includes("DAY") || status === "DTD" || status.includes("QUESTION")) return "warn";
-  return "ok";
 }
 
 /** Dynasty roster display order for baseball lineup slots. */

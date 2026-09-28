@@ -1,0 +1,80 @@
+import { existsSync, readdirSync, readFileSync } from "node:fs";
+import path from "node:path";
+
+import { describe, expect, it } from "vitest";
+
+const APP_DIR = path.resolve(__dirname);
+const WEB_ROOT = path.resolve(__dirname, "../..");
+const PUBLIC_DIR = path.join(WEB_ROOT, "public");
+
+describe("roadmap 3.6 polish surface", () => {
+  it("ships loading skeletons for hub routes", () => {
+    for (const relative of [
+      "loading.tsx",
+      "leagues/loading.tsx",
+      "leagues/[leagueId]/loading.tsx",
+    ]) {
+      expect(existsSync(path.join(APP_DIR, relative))).toBe(true);
+    }
+    const loading = readFileSync(path.join(APP_DIR, "loading.tsx"), "utf8");
+    expect(loading).toMatch(/LoadingSkeleton/);
+  });
+
+  it("exposes robots, manifest, and opengraph image modules", () => {
+    expect(existsSync(path.join(APP_DIR, "robots.ts"))).toBe(true);
+    expect(existsSync(path.join(APP_DIR, "manifest.ts"))).toBe(true);
+    expect(existsSync(path.join(APP_DIR, "opengraph-image.tsx"))).toBe(true);
+  });
+
+  it("keeps opengraph and icon routes outside the auth matcher", () => {
+    const middleware = readFileSync(
+      path.join(APP_DIR, "../middleware.ts"),
+      "utf8",
+    );
+    expect(middleware).toMatch(/isPublicMetadataPath/);
+    expect(middleware).toMatch(/opengraph-image/);
+    expect(middleware).toMatch(/twitter-image/);
+  });
+
+  it("removes create-next-app boilerplate SVGs", () => {
+    // Keep public/ present (Docker COPY needs the directory) via .gitkeep only.
+    const names = existsSync(PUBLIC_DIR) ? readdirSync(PUBLIC_DIR) : [];
+    expect(names.filter((name) => name.endsWith(".svg"))).toEqual([]);
+    expect(names).toContain(".gitkeep");
+  });
+
+  it("distinguishes corrupt snapshots in readJson wiring", () => {
+    const data = readFileSync(path.join(APP_DIR, "../lib/data.ts"), "utf8");
+    expect(data).toMatch(/CorruptSnapshotError/);
+    expect(data).toMatch(/parseSnapshotJson/);
+    expect(data).toMatch(/isNotFoundFsError/);
+  });
+
+  it("uses Next Data Cache tags instead of a process-local Map", () => {
+    const data = readFileSync(path.join(APP_DIR, "../lib/data.ts"), "utf8");
+    expect(data).toMatch(/unstable_cache/);
+    expect(data).toMatch(/SJ_SNAPSHOTS_CACHE_TAG/);
+    expect(data).not.toMatch(/\bfileCache\b/);
+    expect(existsSync(path.join(APP_DIR, "api/revalidate/route.ts"))).toBe(true);
+  });
+
+  it("ships a post-build client bundle budget check", () => {
+    const pkg = JSON.parse(
+      readFileSync(path.join(WEB_ROOT, "package.json"), "utf8"),
+    );
+    expect(pkg.scripts["verify:bundle-budget"]).toMatch(/check-bundle-budget/);
+    expect(
+      existsSync(path.join(WEB_ROOT, "scripts/check-bundle-budget.mjs")),
+    ).toBe(true);
+  });
+
+  it("ships a post-build HTML document budget check (roadmap 7.11)", () => {
+    const pkg = JSON.parse(
+      readFileSync(path.join(WEB_ROOT, "package.json"), "utf8"),
+    );
+    expect(pkg.scripts["verify:html-budget"]).toMatch(/check-html-budget/);
+    expect(
+      existsSync(path.join(WEB_ROOT, "scripts/check-html-budget.mjs")),
+    ).toBe(true);
+  });
+});
