@@ -73,8 +73,26 @@ describe("requireSession", () => {
   });
 });
 
+/** Every session-gated snapshot reader in data.ts (audit Batch C). */
+const SESSION_GATED_READERS = [
+  "getLeagueIndex",
+  "getLeagueHistoryArchive",
+  "getLeagueSnapshot",
+  "getProjectionSnapshot",
+  "getWeeklyProjectionSnapshot",
+  "getPlayoffOddsSnapshot",
+  "getPlayoffOddsSamples",
+  "getWeekBoxScore",
+  "getProSchedule",
+  "getBaseballAnalysis",
+  "listWeekBoxScoreWeeks",
+  "getDraftSimSnapshot",
+  "listDraftSimSlots",
+  "getPlayerMap",
+] as const;
+
 describe("data layer gating", () => {
-  it("guards both snapshot entry points", async () => {
+  it("guards every named snapshot reader with requireSession", async () => {
     // Reading the source is the reliable assertion here: importing data.ts
     // pulls in the fs-backed module, and what matters is that neither door to
     // league data can be opened without the check.
@@ -86,8 +104,15 @@ describe("data layer gating", () => {
     );
 
     const guarded = source.match(/await requireSession\(\)/g) ?? [];
-    expect(guarded.length).toBe(2);
-    expect(source).toMatch(/getLeagueIndex = cache\(async \(\)[^{]*\{\s*await requireSession\(\)/);
-    expect(source).toMatch(/await requireSession\(\);\s*const index = await getLeagueIndex\(\)/);
+    expect(guarded.length).toBe(SESSION_GATED_READERS.length);
+
+    for (const name of SESSION_GATED_READERS) {
+      // Each export's first statement in the async body is requireSession.
+      expect(source).toMatch(
+        new RegExp(
+          `${name}\\s*=\\s*cache\\([\\s\\S]*?\\{[\\s\\S]*?await requireSession\\(\\)`,
+        ),
+      );
+    }
   });
 });

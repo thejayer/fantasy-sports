@@ -10,7 +10,13 @@ ROOT = Path(__file__).resolve().parents[1]
 def test_load_default_registry():
     registry = load_registry(ROOT / "configs" / "leagues.yaml")
     ids = {lg.id for lg in registry.leagues}
-    assert ids == {"baseball-dynasty", "football-main", "football-dynasty"}
+    assert ids == {
+        "baseball-dynasty",
+        "football-main",
+        "football-dynasty",
+        "hockey-main",
+        "golf-main",
+    }
 
 
 def test_registry_espn_ids_and_formats():
@@ -31,6 +37,28 @@ def test_registry_espn_ids_and_formats():
     assert dynasty.espn_league_id == 94266
     assert dynasty.format == "dynasty"
     assert dynasty.seasons[0] == 2018
+
+    hockey = registry.by_id("hockey-main")
+    assert hockey.sport == "hockey"
+    assert hockey.format == "redraft"
+    assert hockey.platform == "espn"
+    assert hockey.espn_league_id == 1023106173
+    assert hockey.seasons == [2026, 2027]
+    assert hockey.current_season == 2027
+    assert hockey.has_live_espn_id() is True
+    assert hockey.espn_url == (
+        "https://fantasy.espn.com/hockey/league?leagueId=1023106173"
+    )
+    assert "pendingReactivation" not in (hockey.espn_url or "")
+
+    golf = registry.by_id("golf-main")
+    assert golf.sport == "golf"
+    assert golf.format == "h2h"
+    assert golf.platform == "hub"
+    assert golf.espn_league_id is None
+    assert golf.team_count == 8
+    assert golf.golf is not None
+    assert golf.golf.missed_cut_mode == "alt1"
 
 
 def test_unknown_league_raises():

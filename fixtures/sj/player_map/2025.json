@@ -1,0 +1,120 @@
+{
+  "schema_version": 1,
+  "generated_at": "2025-09-01T12:00:00Z",
+  "season": 2025,
+  "source": {
+    "engine": "ffa",
+    "fixture": true,
+    "note": "Real ESPN\u2194GSIS rows plus fixture_overlay for synthetic hub roster ids"
+  },
+  "stats": {
+    "mappings": 14
+  },
+  "coverage": {
+    "rostered": 82,
+    "resolved": 8,
+    "rate": 0.0976,
+    "misses": [],
+    "note": "fixture_overlay maps a few synthetic ESPN ids to GSIS so offline hub joins are non-empty"
+  },
+  "mappings": [
+    {
+      "espn_id": "3139477",
+      "player_id": "00-0033873",
+      "name": "Patrick Mahomes",
+      "position": "QB",
+      "method": "roster"
+    },
+    {
+      "espn_id": "3117251",
+      "player_id": "00-0033280",
+      "name": "Christian McCaffrey",
+      "position": "RB",
+      "method": "roster"
+    },
+    {
+      "espn_id": "4262921",
+      "player_id": "00-0036322",
+      "name": "Justin Jefferson",
+      "position": "WR",
+      "method": "roster"
+    },
+    {
+      "espn_id": "15847",
+      "player_id": "00-0030506",
+      "name": "Travis Kelce",
+      "position": "TE",
+      "method": "roster"
+    },
+    {
+      "espn_id": "4362628",
+      "player_id": "00-0036900",
+      "name": "Ja'Marr Chase",
+      "position": "WR",
+      "method": "roster"
+    },
+    {
+      "espn_id": "4241389",
+      "player_id": "00-0036358",
+      "name": "CeeDee Lamb",
+      "position": "WR",
+      "method": "roster"
+    },
+    {
+      "espn_id": "202600301",
+      "player_id": "00-0033873",
+      "name": "Logan Baker",
+      "position": "QB",
+      "method": "fixture_overlay"
+    },
+    {
+      "espn_id": "202600302",
+      "player_id": "00-0033280",
+      "name": "Zachary Rogers",
+      "position": "RB",
+      "method": "fixture_overlay"
+    },
+    {
+      "espn_id": "202600304",
+      "player_id": "00-0036322",
+      "name": "Logan Edwards",
+      "position": "WR",
+      "method": "fixture_overlay"
+    },
+    {
+      "espn_id": "202600307",
+      "player_id": "00-0030506",
+      "name": "Sean Gutierrez",
+      "position": "TE",
+      "method": "fixture_overlay"
+    },
+    {
+      "espn_id": "202600001",
+      "player_id": "00-0033873",
+      "name": "Juan Phillips",
+      "position": "QB",
+      "method": "fixture_overlay"
+    },
+    {
+      "espn_id": "202600002",
+      "player_id": "00-0033280",
+      "name": "Scott Roberts",
+      "position": "RB",
+      "method": "fixture_overlay"
+    },
+    {
+      "espn_id": "202600004",
+      "player_id": "00-0036322",
+      "name": "Steven Garcia",
+      "position": "WR",
+      "method": "fixture_overlay"
+    },
+    {
+      "espn_id": "202600007",
+      "player_id": "00-0030506",
+      "name": "Jordan Edwards",
+      "position": "TE",
+      "method": "fixture_overlay"
+    }
+  ]
+}

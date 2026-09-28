@@ -19,12 +19,21 @@ from sj.cli import app
 from sj.registry import LeagueSpec, load_registry
 from sj.sample import sample_league
 from sj.sync import (
+    ACTIVITY_MIN_SEASON,
+    DEFAULT_ACTIVITY_MAX_PAGES,
+    FREE_AGENT_MIN_SEASON,
+    MAX_ACTIVITY_MAX_PAGES,
     SyncAllFailed,
     SyncFailure,
     SyncResult,
+    activity_max_pages,
     classify_sync_error,
+    espn_call,
     espn_credentials,
     failures_should_fail_run,
+    fetch_free_agents,
+    fetch_recent_activity,
+    notify_hub_revalidate,
     open_espn_league,
     sync_league_season,
     sync_registry,
@@ -159,6 +168,7 @@ def test_open_espn_league_requires_credentials(football_spec, monkeypatch):
         ("football", "espn_api.football.League"),
         ("baseball", "espn_api.baseball.League"),
         ("basketball", "espn_api.basketball.League"),
+        ("hockey", "espn_api.hockey.League"),
     ],
 )
 def test_open_espn_league_dispatches_by_sport(monkeypatch, sport, module_path):
@@ -179,6 +189,73 @@ def test_open_espn_league_dispatches_by_sport(monkeypatch, sport, module_path):
     opened = open_espn_league(spec, 2025)
     fake.assert_called_once_with(league_id=1, year=2025, espn_s2="s2", swid="{swid}")
     assert opened is fake.return_value
+
+
+def test_open_espn_league_refuses_placeholder_id(monkeypatch):
+    monkeypatch.setenv("ESPN_S2", "s2")
+    monkeypatch.setenv("ESPN_SWID", "{swid}")
+    spec = LeagueSpec(
+        id="hockey-pending",
+        name="Hockey",
+        short_name="Hockey",
+        sport="hockey",
+        format="redraft",
+        espn_league_id=0,
+        seasons=[2025],
+        current_season=2025,
+    )
+    with pytest.raises(ValueError, match="not set"):
+        open_espn_league(spec, 2025)
+
+
+def test_sync_registry_skips_placeholder_espn_id(tmp_path, monkeypatch):
+    path = tmp_path / "leagues.yaml"
+    path.write_text(
+        """\
+leagues:
+  - id: hockey-pending
+    name: Hockey
+    short_name: Hockey
+    sport: hockey
+    format: redraft
+    platform: espn
+    espn_league_id: 0
+    seasons: [2025]
+    current_season: 2025
+""",
+        encoding="utf-8",
+    )
+    events: list[str] = []
+    monkeypatch.setattr(
+        "sj.sync.sync_league_season",
+        lambda *args, **kwargs: (_ for _ in ()).throw(AssertionError("must skip")),
+    )
+    results, failures = sync_registry(
+        registry_path=path,
+        store_dir=tmp_path / "store",
+        on_event=events.append,
+    )
+    assert results == []
+    assert failures == []
+    assert any("placeholder" in event for event in events)
+
+
+def test_sync_registry_attempts_hockey_main(tmp_path, monkeypatch):
+    called: list[tuple[str, int | None, int]] = []
+
+    def fake(spec, season, store_dir=None):
+        called.append((spec.id, spec.espn_league_id, season))
+        return SyncResult(spec.id, season, f"{spec.id}/{season}.json", 3)
+
+    monkeypatch.setattr("sj.sync.sync_league_season", fake)
+    results, failures = sync_registry(
+        league_ids=["hockey-main"],
+        store_dir=tmp_path / "store",
+        current_only=True,
+    )
+    assert failures == []
+    assert [r.league_id for r in results] == ["hockey-main"]
+    assert called == [("hockey-main", 1023106173, 2027)]
 
 
 # ---------------------------------------------------------------------------
@@ -314,7 +391,137 @@ def test_sync_league_season_writes_snapshot(
 
     result = sync_league_season(football_spec, 2025, store_dir=tmp_path)
     assert result.team_count == 4
-    assert (tmp_path / "football-main" / "2025.json").exists()
+    season_dir = tmp_path / "football-main" / "2025"
+    assert (season_dir / "manifest.json").exists()
+    assert (season_dir / "settings.json").exists()
+    assert (season_dir / "transactions.json").exists()
+    assert (season_dir / "free_agents.json").exists()
+    assert not (tmp_path / "football-main" / "2025.json").exists()
+    settings = json.loads((season_dir / "settings.json").read_text(encoding="utf-8"))
+    txns = json.loads((season_dir / "transactions.json").read_text(encoding="utf-8"))
+    agents = json.loads((season_dir / "free_agents.json").read_text(encoding="utf-8"))
+    assert settings["settings"]["faab"] is True
+    assert len(txns["transactions"]) >= 1
+    assert len(agents["free_agents"]) >= 1
+    assert agents["free_agents"][0]["slot"] == "FA"
+
+
+def test_espn_call_retries_transient_errors(monkeypatch):
+    sleeps: list[float] = []
+    monkeypatch.setattr("sj.sync.time.sleep", sleeps.append)
+    attempts = {"n": 0}
+
+    def flaky():
+        attempts["n"] += 1
+        if attempts["n"] < 3:
+            raise TimeoutError("slow")
+        return "ok"
+
+    assert espn_call(flaky, max_attempts=4, base_delay=0.1) == "ok"
+    assert attempts["n"] == 3
+    assert sleeps == [0.1, 0.2]
+
+
+def test_espn_call_does_not_retry_access_denied():
+    def boom():
+        raise ESPNAccessDenied("nope")
+
+    with pytest.raises(ESPNAccessDenied):
+        espn_call(boom, max_attempts=4)
+
+
+def test_fetch_recent_activity_empty_before_2019():
+    league = MagicMock()
+    league.year = ACTIVITY_MIN_SEASON - 1
+    assert fetch_recent_activity(league) == []
+    league.recent_activity.assert_not_called()
+
+
+def test_fetch_recent_activity_pages_until_short(monkeypatch):
+    monkeypatch.setattr("sj.sync.time.sleep", lambda *_a, **_k: None)
+    league = MagicMock()
+    league.year = 2025
+    league.recent_activity.side_effect = [
+        [MagicMock(name="a"), MagicMock(name="b")],
+        [MagicMock(name="c")],
+    ]
+    items = fetch_recent_activity(league, page_size=2, max_pages=5)
+    assert len(items) == 3
+    assert league.recent_activity.call_args_list[0].kwargs == {
+        "size": 2,
+        "offset": 0,
+    }
+    assert league.recent_activity.call_args_list[1].kwargs == {
+        "size": 2,
+        "offset": 2,
+    }
+
+
+def test_fetch_recent_activity_treats_invalid_league_as_empty():
+    """Historical activity endpoints often raise ESPNInvalidLeague falsely."""
+    league = MagicMock()
+    league.year = 2019
+    league.recent_activity.side_effect = ESPNInvalidLeague(
+        "League 39790 does not exist"
+    )
+    assert fetch_recent_activity(league) == []
+
+
+def test_fetch_recent_activity_stops_at_max_pages(monkeypatch):
+    monkeypatch.setattr("sj.sync.time.sleep", lambda *_a, **_k: None)
+    league = MagicMock()
+    league.year = 2025
+    league.recent_activity.side_effect = lambda **_kw: [MagicMock(), MagicMock()]
+    items = fetch_recent_activity(league, page_size=2, max_pages=3)
+    assert len(items) == 6
+    assert league.recent_activity.call_count == 3
+
+
+def test_activity_max_pages_from_env(monkeypatch):
+    monkeypatch.delenv("SJ_ACTIVITY_MAX_PAGES", raising=False)
+    assert activity_max_pages() == DEFAULT_ACTIVITY_MAX_PAGES
+    monkeypatch.setenv("SJ_ACTIVITY_MAX_PAGES", "12")
+    assert activity_max_pages() == 12
+    monkeypatch.setenv("SJ_ACTIVITY_MAX_PAGES", "9999")
+    assert activity_max_pages() == MAX_ACTIVITY_MAX_PAGES
+    monkeypatch.setenv("SJ_ACTIVITY_MAX_PAGES", "nope")
+    assert activity_max_pages() == DEFAULT_ACTIVITY_MAX_PAGES
+
+
+def test_fetch_recent_activity_uses_env_page_cap(monkeypatch):
+    monkeypatch.setattr("sj.sync.time.sleep", lambda *_a, **_k: None)
+    monkeypatch.setenv("SJ_ACTIVITY_MAX_PAGES", "2")
+    league = MagicMock()
+    league.year = 2025
+    league.recent_activity.side_effect = lambda **_kw: [MagicMock(), MagicMock()]
+    items = fetch_recent_activity(league, page_size=2)
+    assert len(items) == 4
+    assert league.recent_activity.call_count == 2
+
+
+def test_fetch_free_agents_empty_before_2019():
+    league = MagicMock()
+    league.year = FREE_AGENT_MIN_SEASON - 1
+    assert fetch_free_agents(league) == []
+    league.free_agents.assert_not_called()
+
+
+def test_fetch_free_agents_passes_size(monkeypatch):
+    monkeypatch.setattr("sj.sync.time.sleep", lambda *_a, **_k: None)
+    league = MagicMock()
+    league.year = 2025
+    league.free_agents.return_value = [MagicMock(name="fa")]
+    items = fetch_free_agents(league, size=10)
+    assert len(items) == 1
+    assert league.free_agents.call_args.kwargs == {"size": 10}
+
+
+def test_fetch_free_agents_unsupported_returns_empty(monkeypatch):
+    monkeypatch.setattr("sj.sync.time.sleep", lambda *_a, **_k: None)
+    league = MagicMock()
+    league.year = 2020
+    league.free_agents.side_effect = Exception("Cant use free agents before 2019")
+    assert fetch_free_agents(league) == []
 
 
 # ---------------------------------------------------------------------------
@@ -484,3 +691,54 @@ def test_cli_sync_unknown_league_exits_cleanly(registry_path, tmp_path):
     assert result.exit_code == 1
     assert "nope" in result.output
     assert "Traceback" not in result.output
+
+
+def test_notify_hub_revalidate_skips_without_env(monkeypatch):
+    monkeypatch.delenv("SJ_REVALIDATE_URL", raising=False)
+    monkeypatch.delenv("SJ_REVALIDATE_SECRET", raising=False)
+    assert "skipped" in notify_hub_revalidate()
+
+
+def test_notify_hub_revalidate_posts_bearer(monkeypatch):
+    calls: list[object] = []
+
+    class _Resp:
+        def __enter__(self):
+            return self
+
+        def __exit__(self, *args):
+            return False
+
+        def getcode(self):
+            return 200
+
+        status = 200
+
+    def fake_urlopen(request, timeout=0):
+        calls.append(request)
+        return _Resp()
+
+    monkeypatch.setattr("urllib.request.urlopen", fake_urlopen)
+    status = notify_hub_revalidate(
+        url="https://hub.example/api/revalidate",
+        secret="s3cret",
+    )
+    assert status == "ok HTTP 200"
+    assert len(calls) == 1
+    req = calls[0]
+    assert req.full_url == "https://hub.example/api/revalidate"
+    assert req.get_header("Authorization") == "Bearer s3cret"
+    assert req.get_method() == "POST"
+
+
+def test_notify_hub_revalidate_swallows_errors(monkeypatch):
+    def boom(*_args, **_kwargs):
+        raise TimeoutError("nope")
+
+    monkeypatch.setattr("urllib.request.urlopen", boom)
+    status = notify_hub_revalidate(
+        url="https://hub.example/api/revalidate",
+        secret="s3cret",
+    )
+    assert status.startswith("failed")
+    assert "TimeoutError" in status

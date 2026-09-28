@@ -1,6 +1,11 @@
+import NextAuth from "next-auth";
 import { NextResponse } from "next/server";
-import { auth } from "./auth";
-import { safeCallbackUrl } from "./lib/safe-redirect";
+
+import { authConfig } from "@/auth.config";
+import { isPublicMetadataPath } from "@/lib/public-metadata";
+import { safeCallbackUrl } from "@/lib/safe-redirect";
+
+const { auth } = NextAuth(authConfig);
 
 export default auth((req) => {
   const { pathname, search } = req.nextUrl;
@@ -8,9 +13,18 @@ export default auth((req) => {
   const isAuthApi = pathname.startsWith("/api/auth");
   // Public probe for uptime / Cloud Monitoring — no session, no league bodies.
   const isHealth = pathname === "/api/health";
+  // Sync webhook — Bearer SJ_REVALIDATE_SECRET checked in the route handler.
+  const isRevalidate = pathname === "/api/revalidate";
   const bypass = process.env.AUTH_DEV_BYPASS === "1";
 
-  if (bypass || isLogin || isAuthApi || isHealth) {
+  if (
+    bypass ||
+    isLogin ||
+    isAuthApi ||
+    isHealth ||
+    isRevalidate ||
+    isPublicMetadataPath(pathname)
+  ) {
     return NextResponse.next();
   }
 
@@ -26,5 +40,7 @@ export default auth((req) => {
 });
 
 export const config = {
-  matcher: ["/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)"],
+  matcher: [
+    "/((?!_next/static|_next/image|favicon.ico|icon(?:/|$)|apple-icon|opengraph-image|twitter-image|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)",
+  ],
 };

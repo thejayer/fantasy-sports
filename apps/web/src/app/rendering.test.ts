@@ -33,10 +33,14 @@ describe("snapshot-backed pages opt out of prerendering", () => {
       .map(({ file }) => path.relative(APP_DIR, file))
       .sort();
     expect(relative).toEqual([
+      "leagues/[leagueId]/franchises/[teamId]/page.tsx",
       "leagues/[leagueId]/page.tsx",
+      "leagues/[leagueId]/players/[playerId]/page.tsx",
       "leagues/[leagueId]/teams/[teamId]/page.tsx",
       "leagues/page.tsx",
       "page.tsx",
+      // Profile pages join league history via getLeagueHistoryArchive (7.12).
+      "u/[handle]/page.tsx",
     ]);
   });
 

@@ -1,10 +1,14 @@
 # Strictly Jayers fantasy sports
 
-This repo hosts the **Strictly Jayers** member hub (ESPN leagues, teams,
-players, standings) and the `ffa` NFL analytics engine.
+This repo hosts the **Strictly Jayers** community portal, member hub (ESPN
+leagues, teams, players, standings), and the `ffa` NFL analytics engine.
 
-- **Hub (start here for the site):** see [HUB.md](HUB.md) — `configs/leagues.yaml`,
-  `src/sj` sync CLI, and `apps/web` Next.js app.
+- **Community portal (apex):** see [PORTAL.md](PORTAL.md) — `apps/www` at
+  `strictlyjayers.com`, with absolute links into the fantasy hub and fitness log.
+- **Hub (fantasy subdomain):** see [HUB.md](HUB.md) — `configs/leagues.yaml`,
+  `src/sj` sync CLI, and `apps/web` Next.js app at `fantasy.strictlyjayers.com`.
+- **Fitness (training log):** see [FITNESS.md](FITNESS.md) — `apps/fitness` at
+  `fitness.strictlyjayers.com` (Modernist restyle of the athlete-log PWA).
 - **Analytics engine:** `ffa` below — projections, ranking, draft tools, Streamlit dashboard.
 - **Where the site stands and where it's going:** [AUDIT.md](AUDIT.md) (findings,
   with reproductions) and [ROADMAP.md](ROADMAP.md) (the phased plan).
@@ -105,6 +109,14 @@ ffa simulate --season 2025 --league configs/ppr.yaml --generator quantile
 
 # VOR + tiers across positions, posterior-driven
 ffa rank --season 2025 --league configs/ppr.yaml --samples 1000 --tiers 5
+
+# Hub-consumable projection snapshot (conditioned LevelModel on by default)
+ffa export-projections --season 2025 --league configs/ppr.yaml \
+    --out-dir data/sj/projections --format both
+
+# ESPN ↔ nflverse player map + hub coverage report
+ffa export-player-map --season 2025 --out-dir data/sj/player_map \
+    --sj-root data/sj
 
 # Walk-forward backtest: how good are the projections, really?
 ffa backtest --league configs/ppr.yaml --start 2023 --end 2024 \
@@ -338,9 +350,10 @@ Two GitHub Actions workflows ship in `.github/workflows/`:
 
 - `tests.yml`: runs `ruff` + `pytest` on pushes to main and every PR.
 - `refresh.yml`: scheduled (weekday mornings during NFL season) and
-  manual; ingests the current season + lookback from nflverse, computes
-  the posterior summary under PPR and Standard, and uploads the Parquet
-  files as build artifacts.
+  manual; ingests the current season + lookback from nflverse, runs
+  `ffa export-projections` for PPR and Standard (conditioned LevelModel),
+  `ffa export-player-map` for the ESPN↔GSIS crosswalk + coverage, and uploads
+  `store/projections/` + `store/player_map/` as build artifacts for the hub store.
 
 ## Backtesting (phase 8)
 
@@ -731,10 +744,10 @@ Conditioning is what makes it work: central coverage 0.74 → 0.80, the
 decision-relevant **mid tier 0.70 → 0.80**, stars to a near-perfect 0.92,
 **bias stays near zero** (the per-tier rate avoids the global-collapse
 disaster), and ranking even ticks up. Used via
-`run_backtest(level_model=LevelModel(), years_exp=...)`; the global
-`--level-sd`/`--level-mean` remain the CLI default until the conditioned
-model is wired through the draft commands (the rosters join is the only
-missing plumbing).
+`run_backtest(level_model=LevelModel(), years_exp=...)` or the CLI flag
+`--conditioned-level` on `simulate` / `rank` / `optimize` / `draft-sim` /
+`backtest` (joins `years_exp` from rosters). Global `--level-sd` /
+`--level-mean` remain available as the scalar fallback.
 
 Central q05-q95 coverage across the full calibration arc: 0.30 (fixed) →
 0.55 (games) → 0.70 (bust) → 0.75 (level) → **0.80 (role)**. Honest
@@ -744,9 +757,19 @@ on what any marginal model can do.
 
 ## What's next, post-phase-18
 
-- Wire the conditioned `LevelModel` (with the `years_exp` rosters join)
-  through the `simulate`/`rank`/`draft-sim` CLI commands so the calibrated
-  config is usable at draft time, not just in the backtest.
+- ~~Wire the conditioned `LevelModel` through `simulate`/`rank`/`draft-sim`~~ —
+  done (`--conditioned-level`; roadmap 4.1).
+- ~~Projection snapshots the hub can read~~ — done (`ffa export-projections` +
+  `getProjectionSnapshot`; roadmap 4.2).
+- ~~ESPN↔nflverse player ID mapping with a coverage metric~~ — done
+  (`ffa export-player-map` + `getPlayerMap`; roadmap 4.3).
+- ~~Hub projection UI~~ — done (football `projections` tab + roster/players
+  Floor/Med/Ceil; roadmap 4.4).
+- ~~Decision tools (trade / waiver proxy / strength)~~ — done (`?tab=tools`;
+  roadmap 4.5). Draft assistant + playoff odds still need offline exporters;
+  weekly start/sit still needs weekly exports.
+- ~~Baseball scope~~ — done: keep ESPN-rich / projection-free (roadmap 4.6).
+  No MLB path in `ffa` without a dedicated modeling plan.
 - Per-position joint-distribution learning (copula over stat vectors) --
   the lever for cross-stat realism once the marginals are calibrated.
 - Schedule-aware adjustments and dashboard-output pricing against
