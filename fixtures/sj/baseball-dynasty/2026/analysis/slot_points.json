@@ -1,5 +1,21 @@
 {
   "espn_league_id": 2499137,
+  "groups": {
+    "bats": [
+      "C",
+      "1B",
+      "2B",
+      "3B",
+      "SS",
+      "OF",
+      "DH",
+      "UTIL"
+    ],
+    "pitchers": [
+      "P",
+      "RP"
+    ]
+  },
   "incremental": false,
   "league_id": "baseball-dynasty",
   "method": "player.stats appliedTotal (statSourceId=0, statSplitTypeId=5) attributed to that day's lineupSlotId",

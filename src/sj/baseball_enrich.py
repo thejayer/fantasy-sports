@@ -190,11 +190,12 @@ def enrich_baseball_trailing_stats(league: Any, snapshot: dict[str, Any]) -> int
     return apply_trailing_stats_to_snapshot(snapshot, trailing)
 
 
-def _attach_team_season_points(league: Any, teams_payload: list[Any]) -> int:
+def attach_team_season_points(league: Any, teams_payload: list[Any]) -> int:
     """Map ESPN ``teams[].points`` → ``team.points_for`` (Season Points standings).
 
-    espn-api baseball ``Team`` never sets ``points_for``; ``record.overall.pointsFor``
-    is 0 for ``TOTAL_SEASON_POINTS``. Official standings use top-level ``points``.
+    espn-api baseball/hockey ``Team`` never sets ``points_for``;
+    ``record.overall.pointsFor`` is 0 for ``TOTAL_SEASON_POINTS``. Official
+    standings use top-level ``points``.
     """
     by_id: dict[int, dict[str, Any]] = {}
     for row in teams_payload:
@@ -226,6 +227,25 @@ def _attach_team_season_points(league: Any, teams_payload: list[Any]) -> int:
     return attached
 
 
+def attach_espn_team_season_points(league: Any) -> int:
+    """Fetch ``get_league()`` and attach ESPN team season points (hockey/baseball)."""
+    request = getattr(league, "espn_request", None)
+    if request is None or not callable(getattr(request, "get_league", None)):
+        return 0
+    try:
+        from sj.sync import espn_call
+
+        data = espn_call(lambda: request.get_league(), label="team_points")
+    except Exception:  # noqa: BLE001 — optional PF attach
+        return 0
+    if not isinstance(data, dict):
+        return 0
+    teams_payload = data.get("teams")
+    if not isinstance(teams_payload, list):
+        return 0
+    return attach_team_season_points(league, teams_payload)
+
+
 def attach_baseball_roster_limits(league: Any) -> bool:
     """Stash roster GS caps and Season Points team totals from raw ESPN payload."""
     settings = getattr(league, "settings", None)
@@ -250,7 +270,7 @@ def attach_baseball_roster_limits(league: Any) -> bool:
             already = True
     teams_payload = data.get("teams")
     if isinstance(teams_payload, list):
-        _attach_team_season_points(league, teams_payload)
+        attach_team_season_points(league, teams_payload)
     return already
 
 

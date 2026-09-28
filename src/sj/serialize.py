@@ -91,6 +91,9 @@ _HOCKEY_STAT_KEYS = (
 )
 _HOCKEY_GOALIE_POSITIONS = {"G", "GOALIE"}
 _HOCKEY_GOALIE_SLOTS = {"G", "GOALIE"}
+# Rate stats that must not be multiplied as counting FP when deriving totals.
+_HOCKEY_RATE_STATS = frozenset({"GAA", "SV%", "ATOI", "AVG", "ERA", "WHIP", "OBP", "OPS"})
+_HOCKEY_BENCH_SLOTS = frozenset({"BE", "BENCH", "IR", "IL"})
 
 
 def _baseball_stats_map() -> dict[int, str]:
@@ -214,6 +217,66 @@ def _hockey_total_bucket(player: Any) -> dict[str, Any]:
         if isinstance(key, str) and key.startswith("Total") and isinstance(bucket, dict):
             return bucket
     return _season_stat_bucket(player)
+
+
+def hockey_applied_total(player: Any) -> float | None:
+    """Season applied FP from a hockey Player when espn-api stored it.
+
+    espn-api 0.46 hockey ``Player`` does not set ``total_points``. Prefer an
+    attached applied total on the ``Total YYYY`` bucket when present.
+    """
+    attached = _num(
+        getattr(player, "applied_total", None) or getattr(player, "appliedTotal", None)
+    )
+    if attached is not None:
+        return attached
+    bucket = _hockey_total_bucket(player)
+    if not isinstance(bucket, dict):
+        return None
+    for source in (bucket, bucket.get("total") if isinstance(bucket.get("total"), dict) else {}):
+        if not isinstance(source, dict):
+            continue
+        for key in ("appliedTotal", "applied_total", "points"):
+            value = _num(source.get(key))
+            if value is not None:
+                return value
+    return None
+
+
+def hockey_points_from_season_stats(
+    stats: dict[str, float | None] | None,
+    scoring_format: Any,
+) -> float | None:
+    """Derive season FP as ``season_stats × scoring_format`` counting weights.
+
+    Skips rate stats (GAA, SV%, …). Returns None when no weighted counting
+    stats are present so callers can leave ``total_points`` null.
+    """
+    if not stats or not scoring_format:
+        return None
+    rows = scoring_format if isinstance(scoring_format, list) else []
+    total = 0.0
+    used = False
+    for row in rows:
+        if isinstance(row, dict):
+            abbr = row.get("abbr") or row.get("statCode")
+            weight = _num(row.get("points") or row.get("pointsOverride"))
+        else:
+            abbr = getattr(row, "abbr", None)
+            weight = _num(getattr(row, "points", None))
+        if not abbr or weight is None:
+            continue
+        key = str(abbr)
+        if key in _HOCKEY_RATE_STATS:
+            continue
+        count = _num(stats.get(key))
+        if count is None:
+            continue
+        total += count * weight
+        used = True
+    if not used:
+        return None
+    return round(total, 1)
 
 
 def extract_hockey_season_stats(player: Any) -> dict[str, float | None]:
@@ -456,9 +519,15 @@ def build_week_box_scores_document(
     }
 
 
-def serialize_player(player: Any, *, sport: str | None = None) -> dict[str, Any]:
+def serialize_player(
+    player: Any,
+    *,
+    sport: str | None = None,
+    scoring_format: Any = None,
+) -> dict[str, Any]:
     position = getattr(player, "position", None)
     slot = getattr(player, "lineupSlot", None) or getattr(player, "slot_position", None)
+    total_points = _num(getattr(player, "total_points", None))
     payload: dict[str, Any] = {
         "id": getattr(player, "playerId", None) or getattr(player, "player_id", None),
         "name": getattr(player, "name", None),
@@ -472,7 +541,7 @@ def serialize_player(player: Any, *, sport: str | None = None) -> dict[str, Any]
         "eligible_slots": list(getattr(player, "eligibleSlots", None) or []),
         "acquisition_type": getattr(player, "acquisitionType", None),
         "percent_owned": _num(getattr(player, "percent_owned", None)),
-        "total_points": _num(getattr(player, "total_points", None)),
+        "total_points": total_points,
         "projected_total_points": _num(
             getattr(player, "projected_total_points", None)
             or getattr(player, "projected_points", None)
@@ -493,6 +562,14 @@ def serialize_player(player: Any, *, sport: str | None = None) -> dict[str, Any]
         trailing = extract_hockey_trailing_stats(player)
         if trailing:
             payload["trailing_stats"] = trailing
+        # espn-api hockey Player never sets total_points. Prefer a stored
+        # appliedTotal, else counting stats × league weights (Hall of Shame).
+        if payload["total_points"] is None:
+            payload["total_points"] = hockey_applied_total(player)
+        if payload["total_points"] is None:
+            payload["total_points"] = hockey_points_from_season_stats(
+                season_stats, scoring_format
+            )
     return payload
 
 
@@ -524,15 +601,19 @@ def serialize_team(
     *,
     sport: str | None = None,
     scoring_type: str | None = None,
+    scoring_format: Any = None,
 ) -> dict[str, Any]:
-    roster = [serialize_player(p, sport=sport) for p in (getattr(team, "roster", None) or [])]
+    roster = [
+        serialize_player(p, sport=sport, scoring_format=scoring_format)
+        for p in (getattr(team, "roster", None) or [])
+    ]
     wins = _int(getattr(team, "wins", 0)) or 0
     losses = _int(getattr(team, "losses", 0)) or 0
     ties = _int(getattr(team, "ties", 0)) or 0
     games = wins + losses + ties
     win_pct = round((wins + 0.5 * ties) / games, 3) if games else None
-    # Prefer official season totals. espn-api baseball Team omits points_for;
-    # sync attaches ESPN ``teams[].points`` (Season Points) as points_for / points.
+    # Prefer official season totals. espn-api baseball/hockey Team omits
+    # points_for; sync attaches ESPN ``teams[].points`` as points_for / points.
     points_for = _num(getattr(team, "points_for", None))
     if points_for is None:
         points_for = _num(getattr(team, "points", None))
@@ -540,16 +621,24 @@ def serialize_team(
         points_for = _num(getattr(team, "points_live", None))
     # Roster-sum fallback is wrong for TOTAL_SEASON_POINTS (bench/IL inflate vs
     # ESPN standings). Keep it only for H2H-shaped baseball where PF is absent.
-    if (
-        points_for is None
-        and roster
-        and not is_season_points_scoring(scoring_type)
-    ):
-        roster_points = [
-            p.get("total_points") for p in roster if p.get("total_points") is not None
-        ]
-        if roster_points:
-            points_for = round(sum(roster_points), 1)
+    # Hockey espn-api also omits PF: sum non-bench slots after player FP is
+    # derived so Hall of Shame / standings are not all-null.
+    if points_for is None and roster:
+        if sport == "hockey" and is_season_points_scoring(scoring_type):
+            starter_points = [
+                p.get("total_points")
+                for p in roster
+                if p.get("total_points") is not None
+                and str(p.get("slot") or "").upper() not in _HOCKEY_BENCH_SLOTS
+            ]
+            if starter_points:
+                points_for = round(sum(starter_points), 1)
+        elif not is_season_points_scoring(scoring_type):
+            roster_points = [
+                p.get("total_points") for p in roster if p.get("total_points") is not None
+            ]
+            if roster_points:
+                points_for = round(sum(roster_points), 1)
     schedule, scores, outcomes = _team_matchup_arrays(team)
     row = {
         "team_id": getattr(team, "team_id", None),
@@ -813,8 +902,26 @@ def serialize_transactions(activities: list[Any] | None) -> list[dict[str, Any]]
     return [serialize_activity(activity) for activity in (activities or [])]
 
 
-def serialize_free_agent(player: Any, *, sport: str | None = None) -> dict[str, Any]:
+def serialize_free_agent(
+    player: Any,
+    *,
+    sport: str | None = None,
+    scoring_format: Any = None,
+) -> dict[str, Any]:
     """Compact FA row — skip season_stats bloat; keep trailing windows for 8.2."""
+    if sport == "hockey":
+        payload = serialize_player(
+            player, sport="hockey", scoring_format=scoring_format
+        )
+        payload.pop("season_stats", None)
+        trailing = extract_hockey_trailing_stats(player)
+        if trailing:
+            payload["trailing_stats"] = trailing
+        if payload.get("role") is None:
+            payload["role"] = _hockey_player_role(
+                payload.get("position"), payload.get("slot")
+            )
+        return payload
     payload = serialize_player(player, sport=None)
     if sport == "baseball":
         trailing = extract_baseball_trailing_stats(player)
@@ -823,21 +930,18 @@ def serialize_free_agent(player: Any, *, sport: str | None = None) -> dict[str, 
             payload["role"] = _player_role(
                 payload.get("position"), payload.get("slot")
             )
-    elif sport == "hockey":
-        trailing = extract_hockey_trailing_stats(player)
-        if trailing:
-            payload["trailing_stats"] = trailing
-            payload["role"] = _hockey_player_role(
-                payload.get("position"), payload.get("slot")
-            )
     return payload
 
 
 def serialize_free_agents(
-    players: list[Any] | None, *, sport: str | None = None
+    players: list[Any] | None,
+    *,
+    sport: str | None = None,
+    scoring_format: Any = None,
 ) -> list[dict[str, Any]]:
     rows = [
-        serialize_free_agent(player, sport=sport) for player in (players or [])
+        serialize_free_agent(player, sport=sport, scoring_format=scoring_format)
+        for player in (players or [])
     ]
     rows.sort(
         key=lambda row: (
@@ -863,8 +967,15 @@ def serialize_league(
     scoring_type = getattr(settings, "scoring_type", None) or getattr(
         league, "scoring_type", None
     )
+    settings_payload = serialize_settings(league, sport=sport)
+    scoring_format = settings_payload.get("scoring_format")
     teams = [
-        serialize_team(t, sport=sport, scoring_type=scoring_type)
+        serialize_team(
+            t,
+            sport=sport,
+            scoring_type=scoring_type,
+            scoring_format=scoring_format,
+        )
         for t in (getattr(league, "teams", None) or [])
     ]
     teams.sort(
@@ -888,10 +999,12 @@ def serialize_league(
         or getattr(league, "scoringPeriodId", None)
         or getattr(league, "current_matchday", None),
         "period_label": "period" if sport == "baseball" else "week",
-        "settings": serialize_settings(league, sport=sport),
+        "settings": settings_payload,
         "draft": serialize_draft(league),
         "transactions": serialize_transactions(transactions),
-        "free_agents": serialize_free_agents(free_agents, sport=sport),
+        "free_agents": serialize_free_agents(
+            free_agents, sport=sport, scoring_format=scoring_format
+        ),
         "teams": teams,
         "players": _unique_players(teams),
     }

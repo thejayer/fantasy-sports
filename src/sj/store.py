@@ -584,7 +584,7 @@ def write_analysis(
     name: str,
     store_dir: Path | str | None = None,
 ) -> str:
-    """Persist one baseball analysis sidecar (no index upsert)."""
+    """Persist one season-points analysis sidecar (no index upsert)."""
     return resolve_store(store_dir).write_analysis(document, name)
 
 

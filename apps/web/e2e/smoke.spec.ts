@@ -750,6 +750,25 @@ test.describe("hub smoke", () => {
     await expect(page).toHaveURL(/series=daily/);
   });
 
+  test("hockey analysis tab shows slot table and skater/goalie split (roadmap 8.5)", async ({
+    page,
+  }) => {
+    await page.goto("/leagues/hockey-main?tab=analysis");
+    await expect(page.getByRole("heading", { name: "Analysis" }).first()).toBeVisible();
+    await expect(
+      page.getByRole("heading", { name: "Points by lineup slot" }),
+    ).toBeVisible();
+    await expect(
+      page.getByRole("columnheader", { name: "Forward" }).first(),
+    ).toBeVisible();
+    await expect(
+      page.getByRole("heading", { name: "Skaters vs goalies" }),
+    ).toBeVisible();
+    await expect(page.getByRole("img", { name: /Season points by team/i })).toBeVisible();
+    await page.getByRole("link", { name: "Daily" }).click();
+    await expect(page).toHaveURL(/series=daily/);
+  });
+
   test("baseball hall of shame ranks fixture drop by season FP (roadmap 9.5)", async ({
     page,
   }) => {

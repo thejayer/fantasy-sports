@@ -91,7 +91,7 @@ export function SettingsPanel({ league }: { league: LeagueSnapshot }) {
           FP. Read-only over synced activity.
         </p>
       ) : null}
-      {league.sport === "baseball" ? (
+      {(league.sport === "baseball" || league.sport === "hockey") ? (
         <p className="muted">
           <Link
             href={`/leagues/${league.league_id}?season=${league.season}&tab=analysis`}

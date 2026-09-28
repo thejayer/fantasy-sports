@@ -1159,8 +1159,9 @@ export const getProSchedule = cache(
 );
 
 /**
- * Baseball season-points analysis under ``{league}/{season}/analysis/``.
+ * Season-points analysis under ``{league}/{season}/analysis/``.
  * Side concern — never assembled into getLeagueSnapshot. Session-gated.
+ * Baseball and hockey Season Points both write the same sidecar names.
  */
 export const getBaseballAnalysis = cache(
   async (
@@ -1189,7 +1190,7 @@ export const getBaseballAnalysis = cache(
         if (
           doc?.league_id === leagueId &&
           doc.season === season &&
-          doc.sport === "baseball" &&
+          (doc.sport === "baseball" || doc.sport === "hockey") &&
           Array.isArray(doc.teams)
         ) {
           slotPoints = doc;
@@ -1202,7 +1203,7 @@ export const getBaseballAnalysis = cache(
         if (
           doc?.league_id === leagueId &&
           doc.season === season &&
-          doc.sport === "baseball" &&
+          (doc.sport === "baseball" || doc.sport === "hockey") &&
           Array.isArray(doc.teams)
         ) {
           timeseries = doc;

@@ -63,7 +63,7 @@ def pro_schedule_rel(league_id: str, season: int) -> str:
 
 
 def analysis_rel(league_id: str, season: int, name: str) -> str:
-    """Side-concern baseball analysis JSON (roadmap 8.5).
+    """Side-concern season-points analysis JSON (roadmap 8.5).
 
     ``name`` is ``slot_points`` or ``points_timeseries``. Not listed in
     ``manifest.files`` — season assemble must never load these.
