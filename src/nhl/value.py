@@ -26,6 +26,7 @@ and is capped at ±25%.
 from __future__ import annotations
 
 import datetime as dt
+import math
 from typing import Any
 
 from nhl.aging import age_project, season_age
@@ -85,10 +86,10 @@ def blend(parts: list[dict[str, Any]], recent: float = RECENT_DEFAULT) -> float 
     if not parts:
         return None
     weights = [part_weight(p["kind"], p["base"], p["games_factor"], recent) for p in parts]
-    total = sum(weights)
+    total = math.fsum(weights)
     if total <= 0:
-        return round(sum(p["fpg"] for p in parts) / len(parts), 3)
-    return round(sum(p["fpg"] * w for p, w in zip(parts, weights, strict=True)) / total, 3)
+        return round(math.fsum(p["fpg"] for p in parts) / len(parts), 3)
+    return round(math.fsum(p["fpg"] * w for p, w in zip(parts, weights, strict=True)) / total, 3)
 
 
 def _usable(fpg: float, games: float, group: str) -> bool:
@@ -183,8 +184,8 @@ def value_parts(
                            and len(str(h.get("season") or "")) == 8]
     if seasons:
         wts = [g * HISTORY_DECAY.get(ago, 0.3) for _, g, ago in seasons]
-        hv = sum(v * w for (v, _, _), w in zip(seasons, wts, strict=True)) / sum(wts)
-        total_gp = sum(g for _, g, _ in seasons)
+        hv = math.fsum(v * w for (v, _, _), w in zip(seasons, wts, strict=True)) / math.fsum(wts)
+        total_gp = math.fsum(g for _, g, _ in seasons)
         n = len(seasons)
         label = (f"NHL history, age-adjusted ({n} season{'s' if n > 1 else ''}, "
                  f"{int(total_gp)} GP)")

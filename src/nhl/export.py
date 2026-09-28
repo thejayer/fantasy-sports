@@ -17,6 +17,7 @@ document's ``errors`` instead of failing the ESPN sync.
 from __future__ import annotations
 
 import datetime as dt
+import math
 import os
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -186,7 +187,7 @@ def team_strength(
     avg: dict[str, float | None] = {}
     for key in ("gf", "ga", "sf", "sa", "pk", "pp"):
         vals = [t[key] for t in teams.values() if t[key] is not None]
-        avg[key] = round(sum(vals) / len(vals), 4) if vals else None
+        avg[key] = round(math.fsum(vals) / len(vals), 4) if vals else None
     return teams, avg
 
 

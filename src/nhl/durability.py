@@ -11,6 +11,7 @@ Later: port the backtested ``ffa.games`` GamesModel (the better version).
 
 from __future__ import annotations
 
+import math
 from dataclasses import dataclass
 
 SEASON_GAMES = 82
@@ -45,14 +46,14 @@ def skater_rate(
         notes.append(f"ESPN projects {espn_projected_gp:g} GP")
     played = sorted(((gp, ago) for gp, ago in history if gp > 0), key=lambda x: x[1])
     if len(played) >= 2 or (played and played[0][1] == 1 and played[0][0] >= 60):
-        weight = sum(DECAY.get(ago, 0.3) for _, ago in played)
-        rate_h = sum(min(gp / SEASON_GAMES, 1.0) * DECAY.get(ago, 0.3) for gp, ago in played) / weight
+        weight = math.fsum(DECAY.get(ago, 0.3) for _, ago in played)
+        rate_h = math.fsum(min(gp / SEASON_GAMES, 1.0) * DECAY.get(ago, 0.3) for gp, ago in played) / weight
         rate_h = (1 - PULL_TO_TYPICAL) * rate_h + PULL_TO_TYPICAL * DEFAULT_RATE
         parts.append((rate_h, HISTORY_WEIGHT))
         notes.append("played " + ", ".join(str(gp) for gp, _ in played) + " GP in recent seasons")
     if not parts:
         return Durability(DEFAULT_RATE, "no durability history; assuming 90% of games", False)
-    rate = sum(v * w for v, w in parts) / sum(w for _, w in parts)
+    rate = math.fsum(v * w for v, w in parts) / math.fsum(w for _, w in parts)
     rate = round(max(FLOOR, min(CEILING, rate)), 3)
     return Durability(rate, "; ".join(notes), rate >= IRON_MAN)
 
