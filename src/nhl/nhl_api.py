@@ -154,6 +154,27 @@ class NHLClient:
             kind, report, f"seasonId={nhl_season} and gameTypeId=2", sort_prop
         )
 
+    def seasons(self) -> dict[str, dict[str, Any]]:
+        """``{season id: {start, end, games}}`` from the stats API season list."""
+        return parse_seasons(self.get(f"{STATS}/season"))
+
+    def range_report(self, kind: str, report: str, start: dt.date, end: dt.date) -> list[dict]:
+        """Regular-season totals per player between two dates (inclusive)."""
+        params = {
+            "isAggregate": "true",
+            "isGame": "true",
+            "start": 0,
+            "limit": -1,
+            "cayenneExp": (
+                f'gameDate<="{end.isoformat()} 23:59:59" and '
+                f'gameDate>="{start.isoformat()}" and gameTypeId=2'
+            ),
+            "sort": json.dumps([{"property": "playerId", "direction": "ASC"}]),
+        }
+        doc = self.get(f"{STATS}/{kind}/{report}", params)
+        rows = doc.get("data") if isinstance(doc, dict) else None
+        return [r for r in rows or [] if isinstance(r, dict)]
+
     def toi_window(self, start: dt.date, end: dt.date) -> dict[int, dict[str, Any]]:
         """Per-game skater ice time between two dates (e.g. the last 14 days)."""
         params = {
@@ -363,6 +384,37 @@ def parse_club_schedule(doc: Any, team: str) -> list[dict[str, Any]]:
             }
         )
     return flag_back_to_backs(out)
+
+
+def parse_seasons(doc: Any) -> dict[str, dict[str, Any]]:
+    """Stats API ``/season`` → ``{"20262027": {start, end, games}}`` (dates as ISO)."""
+    rows = doc.get("data") if isinstance(doc, dict) else None
+    out: dict[str, dict[str, Any]] = {}
+    for r in rows or []:
+        if not isinstance(r, dict) or r.get("id") is None:
+            continue
+        out[str(r["id"])] = {
+            "start": str(r.get("startDate") or "")[:10] or None,
+            "end": str(r.get("regularSeasonEndDate") or "")[:10] or None,
+            "games": _int(r.get("numberOfGames")),
+        }
+    return out
+
+
+def parse_bios(rows: list[dict[str, Any]]) -> dict[int, dict[str, Any]]:
+    """Skater / goalie ``bios`` → ``{id: {name, pos, birth, draft_overall, first_season}}``."""
+    out: dict[int, dict[str, Any]] = {}
+    for r in rows:
+        if r.get("playerId") is None:
+            continue
+        out[int(r["playerId"])] = {
+            "name": r.get("skaterFullName") or r.get("goalieFullName"),
+            "pos": r.get("positionCode") or ("G" if r.get("goalieFullName") else None),
+            "birth": r.get("birthDate"),
+            "draft_overall": _int(r.get("draftOverall")),
+            "first_season": _int(r.get("firstSeasonForGameType")),
+        }
+    return out
 
 
 def summarize_landing(doc: dict[str, Any], current_nhl_season: str) -> dict[str, Any]:

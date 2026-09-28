@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import datetime as dt
+from dataclasses import replace
 
 import pytest
 
@@ -11,6 +12,7 @@ from nhl.durability import goalie_rate, skater_rate
 from nhl.prospects import draft_prior, prospect_fpg
 from nhl.roles import skater_roles
 from nhl.value import (
+    DEFAULT_CONFIG,
     adjust,
     blend,
     build_values,
@@ -85,7 +87,8 @@ def test_espn_inputs_trailing_season_projection():
     trailing, season, proj = parts
     assert trailing["fpg"] == pytest.approx(5 / 3, abs=1e-3)
     assert trailing["games_factor"] == 1.0  # 3 GP fills the last-7 window
-    assert season["fpg"] == 3.0 and season["games_factor"] == 0.4  # 10 / 25 GP
+    assert season["fpg"] == 3.0 and season["games_factor"] == 0.25  # 10 / 40 GP (H2b)
+    assert trailing["base"] == 0.05  # 0.10 × H2b trailing_scale 0.5
     assert proj["fpg"] == pytest.approx(200 / 78, abs=1e-3)
     assert facts["espn_proj"] == {"total": 200.0, "gp": 78.0, "per_game": pytest.approx(2.564, abs=1e-3)}
     assert facts["cur_gp"] == 10
@@ -134,8 +137,8 @@ def test_history_decays_by_season_and_ignores_gaps():
     parts, facts = value_parts(skater(), c, SJ, cur_nhl_season=CUR)
     (hist,) = parts
     # Carried to age 36: 35→36 is −9%; 34→35→36 is −8% then −9%.
-    # Season weights are GP × decay: 80 × 1.0 and 40 × 0.6.
-    expected = (1.5 * 0.91 * 80 + 1.0 * 0.92 * 0.91 * 24) / (80 + 24)
+    # Season weights are GP × decay (H2b-tuned 1.0 / 0.5): 80 × 1.0 and 40 × 0.5.
+    expected = (1.5 * 0.91 * 80 + 1.0 * 0.92 * 0.91 * 20) / (80 + 20)
     assert hist["fpg"] == pytest.approx(expected, abs=1e-3)
     assert hist["gp"] == 120 and hist["games_factor"] == 1.0
     assert "2 seasons" in hist["label"]
@@ -194,16 +197,23 @@ def test_role_estimate_only_when_nothing_else_exists():
 
 
 # --- role adjustment -------------------------------------------------------------
-def test_adjust_line_pp_trend_and_cap():
+def test_role_adjustment_is_off_by_default_after_h2b():
+    role = {"role": {"line": "Line 1", "pp": "PP1", "trend": []}}
+    assert DEFAULT_CONFIG.role_adjust is False
+    assert adjust("F", role) == (1.0, [])
+
+
+def test_adjust_line_pp_trend_and_cap_when_enabled():
+    on = replace(DEFAULT_CONFIG, role_adjust=True)
     mult, why = adjust("F", {"role": {"line": "Line 1", "pp": "PP1",
-                                      "trend": ["PP time up 1.0 min"]}})
+                                      "trend": ["PP time up 1.0 min"]}}, on)
     assert mult == pytest.approx(1.20) and why == ["+top line", "+PP1", "+PP time up 1.0 min"]
     mult, _ = adjust("F", {"role": {"line": "Line 4", "pp": "No PP", "trend": [
-        "even-strength time down 2.0 min", "PP time down 1.0 min", "x down", "y down"]}})
+        "even-strength time down 2.0 min", "PP time down 1.0 min", "x down", "y down"]}}, on)
     assert mult == 0.75  # capped at −25%
-    mult, why = adjust("G", {"goalie": {"role": "Backup"}, "prior_team": "BOS"})
+    mult, why = adjust("G", {"goalie": {"role": "Backup"}, "prior_team": "BOS"}, on)
     assert mult == 0.75 and why == ["−backup", "new team (from BOS)"]
-    assert adjust("D", None) == (1.0, [])
+    assert adjust("D", None, on) == (1.0, [])
 
 
 # --- H3 durability -----------------------------------------------------------------
@@ -272,7 +282,8 @@ def test_build_values_covers_rostered_free_agents_and_unmatched():
     assert unmatched["nhl_id"] is None and unmatched["nhl_team"] == "LAK"
     assert unmatched["remaining_games"] == 3 and unmatched["group"] == "D"
     assert fa["rostered"] is False and fa["nhl_team"] == "MTL" and fa["ros"] is None
-    assert doc["recent_default"] == 0.5 and doc["scoring_source"] == "espn"
+    assert doc["recent_default"] == 0.25 and doc["scoring_source"] == "espn"
+    assert doc["model"]["role_adjust"] is False
 
 
 # --- roles from ice time -------------------------------------------------------------

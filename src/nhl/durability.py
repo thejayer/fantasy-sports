@@ -37,18 +37,30 @@ class Durability:
 def skater_rate(
     espn_projected_gp: float | None,
     history: list[tuple[int, int]],
+    *,
+    pull: float = PULL_TO_TYPICAL,
+    season_games: int = SEASON_GAMES,
+    history_games: dict[int, int] | None = None,
 ) -> Durability:
-    """``history`` is ``[(games played, seasons ago)]`` for prior NHL seasons."""
+    """``history`` is ``[(games played, seasons ago)]`` for prior NHL seasons.
+
+    ``season_games`` is this season's length (84 from 2026–27);
+    ``history_games`` maps seasons-ago → that season's length (56 in 2020–21).
+    """
+    lengths = history_games or {}
     parts: list[tuple[float, float]] = []
     notes: list[str] = []
-    if espn_projected_gp is not None and 20 <= espn_projected_gp <= 84:
-        parts.append((min(espn_projected_gp / SEASON_GAMES, 1.0), ESPN_WEIGHT))
+    if espn_projected_gp is not None and 20 <= espn_projected_gp <= season_games + 2:
+        parts.append((min(espn_projected_gp / season_games, 1.0), ESPN_WEIGHT))
         notes.append(f"ESPN projects {espn_projected_gp:g} GP")
     played = sorted(((gp, ago) for gp, ago in history if gp > 0), key=lambda x: x[1])
     if len(played) >= 2 or (played and played[0][1] == 1 and played[0][0] >= 60):
         weight = math.fsum(DECAY.get(ago, 0.3) for _, ago in played)
-        rate_h = math.fsum(min(gp / SEASON_GAMES, 1.0) * DECAY.get(ago, 0.3) for gp, ago in played) / weight
-        rate_h = (1 - PULL_TO_TYPICAL) * rate_h + PULL_TO_TYPICAL * DEFAULT_RATE
+        rate_h = math.fsum(
+            min(gp / lengths.get(ago, SEASON_GAMES), 1.0) * DECAY.get(ago, 0.3)
+            for gp, ago in played
+        ) / weight
+        rate_h = (1 - pull) * rate_h + pull * DEFAULT_RATE
         parts.append((rate_h, HISTORY_WEIGHT))
         notes.append("played " + ", ".join(str(gp) for gp, _ in played) + " GP in recent seasons")
     if not parts:

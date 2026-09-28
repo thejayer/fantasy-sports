@@ -57,10 +57,43 @@ export type HockeyValuesSnapshot = {
   generated_at: string;
   as_of: string;
   recent_default: number;
+  season_games?: number;
+  /** The value model's knobs (`nhl.value.ValueConfig`), H2b-tuned. */
+  model?: { recent: number; role_adjust: boolean } & Record<string, unknown>;
+  /** H2b accuracy of the shipped model on past NHL seasons (null until backtested). */
+  backtest?: HockeyBacktestSummary | null;
   scoring_source: string;
   weights: Record<string, number>;
   players: Record<string, HockeyPlayerValue>;
 };
+
+export type HockeyBacktestSummary = {
+  seasons: string[];
+  checkpoints: string[];
+  mae_by_group: Record<"F" | "D" | "G", number | null>;
+  bias: number | null;
+  spearman: number | null;
+  n: number;
+};
+
+/** "2022–23" from "20222023". */
+export function seasonLabel(sid: string): string {
+  return sid.length === 8 ? `${sid.slice(0, 4)}–${sid.slice(6, 8)}` : sid;
+}
+
+/** One sentence for the board: how far off the model typically is, by group. */
+export function backtestLine(summary: HockeyBacktestSummary | null | undefined): string | null {
+  if (!summary?.seasons?.length) return null;
+  const first = seasonLabel(summary.seasons[0]);
+  const last = seasonLabel(summary.seasons[summary.seasons.length - 1]);
+  const mae = summary.mae_by_group ?? {};
+  const miss = (["F", "D", "G"] as const)
+    .filter((g) => mae[g] != null)
+    .map((g) => `${{ F: "forwards", D: "defense", G: "goalies" }[g]} ${mae[g]!.toFixed(2)}`)
+    .join(", ");
+  const rank = summary.spearman != null ? `; rank correlation ${summary.spearman.toFixed(2)}` : "";
+  return `Backtested on ${first} to ${last} (${summary.n.toLocaleString("en-US")} player checks): typical miss per game — ${miss}${rank}.`;
+}
 
 export const RECENT_DEFAULT = 0.5;
 
@@ -142,7 +175,8 @@ export type HockeyBoardQuery = {
   sort: "value" | "ros" | "espn" | "durability" | "age" | "name";
   dir: "asc" | "desc";
   page: number;
-  recent: number;
+  /** Recent-form setting; null = the model's shipped default (`recent_default`). */
+  recent: number | null;
   /** ESPN id whose input breakdown is expanded (one at a time keeps HTML small). */
   open: string | null;
 };
@@ -167,7 +201,8 @@ export function parseHockeyBoardQuery(raw: {
   const dir = raw.dir === "asc" ? "asc" : raw.dir === "desc" ? "desc" : sort === "name" ? "asc" : "desc";
   const page = Math.max(1, Number.parseInt(raw.p ?? "1", 10) || 1);
   const open = raw.open && /^\d+$/.test(raw.open) ? raw.open : null;
-  return { pos, who, sort, dir, page, recent: parseRecent(raw.recent), open };
+  const recent = raw.recent != null && raw.recent !== "" ? parseRecent(raw.recent) : null;
+  return { pos, who, sort, dir, page, recent, open };
 }
 
 export type HockeyBoardRow = HockeyPlayerValue & {
@@ -199,7 +234,7 @@ export function hockeyBoardRows(
   const all = Object.values(snapshot?.players ?? {})
     .filter((p) => query.pos === "all" || p.group === query.pos)
     .filter((p) => (query.who === "all" ? true : query.who === "rostered" ? p.rostered : !p.rostered))
-    .map((p) => ({ ...p, blended: reblend(p, query.recent) }));
+    .map((p) => ({ ...p, blended: reblend(p, effectiveRecent(snapshot, query)) }));
   const sign = query.dir === "asc" ? 1 : -1;
   all.sort((a, b) => {
     const ka = sortKey(a, query.sort);
@@ -216,6 +251,14 @@ export function hockeyBoardRows(
   const page = Math.min(query.page, pages);
   const start = (page - 1) * HOCKEY_BOARD_PAGE_SIZE;
   return { rows: all.slice(start, start + HOCKEY_BOARD_PAGE_SIZE), total: all.length, pages, page };
+}
+
+/** The recent-form setting in force: the query's, else the model's shipped default. */
+export function effectiveRecent(
+  snapshot: HockeyValuesSnapshot | null | undefined,
+  query: Pick<HockeyBoardQuery, "recent">,
+): number {
+  return query.recent ?? snapshot?.recent_default ?? RECENT_DEFAULT;
 }
 
 /** ESPN id → value / ROS for roster and Waivers columns (default recent form). */

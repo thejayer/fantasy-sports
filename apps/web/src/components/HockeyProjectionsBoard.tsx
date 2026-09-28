@@ -2,6 +2,8 @@ import Link from "next/link";
 
 import { EmptyState } from "@/components/EmptyState";
 import {
+  backtestLine,
+  effectiveRecent,
   formatPercent,
   formatValue,
   HOCKEY_BOARD_PAGE_SIZE,
@@ -33,7 +35,7 @@ function boardHref(
   if (q.who !== "all") params.set("who", q.who);
   if (q.sort !== "value") params.set("sort", q.sort);
   params.set("dir", q.dir);
-  if (q.recent !== 0.5) params.set("recent", String(q.recent));
+  if (q.recent != null) params.set("recent", String(q.recent));
   if (q.page > 1) params.set("p", String(q.page));
   if (q.open) params.set("open", q.open);
   return `/leagues/${leagueId}?${params.toString()}${q.open ? `#row-${q.open}` : ""}`;
@@ -85,6 +87,8 @@ export function HockeyProjectionsBoard({ leagueId, season, snapshot, query, team
     );
   }
   const result = hockeyBoardRows(snapshot, query);
+  const recent = effectiveRecent(snapshot, query);
+  const accuracy = backtestLine(snapshot.backtest);
   const start = result.total ? (result.page - 1) * HOCKEY_BOARD_PAGE_SIZE + 1 : 0;
   const end = Math.min(result.page * HOCKEY_BOARD_PAGE_SIZE, result.total);
   const chip = (patch: Partial<HockeyBoardQuery>, active: boolean, label: string) => (
@@ -102,7 +106,8 @@ export function HockeyProjectionsBoard({ leagueId, season, snapshot, query, team
       <p className="lede" style={{ marginTop: "0.5rem" }}>
         Per-game value is a weighted blend of recent form, this season, ESPN&rsquo;s
         projection, age-adjusted NHL history, and a prospect estimate for rookies,
-        scored under this league&rsquo;s rules and adjusted for role (±25%). ROS =
+        scored under this league&rsquo;s rules
+        {snapshot.model?.role_adjust ? " and adjusted for role (±25%)" : ""}. ROS =
         value × remaining games × expected share played. Estimates, not
         guarantees — open a row for its inputs.
       </p>
@@ -110,10 +115,15 @@ export function HockeyProjectionsBoard({ leagueId, season, snapshot, query, team
         As of {snapshot.as_of} · scoring from{" "}
         {snapshot.scoring_source === "espn" ? "ESPN league settings" : "the SJ Hockey override"}
       </p>
+      {accuracy ? (
+        <p className="muted hockey-backtest-line" style={{ marginTop: 0 }}>
+          {accuracy}
+        </p>
+      ) : null}
 
       <div className="table-filters" role="group" aria-label="Recent form" style={{ marginTop: "0.5rem" }}>
         {RECENT_STEPS.map((step) =>
-          chip({ recent: step }, query.recent === step, recentLabel(step)),
+          chip({ recent: step }, recent === step, recentLabel(step)),
         )}
       </div>
       <div className="table-filters" role="group" aria-label="Position filter" style={{ marginTop: "0.5rem" }}>
@@ -204,10 +214,12 @@ export function HockeyProjectionsBoard({ leagueId, season, snapshot, query, team
                           {formatPercent(part.share)} of the blend
                         </li>
                       ))}
-                      <li>
-                        Role adjustment ×{formatValue(row.mult)}
-                        {row.adjustments.length ? ` (${row.adjustments.join(", ")})` : ""}
-                      </li>
+                      {snapshot.model?.role_adjust === false ? null : (
+                        <li>
+                          Role adjustment ×{formatValue(row.mult)}
+                          {row.adjustments.length ? ` (${row.adjustments.join(", ")})` : ""}
+                        </li>
+                      )}
                       <li>
                         Plays {formatPercent(row.durability?.rate)} — {row.durability?.basis}
                         {row.remaining_games != null

@@ -3,6 +3,9 @@ import path from "node:path";
 import { describe, expect, it } from "vitest";
 
 import {
+  backtestLine,
+  effectiveRecent,
+  seasonLabel,
   formatPercent,
   formatValue,
   HOCKEY_BOARD_PAGE_SIZE,
@@ -106,8 +109,14 @@ describe("hockey values (HOCKEY-PORT H2/H3)", () => {
     expect(recentLabel(0)).toBe("Track record");
     expect(recentLabel(1)).toBe("Recent form");
     expect(parseHockeyBoardQuery({})).toEqual({
-      pos: "all", who: "all", sort: "value", dir: "desc", page: 1, recent: 0.5, open: null,
+      pos: "all", who: "all", sort: "value", dir: "desc", page: 1, recent: null, open: null,
     });
+    expect(parseHockeyBoardQuery({ recent: "0" }).recent).toBe(0);
+    // No ?recent= → the model's shipped default, not a hard-coded 0.5.
+    const snap = { recent_default: 0.25 } as HockeyValuesSnapshot;
+    expect(effectiveRecent(snap, { recent: null })).toBe(0.25);
+    expect(effectiveRecent(snap, { recent: 1 })).toBe(1);
+    expect(effectiveRecent(null, { recent: null })).toBe(0.5);
     expect(parseHockeyBoardQuery({ open: "12345" }).open).toBe("12345");
     expect(parseHockeyBoardQuery({ open: "<script>" }).open).toBeNull();
     expect(parseHockeyBoardQuery({ pos: "G", who: "fa", sort: "name", p: "3" })).toMatchObject({
@@ -143,6 +152,23 @@ describe("hockey values (HOCKEY-PORT H2/H3)", () => {
       const rows = hockeyBoardRows(withNull, parseHockeyBoardQuery({ dir })).rows;
       expect(rows.map((r) => r.name)).toEqual(["Has", "Empty"]);
     }
+  });
+
+  it("summarizes the backtest in one sentence", () => {
+    expect(backtestLine(null)).toBeNull();
+    expect(backtestLine(undefined)).toBeNull();
+    const line = backtestLine({
+      seasons: ["20222023", "20232024", "20242025", "20252026"],
+      checkpoints: ["preseason", "dec1", "feb1"],
+      mae_by_group: { F: 0.41, D: 0.3, G: 1.38 },
+      bias: 0.05,
+      spearman: 0.826,
+      n: 8520,
+    });
+    expect(line).toBe(
+      "Backtested on 2022–23 to 2025–26 (8,520 player checks): typical miss per game — forwards 0.41, defense 0.30, goalies 1.38; rank correlation 0.83.",
+    );
+    expect(seasonLabel("20262027")).toBe("2026–27");
   });
 
   it("indexes roster and Waivers cells and formats nulls as a dash", () => {

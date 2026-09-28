@@ -26,7 +26,10 @@ and is capped at ±25%.
 from __future__ import annotations
 
 import datetime as dt
+import json
 import math
+from dataclasses import asdict, dataclass
+from pathlib import Path
 from typing import Any
 
 from nhl.aging import age_project, season_age
@@ -37,13 +40,12 @@ from nhl.prospects import prospect_fpg
 from nhl.scoring import score_line
 from nhl.teams import nhl_abbrev
 
-RECENT_DEFAULT = 0.5
+RECENT_DEFAULT = 0.25  # H2b-tuned (was 0.5)
 SCHEMA_VERSION = 1
 
 TRAILING = (("7", 0.10, 3), ("15", 0.15, 6), ("30", 0.15, 12))
-SEASON_BASE, SEASON_FULL_GP = 0.35, 25
-HISTORY_FULL_GP = 120
-HISTORY_DECAY = {1: 1.0, 2: 0.6, 3: 0.35}
+SEASON_BASE, SEASON_FULL_GP = 0.5, 40  # H2b-tuned (was 0.35, 25)
+HISTORY_FULL_GP = 80  # H2b-tuned (was 120)
 PROSPECT_BASE = 0.15
 ROOKIE_MAX_PRIOR_GP = 25  # NHL rookie eligibility
 PROJECTED_GP_DEFAULT = {"F": 78, "D": 78, "G": 55}
@@ -66,6 +68,50 @@ GOALIE_ADJ = {"Starter": (0.05, "starter"), "1A/1B": (-0.06, "splitting starts")
               "Backup": (-0.25, "backup")}
 TREND_ADJ = 0.04
 ADJ_FLOOR, ADJ_CEILING = 0.75, 1.25
+
+
+@dataclass(frozen=True)
+class ValueConfig:
+    """The model's tunable knobs (H2b backtest). Defaults are the shipped model.
+
+    Only knobs whose effect is baked into exported ``parts`` (``base``,
+    ``games_factor``, per-game values) or the exported ``recent_default`` are
+    tunable, so the hub's re-blend (``lib/hockey-values.ts``) stays a mirror of
+    :func:`part_weight` without changes.
+    """
+
+    # H2b-tuned (HOCKEY-BACKTEST.md): beat Rinkside's originals on every
+    # held-out season (2022–23 … 2025–26), −15% error on average. Originals in
+    # comments. The ESPN-projection weight could not be measured (no history).
+    recent: float = RECENT_DEFAULT  # was 0.5
+    trailing_scale: float = 0.5  # was 1.0 — streaks predict less than assumed
+    season_base: float = SEASON_BASE  # was 0.35
+    season_full_gp: float = SEASON_FULL_GP  # was 25
+    history_full_gp: float = HISTORY_FULL_GP  # was 120
+    history_decay: tuple[float, float, float] = (1.0, 0.5, 0.25)  # was 1.0/0.6/0.35
+    prospect_base: float = PROSPECT_BASE
+    aging: bool = True
+    role_adjust: bool = False  # was True — PP1/line boosts double-counted history
+    durability_pull: float = 0.4  # best of 0.0–0.8
+
+    def as_dict(self) -> dict[str, Any]:
+        out = asdict(self)
+        out["history_decay"] = list(self.history_decay)
+        return out
+
+
+DEFAULT_CONFIG = ValueConfig()
+
+BACKTEST_SUMMARY = Path(__file__).resolve().parents[2] / "configs" / "hockey_backtest.json"
+
+
+def load_backtest_summary(path: Path | str | None = None) -> dict[str, Any] | None:
+    """Committed H2b accuracy summary (written by ``sj nhl-backtest``), if any."""
+    target = Path(path) if path is not None else BACKTEST_SUMMARY
+    try:
+        return json.loads(target.read_text(encoding="utf-8"))
+    except (FileNotFoundError, json.JSONDecodeError):
+        return None
 
 
 def part_weight(kind: str, base: float, games_factor: float, recent: float) -> float:
@@ -123,6 +169,7 @@ def value_parts(
     weights: dict[str, float],
     *,
     cur_nhl_season: str,
+    config: ValueConfig = DEFAULT_CONFIG,
 ) -> tuple[list[dict[str, Any]], dict[str, Any]]:
     """Every usable input for one ESPN player, plus facts the caller reuses."""
     ctx = ctx or {}
@@ -134,7 +181,8 @@ def value_parts(
         got = _per_game((row.get("trailing_stats") or {}).get(window), weights)
         if got:
             fpg, games = got
-            parts.append(_part("trailing", f"last {window} days", fpg, games, base,
+            parts.append(_part("trailing", f"last {window} days", fpg, games,
+                               round(base * config.trailing_scale, 4),
                                min(games / full, 1.0)))
 
     history = [h for h in ctx.get("history") or [] if isinstance(h, dict)]
@@ -142,13 +190,13 @@ def value_parts(
     got = _per_game(row.get("season_stats"), weights)
     if got:
         fpg, games = got
-        parts.append(_part("season", "this season", fpg, games, SEASON_BASE,
-                           min(games / SEASON_FULL_GP, 1.0)))
+        parts.append(_part("season", "this season", fpg, games, config.season_base,
+                           min(games / config.season_full_gp, 1.0)))
         facts["cur_gp"] = games
     elif (got := _per_game(nhl_cur, weights)) is not None:
         fpg, games = got
-        parts.append(_part("season", "this season (NHL)", fpg, games, SEASON_BASE,
-                           min(games / SEASON_FULL_GP, 1.0)))
+        parts.append(_part("season", "this season (NHL)", fpg, games, config.season_base,
+                           min(games / config.season_full_gp, 1.0)))
         facts["cur_gp"] = games
 
     projected = row.get("projected_stats") or None
@@ -176,21 +224,26 @@ def value_parts(
         if not got or got[1] < 3 or not _usable(got[0], got[1], group):
             continue
         start = int(sid[:4])
-        adjusted = age_project(got[0], season_age(birth, start), now_age, group)
+        adjusted = (
+            age_project(got[0], season_age(birth, start), now_age, group)
+            if config.aging
+            else got[0]
+        )
         seasons.append((adjusted, got[1], cur_start - start))
     facts["history_gp"] = [(int(float(h.get("GP") or 0)), cur_start - int(str(h["season"])[:4]))
                            for h in history
                            if str(h.get("season") or "") != cur_nhl_season
                            and len(str(h.get("season") or "")) == 8]
     if seasons:
-        wts = [g * HISTORY_DECAY.get(ago, 0.3) for _, g, ago in seasons]
+        decay = dict(zip((1, 2, 3), config.history_decay, strict=True))
+        wts = [g * decay.get(ago, 0.3) for _, g, ago in seasons]
         hv = math.fsum(v * w for (v, _, _), w in zip(seasons, wts, strict=True)) / math.fsum(wts)
         total_gp = math.fsum(g for _, g, _ in seasons)
         n = len(seasons)
         label = (f"NHL history, age-adjusted ({n} season{'s' if n > 1 else ''}, "
                  f"{int(total_gp)} GP)")
         parts.append(_part("history", label, hv, total_gp, 0.0,
-                           min(total_gp / HISTORY_FULL_GP, 1.0)))
+                           min(total_gp / config.history_full_gp, 1.0)))
 
     prior_seasons = [s for s in seasons] or [h for h in facts["history_gp"] if h[0] > 0]
     rookie = bool(ctx) and not prior_seasons and (ctx.get("prior_nhl_gp") or 0) < ROOKIE_MAX_PRIOR_GP
@@ -204,7 +257,8 @@ def value_parts(
             weights=weights,
         )
         if est is not None and _usable(est, 1, group):
-            parts.append(_part("prospect", f"prospect estimate ({why})", est, None, PROSPECT_BASE))
+            parts.append(_part("prospect", f"prospect estimate ({why})", est, None,
+                               config.prospect_base))
 
     if not parts:
         base, why = role_baseline(group, ctx)
@@ -227,9 +281,13 @@ def role_baseline(group: str, ctx: dict[str, Any]) -> tuple[float, str]:
     return base, why
 
 
-def adjust(group: str, ctx: dict[str, Any] | None) -> tuple[float, list[str]]:
+def adjust(
+    group: str, ctx: dict[str, Any] | None, config: ValueConfig = DEFAULT_CONFIG
+) -> tuple[float, list[str]]:
     """Role multiplier (line/pair, PP unit, ice-time trend, goalie role), ±25% cap."""
     ctx = ctx or {}
+    if not config.role_adjust:
+        return 1.0, []
     total, reasons = 0.0, []
 
     def add(delta: float, why: str | None) -> None:
@@ -279,20 +337,25 @@ def player_value(
     cur_nhl_season: str,
     schedule: dict[str, Any] | None,
     as_of: dt.date,
+    config: ValueConfig = DEFAULT_CONFIG,
+    season_games: int = 82,
 ) -> dict[str, Any]:
-    parts, facts = value_parts(row, ctx, weights, cur_nhl_season=cur_nhl_season)
+    parts, facts = value_parts(row, ctx, weights, cur_nhl_season=cur_nhl_season, config=config)
     group = facts["group"]
-    base = blend(parts)
-    mult, reasons = adjust(group, ctx)
+    base = blend(parts, config.recent)
+    mult, reasons = adjust(group, ctx, config)
     value = round(base * mult, 3) if base is not None else None
 
+    projected_gp = (facts.get("espn_proj") or {}).get("gp")
     if group == "G":
         goalie = (ctx or {}).get("goalie") or {}
         durable = goalie_rate(goalie.get("start_share"), goalie.get("basis"))
     elif facts.get("rookie"):
-        durable = skater_rate((facts.get("espn_proj") or {}).get("gp"), [])
+        durable = skater_rate(projected_gp, [], pull=config.durability_pull,
+                              season_games=season_games)
     else:
-        durable = skater_rate((facts.get("espn_proj") or {}).get("gp"), facts["history_gp"])
+        durable = skater_rate(projected_gp, facts["history_gp"], pull=config.durability_pull,
+                              season_games=season_games)
     team = (ctx or {}).get("team") or nhl_abbrev(row.get("pro_team"))
     left = remaining_games(team, schedule, as_of)
     ros = round(value * left * durable.rate, 1) if value is not None and left is not None else None
@@ -331,6 +394,8 @@ def build_values(
     scoring_source: str,
     as_of: dt.date,
     generated_at: str,
+    config: ValueConfig = DEFAULT_CONFIG,
+    season_games: int = 82,
 ) -> dict[str, Any]:
     """``values.json`` for every rostered player and free agent (keyed by ESPN id)."""
     from nhl.export import espn_players
@@ -344,7 +409,8 @@ def build_values(
         entry = mapped.get(str(row.get("id")))
         ctx = ctx_by_nhl.get(str(entry["nhl_id"])) if entry else None
         players[str(row["id"])] = player_value(
-            row, ctx, weights, cur_nhl_season=cur, schedule=schedule, as_of=as_of
+            row, ctx, weights, cur_nhl_season=cur, schedule=schedule, as_of=as_of,
+            config=config, season_games=season_games,
         )
     return {
         "schema_version": SCHEMA_VERSION,
@@ -354,7 +420,11 @@ def build_values(
         "nhl_season": cur,
         "generated_at": generated_at,
         "as_of": as_of.isoformat(),
-        "recent_default": RECENT_DEFAULT,
+        "recent_default": config.recent,
+        "season_games": season_games,
+        "model": config.as_dict(),
+        # H2b accuracy of this model on past seasons (null until backtested).
+        "backtest": load_backtest_summary(),
         "scoring_source": scoring_source,
         "weights": weights,
         "players": players,

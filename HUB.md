@@ -110,18 +110,24 @@ totals. The hub does **not** invent player week lines ESPN omitted, and does
   `durability.py`, `aging.py`, `prospects.py`, `roles.py`). Per-game value is a
   weighted blend — last 7/15/30 days, this season, ESPN's projected stat line
   scored under league rules, age-adjusted NHL history (3 seasons,
-  1.0/0.6/0.35), a prospect estimate for rookies, or a flagged role estimate
-  when nothing else exists — times a role adjustment (line/pair and PP unit
-  from ice time, trend, goalie role; capped ±25%). ROS = value × remaining
-  team games × expected share played (H3 durability; goalies use start share).
-  Zero projections and zero past seasons are gaps; missing data is null.
+  1.0/0.5/0.25), a prospect estimate for rookies, or a flagged role estimate
+  when nothing else exists. ROS = value × remaining team games × expected
+  share played (H3 durability; goalies use start share; real season length —
+  2026–27 is 84 games). Zero projections and zero past seasons are gaps;
+  missing data is null.
+- **H2b (landed): backtested and tuned.** `sj nhl-backtest` replays 2022–23 …
+  2025–26 and scores the model against what happened
+  ([HOCKEY-BACKTEST.md](HOCKEY-BACKTEST.md)). The tuned weights (less weight
+  on short streaks, more on this season, faster-decaying history, role
+  adjustment off) cut error 15% on held-out seasons and ship as the defaults.
+  The board shows the shipped model's typical miss per game by position.
 - The hockey **`projections` tab** is the values board: value, ROS, ESPN
   per-game, share played, age, data-source tag, a recent-form setting
   (`?recent=0…1`, re-blended from saved inputs in `lib/hockey-values.ts`),
   position / rostered / free-agent filters, sort, 25-row pages, and one
   expanded input breakdown at a time (`?open=`). Roster and Waivers gain Value
   and ROS. Tools are Category Board (when `season_stats` exist), Scoring lab,
-  and the season-points Analysis tab below. Not backtested yet (H2b).
+  and the season-points Analysis tab below.
 
 espn-api hockey `Player` omits `total_points`. Sync derives season FP from
 `season_stats × scoring_format` counting weights (skipping GAA/SV%) and

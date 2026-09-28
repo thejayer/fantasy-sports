@@ -152,6 +152,10 @@ class SampleNhl:
                               if team in (g["homeTeam"]["abbrev"], g["awayTeam"]["abbrev"])]}
         if url.startswith(f"{WEB}/player/"):
             return self._landing(int(url.split("/")[-2]))
+        if url == f"{STATS}/season":
+            return {"data": [{"id": int(self.cur), "numberOfGames": 82,
+                              "startDate": f"{self.season - 1}-10-07T00:00:00",
+                              "regularSeasonEndDate": f"{self.season}-04-15T00:00:00"}]}
         if url.startswith(STATS):
             kind, report = url[len(STATS) + 1:].split("/")[:2]
             match = re.search(r"seasonId=(\d{8})", str(params.get("cayenneExp", "")))
