@@ -8,6 +8,13 @@ updates:
     schedule:
       interval: weekly
     open-pull-requests-limit: 5
+    # eslint-config-next (and typescript-eslint via it) is not ready for
+    # ESLint 10 or TypeScript 7. Revisit when Next ships compatible peers.
+    ignore:
+      - dependency-name: eslint
+        update-types: ["version-update:semver-major"]
+      - dependency-name: typescript
+        update-types: ["version-update:semver-major"]
 
   - package-ecosystem: pip
     directory: /
@@ -18,6 +25,21 @@ updates:
     # regenerate the lockfile if needed:
     #   uv pip compile pyproject.toml --extra dev --extra dashboard --extra gcs \
     #     --python-version 3.11 -o requirements-lock.txt
+    # pydantic pins an exact pydantic-core; streamlit and pyarrow share a
+    # crash-avoidance constraint. Group so single-package bumps stay solvable.
+    groups:
+      pydantic:
+        patterns:
+          - "pydantic*"
+      streamlit-arrow:
+        patterns:
+          - "streamlit"
+          - "pyarrow"
+    # espn-api 0.46.0 still requires urllib3<=2.2.3. Drop this ignore when
+    # espn-api publishes a release that lifts the cap.
+    ignore:
+      - dependency-name: urllib3
+        versions: [">2.2.3"]
 
   - package-ecosystem: github-actions
     directory: /
