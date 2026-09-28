@@ -2,16 +2,29 @@
 
 from __future__ import annotations
 
+import inspect
 import json
 import os
 import time
+from collections.abc import Callable
 from dataclasses import asdict, dataclass
 from pathlib import Path
-from typing import Any, Literal
+from typing import Any, Literal, TypeVar
 
+from sj.hockey_espn import (
+    box_has_team,
+    install_matchup_guards,
+    is_incomplete_matchup_error,
+)
+from sj.mtransactions import fetch_transactions_mview
 from sj.registry import LeagueSpec, load_registry
-from sj.serialize import serialize_league
-from sj.store import write_snapshot
+from sj.serialize import (
+    build_week_box_scores_document,
+    build_week_category_document,
+    is_category_scoring,
+    serialize_league,
+)
+from sj.store import write_snapshot, write_week_box_scores
 
 FailureKind = Literal[
     "credentials",
@@ -25,6 +38,27 @@ FailureKind = Literal[
 # should not fail a backfill run. Everything else (auth, network, unknown)
 # must — and `sj sync` treats *any* failure as fatal so Cloud Scheduler sees it.
 TOLERATED_BACKFILL_KINDS: frozenset[FailureKind] = frozenset({"invalid_league"})
+
+# ESPN activity / free-agent endpoints are unavailable before 2019 in espn-api.
+ACTIVITY_MIN_SEASON = 2019
+FREE_AGENT_MIN_SEASON = 2019
+# espn-api football/hockey box_scores() refuse seasons before 2019.
+BOX_SCORE_MIN_SEASON = 2019
+DEFAULT_ESPN_TIMEOUT_SECONDS = 30.0
+DEFAULT_ESPN_MAX_ATTEMPTS = 4
+DEFAULT_ACTIVITY_PAGE_SIZE = 25
+# 25 × 200 = 5,000 communication topics. Football almost always stops early
+# (short page); baseball add/drop seasons routinely exceed the old 40-page
+# (1,000) cap. Override with SJ_ACTIVITY_MAX_PAGES.
+DEFAULT_ACTIVITY_MAX_PAGES = 200
+MAX_ACTIVITY_MAX_PAGES = 400
+DEFAULT_FREE_AGENT_SIZE = 50
+MAX_FREE_AGENT_SIZE = 150
+# Cap HTTP cost on deep historical syncs (~3 ESPN round-trips per week).
+DEFAULT_BOX_SCORE_MAX_WEEKS = 18
+MAX_BOX_SCORE_MAX_WEEKS = 22
+
+T = TypeVar("T")
 
 
 @dataclass
@@ -91,12 +125,120 @@ def espn_credentials() -> tuple[str | None, str | None]:
     return espn_s2, swid
 
 
+def espn_timeout_seconds() -> float:
+    raw = os.environ.get("SJ_ESPN_TIMEOUT", str(DEFAULT_ESPN_TIMEOUT_SECONDS))
+    try:
+        return max(1.0, float(raw))
+    except ValueError:
+        return DEFAULT_ESPN_TIMEOUT_SECONDS
+
+
+def espn_max_attempts() -> int:
+    raw = os.environ.get("SJ_ESPN_MAX_ATTEMPTS", str(DEFAULT_ESPN_MAX_ATTEMPTS))
+    try:
+        return max(1, int(raw))
+    except ValueError:
+        return DEFAULT_ESPN_MAX_ATTEMPTS
+
+
+class _TimedRequests:
+    """Proxy that injects a default timeout into espn-api's ``requests.get`` calls.
+
+    espn-api uses the module-level ``requests`` object (not a Session), so we
+    replace ``espn_api.requests.espn_requests.requests`` with this wrapper.
+    """
+
+    _sj_timeout_wrapped = True
+
+    def __init__(self, timeout: float) -> None:
+        import requests as requests_lib
+
+        self._requests = requests_lib
+        self._sj_timeout = timeout
+
+    def get(self, url: str, **kwargs: Any) -> Any:
+        kwargs.setdefault("timeout", self._sj_timeout)
+        return self._requests.get(url, **kwargs)
+
+    def request(self, method: str, url: str, **kwargs: Any) -> Any:
+        kwargs.setdefault("timeout", self._sj_timeout)
+        return self._requests.request(method, url, **kwargs)
+
+    def __getattr__(self, name: str) -> Any:
+        return getattr(self._requests, name)
+
+
+def _install_espn_timeout(timeout: float | None = None) -> None:
+    """Apply a default timeout to espn-api HTTP calls (roadmap 2.4)."""
+    from espn_api.requests import espn_requests
+
+    seconds = espn_timeout_seconds() if timeout is None else timeout
+    current = espn_requests.requests
+    if getattr(current, "_sj_timeout_wrapped", False):
+        current._sj_timeout = seconds
+        return
+    espn_requests.requests = _TimedRequests(seconds)
+
+
+def _is_retryable_espn_error(exc: BaseException) -> bool:
+    if isinstance(exc, (ConnectionError, TimeoutError, OSError)):
+        return True
+    try:
+        import requests
+        from espn_api.requests.espn_requests import ESPNUnknownError
+
+        if isinstance(exc, (requests.exceptions.Timeout, requests.exceptions.ConnectionError)):
+            return True
+        if isinstance(exc, requests.exceptions.HTTPError):
+            status = getattr(getattr(exc, "response", None), "status_code", None)
+            return status in {408, 429, 500, 502, 503, 504}
+        if isinstance(exc, ESPNUnknownError):
+            msg = str(exc)
+            return any(
+                f"HTTP {code}" in msg for code in (408, 429, 500, 502, 503, 504)
+            )
+    except ImportError:  # pragma: no cover
+        pass
+    return False
+
+
+def espn_call(
+    fn: Callable[[], T],
+    *,
+    label: str = "espn",
+    max_attempts: int | None = None,
+    base_delay: float = 0.5,
+) -> T:
+    """Run an ESPN-facing callable with exponential backoff on transient errors."""
+    del label  # reserved for future structured logging
+    attempts = espn_max_attempts() if max_attempts is None else max(1, max_attempts)
+    last_exc: BaseException | None = None
+    for attempt in range(1, attempts + 1):
+        try:
+            return fn()
+        except Exception as exc:
+            last_exc = exc
+            if attempt >= attempts or not _is_retryable_espn_error(exc):
+                raise
+            time.sleep(base_delay * (2 ** (attempt - 1)))
+    assert last_exc is not None  # pragma: no cover
+    raise last_exc
+
+
 def open_espn_league(spec: LeagueSpec, season: int) -> Any:
+    if not spec.has_live_espn_id():
+        raise ValueError(
+            f"{spec.id}: ESPN league id is not set "
+            f"(platform={spec.platform}, espn_league_id={spec.espn_league_id})"
+        )
+
     espn_s2, swid = espn_credentials()
     if not espn_s2 or not swid:
         raise RuntimeError(
             "ESPN_S2 and ESPN_SWID (or SWID) env vars are required for private leagues"
         )
+
+    _install_espn_timeout()
 
     if spec.sport == "football":
         from espn_api.football import League
@@ -104,15 +246,407 @@ def open_espn_league(spec: LeagueSpec, season: int) -> Any:
         from espn_api.baseball import League
     elif spec.sport == "basketball":
         from espn_api.basketball import League
+    elif spec.sport == "hockey":
+        from espn_api.hockey import League
+
+        # espn-api 0.46 Matchup/BoxScore/Team require winner/home/away on
+        # schedule rows. Patch before League() builds team schedules.
+        install_matchup_guards()
     else:  # pragma: no cover - registry validates sport
         raise ValueError(f"Unsupported sport: {spec.sport}")
 
-    return League(
-        league_id=spec.espn_league_id,
-        year=season,
-        espn_s2=espn_s2,
-        swid=swid,
+    def _construct() -> Any:
+        return League(
+            league_id=spec.espn_league_id,
+            year=season,
+            espn_s2=espn_s2,
+            swid=swid,
+        )
+
+    return espn_call(_construct, label=f"open:{spec.id}:{season}")
+
+
+def _activity_unsupported(exc: BaseException) -> bool:
+    """ESPN often refuses historical activity with misleading errors.
+
+    Pre-2019 is gated separately. For 2019–prior-current, ``recent_activity``
+    can raise ``ESPNInvalidLeague`` ("League N does not exist") even when the
+    League constructor and standings/rosters succeed — treat that as "no
+    activity", not a failed season sync.
+    """
+    from espn_api.requests.espn_requests import ESPNInvalidLeague
+
+    if isinstance(exc, ESPNInvalidLeague):
+        return True
+    msg = str(exc).lower()
+    return (
+        "cant retrieve" in msg
+        or "can't retrieve" in msg
+        or "cant use recent" in msg
+        or "does not exist" in msg
     )
+
+
+def _free_agents_unsupported(exc: BaseException) -> bool:
+    msg = str(exc).lower()
+    return (
+        "cant use free" in msg
+        or "can't use free" in msg
+        or "before 2019" in msg
+        or "cant retrieve" in msg
+        or "can't retrieve" in msg
+    )
+
+
+def free_agent_size() -> int:
+    """ESPN ``limit`` for free_agents (default 50). Cap keeps snapshots small."""
+    raw = os.environ.get("SJ_FREE_AGENT_SIZE", "").strip()
+    if not raw:
+        return DEFAULT_FREE_AGENT_SIZE
+    try:
+        value = int(raw)
+    except ValueError:
+        return DEFAULT_FREE_AGENT_SIZE
+    return max(1, min(value, MAX_FREE_AGENT_SIZE))
+
+
+def fetch_free_agents(
+    league: Any,
+    *,
+    size: int | None = None,
+) -> list[Any]:
+    """Fetch FREEAGENT + WAIVERS pool (espn-api; empty before 2019).
+
+    Football costs three HTTP calls (kona_player_info + schedule + ratings);
+    baseball is one. Docstring says current season only — historical years
+    that error are treated as unsupported (empty list), not sync failures.
+    """
+    season = int(getattr(league, "year", 0) or 0)
+    if season and season < FREE_AGENT_MIN_SEASON:
+        return []
+    if not callable(getattr(league, "free_agents", None)):
+        return []
+    limit = DEFAULT_FREE_AGENT_SIZE if size is None else size
+    limit = max(1, min(int(limit), MAX_FREE_AGENT_SIZE))
+    try:
+        return list(
+            espn_call(
+                lambda: league.free_agents(size=limit),
+                label="free_agents",
+            )
+            or []
+        )
+    except Exception as exc:
+        if _free_agents_unsupported(exc):
+            return []
+        raise
+
+
+def activity_max_pages() -> int:
+    """ESPN ``recent_activity`` page cap (default 200). 25 topics per page."""
+    raw = os.environ.get("SJ_ACTIVITY_MAX_PAGES", "").strip()
+    if not raw:
+        return DEFAULT_ACTIVITY_MAX_PAGES
+    try:
+        value = int(raw)
+    except ValueError:
+        return DEFAULT_ACTIVITY_MAX_PAGES
+    return max(1, min(value, MAX_ACTIVITY_MAX_PAGES))
+
+
+def fetch_recent_activity(
+    league: Any,
+    *,
+    page_size: int = DEFAULT_ACTIVITY_PAGE_SIZE,
+    max_pages: int | None = None,
+) -> list[Any]:
+    """Page through ESPN recent activity for football / baseball / hockey.
+
+    ESPN's communication view is newest-first and offset-paged; espn-api's
+    ``limitPerMessageSet`` is 25, so we keep ``page_size`` at 25 and raise
+    ``max_pages`` (or ``SJ_ACTIVITY_MAX_PAGES``) when a season has more
+    topics than one thousand. Each sync *replaces* ``transactions.json`` —
+    it does not merge with a prior pull — so the cap must cover the season.
+
+    Historical seasons (2019+) often raise ``ESPNInvalidLeague`` on that
+    communication view even though the league exists. When the page is empty
+    or unsupported, fall back to ``mTransactions2`` across scoring periods
+    (see :func:`sj.mtransactions.fetch_transactions_mview`).
+    """
+    season = int(getattr(league, "year", 0) or 0)
+    if season and season < ACTIVITY_MIN_SEASON:
+        return []
+
+    items: list[Any] = []
+    if callable(getattr(league, "recent_activity", None)):
+        pages = activity_max_pages() if max_pages is None else max_pages
+        offset = 0
+        for _ in range(pages):
+            try:
+                page = espn_call(
+                    lambda current=offset: league.recent_activity(
+                        size=page_size, offset=current
+                    ),
+                    label="recent_activity",
+                )
+            except Exception as exc:
+                if offset == 0 and _activity_unsupported(exc):
+                    return fetch_transactions_mview(league)
+                raise
+            if not page:
+                break
+            items.extend(page)
+            if len(page) < page_size:
+                break
+            offset += page_size
+    if items:
+        return items
+    return fetch_transactions_mview(league)
+
+
+def box_score_max_weeks() -> int:
+    """Max scoring periods to pull box scores for (default 18)."""
+    raw = os.environ.get("SJ_BOX_SCORE_MAX_WEEKS", "").strip()
+    if not raw:
+        return DEFAULT_BOX_SCORE_MAX_WEEKS
+    try:
+        value = int(raw)
+    except ValueError:
+        return DEFAULT_BOX_SCORE_MAX_WEEKS
+    return max(1, min(value, MAX_BOX_SCORE_MAX_WEEKS))
+
+
+def _unexpected_keyword_argument(exc: BaseException) -> bool:
+    return "unexpected keyword argument" in str(exc).lower()
+
+
+def _box_scores_unsupported(exc: BaseException) -> bool:
+    msg = str(exc).lower()
+    return (
+        "before 2019" in msg
+        or "cant retrieve" in msg
+        or "can't retrieve" in msg
+        or "does not exist" in msg
+        # Last resort after sport-correct kwargs: a future espn-api signature
+        # change must skip the week, not fail the whole scheduled sync.
+        or _unexpected_keyword_argument(exc)
+    )
+
+
+def _box_scores_param_names(fn: Callable[..., Any]) -> frozenset[str]:
+    try:
+        return frozenset(inspect.signature(fn).parameters)
+    except (TypeError, ValueError):
+        return frozenset()
+
+
+def _invoke_box_scores(
+    league: Any,
+    week: int,
+    player_team_cache: dict[int, int] | None,
+) -> Any:
+    """Call espn-api ``box_scores`` with sport-correct kwargs.
+
+    Football 0.46 accepts ``week=`` and optional ``player_team_cache``.
+    Hockey (and baseball) accept ``matchup_period=`` / ``scoring_period=``
+    only — passing ``week=`` raises TypeError and used to fail the job.
+    """
+    names = _box_scores_param_names(league.box_scores)
+    if "matchup_period" in names or "scoring_period" in names:
+        kwargs: dict[str, Any] = {}
+        if "matchup_period" in names:
+            kwargs["matchup_period"] = week
+        if "scoring_period" in names:
+            kwargs["scoring_period"] = week
+        return league.box_scores(**kwargs)
+    try:
+        return league.box_scores(week=week, player_team_cache=player_team_cache)
+    except TypeError as exc:
+        if not _unexpected_keyword_argument(exc):
+            raise
+        try:
+            return league.box_scores(week=week)
+        except TypeError as exc2:
+            if not _unexpected_keyword_argument(exc2):
+                raise
+            return league.box_scores(matchup_period=week, scoring_period=week)
+
+
+def fetch_box_scores(
+    league: Any,
+    week: int,
+    *,
+    player_team_cache: dict[int, int] | None = None,
+) -> list[Any]:
+    """Fetch ``BoxScore`` objects for one scoring period.
+
+    espn-api football uses ``week=``; hockey uses ``matchup_period`` /
+    ``scoring_period``. Both refuse seasons before 2019.
+    ``player_team_cache`` is football-only and shared across weeks in one sync.
+    """
+    season = int(getattr(league, "year", 0) or 0)
+    if season and season < BOX_SCORE_MIN_SEASON:
+        return []
+    if not callable(getattr(league, "box_scores", None)):
+        return []
+    # Hockey 0.46 BoxScore requires winner/home; install before the call
+    # so a live espn-api list-comp does not fail the week.
+    names = _box_scores_param_names(league.box_scores)
+    hockey_shaped = "matchup_period" in names or "scoring_period" in names
+    if hockey_shaped:
+        install_matchup_guards()
+    try:
+
+        def _call() -> Any:
+            return _invoke_box_scores(league, week, player_team_cache)
+
+        boxes = list(espn_call(_call, label=f"box_scores:w{week}") or [])
+    except Exception as exc:
+        if _box_scores_unsupported(exc) or is_incomplete_matchup_error(exc):
+            return []
+        raise
+    if hockey_shaped:
+        return [box for box in boxes if box_has_team(box)]
+    return boxes
+
+
+def sync_football_box_scores(
+    league: Any,
+    spec: LeagueSpec,
+    season: int,
+    snapshot: dict[str, Any],
+    store_dir: Path | str | None = None,
+) -> int:
+    """Write ``weeks/{N}.json`` for weeks 1..current (football only).
+
+    Side concern — does not upsert ``index.json``. Returns weeks written.
+    """
+    if spec.sport != "football":
+        return 0
+    if season < BOX_SCORE_MIN_SEASON:
+        return 0
+    current = int(snapshot.get("current_week") or 0)
+    if current < 1:
+        return 0
+    last = min(current, box_score_max_weeks())
+    cache: dict[int, int] = {}
+    written = 0
+    synced_at = snapshot.get("synced_at")
+    for week in range(1, last + 1):
+        boxes = fetch_box_scores(league, week, player_team_cache=cache)
+        if not boxes:
+            continue
+        doc = build_week_box_scores_document(
+            league_id=spec.id,
+            season=season,
+            week=week,
+            box_scores=boxes,
+            synced_at=synced_at if isinstance(synced_at, str) else None,
+            period_label=str(snapshot.get("period_label") or "week"),
+        )
+        write_week_box_scores(doc, store_dir=store_dir)
+        written += 1
+    return written
+
+
+def _hockey_category_box(match: Any) -> Any | None:
+    """Adapt espn-api hockey Matchup cats into the baseball category-box shape."""
+    home_cats = getattr(match, "home_team_cats", None)
+    away_cats = getattr(match, "away_team_cats", None)
+    if not isinstance(home_cats, dict) and not isinstance(away_cats, dict):
+        return None
+
+    class _Box:
+        home_team = getattr(match, "home_team", None)
+        away_team = getattr(match, "away_team", None)
+        home_wins = None
+        home_losses = None
+        home_ties = None
+        away_wins = None
+        away_losses = None
+        away_ties = None
+        home_stats = home_cats if isinstance(home_cats, dict) else {}
+        away_stats = away_cats if isinstance(away_cats, dict) else {}
+
+    return _Box()
+
+
+def sync_hockey_week_boxes(
+    league: Any,
+    spec: LeagueSpec,
+    season: int,
+    snapshot: dict[str, Any],
+    store_dir: Path | str | None = None,
+) -> int:
+    """Write ``weeks/{N}.json`` from hockey box_scores or category matchups.
+
+    espn-api hockey exposes football-shaped ``box_scores`` (applied totals +
+    lineups) via ``matchup_period`` / ``scoring_period`` — not football's
+    ``week=`` — and, for H2H cats, ``Matchup.home_team_cats``. Empty weeks are
+    skipped — never invent player lines ESPN did not return.
+    """
+    if spec.sport != "hockey":
+        return 0
+    install_matchup_guards()
+    if season < BOX_SCORE_MIN_SEASON:
+        return 0
+    current = int(snapshot.get("current_week") or 0)
+    if current < 1:
+        return 0
+    last = min(current, box_score_max_weeks())
+    written = 0
+    synced_at = snapshot.get("synced_at")
+    scoring_type = snapshot.get("scoring_type")
+    if isinstance(scoring_type, str) and is_category_scoring(scoring_type):
+        scoreboard = getattr(league, "scoreboard", None)
+        if not callable(scoreboard):
+            return 0
+        for week in range(1, last + 1):
+            try:
+                matchups = espn_call(
+                    lambda current_week=week: scoreboard(matchupPeriod=current_week),
+                    label=f"hockey_scoreboard:w{week}",
+                )
+            except Exception as exc:
+                if _box_scores_unsupported(exc) or is_incomplete_matchup_error(exc):
+                    continue
+                raise
+            boxes = [
+                box
+                for match in (matchups or [])
+                if (box := _hockey_category_box(match)) is not None
+            ]
+            if not boxes:
+                continue
+            doc = build_week_category_document(
+                league_id=spec.id,
+                season=season,
+                week=week,
+                box_scores=boxes,
+                synced_at=synced_at if isinstance(synced_at, str) else None,
+                period_label=str(snapshot.get("period_label") or "week"),
+            )
+            doc["sport"] = "hockey"
+            write_week_box_scores(doc, store_dir=store_dir)
+            written += 1
+        return written
+
+    for week in range(1, last + 1):
+        boxes = fetch_box_scores(league, week)
+        if not boxes:
+            continue
+        doc = build_week_box_scores_document(
+            league_id=spec.id,
+            season=season,
+            week=week,
+            box_scores=boxes,
+            synced_at=synced_at if isinstance(synced_at, str) else None,
+            period_label=str(snapshot.get("period_label") or "week"),
+            sport="hockey",
+        )
+        write_week_box_scores(doc, store_dir=store_dir)
+        written += 1
+    return written
 
 
 def build_snapshot(league: Any, spec: LeagueSpec, season: int) -> dict[str, Any]:
@@ -122,6 +656,11 @@ def build_snapshot(league: Any, spec: LeagueSpec, season: int) -> dict[str, Any]
     league-shaped object -- the live ESPN client, or ``sj.sample`` -- goes
     through one definition of the snapshot schema.
     """
+    # recent_activity (paged) + free_agents (size-capped) are extra ESPN calls;
+    # settings come free from the League constructor's mSettings fetch.
+    # Historical seasons fall back to mTransactions2 inside fetch_recent_activity.
+    activities = fetch_recent_activity(league)
+    agents = fetch_free_agents(league, size=free_agent_size())
     snapshot = serialize_league(
         league,
         league_id=spec.id,
@@ -129,6 +668,8 @@ def build_snapshot(league: Any, spec: LeagueSpec, season: int) -> dict[str, Any]
         format=spec.format,
         season=season,
         espn_league_id=spec.espn_league_id,
+        transactions=activities,
+        free_agents=agents,
     )
     # Prefer the friendly registry name over ESPN's raw settings name.
     snapshot["name"] = spec.name
@@ -142,8 +683,49 @@ def sync_league_season(
     store_dir: Path | str | None = None,
 ) -> SyncResult:
     league = open_espn_league(spec, season)
+    if spec.sport == "baseball":
+        # Stash rosterSettings (GS caps) before serialize_settings runs.
+        from sj.baseball_enrich import attach_baseball_roster_limits
+
+        attach_baseball_roster_limits(league)
+    elif spec.sport == "hockey":
+        # espn-api hockey Team omits points_for; attach ESPN teams[].points.
+        from sj.baseball_enrich import attach_espn_team_season_points
+
+        attach_espn_team_season_points(league)
     snapshot = build_snapshot(league, spec, season)
+    if spec.sport == "baseball":
+        # Attach PR7/15/30 before the season write so monolith + v2 rosters
+        # include trailing_stats without a second rewrite.
+        from sj.baseball_enrich import enrich_baseball_trailing_stats
+
+        enrich_baseball_trailing_stats(league, snapshot)
     location = write_snapshot(snapshot, store_dir=store_dir)
+    # Football box scores are a side concern (roadmap 8.1) — after the season
+    # write so a failed week pull never leaves a half-written manifest.
+    sync_football_box_scores(league, spec, season, snapshot, store_dir=store_dir)
+    sync_hockey_week_boxes(league, spec, season, snapshot, store_dir=store_dir)
+    if spec.sport == "baseball":
+        from sj.baseball_enrich import (
+            sync_baseball_category_boxes,
+            sync_baseball_pro_schedule,
+        )
+
+        sync_baseball_pro_schedule(
+            league, spec, season, snapshot, store_dir=store_dir
+        )
+        sync_baseball_category_boxes(
+            league, spec, season, snapshot, store_dir=store_dir
+        )
+    if spec.sport in ("baseball", "hockey"):
+        from sj.season_points_analysis import sync_season_points_analysis
+
+        # Season-points slot / timeseries analysis (roadmap 8.5). Side
+        # concern after the season write; period failures are recorded in
+        # the JSON rather than failing the league-season.
+        sync_season_points_analysis(
+            league, spec, season, snapshot, store_dir=store_dir
+        )
     return SyncResult(
         league_id=spec.id,
         season=season,
@@ -185,6 +767,15 @@ def sync_registry(
     results: list[SyncResult] = []
     failures: list[SyncFailure] = []
     for spec in selected:
+        if not spec.is_espn():
+            emit(f"skip {spec.id}: platform={spec.platform} (not ESPN)")
+            continue
+        if not spec.has_live_espn_id():
+            emit(
+                f"skip {spec.id}: espn_league_id={spec.espn_league_id} "
+                "(placeholder — fill the live ESPN id before sync)"
+            )
+            continue
         target_seasons = [spec.current_season] if current_only else list(spec.seasons)
         if seasons is not None:
             target_seasons = [s for s in target_seasons if s in seasons]
@@ -238,3 +829,45 @@ def sync_summary_line(
         "failures": [asdict(f) for f in failures],
     }
     return "SYNC_SUMMARY " + json.dumps(payload, sort_keys=True)
+
+
+def notify_hub_revalidate(
+    *,
+    url: str | None = None,
+    secret: str | None = None,
+    timeout_seconds: float = 5.0,
+) -> str:
+    """Best-effort POST to the hub's ``/api/revalidate`` after store writes.
+
+    No-op when ``SJ_REVALIDATE_URL`` or ``SJ_REVALIDATE_SECRET`` is unset.
+    Never raises — sync/backfill must not fail because the hub was unreachable.
+    Returns a short status string for logs.
+    """
+    import urllib.error
+    import urllib.request
+
+    target = (url if url is not None else os.environ.get("SJ_REVALIDATE_URL", "")).strip()
+    token = (
+        secret if secret is not None else os.environ.get("SJ_REVALIDATE_SECRET", "")
+    ).strip()
+    if not target or not token:
+        return "skipped (SJ_REVALIDATE_URL / SJ_REVALIDATE_SECRET unset)"
+
+    request = urllib.request.Request(
+        target,
+        data=b"{}",
+        method="POST",
+        headers={
+            "Authorization": f"Bearer {token}",
+            "Content-Type": "application/json",
+            "User-Agent": "sj-sync-revalidate/1",
+        },
+    )
+    try:
+        with urllib.request.urlopen(request, timeout=timeout_seconds) as response:
+            code = getattr(response, "status", None) or response.getcode()
+            return f"ok HTTP {code}"
+    except urllib.error.HTTPError as exc:
+        return f"failed HTTP {exc.code}"
+    except Exception as exc:  # noqa: BLE001 - best-effort webhook
+        return f"failed {type(exc).__name__}: {exc}"
