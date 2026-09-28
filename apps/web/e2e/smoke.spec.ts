@@ -377,10 +377,13 @@ test.describe("hub smoke", () => {
       ).toBeVisible();
 
       // Link a franchise in each remaining league so the portfolio strip
-      // covers the four-sport set (roadmap 9.4).
+      // covers every sport (roadmap 9.4). Hockey's ESPN year can sit one
+      // ahead of football/baseball/golf; home still defaults to the densest
+      // year, but 2027 must also have a linked franchise.
       for (const label of [
         /Team for Strictly Jayers Football Dynasty/i,
         /Team for Strictly Jayers Baseball/i,
+        /Team for Strictly Jayers Hockey/i,
         /Team for Strictly Jayers Golf/i,
       ]) {
         const select = page.getByLabel(label);

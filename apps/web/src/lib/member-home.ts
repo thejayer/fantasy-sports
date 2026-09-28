@@ -25,17 +25,32 @@ export function homeAvailableSeasons(index: LeagueIndexItem[]): number[] {
 
 /**
  * Resolve `?season=` for the member home.
- * Invalid / missing → newest year that exists on disk.
+ *
+ * Invalid / missing → the on-disk year with the most league snapshots
+ * (ties go to newest). ESPN hockey years run one calendar year ahead of
+ * NFL/MLB (2026–27 → 2027), so "newest" can be hockey-only while the rest
+ * of the hub is still 2026.
  */
 export function resolveHomeSeason(
   seasons: number[],
   requested: number | undefined,
+  index?: LeagueIndexItem[],
 ): number | null {
   if (!seasons.length) return null;
   if (requested != null && Number.isFinite(requested) && seasons.includes(requested)) {
     return requested;
   }
-  return seasons[0] ?? null;
+  if (!index?.length) return seasons[0] ?? null;
+  let best: number | null = null;
+  let bestCount = -1;
+  for (const year of seasons) {
+    const n = index.filter((item) => item.season === year).length;
+    if (n > bestCount) {
+      best = year;
+      bestCount = n;
+    }
+  }
+  return best;
 }
 
 /** One index row per league that has a snapshot for `season`. */

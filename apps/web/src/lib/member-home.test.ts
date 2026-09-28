@@ -445,6 +445,24 @@ describe("home season filter", () => {
     expect(resolveHomeSeason([], 2024)).toBeNull();
   });
 
+  it("defaults to the densest year when hockey ESPN year runs ahead", () => {
+    const mixed = [
+      ...index,
+      indexRow({
+        league_id: "hockey-main",
+        name: "Hockey",
+        sport: "hockey",
+        season: 2027,
+      }),
+    ];
+    const years = homeAvailableSeasons(mixed);
+    expect(years).toEqual([2027, 2026, 2024]);
+    // 2026 has football + baseball; 2027 is hockey-only.
+    expect(resolveHomeSeason(years, undefined, mixed)).toBe(2026);
+    expect(resolveHomeSeason(years, 2027, mixed)).toBe(2027);
+    expect(resolveHomeSeason(years, undefined)).toBe(2027);
+  });
+
   it("keeps only leagues that have that season", () => {
     const at2024 = leaguesAtSeason(index, 2024);
     expect(at2024.map((r) => r.league_id)).toEqual(["football-main"]);

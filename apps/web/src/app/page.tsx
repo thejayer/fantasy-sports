@@ -70,6 +70,7 @@ export default async function HomePage({ searchParams }: Props) {
   const season = resolveHomeSeason(
     seasons,
     requested != null && Number.isFinite(requested) ? requested : undefined,
+    index,
   );
   const leagues = season != null ? leaguesAtSeason(index, season) : [];
   const viewer = await getViewer();
