@@ -33,6 +33,13 @@ import { ToolsPanel, type ToolsView } from "@/components/ToolsPanel";
 import type { BaseballToolsView, TrailingWindow } from "@/lib/baseball-tools";
 import type { HockeyToolsView } from "@/lib/hockey-tools";
 import { hockeyBioIndex, type HockeyNhlSnapshot } from "@/lib/hockey-nhl";
+import {
+  hockeyValueIndex,
+  parseHockeyBoardQuery,
+  type HockeyBoardQuery,
+  type HockeyValuesSnapshot,
+} from "@/lib/hockey-values";
+import { HockeyProjectionsBoard } from "@/components/HockeyProjectionsBoard";
 import { TeamIdentity } from "@/components/TeamAvatar";
 import { ViewerBadge } from "@/components/ViewerBadge";
 import type {
@@ -397,6 +404,8 @@ export function LeagueView({
   baseballAnalysis = null,
   analysisSeriesMode = "cumulative",
   hockeyNhl = null,
+  hockeyValues = null,
+  hockeyBoardQuery,
 }: {
   league: LeagueSnapshot;
   seasons: number[];
@@ -457,6 +466,9 @@ export function LeagueView({
   analysisSeriesMode?: AnalysisSeriesMode;
   /** Hockey NHL sidecars (HOCKEY-PORT.md H1) for Waivers bio / TOI columns. */
   hockeyNhl?: HockeyNhlSnapshot | null;
+  /** Hockey player values (HOCKEY-PORT.md H2/H3) for projections + Waivers. */
+  hockeyValues?: HockeyValuesSnapshot | null;
+  hockeyBoardQuery?: HockeyBoardQuery;
 }) {
   const leagueId = league.league_id;
   const isBaseball = league.sport === "baseball";
@@ -599,7 +611,8 @@ export function LeagueView({
           {league.scoring_type
             ? ` · ${scoringTypeLabel(league.scoring_type) ?? league.scoring_type}`
             : ""}
-          {isProjectionFree ? " · ESPN data · no engine projections" : ""}
+          {isBaseball ? " · ESPN data · no engine projections" : ""}
+          {isHockey ? " · ESPN + NHL data" : ""}
           {isGolf ? " · hub golf · no tour feed yet" : ""}
         </span>
       </div>
@@ -614,9 +627,11 @@ export function LeagueView({
         {syncedLabel(league.synced_at) ? ` · synced ${syncedLabel(league.synced_at)}` : ""}
         {isGolf
           ? " · hub-native PGA Tour counting league"
-          : isProjectionFree
+          : isBaseball
             ? " · projection-free by design"
-            : ""}
+            : isHockey
+              ? " · player values from ESPN + NHL data"
+              : ""}
       </p>
 
       <SeasonSwitcher
@@ -803,6 +818,14 @@ export function LeagueView({
                 )
               : undefined
           }
+          hockeyValues={
+            isHockey
+              ? hockeyValueIndex(
+                  hockeyValues,
+                  (league.free_agents ?? []).map((p) => p.id),
+                )
+              : undefined
+          }
         />
       ) : null}
 
@@ -819,19 +842,20 @@ export function LeagueView({
       ) : null}
 
       {active === "projections" ? (
-        isProjectionFree ? (
-          <EmptyState
-            title={
-              isHockey
-                ? "Hockey stays projection-free by design"
-                : "Baseball stays projection-free by design"
-            }
-          >
+        isHockey ? (
+          <HockeyProjectionsBoard
+            leagueId={leagueId}
+            season={league.season}
+            snapshot={hockeyValues}
+            query={hockeyBoardQuery ?? parseHockeyBoardQuery({})}
+            teamNames={Object.fromEntries(league.teams.map((t) => [t.team_id, t.name]))}
+          />
+        ) : isProjectionFree ? (
+          <EmptyState title="Baseball stays projection-free by design">
             The <code>ffa</code> engine is NFL-only (nflverse weekly stats, GSIS
             ids, football scoring).{" "}
-            {isHockey
-              ? "Hockey keeps ESPN standings, matchups, history, and Scoring lab without an NHL model."
-              : "Baseball-dynasty keeps the richest ESPN hub UI — standings, matchups, history, batter/pitcher boards — without a half-built MLB model."}{" "}
+            Baseball-dynasty keeps the richest ESPN hub UI — standings, matchups,
+            history, batter/pitcher boards — without a half-built MLB model.{" "}
             Extending projections is a future product decision, not a missing
             tab.
           </EmptyState>

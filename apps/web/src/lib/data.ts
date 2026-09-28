@@ -14,6 +14,7 @@ import type {
   HockeyNhlSnapshot,
   HockeyPlayerMapSnapshot,
 } from "@/lib/hockey-nhl";
+import type { HockeyValuesSnapshot } from "@/lib/hockey-values";
 import { dataRoots } from "@/lib/hub-paths";
 import { requireSession } from "@/lib/session";
 import {
@@ -1270,6 +1271,37 @@ export const getHockeyNhl = cache(
       if (playerMap && context) break;
     }
     return { playerMap, context };
+  },
+);
+
+/**
+ * Hockey player values under ``{league}/{season}/nhl/values.json``
+ * (HOCKEY-PORT.md H2/H3). Written by ``sj sync`` / ``sj nhl``; the hub only
+ * re-blends saved inputs. Side concern, session-gated.
+ */
+export const getHockeyValues = cache(
+  async (leagueId: string, season: number): Promise<HockeyValuesSnapshot | null> => {
+    await requireSession();
+    const index = await getLeagueIndex();
+    const match = index.find(
+      (item) => item.league_id === leagueId && item.season === season,
+    );
+    if (!match) return null;
+    for (const root of dataRoots()) {
+      const doc = await readJson<HockeyValuesSnapshot>(
+        path.join(root, weekBoxScoreDir(match.path), "nhl", "values.json"),
+      );
+      if (
+        doc?.league_id === leagueId &&
+        doc.season === season &&
+        doc.sport === "hockey" &&
+        doc.players &&
+        typeof doc.players === "object"
+      ) {
+        return doc;
+      }
+    }
+    return null;
   },
 );
 

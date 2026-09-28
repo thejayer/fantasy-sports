@@ -7,8 +7,10 @@ import { GameLogPanel } from "@/components/GameLogPanel";
 import { GolfRosterView } from "@/components/GolfRosterView";
 import { KeeperBadge } from "@/components/KeeperBadge";
 import { SeasonSwitcher } from "@/components/SeasonSwitcher";
+import { formatValue, hockeyValueIndex } from "@/lib/hockey-values";
 import {
   getHockeyNhl,
+  getHockeyValues,
   getLeagueSeasons,
   getPlayerMap,
   getProjectionSnapshot,
@@ -109,6 +111,12 @@ export default async function TeamPage({ params, searchParams }: Props) {
         team.roster.map((p) => p.id),
       )
     : {};
+  const hockeyValues = isHockey
+    ? hockeyValueIndex(
+        await getHockeyValues(league.league_id, league.season),
+        team.roster.map((p) => p.id),
+      )
+    : {};
   const roster = attachPlayerProjections(
     team.roster,
     indexPlayerMap(playerMap),
@@ -172,6 +180,8 @@ export default async function TeamPage({ params, searchParams }: Props) {
                 <th>Points</th>
                 {isHockey ? (
                   <>
+                    <th>Value</th>
+                    <th>ROS</th>
                     <th>Age</th>
                     <th>Ht</th>
                     <th>Wt</th>
@@ -197,6 +207,8 @@ export default async function TeamPage({ params, searchParams }: Props) {
                 const bio =
                   player.id != null ? hockeyBios[String(player.id)] : undefined;
                 const team = teamLabel(bio);
+                const worth =
+                  player.id != null ? hockeyValues[String(player.id)] : undefined;
                 return (
                   <tr key={`${player.id}-${player.name}`}>
                     <td data-label="Status">
@@ -218,6 +230,8 @@ export default async function TeamPage({ params, searchParams }: Props) {
                     </td>
                     {isHockey ? (
                       <>
+                        <td data-label="Value">{formatValue(worth?.value)}</td>
+                        <td data-label="ROS">{formatValue(worth?.ros, 1)}</td>
                         <td data-label="Age">{formatWhole(bio?.age)}</td>
                         <td data-label="Ht">{formatHeight(bio?.heightIn)}</td>
                         <td data-label="Wt">{formatWhole(bio?.weightLb)}</td>

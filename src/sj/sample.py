@@ -321,18 +321,25 @@ def _hockey_player(rng: random.Random, player_id: int, slot: str) -> _Stub:
         position = slot
 
     if goalie:
+        # Internally consistent line: shots, saves, and goals scale with starts
+        # so per-game fantasy values look like a real NHL goalie's.
+        games = rng.randint(12, 64)
+        starts = rng.randint(max(8, games - 6), games)
+        shots = starts * rng.randint(25, 31)
+        against = int(shots * rng.uniform(0.088, 0.112))
+        wins = rng.randint(starts // 4, max(starts // 4, starts * 3 // 5))
         breakdown = {
-            "W": float(rng.randint(4, 38)),
-            "L": float(rng.randint(2, 28)),
-            "OTL": float(rng.randint(0, 10)),
-            "SV": float(rng.randint(400, 1800)),
-            "SO": float(rng.randint(0, 8)),
-            "GA": float(rng.randint(40, 160)),
-            "SA": float(rng.randint(450, 1950)),
-            "GAA": round(rng.uniform(2.05, 3.55), 2),
-            "SV%": round(rng.uniform(0.888, 0.932), 3),
-            "GS": float(rng.randint(10, 62)),
-            "GP": float(rng.randint(12, 64)),
+            "W": float(wins),
+            "L": float(max(0, starts - wins - rng.randint(0, 6))),
+            "OTL": float(rng.randint(0, 6)),
+            "SV": float(shots - against),
+            "SO": float(rng.randint(0, max(1, starts // 12))),
+            "GA": float(against),
+            "SA": float(shots),
+            "GAA": round(against / max(starts, 1), 2),
+            "SV%": round((shots - against) / shots, 3),
+            "GS": float(starts),
+            "GP": float(games),
         }
         total = round(max(0.0, rng.gauss(280.0, 90.0)), 1)
     else:
@@ -374,7 +381,32 @@ def _hockey_player(rng: random.Random, player_id: int, slot: str) -> _Stub:
         avg_points=round(total / 82.0, 1),
         stats={"Total 2025": {"total": breakdown}},
         trailing_stats=_hockey_trailing_from_season(rng, breakdown),
+        projected_stats=_hockey_projection_from_season(player_id, breakdown, goalie=goalie),
     )
+
+
+def _hockey_projection_from_season(
+    player_id: int, breakdown: dict[str, float], *, goalie: bool
+) -> dict[str, float] | None:
+    """ESPN-style projected season line (HOCKEY-PORT H2), no RNG draws.
+
+    Scales the season line to a full season. A few players get no projection
+    and a few get ESPN's all-zero placeholder, so fixtures exercise the
+    "zero projection is a data gap" rule.
+    """
+    if player_id % 13 == 0:
+        return None
+    games = 55.0 if goalie else 78.0
+    if player_id % 17 == 0:
+        return {stat: 0.0 for stat in breakdown if stat not in {"GAA", "SV%"}} | {"GP": games}
+    played = float(breakdown.get("GP") or 0.0) or games
+    out: dict[str, float] = {}
+    for stat, value in breakdown.items():
+        if stat in {"GAA", "SV%", "+/-"}:
+            continue
+        out[stat] = round(float(value) * games / played, 1)
+    out["GP"] = games
+    return out
 
 
 def _hockey_trailing_from_season(

@@ -50,7 +50,7 @@ concern beside baseball's `analysis/`, not in `manifest.files`, no index upsert)
 | `nhl_context.json`              | H1         | age, ht/wt, team, prior team, TOI (EV/PP), start share |
 | `schedule.json`                 | H1         | team schedules, back-to-backs                          |
 | `team_strength.json`            | H1         | GF/GA/SF/SA per game, PK%, blended with last season    |
-| `values.json`                   | H2–H3      | value, breakdown, durability, ROS projection per player|
+| `values.json`                   | H2–H3 ✓    | value, breakdown, durability, ROS projection per player|
 | `lines.json`                    | H4         | lines, pairs, PP1/PP2, linemates, source date          |
 | `starting_goalies/{date}.json`  | H4         | Confirmed / Likely / Unconfirmed per game              |
 | `injury_log.json`               | H6         | status history (ESPN + DFO), transitions               |
@@ -110,7 +110,7 @@ fixtures/seed). `sj sync` runs it for the current hockey season
 - Committed fixtures under `fixtures/sj/hockey-main/{season}/nhl/` come from
   `sj regenerate-fixtures`; a pytest checks they match the generator.
 
-### H2: player values (fills the empty hockey projections tab)
+### H2: player values (fills the empty hockey projections tab) — LANDED
 
 Per-game value = weighted blend of every usable input; weights shrink with
 small samples. Each input's share is exported for a breakdown view.
@@ -145,12 +145,34 @@ Rules learned the hard way in Rinkside:
 beside it, data-source color (this season / history / rookie / rookie playing /
 role estimate), and an expandable breakdown per player.
 
+**H2 landed as:** `src/nhl/value.py` (+ `aging.py`, `prospects.py`, `roles.py`)
+→ `nhl/values.json`, written by the H1 sync step and `sj nhl`. Notes:
+
+- Serializer groundwork: hockey players now carry `projected_stats` (ESPN's
+  `Projected YYYY` line — espn-api keeps no projected applied total at all, so
+  the projection is always the stat line scored under league rules); the
+  newest `Total YYYY` bucket wins (ESPN can return last season too, and dict
+  order is not season order); hockey free agents keep `season_stats` (they were
+  dropped for size, but waiver values need them).
+- Role adjustment uses ice-time roles from `nhl_context` (Rinkside's
+  `skater_roles`: line/pair from the club's EV ranking, PP1/PP2 from PP time,
+  14-day trend). Linemate quality waits for H4 (needs Daily Faceoff lines);
+  H8 tags will override roles.
+- ESPN's last season (Rinkside's fallback when NHL history is missing) is not
+  used: NHL history already covers it.
+- The recent-form setting re-blends saved inputs in the hub
+  (`lib/hockey-values.ts` mirrors `nhl.value.part_weight`; a test keeps them in
+  lockstep). The breakdown expands one row at a time and pages hold 25 rows so
+  the document stays under the roadmap 7.11 HTML budget.
+- Prospect draft-slot priors and role baselines are Rinkside's SJ-scoring
+  constants; they are part of what H2b should measure.
+
 **H2b (strongly recommended): backtest it.** The weights above are informed
 judgment, never measured. Port the `ffa backtest` pattern: project each past
 season from strictly prior data and report MAE, Spearman, and bias by position
 and tier. Tune the weights from that.
 
-### H3: durability
+### H3: durability — LANDED
 
 Expected share of remaining games = blend of ESPN projected GP (weight 1.5) and
 the last three seasons' GP rate (weights 1 / 0.6 / 0.35, pulled 40% toward 90%).
@@ -159,6 +181,13 @@ ROS points = value × remaining games × durability.
 
 Later: port the `ffa.games` empirical GamesModel, which is the better
 (backtested) version of the same idea.
+
+**Landed with H2** (`src/nhl/durability.py`): skaters as above; seasons count
+only when he played (2+ seasons, or last season with 60+ GP); ESPN projected
+GP counts when 20–84. Goalies use their share of the club's starts from
+`nhl_context` (this season once the club has 6+ starts, else last season),
+not clamped to 50% — a backup really does play ~30%. Remaining games come from
+`schedule.json` (team games on or after the sync date).
 
 ### H4: Daily Faceoff lineups + starting goalies
 
@@ -252,7 +281,8 @@ color, 6'3"+ bold magenta name, 🦾 iron man.
   source lines another way.
 - Should hockey tools be member-only (franchise link required) or visible to
   everyone for every team?
-- Backtest before or after shipping the projections tab?
+- ~~Backtest before or after shipping the projections tab?~~ After: H2/H3
+  shipped first; H2b is the next PR.
 - ~~Is SJ Hockey `TOTAL_SEASON_POINTS` or `H2H_POINTS` on ESPN?~~ Resolved:
   Season Points — total points for the regular season, no weekly matchups.
   H5's start/sit and streaming tools should optimize season totals under the

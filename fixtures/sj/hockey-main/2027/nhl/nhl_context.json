@@ -25,7 +25,7 @@
           "SHP": 2,
           "SOG": 326,
           "season": "20252026",
-          "team": "WSH"
+          "team": "ANA"
         },
         {
           "A": 41,
@@ -41,15 +41,21 @@
           "SHP": 2,
           "SOG": 342,
           "season": "20232024",
-          "team": "WSH"
+          "team": "ANA"
         }
       ],
-      "name": "Christian Hill",
+      "name": "Keith Thompson",
       "nhl_id": 8470000,
       "on_nhl_roster": true,
       "position": "L",
       "prior_team": null,
-      "team": "WSH",
+      "role": {
+        "basis": "last season",
+        "line": "Line 1",
+        "pp": "No PP",
+        "trend": []
+      },
+      "team": "ANA",
       "toi": {
         "basis": "last season",
         "ev_min": 12.93,
@@ -80,7 +86,7 @@
           "SHP": 3,
           "SOG": 242,
           "season": "20252026",
-          "team": "CGY"
+          "team": "SJS"
         },
         {
           "A": 8,
@@ -96,15 +102,21 @@
           "SHP": 2,
           "SOG": 110,
           "season": "20232024",
-          "team": "CGY"
+          "team": "SJS"
         }
       ],
-      "name": "Peter Rogers",
+      "name": "Arthur Garcia",
       "nhl_id": 8470001,
       "on_nhl_roster": true,
       "position": "L",
       "prior_team": null,
-      "team": "CGY",
+      "role": {
+        "basis": "last season",
+        "line": "Line 1",
+        "pp": "No PP",
+        "trend": []
+      },
+      "team": "SJS",
       "toi": {
         "basis": "last season",
         "ev_min": 11.62,
@@ -135,7 +147,7 @@
           "SHP": 1,
           "SOG": 164,
           "season": "20252026",
-          "team": "PHI"
+          "team": "PIT"
         },
         {
           "A": 51,
@@ -151,15 +163,21 @@
           "SHP": 4,
           "SOG": 335,
           "season": "20242025",
-          "team": "PHI"
+          "team": "PIT"
         }
       ],
-      "name": "Benjamin Long",
+      "name": "Bradley Murphy",
       "nhl_id": 8470002,
       "on_nhl_roster": true,
-      "position": "R",
+      "position": "L",
       "prior_team": null,
-      "team": "PHI",
+      "role": {
+        "basis": "last season",
+        "line": "Line 2",
+        "pp": "PP2",
+        "trend": []
+      },
+      "team": "PIT",
       "toi": {
         "basis": "last season",
         "ev_min": 14.42,
@@ -190,15 +208,21 @@
           "SHP": 2,
           "SOG": 144,
           "season": "20252026",
-          "team": "DAL"
+          "team": "WSH"
         }
       ],
-      "name": "Gary Gonzalez",
+      "name": "Keith Adams",
       "nhl_id": 8470003,
       "on_nhl_roster": true,
-      "position": "C",
+      "position": "R",
       "prior_team": null,
-      "team": "DAL",
+      "role": {
+        "basis": "last season",
+        "line": "Line 1",
+        "pp": "PP1",
+        "trend": []
+      },
+      "team": "WSH",
       "toi": {
         "basis": "last season",
         "ev_min": 13.75,
@@ -216,7 +240,7 @@
         "overall": 196,
         "pick_in_round": 4,
         "round": 7,
-        "team": "VAN",
+        "team": "CHI",
         "year": 2011
       },
       "group": "F",
@@ -244,13 +268,19 @@
           "team": "Sample Juniors"
         }
       ],
-      "name": "Jordan Wood",
+      "name": "Jonathan Clark",
       "nhl_id": 8470004,
       "on_nhl_roster": true,
       "position": "R",
       "prior_nhl_gp": 0,
       "prior_team": null,
-      "team": "VAN",
+      "role": {
+        "basis": "no NHL ice time",
+        "line": null,
+        "pp": null,
+        "trend": []
+      },
+      "team": "CHI",
       "toi": {
         "basis": null,
         "ev_min": null,
@@ -281,7 +311,7 @@
           "SHP": 2,
           "SOG": 115,
           "season": "20252026",
-          "team": "VAN"
+          "team": "BUF"
         },
         {
           "A": 5,
@@ -297,7 +327,7 @@
           "SHP": 1,
           "SOG": 237,
           "season": "20242025",
-          "team": "VAN"
+          "team": "BUF"
         },
         {
           "A": 11,
@@ -313,15 +343,21 @@
           "SHP": 2,
           "SOG": 195,
           "season": "20232024",
-          "team": "VAN"
+          "team": "BUF"
         }
       ],
-      "name": "J. Perez",
+      "name": "A. Clark",
       "nhl_id": 8470005,
       "on_nhl_roster": true,
       "position": "L",
       "prior_team": null,
-      "team": "VAN",
+      "role": {
+        "basis": "last season",
+        "line": "Line 1",
+        "pp": "PP1",
+        "trend": []
+      },
+      "team": "BUF",
       "toi": {
         "basis": "last season",
         "ev_min": 12.57,
@@ -352,7 +388,7 @@
           "SHP": 0,
           "SOG": 80,
           "season": "20252026",
-          "team": "MIN"
+          "team": "OTT"
         },
         {
           "A": 47,
@@ -368,7 +404,7 @@
           "SHP": 1,
           "SOG": 68,
           "season": "20242025",
-          "team": "MIN"
+          "team": "OTT"
         },
         {
           "A": 54,
@@ -384,15 +420,21 @@
           "SHP": 4,
           "SOG": 75,
           "season": "20232024",
-          "team": "MIN"
+          "team": "OTT"
         }
       ],
-      "name": "Jason Murphy",
+      "name": "Roy Kelly",
       "nhl_id": 8470006,
       "on_nhl_roster": true,
-      "position": "L",
+      "position": "R",
       "prior_team": null,
-      "team": "MIN",
+      "role": {
+        "basis": "last season",
+        "line": "Line 1",
+        "pp": "No PP",
+        "trend": []
+      },
+      "team": "OTT",
       "toi": {
         "basis": "last season",
         "ev_min": 14.28,
@@ -423,7 +465,7 @@
           "SHP": 2,
           "SOG": 226,
           "season": "20252026",
-          "team": "LAK"
+          "team": "FLA"
         },
         {
           "A": 8,
@@ -439,15 +481,21 @@
           "SHP": 3,
           "SOG": 201,
           "season": "20232024",
-          "team": "LAK"
+          "team": "FLA"
         }
       ],
-      "name": "Elijah Martinez",
+      "name": "Randy Castillo",
       "nhl_id": 8470007,
       "on_nhl_roster": true,
-      "position": "L",
+      "position": "R",
       "prior_team": null,
-      "team": "LAK",
+      "role": {
+        "basis": "last season",
+        "line": "Line 1",
+        "pp": "PP1",
+        "trend": []
+      },
+      "team": "FLA",
       "toi": {
         "basis": "last season",
         "ev_min": 15.1,
@@ -465,7 +513,7 @@
         "overall": 103,
         "pick_in_round": 7,
         "round": 4,
-        "team": "EDM",
+        "team": "CBJ",
         "year": 2020
       },
       "group": "F",
@@ -485,7 +533,7 @@
           "SHP": 2,
           "SOG": 213,
           "season": "20252026",
-          "team": "EDM"
+          "team": "CBJ"
         },
         {
           "A": 49,
@@ -501,17 +549,23 @@
           "SHP": 3,
           "SOG": 234,
           "season": "20232024",
-          "team": "EDM"
+          "team": "CBJ"
         }
       ],
       "minors": [],
-      "name": "Patrick Rogers",
+      "name": "Alan Lee",
       "nhl_id": 8470008,
       "on_nhl_roster": false,
-      "position": "R",
+      "position": "C",
       "prior_nhl_gp": 0,
       "prior_team": null,
-      "team": "EDM",
+      "role": {
+        "basis": null,
+        "line": null,
+        "pp": null,
+        "trend": []
+      },
+      "team": "CBJ",
       "toi": {
         "basis": "last season",
         "ev_min": 10.22,
@@ -542,7 +596,7 @@
           "SHP": 2,
           "SOG": 44,
           "season": "20252026",
-          "team": "STL"
+          "team": "EDM"
         },
         {
           "A": 31,
@@ -558,15 +612,21 @@
           "SHP": 1,
           "SOG": 85,
           "season": "20242025",
-          "team": "STL"
+          "team": "EDM"
         }
       ],
-      "name": "Paul Baker",
+      "name": "Bradley Mendoza",
       "nhl_id": 8470009,
       "on_nhl_roster": true,
       "position": "D",
       "prior_team": null,
-      "team": "STL",
+      "role": {
+        "basis": "last season",
+        "line": "Pair 1",
+        "pp": "PP2",
+        "trend": []
+      },
+      "team": "EDM",
       "toi": {
         "basis": "last season",
         "ev_min": 12.27,
@@ -632,11 +692,17 @@
           "team": "COL"
         }
       ],
-      "name": "Albert Miller",
+      "name": "Bradley Lewis",
       "nhl_id": 8470010,
       "on_nhl_roster": true,
       "position": "D",
       "prior_team": null,
+      "role": {
+        "basis": "last season",
+        "line": "Pair 1",
+        "pp": "PP1",
+        "trend": []
+      },
       "team": "COL",
       "toi": {
         "basis": "last season",
@@ -668,7 +734,7 @@
           "SHP": 3,
           "SOG": 55,
           "season": "20252026",
-          "team": "NJD"
+          "team": "ANA"
         },
         {
           "A": 35,
@@ -684,7 +750,7 @@
           "SHP": 2,
           "SOG": 67,
           "season": "20242025",
-          "team": "NJD"
+          "team": "ANA"
         },
         {
           "A": 36,
@@ -700,15 +766,21 @@
           "SHP": 2,
           "SOG": 53,
           "season": "20232024",
-          "team": "NJD"
+          "team": "ANA"
         }
       ],
-      "name": "Randy Flores",
+      "name": "Christopher Patel",
       "nhl_id": 8470011,
       "on_nhl_roster": true,
       "position": "D",
       "prior_team": null,
-      "team": "NJD",
+      "role": {
+        "basis": "last season",
+        "line": "Pair 1",
+        "pp": "PP1",
+        "trend": []
+      },
+      "team": "ANA",
       "toi": {
         "basis": "last season",
         "ev_min": 12.8,
@@ -739,7 +811,7 @@
           "SHP": 1,
           "SOG": 82,
           "season": "20252026",
-          "team": "WSH"
+          "team": "MTL"
         },
         {
           "A": 5,
@@ -755,7 +827,7 @@
           "SHP": 1,
           "SOG": 93,
           "season": "20242025",
-          "team": "WSH"
+          "team": "MTL"
         },
         {
           "A": 24,
@@ -771,15 +843,21 @@
           "SHP": 1,
           "SOG": 96,
           "season": "20232024",
-          "team": "WSH"
+          "team": "MTL"
         }
       ],
-      "name": "Gabriel Sanchez",
+      "name": "Christopher Wright",
       "nhl_id": 8470012,
       "on_nhl_roster": true,
       "position": "D",
       "prior_team": null,
-      "team": "WSH",
+      "role": {
+        "basis": "last season",
+        "line": "Pair 1",
+        "pp": "PP2",
+        "trend": []
+      },
+      "team": "MTL",
       "toi": {
         "basis": "last season",
         "ev_min": 19.7,
@@ -829,11 +907,17 @@
           "team": "SJS"
         }
       ],
-      "name": "Russell Cooper",
+      "name": "Andrew Lopez",
       "nhl_id": 8470014,
       "on_nhl_roster": true,
-      "position": "R",
+      "position": "L",
       "prior_team": null,
+      "role": {
+        "basis": "last season",
+        "line": "Line 1",
+        "pp": "PP1",
+        "trend": []
+      },
       "team": "SJS",
       "toi": {
         "basis": "last season",
@@ -866,15 +950,15 @@
           "SV": 666,
           "W": 6,
           "season": "20252026",
-          "team": "CHI"
+          "team": "FLA"
         }
       ],
-      "name": "Nicholas Flores",
+      "name": "Richard Castillo",
       "nhl_id": 8470015,
       "on_nhl_roster": true,
       "position": "G",
       "prior_team": null,
-      "team": "CHI",
+      "team": "FLA",
       "toi": null,
       "weight_lb": 205
     },
@@ -884,8 +968,8 @@
       "goalie": {
         "basis": "last season",
         "gs": 64,
-        "role": "Starter",
-        "start_share": 1.0
+        "role": "1A/1B",
+        "start_share": 0.504
       },
       "group": "G",
       "height_in": 77,
@@ -899,7 +983,7 @@
           "SV": 1597,
           "W": 36,
           "season": "20252026",
-          "team": "WSH"
+          "team": "LAK"
         },
         {
           "GA": 59,
@@ -910,7 +994,7 @@
           "SV": 529,
           "W": 6,
           "season": "20242025",
-          "team": "WSH"
+          "team": "LAK"
         },
         {
           "GA": 109,
@@ -921,15 +1005,15 @@
           "SV": 1061,
           "W": 11,
           "season": "20232024",
-          "team": "WSH"
+          "team": "LAK"
         }
       ],
-      "name": "Z. Phillips",
+      "name": "P. Lewis",
       "nhl_id": 8470016,
       "on_nhl_roster": true,
       "position": "G",
       "prior_team": null,
-      "team": "WSH",
+      "team": "LAK",
       "toi": null,
       "weight_lb": 192
     },
@@ -953,7 +1037,7 @@
           "SHP": 2,
           "SOG": 182,
           "season": "20252026",
-          "team": "STL"
+          "team": "NYI"
         },
         {
           "A": 46,
@@ -969,7 +1053,7 @@
           "SHP": 3,
           "SOG": 313,
           "season": "20242025",
-          "team": "STL"
+          "team": "NYI"
         },
         {
           "A": 13,
@@ -985,15 +1069,21 @@
           "SHP": 1,
           "SOG": 149,
           "season": "20232024",
-          "team": "STL"
+          "team": "NYI"
         }
       ],
-      "name": "Kenneth Flores",
+      "name": "Randy Anderson",
       "nhl_id": 8470017,
       "on_nhl_roster": true,
-      "position": "C",
+      "position": "L",
       "prior_team": null,
-      "team": "STL",
+      "role": {
+        "basis": "last season",
+        "line": "Line 1",
+        "pp": "PP2",
+        "trend": []
+      },
+      "team": "NYI",
       "toi": {
         "basis": "last season",
         "ev_min": 10.22,
@@ -1007,179 +1097,191 @@
     "8470018": {
       "age": 31,
       "birth_date": "1994-12-01",
-      "group": "D",
+      "goalie": {
+        "basis": "last season",
+        "gs": 47,
+        "role": "1A/1B",
+        "start_share": 0.5
+      },
+      "group": "G",
       "height_in": 77,
       "history": [
         {
-          "A": 37,
-          "BLK": 67,
-          "G": 8,
+          "GA": 146,
           "GP": 49,
-          "GWG": 1,
-          "HIT": 11,
-          "PPA": 11,
-          "PPG": 2,
-          "SHA": 0,
-          "SHG": 1,
-          "SHP": 1,
-          "SOG": 85,
+          "GS": 47,
+          "L": 18,
+          "SO": 0,
+          "SV": 1311,
+          "W": 24,
           "season": "20252026",
-          "team": "VGK"
+          "team": "EDM"
         },
         {
-          "A": 7,
-          "BLK": 107,
-          "G": 12,
-          "GP": 76,
-          "GWG": 0,
-          "HIT": 173,
-          "PPA": 2,
-          "PPG": 2,
-          "SHA": 0,
-          "SHG": 1,
-          "SHP": 1,
-          "SOG": 76,
+          "GA": 57,
+          "GP": 30,
+          "GS": 17,
+          "L": 9,
+          "SO": 0,
+          "SV": 470,
+          "W": 6,
+          "season": "20242025",
+          "team": "EDM"
+        },
+        {
+          "GA": 226,
+          "GP": 68,
+          "GS": 68,
+          "L": 40,
+          "SO": 4,
+          "SV": 1814,
+          "W": 26,
           "season": "20232024",
-          "team": "VGK"
+          "team": "EDM"
         }
       ],
-      "name": "Sean Price",
+      "name": "Daniel Hernandez",
       "nhl_id": 8470018,
       "on_nhl_roster": true,
-      "position": "D",
+      "position": "G",
       "prior_team": null,
-      "team": "VGK",
-      "toi": {
-        "basis": "last season",
-        "ev_min": 12.67,
-        "gp": 49,
-        "pp_min": 1.17,
-        "sh_min": 1.0,
-        "toi_min": 26.0
-      },
+      "team": "EDM",
+      "toi": null,
       "weight_lb": 211
     },
     "8470019": {
-      "age": 21,
-      "birth_date": "2005-07-12",
-      "group": "D",
-      "height_in": 70,
-      "history": [
-        {
-          "A": 33,
-          "BLK": 28,
-          "G": 11,
-          "GP": 42,
-          "GWG": 1,
-          "HIT": 101,
-          "PPA": 3,
-          "PPG": 2,
-          "SHA": 0,
-          "SHG": 0,
-          "SHP": 0,
-          "SOG": 99,
-          "season": "20252026",
-          "team": "TBL"
-        },
-        {
-          "A": 31,
-          "BLK": 98,
-          "G": 11,
-          "GP": 52,
-          "GWG": 1,
-          "HIT": 21,
-          "PPA": 0,
-          "PPG": 1,
-          "SHA": 0,
-          "SHG": 1,
-          "SHP": 1,
-          "SOG": 124,
-          "season": "20242025",
-          "team": "TBL"
-        }
-      ],
-      "name": "Benjamin Richardson",
-      "nhl_id": 8470019,
-      "on_nhl_roster": true,
-      "position": "D",
-      "prior_team": null,
-      "team": "TBL",
-      "toi": {
-        "basis": "last season",
-        "ev_min": 13.6,
-        "gp": 42,
-        "pp_min": 1.17,
-        "sh_min": 0.25,
-        "toi_min": 12.67
-      },
-      "weight_lb": 227
-    },
-    "8470020": {
-      "age": 28,
-      "birth_date": "1998-04-05",
+      "age": 32,
+      "birth_date": "1994-02-05",
       "group": "F",
-      "height_in": 72,
+      "height_in": 78,
       "history": [
         {
-          "A": 42,
-          "BLK": 49,
-          "G": 32,
-          "GP": 33,
-          "GWG": 1,
-          "HIT": 186,
-          "PPA": 9,
-          "PPG": 9,
+          "A": 13,
+          "BLK": 10,
+          "G": 24,
+          "GP": 55,
+          "GWG": 2,
+          "HIT": 73,
+          "PPA": 3,
+          "PPG": 3,
           "SHA": 2,
           "SHG": 0,
           "SHP": 2,
-          "SOG": 176,
+          "SOG": 175,
           "season": "20252026",
-          "team": "CBJ"
+          "team": "UTA"
         },
         {
-          "A": 33,
-          "BLK": 8,
-          "G": 28,
-          "GP": 64,
+          "A": 26,
+          "BLK": 39,
+          "G": 16,
+          "GP": 81,
           "GWG": 0,
-          "HIT": 15,
-          "PPA": 7,
-          "PPG": 3,
-          "SHA": 2,
-          "SHG": 2,
-          "SHP": 4,
-          "SOG": 275,
+          "HIT": 104,
+          "PPA": 2,
+          "PPG": 5,
+          "SHA": 1,
+          "SHG": 1,
+          "SHP": 2,
+          "SOG": 101,
           "season": "20232024",
-          "team": "CBJ"
+          "team": "UTA"
         }
       ],
-      "name": "Roger Mendoza",
-      "nhl_id": 8470020,
+      "name": "Zachary Green",
+      "nhl_id": 8470019,
       "on_nhl_roster": true,
-      "position": "L",
+      "position": "C",
       "prior_team": null,
-      "team": "CBJ",
+      "role": {
+        "basis": "last season",
+        "line": "Line 1",
+        "pp": "PP1",
+        "trend": []
+      },
+      "team": "UTA",
       "toi": {
         "basis": "last season",
-        "ev_min": 15.55,
-        "gp": 33,
-        "pp_min": 2.0,
-        "sh_min": 1.0,
-        "toi_min": 21.5
+        "ev_min": 12.93,
+        "gp": 55,
+        "pp_min": 1.17,
+        "sh_min": 0.0,
+        "toi_min": 17.82
       },
-      "weight_lb": 201
+      "weight_lb": 210
+    },
+    "8470020": {
+      "age": 28,
+      "birth_date": "1997-11-28",
+      "group": "F",
+      "height_in": 70,
+      "history": [
+        {
+          "A": 35,
+          "BLK": 17,
+          "G": 17,
+          "GP": 38,
+          "GWG": 2,
+          "HIT": 154,
+          "PPA": 7,
+          "PPG": 1,
+          "SHA": 2,
+          "SHG": 0,
+          "SHP": 2,
+          "SOG": 98,
+          "season": "20252026",
+          "team": "CGY"
+        },
+        {
+          "A": 32,
+          "BLK": 6,
+          "G": 23,
+          "GP": 30,
+          "GWG": 3,
+          "HIT": 145,
+          "PPA": 3,
+          "PPG": 6,
+          "SHA": 2,
+          "SHG": 1,
+          "SHP": 3,
+          "SOG": 142,
+          "season": "20242025",
+          "team": "CGY"
+        }
+      ],
+      "name": "Kyle Gonzalez",
+      "nhl_id": 8470020,
+      "on_nhl_roster": true,
+      "position": "C",
+      "prior_team": null,
+      "role": {
+        "basis": "last season",
+        "line": "Line 1",
+        "pp": "PP1",
+        "trend": []
+      },
+      "team": "CGY",
+      "toi": {
+        "basis": "last season",
+        "ev_min": 15.87,
+        "gp": 38,
+        "pp_min": 3.5,
+        "sh_min": 1.83,
+        "toi_min": 13.12
+      },
+      "weight_lb": 180
     },
     "8470021": {
-      "age": 21,
-      "birth_date": "2004-12-08",
+      "age": 23,
+      "birth_date": "2003-04-17",
       "goalie": {
         "basis": "last season",
         "gs": 11,
-        "role": "Backup",
-        "start_share": 0.275
+        "role": "Starter",
+        "start_share": 1.0
       },
       "group": "G",
-      "height_in": 76,
+      "height_in": 71,
       "history": [
         {
           "GA": 35,
@@ -1190,7 +1292,7 @@
           "SV": 284,
           "W": 4,
           "season": "20252026",
-          "team": "SJS"
+          "team": "NSH"
         },
         {
           "GA": 84,
@@ -1201,17 +1303,17 @@
           "SV": 716,
           "W": 12,
           "season": "20242025",
-          "team": "SJS"
+          "team": "NSH"
         }
       ],
-      "name": "Kenneth Parker",
+      "name": "Ethan Richardson",
       "nhl_id": 8470021,
       "on_nhl_roster": true,
       "position": "G",
       "prior_team": null,
-      "team": "SJS",
+      "team": "NSH",
       "toi": null,
-      "weight_lb": 184
+      "weight_lb": 230
     },
     "8470022": {
       "age": 32,
@@ -1220,7 +1322,7 @@
         "overall": 117,
         "pick_in_round": 21,
         "round": 4,
-        "team": "WSH",
+        "team": "FLA",
         "year": 2011
       },
       "group": "F",
@@ -1248,13 +1350,19 @@
           "team": "Sample Juniors"
         }
       ],
-      "name": "Justin Kelly",
+      "name": "Scott Myers",
       "nhl_id": 8470022,
       "on_nhl_roster": true,
-      "position": "L",
+      "position": "R",
       "prior_nhl_gp": 0,
       "prior_team": null,
-      "team": "WSH",
+      "role": {
+        "basis": "no NHL ice time",
+        "line": null,
+        "pp": null,
+        "trend": []
+      },
+      "team": "FLA",
       "toi": {
         "basis": null,
         "ev_min": null,
@@ -1268,480 +1376,532 @@
     "8470023": {
       "age": 32,
       "birth_date": "1994-02-15",
-      "group": "D",
+      "goalie": {
+        "basis": "last season",
+        "gs": 46,
+        "role": "Backup",
+        "start_share": 0.303
+      },
+      "group": "G",
       "height_in": 74,
       "history": [
         {
-          "A": 33,
-          "BLK": 117,
-          "G": 12,
+          "GA": 110,
           "GP": 51,
-          "GWG": 0,
-          "HIT": 119,
-          "PPA": 7,
-          "PPG": 2,
-          "SHA": 2,
-          "SHG": 0,
-          "SHP": 2,
-          "SOG": 112,
+          "GS": 46,
+          "L": 30,
+          "SO": 3,
+          "SV": 1132,
+          "W": 13,
           "season": "20252026",
-          "team": "FLA"
+          "team": "SJS"
         },
         {
-          "A": 7,
-          "BLK": 48,
-          "G": 2,
-          "GP": 75,
-          "GWG": 0,
-          "HIT": 216,
-          "PPA": 0,
-          "PPG": 0,
-          "SHA": 0,
-          "SHG": 2,
-          "SHP": 2,
-          "SOG": 31,
+          "GA": 207,
+          "GP": 71,
+          "GS": 67,
+          "L": 30,
+          "SO": 3,
+          "SV": 1669,
+          "W": 35,
           "season": "20242025",
-          "team": "FLA"
+          "team": "SJS"
+        },
+        {
+          "GA": 71,
+          "GP": 35,
+          "GS": 33,
+          "L": 10,
+          "SO": 1,
+          "SV": 754,
+          "W": 18,
+          "season": "20232024",
+          "team": "SJS"
         }
       ],
-      "name": "Nicholas Edwards",
+      "name": "Keith Williams",
       "nhl_id": 8470023,
       "on_nhl_roster": true,
-      "position": "D",
+      "position": "G",
       "prior_team": null,
-      "team": "FLA",
-      "toi": {
-        "basis": "last season",
-        "ev_min": 14.65,
-        "gp": 51,
-        "pp_min": 2.0,
-        "sh_min": 1.0,
-        "toi_min": 22.17
-      },
+      "team": "SJS",
+      "toi": null,
       "weight_lb": 211
     },
     "8470024": {
-      "age": 19,
-      "birth_date": "2006-11-15",
+      "age": 24,
+      "birth_date": "2002-04-01",
       "goalie": {
         "basis": "last season",
-        "gs": 41,
-        "role": "1A/1B",
-        "start_share": 0.526
+        "gs": 62,
+        "role": "Starter",
+        "start_share": 1.0
       },
       "group": "G",
-      "height_in": 73,
+      "height_in": 70,
       "history": [
         {
-          "GA": 125,
-          "GP": 59,
-          "GS": 41,
-          "L": 29,
+          "GA": 173,
+          "GP": 77,
+          "GS": 62,
+          "L": 42,
           "SO": 5,
-          "SV": 982,
-          "W": 10,
+          "SV": 1687,
+          "W": 20,
           "season": "20252026",
-          "team": "CAR"
+          "team": "WSH"
         },
         {
-          "GA": 195,
-          "GP": 70,
-          "GS": 66,
-          "L": 34,
-          "SO": 4,
-          "SV": 1719,
-          "W": 32,
+          "GA": 71,
+          "GP": 65,
+          "GS": 27,
+          "L": 9,
+          "SO": 2,
+          "SV": 658,
+          "W": 16,
           "season": "20242025",
-          "team": "CAR"
+          "team": "WSH"
         },
         {
-          "GA": 84,
-          "GP": 59,
-          "GS": 32,
-          "L": 18,
-          "SO": 3,
-          "SV": 780,
-          "W": 14,
+          "GA": 65,
+          "GP": 30,
+          "GS": 20,
+          "L": 5,
+          "SO": 5,
+          "SV": 555,
+          "W": 10,
           "season": "20232024",
-          "team": "CAR"
+          "team": "WSH"
         }
       ],
-      "name": "Paul Reed",
+      "name": "Jose Johnson",
       "nhl_id": 8470024,
       "on_nhl_roster": true,
       "position": "G",
       "prior_team": null,
-      "team": "CAR",
+      "team": "WSH",
       "toi": null,
-      "weight_lb": 205
+      "weight_lb": 232
     },
     "8470025": {
-      "age": 26,
-      "birth_date": "2000-07-26",
+      "age": 25,
+      "birth_date": "2000-10-17",
       "draft": {
-        "overall": 184,
-        "pick_in_round": 24,
-        "round": 6,
-        "team": "CBJ",
+        "overall": 105,
+        "pick_in_round": 9,
+        "round": 4,
+        "team": "DET",
         "year": 2018
       },
       "group": "F",
-      "height_in": 70,
+      "height_in": 68,
       "history": [
         {
-          "A": 7,
-          "BLK": 17,
-          "G": 25,
-          "GP": 62,
-          "GWG": 0,
-          "HIT": 24,
+          "A": 30,
+          "BLK": 13,
+          "G": 17,
+          "GP": 43,
+          "GWG": 2,
+          "HIT": 107,
           "PPA": 0,
-          "PPG": 0,
-          "SHA": 0,
-          "SHG": 0,
-          "SHP": 0,
-          "SOG": 252,
-          "season": "20252026",
-          "team": "CBJ"
-        },
-        {
-          "A": 40,
-          "BLK": 41,
-          "G": 12,
-          "GP": 45,
-          "GWG": 0,
-          "HIT": 179,
-          "PPA": 1,
-          "PPG": 0,
-          "SHA": 0,
-          "SHG": 2,
-          "SHP": 2,
-          "SOG": 128,
-          "season": "20242025",
-          "team": "CBJ"
-        },
-        {
-          "A": 41,
-          "BLK": 49,
-          "G": 32,
-          "GP": 37,
-          "GWG": 5,
-          "HIT": 52,
-          "PPA": 8,
           "PPG": 1,
-          "SHA": 2,
-          "SHG": 0,
+          "SHA": 1,
+          "SHG": 1,
           "SHP": 2,
-          "SOG": 276,
-          "season": "20232024",
-          "team": "CBJ"
+          "SOG": 189,
+          "season": "20252026",
+          "team": "DET"
         }
       ],
       "minors": [],
-      "name": "Jose Rogers",
+      "name": "Patrick Howard",
       "nhl_id": 8470025,
       "on_nhl_roster": false,
       "position": "C",
       "prior_nhl_gp": 0,
       "prior_team": null,
-      "team": "CBJ",
+      "role": {
+        "basis": null,
+        "line": null,
+        "pp": null,
+        "trend": []
+      },
+      "team": "DET",
       "toi": {
         "basis": "last season",
-        "ev_min": 12.9,
-        "gp": 62,
-        "pp_min": 3.5,
-        "sh_min": 0.25,
-        "toi_min": 20.35
-      },
-      "weight_lb": 199
-    },
-    "8470026": {
-      "age": 20,
-      "birth_date": "2006-04-08",
-      "goalie": {
-        "basis": "last season",
-        "gs": 22,
-        "role": "Starter",
-        "start_share": 1.0
-      },
-      "group": "G",
-      "height_in": 72,
-      "history": [
-        {
-          "GA": 48,
-          "GP": 36,
-          "GS": 22,
-          "L": 14,
-          "SO": 1,
-          "SV": 524,
-          "W": 8,
-          "season": "20252026",
-          "team": "OTT"
-        },
-        {
-          "GA": 111,
-          "GP": 73,
-          "GS": 43,
-          "L": 24,
-          "SO": 0,
-          "SV": 1007,
-          "W": 15,
-          "season": "20242025",
-          "team": "OTT"
-        },
-        {
-          "GA": 28,
-          "GP": 32,
-          "GS": 10,
-          "L": 6,
-          "SO": 4,
-          "SV": 222,
-          "W": 4,
-          "season": "20232024",
-          "team": "OTT"
-        }
-      ],
-      "name": "Kyle Walker",
-      "nhl_id": 8470026,
-      "on_nhl_roster": true,
-      "position": "G",
-      "prior_team": null,
-      "team": "OTT",
-      "toi": null,
-      "weight_lb": 215
-    },
-    "8470027": {
-      "age": 30,
-      "birth_date": "1996-07-21",
-      "group": "F",
-      "height_in": 68,
-      "history": [
-        {
-          "A": 9,
-          "BLK": 8,
-          "G": 13,
-          "GP": 63,
-          "GWG": 2,
-          "HIT": 142,
-          "PPA": 0,
-          "PPG": 0,
-          "SHA": 0,
-          "SHG": 2,
-          "SHP": 2,
-          "SOG": 127,
-          "season": "20252026",
-          "team": "SEA"
-        },
-        {
-          "A": 21,
-          "BLK": 34,
-          "G": 22,
-          "GP": 37,
-          "GWG": 0,
-          "HIT": 175,
-          "PPA": 5,
-          "PPG": 1,
-          "SHA": 2,
-          "SHG": 2,
-          "SHP": 4,
-          "SOG": 167,
-          "season": "20242025",
-          "team": "SEA"
-        },
-        {
-          "A": 28,
-          "BLK": 41,
-          "G": 3,
-          "GP": 40,
-          "GWG": 1,
-          "HIT": 169,
-          "PPA": 4,
-          "PPG": 1,
-          "SHA": 1,
-          "SHG": 1,
-          "SHP": 2,
-          "SOG": 66,
-          "season": "20232024",
-          "team": "SEA"
-        }
-      ],
-      "name": "A. Peterson",
-      "nhl_id": 8470027,
-      "on_nhl_roster": true,
-      "position": "R",
-      "prior_team": null,
-      "team": "SEA",
-      "toi": {
-        "basis": "last season",
-        "ev_min": 16.85,
-        "gp": 63,
+        "ev_min": 16.12,
+        "gp": 43,
         "pp_min": 2.0,
         "sh_min": 1.83,
-        "toi_min": 19.7
+        "toi_min": 19.8
       },
-      "weight_lb": 208
+      "weight_lb": 207
     },
-    "8470028": {
-      "age": 33,
-      "birth_date": "1993-02-06",
-      "group": "F",
-      "height_in": 72,
+    "8470026": {
+      "age": 32,
+      "birth_date": "1994-02-02",
+      "group": "D",
+      "height_in": 79,
       "history": [
         {
-          "A": 34,
-          "BLK": 48,
-          "G": 27,
-          "GP": 38,
+          "A": 41,
+          "BLK": 65,
+          "G": 4,
+          "GP": 33,
           "GWG": 0,
-          "HIT": 49,
-          "PPA": 1,
-          "PPG": 2,
-          "SHA": 1,
+          "HIT": 78,
+          "PPA": 13,
+          "PPG": 1,
+          "SHA": 2,
           "SHG": 1,
-          "SHP": 2,
-          "SOG": 178,
+          "SHP": 3,
+          "SOG": 70,
           "season": "20252026",
-          "team": "OTT"
+          "team": "STL"
+        },
+        {
+          "A": 11,
+          "BLK": 32,
+          "G": 10,
+          "GP": 72,
+          "GWG": 0,
+          "HIT": 160,
+          "PPA": 2,
+          "PPG": 3,
+          "SHA": 2,
+          "SHG": 0,
+          "SHP": 2,
+          "SOG": 113,
+          "season": "20232024",
+          "team": "STL"
         }
       ],
-      "name": "Daniel Evans",
-      "nhl_id": 8470028,
+      "name": "Ethan Roberts",
+      "nhl_id": 8470026,
       "on_nhl_roster": true,
-      "position": "C",
+      "position": "D",
       "prior_team": null,
-      "team": "OTT",
+      "role": {
+        "basis": "last season",
+        "line": "Pair 1",
+        "pp": "No PP",
+        "trend": []
+      },
+      "team": "STL",
       "toi": {
         "basis": "last season",
-        "ev_min": 15.63,
-        "gp": 38,
+        "ev_min": 19.62,
+        "gp": 33,
         "pp_min": 0.0,
-        "sh_min": 1.83,
-        "toi_min": 21.38
+        "sh_min": 0.0,
+        "toi_min": 15.18
       },
-      "weight_lb": 196
+      "weight_lb": 223
     },
-    "8470029": {
-      "age": 33,
-      "birth_date": "1992-12-16",
+    "8470027": {
+      "age": 31,
+      "birth_date": "1994-12-26",
       "group": "F",
-      "height_in": 72,
+      "height_in": 79,
       "history": [
         {
-          "A": 6,
-          "BLK": 30,
-          "G": 18,
-          "GP": 77,
-          "GWG": 0,
-          "HIT": 119,
-          "PPA": 2,
-          "PPG": 2,
-          "SHA": 0,
-          "SHG": 1,
-          "SHP": 1,
-          "SOG": 119,
+          "A": 52,
+          "BLK": 26,
+          "G": 14,
+          "GP": 71,
+          "GWG": 1,
+          "HIT": 34,
+          "PPA": 9,
+          "PPG": 1,
+          "SHA": 2,
+          "SHG": 0,
+          "SHP": 2,
+          "SOG": 97,
           "season": "20252026",
-          "team": "MTL"
+          "team": "WSH"
+        },
+        {
+          "A": 19,
+          "BLK": 35,
+          "G": 20,
+          "GP": 73,
+          "GWG": 1,
+          "HIT": 13,
+          "PPA": 6,
+          "PPG": 3,
+          "SHA": 2,
+          "SHG": 0,
+          "SHP": 2,
+          "SOG": 178,
+          "season": "20232024",
+          "team": "WSH"
         }
       ],
-      "name": "Peter Hughes",
-      "nhl_id": 8470029,
+      "name": "C. Hill",
+      "nhl_id": 8470027,
       "on_nhl_roster": true,
       "position": "L",
       "prior_team": null,
-      "team": "MTL",
+      "role": {
+        "basis": "last season",
+        "line": "Line 1",
+        "pp": "PP1",
+        "trend": []
+      },
+      "team": "WSH",
       "toi": {
         "basis": "last season",
-        "ev_min": 10.82,
-        "gp": 77,
-        "pp_min": 2.83,
-        "sh_min": 1.0,
-        "toi_min": 15.92
+        "ev_min": 10.0,
+        "gp": 71,
+        "pp_min": 3.5,
+        "sh_min": 0.25,
+        "toi_min": 16.0
       },
-      "weight_lb": 208
+      "weight_lb": 219
     },
-    "8470030": {
-      "age": 25,
-      "birth_date": "2000-12-15",
+    "8470028": {
+      "age": 21,
+      "birth_date": "2005-02-19",
+      "group": "F",
+      "height_in": 72,
+      "history": [
+        {
+          "A": 38,
+          "BLK": 15,
+          "G": 28,
+          "GP": 68,
+          "GWG": 4,
+          "HIT": 40,
+          "PPA": 1,
+          "PPG": 8,
+          "SHA": 0,
+          "SHG": 0,
+          "SHP": 0,
+          "SOG": 277,
+          "season": "20252026",
+          "team": "CGY"
+        },
+        {
+          "A": 41,
+          "BLK": 25,
+          "G": 33,
+          "GP": 55,
+          "GWG": 2,
+          "HIT": 157,
+          "PPA": 1,
+          "PPG": 7,
+          "SHA": 1,
+          "SHG": 0,
+          "SHP": 1,
+          "SOG": 181,
+          "season": "20242025",
+          "team": "CGY"
+        },
+        {
+          "A": 29,
+          "BLK": 35,
+          "G": 1,
+          "GP": 59,
+          "GWG": 1,
+          "HIT": 98,
+          "PPA": 2,
+          "PPG": 0,
+          "SHA": 0,
+          "SHG": 0,
+          "SHP": 0,
+          "SOG": 39,
+          "season": "20232024",
+          "team": "CGY"
+        }
+      ],
+      "name": "Peter Rogers",
+      "nhl_id": 8470028,
+      "on_nhl_roster": true,
+      "position": "L",
+      "prior_team": null,
+      "role": {
+        "basis": "last season",
+        "line": "Line 1",
+        "pp": "No PP",
+        "trend": []
+      },
+      "team": "CGY",
+      "toi": {
+        "basis": "last season",
+        "ev_min": 14.42,
+        "gp": 68,
+        "pp_min": 0.0,
+        "sh_min": 1.83,
+        "toi_min": 20.37
+      },
+      "weight_lb": 231
+    },
+    "8470029": {
+      "age": 19,
+      "birth_date": "2006-10-26",
       "group": "F",
       "height_in": 77,
       "history": [
         {
-          "A": 11,
-          "BLK": 44,
-          "G": 13,
-          "GP": 70,
+          "A": 8,
+          "BLK": 35,
+          "G": 5,
+          "GP": 34,
           "GWG": 1,
-          "HIT": 168,
-          "PPA": 2,
+          "HIT": 116,
+          "PPA": 1,
           "PPG": 0,
           "SHA": 1,
-          "SHG": 0,
-          "SHP": 1,
-          "SOG": 66,
+          "SHG": 1,
+          "SHP": 2,
+          "SOG": 33,
           "season": "20252026",
           "team": "PHI"
         },
         {
-          "A": 53,
-          "BLK": 49,
-          "G": 28,
-          "GP": 53,
-          "GWG": 2,
-          "HIT": 138,
-          "PPA": 15,
-          "PPG": 7,
-          "SHA": 1,
-          "SHG": 1,
-          "SHP": 2,
-          "SOG": 192,
+          "A": 14,
+          "BLK": 32,
+          "G": 40,
+          "GP": 30,
+          "GWG": 0,
+          "HIT": 10,
+          "PPA": 4,
+          "PPG": 2,
+          "SHA": 2,
+          "SHG": 2,
+          "SHP": 4,
+          "SOG": 305,
           "season": "20242025",
           "team": "PHI"
         },
         {
-          "A": 55,
-          "BLK": 46,
-          "G": 38,
-          "GP": 55,
+          "A": 16,
+          "BLK": 19,
+          "G": 31,
+          "GP": 51,
           "GWG": 5,
-          "HIT": 116,
-          "PPA": 16,
-          "PPG": 7,
+          "HIT": 27,
+          "PPA": 2,
+          "PPG": 4,
           "SHA": 1,
-          "SHG": 1,
-          "SHP": 2,
-          "SOG": 345,
+          "SHG": 0,
+          "SHP": 1,
+          "SOG": 207,
           "season": "20232024",
           "team": "PHI"
         }
       ],
-      "name": "Keith Richardson",
+      "name": "Benjamin Long",
+      "nhl_id": 8470029,
+      "on_nhl_roster": true,
+      "position": "R",
+      "prior_team": null,
+      "role": {
+        "basis": "last season",
+        "line": "Line 1",
+        "pp": "No PP",
+        "trend": []
+      },
+      "team": "PHI",
+      "toi": {
+        "basis": "last season",
+        "ev_min": 14.13,
+        "gp": 34,
+        "pp_min": 0.0,
+        "sh_min": 1.0,
+        "toi_min": 14.28
+      },
+      "weight_lb": 219
+    },
+    "8470030": {
+      "age": 26,
+      "birth_date": "2000-06-05",
+      "group": "F",
+      "height_in": 71,
+      "history": [
+        {
+          "A": 46,
+          "BLK": 17,
+          "G": 16,
+          "GP": 66,
+          "GWG": 2,
+          "HIT": 218,
+          "PPA": 6,
+          "PPG": 0,
+          "SHA": 0,
+          "SHG": 2,
+          "SHP": 2,
+          "SOG": 89,
+          "season": "20252026",
+          "team": "DAL"
+        },
+        {
+          "A": 47,
+          "BLK": 36,
+          "G": 35,
+          "GP": 39,
+          "GWG": 5,
+          "HIT": 207,
+          "PPA": 12,
+          "PPG": 7,
+          "SHA": 1,
+          "SHG": 1,
+          "SHP": 2,
+          "SOG": 286,
+          "season": "20242025",
+          "team": "DAL"
+        },
+        {
+          "A": 19,
+          "BLK": 48,
+          "G": 25,
+          "GP": 62,
+          "GWG": 4,
+          "HIT": 135,
+          "PPA": 2,
+          "PPG": 6,
+          "SHA": 1,
+          "SHG": 1,
+          "SHP": 2,
+          "SOG": 239,
+          "season": "20232024",
+          "team": "DAL"
+        }
+      ],
+      "name": "Gary Gonzalez",
       "nhl_id": 8470030,
       "on_nhl_roster": true,
       "position": "C",
       "prior_team": null,
-      "team": "PHI",
+      "role": {
+        "basis": "last season",
+        "line": "Line 1",
+        "pp": "PP1",
+        "trend": []
+      },
+      "team": "DAL",
       "toi": {
         "basis": "last season",
-        "ev_min": 14.53,
-        "gp": 70,
-        "pp_min": 3.5,
-        "sh_min": 1.83,
-        "toi_min": 14.63
+        "ev_min": 12.78,
+        "gp": 66,
+        "pp_min": 1.17,
+        "sh_min": 0.0,
+        "toi_min": 17.12
       },
-      "weight_lb": 216
+      "weight_lb": 231
     },
     "8470031": {
-      "age": 31,
-      "birth_date": "1994-10-09",
+      "age": 23,
+      "birth_date": "2002-12-03",
       "draft": {
-        "overall": 175,
-        "pick_in_round": 15,
+        "overall": 176,
+        "pick_in_round": 16,
         "round": 6,
-        "team": "TBL",
-        "year": 2012
+        "team": "VAN",
+        "year": 2020
       },
       "group": "F",
-      "height_in": 78,
+      "height_in": 70,
       "history": [],
       "minors": [
         {
@@ -1765,13 +1925,19 @@
           "team": "Sample Juniors"
         }
       ],
-      "name": "Gregory Davis",
+      "name": "Jordan Wood",
       "nhl_id": 8470031,
       "on_nhl_roster": true,
-      "position": "L",
+      "position": "R",
       "prior_nhl_gp": 0,
       "prior_team": null,
-      "team": "TBL",
+      "role": {
+        "basis": "no NHL ice time",
+        "line": null,
+        "pp": null,
+        "trend": []
+      },
+      "team": "VAN",
       "toi": {
         "basis": null,
         "ev_min": null,
@@ -1780,508 +1946,540 @@
         "sh_min": null,
         "toi_min": null
       },
-      "weight_lb": 197
+      "weight_lb": 220
     },
     "8470032": {
-      "age": 27,
-      "birth_date": "1998-12-02",
+      "age": 22,
+      "birth_date": "2003-08-05",
       "group": "F",
-      "height_in": 69,
+      "height_in": 77,
       "history": [
         {
-          "A": 29,
-          "BLK": 45,
-          "G": 32,
-          "GP": 75,
-          "GWG": 0,
-          "HIT": 179,
-          "PPA": 3,
-          "PPG": 6,
-          "SHA": 2,
-          "SHG": 2,
-          "SHP": 4,
-          "SOG": 175,
-          "season": "20252026",
-          "team": "UTA"
-        },
-        {
-          "A": 11,
-          "BLK": 45,
-          "G": 31,
-          "GP": 51,
-          "GWG": 4,
-          "HIT": 15,
-          "PPA": 2,
-          "PPG": 8,
-          "SHA": 0,
-          "SHG": 0,
-          "SHP": 0,
-          "SOG": 237,
-          "season": "20242025",
-          "team": "UTA"
-        },
-        {
-          "A": 15,
-          "BLK": 48,
-          "G": 13,
-          "GP": 31,
+          "A": 9,
+          "BLK": 30,
+          "G": 4,
+          "GP": 57,
           "GWG": 1,
-          "HIT": 44,
+          "HIT": 137,
+          "PPA": 0,
+          "PPG": 1,
+          "SHA": 1,
+          "SHG": 2,
+          "SHP": 3,
+          "SOG": 65,
+          "season": "20252026",
+          "team": "VAN"
+        },
+        {
+          "A": 19,
+          "BLK": 43,
+          "G": 15,
+          "GP": 50,
+          "GWG": 0,
+          "HIT": 25,
+          "PPA": 2,
+          "PPG": 1,
+          "SHA": 1,
+          "SHG": 2,
+          "SHP": 3,
+          "SOG": 143,
+          "season": "20232024",
+          "team": "VAN"
+        }
+      ],
+      "name": "Jason Perez",
+      "nhl_id": 8470032,
+      "on_nhl_roster": true,
+      "position": "L",
+      "prior_team": null,
+      "role": {
+        "basis": "last season",
+        "line": "Line 1",
+        "pp": "PP2",
+        "trend": []
+      },
+      "team": "VAN",
+      "toi": {
+        "basis": "last season",
+        "ev_min": 16.27,
+        "gp": 57,
+        "pp_min": 0.5,
+        "sh_min": 0.0,
+        "toi_min": 18.45
+      },
+      "weight_lb": 186
+    },
+    "8470033": {
+      "age": 33,
+      "birth_date": "1992-12-21",
+      "group": "F",
+      "height_in": 78,
+      "history": [
+        {
+          "A": 16,
+          "BLK": 13,
+          "G": 2,
+          "GP": 81,
+          "GWG": 0,
+          "HIT": 57,
           "PPA": 1,
           "PPG": 0,
           "SHA": 0,
           "SHG": 0,
           "SHP": 0,
-          "SOG": 88,
-          "season": "20232024",
-          "team": "UTA"
-        }
-      ],
-      "name": "Scott Price",
-      "nhl_id": 8470032,
-      "on_nhl_roster": true,
-      "position": "R",
-      "prior_team": null,
-      "team": "UTA",
-      "toi": {
-        "basis": "last season",
-        "ev_min": 11.97,
-        "gp": 75,
-        "pp_min": 0.5,
-        "sh_min": 0.25,
-        "toi_min": 17.47
-      },
-      "weight_lb": 191
-    },
-    "8470033": {
-      "age": 32,
-      "birth_date": "1994-03-03",
-      "group": "F",
-      "height_in": 79,
-      "history": [
-        {
-          "A": 37,
-          "BLK": 13,
-          "G": 24,
-          "GP": 60,
-          "GWG": 4,
-          "HIT": 127,
-          "PPA": 12,
-          "PPG": 2,
-          "SHA": 1,
-          "SHG": 2,
-          "SHP": 3,
-          "SOG": 136,
+          "SOG": 34,
           "season": "20252026",
-          "team": "TOR"
-        },
-        {
-          "A": 7,
-          "BLK": 25,
-          "G": 33,
-          "GP": 42,
-          "GWG": 0,
-          "HIT": 31,
-          "PPA": 0,
-          "PPG": 0,
-          "SHA": 1,
-          "SHG": 0,
-          "SHP": 1,
-          "SOG": 236,
-          "season": "20232024",
-          "team": "TOR"
+          "team": "MIN"
         }
       ],
-      "name": "Edward Ruiz",
+      "name": "Jason Murphy",
       "nhl_id": 8470033,
       "on_nhl_roster": true,
       "position": "L",
       "prior_team": null,
-      "team": "TOR",
+      "role": {
+        "basis": "last season",
+        "line": "Line 1",
+        "pp": "PP2",
+        "trend": []
+      },
+      "team": "MIN",
       "toi": {
         "basis": "last season",
-        "ev_min": 12.57,
-        "gp": 60,
-        "pp_min": 2.0,
-        "sh_min": 1.0,
-        "toi_min": 16.72
+        "ev_min": 12.52,
+        "gp": 81,
+        "pp_min": 0.5,
+        "sh_min": 0.25,
+        "toi_min": 21.0
       },
-      "weight_lb": 218
+      "weight_lb": 193
     },
     "8470034": {
-      "age": 27,
-      "birth_date": "1998-11-19",
+      "age": 22,
+      "birth_date": "2004-04-25",
       "group": "F",
-      "height_in": 77,
-      "history": [
-        {
-          "A": 20,
-          "BLK": 13,
-          "G": 18,
-          "GP": 46,
-          "GWG": 0,
-          "HIT": 125,
-          "PPA": 4,
-          "PPG": 5,
-          "SHA": 1,
-          "SHG": 2,
-          "SHP": 3,
-          "SOG": 186,
-          "season": "20252026",
-          "team": "VGK"
-        },
-        {
-          "A": 13,
-          "BLK": 36,
-          "G": 39,
-          "GP": 30,
-          "GWG": 3,
-          "HIT": 149,
-          "PPA": 0,
-          "PPG": 2,
-          "SHA": 2,
-          "SHG": 1,
-          "SHP": 3,
-          "SOG": 232,
-          "season": "20242025",
-          "team": "VGK"
-        },
-        {
-          "A": 41,
-          "BLK": 24,
-          "G": 36,
-          "GP": 82,
-          "GWG": 5,
-          "HIT": 56,
-          "PPA": 10,
-          "PPG": 4,
-          "SHA": 1,
-          "SHG": 2,
-          "SHP": 3,
-          "SOG": 216,
-          "season": "20232024",
-          "team": "VGK"
-        }
-      ],
-      "name": "Samuel Thomas",
-      "nhl_id": 8470034,
-      "on_nhl_roster": true,
-      "position": "R",
-      "prior_team": null,
-      "team": "VGK",
-      "toi": {
-        "basis": "last season",
-        "ev_min": 13.05,
-        "gp": 46,
-        "pp_min": 3.5,
-        "sh_min": 1.83,
-        "toi_min": 12.43
-      },
-      "weight_lb": 170
-    },
-    "8470035": {
-      "age": 21,
-      "birth_date": "2004-10-10",
-      "group": "F",
-      "height_in": 72,
-      "history": [
-        {
-          "A": 30,
-          "BLK": 35,
-          "G": 21,
-          "GP": 66,
-          "GWG": 0,
-          "HIT": 63,
-          "PPA": 2,
-          "PPG": 7,
-          "SHA": 2,
-          "SHG": 0,
-          "SHP": 2,
-          "SOG": 211,
-          "season": "20252026",
-          "team": "FLA"
-        },
-        {
-          "A": 22,
-          "BLK": 15,
-          "G": 40,
-          "GP": 48,
-          "GWG": 0,
-          "HIT": 130,
-          "PPA": 4,
-          "PPG": 2,
-          "SHA": 1,
-          "SHG": 2,
-          "SHP": 3,
-          "SOG": 207,
-          "season": "20242025",
-          "team": "FLA"
-        },
-        {
-          "A": 21,
-          "BLK": 18,
-          "G": 14,
-          "GP": 67,
-          "GWG": 2,
-          "HIT": 31,
-          "PPA": 0,
-          "PPG": 2,
-          "SHA": 0,
-          "SHG": 2,
-          "SHP": 2,
-          "SOG": 111,
-          "season": "20232024",
-          "team": "FLA"
-        }
-      ],
-      "name": "Joseph Mitchell",
-      "nhl_id": 8470035,
-      "on_nhl_roster": true,
-      "position": "R",
-      "prior_team": null,
-      "team": "FLA",
-      "toi": {
-        "basis": "last season",
-        "ev_min": 11.35,
-        "gp": 66,
-        "pp_min": 2.83,
-        "sh_min": 0.25,
-        "toi_min": 14.77
-      },
-      "weight_lb": 187
-    },
-    "8470036": {
-      "age": 32,
-      "birth_date": "1994-01-24",
-      "group": "D",
-      "height_in": 76,
-      "history": [
-        {
-          "A": 14,
-          "BLK": 158,
-          "G": 12,
-          "GP": 38,
-          "GWG": 2,
-          "HIT": 167,
-          "PPA": 0,
-          "PPG": 4,
-          "SHA": 0,
-          "SHG": 1,
-          "SHP": 1,
-          "SOG": 68,
-          "season": "20252026",
-          "team": "TBL"
-        },
-        {
-          "A": 32,
-          "BLK": 160,
-          "G": 7,
-          "GP": 55,
-          "GWG": 0,
-          "HIT": 91,
-          "PPA": 9,
-          "PPG": 2,
-          "SHA": 0,
-          "SHG": 2,
-          "SHP": 2,
-          "SOG": 83,
-          "season": "20242025",
-          "team": "TBL"
-        }
-      ],
-      "name": "Alan Smith",
-      "nhl_id": 8470036,
-      "on_nhl_roster": true,
-      "position": "D",
-      "prior_team": null,
-      "team": "TBL",
-      "toi": {
-        "basis": "last season",
-        "ev_min": 15.4,
-        "gp": 38,
-        "pp_min": 2.83,
-        "sh_min": 1.83,
-        "toi_min": 12.02
-      },
-      "weight_lb": 207
-    },
-    "8470037": {
-      "age": 31,
-      "birth_date": "1994-09-26",
-      "group": "D",
-      "height_in": 73,
-      "history": [
-        {
-          "A": 38,
-          "BLK": 48,
-          "G": 8,
-          "GP": 40,
-          "GWG": 0,
-          "HIT": 23,
-          "PPA": 2,
-          "PPG": 2,
-          "SHA": 0,
-          "SHG": 2,
-          "SHP": 2,
-          "SOG": 63,
-          "season": "20252026",
-          "team": "NYI"
-        }
-      ],
-      "name": "Logan Campbell",
-      "nhl_id": 8470037,
-      "on_nhl_roster": true,
-      "position": "D",
-      "prior_team": null,
-      "team": "NYI",
-      "toi": {
-        "basis": "last season",
-        "ev_min": 12.5,
-        "gp": 40,
-        "pp_min": 0.0,
-        "sh_min": 0.25,
-        "toi_min": 18.47
-      },
-      "weight_lb": 222
-    },
-    "8470038": {
-      "age": 29,
-      "birth_date": "1996-08-23",
-      "group": "D",
-      "height_in": 68,
+      "height_in": 75,
       "history": [
         {
           "A": 37,
           "BLK": 26,
-          "G": 9,
-          "GP": 65,
-          "GWG": 1,
-          "HIT": 85,
-          "PPA": 10,
-          "PPG": 2,
-          "SHA": 1,
-          "SHG": 1,
-          "SHP": 2,
-          "SOG": 47,
-          "season": "20252026",
-          "team": "FLA"
-        },
-        {
-          "A": 32,
-          "BLK": 46,
-          "G": 3,
-          "GP": 36,
-          "GWG": 0,
-          "HIT": 54,
+          "G": 23,
+          "GP": 40,
+          "GWG": 2,
+          "HIT": 216,
           "PPA": 2,
           "PPG": 1,
           "SHA": 1,
-          "SHG": 0,
-          "SHP": 1,
-          "SOG": 37,
-          "season": "20232024",
-          "team": "FLA"
-        }
-      ],
-      "name": "N. Williams",
-      "nhl_id": 8470038,
-      "on_nhl_roster": true,
-      "position": "D",
-      "prior_team": null,
-      "team": "FLA",
-      "toi": {
-        "basis": "last season",
-        "ev_min": 18.18,
-        "gp": 65,
-        "pp_min": 3.5,
-        "sh_min": 1.83,
-        "toi_min": 13.87
-      },
-      "weight_lb": 192
-    },
-    "8470039": {
-      "age": 33,
-      "birth_date": "1993-04-02",
-      "group": "D",
-      "height_in": 69,
-      "history": [
-        {
-          "A": 20,
-          "BLK": 137,
-          "G": 6,
-          "GP": 41,
-          "GWG": 1,
-          "HIT": 152,
-          "PPA": 6,
-          "PPG": 1,
-          "SHA": 0,
-          "SHG": 2,
+          "SHG": 1,
           "SHP": 2,
-          "SOG": 66,
+          "SOG": 226,
           "season": "20252026",
-          "team": "BUF"
+          "team": "LAK"
         },
         {
-          "A": 11,
-          "BLK": 128,
-          "G": 5,
+          "A": 6,
+          "BLK": 7,
+          "G": 8,
           "GP": 30,
           "GWG": 1,
-          "HIT": 56,
-          "PPA": 0,
+          "HIT": 99,
+          "PPA": 1,
+          "PPG": 1,
+          "SHA": 0,
+          "SHG": 0,
+          "SHP": 0,
+          "SOG": 74,
+          "season": "20242025",
+          "team": "LAK"
+        },
+        {
+          "A": 40,
+          "BLK": 22,
+          "G": 37,
+          "GP": 70,
+          "GWG": 5,
+          "HIT": 205,
+          "PPA": 12,
           "PPG": 0,
           "SHA": 1,
           "SHG": 1,
           "SHP": 2,
-          "SOG": 50,
-          "season": "20242025",
-          "team": "BUF"
+          "SOG": 356,
+          "season": "20232024",
+          "team": "LAK"
+        }
+      ],
+      "name": "Elijah Martinez",
+      "nhl_id": 8470034,
+      "on_nhl_roster": true,
+      "position": "L",
+      "prior_team": null,
+      "role": {
+        "basis": "last season",
+        "line": "Line 1",
+        "pp": "PP1",
+        "trend": []
+      },
+      "team": "LAK",
+      "toi": {
+        "basis": "last season",
+        "ev_min": 16.8,
+        "gp": 40,
+        "pp_min": 1.17,
+        "sh_min": 0.25,
+        "toi_min": 15.32
+      },
+      "weight_lb": 215
+    },
+    "8470035": {
+      "age": 19,
+      "birth_date": "2006-09-22",
+      "group": "F",
+      "height_in": 76,
+      "history": [
+        {
+          "A": 26,
+          "BLK": 9,
+          "G": 2,
+          "GP": 38,
+          "GWG": 0,
+          "HIT": 75,
+          "PPA": 0,
+          "PPG": 0,
+          "SHA": 2,
+          "SHG": 1,
+          "SHP": 3,
+          "SOG": 19,
+          "season": "20252026",
+          "team": "EDM"
         },
         {
-          "A": 27,
-          "BLK": 86,
-          "G": 12,
-          "GP": 54,
+          "A": 7,
+          "BLK": 29,
+          "G": 4,
+          "GP": 60,
+          "GWG": 0,
+          "HIT": 88,
+          "PPA": 2,
+          "PPG": 1,
+          "SHA": 1,
+          "SHG": 2,
+          "SHP": 3,
+          "SOG": 31,
+          "season": "20242025",
+          "team": "EDM"
+        },
+        {
+          "A": 6,
+          "BLK": 12,
+          "G": 29,
+          "GP": 73,
           "GWG": 1,
-          "HIT": 131,
+          "HIT": 151,
+          "PPA": 1,
+          "PPG": 9,
+          "SHA": 1,
+          "SHG": 1,
+          "SHP": 2,
+          "SOG": 192,
+          "season": "20232024",
+          "team": "EDM"
+        }
+      ],
+      "name": "Patrick Rogers",
+      "nhl_id": 8470035,
+      "on_nhl_roster": true,
+      "position": "R",
+      "prior_team": null,
+      "role": {
+        "basis": "last season",
+        "line": "Line 1",
+        "pp": "PP1",
+        "trend": []
+      },
+      "team": "EDM",
+      "toi": {
+        "basis": "last season",
+        "ev_min": 11.25,
+        "gp": 38,
+        "pp_min": 2.83,
+        "sh_min": 1.83,
+        "toi_min": 19.87
+      },
+      "weight_lb": 224
+    },
+    "8470036": {
+      "age": 31,
+      "birth_date": "1994-09-05",
+      "group": "D",
+      "height_in": 73,
+      "history": [
+        {
+          "A": 20,
+          "BLK": 139,
+          "G": 11,
+          "GP": 38,
+          "GWG": 0,
+          "HIT": 30,
           "PPA": 0,
-          "PPG": 4,
+          "PPG": 2,
           "SHA": 1,
           "SHG": 0,
           "SHP": 1,
-          "SOG": 68,
+          "SOG": 79,
+          "season": "20252026",
+          "team": "STL"
+        },
+        {
+          "A": 6,
+          "BLK": 34,
+          "G": 11,
+          "GP": 76,
+          "GWG": 0,
+          "HIT": 198,
+          "PPA": 1,
+          "PPG": 1,
+          "SHA": 0,
+          "SHG": 2,
+          "SHP": 2,
+          "SOG": 129,
+          "season": "20242025",
+          "team": "STL"
+        },
+        {
+          "A": 38,
+          "BLK": 5,
+          "G": 3,
+          "GP": 74,
+          "GWG": 0,
+          "HIT": 163,
+          "PPA": 2,
+          "PPG": 1,
+          "SHA": 2,
+          "SHG": 0,
+          "SHP": 2,
+          "SOG": 54,
           "season": "20232024",
-          "team": "BUF"
+          "team": "STL"
         }
       ],
-      "name": "Kevin Allen",
+      "name": "Paul Baker",
+      "nhl_id": 8470036,
+      "on_nhl_roster": true,
+      "position": "D",
+      "prior_team": null,
+      "role": {
+        "basis": "last season",
+        "line": "Pair 1",
+        "pp": "PP1",
+        "trend": []
+      },
+      "team": "STL",
+      "toi": {
+        "basis": "last season",
+        "ev_min": 13.37,
+        "gp": 38,
+        "pp_min": 2.83,
+        "sh_min": 0.25,
+        "toi_min": 16.28
+      },
+      "weight_lb": 182
+    },
+    "8470037": {
+      "age": 23,
+      "birth_date": "2002-11-13",
+      "group": "D",
+      "height_in": 74,
+      "history": [
+        {
+          "A": 6,
+          "BLK": 20,
+          "G": 3,
+          "GP": 67,
+          "GWG": 1,
+          "HIT": 25,
+          "PPA": 2,
+          "PPG": 1,
+          "SHA": 2,
+          "SHG": 1,
+          "SHP": 3,
+          "SOG": 53,
+          "season": "20252026",
+          "team": "COL"
+        },
+        {
+          "A": 32,
+          "BLK": 42,
+          "G": 3,
+          "GP": 70,
+          "GWG": 0,
+          "HIT": 107,
+          "PPA": 2,
+          "PPG": 0,
+          "SHA": 0,
+          "SHG": 0,
+          "SHP": 0,
+          "SOG": 25,
+          "season": "20242025",
+          "team": "COL"
+        },
+        {
+          "A": 7,
+          "BLK": 82,
+          "G": 12,
+          "GP": 59,
+          "GWG": 2,
+          "HIT": 94,
+          "PPA": 1,
+          "PPG": 2,
+          "SHA": 2,
+          "SHG": 0,
+          "SHP": 2,
+          "SOG": 127,
+          "season": "20232024",
+          "team": "COL"
+        }
+      ],
+      "name": "Albert Miller",
+      "nhl_id": 8470037,
+      "on_nhl_roster": true,
+      "position": "D",
+      "prior_team": null,
+      "role": {
+        "basis": "last season",
+        "line": "Pair 1",
+        "pp": "PP2",
+        "trend": []
+      },
+      "team": "COL",
+      "toi": {
+        "basis": "last season",
+        "ev_min": 13.15,
+        "gp": 67,
+        "pp_min": 2.83,
+        "sh_min": 1.0,
+        "toi_min": 12.02
+      },
+      "weight_lb": 224
+    },
+    "8470038": {
+      "age": 21,
+      "birth_date": "2005-01-10",
+      "group": "D",
+      "height_in": 69,
+      "history": [
+        {
+          "A": 10,
+          "BLK": 93,
+          "G": 8,
+          "GP": 40,
+          "GWG": 0,
+          "HIT": 49,
+          "PPA": 3,
+          "PPG": 0,
+          "SHA": 0,
+          "SHG": 1,
+          "SHP": 1,
+          "SOG": 74,
+          "season": "20252026",
+          "team": "NJD"
+        }
+      ],
+      "name": "R. Flores",
+      "nhl_id": 8470038,
+      "on_nhl_roster": true,
+      "position": "D",
+      "prior_team": null,
+      "role": {
+        "basis": "last season",
+        "line": "Pair 1",
+        "pp": "PP2",
+        "trend": []
+      },
+      "team": "NJD",
+      "toi": {
+        "basis": "last season",
+        "ev_min": 12.73,
+        "gp": 40,
+        "pp_min": 2.0,
+        "sh_min": 0.25,
+        "toi_min": 14.95
+      },
+      "weight_lb": 177
+    },
+    "8470039": {
+      "age": 34,
+      "birth_date": "1992-02-22",
+      "group": "D",
+      "height_in": 70,
+      "history": [
+        {
+          "A": 10,
+          "BLK": 71,
+          "G": 11,
+          "GP": 57,
+          "GWG": 1,
+          "HIT": 10,
+          "PPA": 3,
+          "PPG": 3,
+          "SHA": 2,
+          "SHG": 1,
+          "SHP": 3,
+          "SOG": 61,
+          "season": "20252026",
+          "team": "WSH"
+        },
+        {
+          "A": 29,
+          "BLK": 101,
+          "G": 5,
+          "GP": 52,
+          "GWG": 1,
+          "HIT": 118,
+          "PPA": 7,
+          "PPG": 0,
+          "SHA": 1,
+          "SHG": 1,
+          "SHP": 2,
+          "SOG": 69,
+          "season": "20242025",
+          "team": "WSH"
+        }
+      ],
+      "name": "Gabriel Sanchez",
       "nhl_id": 8470039,
       "on_nhl_roster": true,
       "position": "D",
       "prior_team": null,
-      "team": "BUF",
+      "role": {
+        "basis": "last season",
+        "line": "Pair 1",
+        "pp": "PP1",
+        "trend": []
+      },
+      "team": "WSH",
       "toi": {
         "basis": "last season",
-        "ev_min": 16.8,
-        "gp": 41,
-        "pp_min": 3.5,
-        "sh_min": 1.0,
-        "toi_min": 25.07
+        "ev_min": 11.92,
+        "gp": 57,
+        "pp_min": 2.83,
+        "sh_min": 0.0,
+        "toi_min": 24.78
       },
-      "weight_lb": 230
+      "weight_lb": 199
     },
     "8470040": {
-      "age": 20,
-      "birth_date": "2006-03-01",
+      "age": 27,
+      "birth_date": "1999-02-16",
       "draft": {
-        "overall": 30,
-        "pick_in_round": 30,
-        "round": 1,
-        "team": "MIN",
-        "year": 2024
+        "overall": 100,
+        "pick_in_round": 4,
+        "round": 4,
+        "team": "ANA",
+        "year": 2017
       },
       "group": "D",
-      "height_in": 75,
+      "height_in": 73,
       "history": [],
       "minors": [
         {
@@ -2305,13 +2503,19 @@
           "team": "Sample Juniors"
         }
       ],
-      "name": "Tyler Phillips",
+      "name": "Adam Brooks",
       "nhl_id": 8470040,
       "on_nhl_roster": true,
       "position": "D",
       "prior_nhl_gp": 0,
       "prior_team": null,
-      "team": "MIN",
+      "role": {
+        "basis": "no NHL ice time",
+        "line": null,
+        "pp": null,
+        "trend": []
+      },
+      "team": "ANA",
       "toi": {
         "basis": null,
         "ev_min": null,
@@ -2320,72 +2524,78 @@
         "sh_min": null,
         "toi_min": null
       },
-      "weight_lb": 185
+      "weight_lb": 196
     },
     "8470041": {
-      "age": 24,
-      "birth_date": "2001-09-23",
+      "age": 23,
+      "birth_date": "2003-07-06",
       "group": "F",
-      "height_in": 73,
+      "height_in": 68,
       "history": [
         {
-          "A": 26,
-          "BLK": 9,
-          "G": 18,
-          "GP": 64,
-          "GWG": 3,
-          "HIT": 48,
-          "PPA": 1,
-          "PPG": 2,
-          "SHA": 0,
+          "A": 39,
+          "BLK": 34,
+          "G": 9,
+          "GP": 58,
+          "GWG": 1,
+          "HIT": 12,
+          "PPA": 4,
+          "PPG": 0,
+          "SHA": 1,
           "SHG": 2,
-          "SHP": 2,
-          "SOG": 100,
+          "SHP": 3,
+          "SOG": 58,
           "season": "20252026",
-          "team": "PIT"
+          "team": "SJS"
         },
         {
-          "A": 10,
-          "BLK": 40,
-          "G": 34,
-          "GP": 49,
-          "GWG": 4,
-          "HIT": 14,
-          "PPA": 0,
-          "PPG": 5,
-          "SHA": 2,
-          "SHG": 0,
-          "SHP": 2,
-          "SOG": 299,
-          "season": "20242025",
-          "team": "PIT"
+          "A": 23,
+          "BLK": 17,
+          "G": 10,
+          "GP": 68,
+          "GWG": 0,
+          "HIT": 127,
+          "PPA": 2,
+          "PPG": 0,
+          "SHA": 0,
+          "SHG": 1,
+          "SHP": 1,
+          "SOG": 121,
+          "season": "20232024",
+          "team": "SJS"
         }
       ],
-      "name": "Adam Parker",
+      "name": "Russell Cooper",
       "nhl_id": 8470041,
       "on_nhl_roster": true,
-      "position": "L",
+      "position": "R",
       "prior_team": null,
-      "team": "PIT",
+      "role": {
+        "basis": "last season",
+        "line": "Line 1",
+        "pp": "No PP",
+        "trend": []
+      },
+      "team": "SJS",
       "toi": {
         "basis": "last season",
-        "ev_min": 11.1,
-        "gp": 64,
-        "pp_min": 1.17,
-        "sh_min": 1.0,
-        "toi_min": 18.93
+        "ev_min": 11.28,
+        "gp": 58,
+        "pp_min": 0.0,
+        "sh_min": 1.83,
+        "toi_min": 13.33
       },
-      "weight_lb": 198
+      "weight_lb": 199
     },
     "8470042": {
-      "age": 25,
-      "birth_date": "2000-08-03",
+      "age": 33,
+      "birth_date": "1993-05-15",
       "draft": {
-        "overall": 51,
-        "pick_in_round": 19,
-        "round": 2,
-        "team": "WSH",
-        "year": 2018
+        "overall": 174,
+        "pick_in_round": 14,
+        "round": 6,
+        "team": "SEA",
+        "year": 2011
       },
       "goalie": {
         "basis": null,
@@ -2394,18 +2604,18 @@
         "start_share": null
       },
       "group": "G",
-      "height_in": 72,
+      "height_in": 71,
       "history": [
         {
-          "GA": 92,
-          "GP": 54,
-          "GS": 40,
-          "L": 16,
-          "SO": 1,
-          "SV": 908,
-          "W": 23,
+          "GA": 106,
+          "GP": 74,
+          "GS": 46,
+          "L": 30,
+          "SO": 0,
+          "SV": 1044,
+          "W": 15,
           "season": "20252026",
-          "team": "WSH"
+          "team": "SEA"
         },
         {
           "GA": 54,
@@ -2416,19 +2626,19 @@
           "SV": 513,
           "W": 11,
           "season": "20232024",
-          "team": "WSH"
+          "team": "SEA"
         }
       ],
       "minors": [],
-      "name": "Paul Clark",
+      "name": "Samuel Lopez",
       "nhl_id": 8470042,
       "on_nhl_roster": false,
       "position": "G",
       "prior_nhl_gp": 0,
       "prior_team": null,
-      "team": "WSH",
+      "team": "SEA",
       "toi": null,
-      "weight_lb": 198
+      "weight_lb": 206
     },
     "8470043": {
       "age": 21,
@@ -2436,8 +2646,8 @@
       "goalie": {
         "basis": "last season",
         "gs": 42,
-        "role": "Starter",
-        "start_share": 1.0
+        "role": "Backup",
+        "start_share": 0.276
       },
       "group": "G",
       "height_in": 69,
@@ -2451,7 +2661,7 @@
           "SV": 1072,
           "W": 20,
           "season": "20252026",
-          "team": "BOS"
+          "team": "SJS"
         },
         {
           "GA": 157,
@@ -2462,7 +2672,7 @@
           "SV": 1668,
           "W": 18,
           "season": "20242025",
-          "team": "BOS"
+          "team": "SJS"
         },
         {
           "GA": 45,
@@ -2473,15 +2683,15 @@
           "SV": 423,
           "W": 9,
           "season": "20232024",
-          "team": "BOS"
+          "team": "SJS"
         }
       ],
-      "name": "Bruce Watson",
+      "name": "Robert Phillips",
       "nhl_id": 8470043,
       "on_nhl_roster": true,
       "position": "G",
       "prior_team": null,
-      "team": "BOS",
+      "team": "SJS",
       "toi": null,
       "weight_lb": 204
     },
@@ -2505,7 +2715,7 @@
           "SHP": 3,
           "SOG": 52,
           "season": "20252026",
-          "team": "CAR"
+          "team": "WPG"
         },
         {
           "A": 4,
@@ -2521,7 +2731,7 @@
           "SHP": 1,
           "SOG": 77,
           "season": "20242025",
-          "team": "CAR"
+          "team": "WPG"
         },
         {
           "A": 15,
@@ -2537,15 +2747,21 @@
           "SHP": 4,
           "SOG": 85,
           "season": "20232024",
-          "team": "CAR"
+          "team": "WPG"
         }
       ],
-      "name": "Nathan Turner",
+      "name": "David Jackson",
       "nhl_id": 8470044,
       "on_nhl_roster": true,
-      "position": "L",
+      "position": "C",
       "prior_team": null,
-      "team": "CAR",
+      "role": {
+        "basis": "last season",
+        "line": "Line 1",
+        "pp": "PP1",
+        "trend": []
+      },
+      "team": "WPG",
       "toi": {
         "basis": "last season",
         "ev_min": 10.72,
@@ -2576,7 +2792,7 @@
           "SHP": 2,
           "SOG": 193,
           "season": "20252026",
-          "team": "BUF"
+          "team": "STL"
         },
         {
           "A": 30,
@@ -2592,7 +2808,7 @@
           "SHP": 4,
           "SOG": 213,
           "season": "20242025",
-          "team": "BUF"
+          "team": "STL"
         },
         {
           "A": 47,
@@ -2608,15 +2824,21 @@
           "SHP": 1,
           "SOG": 330,
           "season": "20232024",
-          "team": "BUF"
+          "team": "STL"
         }
       ],
-      "name": "Jordan Reyes",
+      "name": "Timothy King",
       "nhl_id": 8470045,
       "on_nhl_roster": true,
-      "position": "L",
+      "position": "C",
       "prior_team": null,
-      "team": "BUF",
+      "role": {
+        "basis": "last season",
+        "line": "Line 1",
+        "pp": "PP2",
+        "trend": []
+      },
+      "team": "STL",
       "toi": {
         "basis": "last season",
         "ev_min": 16.82,
@@ -2630,150 +2852,156 @@
     "8470046": {
       "age": 25,
       "birth_date": "2000-12-06",
-      "goalie": {
-        "basis": "last season",
-        "gs": 37,
-        "role": "1A/1B",
-        "start_share": 0.474
-      },
-      "group": "G",
+      "group": "F",
       "height_in": 68,
       "history": [
         {
-          "GA": 112,
+          "A": 23,
+          "BLK": 38,
+          "G": 16,
           "GP": 68,
-          "GS": 37,
-          "L": 17,
-          "SO": 1,
-          "SV": 887,
-          "W": 20,
-          "season": "20252026",
-          "team": "CAR"
-        },
-        {
-          "GA": 74,
-          "GP": 46,
-          "GS": 24,
-          "L": 15,
-          "SO": 4,
-          "SV": 622,
-          "W": 7,
-          "season": "20242025",
-          "team": "CAR"
-        },
-        {
-          "GA": 126,
-          "GP": 65,
-          "GS": 45,
-          "L": 22,
-          "SO": 1,
-          "SV": 1269,
-          "W": 21,
-          "season": "20232024",
-          "team": "CAR"
-        }
-      ],
-      "name": "Bryan Diaz",
-      "nhl_id": 8470046,
-      "on_nhl_roster": true,
-      "position": "G",
-      "prior_team": null,
-      "team": "CAR",
-      "toi": null,
-      "weight_lb": 183
-    },
-    "8470047": {
-      "age": 29,
-      "birth_date": "1997-05-16",
-      "group": "D",
-      "height_in": 70,
-      "history": [
-        {
-          "A": 22,
-          "BLK": 92,
-          "G": 1,
-          "GP": 65,
           "GWG": 1,
-          "HIT": 26,
-          "PPA": 2,
-          "PPG": 0,
+          "HIT": 47,
+          "PPA": 3,
+          "PPG": 5,
           "SHA": 2,
-          "SHG": 1,
-          "SHP": 3,
-          "SOG": 33,
+          "SHG": 0,
+          "SHP": 2,
+          "SOG": 148,
           "season": "20252026",
-          "team": "CGY"
+          "team": "FLA"
+        },
+        {
+          "A": 25,
+          "BLK": 29,
+          "G": 11,
+          "GP": 41,
+          "GWG": 1,
+          "HIT": 23,
+          "PPA": 5,
+          "PPG": 2,
+          "SHA": 1,
+          "SHG": 0,
+          "SHP": 1,
+          "SOG": 76,
+          "season": "20242025",
+          "team": "FLA"
         },
         {
           "A": 20,
-          "BLK": 106,
-          "G": 10,
-          "GP": 52,
-          "GWG": 0,
-          "HIT": 59,
-          "PPA": 3,
+          "BLK": 26,
+          "G": 11,
+          "GP": 67,
+          "GWG": 1,
+          "HIT": 26,
+          "PPA": 5,
           "PPG": 1,
           "SHA": 2,
-          "SHG": 1,
-          "SHP": 3,
-          "SOG": 122,
+          "SHG": 2,
+          "SHP": 4,
+          "SOG": 112,
+          "season": "20232024",
+          "team": "FLA"
+        }
+      ],
+      "name": "Michael Johnson",
+      "nhl_id": 8470046,
+      "on_nhl_roster": true,
+      "position": "R",
+      "prior_team": null,
+      "role": {
+        "basis": "last season",
+        "line": "Line 1",
+        "pp": "PP1",
+        "trend": []
+      },
+      "team": "FLA",
+      "toi": {
+        "basis": "last season",
+        "ev_min": 10.72,
+        "gp": 68,
+        "pp_min": 1.17,
+        "sh_min": 1.0,
+        "toi_min": 18.32
+      },
+      "weight_lb": 183
+    },
+    "8470047": {
+      "age": 27,
+      "birth_date": "1998-09-12",
+      "goalie": {
+        "basis": "last season",
+        "gs": 30,
+        "role": "Starter",
+        "start_share": 1.0
+      },
+      "group": "G",
+      "height_in": 77,
+      "history": [
+        {
+          "GA": 78,
+          "GP": 73,
+          "GS": 30,
+          "L": 13,
+          "SO": 5,
+          "SV": 792,
+          "W": 13,
+          "season": "20252026",
+          "team": "CGY"
+        },
+        {
+          "GA": 152,
+          "GP": 60,
+          "GS": 54,
+          "L": 23,
+          "SO": 2,
+          "SV": 1522,
+          "W": 28,
           "season": "20242025",
           "team": "CGY"
         },
         {
-          "A": 23,
-          "BLK": 101,
-          "G": 7,
-          "GP": 60,
-          "GWG": 1,
-          "HIT": 208,
-          "PPA": 4,
-          "PPG": 2,
-          "SHA": 0,
-          "SHG": 2,
-          "SHP": 2,
-          "SOG": 95,
+          "GA": 98,
+          "GP": 71,
+          "GS": 41,
+          "L": 21,
+          "SO": 1,
+          "SV": 968,
+          "W": 17,
           "season": "20232024",
           "team": "CGY"
         }
       ],
-      "name": "Elijah Miller",
+      "name": "Brandon Williams",
       "nhl_id": 8470047,
       "on_nhl_roster": true,
-      "position": "D",
+      "position": "G",
       "prior_team": null,
       "team": "CGY",
-      "toi": {
-        "basis": "last season",
-        "ev_min": 18.57,
-        "gp": 65,
-        "pp_min": 2.0,
-        "sh_min": 0.25,
-        "toi_min": 14.67
-      },
-      "weight_lb": 173
+      "toi": null,
+      "weight_lb": 186
     },
     "8470048": {
-      "age": 24,
-      "birth_date": "2002-05-17",
+      "age": 26,
+      "birth_date": "2000-04-01",
       "group": "F",
       "height_in": 78,
       "history": [
         {
-          "A": 33,
+          "A": 49,
           "BLK": 10,
-          "G": 11,
-          "GP": 52,
+          "G": 23,
+          "GP": 36,
           "GWG": 0,
           "HIT": 115,
-          "PPA": 8,
-          "PPG": 3,
-          "SHA": 2,
-          "SHG": 0,
-          "SHP": 2,
-          "SOG": 84,
+          "PPA": 15,
+          "PPG": 2,
+          "SHA": 0,
+          "SHG": 1,
+          "SHP": 1,
+          "SOG": 174,
           "season": "20252026",
-          "team": "ANA"
+          "team": "CBJ"
         },
         {
           "A": 54,
@@ -2789,7 +3017,7 @@
           "SHP": 0,
           "SOG": 231,
           "season": "20242025",
-          "team": "ANA"
+          "team": "CBJ"
         },
         {
           "A": 53,
@@ -2805,459 +3033,43 @@
           "SHP": 1,
           "SOG": 141,
           "season": "20232024",
-          "team": "ANA"
+          "team": "CBJ"
         }
       ],
-      "name": "Lawrence Kelly",
+      "name": "James Jackson",
       "nhl_id": 8470048,
       "on_nhl_roster": true,
-      "position": "L",
+      "position": "C",
       "prior_team": null,
-      "team": "ANA",
+      "role": {
+        "basis": "last season",
+        "line": "Line 2",
+        "pp": "PP2",
+        "trend": []
+      },
+      "team": "CBJ",
       "toi": {
         "basis": "last season",
         "ev_min": 11.32,
-        "gp": 52,
+        "gp": 36,
         "pp_min": 0.5,
         "sh_min": 1.83,
         "toi_min": 15.88
       },
-      "weight_lb": 194
+      "weight_lb": 188
     },
-    "8470051": {
-      "age": 27,
-      "birth_date": "1998-11-19",
-      "goalie": {
-        "basis": "last season",
-        "gs": 22,
-        "role": "Starter",
-        "start_share": 1.0
-      },
-      "group": "G",
-      "height_in": 73,
-      "history": [
-        {
-          "GA": 51,
-          "GP": 41,
-          "GS": 22,
-          "L": 9,
-          "SO": 4,
-          "SV": 499,
-          "W": 8,
-          "season": "20252026",
-          "team": "DAL"
-        },
-        {
-          "GA": 94,
-          "GP": 60,
-          "GS": 31,
-          "L": 16,
-          "SO": 4,
-          "SV": 774,
-          "W": 11,
-          "season": "20242025",
-          "team": "DAL"
-        }
-      ],
-      "name": "Jose Morales",
-      "nhl_id": 8470051,
-      "on_nhl_roster": true,
-      "position": "G",
-      "prior_team": null,
-      "team": "DAL",
-      "toi": null,
-      "weight_lb": 225
-    },
-    "8470052": {
-      "age": 28,
-      "birth_date": "1998-02-20",
-      "group": "D",
-      "height_in": 68,
-      "history": [
-        {
-          "A": 24,
-          "BLK": 148,
-          "G": 9,
-          "GP": 30,
-          "GWG": 1,
-          "HIT": 211,
-          "PPA": 8,
-          "PPG": 0,
-          "SHA": 0,
-          "SHG": 2,
-          "SHP": 2,
-          "SOG": 68,
-          "season": "20252026",
-          "team": "FLA"
-        },
-        {
-          "A": 9,
-          "BLK": 67,
-          "G": 7,
-          "GP": 41,
-          "GWG": 0,
-          "HIT": 200,
-          "PPA": 2,
-          "PPG": 2,
-          "SHA": 1,
-          "SHG": 0,
-          "SHP": 1,
-          "SOG": 44,
-          "season": "20242025",
-          "team": "FLA"
-        },
-        {
-          "A": 39,
-          "BLK": 144,
-          "G": 6,
-          "GP": 73,
-          "GWG": 1,
-          "HIT": 142,
-          "PPA": 3,
-          "PPG": 2,
-          "SHA": 0,
-          "SHG": 2,
-          "SHP": 2,
-          "SOG": 49,
-          "season": "20232024",
-          "team": "FLA"
-        }
-      ],
-      "name": "Dennis Bailey",
-      "nhl_id": 8470052,
-      "on_nhl_roster": true,
-      "position": "D",
-      "prior_team": null,
-      "team": "FLA",
-      "toi": {
-        "basis": "last season",
-        "ev_min": 16.17,
-        "gp": 30,
-        "pp_min": 2.0,
-        "sh_min": 0.25,
-        "toi_min": 18.17
-      },
-      "weight_lb": 199
-    },
-    "8470053": {
-      "age": 27,
-      "birth_date": "1999-01-27",
-      "group": "F",
-      "height_in": 79,
-      "history": [
-        {
-          "A": 16,
-          "BLK": 42,
-          "G": 33,
-          "GP": 79,
-          "GWG": 5,
-          "HIT": 64,
-          "PPA": 2,
-          "PPG": 4,
-          "SHA": 0,
-          "SHG": 1,
-          "SHP": 1,
-          "SOG": 280,
-          "season": "20252026",
-          "team": "UTA"
-        }
-      ],
-      "name": "Aaron Phillips",
-      "nhl_id": 8470053,
-      "on_nhl_roster": true,
-      "position": "L",
-      "prior_team": null,
-      "team": "UTA",
-      "toi": {
-        "basis": "last season",
-        "ev_min": 11.43,
-        "gp": 79,
-        "pp_min": 0.5,
-        "sh_min": 0.0,
-        "toi_min": 13.63
-      },
-      "weight_lb": 225
-    },
-    "8470054": {
-      "age": 22,
-      "birth_date": "2004-07-05",
-      "group": "F",
-      "height_in": 76,
-      "history": [
-        {
-          "A": 33,
-          "BLK": 25,
-          "G": 40,
-          "GP": 77,
-          "GWG": 0,
-          "HIT": 20,
-          "PPA": 7,
-          "PPG": 5,
-          "SHA": 2,
-          "SHG": 0,
-          "SHP": 2,
-          "SOG": 266,
-          "season": "20252026",
-          "team": "BOS"
-        },
-        {
-          "A": 17,
-          "BLK": 18,
-          "G": 30,
-          "GP": 72,
-          "GWG": 4,
-          "HIT": 83,
-          "PPA": 3,
-          "PPG": 9,
-          "SHA": 2,
-          "SHG": 1,
-          "SHP": 3,
-          "SOG": 151,
-          "season": "20232024",
-          "team": "BOS"
-        }
-      ],
-      "name": "Justin Rogers",
-      "nhl_id": 8470054,
-      "on_nhl_roster": true,
-      "position": "C",
-      "prior_team": null,
-      "team": "BOS",
-      "toi": {
-        "basis": "last season",
-        "ev_min": 10.85,
-        "gp": 77,
-        "pp_min": 2.83,
-        "sh_min": 1.83,
-        "toi_min": 12.32
-      },
-      "weight_lb": 175
-    },
-    "8470055": {
-      "age": 31,
-      "birth_date": "1995-07-24",
-      "group": "F",
-      "height_in": 71,
-      "history": [
-        {
-          "A": 30,
-          "BLK": 23,
-          "G": 28,
-          "GP": 37,
-          "GWG": 3,
-          "HIT": 78,
-          "PPA": 10,
-          "PPG": 7,
-          "SHA": 2,
-          "SHG": 2,
-          "SHP": 4,
-          "SOG": 205,
-          "season": "20252026",
-          "team": "FLA"
-        },
-        {
-          "A": 30,
-          "BLK": 20,
-          "G": 34,
-          "GP": 56,
-          "GWG": 4,
-          "HIT": 46,
-          "PPA": 8,
-          "PPG": 2,
-          "SHA": 0,
-          "SHG": 1,
-          "SHP": 1,
-          "SOG": 282,
-          "season": "20242025",
-          "team": "FLA"
-        },
-        {
-          "A": 51,
-          "BLK": 46,
-          "G": 15,
-          "GP": 68,
-          "GWG": 1,
-          "HIT": 131,
-          "PPA": 2,
-          "PPG": 0,
-          "SHA": 2,
-          "SHG": 2,
-          "SHP": 4,
-          "SOG": 127,
-          "season": "20232024",
-          "team": "FLA"
-        }
-      ],
-      "name": "Alan Harris",
-      "nhl_id": 8470055,
-      "on_nhl_roster": true,
-      "position": "R",
-      "prior_team": null,
-      "team": "FLA",
-      "toi": {
-        "basis": "last season",
-        "ev_min": 16.17,
-        "gp": 37,
-        "pp_min": 3.5,
-        "sh_min": 0.0,
-        "toi_min": 19.13
-      },
-      "weight_lb": 217
-    },
-    "8470056": {
-      "age": 33,
-      "birth_date": "1992-12-22",
-      "group": "F",
-      "height_in": 76,
-      "history": [
-        {
-          "A": 14,
-          "BLK": 9,
-          "G": 12,
-          "GP": 69,
-          "GWG": 2,
-          "HIT": 15,
-          "PPA": 2,
-          "PPG": 1,
-          "SHA": 2,
-          "SHG": 2,
-          "SHP": 4,
-          "SOG": 91,
-          "season": "20252026",
-          "team": "TOR"
-        },
-        {
-          "A": 35,
-          "BLK": 44,
-          "G": 22,
-          "GP": 67,
-          "GWG": 3,
-          "HIT": 41,
-          "PPA": 9,
-          "PPG": 1,
-          "SHA": 0,
-          "SHG": 2,
-          "SHP": 2,
-          "SOG": 194,
-          "season": "20242025",
-          "team": "TOR"
-        },
-        {
-          "A": 11,
-          "BLK": 7,
-          "G": 31,
-          "GP": 70,
-          "GWG": 3,
-          "HIT": 216,
-          "PPA": 3,
-          "PPG": 5,
-          "SHA": 1,
-          "SHG": 1,
-          "SHP": 2,
-          "SOG": 248,
-          "season": "20232024",
-          "team": "TOR"
-        }
-      ],
-      "name": "Walter Reed",
-      "nhl_id": 8470056,
-      "on_nhl_roster": true,
-      "position": "L",
-      "prior_team": null,
-      "team": "TOR",
-      "toi": {
-        "basis": "last season",
-        "ev_min": 10.33,
-        "gp": 69,
-        "pp_min": 2.0,
-        "sh_min": 1.83,
-        "toi_min": 12.48
-      },
-      "weight_lb": 214
-    },
-    "8470057": {
-      "age": 21,
-      "birth_date": "2005-06-15",
-      "group": "F",
-      "height_in": 79,
-      "history": [
-        {
-          "A": 5,
-          "BLK": 40,
-          "G": 10,
-          "GP": 72,
-          "GWG": 1,
-          "HIT": 41,
-          "PPA": 0,
-          "PPG": 2,
-          "SHA": 2,
-          "SHG": 1,
-          "SHP": 3,
-          "SOG": 90,
-          "season": "20252026",
-          "team": "VAN"
-        },
-        {
-          "A": 54,
-          "BLK": 23,
-          "G": 24,
-          "GP": 69,
-          "GWG": 0,
-          "HIT": 114,
-          "PPA": 16,
-          "PPG": 8,
-          "SHA": 1,
-          "SHG": 1,
-          "SHP": 2,
-          "SOG": 183,
-          "season": "20242025",
-          "team": "VAN"
-        },
-        {
-          "A": 24,
-          "BLK": 21,
-          "G": 34,
-          "GP": 34,
-          "GWG": 5,
-          "HIT": 85,
-          "PPA": 5,
-          "PPG": 6,
-          "SHA": 0,
-          "SHG": 1,
-          "SHP": 1,
-          "SOG": 312,
-          "season": "20232024",
-          "team": "VAN"
-        }
-      ],
-      "name": "Juan Cooper",
-      "nhl_id": 8470057,
-      "on_nhl_roster": true,
-      "position": "L",
-      "prior_team": null,
-      "team": "VAN",
-      "toi": {
-        "basis": "last season",
-        "ev_min": 14.4,
-        "gp": 72,
-        "pp_min": 2.0,
-        "sh_min": 1.83,
-        "toi_min": 16.77
-      },
-      "weight_lb": 181
-    },
-    "8470058": {
-      "age": 33,
-      "birth_date": "1993-03-24",
+    "8470049": {
+      "age": 20,
+      "birth_date": "2006-03-27",
       "draft": {
-        "overall": 106,
-        "pick_in_round": 10,
-        "round": 4,
-        "team": "COL",
-        "year": 2011
+        "overall": 195,
+        "pick_in_round": 3,
+        "round": 7,
+        "team": "BUF",
+        "year": 2024
       },
       "group": "F",
-      "height_in": 76,
+      "height_in": 68,
       "history": [],
       "minors": [
         {
@@ -3281,13 +3093,19 @@
           "team": "Sample Juniors"
         }
       ],
-      "name": "Samuel Davis",
-      "nhl_id": 8470058,
+      "name": "D. Robinson",
+      "nhl_id": 8470049,
       "on_nhl_roster": true,
-      "position": "C",
+      "position": "R",
       "prior_nhl_gp": 0,
       "prior_team": null,
-      "team": "COL",
+      "role": {
+        "basis": "no NHL ice time",
+        "line": null,
+        "pp": null,
+        "trend": []
+      },
+      "team": "BUF",
       "toi": {
         "basis": null,
         "ev_min": null,
@@ -3296,94 +3114,665 @@
         "sh_min": null,
         "toi_min": null
       },
-      "weight_lb": 180
+      "weight_lb": 193
     },
-    "8470059": {
-      "age": 19,
-      "birth_date": "2006-10-11",
-      "draft": {
-        "overall": 101,
-        "pick_in_round": 5,
-        "round": 4,
-        "team": "DET",
-        "year": 2024
-      },
+    "8470051": {
+      "age": 27,
+      "birth_date": "1998-11-19",
       "group": "F",
-      "height_in": 76,
+      "height_in": 73,
+      "history": [
+        {
+          "A": 10,
+          "BLK": 32,
+          "G": 20,
+          "GP": 41,
+          "GWG": 0,
+          "HIT": 56,
+          "PPA": 1,
+          "PPG": 2,
+          "SHA": 2,
+          "SHG": 1,
+          "SHP": 3,
+          "SOG": 161,
+          "season": "20252026",
+          "team": "VAN"
+        },
+        {
+          "A": 33,
+          "BLK": 38,
+          "G": 2,
+          "GP": 69,
+          "GWG": 1,
+          "HIT": 203,
+          "PPA": 0,
+          "PPG": 0,
+          "SHA": 2,
+          "SHG": 1,
+          "SHP": 3,
+          "SOG": 16,
+          "season": "20232024",
+          "team": "VAN"
+        }
+      ],
+      "name": "Gary Edwards",
+      "nhl_id": 8470051,
+      "on_nhl_roster": true,
+      "position": "R",
+      "prior_team": null,
+      "role": {
+        "basis": "last season",
+        "line": "Line 1",
+        "pp": "PP1",
+        "trend": []
+      },
+      "team": "VAN",
+      "toi": {
+        "basis": "last season",
+        "ev_min": 12.62,
+        "gp": 41,
+        "pp_min": 2.83,
+        "sh_min": 0.0,
+        "toi_min": 17.98
+      },
+      "weight_lb": 225
+    },
+    "8470052": {
+      "age": 29,
+      "birth_date": "1997-07-27",
+      "group": "F",
+      "height_in": 70,
+      "history": [
+        {
+          "A": 9,
+          "BLK": 20,
+          "G": 27,
+          "GP": 81,
+          "GWG": 1,
+          "HIT": 200,
+          "PPA": 2,
+          "PPG": 8,
+          "SHA": 1,
+          "SHG": 0,
+          "SHP": 1,
+          "SOG": 153,
+          "season": "20252026",
+          "team": "PIT"
+        },
+        {
+          "A": 39,
+          "BLK": 5,
+          "G": 23,
+          "GP": 79,
+          "GWG": 0,
+          "HIT": 130,
+          "PPA": 4,
+          "PPG": 3,
+          "SHA": 0,
+          "SHG": 0,
+          "SHP": 0,
+          "SOG": 208,
+          "season": "20232024",
+          "team": "PIT"
+        }
+      ],
+      "name": "Elijah Wilson",
+      "nhl_id": 8470052,
+      "on_nhl_roster": true,
+      "position": "C",
+      "prior_team": null,
+      "role": {
+        "basis": "last season",
+        "line": "Line 1",
+        "pp": "PP2",
+        "trend": []
+      },
+      "team": "PIT",
+      "toi": {
+        "basis": "last season",
+        "ev_min": 16.22,
+        "gp": 81,
+        "pp_min": 0.5,
+        "sh_min": 1.83,
+        "toi_min": 21.97
+      },
+      "weight_lb": 221
+    },
+    "8470053": {
+      "age": 30,
+      "birth_date": "1996-05-11",
+      "group": "F",
+      "height_in": 70,
+      "history": [
+        {
+          "A": 18,
+          "BLK": 40,
+          "G": 11,
+          "GP": 36,
+          "GWG": 1,
+          "HIT": 47,
+          "PPA": 1,
+          "PPG": 0,
+          "SHA": 0,
+          "SHG": 0,
+          "SHP": 0,
+          "SOG": 110,
+          "season": "20252026",
+          "team": "STL"
+        },
+        {
+          "A": 33,
+          "BLK": 25,
+          "G": 40,
+          "GP": 71,
+          "GWG": 0,
+          "HIT": 20,
+          "PPA": 7,
+          "PPG": 5,
+          "SHA": 2,
+          "SHG": 0,
+          "SHP": 2,
+          "SOG": 266,
+          "season": "20242025",
+          "team": "STL"
+        }
+      ],
+      "name": "Roy Bailey",
+      "nhl_id": 8470053,
+      "on_nhl_roster": true,
+      "position": "C",
+      "prior_team": null,
+      "role": {
+        "basis": "last season",
+        "line": "Line 1",
+        "pp": "PP1",
+        "trend": []
+      },
+      "team": "STL",
+      "toi": {
+        "basis": "last season",
+        "ev_min": 12.07,
+        "gp": 36,
+        "pp_min": 2.83,
+        "sh_min": 1.0,
+        "toi_min": 13.4
+      },
+      "weight_lb": 216
+    },
+    "8470054": {
+      "age": 30,
+      "birth_date": "1996-01-22",
+      "group": "F",
+      "height_in": 75,
+      "history": [
+        {
+          "A": 28,
+          "BLK": 43,
+          "G": 17,
+          "GP": 82,
+          "GWG": 0,
+          "HIT": 172,
+          "PPA": 0,
+          "PPG": 5,
+          "SHA": 1,
+          "SHG": 2,
+          "SHP": 3,
+          "SOG": 148,
+          "season": "20252026",
+          "team": "CBJ"
+        },
+        {
+          "A": 31,
+          "BLK": 23,
+          "G": 8,
+          "GP": 76,
+          "GWG": 1,
+          "HIT": 78,
+          "PPA": 8,
+          "PPG": 1,
+          "SHA": 2,
+          "SHG": 1,
+          "SHP": 3,
+          "SOG": 72,
+          "season": "20242025",
+          "team": "CBJ"
+        },
+        {
+          "A": 30,
+          "BLK": 20,
+          "G": 34,
+          "GP": 56,
+          "GWG": 4,
+          "HIT": 46,
+          "PPA": 8,
+          "PPG": 2,
+          "SHA": 0,
+          "SHG": 1,
+          "SHP": 1,
+          "SOG": 282,
+          "season": "20232024",
+          "team": "CBJ"
+        }
+      ],
+      "name": "Roger Gomez",
+      "nhl_id": 8470054,
+      "on_nhl_roster": true,
+      "position": "R",
+      "prior_team": null,
+      "role": {
+        "basis": "last season",
+        "line": "Line 1",
+        "pp": "PP1",
+        "trend": []
+      },
+      "team": "CBJ",
+      "toi": {
+        "basis": "last season",
+        "ev_min": 11.88,
+        "gp": 82,
+        "pp_min": 2.0,
+        "sh_min": 0.25,
+        "toi_min": 13.12
+      },
+      "weight_lb": 229
+    },
+    "8470055": {
+      "age": 23,
+      "birth_date": "2003-06-20",
+      "group": "F",
+      "height_in": 71,
       "history": [
         {
           "A": 30,
-          "BLK": 45,
-          "G": 2,
-          "GP": 76,
-          "GWG": 0,
-          "HIT": 85,
-          "PPA": 2,
-          "PPG": 0,
-          "SHA": 1,
-          "SHG": 0,
-          "SHP": 1,
-          "SOG": 51,
+          "BLK": 48,
+          "G": 20,
+          "GP": 72,
+          "GWG": 3,
+          "HIT": 187,
+          "PPA": 4,
+          "PPG": 3,
+          "SHA": 2,
+          "SHG": 2,
+          "SHP": 4,
+          "SOG": 106,
           "season": "20252026",
-          "team": "DET"
+          "team": "TOR"
         },
         {
-          "A": 47,
-          "BLK": 46,
-          "G": 24,
-          "GP": 67,
-          "GWG": 4,
-          "HIT": 110,
-          "PPA": 13,
-          "PPG": 6,
-          "SHA": 1,
-          "SHG": 0,
-          "SHP": 1,
-          "SOG": 255,
+          "A": 16,
+          "BLK": 7,
+          "G": 11,
+          "GP": 41,
+          "GWG": 0,
+          "HIT": 17,
+          "PPA": 5,
+          "PPG": 2,
+          "SHA": 0,
+          "SHG": 2,
+          "SHP": 2,
+          "SOG": 64,
           "season": "20242025",
-          "team": "DET"
+          "team": "TOR"
         },
         {
-          "A": 47,
-          "BLK": 18,
-          "G": 12,
-          "GP": 56,
-          "GWG": 1,
-          "HIT": 191,
-          "PPA": 11,
+          "A": 35,
+          "BLK": 44,
+          "G": 22,
+          "GP": 67,
+          "GWG": 3,
+          "HIT": 41,
+          "PPA": 9,
+          "PPG": 1,
+          "SHA": 0,
+          "SHG": 2,
+          "SHP": 2,
+          "SOG": 194,
+          "season": "20232024",
+          "team": "TOR"
+        }
+      ],
+      "name": "Kevin Miller",
+      "nhl_id": 8470055,
+      "on_nhl_roster": true,
+      "position": "R",
+      "prior_team": null,
+      "role": {
+        "basis": "last season",
+        "line": "Line 1",
+        "pp": "PP2",
+        "trend": []
+      },
+      "team": "TOR",
+      "toi": {
+        "basis": "last season",
+        "ev_min": 15.93,
+        "gp": 72,
+        "pp_min": 0.5,
+        "sh_min": 0.25,
+        "toi_min": 21.28
+      },
+      "weight_lb": 217
+    },
+    "8470056": {
+      "age": 25,
+      "birth_date": "2001-02-21",
+      "group": "F",
+      "height_in": 78,
+      "history": [
+        {
+          "A": 26,
+          "BLK": 27,
+          "G": 30,
+          "GP": 51,
+          "GWG": 4,
+          "HIT": 205,
+          "PPA": 0,
+          "PPG": 6,
+          "SHA": 2,
+          "SHG": 1,
+          "SHP": 3,
+          "SOG": 181,
+          "season": "20252026",
+          "team": "EDM"
+        },
+        {
+          "A": 46,
+          "BLK": 22,
+          "G": 15,
+          "GP": 52,
+          "GWG": 0,
+          "HIT": 150,
+          "PPA": 12,
           "PPG": 4,
           "SHA": 1,
           "SHG": 2,
           "SHP": 3,
-          "SOG": 121,
+          "SOG": 170,
           "season": "20232024",
-          "team": "DET"
+          "team": "EDM"
+        }
+      ],
+      "name": "Nathan Hall",
+      "nhl_id": 8470056,
+      "on_nhl_roster": true,
+      "position": "R",
+      "prior_team": null,
+      "role": {
+        "basis": "last season",
+        "line": "Line 1",
+        "pp": "PP2",
+        "trend": []
+      },
+      "team": "EDM",
+      "toi": {
+        "basis": "last season",
+        "ev_min": 15.88,
+        "gp": 51,
+        "pp_min": 0.5,
+        "sh_min": 0.25,
+        "toi_min": 19.82
+      },
+      "weight_lb": 200
+    },
+    "8470057": {
+      "age": 26,
+      "birth_date": "2000-05-20",
+      "group": "F",
+      "height_in": 73,
+      "history": [
+        {
+          "A": 5,
+          "BLK": 11,
+          "G": 21,
+          "GP": 62,
+          "GWG": 1,
+          "HIT": 64,
+          "PPA": 1,
+          "PPG": 3,
+          "SHA": 0,
+          "SHG": 1,
+          "SHP": 1,
+          "SOG": 222,
+          "season": "20252026",
+          "team": "CBJ"
+        },
+        {
+          "A": 47,
+          "BLK": 14,
+          "G": 1,
+          "GP": 53,
+          "GWG": 0,
+          "HIT": 39,
+          "PPA": 13,
+          "PPG": 0,
+          "SHA": 1,
+          "SHG": 1,
+          "SHP": 2,
+          "SOG": 33,
+          "season": "20242025",
+          "team": "CBJ"
+        },
+        {
+          "A": 50,
+          "BLK": 14,
+          "G": 37,
+          "GP": 55,
+          "GWG": 6,
+          "HIT": 125,
+          "PPA": 0,
+          "PPG": 0,
+          "SHA": 0,
+          "SHG": 1,
+          "SHP": 1,
+          "SOG": 221,
+          "season": "20232024",
+          "team": "CBJ"
+        }
+      ],
+      "name": "Michael Edwards",
+      "nhl_id": 8470057,
+      "on_nhl_roster": true,
+      "position": "C",
+      "prior_team": null,
+      "role": {
+        "basis": "last season",
+        "line": "Line 2",
+        "pp": "PP1",
+        "trend": []
+      },
+      "team": "CBJ",
+      "toi": {
+        "basis": "last season",
+        "ev_min": 10.53,
+        "gp": 62,
+        "pp_min": 2.83,
+        "sh_min": 1.0,
+        "toi_min": 17.88
+      },
+      "weight_lb": 220
+    },
+    "8470058": {
+      "age": 26,
+      "birth_date": "2000-05-10",
+      "draft": {
+        "overall": 94,
+        "pick_in_round": 30,
+        "round": 3,
+        "team": "PHI",
+        "year": 2018
+      },
+      "group": "F",
+      "height_in": 70,
+      "history": [],
+      "minors": [
+        {
+          "a": 20,
+          "g": 14,
+          "gp": 50,
+          "league": "AHL",
+          "pts": 34,
+          "season": "20252026",
+          "sv_pct": null,
+          "team": "Sample Juniors"
+        },
+        {
+          "a": 15,
+          "g": 10,
+          "gp": 60,
+          "league": "OHL",
+          "pts": 25,
+          "season": "20242025",
+          "sv_pct": null,
+          "team": "Sample Juniors"
+        }
+      ],
+      "name": "David Jackson",
+      "nhl_id": 8470058,
+      "on_nhl_roster": true,
+      "position": "C",
+      "prior_nhl_gp": 0,
+      "prior_team": null,
+      "role": {
+        "basis": "no NHL ice time",
+        "line": null,
+        "pp": null,
+        "trend": []
+      },
+      "team": "PHI",
+      "toi": {
+        "basis": null,
+        "ev_min": null,
+        "gp": null,
+        "pp_min": null,
+        "sh_min": null,
+        "toi_min": null
+      },
+      "weight_lb": 207
+    },
+    "8470059": {
+      "age": 24,
+      "birth_date": "2002-07-01",
+      "draft": {
+        "overall": 105,
+        "pick_in_round": 9,
+        "round": 4,
+        "team": "CAR",
+        "year": 2020
+      },
+      "group": "F",
+      "height_in": 74,
+      "history": [
+        {
+          "A": 45,
+          "BLK": 48,
+          "G": 26,
+          "GP": 63,
+          "GWG": 3,
+          "HIT": 182,
+          "PPA": 15,
+          "PPG": 4,
+          "SHA": 2,
+          "SHG": 2,
+          "SHP": 4,
+          "SOG": 176,
+          "season": "20252026",
+          "team": "CAR"
+        },
+        {
+          "A": 41,
+          "BLK": 26,
+          "G": 14,
+          "GP": 75,
+          "GWG": 0,
+          "HIT": 105,
+          "PPA": 2,
+          "PPG": 2,
+          "SHA": 2,
+          "SHG": 0,
+          "SHP": 2,
+          "SOG": 158,
+          "season": "20242025",
+          "team": "CAR"
+        },
+        {
+          "A": 48,
+          "BLK": 47,
+          "G": 38,
+          "GP": 30,
+          "GWG": 1,
+          "HIT": 179,
+          "PPA": 3,
+          "PPG": 9,
+          "SHA": 1,
+          "SHG": 0,
+          "SHP": 1,
+          "SOG": 220,
+          "season": "20232024",
+          "team": "CAR"
         }
       ],
       "minors": [],
-      "name": "Christian Brown",
+      "name": "Matthew Rogers",
       "nhl_id": 8470059,
       "on_nhl_roster": false,
-      "position": "L",
+      "position": "R",
       "prior_nhl_gp": 0,
       "prior_team": null,
-      "team": "DET",
+      "role": {
+        "basis": null,
+        "line": null,
+        "pp": null,
+        "trend": []
+      },
+      "team": "CAR",
       "toi": {
         "basis": "last season",
-        "ev_min": 15.98,
-        "gp": 76,
-        "pp_min": 0.0,
-        "sh_min": 1.0,
-        "toi_min": 18.92
+        "ev_min": 16.05,
+        "gp": 63,
+        "pp_min": 1.17,
+        "sh_min": 1.83,
+        "toi_min": 20.67
       },
-      "weight_lb": 187
+      "weight_lb": 230
     },
-    "8470061": {
-      "age": 21,
-      "birth_date": "2005-01-12",
+    "8470060": {
+      "age": 23,
+      "birth_date": "2003-04-02",
       "group": "F",
-      "height_in": 77,
+      "height_in": 68,
       "history": [
+        {
+          "A": 49,
+          "BLK": 34,
+          "G": 3,
+          "GP": 36,
+          "GWG": 0,
+          "HIT": 219,
+          "PPA": 13,
+          "PPG": 1,
+          "SHA": 1,
+          "SHG": 1,
+          "SHP": 2,
+          "SOG": 59,
+          "season": "20252026",
+          "team": "PIT"
+        },
+        {
+          "A": 50,
+          "BLK": 5,
+          "G": 3,
+          "GP": 53,
+          "GWG": 1,
+          "HIT": 131,
+          "PPA": 16,
+          "PPG": 0,
+          "SHA": 0,
+          "SHG": 0,
+          "SHP": 0,
+          "SOG": 61,
+          "season": "20242025",
+          "team": "PIT"
+        },
         {
           "A": 18,
           "BLK": 40,
@@ -3397,240 +3786,264 @@
           "SHG": 0,
           "SHP": 0,
           "SOG": 168,
-          "season": "20252026",
-          "team": "OTT"
-        },
-        {
-          "A": 9,
-          "BLK": 48,
-          "G": 19,
-          "GP": 59,
-          "GWG": 1,
-          "HIT": 45,
-          "PPA": 1,
-          "PPG": 6,
-          "SHA": 1,
-          "SHG": 1,
-          "SHP": 2,
-          "SOG": 143,
           "season": "20232024",
-          "team": "OTT"
+          "team": "PIT"
         }
       ],
-      "name": "Jordan Kelly",
-      "nhl_id": 8470061,
-      "on_nhl_roster": true,
-      "position": "C",
-      "prior_team": null,
-      "team": "OTT",
-      "toi": {
-        "basis": "last season",
-        "ev_min": 16.0,
-        "gp": 61,
-        "pp_min": 0.0,
-        "sh_min": 0.25,
-        "toi_min": 17.53
-      },
-      "weight_lb": 184
-    },
-    "8470062": {
-      "age": 33,
-      "birth_date": "1993-02-04",
-      "group": "F",
-      "height_in": 75,
-      "history": [
-        {
-          "A": 47,
-          "BLK": 35,
-          "G": 19,
-          "GP": 75,
-          "GWG": 1,
-          "HIT": 38,
-          "PPA": 12,
-          "PPG": 5,
-          "SHA": 2,
-          "SHG": 2,
-          "SHP": 4,
-          "SOG": 196,
-          "season": "20252026",
-          "team": "COL"
-        },
-        {
-          "A": 8,
-          "BLK": 31,
-          "G": 37,
-          "GP": 77,
-          "GWG": 3,
-          "HIT": 150,
-          "PPA": 0,
-          "PPG": 2,
-          "SHA": 2,
-          "SHG": 0,
-          "SHP": 2,
-          "SOG": 206,
-          "season": "20242025",
-          "team": "COL"
-        },
-        {
-          "A": 16,
-          "BLK": 37,
-          "G": 34,
-          "GP": 82,
-          "GWG": 5,
-          "HIT": 136,
-          "PPA": 1,
-          "PPG": 1,
-          "SHA": 2,
-          "SHG": 2,
-          "SHP": 4,
-          "SOG": 246,
-          "season": "20232024",
-          "team": "COL"
-        }
-      ],
-      "name": "Gregory Gutierrez",
-      "nhl_id": 8470062,
+      "name": "C. Richardson",
+      "nhl_id": 8470060,
       "on_nhl_roster": true,
       "position": "L",
       "prior_team": null,
-      "team": "COL",
+      "role": {
+        "basis": "last season",
+        "line": "Line 1",
+        "pp": "PP2",
+        "trend": []
+      },
+      "team": "PIT",
       "toi": {
         "basis": "last season",
-        "ev_min": 16.83,
-        "gp": 75,
-        "pp_min": 3.5,
-        "sh_min": 0.0,
-        "toi_min": 16.35
+        "ev_min": 15.98,
+        "gp": 36,
+        "pp_min": 0.5,
+        "sh_min": 1.83,
+        "toi_min": 13.97
       },
-      "weight_lb": 205
+      "weight_lb": 179
     },
-    "8470063": {
-      "age": 19,
-      "birth_date": "2006-09-27",
-      "group": "D",
-      "height_in": 71,
+    "8470061": {
+      "age": 31,
+      "birth_date": "1994-09-15",
+      "group": "F",
+      "height_in": 72,
       "history": [
         {
-          "A": 31,
-          "BLK": 33,
-          "G": 12,
-          "GP": 58,
-          "GWG": 0,
-          "HIT": 152,
-          "PPA": 8,
-          "PPG": 3,
+          "A": 12,
+          "BLK": 12,
+          "G": 36,
+          "GP": 60,
+          "GWG": 6,
+          "HIT": 185,
+          "PPA": 3,
+          "PPG": 6,
           "SHA": 0,
           "SHG": 0,
           "SHP": 0,
-          "SOG": 101,
+          "SOG": 345,
           "season": "20252026",
-          "team": "DET"
+          "team": "CGY"
         },
         {
-          "A": 7,
-          "BLK": 76,
-          "G": 12,
-          "GP": 76,
+          "A": 51,
+          "BLK": 19,
+          "G": 31,
+          "GP": 32,
+          "GWG": 5,
+          "HIT": 147,
+          "PPA": 17,
+          "PPG": 4,
+          "SHA": 2,
+          "SHG": 2,
+          "SHP": 4,
+          "SOG": 254,
+          "season": "20242025",
+          "team": "CGY"
+        },
+        {
+          "A": 51,
+          "BLK": 40,
+          "G": 7,
+          "GP": 70,
           "GWG": 0,
-          "HIT": 97,
-          "PPA": 1,
-          "PPG": 1,
+          "HIT": 31,
+          "PPA": 4,
+          "PPG": 2,
+          "SHA": 0,
+          "SHG": 0,
+          "SHP": 0,
+          "SOG": 86,
+          "season": "20232024",
+          "team": "CGY"
+        }
+      ],
+      "name": "Jesse Allen",
+      "nhl_id": 8470061,
+      "on_nhl_roster": true,
+      "position": "L",
+      "prior_team": null,
+      "role": {
+        "basis": "last season",
+        "line": "Line 1",
+        "pp": "No PP",
+        "trend": []
+      },
+      "team": "CGY",
+      "toi": {
+        "basis": "last season",
+        "ev_min": 11.02,
+        "gp": 60,
+        "pp_min": 0.0,
+        "sh_min": 1.83,
+        "toi_min": 13.35
+      },
+      "weight_lb": 175
+    },
+    "8470062": {
+      "age": 24,
+      "birth_date": "2001-12-02",
+      "group": "F",
+      "height_in": 77,
+      "history": [
+        {
+          "A": 19,
+          "BLK": 35,
+          "G": 39,
+          "GP": 34,
+          "GWG": 4,
+          "HIT": 88,
+          "PPA": 2,
+          "PPG": 8,
+          "SHA": 1,
+          "SHG": 2,
+          "SHP": 3,
+          "SOG": 339,
+          "season": "20252026",
+          "team": "VGK"
+        },
+        {
+          "A": 30,
+          "BLK": 16,
+          "G": 28,
+          "GP": 58,
+          "GWG": 2,
+          "HIT": 38,
+          "PPA": 0,
+          "PPG": 0,
           "SHA": 0,
           "SHG": 2,
           "SHP": 2,
-          "SOG": 134,
+          "SOG": 282,
           "season": "20242025",
-          "team": "DET"
+          "team": "VGK"
+        },
+        {
+          "A": 17,
+          "BLK": 22,
+          "G": 4,
+          "GP": 76,
+          "GWG": 1,
+          "HIT": 185,
+          "PPA": 0,
+          "PPG": 1,
+          "SHA": 2,
+          "SHG": 0,
+          "SHP": 2,
+          "SOG": 64,
+          "season": "20232024",
+          "team": "VGK"
         }
       ],
-      "name": "Juan Wood",
+      "name": "John Garcia",
+      "nhl_id": 8470062,
+      "on_nhl_roster": true,
+      "position": "R",
+      "prior_team": null,
+      "role": {
+        "basis": "last season",
+        "line": "Line 1",
+        "pp": "PP2",
+        "trend": []
+      },
+      "team": "VGK",
+      "toi": {
+        "basis": "last season",
+        "ev_min": 14.35,
+        "gp": 34,
+        "pp_min": 0.5,
+        "sh_min": 0.25,
+        "toi_min": 16.0
+      },
+      "weight_lb": 187
+    },
+    "8470063": {
+      "age": 34,
+      "birth_date": "1992-03-17",
+      "group": "D",
+      "height_in": 70,
+      "history": [
+        {
+          "A": 36,
+          "BLK": 126,
+          "G": 3,
+          "GP": 35,
+          "GWG": 0,
+          "HIT": 217,
+          "PPA": 4,
+          "PPG": 0,
+          "SHA": 0,
+          "SHG": 2,
+          "SHP": 2,
+          "SOG": 31,
+          "season": "20252026",
+          "team": "MTL"
+        },
+        {
+          "A": 37,
+          "BLK": 109,
+          "G": 3,
+          "GP": 70,
+          "GWG": 0,
+          "HIT": 91,
+          "PPA": 12,
+          "PPG": 1,
+          "SHA": 1,
+          "SHG": 2,
+          "SHP": 3,
+          "SOG": 33,
+          "season": "20242025",
+          "team": "MTL"
+        },
+        {
+          "A": 22,
+          "BLK": 118,
+          "G": 11,
+          "GP": 49,
+          "GWG": 0,
+          "HIT": 211,
+          "PPA": 3,
+          "PPG": 1,
+          "SHA": 1,
+          "SHG": 1,
+          "SHP": 2,
+          "SOG": 104,
+          "season": "20232024",
+          "team": "MTL"
+        }
+      ],
+      "name": "Wayne Campbell",
       "nhl_id": 8470063,
       "on_nhl_roster": true,
       "position": "D",
       "prior_team": null,
-      "team": "DET",
-      "toi": {
+      "role": {
         "basis": "last season",
-        "ev_min": 13.48,
-        "gp": 58,
-        "pp_min": 3.5,
-        "sh_min": 1.0,
-        "toi_min": 15.15
+        "line": "Pair 2",
+        "pp": "PP1",
+        "trend": []
       },
-      "weight_lb": 228
-    },
-    "8470064": {
-      "age": 26,
-      "birth_date": "2000-03-13",
-      "group": "D",
-      "height_in": 75,
-      "history": [
-        {
-          "A": 16,
-          "BLK": 12,
-          "G": 5,
-          "GP": 70,
-          "GWG": 0,
-          "HIT": 186,
-          "PPA": 3,
-          "PPG": 0,
-          "SHA": 2,
-          "SHG": 1,
-          "SHP": 3,
-          "SOG": 51,
-          "season": "20252026",
-          "team": "MTL"
-        },
-        {
-          "A": 32,
-          "BLK": 54,
-          "G": 10,
-          "GP": 56,
-          "GWG": 1,
-          "HIT": 95,
-          "PPA": 5,
-          "PPG": 0,
-          "SHA": 1,
-          "SHG": 1,
-          "SHP": 2,
-          "SOG": 89,
-          "season": "20242025",
-          "team": "MTL"
-        },
-        {
-          "A": 31,
-          "BLK": 118,
-          "G": 3,
-          "GP": 68,
-          "GWG": 0,
-          "HIT": 109,
-          "PPA": 9,
-          "PPG": 0,
-          "SHA": 2,
-          "SHG": 1,
-          "SHP": 3,
-          "SOG": 64,
-          "season": "20232024",
-          "team": "MTL"
-        }
-      ],
-      "name": "Terry Wilson",
-      "nhl_id": 8470064,
-      "on_nhl_roster": true,
-      "position": "D",
-      "prior_team": null,
       "team": "MTL",
       "toi": {
         "basis": "last season",
-        "ev_min": 17.18,
-        "gp": 70,
-        "pp_min": 3.5,
-        "sh_min": 0.25,
-        "toi_min": 24.27
+        "ev_min": 11.28,
+        "gp": 35,
+        "pp_min": 2.0,
+        "sh_min": 0.0,
+        "toi_min": 24.55
       },
-      "weight_lb": 225
+      "weight_lb": 195
     },
-    "8470065": {
+    "8470064": {
       "age": 34,
       "birth_date": "1992-06-08",
       "group": "D",
@@ -3650,7 +4063,7 @@
           "SHP": 3,
           "SOG": 77,
           "season": "20252026",
-          "team": "NYR"
+          "team": "OTT"
         },
         {
           "A": 29,
@@ -3666,15 +4079,21 @@
           "SHP": 2,
           "SOG": 92,
           "season": "20242025",
-          "team": "NYR"
+          "team": "OTT"
         }
       ],
-      "name": "Elijah Wright",
-      "nhl_id": 8470065,
+      "name": "Paul Gomez",
+      "nhl_id": 8470064,
       "on_nhl_roster": true,
       "position": "D",
       "prior_team": null,
-      "team": "NYR",
+      "role": {
+        "basis": "last season",
+        "line": "Pair 2",
+        "pp": "No PP",
+        "trend": []
+      },
+      "team": "OTT",
       "toi": {
         "basis": "last season",
         "ev_min": 12.05,
@@ -3685,7 +4104,7 @@
       },
       "weight_lb": 193
     },
-    "8470066": {
+    "8470065": {
       "age": 24,
       "birth_date": "2002-07-15",
       "group": "D",
@@ -3705,7 +4124,7 @@
           "SHP": 2,
           "SOG": 18,
           "season": "20252026",
-          "team": "STL"
+          "team": "UTA"
         },
         {
           "A": 24,
@@ -3721,7 +4140,7 @@
           "SHP": 4,
           "SOG": 84,
           "season": "20242025",
-          "team": "STL"
+          "team": "UTA"
         },
         {
           "A": 39,
@@ -3737,15 +4156,21 @@
           "SHP": 3,
           "SOG": 64,
           "season": "20232024",
-          "team": "STL"
+          "team": "UTA"
         }
       ],
-      "name": "Patrick Martin",
-      "nhl_id": 8470066,
+      "name": "Scott Miller",
+      "nhl_id": 8470065,
       "on_nhl_roster": true,
       "position": "D",
       "prior_team": null,
-      "team": "STL",
+      "role": {
+        "basis": "last season",
+        "line": "Pair 1",
+        "pp": "PP1",
+        "trend": []
+      },
+      "team": "UTA",
       "toi": {
         "basis": "last season",
         "ev_min": 16.9,
@@ -3756,18 +4181,95 @@
       },
       "weight_lb": 183
     },
-    "8470067": {
+    "8470066": {
       "age": 28,
       "birth_date": "1998-02-06",
-      "draft": {
-        "overall": 98,
-        "pick_in_round": 2,
-        "round": 4,
-        "team": "MTL",
-        "year": 2016
-      },
       "group": "D",
       "height_in": 78,
+      "history": [
+        {
+          "A": 30,
+          "BLK": 25,
+          "G": 4,
+          "GP": 81,
+          "GWG": 1,
+          "HIT": 114,
+          "PPA": 2,
+          "PPG": 1,
+          "SHA": 2,
+          "SHG": 2,
+          "SHP": 4,
+          "SOG": 75,
+          "season": "20252026",
+          "team": "PIT"
+        },
+        {
+          "A": 28,
+          "BLK": 140,
+          "G": 4,
+          "GP": 41,
+          "GWG": 1,
+          "HIT": 119,
+          "PPA": 8,
+          "PPG": 0,
+          "SHA": 1,
+          "SHG": 2,
+          "SHP": 3,
+          "SOG": 60,
+          "season": "20242025",
+          "team": "PIT"
+        },
+        {
+          "A": 14,
+          "BLK": 150,
+          "G": 8,
+          "GP": 58,
+          "GWG": 0,
+          "HIT": 152,
+          "PPA": 0,
+          "PPG": 2,
+          "SHA": 2,
+          "SHG": 0,
+          "SHP": 2,
+          "SOG": 89,
+          "season": "20232024",
+          "team": "PIT"
+        }
+      ],
+      "name": "Bradley Kelly",
+      "nhl_id": 8470066,
+      "on_nhl_roster": true,
+      "position": "D",
+      "prior_team": null,
+      "role": {
+        "basis": "last season",
+        "line": "Pair 1",
+        "pp": "PP1",
+        "trend": []
+      },
+      "team": "PIT",
+      "toi": {
+        "basis": "last season",
+        "ev_min": 13.05,
+        "gp": 81,
+        "pp_min": 2.0,
+        "sh_min": 0.25,
+        "toi_min": 24.05
+      },
+      "weight_lb": 172
+    },
+    "8470067": {
+      "age": 30,
+      "birth_date": "1995-09-23",
+      "draft": {
+        "overall": 15,
+        "pick_in_round": 15,
+        "round": 1,
+        "team": "FLA",
+        "year": 2013
+      },
+      "group": "D",
+      "height_in": 72,
       "history": [],
       "minors": [
         {
@@ -3791,13 +4293,19 @@
           "team": "Sample Juniors"
         }
       ],
-      "name": "Nicholas Cruz",
+      "name": "Kenneth Morales",
       "nhl_id": 8470067,
       "on_nhl_roster": true,
       "position": "D",
       "prior_nhl_gp": 0,
       "prior_team": null,
-      "team": "MTL",
+      "role": {
+        "basis": "no NHL ice time",
+        "line": null,
+        "pp": null,
+        "trend": []
+      },
+      "team": "FLA",
       "toi": {
         "basis": null,
         "ev_min": null,
@@ -3806,428 +4314,1541 @@
         "sh_min": null,
         "toi_min": null
       },
-      "weight_lb": 172
+      "weight_lb": 199
     },
     "8470068": {
-      "age": 27,
-      "birth_date": "1999-02-26",
+      "age": 26,
+      "birth_date": "2000-05-14",
       "group": "F",
-      "height_in": 71,
+      "height_in": 79,
       "history": [
         {
-          "A": 30,
-          "BLK": 46,
-          "G": 40,
-          "GP": 40,
-          "GWG": 5,
-          "HIT": 119,
-          "PPA": 10,
-          "PPG": 13,
+          "A": 25,
+          "BLK": 35,
+          "G": 14,
+          "GP": 58,
+          "GWG": 2,
+          "HIT": 115,
+          "PPA": 2,
+          "PPG": 3,
+          "SHA": 2,
+          "SHG": 0,
+          "SHP": 2,
+          "SOG": 118,
+          "season": "20252026",
+          "team": "PIT"
+        },
+        {
+          "A": 27,
+          "BLK": 50,
+          "G": 32,
+          "GP": 51,
+          "GWG": 0,
+          "HIT": 113,
+          "PPA": 6,
+          "PPG": 7,
+          "SHA": 1,
+          "SHG": 1,
+          "SHP": 2,
+          "SOG": 208,
+          "season": "20242025",
+          "team": "PIT"
+        },
+        {
+          "A": 20,
+          "BLK": 24,
+          "G": 24,
+          "GP": 75,
+          "GWG": 0,
+          "HIT": 58,
+          "PPA": 4,
+          "PPG": 6,
           "SHA": 0,
           "SHG": 1,
           "SHP": 1,
-          "SOG": 245,
-          "season": "20252026",
-          "team": "MTL"
-        },
-        {
-          "A": 48,
-          "BLK": 30,
-          "G": 7,
-          "GP": 74,
-          "GWG": 1,
-          "HIT": 16,
-          "PPA": 9,
-          "PPG": 2,
-          "SHA": 2,
-          "SHG": 1,
-          "SHP": 3,
-          "SOG": 102,
-          "season": "20242025",
-          "team": "MTL"
-        },
-        {
-          "A": 49,
-          "BLK": 33,
-          "G": 11,
-          "GP": 77,
-          "GWG": 1,
-          "HIT": 64,
-          "PPA": 6,
-          "PPG": 1,
-          "SHA": 1,
-          "SHG": 0,
-          "SHP": 1,
-          "SOG": 82,
+          "SOG": 198,
           "season": "20232024",
-          "team": "MTL"
+          "team": "PIT"
         }
       ],
-      "name": "Kyle Smith",
+      "name": "Wayne Scott",
       "nhl_id": 8470068,
       "on_nhl_roster": true,
-      "position": "C",
+      "position": "R",
       "prior_team": null,
-      "team": "MTL",
+      "role": {
+        "basis": "last season",
+        "line": "Line 1",
+        "pp": "PP1",
+        "trend": []
+      },
+      "team": "PIT",
       "toi": {
         "basis": "last season",
-        "ev_min": 13.68,
-        "gp": 40,
-        "pp_min": 0.5,
+        "ev_min": 15.98,
+        "gp": 58,
+        "pp_min": 2.0,
         "sh_min": 0.25,
-        "toi_min": 14.58
+        "toi_min": 13.73
       },
       "weight_lb": 196
     },
     "8470069": {
-      "age": 27,
-      "birth_date": "1999-01-18",
+      "age": 31,
+      "birth_date": "1994-10-23",
       "goalie": {
         "basis": "last season",
-        "gs": 48,
-        "role": "Starter",
-        "start_share": 1.0
+        "gs": 47,
+        "role": "1A/1B",
+        "start_share": 0.5
       },
       "group": "G",
-      "height_in": 72,
+      "height_in": 76,
       "history": [
         {
-          "GA": 122,
-          "GP": 64,
-          "GS": 48,
-          "L": 23,
-          "SO": 1,
-          "SV": 1222,
-          "W": 22,
+          "GA": 136,
+          "GP": 61,
+          "GS": 47,
+          "L": 22,
+          "SO": 3,
+          "SV": 1133,
+          "W": 23,
           "season": "20252026",
-          "team": "NYI"
+          "team": "EDM"
         },
         {
-          "GA": 132,
-          "GP": 54,
-          "GS": 44,
-          "L": 20,
-          "SO": 2,
-          "SV": 1100,
-          "W": 23,
+          "GA": 82,
+          "GP": 32,
+          "GS": 29,
+          "L": 17,
+          "SO": 5,
+          "SV": 788,
+          "W": 8,
+          "season": "20242025",
+          "team": "EDM"
+        },
+        {
+          "GA": 39,
+          "GP": 38,
+          "GS": 12,
+          "L": 2,
+          "SO": 4,
+          "SV": 309,
+          "W": 5,
           "season": "20232024",
-          "team": "NYI"
+          "team": "EDM"
         }
       ],
-      "name": "Kevin Jimenez",
+      "name": "Andrew Bennett",
       "nhl_id": 8470069,
       "on_nhl_roster": true,
       "position": "G",
       "prior_team": null,
-      "team": "NYI",
+      "team": "EDM",
       "toi": null,
-      "weight_lb": 227
+      "weight_lb": 222
     },
     "8470070": {
-      "age": 30,
-      "birth_date": "1996-06-16",
+      "age": 34,
+      "birth_date": "1992-01-15",
       "goalie": {
         "basis": "last season",
-        "gs": 18,
-        "role": "Starter",
-        "start_share": 1.0
-      },
-      "group": "G",
-      "height_in": 73,
-      "history": [
-        {
-          "GA": 48,
-          "GP": 51,
-          "GS": 18,
-          "L": 5,
-          "SO": 0,
-          "SV": 492,
-          "W": 9,
-          "season": "20252026",
-          "team": "NYR"
-        },
-        {
-          "GA": 136,
-          "GP": 55,
-          "GS": 42,
-          "L": 21,
-          "SO": 2,
-          "SV": 1124,
-          "W": 18,
-          "season": "20242025",
-          "team": "NYR"
-        },
-        {
-          "GA": 87,
-          "GP": 34,
-          "GS": 29,
-          "L": 16,
-          "SO": 5,
-          "SV": 696,
-          "W": 11,
-          "season": "20232024",
-          "team": "NYR"
-        }
-      ],
-      "name": "Kenneth Gutierrez",
-      "nhl_id": 8470070,
-      "on_nhl_roster": true,
-      "position": "G",
-      "prior_team": null,
-      "team": "NYR",
-      "toi": null,
-      "weight_lb": 200
-    },
-    "8470072": {
-      "age": 25,
-      "birth_date": "2001-02-24",
-      "group": "D",
-      "height_in": 78,
-      "history": [
-        {
-          "A": 22,
-          "BLK": 6,
-          "G": 8,
-          "GP": 82,
-          "GWG": 0,
-          "HIT": 35,
-          "PPA": 1,
-          "PPG": 2,
-          "SHA": 0,
-          "SHG": 0,
-          "SHP": 0,
-          "SOG": 70,
-          "season": "20252026",
-          "team": "TOR"
-        },
-        {
-          "A": 12,
-          "BLK": 56,
-          "G": 3,
-          "GP": 64,
-          "GWG": 1,
-          "HIT": 218,
-          "PPA": 2,
-          "PPG": 1,
-          "SHA": 1,
-          "SHG": 1,
-          "SHP": 2,
-          "SOG": 24,
-          "season": "20242025",
-          "team": "TOR"
-        },
-        {
-          "A": 25,
-          "BLK": 6,
-          "G": 7,
-          "GP": 45,
-          "GWG": 0,
-          "HIT": 71,
-          "PPA": 6,
-          "PPG": 2,
-          "SHA": 0,
-          "SHG": 1,
-          "SHP": 1,
-          "SOG": 45,
-          "season": "20232024",
-          "team": "TOR"
-        }
-      ],
-      "name": "Alan Smith",
-      "nhl_id": 8470072,
-      "on_nhl_roster": true,
-      "position": "D",
-      "prior_team": null,
-      "team": "TOR",
-      "toi": {
-        "basis": "last season",
-        "ev_min": 19.35,
-        "gp": 82,
-        "pp_min": 0.0,
-        "sh_min": 0.0,
-        "toi_min": 25.93
-      },
-      "weight_lb": 180
-    },
-    "8470073": {
-      "age": 33,
-      "birth_date": "1992-09-04",
-      "group": "F",
-      "height_in": 71,
-      "history": [
-        {
-          "A": 4,
-          "BLK": 16,
-          "G": 23,
-          "GP": 70,
-          "GWG": 3,
-          "HIT": 129,
-          "PPA": 0,
-          "PPG": 2,
-          "SHA": 0,
-          "SHG": 1,
-          "SHP": 1,
-          "SOG": 164,
-          "season": "20252026",
-          "team": "ANA"
-        },
-        {
-          "A": 17,
-          "BLK": 35,
-          "G": 10,
-          "GP": 49,
-          "GWG": 0,
-          "HIT": 103,
-          "PPA": 3,
-          "PPG": 2,
-          "SHA": 0,
-          "SHG": 2,
-          "SHP": 2,
-          "SOG": 109,
-          "season": "20242025",
-          "team": "ANA"
-        },
-        {
-          "A": 29,
-          "BLK": 42,
-          "G": 33,
-          "GP": 63,
-          "GWG": 2,
-          "HIT": 197,
-          "PPA": 5,
-          "PPG": 1,
-          "SHA": 1,
-          "SHG": 1,
-          "SHP": 2,
-          "SOG": 241,
-          "season": "20232024",
-          "team": "ANA"
-        }
-      ],
-      "name": "Sean Smith",
-      "nhl_id": 8470073,
-      "on_nhl_roster": true,
-      "position": "R",
-      "prior_team": null,
-      "team": "ANA",
-      "toi": {
-        "basis": "last season",
-        "ev_min": 11.85,
-        "gp": 70,
-        "pp_min": 0.5,
-        "sh_min": 1.83,
-        "toi_min": 14.98
-      },
-      "weight_lb": 200
-    },
-    "8470074": {
-      "age": 25,
-      "birth_date": "2000-09-22",
-      "goalie": {
-        "basis": "last season",
-        "gs": 60,
-        "role": "Starter",
-        "start_share": 1.0
+        "gs": 41,
+        "role": "1A/1B",
+        "start_share": 0.436
       },
       "group": "G",
       "height_in": 70,
       "history": [
         {
-          "GA": 189,
-          "GP": 82,
-          "GS": 60,
-          "L": 39,
-          "SO": 2,
-          "SV": 1611,
+          "GA": 126,
+          "GP": 74,
+          "GS": 41,
+          "L": 20,
+          "SO": 4,
+          "SV": 1145,
           "W": 20,
           "season": "20252026",
-          "team": "MTL"
+          "team": "CHI"
         },
         {
-          "GA": 126,
-          "GP": 47,
-          "GS": 45,
-          "L": 18,
-          "SO": 0,
-          "SV": 1134,
-          "W": 25,
-          "season": "20242025",
-          "team": "MTL"
-        },
-        {
-          "GA": 148,
-          "GP": 67,
-          "GS": 49,
-          "L": 26,
-          "SO": 5,
-          "SV": 1371,
-          "W": 21,
+          "GA": 99,
+          "GP": 73,
+          "GS": 34,
+          "L": 14,
+          "SO": 2,
+          "SV": 853,
+          "W": 15,
           "season": "20232024",
-          "team": "MTL"
+          "team": "CHI"
         }
       ],
-      "name": "Russell Mitchell",
-      "nhl_id": 8470074,
+      "name": "Henry Green",
+      "nhl_id": 8470070,
       "on_nhl_roster": true,
       "position": "G",
       "prior_team": null,
-      "team": "MTL",
+      "team": "CHI",
       "toi": null,
-      "weight_lb": 203
+      "weight_lb": 200
     },
-    "8470075": {
+    "8470071": {
+      "age": 25,
+      "birth_date": "2001-02-25",
+      "group": "D",
+      "height_in": 77,
+      "history": [
+        {
+          "A": 4,
+          "BLK": 69,
+          "G": 2,
+          "GP": 45,
+          "GWG": 1,
+          "HIT": 88,
+          "PPA": 0,
+          "PPG": 0,
+          "SHA": 0,
+          "SHG": 0,
+          "SHP": 0,
+          "SOG": 36,
+          "season": "20252026",
+          "team": "NJD"
+        },
+        {
+          "A": 20,
+          "BLK": 108,
+          "G": 4,
+          "GP": 38,
+          "GWG": 1,
+          "HIT": 120,
+          "PPA": 1,
+          "PPG": 1,
+          "SHA": 1,
+          "SHG": 0,
+          "SHP": 1,
+          "SOG": 56,
+          "season": "20242025",
+          "team": "NJD"
+        }
+      ],
+      "name": "N. Wright",
+      "nhl_id": 8470071,
+      "on_nhl_roster": true,
+      "position": "D",
+      "prior_team": null,
+      "role": {
+        "basis": "last season",
+        "line": "Pair 1",
+        "pp": "PP1",
+        "trend": []
+      },
+      "team": "NJD",
+      "toi": {
+        "basis": "last season",
+        "ev_min": 12.63,
+        "gp": 45,
+        "pp_min": 3.5,
+        "sh_min": 0.25,
+        "toi_min": 18.3
+      },
+      "weight_lb": 174
+    },
+    "8470072": {
+      "age": 34,
+      "birth_date": "1992-03-21",
+      "group": "F",
+      "height_in": 71,
+      "history": [
+        {
+          "A": 19,
+          "BLK": 13,
+          "G": 7,
+          "GP": 63,
+          "GWG": 1,
+          "HIT": 13,
+          "PPA": 0,
+          "PPG": 1,
+          "SHA": 2,
+          "SHG": 0,
+          "SHP": 2,
+          "SOG": 80,
+          "season": "20252026",
+          "team": "WPG"
+        },
+        {
+          "A": 17,
+          "BLK": 21,
+          "G": 12,
+          "GP": 76,
+          "GWG": 1,
+          "HIT": 64,
+          "PPA": 3,
+          "PPG": 1,
+          "SHA": 1,
+          "SHG": 1,
+          "SHP": 2,
+          "SOG": 79,
+          "season": "20232024",
+          "team": "WPG"
+        }
+      ],
+      "name": "Eric Davis",
+      "nhl_id": 8470072,
+      "on_nhl_roster": true,
+      "position": "C",
+      "prior_team": null,
+      "role": {
+        "basis": "last season",
+        "line": "Line 1",
+        "pp": "PP2",
+        "trend": []
+      },
+      "team": "WPG",
+      "toi": {
+        "basis": "last season",
+        "ev_min": 10.72,
+        "gp": 63,
+        "pp_min": 0.5,
+        "sh_min": 1.83,
+        "toi_min": 18.1
+      },
+      "weight_lb": 199
+    },
+    "8470073": {
       "age": 27,
-      "birth_date": "1999-05-14",
+      "birth_date": "1999-06-16",
       "goalie": {
         "basis": "last season",
-        "gs": 29,
+        "gs": 58,
         "role": "Starter",
-        "start_share": 0.725
+        "start_share": 1.0
+      },
+      "group": "G",
+      "height_in": 75,
+      "history": [
+        {
+          "GA": 162,
+          "GP": 77,
+          "GS": 58,
+          "L": 39,
+          "SO": 5,
+          "SV": 1520,
+          "W": 16,
+          "season": "20252026",
+          "team": "UTA"
+        },
+        {
+          "GA": 81,
+          "GP": 50,
+          "GS": 32,
+          "L": 13,
+          "SO": 0,
+          "SV": 783,
+          "W": 17,
+          "season": "20242025",
+          "team": "UTA"
+        }
+      ],
+      "name": "Nicholas Walker",
+      "nhl_id": 8470073,
+      "on_nhl_roster": true,
+      "position": "G",
+      "prior_team": null,
+      "team": "UTA",
+      "toi": null,
+      "weight_lb": 221
+    },
+    "8470074": {
+      "age": 33,
+      "birth_date": "1992-09-26",
+      "group": "D",
+      "height_in": 76,
+      "history": [
+        {
+          "A": 37,
+          "BLK": 127,
+          "G": 6,
+          "GP": 46,
+          "GWG": 1,
+          "HIT": 81,
+          "PPA": 2,
+          "PPG": 2,
+          "SHA": 0,
+          "SHG": 2,
+          "SHP": 2,
+          "SOG": 88,
+          "season": "20252026",
+          "team": "OTT"
+        },
+        {
+          "A": 41,
+          "BLK": 83,
+          "G": 8,
+          "GP": 60,
+          "GWG": 1,
+          "HIT": 207,
+          "PPA": 2,
+          "PPG": 1,
+          "SHA": 1,
+          "SHG": 1,
+          "SHP": 2,
+          "SOG": 97,
+          "season": "20242025",
+          "team": "OTT"
+        },
+        {
+          "A": 34,
+          "BLK": 42,
+          "G": 3,
+          "GP": 60,
+          "GWG": 0,
+          "HIT": 116,
+          "PPA": 9,
+          "PPG": 1,
+          "SHA": 0,
+          "SHG": 2,
+          "SHP": 2,
+          "SOG": 20,
+          "season": "20232024",
+          "team": "OTT"
+        }
+      ],
+      "name": "Walter James",
+      "nhl_id": 8470074,
+      "on_nhl_roster": true,
+      "position": "D",
+      "prior_team": null,
+      "role": {
+        "basis": "last season",
+        "line": "Pair 1",
+        "pp": "PP2",
+        "trend": []
+      },
+      "team": "OTT",
+      "toi": {
+        "basis": "last season",
+        "ev_min": 18.77,
+        "gp": 46,
+        "pp_min": 0.5,
+        "sh_min": 1.83,
+        "toi_min": 20.32
+      },
+      "weight_lb": 212
+    },
+    "8470075": {
+      "age": 22,
+      "birth_date": "2003-10-12",
+      "group": "D",
+      "height_in": 71,
+      "history": [
+        {
+          "A": 21,
+          "BLK": 103,
+          "G": 8,
+          "GP": 38,
+          "GWG": 0,
+          "HIT": 53,
+          "PPA": 0,
+          "PPG": 2,
+          "SHA": 2,
+          "SHG": 1,
+          "SHP": 3,
+          "SOG": 70,
+          "season": "20252026",
+          "team": "PHI"
+        },
+        {
+          "A": 25,
+          "BLK": 160,
+          "G": 12,
+          "GP": 66,
+          "GWG": 1,
+          "HIT": 21,
+          "PPA": 3,
+          "PPG": 0,
+          "SHA": 2,
+          "SHG": 1,
+          "SHP": 3,
+          "SOG": 60,
+          "season": "20242025",
+          "team": "PHI"
+        },
+        {
+          "A": 7,
+          "BLK": 77,
+          "G": 1,
+          "GP": 59,
+          "GWG": 0,
+          "HIT": 86,
+          "PPA": 2,
+          "PPG": 0,
+          "SHA": 0,
+          "SHG": 1,
+          "SHP": 1,
+          "SOG": 42,
+          "season": "20232024",
+          "team": "PHI"
+        }
+      ],
+      "name": "Eugene Ross",
+      "nhl_id": 8470075,
+      "on_nhl_roster": true,
+      "position": "D",
+      "prior_team": null,
+      "role": {
+        "basis": "last season",
+        "line": "Pair 1",
+        "pp": "PP2",
+        "trend": []
+      },
+      "team": "PHI",
+      "toi": {
+        "basis": "last season",
+        "ev_min": 12.03,
+        "gp": 38,
+        "pp_min": 0.5,
+        "sh_min": 1.0,
+        "toi_min": 12.48
+      },
+      "weight_lb": 206
+    },
+    "8470076": {
+      "age": 24,
+      "birth_date": "2001-12-01",
+      "draft": {
+        "overall": 22,
+        "pick_in_round": 22,
+        "round": 1,
+        "team": "WPG",
+        "year": 2019
+      },
+      "group": "F",
+      "height_in": 79,
+      "history": [],
+      "minors": [
+        {
+          "a": 20,
+          "g": 14,
+          "gp": 50,
+          "league": "AHL",
+          "pts": 34,
+          "season": "20252026",
+          "sv_pct": null,
+          "team": "Sample Juniors"
+        },
+        {
+          "a": 15,
+          "g": 10,
+          "gp": 60,
+          "league": "OHL",
+          "pts": 25,
+          "season": "20242025",
+          "sv_pct": null,
+          "team": "Sample Juniors"
+        }
+      ],
+      "name": "Matthew Wood",
+      "nhl_id": 8470076,
+      "on_nhl_roster": false,
+      "position": "C",
+      "prior_nhl_gp": 0,
+      "prior_team": null,
+      "role": {
+        "basis": null,
+        "line": null,
+        "pp": null,
+        "trend": []
+      },
+      "team": "WPG",
+      "toi": {
+        "basis": null,
+        "ev_min": null,
+        "gp": null,
+        "pp_min": null,
+        "sh_min": null,
+        "toi_min": null
+      },
+      "weight_lb": 218
+    },
+    "8470077": {
+      "age": 27,
+      "birth_date": "1999-02-04",
+      "group": "F",
+      "height_in": 71,
+      "history": [
+        {
+          "A": 37,
+          "BLK": 10,
+          "G": 25,
+          "GP": 37,
+          "GWG": 3,
+          "HIT": 148,
+          "PPA": 5,
+          "PPG": 0,
+          "SHA": 1,
+          "SHG": 1,
+          "SHP": 2,
+          "SOG": 256,
+          "season": "20252026",
+          "team": "CBJ"
+        },
+        {
+          "A": 27,
+          "BLK": 23,
+          "G": 5,
+          "GP": 70,
+          "GWG": 1,
+          "HIT": 206,
+          "PPA": 8,
+          "PPG": 0,
+          "SHA": 1,
+          "SHG": 0,
+          "SHP": 1,
+          "SOG": 72,
+          "season": "20242025",
+          "team": "CBJ"
+        },
+        {
+          "A": 16,
+          "BLK": 37,
+          "G": 7,
+          "GP": 47,
+          "GWG": 1,
+          "HIT": 152,
+          "PPA": 1,
+          "PPG": 1,
+          "SHA": 1,
+          "SHG": 2,
+          "SHP": 3,
+          "SOG": 42,
+          "season": "20232024",
+          "team": "CBJ"
+        }
+      ],
+      "name": "Philip Kelly",
+      "nhl_id": 8470077,
+      "on_nhl_roster": true,
+      "position": "C",
+      "prior_team": null,
+      "role": {
+        "basis": "last season",
+        "line": "Line 1",
+        "pp": "PP1",
+        "trend": []
+      },
+      "team": "CBJ",
+      "toi": {
+        "basis": "last season",
+        "ev_min": 16.03,
+        "gp": 37,
+        "pp_min": 2.83,
+        "sh_min": 1.83,
+        "toi_min": 14.0
+      },
+      "weight_lb": 216
+    },
+    "8470078": {
+      "age": 20,
+      "birth_date": "2005-09-11",
+      "group": "D",
+      "height_in": 69,
+      "history": [
+        {
+          "A": 13,
+          "BLK": 63,
+          "G": 5,
+          "GP": 45,
+          "GWG": 0,
+          "HIT": 210,
+          "PPA": 3,
+          "PPG": 0,
+          "SHA": 2,
+          "SHG": 2,
+          "SHP": 4,
+          "SOG": 76,
+          "season": "20252026",
+          "team": "PIT"
+        },
+        {
+          "A": 14,
+          "BLK": 126,
+          "G": 6,
+          "GP": 30,
+          "GWG": 0,
+          "HIT": 134,
+          "PPA": 3,
+          "PPG": 1,
+          "SHA": 1,
+          "SHG": 1,
+          "SHP": 2,
+          "SOG": 32,
+          "season": "20232024",
+          "team": "PIT"
+        }
+      ],
+      "name": "Thomas Nelson",
+      "nhl_id": 8470078,
+      "on_nhl_roster": true,
+      "position": "D",
+      "prior_team": null,
+      "role": {
+        "basis": "last season",
+        "line": "Pair 1",
+        "pp": "PP2",
+        "trend": []
+      },
+      "team": "PIT",
+      "toi": {
+        "basis": "last season",
+        "ev_min": 13.03,
+        "gp": 45,
+        "pp_min": 2.0,
+        "sh_min": 0.25,
+        "toi_min": 13.03
+      },
+      "weight_lb": 186
+    },
+    "8470079": {
+      "age": 34,
+      "birth_date": "1992-01-15",
+      "group": "D",
+      "height_in": 68,
+      "history": [
+        {
+          "A": 18,
+          "BLK": 133,
+          "G": 11,
+          "GP": 61,
+          "GWG": 0,
+          "HIT": 187,
+          "PPA": 4,
+          "PPG": 1,
+          "SHA": 0,
+          "SHG": 0,
+          "SHP": 0,
+          "SOG": 64,
+          "season": "20252026",
+          "team": "TOR"
+        },
+        {
+          "A": 30,
+          "BLK": 106,
+          "G": 11,
+          "GP": 71,
+          "GWG": 0,
+          "HIT": 185,
+          "PPA": 0,
+          "PPG": 1,
+          "SHA": 0,
+          "SHG": 1,
+          "SHP": 1,
+          "SOG": 83,
+          "season": "20242025",
+          "team": "TOR"
+        },
+        {
+          "A": 42,
+          "BLK": 52,
+          "G": 7,
+          "GP": 68,
+          "GWG": 0,
+          "HIT": 133,
+          "PPA": 7,
+          "PPG": 2,
+          "SHA": 2,
+          "SHG": 2,
+          "SHP": 4,
+          "SOG": 40,
+          "season": "20232024",
+          "team": "TOR"
+        }
+      ],
+      "name": "Kevin Wright",
+      "nhl_id": 8470079,
+      "on_nhl_roster": true,
+      "position": "D",
+      "prior_team": null,
+      "role": {
+        "basis": "last season",
+        "line": "Pair 1",
+        "pp": "PP1",
+        "trend": []
+      },
+      "team": "TOR",
+      "toi": {
+        "basis": "last season",
+        "ev_min": 15.05,
+        "gp": 61,
+        "pp_min": 3.5,
+        "sh_min": 0.0,
+        "toi_min": 17.78
+      },
+      "weight_lb": 191
+    },
+    "8470080": {
+      "age": 28,
+      "birth_date": "1997-10-21",
+      "group": "D",
+      "height_in": 76,
+      "history": [
+        {
+          "A": 4,
+          "BLK": 112,
+          "G": 1,
+          "GP": 63,
+          "GWG": 1,
+          "HIT": 172,
+          "PPA": 0,
+          "PPG": 0,
+          "SHA": 1,
+          "SHG": 1,
+          "SHP": 2,
+          "SOG": 49,
+          "season": "20252026",
+          "team": "CHI"
+        },
+        {
+          "A": 23,
+          "BLK": 35,
+          "G": 6,
+          "GP": 78,
+          "GWG": 0,
+          "HIT": 216,
+          "PPA": 1,
+          "PPG": 0,
+          "SHA": 0,
+          "SHG": 1,
+          "SHP": 1,
+          "SOG": 38,
+          "season": "20242025",
+          "team": "CHI"
+        }
+      ],
+      "name": "Jordan Green",
+      "nhl_id": 8470080,
+      "on_nhl_roster": true,
+      "position": "D",
+      "prior_team": null,
+      "role": {
+        "basis": "last season",
+        "line": "Pair 1",
+        "pp": "PP1",
+        "trend": []
+      },
+      "team": "CHI",
+      "toi": {
+        "basis": "last season",
+        "ev_min": 19.0,
+        "gp": 63,
+        "pp_min": 3.5,
+        "sh_min": 0.0,
+        "toi_min": 19.98
+      },
+      "weight_lb": 179
+    },
+    "8470081": {
+      "age": 20,
+      "birth_date": "2005-10-12",
+      "group": "F",
+      "height_in": 76,
+      "history": [
+        {
+          "A": 32,
+          "BLK": 7,
+          "G": 19,
+          "GP": 67,
+          "GWG": 3,
+          "HIT": 214,
+          "PPA": 10,
+          "PPG": 6,
+          "SHA": 2,
+          "SHG": 2,
+          "SHP": 4,
+          "SOG": 200,
+          "season": "20252026",
+          "team": "WSH"
+        },
+        {
+          "A": 9,
+          "BLK": 34,
+          "G": 28,
+          "GP": 30,
+          "GWG": 1,
+          "HIT": 27,
+          "PPA": 2,
+          "PPG": 1,
+          "SHA": 0,
+          "SHG": 1,
+          "SHP": 1,
+          "SOG": 248,
+          "season": "20232024",
+          "team": "WSH"
+        }
+      ],
+      "name": "Jacob Rodriguez",
+      "nhl_id": 8470081,
+      "on_nhl_roster": true,
+      "position": "C",
+      "prior_team": null,
+      "role": {
+        "basis": "last season",
+        "line": "Line 1",
+        "pp": "PP1",
+        "trend": []
+      },
+      "team": "WSH",
+      "toi": {
+        "basis": "last season",
+        "ev_min": 16.98,
+        "gp": 67,
+        "pp_min": 2.0,
+        "sh_min": 0.25,
+        "toi_min": 18.73
+      },
+      "weight_lb": 182
+    },
+    "8470082": {
+      "age": 31,
+      "birth_date": "1994-08-12",
+      "group": "F",
+      "height_in": 69,
+      "history": [
+        {
+          "A": 13,
+          "BLK": 23,
+          "G": 18,
+          "GP": 51,
+          "GWG": 1,
+          "HIT": 53,
+          "PPA": 1,
+          "PPG": 1,
+          "SHA": 2,
+          "SHG": 1,
+          "SHP": 3,
+          "SOG": 163,
+          "season": "20252026",
+          "team": "BOS"
+        },
+        {
+          "A": 21,
+          "BLK": 45,
+          "G": 15,
+          "GP": 61,
+          "GWG": 2,
+          "HIT": 141,
+          "PPA": 4,
+          "PPG": 5,
+          "SHA": 0,
+          "SHG": 1,
+          "SHP": 1,
+          "SOG": 90,
+          "season": "20242025",
+          "team": "BOS"
+        },
+        {
+          "A": 22,
+          "BLK": 37,
+          "G": 10,
+          "GP": 74,
+          "GWG": 0,
+          "HIT": 206,
+          "PPA": 4,
+          "PPG": 0,
+          "SHA": 1,
+          "SHG": 2,
+          "SHP": 3,
+          "SOG": 103,
+          "season": "20232024",
+          "team": "BOS"
+        }
+      ],
+      "name": "A. Kim",
+      "nhl_id": 8470082,
+      "on_nhl_roster": true,
+      "position": "R",
+      "prior_team": null,
+      "role": {
+        "basis": "last season",
+        "line": "Line 1",
+        "pp": "No PP",
+        "trend": []
+      },
+      "team": "BOS",
+      "toi": {
+        "basis": "last season",
+        "ev_min": 16.33,
+        "gp": 51,
+        "pp_min": 0.0,
+        "sh_min": 1.0,
+        "toi_min": 20.57
+      },
+      "weight_lb": 183
+    },
+    "8470083": {
+      "age": 33,
+      "birth_date": "1993-04-14",
+      "goalie": {
+        "basis": "last season",
+        "gs": 63,
+        "role": "1A/1B",
+        "start_share": 0.496
       },
       "group": "G",
       "height_in": 73,
       "history": [
         {
-          "GA": 81,
-          "GP": 60,
-          "GS": 29,
-          "L": 13,
-          "SO": 1,
-          "SV": 731,
-          "W": 16,
+          "GA": 181,
+          "GP": 67,
+          "GS": 63,
+          "L": 26,
+          "SO": 2,
+          "SV": 1520,
+          "W": 32,
           "season": "20252026",
-          "team": "SJS"
+          "team": "LAK"
         },
         {
-          "GA": 83,
-          "GP": 39,
-          "GS": 27,
+          "GA": 74,
+          "GP": 73,
+          "GS": 26,
           "L": 12,
-          "SO": 4,
-          "SV": 673,
+          "SO": 1,
+          "SV": 602,
           "W": 10,
+          "season": "20242025",
+          "team": "LAK"
+        },
+        {
+          "GA": 61,
+          "GP": 35,
+          "GS": 22,
+          "L": 13,
+          "SO": 5,
+          "SV": 511,
+          "W": 8,
           "season": "20232024",
-          "team": "SJS"
+          "team": "LAK"
         }
       ],
-      "name": "Richard Smith",
-      "nhl_id": 8470075,
+      "name": "Ethan Williams",
+      "nhl_id": 8470083,
       "on_nhl_roster": true,
       "position": "G",
       "prior_team": null,
-      "team": "SJS",
+      "team": "LAK",
       "toi": null,
-      "weight_lb": 215
+      "weight_lb": 204
     },
-    "8470076": {
-      "age": 29,
-      "birth_date": "1997-04-19",
+    "8470084": {
+      "age": 32,
+      "birth_date": "1994-01-27",
+      "group": "F",
+      "height_in": 68,
+      "history": [
+        {
+          "A": 51,
+          "BLK": 30,
+          "G": 20,
+          "GP": 46,
+          "GWG": 3,
+          "HIT": 151,
+          "PPA": 4,
+          "PPG": 3,
+          "SHA": 2,
+          "SHG": 0,
+          "SHP": 2,
+          "SOG": 201,
+          "season": "20252026",
+          "team": "CBJ"
+        },
+        {
+          "A": 28,
+          "BLK": 38,
+          "G": 11,
+          "GP": 31,
+          "GWG": 1,
+          "HIT": 174,
+          "PPA": 7,
+          "PPG": 2,
+          "SHA": 0,
+          "SHG": 1,
+          "SHP": 1,
+          "SOG": 103,
+          "season": "20232024",
+          "team": "CBJ"
+        }
+      ],
+      "name": "Stephen Gutierrez",
+      "nhl_id": 8470084,
+      "on_nhl_roster": true,
+      "position": "C",
+      "prior_team": null,
+      "role": {
+        "basis": "last season",
+        "line": "Line 1",
+        "pp": "PP1",
+        "trend": []
+      },
+      "team": "CBJ",
+      "toi": {
+        "basis": "last season",
+        "ev_min": 14.67,
+        "gp": 46,
+        "pp_min": 2.83,
+        "sh_min": 0.0,
+        "toi_min": 21.75
+      },
+      "weight_lb": 196
+    },
+    "8470085": {
+      "age": 34,
+      "birth_date": "1992-06-28",
       "draft": {
-        "overall": 165,
-        "pick_in_round": 5,
+        "overall": 190,
+        "pick_in_round": 30,
         "round": 6,
-        "team": "DET",
-        "year": 2015
+        "team": "TBL",
+        "year": 2010
+      },
+      "group": "D",
+      "height_in": 75,
+      "history": [],
+      "minors": [
+        {
+          "a": 20,
+          "g": 14,
+          "gp": 50,
+          "league": "AHL",
+          "pts": 34,
+          "season": "20252026",
+          "sv_pct": null,
+          "team": "Sample Juniors"
+        },
+        {
+          "a": 15,
+          "g": 10,
+          "gp": 60,
+          "league": "OHL",
+          "pts": 25,
+          "season": "20242025",
+          "sv_pct": null,
+          "team": "Sample Juniors"
+        }
+      ],
+      "name": "Austin Reed",
+      "nhl_id": 8470085,
+      "on_nhl_roster": true,
+      "position": "D",
+      "prior_nhl_gp": 0,
+      "prior_team": null,
+      "role": {
+        "basis": "no NHL ice time",
+        "line": null,
+        "pp": null,
+        "trend": []
+      },
+      "team": "TBL",
+      "toi": {
+        "basis": null,
+        "ev_min": null,
+        "gp": null,
+        "pp_min": null,
+        "sh_min": null,
+        "toi_min": null
+      },
+      "weight_lb": 174
+    },
+    "8470086": {
+      "age": 27,
+      "birth_date": "1999-06-03",
+      "group": "F",
+      "height_in": 77,
+      "history": [
+        {
+          "A": 23,
+          "BLK": 8,
+          "G": 30,
+          "GP": 75,
+          "GWG": 3,
+          "HIT": 42,
+          "PPA": 4,
+          "PPG": 3,
+          "SHA": 2,
+          "SHG": 0,
+          "SHP": 2,
+          "SOG": 216,
+          "season": "20252026",
+          "team": "WPG"
+        },
+        {
+          "A": 25,
+          "BLK": 24,
+          "G": 31,
+          "GP": 39,
+          "GWG": 4,
+          "HIT": 202,
+          "PPA": 1,
+          "PPG": 5,
+          "SHA": 0,
+          "SHG": 1,
+          "SHP": 1,
+          "SOG": 165,
+          "season": "20242025",
+          "team": "WPG"
+        },
+        {
+          "A": 16,
+          "BLK": 16,
+          "G": 35,
+          "GP": 35,
+          "GWG": 0,
+          "HIT": 23,
+          "PPA": 5,
+          "PPG": 9,
+          "SHA": 1,
+          "SHG": 0,
+          "SHP": 1,
+          "SOG": 322,
+          "season": "20232024",
+          "team": "WPG"
+        }
+      ],
+      "name": "Juan Nguyen",
+      "nhl_id": 8470086,
+      "on_nhl_roster": true,
+      "position": "L",
+      "prior_team": null,
+      "role": {
+        "basis": "last season",
+        "line": "Line 1",
+        "pp": "PP1",
+        "trend": []
+      },
+      "team": "WPG",
+      "toi": {
+        "basis": "last season",
+        "ev_min": 15.63,
+        "gp": 75,
+        "pp_min": 2.83,
+        "sh_min": 0.25,
+        "toi_min": 21.82
+      },
+      "weight_lb": 177
+    },
+    "8470088": {
+      "age": 25,
+      "birth_date": "2000-08-15",
+      "group": "F",
+      "height_in": 68,
+      "history": [
+        {
+          "A": 24,
+          "BLK": 50,
+          "G": 28,
+          "GP": 69,
+          "GWG": 2,
+          "HIT": 52,
+          "PPA": 3,
+          "PPG": 6,
+          "SHA": 2,
+          "SHG": 2,
+          "SHP": 4,
+          "SOG": 190,
+          "season": "20252026",
+          "team": "BOS"
+        },
+        {
+          "A": 43,
+          "BLK": 35,
+          "G": 13,
+          "GP": 32,
+          "GWG": 0,
+          "HIT": 15,
+          "PPA": 3,
+          "PPG": 0,
+          "SHA": 2,
+          "SHG": 2,
+          "SHP": 4,
+          "SOG": 120,
+          "season": "20242025",
+          "team": "BOS"
+        },
+        {
+          "A": 12,
+          "BLK": 13,
+          "G": 14,
+          "GP": 58,
+          "GWG": 0,
+          "HIT": 28,
+          "PPA": 2,
+          "PPG": 2,
+          "SHA": 0,
+          "SHG": 2,
+          "SHP": 2,
+          "SOG": 164,
+          "season": "20232024",
+          "team": "BOS"
+        }
+      ],
+      "name": "Charles Clark",
+      "nhl_id": 8470088,
+      "on_nhl_roster": true,
+      "position": "R",
+      "prior_team": null,
+      "role": {
+        "basis": "last season",
+        "line": "Line 1",
+        "pp": "PP1",
+        "trend": []
+      },
+      "team": "BOS",
+      "toi": {
+        "basis": "last season",
+        "ev_min": 15.58,
+        "gp": 69,
+        "pp_min": 2.83,
+        "sh_min": 1.0,
+        "toi_min": 22.0
+      },
+      "weight_lb": 219
+    },
+    "8470089": {
+      "age": 25,
+      "birth_date": "2000-10-20",
+      "group": "D",
+      "height_in": 70,
+      "history": [
+        {
+          "A": 37,
+          "BLK": 94,
+          "G": 3,
+          "GP": 59,
+          "GWG": 1,
+          "HIT": 14,
+          "PPA": 4,
+          "PPG": 1,
+          "SHA": 2,
+          "SHG": 1,
+          "SHP": 3,
+          "SOG": 63,
+          "season": "20252026",
+          "team": "EDM"
+        },
+        {
+          "A": 19,
+          "BLK": 73,
+          "G": 4,
+          "GP": 51,
+          "GWG": 0,
+          "HIT": 53,
+          "PPA": 5,
+          "PPG": 0,
+          "SHA": 2,
+          "SHG": 0,
+          "SHP": 2,
+          "SOG": 59,
+          "season": "20242025",
+          "team": "EDM"
+        }
+      ],
+      "name": "Charles Ramos",
+      "nhl_id": 8470089,
+      "on_nhl_roster": true,
+      "position": "D",
+      "prior_team": null,
+      "role": {
+        "basis": "last season",
+        "line": "Pair 1",
+        "pp": "No PP",
+        "trend": []
+      },
+      "team": "EDM",
+      "toi": {
+        "basis": "last season",
+        "ev_min": 18.95,
+        "gp": 59,
+        "pp_min": 0.5,
+        "sh_min": 0.25,
+        "toi_min": 19.53
+      },
+      "weight_lb": 187
+    },
+    "8470090": {
+      "age": 26,
+      "birth_date": "2000-02-18",
+      "group": "D",
+      "height_in": 74,
+      "history": [
+        {
+          "A": 45,
+          "BLK": 24,
+          "G": 3,
+          "GP": 35,
+          "GWG": 0,
+          "HIT": 141,
+          "PPA": 2,
+          "PPG": 1,
+          "SHA": 0,
+          "SHG": 0,
+          "SHP": 0,
+          "SOG": 18,
+          "season": "20252026",
+          "team": "MTL"
+        }
+      ],
+      "name": "Joseph Alvarez",
+      "nhl_id": 8470090,
+      "on_nhl_roster": true,
+      "position": "D",
+      "prior_team": null,
+      "role": {
+        "basis": "last season",
+        "line": "Pair 1",
+        "pp": "No PP",
+        "trend": []
+      },
+      "team": "MTL",
+      "toi": {
+        "basis": "last season",
+        "ev_min": 19.15,
+        "gp": 35,
+        "pp_min": 0.5,
+        "sh_min": 0.0,
+        "toi_min": 23.07
+      },
+      "weight_lb": 183
+    },
+    "8470091": {
+      "age": 20,
+      "birth_date": "2006-02-21",
+      "group": "F",
+      "height_in": 70,
+      "history": [
+        {
+          "A": 6,
+          "BLK": 26,
+          "G": 3,
+          "GP": 73,
+          "GWG": 1,
+          "HIT": 14,
+          "PPA": 0,
+          "PPG": 0,
+          "SHA": 1,
+          "SHG": 0,
+          "SHP": 1,
+          "SOG": 50,
+          "season": "20252026",
+          "team": "UTA"
+        },
+        {
+          "A": 11,
+          "BLK": 21,
+          "G": 39,
+          "GP": 31,
+          "GWG": 2,
+          "HIT": 26,
+          "PPA": 3,
+          "PPG": 10,
+          "SHA": 2,
+          "SHG": 0,
+          "SHP": 2,
+          "SOG": 269,
+          "season": "20232024",
+          "team": "UTA"
+        }
+      ],
+      "name": "Douglas Taylor",
+      "nhl_id": 8470091,
+      "on_nhl_roster": true,
+      "position": "L",
+      "prior_team": null,
+      "role": {
+        "basis": "last season",
+        "line": "Line 1",
+        "pp": "PP1",
+        "trend": []
+      },
+      "team": "UTA",
+      "toi": {
+        "basis": "last season",
+        "ev_min": 13.4,
+        "gp": 73,
+        "pp_min": 2.0,
+        "sh_min": 1.83,
+        "toi_min": 21.55
+      },
+      "weight_lb": 195
+    },
+    "8470092": {
+      "age": 20,
+      "birth_date": "2005-10-22",
+      "group": "F",
+      "height_in": 77,
+      "history": [
+        {
+          "A": 23,
+          "BLK": 41,
+          "G": 14,
+          "GP": 69,
+          "GWG": 0,
+          "HIT": 73,
+          "PPA": 5,
+          "PPG": 1,
+          "SHA": 0,
+          "SHG": 2,
+          "SHP": 2,
+          "SOG": 90,
+          "season": "20252026",
+          "team": "CHI"
+        },
+        {
+          "A": 19,
+          "BLK": 29,
+          "G": 20,
+          "GP": 31,
+          "GWG": 3,
+          "HIT": 45,
+          "PPA": 1,
+          "PPG": 3,
+          "SHA": 0,
+          "SHG": 0,
+          "SHP": 0,
+          "SOG": 124,
+          "season": "20242025",
+          "team": "CHI"
+        }
+      ],
+      "name": "Henry Lee",
+      "nhl_id": 8470092,
+      "on_nhl_roster": true,
+      "position": "C",
+      "prior_team": null,
+      "role": {
+        "basis": "last season",
+        "line": "Line 1",
+        "pp": "PP1",
+        "trend": []
+      },
+      "team": "CHI",
+      "toi": {
+        "basis": "last season",
+        "ev_min": 10.23,
+        "gp": 69,
+        "pp_min": 1.17,
+        "sh_min": 1.83,
+        "toi_min": 18.43
+      },
+      "weight_lb": 211
+    },
+    "8470094": {
+      "age": 29,
+      "birth_date": "1996-11-13",
+      "draft": {
+        "overall": 172,
+        "pick_in_round": 12,
+        "round": 6,
+        "team": "OTT",
+        "year": 2014
       },
       "goalie": {
         "basis": null,
@@ -4236,7 +5857,7 @@
         "start_share": null
       },
       "group": "G",
-      "height_in": 72,
+      "height_in": 76,
       "history": [],
       "minors": [
         {
@@ -4260,830 +5881,99 @@
           "team": "Sample Juniors"
         }
       ],
-      "name": "Edward Reyes",
-      "nhl_id": 8470076,
-      "on_nhl_roster": false,
+      "name": "Carl Sanchez",
+      "nhl_id": 8470094,
+      "on_nhl_roster": true,
       "position": "G",
       "prior_nhl_gp": 0,
       "prior_team": null,
-      "team": "DET",
+      "team": "OTT",
       "toi": null,
-      "weight_lb": 173
+      "weight_lb": 227
     },
-    "8470077": {
-      "age": 29,
-      "birth_date": "1997-03-16",
+    "8470095": {
+      "age": 23,
+      "birth_date": "2003-06-03",
       "group": "D",
       "height_in": 72,
       "history": [
         {
-          "A": 19,
-          "BLK": 149,
-          "G": 2,
-          "GP": 76,
-          "GWG": 0,
-          "HIT": 103,
-          "PPA": 0,
-          "PPG": 0,
-          "SHA": 0,
-          "SHG": 1,
-          "SHP": 1,
-          "SOG": 33,
-          "season": "20252026",
-          "team": "NJD"
-        },
-        {
-          "A": 32,
-          "BLK": 97,
-          "G": 10,
-          "GP": 44,
-          "GWG": 0,
-          "HIT": 64,
-          "PPA": 9,
-          "PPG": 0,
-          "SHA": 0,
-          "SHG": 0,
-          "SHP": 0,
-          "SOG": 96,
-          "season": "20242025",
-          "team": "NJD"
-        },
-        {
-          "A": 37,
-          "BLK": 7,
-          "G": 8,
-          "GP": 38,
-          "GWG": 1,
-          "HIT": 18,
-          "PPA": 2,
-          "PPG": 0,
-          "SHA": 2,
-          "SHG": 2,
-          "SHP": 4,
-          "SOG": 76,
-          "season": "20232024",
-          "team": "NJD"
-        }
-      ],
-      "name": "Jose Roberts",
-      "nhl_id": 8470077,
-      "on_nhl_roster": true,
-      "position": "D",
-      "prior_team": null,
-      "team": "NJD",
-      "toi": {
-        "basis": "last season",
-        "ev_min": 15.78,
-        "gp": 76,
-        "pp_min": 0.0,
-        "sh_min": 1.0,
-        "toi_min": 24.1
-      },
-      "weight_lb": 232
-    },
-    "8470078": {
-      "age": 19,
-      "birth_date": "2006-12-25",
-      "group": "F",
-      "height_in": 69,
-      "history": [
-        {
-          "A": 28,
-          "BLK": 45,
-          "G": 8,
-          "GP": 66,
-          "GWG": 1,
-          "HIT": 162,
-          "PPA": 4,
-          "PPG": 2,
-          "SHA": 1,
-          "SHG": 0,
-          "SHP": 1,
-          "SOG": 91,
-          "season": "20252026",
-          "team": "EDM"
-        },
-        {
-          "A": 52,
-          "BLK": 34,
-          "G": 25,
-          "GP": 69,
-          "GWG": 4,
-          "HIT": 187,
-          "PPA": 2,
-          "PPG": 1,
-          "SHA": 0,
-          "SHG": 1,
-          "SHP": 1,
-          "SOG": 241,
-          "season": "20242025",
-          "team": "EDM"
-        },
-        {
-          "A": 10,
-          "BLK": 40,
-          "G": 18,
-          "GP": 47,
-          "GWG": 2,
-          "HIT": 24,
-          "PPA": 1,
-          "PPG": 1,
-          "SHA": 1,
-          "SHG": 1,
-          "SHP": 2,
-          "SOG": 160,
-          "season": "20232024",
-          "team": "EDM"
-        }
-      ],
-      "name": "James Brown",
-      "nhl_id": 8470078,
-      "on_nhl_roster": true,
-      "position": "L",
-      "prior_team": null,
-      "team": "EDM",
-      "toi": {
-        "basis": "last season",
-        "ev_min": 14.62,
-        "gp": 66,
-        "pp_min": 0.0,
-        "sh_min": 0.0,
-        "toi_min": 20.78
-      },
-      "weight_lb": 201
-    },
-    "8470079": {
-      "age": 20,
-      "birth_date": "2005-09-11",
-      "group": "F",
-      "height_in": 69,
-      "history": [
-        {
-          "A": 50,
-          "BLK": 19,
-          "G": 20,
-          "GP": 45,
-          "GWG": 0,
-          "HIT": 210,
-          "PPA": 15,
-          "PPG": 1,
-          "SHA": 2,
-          "SHG": 0,
-          "SHP": 2,
-          "SOG": 202,
-          "season": "20252026",
-          "team": "DAL"
-        },
-        {
-          "A": 8,
-          "BLK": 30,
-          "G": 13,
-          "GP": 69,
-          "GWG": 1,
-          "HIT": 119,
-          "PPA": 2,
-          "PPG": 1,
-          "SHA": 0,
-          "SHG": 2,
-          "SHP": 2,
-          "SOG": 86,
-          "season": "20242025",
-          "team": "DAL"
-        },
-        {
           "A": 41,
-          "BLK": 26,
-          "G": 31,
-          "GP": 61,
+          "BLK": 136,
+          "G": 10,
+          "GP": 53,
           "GWG": 0,
-          "HIT": 13,
-          "PPA": 4,
-          "PPG": 7,
-          "SHA": 0,
-          "SHG": 1,
-          "SHP": 1,
-          "SOG": 272,
-          "season": "20232024",
-          "team": "DAL"
-        }
-      ],
-      "name": "Gary Castillo",
-      "nhl_id": 8470079,
-      "on_nhl_roster": true,
-      "position": "C",
-      "prior_team": null,
-      "team": "DAL",
-      "toi": {
-        "basis": "last season",
-        "ev_min": 15.32,
-        "gp": 45,
-        "pp_min": 2.83,
-        "sh_min": 0.25,
-        "toi_min": 13.03
-      },
-      "weight_lb": 186
-    },
-    "8470080": {
-      "age": 24,
-      "birth_date": "2002-04-19",
-      "group": "F",
-      "height_in": 70,
-      "history": [
-        {
-          "A": 25,
-          "BLK": 31,
-          "G": 33,
-          "GP": 34,
-          "GWG": 5,
-          "HIT": 177,
-          "PPA": 1,
-          "PPG": 4,
+          "HIT": 155,
+          "PPA": 9,
+          "PPG": 1,
           "SHA": 2,
-          "SHG": 2,
-          "SHP": 4,
-          "SOG": 329,
+          "SHG": 0,
+          "SHP": 2,
+          "SOG": 127,
           "season": "20252026",
           "team": "OTT"
         },
         {
-          "A": 25,
-          "BLK": 36,
-          "G": 9,
-          "GP": 55,
-          "GWG": 1,
-          "HIT": 167,
+          "A": 39,
+          "BLK": 24,
+          "G": 4,
+          "GP": 36,
+          "GWG": 0,
+          "HIT": 101,
           "PPA": 2,
-          "PPG": 2,
-          "SHA": 2,
+          "PPG": 0,
+          "SHA": 0,
+          "SHG": 0,
+          "SHP": 0,
+          "SOG": 32,
+          "season": "20242025",
+          "team": "OTT"
+        },
+        {
+          "A": 25,
+          "BLK": 142,
+          "G": 1,
+          "GP": 58,
+          "GWG": 1,
+          "HIT": 123,
+          "PPA": 8,
+          "PPG": 0,
+          "SHA": 1,
           "SHG": 1,
-          "SHP": 3,
-          "SOG": 109,
+          "SHP": 2,
+          "SOG": 21,
           "season": "20232024",
           "team": "OTT"
         }
       ],
       "name": "Steven Mendoza",
-      "nhl_id": 8470080,
-      "on_nhl_roster": true,
-      "position": "R",
-      "prior_team": null,
-      "team": "OTT",
-      "toi": {
-        "basis": "last season",
-        "ev_min": 13.57,
-        "gp": 34,
-        "pp_min": 0.0,
-        "sh_min": 0.25,
-        "toi_min": 15.92
-      },
-      "weight_lb": 172
-    },
-    "8470081": {
-      "age": 33,
-      "birth_date": "1992-08-06",
-      "group": "F",
-      "height_in": 69,
-      "history": [
-        {
-          "A": 44,
-          "BLK": 25,
-          "G": 38,
-          "GP": 53,
-          "GWG": 0,
-          "HIT": 104,
-          "PPA": 11,
-          "PPG": 8,
-          "SHA": 2,
-          "SHG": 0,
-          "SHP": 2,
-          "SOG": 190,
-          "season": "20252026",
-          "team": "DET"
-        },
-        {
-          "A": 53,
-          "BLK": 20,
-          "G": 2,
-          "GP": 75,
-          "GWG": 1,
-          "HIT": 214,
-          "PPA": 9,
-          "PPG": 0,
-          "SHA": 0,
-          "SHG": 1,
-          "SHP": 1,
-          "SOG": 15,
-          "season": "20242025",
-          "team": "DET"
-        },
-        {
-          "A": 11,
-          "BLK": 23,
-          "G": 23,
-          "GP": 69,
-          "GWG": 1,
-          "HIT": 158,
-          "PPA": 2,
-          "PPG": 4,
-          "SHA": 2,
-          "SHG": 2,
-          "SHP": 4,
-          "SOG": 135,
-          "season": "20232024",
-          "team": "DET"
-        }
-      ],
-      "name": "Jose White",
-      "nhl_id": 8470081,
-      "on_nhl_roster": true,
-      "position": "R",
-      "prior_team": null,
-      "team": "DET",
-      "toi": {
-        "basis": "last season",
-        "ev_min": 13.97,
-        "gp": 53,
-        "pp_min": 2.0,
-        "sh_min": 1.83,
-        "toi_min": 13.28
-      },
-      "weight_lb": 182
-    },
-    "8470082": {
-      "age": 21,
-      "birth_date": "2005-01-28",
-      "group": "F",
-      "height_in": 74,
-      "history": [
-        {
-          "A": 23,
-          "BLK": 42,
-          "G": 14,
-          "GP": 41,
-          "GWG": 0,
-          "HIT": 141,
-          "PPA": 6,
-          "PPG": 4,
-          "SHA": 0,
-          "SHG": 0,
-          "SHP": 0,
-          "SOG": 104,
-          "season": "20252026",
-          "team": "STL"
-        },
-        {
-          "A": 41,
-          "BLK": 18,
-          "G": 32,
-          "GP": 82,
-          "GWG": 3,
-          "HIT": 40,
-          "PPA": 4,
-          "PPG": 1,
-          "SHA": 0,
-          "SHG": 2,
-          "SHP": 2,
-          "SOG": 250,
-          "season": "20232024",
-          "team": "STL"
-        }
-      ],
-      "name": "K. Hill",
-      "nhl_id": 8470082,
-      "on_nhl_roster": true,
-      "position": "L",
-      "prior_team": null,
-      "team": "STL",
-      "toi": {
-        "basis": "last season",
-        "ev_min": 10.58,
-        "gp": 41,
-        "pp_min": 0.5,
-        "sh_min": 1.83,
-        "toi_min": 18.0
-      },
-      "weight_lb": 222
-    },
-    "8470083": {
-      "age": 32,
-      "birth_date": "1994-04-11",
-      "group": "F",
-      "height_in": 70,
-      "history": [
-        {
-          "A": 51,
-          "BLK": 46,
-          "G": 33,
-          "GP": 48,
-          "GWG": 3,
-          "HIT": 81,
-          "PPA": 12,
-          "PPG": 0,
-          "SHA": 0,
-          "SHG": 1,
-          "SHP": 1,
-          "SOG": 222,
-          "season": "20252026",
-          "team": "SJS"
-        },
-        {
-          "A": 9,
-          "BLK": 10,
-          "G": 5,
-          "GP": 52,
-          "GWG": 0,
-          "HIT": 179,
-          "PPA": 1,
-          "PPG": 0,
-          "SHA": 2,
-          "SHG": 2,
-          "SHP": 4,
-          "SOG": 43,
-          "season": "20242025",
-          "team": "SJS"
-        },
-        {
-          "A": 30,
-          "BLK": 32,
-          "G": 9,
-          "GP": 79,
-          "GWG": 0,
-          "HIT": 58,
-          "PPA": 1,
-          "PPG": 1,
-          "SHA": 2,
-          "SHG": 0,
-          "SHP": 2,
-          "SOG": 57,
-          "season": "20232024",
-          "team": "SJS"
-        }
-      ],
-      "name": "Kevin Johnson",
-      "nhl_id": 8470083,
-      "on_nhl_roster": true,
-      "position": "R",
-      "prior_team": null,
-      "team": "SJS",
-      "toi": {
-        "basis": "last season",
-        "ev_min": 12.27,
-        "gp": 48,
-        "pp_min": 0.5,
-        "sh_min": 0.0,
-        "toi_min": 16.5
-      },
-      "weight_lb": 209
-    },
-    "8470084": {
-      "age": 22,
-      "birth_date": "2003-09-24",
-      "group": "D",
-      "height_in": 72,
-      "history": [
-        {
-          "A": 14,
-          "BLK": 40,
-          "G": 9,
-          "GP": 82,
-          "GWG": 0,
-          "HIT": 47,
-          "PPA": 2,
-          "PPG": 1,
-          "SHA": 0,
-          "SHG": 0,
-          "SHP": 0,
-          "SOG": 72,
-          "season": "20252026",
-          "team": "NJD"
-        },
-        {
-          "A": 35,
-          "BLK": 151,
-          "G": 12,
-          "GP": 49,
-          "GWG": 1,
-          "HIT": 110,
-          "PPA": 11,
-          "PPG": 1,
-          "SHA": 2,
-          "SHG": 0,
-          "SHP": 2,
-          "SOG": 130,
-          "season": "20232024",
-          "team": "NJD"
-        }
-      ],
-      "name": "Jesse Davis",
-      "nhl_id": 8470084,
+      "nhl_id": 8470095,
       "on_nhl_roster": true,
       "position": "D",
       "prior_team": null,
-      "team": "NJD",
+      "role": {
+        "basis": "last season",
+        "line": "Pair 1",
+        "pp": "PP1",
+        "trend": []
+      },
+      "team": "OTT",
       "toi": {
         "basis": "last season",
-        "ev_min": 10.18,
-        "gp": 82,
-        "pp_min": 2.0,
-        "sh_min": 1.0,
-        "toi_min": 13.0
-      },
-      "weight_lb": 230
-    },
-    "8470085": {
-      "age": 34,
-      "birth_date": "1992-03-13",
-      "draft": {
-        "overall": 124,
-        "pick_in_round": 28,
-        "round": 4,
-        "team": "NSH",
-        "year": 2010
-      },
-      "group": "F",
-      "height_in": 73,
-      "history": [],
-      "minors": [
-        {
-          "a": 20,
-          "g": 14,
-          "gp": 50,
-          "league": "AHL",
-          "pts": 34,
-          "season": "20252026",
-          "sv_pct": null,
-          "team": "Sample Juniors"
-        },
-        {
-          "a": 15,
-          "g": 10,
-          "gp": 60,
-          "league": "OHL",
-          "pts": 25,
-          "season": "20242025",
-          "sv_pct": null,
-          "team": "Sample Juniors"
-        }
-      ],
-      "name": "Keith Parker",
-      "nhl_id": 8470085,
-      "on_nhl_roster": true,
-      "position": "C",
-      "prior_nhl_gp": 0,
-      "prior_team": null,
-      "team": "NSH",
-      "toi": {
-        "basis": null,
-        "ev_min": null,
-        "gp": null,
-        "pp_min": null,
-        "sh_min": null,
-        "toi_min": null
-      },
-      "weight_lb": 196
-    },
-    "8470086": {
-      "age": 33,
-      "birth_date": "1993-06-13",
-      "group": "F",
-      "height_in": 78,
-      "history": [
-        {
-          "A": 17,
-          "BLK": 43,
-          "G": 27,
-          "GP": 47,
-          "GWG": 3,
-          "HIT": 26,
-          "PPA": 3,
-          "PPG": 0,
-          "SHA": 0,
-          "SHG": 1,
-          "SHP": 1,
-          "SOG": 228,
-          "season": "20252026",
-          "team": "WSH"
-        },
-        {
-          "A": 44,
-          "BLK": 35,
-          "G": 19,
-          "GP": 41,
-          "GWG": 1,
-          "HIT": 49,
-          "PPA": 2,
-          "PPG": 3,
-          "SHA": 0,
-          "SHG": 1,
-          "SHP": 1,
-          "SOG": 177,
-          "season": "20242025",
-          "team": "WSH"
-        }
-      ],
-      "name": "Mason Brown",
-      "nhl_id": 8470086,
-      "on_nhl_roster": true,
-      "position": "R",
-      "prior_team": null,
-      "team": "WSH",
-      "toi": {
-        "basis": "last season",
-        "ev_min": 15.9,
-        "gp": 47,
-        "pp_min": 2.83,
-        "sh_min": 1.83,
-        "toi_min": 13.98
-      },
-      "weight_lb": 231
-    },
-    "8470088": {
-      "age": 34,
-      "birth_date": "1992-05-22",
-      "group": "F",
-      "height_in": 73,
-      "history": [
-        {
-          "A": 38,
-          "BLK": 8,
-          "G": 6,
-          "GP": 53,
-          "GWG": 1,
-          "HIT": 157,
-          "PPA": 3,
-          "PPG": 0,
-          "SHA": 2,
-          "SHG": 2,
-          "SHP": 4,
-          "SOG": 31,
-          "season": "20252026",
-          "team": "TOR"
-        },
-        {
-          "A": 55,
-          "BLK": 25,
-          "G": 35,
-          "GP": 60,
-          "GWG": 4,
-          "HIT": 120,
-          "PPA": 1,
-          "PPG": 7,
-          "SHA": 0,
-          "SHG": 1,
-          "SHP": 1,
-          "SOG": 332,
-          "season": "20242025",
-          "team": "TOR"
-        }
-      ],
-      "name": "Benjamin Wilson",
-      "nhl_id": 8470088,
-      "on_nhl_roster": true,
-      "position": "L",
-      "prior_team": null,
-      "team": "TOR",
-      "toi": {
-        "basis": "last season",
-        "ev_min": 12.17,
+        "ev_min": 14.55,
         "gp": 53,
-        "pp_min": 0.0,
-        "sh_min": 0.25,
-        "toi_min": 14.98
-      },
-      "weight_lb": 185
-    },
-    "8470089": {
-      "age": 19,
-      "birth_date": "2006-12-26",
-      "group": "F",
-      "height_in": 77,
-      "history": [
-        {
-          "A": 46,
-          "BLK": 32,
-          "G": 3,
-          "GP": 34,
-          "GWG": 0,
-          "HIT": 72,
-          "PPA": 3,
-          "PPG": 0,
-          "SHA": 2,
-          "SHG": 2,
-          "SHP": 4,
-          "SOG": 47,
-          "season": "20252026",
-          "team": "CBJ"
-        },
-        {
-          "A": 36,
-          "BLK": 45,
-          "G": 33,
-          "GP": 74,
-          "GWG": 1,
-          "HIT": 198,
-          "PPA": 7,
-          "PPG": 9,
-          "SHA": 0,
-          "SHG": 1,
-          "SHP": 1,
-          "SOG": 255,
-          "season": "20232024",
-          "team": "CBJ"
-        }
-      ],
-      "name": "Kyle Peterson",
-      "nhl_id": 8470089,
-      "on_nhl_roster": true,
-      "position": "R",
-      "prior_team": null,
-      "team": "CBJ",
-      "toi": {
-        "basis": "last season",
-        "ev_min": 14.08,
-        "gp": 34,
-        "pp_min": 0.5,
-        "sh_min": 0.0,
-        "toi_min": 12.35
-      },
-      "weight_lb": 211
-    },
-    "8470090": {
-      "age": 21,
-      "birth_date": "2005-03-24",
-      "group": "F",
-      "height_in": 73,
-      "history": [
-        {
-          "A": 43,
-          "BLK": 47,
-          "G": 37,
-          "GP": 62,
-          "GWG": 3,
-          "HIT": 46,
-          "PPA": 4,
-          "PPG": 2,
-          "SHA": 2,
-          "SHG": 1,
-          "SHP": 3,
-          "SOG": 301,
-          "season": "20252026",
-          "team": "MIN"
-        },
-        {
-          "A": 52,
-          "BLK": 48,
-          "G": 18,
-          "GP": 48,
-          "GWG": 1,
-          "HIT": 46,
-          "PPA": 14,
-          "PPG": 0,
-          "SHA": 2,
-          "SHG": 1,
-          "SHP": 3,
-          "SOG": 194,
-          "season": "20242025",
-          "team": "MIN"
-        },
-        {
-          "A": 18,
-          "BLK": 23,
-          "G": 40,
-          "GP": 77,
-          "GWG": 5,
-          "HIT": 167,
-          "PPA": 2,
-          "PPG": 9,
-          "SHA": 0,
-          "SHG": 0,
-          "SHP": 0,
-          "SOG": 368,
-          "season": "20232024",
-          "team": "MIN"
-        }
-      ],
-      "name": "Dylan Parker",
-      "nhl_id": 8470090,
-      "on_nhl_roster": true,
-      "position": "L",
-      "prior_team": null,
-      "team": "MIN",
-      "toi": {
-        "basis": "last season",
-        "ev_min": 16.13,
-        "gp": 62,
         "pp_min": 2.0,
-        "sh_min": 1.83,
-        "toi_min": 20.83
+        "sh_min": 0.25,
+        "toi_min": 12.32
       },
-      "weight_lb": 204
+      "weight_lb": 214
     },
-    "8470091": {
-      "age": 26,
-      "birth_date": "2000-02-18",
+    "8470096": {
+      "age": 27,
+      "birth_date": "1999-02-04",
       "goalie": {
         "basis": "last season",
-        "gs": 15,
+        "gs": 55,
         "role": "Starter",
         "start_share": 1.0
       },
@@ -5091,580 +5981,273 @@
       "height_in": 74,
       "history": [
         {
-          "GA": 50,
+          "GA": 163,
+          "GP": 59,
+          "GS": 55,
+          "L": 34,
+          "SO": 0,
+          "SV": 1267,
+          "W": 20,
+          "season": "20252026",
+          "team": "PIT"
+        },
+        {
+          "GA": 45,
           "GP": 35,
           "GS": 15,
-          "L": 12,
-          "SO": 1,
-          "SV": 400,
-          "W": 3,
-          "season": "20252026",
-          "team": "WPG"
-        },
-        {
-          "GA": 70,
-          "GP": 63,
-          "GS": 28,
-          "L": 15,
-          "SO": 5,
-          "SV": 630,
-          "W": 8,
+          "L": 5,
+          "SO": 4,
+          "SV": 420,
+          "W": 5,
           "season": "20242025",
-          "team": "WPG"
-        },
-        {
-          "GA": 209,
-          "GP": 77,
-          "GS": 59,
-          "L": 41,
-          "SO": 1,
-          "SV": 1620,
-          "W": 18,
-          "season": "20232024",
-          "team": "WPG"
+          "team": "PIT"
         }
       ],
-      "name": "Jordan Jones",
-      "nhl_id": 8470091,
+      "name": "Jeffrey Stewart",
+      "nhl_id": 8470096,
       "on_nhl_roster": true,
       "position": "G",
       "prior_team": null,
-      "team": "WPG",
+      "team": "PIT",
       "toi": null,
-      "weight_lb": 183
+      "weight_lb": 174
     },
-    "8470092": {
-      "age": 28,
-      "birth_date": "1998-01-03",
-      "group": "D",
-      "height_in": 69,
-      "history": [
-        {
-          "A": 6,
-          "BLK": 9,
-          "G": 5,
-          "GP": 63,
-          "GWG": 1,
-          "HIT": 151,
-          "PPA": 0,
-          "PPG": 0,
-          "SHA": 0,
-          "SHG": 0,
-          "SHP": 0,
-          "SOG": 45,
-          "season": "20252026",
-          "team": "BUF"
-        },
-        {
-          "A": 43,
-          "BLK": 95,
-          "G": 2,
-          "GP": 56,
-          "GWG": 0,
-          "HIT": 177,
-          "PPA": 9,
-          "PPG": 0,
-          "SHA": 0,
-          "SHG": 2,
-          "SHP": 2,
-          "SOG": 36,
-          "season": "20242025",
-          "team": "BUF"
-        },
-        {
-          "A": 42,
-          "BLK": 151,
-          "G": 1,
-          "GP": 78,
-          "GWG": 0,
-          "HIT": 62,
-          "PPA": 14,
-          "PPG": 0,
-          "SHA": 2,
-          "SHG": 0,
-          "SHP": 2,
-          "SOG": 24,
-          "season": "20232024",
-          "team": "BUF"
-        }
-      ],
-      "name": "David Jackson",
-      "nhl_id": 8470092,
-      "on_nhl_roster": true,
-      "position": "D",
-      "prior_team": null,
-      "team": "BUF",
-      "toi": {
-        "basis": "last season",
-        "ev_min": 19.55,
-        "gp": 63,
-        "pp_min": 2.0,
-        "sh_min": 1.83,
-        "toi_min": 17.85
-      },
-      "weight_lb": 211
-    },
-    "8470094": {
-      "age": 25,
-      "birth_date": "2001-07-15",
-      "draft": {
-        "overall": 135,
-        "pick_in_round": 7,
-        "round": 5,
-        "team": "MIN",
-        "year": 2019
-      },
+    "8470097": {
+      "age": 32,
+      "birth_date": "1994-06-12",
       "group": "F",
-      "height_in": 76,
-      "history": [],
-      "minors": [
-        {
-          "a": 20,
-          "g": 14,
-          "gp": 50,
-          "league": "AHL",
-          "pts": 34,
-          "season": "20252026",
-          "sv_pct": null,
-          "team": "Sample Juniors"
-        },
-        {
-          "a": 15,
-          "g": 10,
-          "gp": 60,
-          "league": "OHL",
-          "pts": 25,
-          "season": "20242025",
-          "sv_pct": null,
-          "team": "Sample Juniors"
-        }
-      ],
-      "name": "Jacob Alvarez",
-      "nhl_id": 8470094,
-      "on_nhl_roster": true,
-      "position": "C",
-      "prior_nhl_gp": 0,
-      "prior_team": null,
-      "team": "MIN",
-      "toi": {
-        "basis": null,
-        "ev_min": null,
-        "gp": null,
-        "pp_min": null,
-        "sh_min": null,
-        "toi_min": null
-      },
-      "weight_lb": 216
-    },
-    "8470095": {
-      "age": 30,
-      "birth_date": "1995-09-15",
-      "group": "F",
-      "height_in": 76,
+      "height_in": 77,
       "history": [
-        {
-          "A": 38,
-          "BLK": 39,
-          "G": 11,
-          "GP": 64,
-          "GWG": 1,
-          "HIT": 78,
-          "PPA": 12,
-          "PPG": 3,
-          "SHA": 0,
-          "SHG": 1,
-          "SHP": 1,
-          "SOG": 93,
-          "season": "20252026",
-          "team": "CGY"
-        },
-        {
-          "A": 47,
-          "BLK": 12,
-          "G": 13,
-          "GP": 33,
-          "GWG": 1,
-          "HIT": 198,
-          "PPA": 3,
-          "PPG": 1,
-          "SHA": 2,
-          "SHG": 2,
-          "SHP": 4,
-          "SOG": 66,
-          "season": "20242025",
-          "team": "CGY"
-        },
-        {
-          "A": 46,
-          "BLK": 28,
-          "G": 33,
-          "GP": 54,
-          "GWG": 5,
-          "HIT": 164,
-          "PPA": 2,
-          "PPG": 11,
-          "SHA": 1,
-          "SHG": 1,
-          "SHP": 2,
-          "SOG": 288,
-          "season": "20232024",
-          "team": "CGY"
-        }
-      ],
-      "name": "Daniel Robinson",
-      "nhl_id": 8470095,
-      "on_nhl_roster": true,
-      "position": "R",
-      "prior_team": null,
-      "team": "CGY",
-      "toi": {
-        "basis": "last season",
-        "ev_min": 16.98,
-        "gp": 64,
-        "pp_min": 0.0,
-        "sh_min": 1.0,
-        "toi_min": 15.58
-      },
-      "weight_lb": 188
-    },
-    "8470096": {
-      "age": 31,
-      "birth_date": "1994-10-23",
-      "group": "F",
-      "height_in": 79,
-      "history": [
-        {
-          "A": 36,
-          "BLK": 7,
-          "G": 30,
-          "GP": 47,
-          "GWG": 0,
-          "HIT": 152,
-          "PPA": 12,
-          "PPG": 9,
-          "SHA": 0,
-          "SHG": 0,
-          "SHP": 0,
-          "SOG": 202,
-          "season": "20252026",
-          "team": "PHI"
-        },
         {
           "A": 8,
-          "BLK": 48,
-          "G": 23,
-          "GP": 42,
-          "GWG": 2,
-          "HIT": 22,
-          "PPA": 0,
+          "BLK": 7,
+          "G": 2,
+          "GP": 59,
+          "GWG": 1,
+          "HIT": 15,
+          "PPA": 2,
+          "PPG": 0,
+          "SHA": 0,
+          "SHG": 0,
+          "SHP": 0,
+          "SOG": 42,
+          "season": "20252026",
+          "team": "ANA"
+        },
+        {
+          "A": 35,
+          "BLK": 50,
+          "G": 34,
+          "GP": 46,
+          "GWG": 0,
+          "HIT": 46,
+          "PPA": 11,
           "PPG": 5,
           "SHA": 1,
           "SHG": 0,
           "SHP": 1,
-          "SOG": 227,
+          "SOG": 332,
           "season": "20242025",
-          "team": "PHI"
+          "team": "ANA"
         },
         {
-          "A": 36,
-          "BLK": 30,
-          "G": 35,
-          "GP": 58,
-          "GWG": 3,
-          "HIT": 35,
-          "PPA": 10,
-          "PPG": 6,
-          "SHA": 1,
-          "SHG": 0,
-          "SHP": 1,
-          "SOG": 200,
-          "season": "20232024",
-          "team": "PHI"
-        }
-      ],
-      "name": "Brian Turner",
-      "nhl_id": 8470096,
-      "on_nhl_roster": true,
-      "position": "C",
-      "prior_team": null,
-      "team": "PHI",
-      "toi": {
-        "basis": "last season",
-        "ev_min": 11.43,
-        "gp": 47,
-        "pp_min": 0.0,
-        "sh_min": 0.0,
-        "toi_min": 12.87
-      },
-      "weight_lb": 204
-    },
-    "8470097": {
-      "age": 23,
-      "birth_date": "2002-10-05",
-      "group": "F",
-      "height_in": 71,
-      "history": [
-        {
-          "A": 12,
-          "BLK": 26,
-          "G": 6,
-          "GP": 77,
-          "GWG": 0,
-          "HIT": 54,
-          "PPA": 2,
-          "PPG": 1,
+          "A": 50,
+          "BLK": 49,
+          "G": 2,
+          "GP": 40,
+          "GWG": 1,
+          "HIT": 16,
+          "PPA": 6,
+          "PPG": 0,
           "SHA": 2,
           "SHG": 2,
           "SHP": 4,
-          "SOG": 91,
-          "season": "20252026",
-          "team": "CAR"
-        },
-        {
-          "A": 10,
-          "BLK": 12,
-          "G": 5,
-          "GP": 31,
-          "GWG": 0,
-          "HIT": 28,
-          "PPA": 1,
-          "PPG": 0,
-          "SHA": 1,
-          "SHG": 2,
-          "SHP": 3,
-          "SOG": 27,
+          "SOG": 28,
           "season": "20232024",
-          "team": "CAR"
+          "team": "ANA"
         }
       ],
-      "name": "Peter Torres",
+      "name": "Jeremy Hernandez",
       "nhl_id": 8470097,
       "on_nhl_roster": true,
-      "position": "L",
+      "position": "R",
       "prior_team": null,
-      "team": "CAR",
+      "role": {
+        "basis": "last season",
+        "line": "Line 1",
+        "pp": "PP2",
+        "trend": []
+      },
+      "team": "ANA",
       "toi": {
         "basis": "last season",
-        "ev_min": 15.23,
-        "gp": 77,
-        "pp_min": 3.5,
-        "sh_min": 1.0,
-        "toi_min": 18.08
+        "ev_min": 10.93,
+        "gp": 59,
+        "pp_min": 0.5,
+        "sh_min": 0.0,
+        "toi_min": 13.23
       },
-      "weight_lb": 228
+      "weight_lb": 215
     },
     "8470098": {
-      "age": 30,
-      "birth_date": "1996-05-27",
+      "age": 25,
+      "birth_date": "2001-04-07",
       "group": "F",
-      "height_in": 79,
+      "height_in": 76,
       "history": [
         {
-          "A": 10,
-          "BLK": 26,
-          "G": 25,
-          "GP": 76,
-          "GWG": 1,
-          "HIT": 210,
-          "PPA": 0,
-          "PPG": 2,
+          "A": 22,
+          "BLK": 29,
+          "G": 27,
+          "GP": 54,
+          "GWG": 3,
+          "HIT": 86,
+          "PPA": 6,
+          "PPG": 3,
           "SHA": 1,
           "SHG": 2,
           "SHP": 3,
-          "SOG": 226,
+          "SOG": 181,
           "season": "20252026",
-          "team": "TOR"
+          "team": "CAR"
         },
         {
-          "A": 22,
-          "BLK": 19,
-          "G": 27,
-          "GP": 43,
-          "GWG": 3,
-          "HIT": 219,
-          "PPA": 5,
-          "PPG": 0,
-          "SHA": 2,
+          "A": 13,
+          "BLK": 8,
+          "G": 22,
+          "GP": 60,
+          "GWG": 0,
+          "HIT": 83,
+          "PPA": 4,
+          "PPG": 1,
+          "SHA": 1,
           "SHG": 2,
-          "SHP": 4,
-          "SOG": 283,
-          "season": "20242025",
-          "team": "TOR"
-        },
-        {
-          "A": 47,
-          "BLK": 34,
-          "G": 25,
-          "GP": 69,
-          "GWG": 3,
-          "HIT": 171,
-          "PPA": 7,
-          "PPG": 6,
-          "SHA": 2,
-          "SHG": 1,
           "SHP": 3,
-          "SOG": 208,
-          "season": "20232024",
-          "team": "TOR"
+          "SOG": 236,
+          "season": "20242025",
+          "team": "CAR"
         }
       ],
-      "name": "Logan Castillo",
+      "name": "Nicholas Sanders",
       "nhl_id": 8470098,
       "on_nhl_roster": true,
       "position": "R",
       "prior_team": null,
-      "team": "TOR",
+      "role": {
+        "basis": "last season",
+        "line": "Line 1",
+        "pp": "No PP",
+        "trend": []
+      },
+      "team": "CAR",
       "toi": {
         "basis": "last season",
-        "ev_min": 10.2,
-        "gp": 76,
-        "pp_min": 3.5,
-        "sh_min": 0.0,
-        "toi_min": 14.83
+        "ev_min": 11.0,
+        "gp": 54,
+        "pp_min": 0.0,
+        "sh_min": 1.83,
+        "toi_min": 13.17
       },
-      "weight_lb": 203
+      "weight_lb": 184
     },
     "8470099": {
-      "age": 33,
-      "birth_date": "1993-01-15",
-      "group": "D",
-      "height_in": 74,
+      "age": 21,
+      "birth_date": "2004-10-23",
+      "goalie": {
+        "basis": "last season",
+        "gs": 64,
+        "role": "1A/1B",
+        "start_share": 0.421
+      },
+      "group": "G",
+      "height_in": 72,
       "history": [
         {
-          "A": 41,
-          "BLK": 20,
-          "G": 12,
-          "GP": 37,
-          "GWG": 2,
-          "HIT": 83,
-          "PPA": 8,
-          "PPG": 3,
-          "SHA": 2,
-          "SHG": 0,
-          "SHP": 2,
-          "SOG": 123,
+          "GA": 170,
+          "GP": 64,
+          "GS": 64,
+          "L": 28,
+          "SO": 2,
+          "SV": 1494,
+          "W": 36,
           "season": "20252026",
-          "team": "NJD"
+          "team": "SJS"
         },
         {
-          "A": 20,
-          "BLK": 151,
-          "G": 12,
-          "GP": 69,
-          "GWG": 2,
-          "HIT": 45,
-          "PPA": 3,
-          "PPG": 1,
-          "SHA": 2,
-          "SHG": 2,
-          "SHP": 4,
-          "SOG": 147,
-          "season": "20242025",
-          "team": "NJD"
-        },
-        {
-          "A": 37,
-          "BLK": 138,
-          "G": 3,
-          "GP": 66,
-          "GWG": 1,
-          "HIT": 46,
-          "PPA": 1,
-          "PPG": 0,
-          "SHA": 0,
-          "SHG": 2,
-          "SHP": 2,
-          "SOG": 40,
+          "GA": 76,
+          "GP": 40,
+          "GS": 29,
+          "L": 20,
+          "SO": 5,
+          "SV": 823,
+          "W": 8,
           "season": "20232024",
-          "team": "NJD"
+          "team": "SJS"
         }
       ],
-      "name": "Joseph Morales",
+      "name": "Juan Cooper",
       "nhl_id": 8470099,
       "on_nhl_roster": true,
-      "position": "D",
+      "position": "G",
       "prior_team": null,
-      "team": "NJD",
-      "toi": {
-        "basis": "last season",
-        "ev_min": 17.03,
-        "gp": 37,
-        "pp_min": 0.5,
-        "sh_min": 0.0,
-        "toi_min": 18.45
-      },
-      "weight_lb": 201
+      "team": "SJS",
+      "toi": null,
+      "weight_lb": 178
     },
     "8470100": {
-      "age": 24,
-      "birth_date": "2002-04-18",
-      "group": "F",
-      "height_in": 71,
+      "age": 29,
+      "birth_date": "1997-07-05",
+      "goalie": {
+        "basis": "last season",
+        "gs": 53,
+        "role": "Starter",
+        "start_share": 0.564
+      },
+      "group": "G",
+      "height_in": 76,
       "history": [
         {
-          "A": 40,
-          "BLK": 43,
-          "G": 10,
-          "GP": 43,
-          "GWG": 0,
-          "HIT": 62,
-          "PPA": 5,
-          "PPG": 2,
-          "SHA": 2,
-          "SHG": 2,
-          "SHP": 4,
-          "SOG": 111,
+          "GA": 144,
+          "GP": 74,
+          "GS": 53,
+          "L": 31,
+          "SO": 5,
+          "SV": 1446,
+          "W": 19,
           "season": "20252026",
-          "team": "WSH"
+          "team": "CHI"
         },
         {
-          "A": 41,
-          "BLK": 16,
-          "G": 6,
-          "GP": 69,
-          "GWG": 0,
-          "HIT": 97,
-          "PPA": 9,
-          "PPG": 0,
-          "SHA": 0,
-          "SHG": 1,
-          "SHP": 1,
-          "SOG": 40,
+          "GA": 94,
+          "GP": 39,
+          "GS": 31,
+          "L": 15,
+          "SO": 1,
+          "SV": 743,
+          "W": 12,
           "season": "20242025",
-          "team": "WSH"
+          "team": "CHI"
         },
         {
-          "A": 9,
-          "BLK": 19,
-          "G": 37,
-          "GP": 31,
-          "GWG": 0,
-          "HIT": 128,
-          "PPA": 1,
-          "PPG": 4,
-          "SHA": 0,
-          "SHG": 1,
-          "SHP": 1,
-          "SOG": 287,
+          "GA": 167,
+          "GP": 68,
+          "GS": 56,
+          "L": 35,
+          "SO": 5,
+          "SV": 1457,
+          "W": 16,
           "season": "20232024",
-          "team": "WSH"
+          "team": "CHI"
         }
       ],
-      "name": "Wayne Hill",
+      "name": "Alexander Foster",
       "nhl_id": 8470100,
       "on_nhl_roster": true,
-      "position": "R",
+      "position": "G",
       "prior_team": null,
-      "team": "WSH",
-      "toi": {
-        "basis": "last season",
-        "ev_min": 14.57,
-        "gp": 43,
-        "pp_min": 2.83,
-        "sh_min": 0.0,
-        "toi_min": 21.17
-      },
-      "weight_lb": 229
+      "team": "CHI",
+      "toi": null,
+      "weight_lb": 192
     }
   },
   "schema_version": 1,
