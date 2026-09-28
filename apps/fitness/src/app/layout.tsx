@@ -12,7 +12,7 @@ export function generateMetadata(): Metadata {
       template: "%s · Strictly Jayers",
     },
     description:
-      "Strictly Jayers training log — golf, tennis, pickleball, lifting, and endurance. Local-first, installable, offline.",
+      "Strictly Jayers training log — golf, tennis, pickleball, lifting, and endurance. Signed-in members, installable, offline.",
     applicationName: "Strictly Jayers",
   };
 }

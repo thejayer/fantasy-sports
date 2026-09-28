@@ -6,9 +6,9 @@ from pathlib import Path
 from typing import Any, Literal
 
 import yaml
-from pydantic import BaseModel, Field, PositiveInt, model_validator
+from pydantic import BaseModel, Field, NonNegativeInt, PositiveInt, model_validator
 
-Sport = Literal["football", "baseball", "basketball", "golf"]
+Sport = Literal["football", "baseball", "basketball", "hockey", "golf"]
 Format = Literal["redraft", "dynasty", "h2h", "season_points"]
 Platform = Literal["espn", "hub"]
 
@@ -38,7 +38,8 @@ class LeagueSpec(BaseModel):
     sport: Sport
     format: Format
     platform: Platform = "espn"
-    espn_league_id: PositiveInt | None = None
+    # 0 is an explicit ESPN placeholder (ops fills the live id later).
+    espn_league_id: NonNegativeInt | None = None
     seasons: list[PositiveInt] = Field(min_length=1)
     current_season: PositiveInt
     espn_url: str | None = None
@@ -71,6 +72,10 @@ class LeagueSpec(BaseModel):
 
     def is_espn(self) -> bool:
         return self.platform == "espn"
+
+    def has_live_espn_id(self) -> bool:
+        """True when ESPN cookies can actually open this league."""
+        return self.is_espn() and self.espn_league_id is not None and self.espn_league_id > 0
 
 
 class Registry(BaseModel):

@@ -35,17 +35,23 @@ rewrite, reverse proxy, or same-origin `/leagues` path on the apex — that woul
 break Auth.js and couple deploys.
 
 Discord CTA defaults to the crew invite (`lib/site.ts`); override with
-`DISCORD_INVITE_URL` on `sj-www` if the code rotates. Set `PALWORLD_INFO_URL`
-to turn the Palworld destination tile into a live link.
+`DISCORD_INVITE_URL` on `sj-www` if the code rotates. Palworld is a real
+`/palworld` room (join cards + Discord CTA). Optional `PALWORLD_STATUS` is a
+public world line only — never put IPs or passwords in env or copy. Optional
+`PALWORLD_INFO_URL` adds an extra “more info” link on that page.
 
-**AI News** lives at `/ai` (nav + homepage destination). Big stories are
-hand-edited dated pieces in `AI_EDITOR_PICKS` (`apps/www/src/lib/ai-news.ts`);
-RSS covers the firehose below. X timelines use official embed widgets.
+**AI News** lives at `/ai` (nav + homepage destination). **Must read** is the
+hand-edited `AI_EDITOR_PICKS` desk (`apps/www/src/lib/ai-news.ts`); **Top
+stories** is the RSS firehose. X timelines use official embed widgets.
 
-**Watch** lives at `/watch` — embeds the shared YouTube playlist
-(`lib/watch.ts` default, override with `YOUTUBE_PLAYLIST_ID` on `sj-www`),
-highlights **Tonight’s pick** from the playlist RSS, and links Discord voice /
-clip drops. Anyone with YouTube edit access can add/remove videos.
+**Watch** lives at `/watch` — featured `youtube-nocookie` player (~2/3) plus a
+playlist sidebar (~1/3) with thumbnails and a Playing mark. Embeds the shared
+YouTube playlist (`lib/watch.ts` default, override with `YOUTUBE_PLAYLIST_ID`
+on `sj-www`). Queue `?v=` stays inside the same playlist. Discord voice / clip
+drops stay on the page. Anyone with YouTube edit access can add/remove videos.
+
+**Palworld** lives at `/palworld` — world status + how to join. Passwords stay
+in Discord. Home tile links here (Soon only if join copy is marked empty).
 
 **People** lives at `/people` — a bank-style leadership desk (portrait, bio,
 Follow on X) of influential accounts (Elon, Jensen Huang, AI lab leads,

@@ -13,7 +13,19 @@ import { formatMatchupScore, outcomeTone } from "@/lib/matchups";
 import { sportFormatLabel } from "@/lib/league";
 import type { OnThisDayMoment } from "@/lib/on-this-day";
 
+function formatSeasonFp(value: number | null | undefined): string {
+  return value != null && Number.isFinite(value) ? value.toFixed(1) : "—";
+}
+
 function MatchupLine({ card }: { card: HomeLeagueCard }) {
+  if (card.seasonPoints && card.team) {
+    return (
+      <p className="home-matchup">
+        <span className="muted">Season FP</span>{" "}
+        <span className="home-score">{formatSeasonFp(card.team.pointsFor)}</span>
+      </p>
+    );
+  }
   const { matchup } = card;
   if (!matchup) {
     return (
@@ -100,7 +112,7 @@ function LeagueCard({ card }: { card: HomeLeagueCard }) {
             </div>
           </div>
           <MatchupLine card={card} />
-          {card.next && !card.matchup?.bye ? (
+          {card.next && !card.matchup?.bye && !card.seasonPoints ? (
             <p className="league-meta home-next">
               Next: {card.periodLabel} {card.next.period}
               {card.next.opponentName ? ` vs ${card.next.opponentName}` : ""}
@@ -149,7 +161,9 @@ export function MemberDashboard({
   onThisDayLabel?: string;
 }) {
   const todo = dashboardActions(cards);
-  const linked = cards.filter((card) => card.team).length;
+  const linkedCards = cards.filter((card) => card.team);
+  const linked = linkedCards.length;
+  const pulse = linkedCards[0] ?? cards[0];
 
   return (
     <main className="section home-dashboard">
@@ -173,6 +187,62 @@ export function MemberDashboard({
           </Link>
         </div>
       </div>
+
+      {cards.length > 1 ? (
+        <nav className="league-switch" aria-label="League switcher">
+          {cards.map((card) => (
+            <Link
+              key={card.leagueId}
+              href={card.href}
+              className={`season-chip${card.team ? " is-viewer" : ""}`}
+            >
+              {card.name}
+            </Link>
+          ))}
+        </nav>
+      ) : null}
+
+      {pulse?.team ? (
+        <section className="league-pulse" aria-label="League pulse">
+          <p className="league-pulse-kicker">{pulse.name}</p>
+          <div className="league-pulse-grid">
+            <div>
+              <span className="muted">Standing</span>
+              <strong>
+                {pulse.team.standing != null
+                  ? `${pulse.team.standing} of ${pulse.team.teamCount}`
+                  : "—"}
+              </strong>
+            </div>
+            <div>
+              <span className="muted">
+                {pulse.seasonPoints ? "Season FP" : "This period"}
+              </span>
+              <strong>
+                {pulse.seasonPoints
+                  ? formatSeasonFp(pulse.team.pointsFor)
+                  : pulse.matchup
+                    ? pulse.matchup.bye
+                      ? "Bye"
+                      : `${pulse.matchup.opponentName ?? "Matchup"}`
+                    : "—"}
+              </strong>
+            </div>
+            <div>
+              <span className="muted">
+                {pulse.seasonPoints ? "Record" : "Next"}
+              </span>
+              <strong>
+                {pulse.seasonPoints
+                  ? pulse.team.record
+                  : pulse.next
+                    ? `${pulse.periodLabel} ${pulse.next.period}`
+                    : "—"}
+              </strong>
+            </div>
+          </div>
+        </section>
+      ) : null}
 
       <PortfolioTable cards={cards} season={currentSeason} />
 

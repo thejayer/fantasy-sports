@@ -55,7 +55,7 @@ export async function POST(request: Request, { params }: Props) {
   }
   if (!recapSport(league.sport)) {
     return NextResponse.json(
-      { error: "Recaps are football and baseball only" },
+      { error: "Recaps are football, baseball, and hockey only" },
       { status: 400 },
     );
   }

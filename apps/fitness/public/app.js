@@ -1,17 +1,19 @@
 // @ts-nocheck -- DOM- and IDB-heavy state container. State now lives in
 // store.js (COM-150); the remaining type cleanup of app.js is tracked under
 // COM-154 alongside render.js / events.js / service-worker.js.
-const storageKey = "athleteLog.sessions.v1";
-const recoveryStorageKey = "athleteLog.recovery.v1";
-const plannerStorageKey = "athleteLog.planner.v1";
-const goalStorageKey = "athleteLog.goal.v1";
-const programStorageKey = "athleteLog.program.v1";
-const profileStorageKey = "athleteLog.profile.v1";
-const customDrillStorageKey = "athleteLog.customDrills.v1";
-const readinessStorageKey = "athleteLog.readiness.v1";
-const golfClubBagStorageKey = "athleteLog.golfClubBag.v1";
-const golfGpsRoundStorageKey = "athleteLog.golfGpsRound.v1";
-const dbName = "athleteLog.db";
+const fitnessIdentity = window.__sjFitness || {};
+const storagePrefix = fitnessIdentity.storagePrefix || "athleteLog.guest";
+const storageKey = `${storagePrefix}.sessions.v1`;
+const recoveryStorageKey = `${storagePrefix}.recovery.v1`;
+const plannerStorageKey = `${storagePrefix}.planner.v1`;
+const goalStorageKey = `${storagePrefix}.goal.v1`;
+const programStorageKey = `${storagePrefix}.program.v1`;
+const profileStorageKey = `${storagePrefix}.profile.v1`;
+const customDrillStorageKey = `${storagePrefix}.customDrills.v1`;
+const readinessStorageKey = `${storagePrefix}.readiness.v1`;
+const golfClubBagStorageKey = `${storagePrefix}.golfClubBag.v1`;
+const golfGpsRoundStorageKey = `${storagePrefix}.golfGpsRound.v1`;
+const dbName = `${storagePrefix}.db`;
 const dbVersion = 1;
 let athleteDb = null;
 
@@ -63,11 +65,13 @@ const normalizeSession = (session, index = 0) => ({
   values: session.values || {},
   sets: Array.isArray(session.sets) ? session.sets : [],
   note: session.note || "",
+  source: typeof session.source === "string" ? session.source : undefined,
+  importKey: typeof session.importKey === "string" ? session.importKey : undefined,
 });
 
 const storedSessions = readStoredJson(storageKey, null);
 const initialSessions = (
-  Array.isArray(storedSessions) ? storedSessions : cloneItems(defaultSessions)
+  Array.isArray(storedSessions) ? storedSessions : []
 ).map(normalizeSession);
 let editingSessionId = null;
 let editingCustomDrillId = null;
@@ -99,15 +103,13 @@ const normalizeCustomDrill = (drill) => {
 
 const storedPlannedSessions = readStoredJson(plannerStorageKey, null);
 const initialPlannedSessions = (
-  Array.isArray(storedPlannedSessions) ? storedPlannedSessions : cloneItems(defaultPlannedSessions)
+  Array.isArray(storedPlannedSessions) ? storedPlannedSessions : []
 ).map(normalizePlan);
 
 const storedRecovery = readStoredJson(recoveryStorageKey, null);
 const storedCustomDrills = readStoredJson(customDrillStorageKey, null);
 const storedReadinessCheckins = readStoredJson(readinessStorageKey, null);
-const initialRecovery = Array.isArray(storedRecovery)
-  ? storedRecovery
-  : cloneItems(defaultRecovery);
+const initialRecovery = Array.isArray(storedRecovery) ? storedRecovery : [];
 const initialCustomDrills = (Array.isArray(storedCustomDrills) ? storedCustomDrills : []).map(
   normalizeCustomDrill
 );
@@ -198,7 +200,9 @@ const normalizeAthleteProfile = (profile = {}) => {
   return {
     ...defaultProfile,
     ...source,
-    name: String(source.name || defaultProfile.name).trim() || defaultProfile.name,
+    name:
+      String(source.name || fitnessIdentity.user?.name || defaultProfile.name).trim() ||
+      defaultProfile.name,
     primarySport,
     activeSports,
     sportPriorities,
@@ -1286,6 +1290,48 @@ const deleteSession = (sessionId) => {
   showToast("Session deleted");
 };
 
+const PRIMARY_VIEWS = ["dashboard", "log", "planner", "progress"];
+
+function setMoreNavOpen(open) {
+  // Exposed for the More disclosure buttons (onclick in app.html).
+  const panel = document.querySelector("#navMore");
+  document.querySelectorAll(".nav-more-toggle").forEach((toggle) => {
+    toggle.setAttribute("aria-expanded", open ? "true" : "false");
+    if (!toggle.querySelector("[data-more-icon]")) {
+      toggle.textContent = open ? "Close" : "More";
+    }
+  });
+  if (!panel) return;
+  panel.classList.toggle("is-open", open);
+  panel.toggleAttribute("hidden", !open);
+  panel.setAttribute("aria-hidden", open ? "false" : "true");
+}
+
+function syncMoreNav(viewId) {
+  const isMore = !PRIMARY_VIEWS.includes(viewId);
+  document.querySelectorAll(".nav-more-toggle").forEach((toggle) => {
+    toggle.classList.toggle("is-current", isMore);
+  });
+  // Never auto-open on first paint / dashboard. Only reveal extra rooms
+  // after the athlete is already in a More destination.
+  if (isMore) setMoreNavOpen(true);
+}
+
+function setupMoreNav() {
+  document.addEventListener("click", (event) => {
+    const toggle = event.target.closest(".nav-more-toggle");
+    if (!toggle) return;
+    event.preventDefault();
+    const panel = document.querySelector("#navMore");
+    setMoreNavOpen(!panel?.classList.contains("is-open"));
+  });
+  document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape") setMoreNavOpen(false);
+  });
+}
+
+window.setMoreNavOpen = setMoreNavOpen;
+
 const setView = (viewId, options = {}) => {
   document.body.dataset.view = viewId;
   document
@@ -1296,11 +1342,15 @@ const setView = (viewId, options = {}) => {
     item.classList.toggle("active", active);
     item.setAttribute("aria-current", active ? "page" : "false");
   });
-  document.querySelectorAll(".bottom-nav-item").forEach((item) => {
+  document.querySelectorAll(".bottom-nav-item[data-view]").forEach((item) => {
     const active = item.dataset.view === viewId;
     item.classList.toggle("active", active);
     item.setAttribute("aria-current", active ? "page" : "false");
   });
+  syncMoreNav(viewId);
+  if (PRIMARY_VIEWS.includes(viewId) && !options.keepMoreOpen) {
+    setMoreNavOpen(false);
+  }
   if (options.focus) {
     const heading = document.querySelector(`#${viewId} h2`);
     heading?.setAttribute("tabindex", "-1");
@@ -1335,10 +1385,12 @@ const renderAll = () => {
   renderImportPreview();
 };
 
+setupMoreNav();
 setupEventListeners();
 renderAll();
 store.subscribe(renderAll);
 setView("dashboard");
+setMoreNavOpen(false);
 applyTemplate(sessionTemplates[0].type);
 
 openAthleteDb()
@@ -1355,6 +1407,8 @@ openAthleteDb()
       "This browser or file mode is using localStorage only. Export JSON for portable backups."
     );
   });
+
+document.body.dataset.fitnessReady = "1";
 
 if ("serviceWorker" in navigator && window.location.protocol !== "file:") {
   navigator.serviceWorker.register("service-worker.js").catch(() => {

@@ -11,6 +11,7 @@
  */
 
 import type { LeagueIndexItem, LeagueSnapshot, Team } from "@/lib/data";
+import { isSeasonPointsScoring } from "@/lib/scoring-type";
 import { buildGameLog, type GameLogRow } from "@/lib/game-log";
 import { gamesForPeriod, isViewerGame, resolvePeriod, periodCount } from "@/lib/matchups";
 import { recordLabel, winPctLabel, injuryTone } from "@/lib/league";
@@ -24,17 +25,32 @@ export function homeAvailableSeasons(index: LeagueIndexItem[]): number[] {
 
 /**
  * Resolve `?season=` for the member home.
- * Invalid / missing → newest year that exists on disk.
+ *
+ * Invalid / missing → the on-disk year with the most league snapshots
+ * (ties go to newest). ESPN hockey years run one calendar year ahead of
+ * NFL/MLB (2026–27 → 2027), so "newest" can be hockey-only while the rest
+ * of the hub is still 2026.
  */
 export function resolveHomeSeason(
   seasons: number[],
   requested: number | undefined,
+  index?: LeagueIndexItem[],
 ): number | null {
   if (!seasons.length) return null;
   if (requested != null && Number.isFinite(requested) && seasons.includes(requested)) {
     return requested;
   }
-  return seasons[0] ?? null;
+  if (!index?.length) return seasons[0] ?? null;
+  let best: number | null = null;
+  let bestCount = -1;
+  for (const year of seasons) {
+    const n = index.filter((item) => item.season === year).length;
+    if (n > bestCount) {
+      best = year;
+      bestCount = n;
+    }
+  }
+  return best;
 }
 
 /** One index row per league that has a snapshot for `season`. */
@@ -95,6 +111,9 @@ export type HomeLeagueCard = {
   next: GameLogRow | null;
   actions: ActionItem[];
   href: string;
+  scoringType?: string | null;
+  /** Season-points / golf season_points — standings are FP, not H2H. */
+  seasonPoints?: boolean;
   /** Football make-playoffs % when a playoff_odds snapshot exists (roadmap 9.4). */
   makePlayoffs?: number | null;
   makePlayoffsDelta?: number | null;
@@ -310,6 +329,12 @@ export function buildLeagueCard(
     next,
     actions: sortActions(actions),
     href: `/leagues/${league.league_id}?season=${league.season}`,
+    scoringType: league.scoring_type ?? league.settings?.scoring_type ?? null,
+    seasonPoints:
+      (league.sport === "golf" && league.format === "season_points") ||
+      isSeasonPointsScoring(
+        league.scoring_type ?? league.settings?.scoring_type,
+      ),
   };
 }
 

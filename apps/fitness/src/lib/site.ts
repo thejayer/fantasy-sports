@@ -6,10 +6,20 @@ export type FitnessSiteConfig = {
   siteUrl: string;
   communitySiteUrl: string;
   fantasyHubUrl: string;
+  discordInviteUrl: string | null;
 };
+
+/** Crew Discord invite — same default as the apex portal. */
+export const DEFAULT_DISCORD_INVITE_URL = "https://discord.gg/6BH4CfB";
 
 function trimTrailingSlash(value: string): string {
   return value.replace(/\/+$/, "");
+}
+
+function optionalUrl(raw: string | undefined): string | null {
+  const value = raw?.trim();
+  if (!value) return null;
+  return trimTrailingSlash(value);
 }
 
 export function getFitnessSiteConfig(): FitnessSiteConfig {
@@ -24,5 +34,7 @@ export function getFitnessSiteConfig(): FitnessSiteConfig {
       process.env.FANTASY_HUB_URL?.trim() ||
         "https://fantasy.strictlyjayers.com",
     ),
+    discordInviteUrl:
+      optionalUrl(process.env.DISCORD_INVITE_URL) || DEFAULT_DISCORD_INVITE_URL,
   };
 }

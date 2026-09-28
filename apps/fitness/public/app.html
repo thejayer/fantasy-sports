@@ -6,7 +6,9 @@
     <meta name="theme-color" content="#ec3013" />
     <title>Fitness · Strictly Jayers</title>
     <link rel="manifest" href="manifest.webmanifest" />
+    <link rel="icon" href="/favicon.ico" sizes="any" />
     <link rel="icon" href="assets/app-icon.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="/apple-icon" />
     <link rel="stylesheet" href="styles.css" />
     <meta name="sj-community" content="https://strictlyjayers.com" />
     <meta name="sj-fantasy" content="https://fantasy.strictlyjayers.com" />
@@ -22,7 +24,7 @@
       })();
     </script>
   </head>
-  <body>
+  <body data-view="dashboard">
     <a class="skip-link" href="#dashboard-title">Skip to main content</a>
     <header class="site-header">
       <a class="sj-brand" data-sj-community href="https://strictlyjayers.com">Strictly Jayers</a>
@@ -30,6 +32,11 @@
         <a data-sj-community href="https://strictlyjayers.com">Community</a>
         <a data-sj-fantasy href="https://fantasy.strictlyjayers.com">Fantasy</a>
         <a href="/" aria-current="page">Fitness</a>
+        <span class="sj-account" id="sjAccount" hidden>
+          <span class="sj-account-name" id="sjAccountName"></span>
+          <button class="sj-sign-out" id="sjSignOut" type="button">Sign out</button>
+        </span>
+        <button class="icon-button header-theme" id="themeToggle" type="button" aria-label="Toggle theme" title="Toggle theme">T</button>
         <span class="accent-picker" id="accentPicker" aria-label="Accent color"></span>
       </nav>
     </header>
@@ -37,9 +44,12 @@
       <p class="hero-kicker">Train</p>
       <h1>Fitness</h1>
       <p>
-        Golf, tennis, pickleball, lifting, and endurance — local-first, installable,
-        offline.
+        Golf, tennis, pickleball, lifting, and endurance — signed in to your
+        profile, installable, offline.
       </p>
+      <div class="hero-cta">
+        <button class="primary-button" data-view-jump="log" type="button">Log session →</button>
+      </div>
     </section>
     <div class="app-shell">
       <aside class="sidebar" aria-label="Primary navigation">
@@ -54,54 +64,61 @@
         </div>
 
         <nav class="nav-list" aria-label="App sections">
-          <button class="nav-item active" data-view="dashboard" type="button">
-            <span class="icon" aria-hidden="true">H</span>
-            Dashboard
-          </button>
-          <button class="nav-item" data-view="log" type="button">
-            <span class="icon" aria-hidden="true">+</span>
-            Log Workout
-          </button>
-          <button class="nav-item" data-view="planner" type="button">
-            <span class="icon" aria-hidden="true">W</span>
-            Planner
-          </button>
-          <button class="nav-item" data-view="calendar" type="button">
-            <span class="icon" aria-hidden="true">C</span>
-            Calendar
-          </button>
-          <button class="nav-item" data-view="goals" type="button">
-            <span class="icon" aria-hidden="true">G</span>
-            Goals
-          </button>
-          <button class="nav-item" data-view="profile" type="button">
-            <span class="icon" aria-hidden="true">U</span>
-            Profile
-          </button>
-          <button class="nav-item" data-view="sports" type="button">
-            <span class="icon" aria-hidden="true">S</span>
-            Sports
-          </button>
-          <button class="nav-item" data-view="gps" type="button">
-            <span class="icon" aria-hidden="true">Y</span>
-            Golf GPS
-          </button>
-          <button class="nav-item" data-view="library" type="button">
-            <span class="icon" aria-hidden="true">L</span>
-            Library
-          </button>
-          <button class="nav-item" data-view="programs" type="button">
-            <span class="icon" aria-hidden="true">P</span>
-            Programs
-          </button>
-          <button class="nav-item" data-view="compare" type="button">
-            <span class="icon" aria-hidden="true">M</span>
-            Compare
-          </button>
-          <button class="nav-item" data-view="progress" type="button">
-            <span class="icon" aria-hidden="true">R</span>
-            Progress
-          </button>
+          <div class="nav-primary">
+            <button class="nav-item active" data-view="dashboard" type="button">
+              <span class="icon" aria-hidden="true">H</span>
+              Dashboard
+            </button>
+            <button class="nav-item" data-view="log" type="button">
+              <span class="icon" aria-hidden="true">+</span>
+              Log
+            </button>
+            <button class="nav-item" data-view="planner" type="button">
+              <span class="icon" aria-hidden="true">W</span>
+              Planner
+            </button>
+            <button class="nav-item" data-view="progress" type="button">
+              <span class="icon" aria-hidden="true">R</span>
+              Progress
+            </button>
+            <button class="nav-more-toggle" id="navMoreToggle" type="button" aria-expanded="false" aria-controls="navMore">
+              More
+            </button>
+          </div>
+          <div class="nav-more" id="navMore" hidden aria-hidden="true">
+            <button class="nav-item" data-view="calendar" type="button">
+              <span class="icon" aria-hidden="true">C</span>
+              Calendar
+            </button>
+            <button class="nav-item" data-view="goals" type="button">
+              <span class="icon" aria-hidden="true">G</span>
+              Goals
+            </button>
+            <button class="nav-item" data-view="profile" type="button">
+              <span class="icon" aria-hidden="true">U</span>
+              Profile
+            </button>
+            <button class="nav-item" data-view="sports" type="button">
+              <span class="icon" aria-hidden="true">S</span>
+              Sports
+            </button>
+            <button class="nav-item" data-view="gps" type="button">
+              <span class="icon" aria-hidden="true">Y</span>
+              Golf GPS
+            </button>
+            <button class="nav-item" data-view="library" type="button">
+              <span class="icon" aria-hidden="true">L</span>
+              Library
+            </button>
+            <button class="nav-item" data-view="programs" type="button">
+              <span class="icon" aria-hidden="true">P</span>
+              Programs
+            </button>
+            <button class="nav-item" data-view="compare" type="button">
+              <span class="icon" aria-hidden="true">M</span>
+              Compare
+            </button>
+          </div>
         </nav>
 
         <section class="sidebar-panel">
@@ -116,36 +133,40 @@
 
       <main class="content">
         <header class="topbar">
-          <div class="topbar-copy">
-            <p class="eyebrow">Today</p>
-            <h2>Hybrid training cockpit</h2>
-          </div>
-          <div class="cockpit-status" aria-label="Current training status">
-            <div>
-              <span>Ready</span>
-              <strong id="topbarReadiness">82</strong>
-            </div>
-            <div>
-              <span>Load</span>
-              <strong id="topbarLoad">7.4h</strong>
-            </div>
-            <div>
-              <span>Focus</span>
-              <strong id="topbarFocus">Golf</strong>
-            </div>
-          </div>
           <div class="top-actions">
-            <button class="icon-button" id="themeToggle" type="button" aria-label="Toggle theme" title="Toggle theme">T</button>
             <button class="ghost-button install-button" id="installApp" type="button" hidden>Install</button>
-            <button class="primary-button" data-view-jump="log" type="button">Log session →</button>
+            <button class="primary-button topbar-log" data-view-jump="log" type="button">Log session →</button>
           </div>
         </header>
 
         <section class="view active" id="dashboard" aria-labelledby="dashboard-title">
+          <section class="today-summary" aria-labelledby="dashboard-title">
+            <p class="eyebrow">Today</p>
+            <h2 id="dashboard-title">Ready to train</h2>
+            <p class="today-lead" id="todayLead">Golf · 7.4h this week · Ready 82</p>
+            <p class="today-next" id="todayNext">Next up: rotational power + shoulder resilience</p>
+            <p class="today-goal" id="todayGoalLine">Increase clubhead speed — 68% toward more speed without losing control.</p>
+            <span id="topbarReadiness" hidden>82</span>
+            <span id="topbarLoad" hidden>7.4h</span>
+            <span id="topbarFocus" hidden>Golf</span>
+          </section>
+
+          <section class="home-log" aria-labelledby="home-log-title">
+            <div class="home-log-head">
+              <div>
+                <p class="eyebrow">Log</p>
+                <h3 id="home-log-title">Last sessions</h3>
+              </div>
+              <button class="ghost-button" data-view-jump="log" type="button">Open log</button>
+            </div>
+            <div class="sport-chips" id="homeSportChips"></div>
+            <div class="home-session-list" id="homeRecentSessions"></div>
+          </section>
+
           <div class="hero-band">
             <div>
               <p class="eyebrow">Training Focus</p>
-              <h2 id="dashboard-title">Build rotational power, quick feet, and durable shoulders.</h2>
+              <h2 id="training-focus-title">Build rotational power, quick feet, and durable shoulders.</h2>
               <p>
                 A weekly plan for golf, tennis, pickleball, lifting, and endurance work without treating every session like the same generic gym entry.
               </p>
@@ -370,6 +391,65 @@
               <button class="primary-button" type="submit">Save profile</button>
             </div>
           </form>
+
+          <section class="panel data-tools-panel">
+            <div class="panel-heading">
+              <div>
+                <p class="eyebrow">Data</p>
+                <h3>Import and export</h3>
+              </div>
+            </div>
+            <div class="data-tools">
+              <article class="persistence-card wide" id="persistenceStatus" aria-live="polite">
+                <span>Storage</span>
+                <strong>Local storage ready</strong>
+                <p>Browser backup is available on this device.</p>
+              </article>
+              <button class="ghost-button" id="exportJson" type="button">Export JSON</button>
+              <button class="ghost-button" id="exportCsv" type="button">Export CSV</button>
+              <label class="wide">
+                Import JSON
+                <textarea id="importJsonText" rows="5" placeholder="Paste a Strictly Jayers Fitness JSON export"></textarea>
+              </label>
+              <button class="primary-button" id="importJson" type="button">Import data</button>
+              <div class="import-mapper hevy-import wide">
+                <div class="hevy-import-copy">
+                  <p class="eyebrow">Hevy</p>
+                  <h4>Import Hevy workouts</h4>
+                  <p>
+                    In Hevy: Profile → Settings → Export &amp; Import Data → Export Workouts → CSV.
+                    Free export — no API key. Workouts land on this signed-in log only.
+                  </p>
+                </div>
+                <label>
+                  Choose CSV
+                  <input id="hevyCsvFile" type="file" accept=".csv,text/csv,text/plain" />
+                </label>
+                <label class="wide">
+                  Or paste Hevy CSV
+                  <textarea id="hevyCsvText" rows="5" placeholder="Paste the Hevy workout CSV export"></textarea>
+                </label>
+                <button class="primary-button" id="importHevy" type="button">Import Hevy CSV</button>
+                <div class="import-preview" id="hevyImportStatus" role="status" aria-live="polite"></div>
+              </div>
+              <div class="import-mapper wide">
+                <label>
+                  Source
+                  <select id="importSource">
+                    <option>Apple Health CSV</option>
+                    <option>Strava CSV</option>
+                    <option>Garmin CSV</option>
+                  </select>
+                </label>
+                <label class="wide">
+                  Activity import preview
+                  <textarea id="importMappingText" rows="5" placeholder="Paste a few CSV rows to preview date, type, duration, distance, and notes mapping"></textarea>
+                </label>
+                <button class="ghost-button" id="previewImportMapping" type="button">Preview mapping</button>
+                <div class="import-preview" id="importPreview" role="status" aria-live="polite"></div>
+              </div>
+            </div>
+          </section>
         </section>
 
         <section class="view" id="sports" aria-labelledby="sports-title">
@@ -540,10 +620,19 @@
             <section class="lift-set-builder wide" id="liftSetBuilder" hidden>
               <div class="panel-heading">
                 <div>
-                  <p class="eyebrow">Strength Detail</p>
-                  <h3>Exercise sets</h3>
+                  <p class="eyebrow">Strength</p>
+                  <h3>Sets</h3>
                 </div>
-                <button class="ghost-button" id="addLiftSet" type="button">Add set</button>
+                <button class="ghost-button" id="addLiftSet" type="button">+ Add set</button>
+              </div>
+              <div class="lift-set-head" aria-hidden="true">
+                <span>Exercise</span>
+                <span>Set</span>
+                <span>Prev</span>
+                <span>Reps</span>
+                <span>Weight</span>
+                <span>RPE</span>
+                <span></span>
               </div>
               <div class="lift-set-list" id="liftSetList"></div>
             </section>
@@ -829,44 +918,6 @@
             </div>
             <div class="insight-list" id="trendReadout"></div>
           </section>
-          <section class="panel data-tools-panel">
-            <div class="panel-heading">
-              <div>
-                <p class="eyebrow">Data</p>
-                <h3>Import and export</h3>
-              </div>
-            </div>
-            <div class="data-tools">
-              <article class="persistence-card wide" id="persistenceStatus" aria-live="polite">
-                <span>Storage</span>
-                <strong>Local storage ready</strong>
-                <p>Browser backup is available on this device.</p>
-              </article>
-              <button class="ghost-button" id="exportJson" type="button">Export JSON</button>
-              <button class="ghost-button" id="exportCsv" type="button">Export CSV</button>
-              <label class="wide">
-                Import JSON
-                <textarea id="importJsonText" rows="5" placeholder="Paste a Strictly Jayers Fitness JSON export"></textarea>
-              </label>
-              <button class="primary-button" id="importJson" type="button">Import data</button>
-              <div class="import-mapper wide">
-                <label>
-                  Source
-                  <select id="importSource">
-                    <option>Apple Health CSV</option>
-                    <option>Strava CSV</option>
-                    <option>Garmin CSV</option>
-                  </select>
-                </label>
-                <label class="wide">
-                  Activity import preview
-                  <textarea id="importMappingText" rows="5" placeholder="Paste a few CSV rows to preview date, type, duration, distance, and notes mapping"></textarea>
-                </label>
-                <button class="ghost-button" id="previewImportMapping" type="button">Preview mapping</button>
-                <div class="import-preview" id="importPreview" role="status" aria-live="polite"></div>
-              </div>
-            </div>
-          </section>
         </section>
       </main>
     </div>
@@ -886,21 +937,13 @@
         <span>W</span>
         Plan
       </button>
-      <button class="bottom-nav-item" data-view="calendar" type="button">
-        <span>C</span>
-        Cal
+      <button class="bottom-nav-item" data-view="progress" type="button">
+        <span>R</span>
+        Progress
       </button>
-      <button class="bottom-nav-item" data-view="goals" type="button">
-        <span>G</span>
-        Goals
-      </button>
-      <button class="bottom-nav-item" data-view="sports" type="button">
-        <span>S</span>
-        Sports
-      </button>
-      <button class="bottom-nav-item" data-view="gps" type="button">
-        <span>Y</span>
-        GPS
+      <button class="bottom-nav-item nav-more-toggle" type="button" aria-expanded="false" aria-controls="navMore">
+        <span data-more-icon>…</span>
+        More
       </button>
     </nav>
 
@@ -912,12 +955,13 @@
     </footer>
     <script src="sj-chrome.js"></script>
     <script src="utils.js"></script>
+    <script src="hevy-import.js"></script>
     <script src="data.js"></script>
     <script src="store.js"></script>
     <script src="timers.js"></script>
     <script src="analytics.js"></script>
     <script src="render.js"></script>
     <script src="events.js"></script>
-    <script src="app.js"></script>
+    <script src="sync.js"></script>
   </body>
 </html>

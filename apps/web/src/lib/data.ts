@@ -3,6 +3,11 @@ import path from "path";
 import { unstable_cache } from "next/cache";
 import { cache } from "react";
 
+import type {
+  BaseballAnalysisSnapshot,
+  PointsTimeseriesSnapshot,
+  SlotPointsSnapshot,
+} from "@/lib/baseball-analysis";
 import { SJ_SNAPSHOTS_CACHE_TAG } from "@/lib/cache-tags";
 import { dataRoots } from "@/lib/hub-paths";
 import { requireSession } from "@/lib/session";
@@ -40,6 +45,22 @@ export type SeasonStats = {
   GS?: number;
   /** Synthetic OWGR rank on golf roster rows (roadmap 6.4b). */
   OWGR?: number;
+  /** Hockey counting stats from espn-api ``Total YYYY`` / STATS_MAP. */
+  G?: number;
+  A?: number;
+  PPP?: number;
+  PPG?: number;
+  PPA?: number;
+  SOG?: number;
+  HIT?: number;
+  BLK?: number;
+  PIM?: number;
+  SO?: number;
+  GA?: number;
+  SA?: number;
+  GAA?: number;
+  "SV%"?: number;
+  "+/-"?: number;
 };
 
 export type Player = {
@@ -244,6 +265,11 @@ export type BoxScorePlayer = {
   projected_points?: number | null;
   injury_status?: string | null;
   game_played?: number | null;
+  /**
+   * Named counting stats for the LM scoring sandbox (roadmap 8.4).
+   * Never display these as the score — ``points`` stays ESPN-applied.
+   */
+  stats?: Record<string, number | null>;
 };
 
 /** One category cell on a baseball H2H category box (roadmap 8.2). */
@@ -323,6 +349,12 @@ export type ProScheduleSnapshot = {
   synced_at?: string;
   matchup_periods?: Record<string, number[]>;
   games: ProScheduleGame[];
+};
+
+export type {
+  BaseballAnalysisSnapshot,
+  PointsTimeseriesSnapshot,
+  SlotPointsSnapshot,
 };
 
 /** Compact FP draws for hub trade Δ (`ffa export-playoff-odds --write-samples`). */
@@ -1123,6 +1155,63 @@ export const getProSchedule = cache(
       }
     }
     return null;
+  },
+);
+
+/**
+ * Season-points analysis under ``{league}/{season}/analysis/``.
+ * Side concern — never assembled into getLeagueSnapshot. Session-gated.
+ * Baseball and hockey Season Points both write the same sidecar names.
+ */
+export const getBaseballAnalysis = cache(
+  async (
+    leagueId: string,
+    season: number,
+  ): Promise<BaseballAnalysisSnapshot> => {
+    await requireSession();
+    const empty: BaseballAnalysisSnapshot = {
+      slotPoints: null,
+      timeseries: null,
+    };
+    const index = await getLeagueIndex();
+    const match = index.find(
+      (item) => item.league_id === leagueId && item.season === season,
+    );
+    if (!match) return empty;
+
+    let slotPoints: SlotPointsSnapshot | null = null;
+    let timeseries: PointsTimeseriesSnapshot | null = null;
+    for (const root of dataRoots()) {
+      const dir = weekBoxScoreDir(match.path);
+      if (!slotPoints) {
+        const doc = await readJson<SlotPointsSnapshot>(
+          path.join(root, dir, "analysis", "slot_points.json"),
+        );
+        if (
+          doc?.league_id === leagueId &&
+          doc.season === season &&
+          (doc.sport === "baseball" || doc.sport === "hockey") &&
+          Array.isArray(doc.teams)
+        ) {
+          slotPoints = doc;
+        }
+      }
+      if (!timeseries) {
+        const doc = await readJson<PointsTimeseriesSnapshot>(
+          path.join(root, dir, "analysis", "points_timeseries.json"),
+        );
+        if (
+          doc?.league_id === leagueId &&
+          doc.season === season &&
+          (doc.sport === "baseball" || doc.sport === "hockey") &&
+          Array.isArray(doc.teams)
+        ) {
+          timeseries = doc;
+        }
+      }
+      if (slotPoints && timeseries) break;
+    }
+    return { slotPoints, timeseries };
   },
 );
 

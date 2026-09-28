@@ -63,7 +63,10 @@ def test_snapshot_matches_serializer_schema(registry):
     assert seeded["short_name"] == spec.short_name
 
 
-@pytest.mark.parametrize("league_id", ["football-main", "football-dynasty", "baseball-dynasty"])
+@pytest.mark.parametrize(
+    "league_id",
+    ["football-main", "football-dynasty", "baseball-dynasty", "hockey-main"],
+)
 def test_seeded_snapshot_shares_schema_with_committed_fixtures(
     registry, league_id, tmp_path: Path
 ):
@@ -234,6 +237,23 @@ def test_baseball_season_points_uses_official_points_for(registry):
     weights = snapshot["settings"]["scoring_format"]
     assert any(row.get("abbr") == "HR" or row.get("id") == 5 for row in weights)
     assert any(row.get("points") == 5.0 for row in weights)
+
+
+def test_hockey_season_points_standings_and_roles(registry):
+    snapshot = sample_snapshot(spec_for(registry, "hockey-main"), 2027, teams=4)
+    assert snapshot["scoring_type"] == "TOTAL_SEASON_POINTS"
+    assert snapshot["season"] == 2027
+    team = snapshot["teams"][0]
+    assert team["points_for"] is not None
+    roster_sum = round(sum(p["total_points"] for p in team["roster"]), 1)
+    assert team["points_for"] != pytest.approx(roster_sum)
+    assert team["points_against"] is None
+    assert team["wins"] == 0 and team["losses"] == 0
+    assert {p["role"] for p in team["roster"]} <= {"skater", "goalie"}
+    points = [t["points_for"] for t in snapshot["teams"]]
+    assert points == sorted(points, reverse=True)
+    weights = snapshot["settings"]["scoring_format"]
+    assert any(row.get("abbr") == "G" for row in weights)
 
 
 def test_win_pct_is_consistent_with_record(registry):
