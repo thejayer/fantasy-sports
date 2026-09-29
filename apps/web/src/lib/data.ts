@@ -10,6 +10,7 @@ import type {
 } from "@/lib/baseball-analysis";
 import { SJ_SNAPSHOTS_CACHE_TAG } from "@/lib/cache-tags";
 import type {
+  HockeyLinesSnapshot,
   HockeyNhlContextSnapshot,
   HockeyNhlSnapshot,
   HockeyPlayerMapSnapshot,
@@ -1229,7 +1230,7 @@ export const getBaseballAnalysis = cache(
 export const getHockeyNhl = cache(
   async (leagueId: string, season: number): Promise<HockeyNhlSnapshot> => {
     await requireSession();
-    const empty: HockeyNhlSnapshot = { playerMap: null, context: null };
+    const empty: HockeyNhlSnapshot = { playerMap: null, context: null, lines: null };
     const index = await getLeagueIndex();
     const match = index.find(
       (item) => item.league_id === leagueId && item.season === season,
@@ -1238,6 +1239,7 @@ export const getHockeyNhl = cache(
 
     let playerMap: HockeyPlayerMapSnapshot | null = null;
     let context: HockeyNhlContextSnapshot | null = null;
+    let lines: HockeyLinesSnapshot | null = null;
     for (const root of dataRoots()) {
       const dir = weekBoxScoreDir(match.path);
       if (!playerMap) {
@@ -1268,9 +1270,24 @@ export const getHockeyNhl = cache(
           context = doc;
         }
       }
-      if (playerMap && context) break;
+      if (!lines) {
+        // H4 Daily Faceoff lines; refreshed by the afternoon `sj nhl-lines` job.
+        const doc = await readJson<HockeyLinesSnapshot>(
+          path.join(root, dir, "nhl", "lines.json"),
+        );
+        if (
+          doc?.league_id === leagueId &&
+          doc.season === season &&
+          doc.sport === "hockey" &&
+          doc.players &&
+          typeof doc.players === "object"
+        ) {
+          lines = doc;
+        }
+      }
+      if (playerMap && context && lines) break;
     }
-    return { playerMap, context };
+    return { playerMap, context, lines };
   },
 );
 

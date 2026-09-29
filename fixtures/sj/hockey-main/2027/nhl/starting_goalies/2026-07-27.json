@@ -1,0 +1,16 @@
+{
+  "date": "2026-07-27",
+  "errors": [
+    "dfo DET: no lineup found on the page",
+    "dfo NYR: no lineup found on the page",
+    "dfo SEA: no lineup found on the page"
+  ],
+  "games": [],
+  "generated_at": "2026-07-27T00:00:00+00:00",
+  "league_id": "hockey-main",
+  "nhl_season": "20262027",
+  "schema_version": 1,
+  "season": 2027,
+  "source": "dailyfaceoff.com",
+  "sport": "hockey"
+}

@@ -321,6 +321,7 @@ def nhl_cmd(
     ``sj sync`` already runs this for the current hockey season unless
     ``SJ_NHL_SYNC=0``.
     """
+    from nhl.dfo import DfoClient, dfo_sync_enabled
     from nhl.export import export_nhl
     from sj.store import read_snapshot
 
@@ -340,7 +341,10 @@ def nhl_cmd(
         year = season if season is not None else spec.current_season
         try:
             snapshot = read_snapshot(spec.id, year, store_dir=store_dir)
-            result = export_nhl(snapshot, store_dir=store_dir, fail_below=fail_below)
+            dfo = DfoClient() if dfo_sync_enabled() else None
+            result = export_nhl(
+                snapshot, store_dir=store_dir, fail_below=fail_below, dfo=dfo
+            )
         except Exception as exc:  # noqa: BLE001 - report per league
             typer.echo(f"failed {spec.id} {year}: {exc}", err=True)
             failed = True
@@ -357,6 +361,64 @@ def nhl_cmd(
             typer.echo(f"  warn: {error}", err=True)
     if wrote:
         typer.echo(f"hub revalidate: {notify_hub_revalidate()}")
+    if failed:
+        raise typer.Exit(code=1)
+
+
+@app.command("nhl-lines")
+def nhl_lines_cmd(
+    league: list[str] | None = typer.Option(
+        None, "--league", "-l", help="League id (repeatable). Default: hockey leagues."
+    ),
+    store_dir: Path | None = typer.Option(
+        None, help="Write to this directory instead of the configured store."
+    ),
+    registry: Path | None = typer.Option(None, help="Path to leagues.yaml"),
+) -> None:
+    """Refresh Daily Faceoff lines + starting goalies only (HOCKEY-PORT.md H4).
+
+    Light job for the late afternoon (goalie confirmations land after the 6:00
+    sync): 32 NHL roster reads + 32 Daily Faceoff team pages + 3 goalie pages,
+    written to ``nhl/lines.json`` and ``nhl/starting_goalies/{date}.json`` for
+    each hockey league's current season. No ESPN cookies needed. Values are
+    left as the morning sync wrote them.
+    """
+    from nhl.dfo import DfoClient, dfo_sync_enabled
+    from nhl.export import export_lines
+    from nhl.nhl_api import NHLClient
+
+    if not dfo_sync_enabled():
+        typer.echo("SJ_DFO_SYNC is off; nothing to do")
+        return
+    typer.echo(f"store: {describe_store(store_dir)}")
+    reg = load_registry(registry)
+    selected = [lg for lg in reg.leagues if lg.sport == "hockey"]
+    if league:
+        selected = [lg for lg in selected if lg.id in set(league)]
+    if not selected:
+        typer.echo("error: no hockey leagues selected", err=True)
+        raise typer.Exit(code=1)
+    # One set of page reads serves every hockey league.
+    client, dfo = NHLClient(), DfoClient()
+    failed = False
+    for spec in selected:
+        try:
+            docs = export_lines(spec.id, spec.current_season, client=client, dfo=dfo,
+                                store_dir=store_dir)
+        except Exception as exc:  # noqa: BLE001
+            typer.echo(f"failed {spec.id}: {exc}", err=True)
+            failed = True
+            continue
+        lines = docs["lines"]
+        dates = sorted(k.split("/", 1)[1] for k in docs if k.startswith("starting_goalies/"))
+        typer.echo(
+            f"lines {spec.id} {spec.current_season}: {len(lines['teams'])} clubs, "
+            f"{len(lines['players'])} players, goalies {', '.join(dates)}, "
+            f"{len(lines['errors'])} errors"
+        )
+        for error in lines["errors"][:10]:
+            typer.echo(f"  warn: {error}", err=True)
+    typer.echo(f"hub revalidate: {notify_hub_revalidate()}")
     if failed:
         raise typer.Exit(code=1)
 

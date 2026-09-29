@@ -12,10 +12,12 @@ fixture exercises every match method and a non-empty ``unmatched`` list.
 from __future__ import annotations
 
 import datetime as dt
+import json
 import random
 import re
 from typing import Any
 
+from nhl.dfo import DfoClient, team_slug
 from nhl.export import build_nhl_documents, espn_players
 from nhl.match import grp, norm
 from nhl.nhl_api import SEARCH, STATS, WEB, NHLClient, prior_season_ids, season_id
@@ -232,17 +234,88 @@ class SampleNhl:
         return hits
 
 
+class SampleDfo:
+    """Synthetic Daily Faceoff pages (H4) for the :class:`SampleNhl` rosters.
+
+    Serves ``__NEXT_DATA__`` HTML in the live page shape: forwards in lines of
+    three, defense in pairs, PP1/PP2, goalies, one day-to-day tag per club,
+    and starting goalies for the sample slate.
+    """
+
+    def __init__(self, nhl: SampleNhl) -> None:
+        self.nhl = nhl
+        self.by_team: dict[str, list[dict[str, Any]]] = {}
+        for pid in sorted(nhl.roster_ids):
+            p = nhl.players[pid]
+            self.by_team.setdefault(p["team"], []).append(p)
+        self.slug_to_team = {team_slug(NHL_NAMES[t]): t for t in NHL_ABBREVS}
+
+    @staticmethod
+    def _html(page_props: dict[str, Any]) -> str:
+        data = json.dumps({"props": {"pageProps": page_props}})
+        return f'<html><body><script id="__NEXT_DATA__" type="application/json">{data}</script></body></html>'
+
+    def _team(self, abbrev: str) -> str:
+        roster = self.by_team.get(abbrev, [])
+        fwd = [p for p in roster if p["pos"] not in {"D", "G"}]
+        dmen = [p for p in roster if p["pos"] == "D"]
+        goalies = [p for p in roster if p["pos"] == "G"]
+
+        def row(p: dict[str, Any], group: str, category: str, injury: str | None = None) -> dict:
+            return {"name": f"{p['first']} {p['last']}", "groupIdentifier": group,
+                    "categoryIdentifier": category, "injuryStatus": injury,
+                    "gameTimeDecision": False}
+
+        players = [row(p, f"f{i // 3 + 1}", "ev") for i, p in enumerate(fwd[:12])]
+        players += [row(p, f"d{i // 2 + 1}", "ev") for i, p in enumerate(dmen[:6])]
+        players += [row(p, "g", "ev") for p in goalies[:2]]
+        unit1 = fwd[:4] + dmen[:1]
+        unit2 = fwd[4:8] + dmen[1:2]
+        players += [row(p, "pp1", "pp") for p in unit1] + [row(p, "pp2", "pp") for p in unit2]
+        if fwd:
+            players[len(fwd[:12]) - 1]["injuryStatus"] = "dtd"
+        return self._html({"combinations": {
+            "teamAbbreviation": abbrev, "sourceName": "DFO Projections",
+            "updatedAt": f"{self.nhl.season - 1}-10-01T12:00:00.000Z", "players": players,
+        }})
+
+    def _goalies(self, day: str) -> str:
+        rows = []
+        for i, g in enumerate(x for x in self.nhl.slate if x["gameDate"] == day):
+            home, away = g["homeTeam"]["abbrev"], g["awayTeam"]["abbrev"]
+            row: dict[str, Any] = {"date": day, "time": "19:00",
+                                   "homeTeamName": NHL_NAMES[home], "awayTeamName": NHL_NAMES[away]}
+            for side, team in (("home", home), ("away", away)):
+                starters = [p for p in self.by_team.get(team, []) if p["pos"] == "G"]
+                row[f"{side}GoalieName"] = (
+                    f"{starters[0]['first']} {starters[0]['last']}" if starters else None
+                )
+                row[f"{side}NewsStrengthName"] = ("Confirmed", "Likely", None)[i % 3]
+            rows.append(row)
+        return self._html({"data": rows, "date": day})
+
+    def __call__(self, url: str) -> str:
+        if "/line-combinations" in url:
+            slug = url.split("/teams/")[1].split("/")[0]
+            return self._team(self.slug_to_team[slug])
+        if "/starting-goalies/" in url:
+            return self._goalies(url.rsplit("/", 1)[1])
+        raise KeyError(f"sample Daily Faceoff has no route for {url}")
+
+
 def sample_nhl_documents(
     snapshot: dict[str, Any], *, generated_at: str
 ) -> dict[str, dict[str, Any]]:
-    """The four H1 documents for a synthetic hockey snapshot."""
+    """The NHL + Daily Faceoff documents for a synthetic hockey snapshot."""
     as_of = dt.datetime.fromisoformat(generated_at.replace("Z", "+00:00")).date()
+    nhl = SampleNhl(snapshot)
     result = build_nhl_documents(
         snapshot,
-        NHLClient(fetch=SampleNhl(snapshot), throttle=0.0),
+        NHLClient(fetch=nhl, throttle=0.0),
         as_of=as_of,
         generated_at=generated_at,
         search_max=200,
         landing_max=200,
+        dfo=DfoClient(fetch=SampleDfo(nhl), throttle=0.0),
     )
     return result.documents

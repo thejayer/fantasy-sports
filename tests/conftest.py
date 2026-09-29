@@ -15,6 +15,7 @@ def _offline_nhl(monkeypatch):
     the hook with ``monkeypatch.setenv("SJ_NHL_SYNC", "1")`` plus a fake.
     """
     monkeypatch.setenv("SJ_NHL_SYNC", "0")
+    monkeypatch.setenv("SJ_DFO_SYNC", "0")  # never reach Daily Faceoff either
 
 
 @pytest.fixture

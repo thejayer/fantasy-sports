@@ -121,6 +121,15 @@ totals. The hub does **not** invent player week lines ESPN omitted, and does
   on short streaks, more on this season, faster-decaying history, role
   adjustment off) cut error 15% on held-out seasons and ship as the defaults.
   The board shows the shipped model's typical miss per game by position.
+- **H4 (landed): Daily Faceoff lines + starting goalies.** The same sync step
+  (unless `SJ_DFO_SYNC=0`) reads the 32 clubs' Daily Faceoff line-combination
+  pages and the next three days of starting goalies, matches names to NHL ids,
+  and writes `nhl/lines.json` + `nhl/starting_goalies/{date}.json`; published
+  lines / PP units replace the ice-time role estimate. A light `sj nhl-lines`
+  job (Cloud Scheduler `sj-hockey-lines-1500` / `-1730`, Central) refreshes
+  just lines + goalies after confirmations land. Roster and Waivers show
+  **Role** (with possible-scratch / injury flags), **PP** (links to the club's
+  Daily Faceoff page) and **Linemates**.
 - The hockey **`projections` tab** is the values board: value, ROS, ESPN
   per-game, share played, age, data-source tag, a recent-form setting
   (`?recent=0…1`, re-blended from saved inputs in `lib/hockey-values.ts`),

@@ -51,8 +51,8 @@ concern beside baseball's `analysis/`, not in `manifest.files`, no index upsert)
 | `schedule.json`                 | H1         | team schedules, back-to-backs                          |
 | `team_strength.json`            | H1         | GF/GA/SF/SA per game, PK%, blended with last season    |
 | `values.json`                   | H2–H3 ✓    | value, breakdown, durability, ROS projection per player|
-| `lines.json`                    | H4         | lines, pairs, PP1/PP2, linemates, source date          |
-| `starting_goalies/{date}.json`  | H4         | Confirmed / Likely / Unconfirmed per game              |
+| `lines.json`                    | H4 ✓       | lines, pairs, PP1/PP2, linemates, source date          |
+| `starting_goalies/{date}.json`  | H4 ✓       | Confirmed / Likely / Unconfirmed per game              |
 | `injury_log.json`               | H6         | status history (ESPN + DFO), transitions               |
 | `ownership.json`                | H7         | ESPN and Yahoo % rostered + recent change              |
 
@@ -217,7 +217,7 @@ GP counts when 20–84. Goalies use their share of the club's starts from
 not clamped to 50% — a backup really does play ~30%. Remaining games come from
 `schedule.json` (team games on or after the sync date).
 
-### H4: Daily Faceoff lineups + starting goalies
+### H4: Daily Faceoff lineups + starting goalies — LANDED
 
 - Team pages (`/teams/{slug}/line-combinations`): forward lines, D pairs, PP1
   and PP2, goalies, injuries. Parse the embedded `__NEXT_DATA__` JSON first,
@@ -230,6 +230,37 @@ not clamped to 50% — a backup really does play ~30%. Remaining games come from
   Central) that refreshes lines + goalies only. Be polite: 32 team pages at
   most every few hours, one goalie page per date.
 - **UI:** Role and PP columns (PP links to the team's DFO page), Linemates.
+
+**Landed as:** `src/nhl/dfo.py` (pages + parsers) and `src/nhl/lineups.py`
+(matching + artifacts). Daily Faceoff's team pages embed
+`combinations.players`, each with a `groupIdentifier` (`f1`–`f4`, `d1`–`d3`,
+`pp1`/`pp2`, `pk1`/`pk2`, `g`, `ir`), an `injuryStatus` and the page's
+`updatedAt`; goalie pages embed `data` rows with home/away goalie names and a
+news strength (Confirmed / Likely / none → Unconfirmed). A visible-section
+fallback covers pages without the JSON. Names are matched to NHL ids within
+each club's roster (goalie pages: the club's goalies).
+
+- `sj sync` (current hockey season) and `sj nhl` include Daily Faceoff unless
+  `SJ_DFO_SYNC=0`; its line/PP beat the ice-time role in `nhl_context`
+  (`role.basis = "Daily Faceoff"`), and each player gains a `dfo` block
+  (PK unit, linemates, injury, game-time decision, possible scratch, team URL;
+  goalies: depth and upcoming starts). Values use the new role for the
+  role-estimate fallback; the role *adjustment* stays off per H2b.
+- Artifacts: `nhl/lines.json` (per club + per NHL player, plus a goalie-start
+  index) and `nhl/starting_goalies/{date}.json` (today … +2).
+- Possible scratch: on the club's NHL roster, not listed and not injured, only
+  when the lineup is full (15+ matched players) — for the next game.
+- Light job: `sj nhl-lines` (no ESPN cookies) refreshes just lines + goalies;
+  `scripts/setup-sync-infra.sh` adds Cloud Scheduler triggers
+  `sj-hockey-lines-1500` / `-1730` (America/Chicago) that run the `sj-sync`
+  job with args `nhl-lines` (`SJ_HOCKEY_LINES=0` skips).
+- Politeness: honest User-Agent, `SJ_DFO_THROTTLE` (default 2s) between pages,
+  32 team pages + 3 goalie pages per run; robots.txt allows these paths
+  (it disallows `/api/` and `/cms/`). Austin approved scheduled reads.
+- Hub: roster and Waivers gain **Role** (with possible-scratch / injury
+  flags), **PP** (links to the club's Daily Faceoff page), **Linemates**;
+  `getHockeyNhl` also reads `lines.json` and prefers it over the morning
+  context, so the afternoon refresh shows up without a full sync.
 
 ### H5: decision tools (hockey `tools` tab)
 
@@ -305,8 +336,9 @@ color, 6'3"+ bold magenta name, 🦾 iron man.
 
 ## Open questions
 
-- Daily Faceoff: confirm they're fine with a few scheduled reads a day, or
-  source lines another way.
+- ~~Daily Faceoff: confirm they're fine with a few scheduled reads a day, or
+  source lines another way.~~ Austin approved; robots.txt allows the pages.
+  Reads stay light (see H4).
 - Should hockey tools be member-only (franchise link required) or visible to
   everyone for every team?
 - ~~Backtest before or after shipping the projections tab?~~ After: H2/H3

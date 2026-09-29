@@ -7,6 +7,8 @@ import {
   formatHeight,
   formatMinutes,
   formatWhole,
+  ppLabel,
+  roleLabel,
   teamLabel,
   toiTitle,
   type HockeyBioIndex,
@@ -52,6 +54,37 @@ function hockeyColumns(bios: HockeyBioIndex): DataTableColumn<Player>[] {
         const label = teamLabel(bio(row));
         return <span title={label.title}>{label.text}</span>;
       },
+    },
+    {
+      id: "role",
+      header: "Role",
+      sortable: true,
+      sortValue: (row) => bio(row)?.role ?? null,
+      cell: (row) => {
+        const label = roleLabel(bio(row));
+        return <span title={label.title}>{label.text}</span>;
+      },
+    },
+    {
+      id: "pp_unit",
+      header: "PP",
+      sortable: true,
+      sortValue: (row) => bio(row)?.pp ?? null,
+      cell: (row) => {
+        const pp = ppLabel(bio(row));
+        return pp.href ? (
+          <a href={pp.href} target="_blank" rel="noopener noreferrer" title="Daily Faceoff lines">
+            {pp.text}
+          </a>
+        ) : (
+          pp.text
+        );
+      },
+    },
+    {
+      id: "linemates",
+      header: "Linemates",
+      cell: (row) => bio(row)?.linemates.join(", ") || "—",
     },
     {
       id: "ev_min",

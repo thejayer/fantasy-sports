@@ -1,0 +1,2661 @@
+{
+  "errors": [
+    "dfo DET: no lineup found on the page",
+    "dfo NYR: no lineup found on the page",
+    "dfo SEA: no lineup found on the page"
+  ],
+  "generated_at": "2026-07-27T00:00:00+00:00",
+  "goalie_starts": {},
+  "league_id": "hockey-main",
+  "nhl_season": "20262027",
+  "players": {
+    "8470000": {
+      "goalie_depth": null,
+      "gtd": false,
+      "injury": null,
+      "line": "Line 1",
+      "linemates": [
+        "Jeremy Hernandez"
+      ],
+      "pk": null,
+      "possible_scratch": false,
+      "pp": "PP1",
+      "team": "ANA",
+      "team_url": "https://www.dailyfaceoff.com/teams/anaheim-ducks/line-combinations"
+    },
+    "8470001": {
+      "goalie_depth": null,
+      "gtd": false,
+      "injury": null,
+      "line": "Line 1",
+      "linemates": [
+        "Andrew Lopez",
+        "Russell Cooper"
+      ],
+      "pk": null,
+      "possible_scratch": false,
+      "pp": "PP1",
+      "team": "SJS",
+      "team_url": "https://www.dailyfaceoff.com/teams/san-jose-sharks/line-combinations"
+    },
+    "8470002": {
+      "goalie_depth": null,
+      "gtd": false,
+      "injury": null,
+      "line": "Line 1",
+      "linemates": [
+        "Elijah Wilson",
+        "C. Richardson"
+      ],
+      "pk": null,
+      "possible_scratch": false,
+      "pp": "PP1",
+      "team": "PIT",
+      "team_url": "https://www.dailyfaceoff.com/teams/pittsburgh-penguins/line-combinations"
+    },
+    "8470003": {
+      "goalie_depth": null,
+      "gtd": false,
+      "injury": null,
+      "line": "Line 1",
+      "linemates": [
+        "C. Hill",
+        "Jacob Rodriguez"
+      ],
+      "pk": null,
+      "possible_scratch": false,
+      "pp": "PP1",
+      "team": "WSH",
+      "team_url": "https://www.dailyfaceoff.com/teams/washington-capitals/line-combinations"
+    },
+    "8470004": {
+      "goalie_depth": null,
+      "gtd": false,
+      "injury": null,
+      "line": "Line 1",
+      "linemates": [
+        "Henry Lee"
+      ],
+      "pk": null,
+      "possible_scratch": false,
+      "pp": "PP1",
+      "team": "CHI",
+      "team_url": "https://www.dailyfaceoff.com/teams/chicago-blackhawks/line-combinations"
+    },
+    "8470005": {
+      "goalie_depth": null,
+      "gtd": false,
+      "injury": null,
+      "line": "Line 1",
+      "linemates": [
+        "D. Robinson"
+      ],
+      "pk": null,
+      "possible_scratch": false,
+      "pp": "PP1",
+      "team": "BUF",
+      "team_url": "https://www.dailyfaceoff.com/teams/buffalo-sabres/line-combinations"
+    },
+    "8470006": {
+      "goalie_depth": null,
+      "gtd": false,
+      "injury": "dtd",
+      "line": "Line 1",
+      "linemates": [],
+      "pk": null,
+      "possible_scratch": false,
+      "pp": "PP1",
+      "team": "OTT",
+      "team_url": "https://www.dailyfaceoff.com/teams/ottawa-senators/line-combinations"
+    },
+    "8470007": {
+      "goalie_depth": null,
+      "gtd": false,
+      "injury": null,
+      "line": "Line 1",
+      "linemates": [
+        "Scott Myers",
+        "Michael Johnson"
+      ],
+      "pk": null,
+      "possible_scratch": false,
+      "pp": "PP1",
+      "team": "FLA",
+      "team_url": "https://www.dailyfaceoff.com/teams/florida-panthers/line-combinations"
+    },
+    "8470009": {
+      "goalie_depth": null,
+      "gtd": false,
+      "injury": null,
+      "line": "Pair 1",
+      "linemates": [
+        "Charles Ramos"
+      ],
+      "pk": null,
+      "possible_scratch": false,
+      "pp": "PP1",
+      "team": "EDM",
+      "team_url": "https://www.dailyfaceoff.com/teams/edmonton-oilers/line-combinations"
+    },
+    "8470010": {
+      "goalie_depth": null,
+      "gtd": false,
+      "injury": null,
+      "line": "Pair 1",
+      "linemates": [
+        "Albert Miller"
+      ],
+      "pk": null,
+      "possible_scratch": false,
+      "pp": "PP1",
+      "team": "COL",
+      "team_url": "https://www.dailyfaceoff.com/teams/colorado-avalanche/line-combinations"
+    },
+    "8470011": {
+      "goalie_depth": null,
+      "gtd": false,
+      "injury": null,
+      "line": "Pair 1",
+      "linemates": [
+        "Adam Brooks"
+      ],
+      "pk": null,
+      "possible_scratch": false,
+      "pp": "PP1",
+      "team": "ANA",
+      "team_url": "https://www.dailyfaceoff.com/teams/anaheim-ducks/line-combinations"
+    },
+    "8470012": {
+      "goalie_depth": null,
+      "gtd": false,
+      "injury": null,
+      "line": "Pair 1",
+      "linemates": [
+        "Wayne Campbell"
+      ],
+      "pk": null,
+      "possible_scratch": false,
+      "pp": "PP1",
+      "team": "MTL",
+      "team_url": "https://www.dailyfaceoff.com/teams/montreal-canadiens/line-combinations"
+    },
+    "8470014": {
+      "goalie_depth": null,
+      "gtd": false,
+      "injury": null,
+      "line": "Line 1",
+      "linemates": [
+        "Arthur Garcia",
+        "Russell Cooper"
+      ],
+      "pk": null,
+      "possible_scratch": false,
+      "pp": "PP1",
+      "team": "SJS",
+      "team_url": "https://www.dailyfaceoff.com/teams/san-jose-sharks/line-combinations"
+    },
+    "8470015": {
+      "goalie_depth": 1,
+      "gtd": false,
+      "injury": null,
+      "line": null,
+      "linemates": [],
+      "pk": null,
+      "possible_scratch": false,
+      "pp": null,
+      "team": "FLA",
+      "team_url": "https://www.dailyfaceoff.com/teams/florida-panthers/line-combinations"
+    },
+    "8470016": {
+      "goalie_depth": 1,
+      "gtd": false,
+      "injury": null,
+      "line": null,
+      "linemates": [],
+      "pk": null,
+      "possible_scratch": false,
+      "pp": null,
+      "team": "LAK",
+      "team_url": "https://www.dailyfaceoff.com/teams/los-angeles-kings/line-combinations"
+    },
+    "8470017": {
+      "goalie_depth": null,
+      "gtd": false,
+      "injury": "dtd",
+      "line": "Line 1",
+      "linemates": [],
+      "pk": null,
+      "possible_scratch": false,
+      "pp": "PP1",
+      "team": "NYI",
+      "team_url": "https://www.dailyfaceoff.com/teams/new-york-islanders/line-combinations"
+    },
+    "8470018": {
+      "goalie_depth": 1,
+      "gtd": false,
+      "injury": null,
+      "line": null,
+      "linemates": [],
+      "pk": null,
+      "possible_scratch": false,
+      "pp": null,
+      "team": "EDM",
+      "team_url": "https://www.dailyfaceoff.com/teams/edmonton-oilers/line-combinations"
+    },
+    "8470019": {
+      "goalie_depth": null,
+      "gtd": false,
+      "injury": null,
+      "line": "Line 1",
+      "linemates": [
+        "Douglas Taylor"
+      ],
+      "pk": null,
+      "possible_scratch": false,
+      "pp": "PP1",
+      "team": "UTA",
+      "team_url": "https://www.dailyfaceoff.com/teams/utah-mammoth/line-combinations"
+    },
+    "8470020": {
+      "goalie_depth": null,
+      "gtd": false,
+      "injury": null,
+      "line": "Line 1",
+      "linemates": [
+        "Peter Rogers",
+        "Jesse Allen"
+      ],
+      "pk": null,
+      "possible_scratch": false,
+      "pp": "PP1",
+      "team": "CGY",
+      "team_url": "https://www.dailyfaceoff.com/teams/calgary-flames/line-combinations"
+    },
+    "8470021": {
+      "goalie_depth": 1,
+      "gtd": false,
+      "injury": null,
+      "line": null,
+      "linemates": [],
+      "pk": null,
+      "possible_scratch": false,
+      "pp": null,
+      "team": "NSH",
+      "team_url": "https://www.dailyfaceoff.com/teams/nashville-predators/line-combinations"
+    },
+    "8470022": {
+      "goalie_depth": null,
+      "gtd": false,
+      "injury": null,
+      "line": "Line 1",
+      "linemates": [
+        "Randy Castillo",
+        "Michael Johnson"
+      ],
+      "pk": null,
+      "possible_scratch": false,
+      "pp": "PP1",
+      "team": "FLA",
+      "team_url": "https://www.dailyfaceoff.com/teams/florida-panthers/line-combinations"
+    },
+    "8470023": {
+      "goalie_depth": 1,
+      "gtd": false,
+      "injury": null,
+      "line": null,
+      "linemates": [],
+      "pk": null,
+      "possible_scratch": false,
+      "pp": null,
+      "team": "SJS",
+      "team_url": "https://www.dailyfaceoff.com/teams/san-jose-sharks/line-combinations"
+    },
+    "8470024": {
+      "goalie_depth": 1,
+      "gtd": false,
+      "injury": null,
+      "line": null,
+      "linemates": [],
+      "pk": null,
+      "possible_scratch": false,
+      "pp": null,
+      "team": "WSH",
+      "team_url": "https://www.dailyfaceoff.com/teams/washington-capitals/line-combinations"
+    },
+    "8470026": {
+      "goalie_depth": null,
+      "gtd": false,
+      "injury": null,
+      "line": "Pair 1",
+      "linemates": [
+        "Paul Baker"
+      ],
+      "pk": null,
+      "possible_scratch": false,
+      "pp": "PP1",
+      "team": "STL",
+      "team_url": "https://www.dailyfaceoff.com/teams/st-louis-blues/line-combinations"
+    },
+    "8470027": {
+      "goalie_depth": null,
+      "gtd": false,
+      "injury": null,
+      "line": "Line 1",
+      "linemates": [
+        "Keith Adams",
+        "Jacob Rodriguez"
+      ],
+      "pk": null,
+      "possible_scratch": false,
+      "pp": "PP1",
+      "team": "WSH",
+      "team_url": "https://www.dailyfaceoff.com/teams/washington-capitals/line-combinations"
+    },
+    "8470028": {
+      "goalie_depth": null,
+      "gtd": false,
+      "injury": null,
+      "line": "Line 1",
+      "linemates": [
+        "Kyle Gonzalez",
+        "Jesse Allen"
+      ],
+      "pk": null,
+      "possible_scratch": false,
+      "pp": "PP1",
+      "team": "CGY",
+      "team_url": "https://www.dailyfaceoff.com/teams/calgary-flames/line-combinations"
+    },
+    "8470029": {
+      "goalie_depth": null,
+      "gtd": false,
+      "injury": null,
+      "line": "Line 1",
+      "linemates": [
+        "David Jackson"
+      ],
+      "pk": null,
+      "possible_scratch": false,
+      "pp": "PP1",
+      "team": "PHI",
+      "team_url": "https://www.dailyfaceoff.com/teams/philadelphia-flyers/line-combinations"
+    },
+    "8470030": {
+      "goalie_depth": null,
+      "gtd": false,
+      "injury": "dtd",
+      "line": "Line 1",
+      "linemates": [],
+      "pk": null,
+      "possible_scratch": false,
+      "pp": "PP1",
+      "team": "DAL",
+      "team_url": "https://www.dailyfaceoff.com/teams/dallas-stars/line-combinations"
+    },
+    "8470031": {
+      "goalie_depth": null,
+      "gtd": false,
+      "injury": null,
+      "line": "Line 1",
+      "linemates": [
+        "Jason Perez",
+        "Gary Edwards"
+      ],
+      "pk": null,
+      "possible_scratch": false,
+      "pp": "PP1",
+      "team": "VAN",
+      "team_url": "https://www.dailyfaceoff.com/teams/vancouver-canucks/line-combinations"
+    },
+    "8470032": {
+      "goalie_depth": null,
+      "gtd": false,
+      "injury": null,
+      "line": "Line 1",
+      "linemates": [
+        "Jordan Wood",
+        "Gary Edwards"
+      ],
+      "pk": null,
+      "possible_scratch": false,
+      "pp": "PP1",
+      "team": "VAN",
+      "team_url": "https://www.dailyfaceoff.com/teams/vancouver-canucks/line-combinations"
+    },
+    "8470033": {
+      "goalie_depth": null,
+      "gtd": false,
+      "injury": "dtd",
+      "line": "Line 1",
+      "linemates": [],
+      "pk": null,
+      "possible_scratch": false,
+      "pp": "PP1",
+      "team": "MIN",
+      "team_url": "https://www.dailyfaceoff.com/teams/minnesota-wild/line-combinations"
+    },
+    "8470034": {
+      "goalie_depth": null,
+      "gtd": false,
+      "injury": "dtd",
+      "line": "Line 1",
+      "linemates": [],
+      "pk": null,
+      "possible_scratch": false,
+      "pp": "PP1",
+      "team": "LAK",
+      "team_url": "https://www.dailyfaceoff.com/teams/los-angeles-kings/line-combinations"
+    },
+    "8470035": {
+      "goalie_depth": null,
+      "gtd": false,
+      "injury": null,
+      "line": "Line 1",
+      "linemates": [
+        "Nathan Hall"
+      ],
+      "pk": null,
+      "possible_scratch": false,
+      "pp": "PP1",
+      "team": "EDM",
+      "team_url": "https://www.dailyfaceoff.com/teams/edmonton-oilers/line-combinations"
+    },
+    "8470036": {
+      "goalie_depth": null,
+      "gtd": false,
+      "injury": null,
+      "line": "Pair 1",
+      "linemates": [
+        "Ethan Roberts"
+      ],
+      "pk": null,
+      "possible_scratch": false,
+      "pp": "PP2",
+      "team": "STL",
+      "team_url": "https://www.dailyfaceoff.com/teams/st-louis-blues/line-combinations"
+    },
+    "8470037": {
+      "goalie_depth": null,
+      "gtd": false,
+      "injury": null,
+      "line": "Pair 1",
+      "linemates": [
+        "Bradley Lewis"
+      ],
+      "pk": null,
+      "possible_scratch": false,
+      "pp": "PP2",
+      "team": "COL",
+      "team_url": "https://www.dailyfaceoff.com/teams/colorado-avalanche/line-combinations"
+    },
+    "8470038": {
+      "goalie_depth": null,
+      "gtd": false,
+      "injury": null,
+      "line": "Pair 1",
+      "linemates": [
+        "N. Wright"
+      ],
+      "pk": null,
+      "possible_scratch": false,
+      "pp": "PP1",
+      "team": "NJD",
+      "team_url": "https://www.dailyfaceoff.com/teams/new-jersey-devils/line-combinations"
+    },
+    "8470039": {
+      "goalie_depth": null,
+      "gtd": false,
+      "injury": null,
+      "line": "Pair 1",
+      "linemates": [],
+      "pk": null,
+      "possible_scratch": false,
+      "pp": "PP1",
+      "team": "WSH",
+      "team_url": "https://www.dailyfaceoff.com/teams/washington-capitals/line-combinations"
+    },
+    "8470040": {
+      "goalie_depth": null,
+      "gtd": false,
+      "injury": null,
+      "line": "Pair 1",
+      "linemates": [
+        "Christopher Patel"
+      ],
+      "pk": null,
+      "possible_scratch": false,
+      "pp": "PP2",
+      "team": "ANA",
+      "team_url": "https://www.dailyfaceoff.com/teams/anaheim-ducks/line-combinations"
+    },
+    "8470041": {
+      "goalie_depth": null,
+      "gtd": false,
+      "injury": "dtd",
+      "line": "Line 1",
+      "linemates": [
+        "Arthur Garcia",
+        "Andrew Lopez"
+      ],
+      "pk": null,
+      "possible_scratch": false,
+      "pp": "PP1",
+      "team": "SJS",
+      "team_url": "https://www.dailyfaceoff.com/teams/san-jose-sharks/line-combinations"
+    },
+    "8470043": {
+      "goalie_depth": 2,
+      "gtd": false,
+      "injury": null,
+      "line": null,
+      "linemates": [],
+      "pk": null,
+      "possible_scratch": false,
+      "pp": null,
+      "team": "SJS",
+      "team_url": "https://www.dailyfaceoff.com/teams/san-jose-sharks/line-combinations"
+    },
+    "8470044": {
+      "goalie_depth": null,
+      "gtd": false,
+      "injury": null,
+      "line": "Line 1",
+      "linemates": [
+        "Eric Davis",
+        "Juan Nguyen"
+      ],
+      "pk": null,
+      "possible_scratch": false,
+      "pp": "PP1",
+      "team": "WPG",
+      "team_url": "https://www.dailyfaceoff.com/teams/winnipeg-jets/line-combinations"
+    },
+    "8470045": {
+      "goalie_depth": null,
+      "gtd": false,
+      "injury": null,
+      "line": "Line 1",
+      "linemates": [
+        "Roy Bailey"
+      ],
+      "pk": null,
+      "possible_scratch": false,
+      "pp": "PP1",
+      "team": "STL",
+      "team_url": "https://www.dailyfaceoff.com/teams/st-louis-blues/line-combinations"
+    },
+    "8470046": {
+      "goalie_depth": null,
+      "gtd": false,
+      "injury": "dtd",
+      "line": "Line 1",
+      "linemates": [
+        "Randy Castillo",
+        "Scott Myers"
+      ],
+      "pk": null,
+      "possible_scratch": false,
+      "pp": "PP1",
+      "team": "FLA",
+      "team_url": "https://www.dailyfaceoff.com/teams/florida-panthers/line-combinations"
+    },
+    "8470047": {
+      "goalie_depth": 1,
+      "gtd": false,
+      "injury": null,
+      "line": null,
+      "linemates": [],
+      "pk": null,
+      "possible_scratch": false,
+      "pp": null,
+      "team": "CGY",
+      "team_url": "https://www.dailyfaceoff.com/teams/calgary-flames/line-combinations"
+    },
+    "8470048": {
+      "goalie_depth": null,
+      "gtd": false,
+      "injury": null,
+      "line": "Line 1",
+      "linemates": [
+        "Roger Gomez",
+        "Michael Edwards"
+      ],
+      "pk": null,
+      "possible_scratch": false,
+      "pp": "PP1",
+      "team": "CBJ",
+      "team_url": "https://www.dailyfaceoff.com/teams/columbus-blue-jackets/line-combinations"
+    },
+    "8470049": {
+      "goalie_depth": null,
+      "gtd": false,
+      "injury": "dtd",
+      "line": "Line 1",
+      "linemates": [
+        "A. Clark"
+      ],
+      "pk": null,
+      "possible_scratch": false,
+      "pp": "PP1",
+      "team": "BUF",
+      "team_url": "https://www.dailyfaceoff.com/teams/buffalo-sabres/line-combinations"
+    },
+    "8470051": {
+      "goalie_depth": null,
+      "gtd": false,
+      "injury": "dtd",
+      "line": "Line 1",
+      "linemates": [
+        "Jordan Wood",
+        "Jason Perez"
+      ],
+      "pk": null,
+      "possible_scratch": false,
+      "pp": "PP1",
+      "team": "VAN",
+      "team_url": "https://www.dailyfaceoff.com/teams/vancouver-canucks/line-combinations"
+    },
+    "8470052": {
+      "goalie_depth": null,
+      "gtd": false,
+      "injury": null,
+      "line": "Line 1",
+      "linemates": [
+        "Bradley Murphy",
+        "C. Richardson"
+      ],
+      "pk": null,
+      "possible_scratch": false,
+      "pp": "PP1",
+      "team": "PIT",
+      "team_url": "https://www.dailyfaceoff.com/teams/pittsburgh-penguins/line-combinations"
+    },
+    "8470053": {
+      "goalie_depth": null,
+      "gtd": false,
+      "injury": "dtd",
+      "line": "Line 1",
+      "linemates": [
+        "Timothy King"
+      ],
+      "pk": null,
+      "possible_scratch": false,
+      "pp": "PP1",
+      "team": "STL",
+      "team_url": "https://www.dailyfaceoff.com/teams/st-louis-blues/line-combinations"
+    },
+    "8470054": {
+      "goalie_depth": null,
+      "gtd": false,
+      "injury": null,
+      "line": "Line 1",
+      "linemates": [
+        "James Jackson",
+        "Michael Edwards"
+      ],
+      "pk": null,
+      "possible_scratch": false,
+      "pp": "PP1",
+      "team": "CBJ",
+      "team_url": "https://www.dailyfaceoff.com/teams/columbus-blue-jackets/line-combinations"
+    },
+    "8470055": {
+      "goalie_depth": null,
+      "gtd": false,
+      "injury": "dtd",
+      "line": "Line 1",
+      "linemates": [],
+      "pk": null,
+      "possible_scratch": false,
+      "pp": "PP1",
+      "team": "TOR",
+      "team_url": "https://www.dailyfaceoff.com/teams/toronto-maple-leafs/line-combinations"
+    },
+    "8470056": {
+      "goalie_depth": null,
+      "gtd": false,
+      "injury": "dtd",
+      "line": "Line 1",
+      "linemates": [
+        "Patrick Rogers"
+      ],
+      "pk": null,
+      "possible_scratch": false,
+      "pp": "PP1",
+      "team": "EDM",
+      "team_url": "https://www.dailyfaceoff.com/teams/edmonton-oilers/line-combinations"
+    },
+    "8470057": {
+      "goalie_depth": null,
+      "gtd": false,
+      "injury": null,
+      "line": "Line 1",
+      "linemates": [
+        "James Jackson",
+        "Roger Gomez"
+      ],
+      "pk": null,
+      "possible_scratch": false,
+      "pp": "PP1",
+      "team": "CBJ",
+      "team_url": "https://www.dailyfaceoff.com/teams/columbus-blue-jackets/line-combinations"
+    },
+    "8470058": {
+      "goalie_depth": null,
+      "gtd": false,
+      "injury": "dtd",
+      "line": "Line 1",
+      "linemates": [
+        "Benjamin Long"
+      ],
+      "pk": null,
+      "possible_scratch": false,
+      "pp": "PP1",
+      "team": "PHI",
+      "team_url": "https://www.dailyfaceoff.com/teams/philadelphia-flyers/line-combinations"
+    },
+    "8470060": {
+      "goalie_depth": null,
+      "gtd": false,
+      "injury": null,
+      "line": "Line 1",
+      "linemates": [
+        "Bradley Murphy",
+        "Elijah Wilson"
+      ],
+      "pk": null,
+      "possible_scratch": false,
+      "pp": "PP1",
+      "team": "PIT",
+      "team_url": "https://www.dailyfaceoff.com/teams/pittsburgh-penguins/line-combinations"
+    },
+    "8470061": {
+      "goalie_depth": null,
+      "gtd": false,
+      "injury": "dtd",
+      "line": "Line 1",
+      "linemates": [
+        "Kyle Gonzalez",
+        "Peter Rogers"
+      ],
+      "pk": null,
+      "possible_scratch": false,
+      "pp": "PP1",
+      "team": "CGY",
+      "team_url": "https://www.dailyfaceoff.com/teams/calgary-flames/line-combinations"
+    },
+    "8470062": {
+      "goalie_depth": null,
+      "gtd": false,
+      "injury": "dtd",
+      "line": "Line 1",
+      "linemates": [],
+      "pk": null,
+      "possible_scratch": false,
+      "pp": "PP1",
+      "team": "VGK",
+      "team_url": "https://www.dailyfaceoff.com/teams/vegas-golden-knights/line-combinations"
+    },
+    "8470063": {
+      "goalie_depth": null,
+      "gtd": false,
+      "injury": null,
+      "line": "Pair 1",
+      "linemates": [
+        "Christopher Wright"
+      ],
+      "pk": null,
+      "possible_scratch": false,
+      "pp": "PP2",
+      "team": "MTL",
+      "team_url": "https://www.dailyfaceoff.com/teams/montreal-canadiens/line-combinations"
+    },
+    "8470064": {
+      "goalie_depth": null,
+      "gtd": false,
+      "injury": null,
+      "line": "Pair 1",
+      "linemates": [
+        "Walter James"
+      ],
+      "pk": null,
+      "possible_scratch": false,
+      "pp": "PP1",
+      "team": "OTT",
+      "team_url": "https://www.dailyfaceoff.com/teams/ottawa-senators/line-combinations"
+    },
+    "8470065": {
+      "goalie_depth": null,
+      "gtd": false,
+      "injury": null,
+      "line": "Pair 1",
+      "linemates": [],
+      "pk": null,
+      "possible_scratch": false,
+      "pp": "PP1",
+      "team": "UTA",
+      "team_url": "https://www.dailyfaceoff.com/teams/utah-mammoth/line-combinations"
+    },
+    "8470066": {
+      "goalie_depth": null,
+      "gtd": false,
+      "injury": null,
+      "line": "Pair 1",
+      "linemates": [
+        "Thomas Nelson"
+      ],
+      "pk": null,
+      "possible_scratch": false,
+      "pp": "PP1",
+      "team": "PIT",
+      "team_url": "https://www.dailyfaceoff.com/teams/pittsburgh-penguins/line-combinations"
+    },
+    "8470067": {
+      "goalie_depth": null,
+      "gtd": false,
+      "injury": null,
+      "line": "Pair 1",
+      "linemates": [],
+      "pk": null,
+      "possible_scratch": false,
+      "pp": "PP1",
+      "team": "FLA",
+      "team_url": "https://www.dailyfaceoff.com/teams/florida-panthers/line-combinations"
+    },
+    "8470068": {
+      "goalie_depth": null,
+      "gtd": false,
+      "injury": "dtd",
+      "line": "Line 2",
+      "linemates": [],
+      "pk": null,
+      "possible_scratch": false,
+      "pp": "PP1",
+      "team": "PIT",
+      "team_url": "https://www.dailyfaceoff.com/teams/pittsburgh-penguins/line-combinations"
+    },
+    "8470069": {
+      "goalie_depth": 2,
+      "gtd": false,
+      "injury": null,
+      "line": null,
+      "linemates": [],
+      "pk": null,
+      "possible_scratch": false,
+      "pp": null,
+      "team": "EDM",
+      "team_url": "https://www.dailyfaceoff.com/teams/edmonton-oilers/line-combinations"
+    },
+    "8470070": {
+      "goalie_depth": 1,
+      "gtd": false,
+      "injury": null,
+      "line": null,
+      "linemates": [],
+      "pk": null,
+      "possible_scratch": false,
+      "pp": null,
+      "team": "CHI",
+      "team_url": "https://www.dailyfaceoff.com/teams/chicago-blackhawks/line-combinations"
+    },
+    "8470071": {
+      "goalie_depth": null,
+      "gtd": false,
+      "injury": null,
+      "line": "Pair 1",
+      "linemates": [
+        "R. Flores"
+      ],
+      "pk": null,
+      "possible_scratch": false,
+      "pp": "PP2",
+      "team": "NJD",
+      "team_url": "https://www.dailyfaceoff.com/teams/new-jersey-devils/line-combinations"
+    },
+    "8470072": {
+      "goalie_depth": null,
+      "gtd": false,
+      "injury": null,
+      "line": "Line 1",
+      "linemates": [
+        "David Jackson",
+        "Juan Nguyen"
+      ],
+      "pk": null,
+      "possible_scratch": false,
+      "pp": "PP1",
+      "team": "WPG",
+      "team_url": "https://www.dailyfaceoff.com/teams/winnipeg-jets/line-combinations"
+    },
+    "8470073": {
+      "goalie_depth": 1,
+      "gtd": false,
+      "injury": null,
+      "line": null,
+      "linemates": [],
+      "pk": null,
+      "possible_scratch": false,
+      "pp": null,
+      "team": "UTA",
+      "team_url": "https://www.dailyfaceoff.com/teams/utah-mammoth/line-combinations"
+    },
+    "8470074": {
+      "goalie_depth": null,
+      "gtd": false,
+      "injury": null,
+      "line": "Pair 1",
+      "linemates": [
+        "Paul Gomez"
+      ],
+      "pk": null,
+      "possible_scratch": false,
+      "pp": "PP2",
+      "team": "OTT",
+      "team_url": "https://www.dailyfaceoff.com/teams/ottawa-senators/line-combinations"
+    },
+    "8470075": {
+      "goalie_depth": null,
+      "gtd": false,
+      "injury": null,
+      "line": "Pair 1",
+      "linemates": [],
+      "pk": null,
+      "possible_scratch": false,
+      "pp": "PP1",
+      "team": "PHI",
+      "team_url": "https://www.dailyfaceoff.com/teams/philadelphia-flyers/line-combinations"
+    },
+    "8470077": {
+      "goalie_depth": null,
+      "gtd": false,
+      "injury": null,
+      "line": "Line 2",
+      "linemates": [
+        "Stephen Gutierrez"
+      ],
+      "pk": null,
+      "possible_scratch": false,
+      "pp": "PP1",
+      "team": "CBJ",
+      "team_url": "https://www.dailyfaceoff.com/teams/columbus-blue-jackets/line-combinations"
+    },
+    "8470078": {
+      "goalie_depth": null,
+      "gtd": false,
+      "injury": null,
+      "line": "Pair 1",
+      "linemates": [
+        "Bradley Kelly"
+      ],
+      "pk": null,
+      "possible_scratch": false,
+      "pp": "PP2",
+      "team": "PIT",
+      "team_url": "https://www.dailyfaceoff.com/teams/pittsburgh-penguins/line-combinations"
+    },
+    "8470079": {
+      "goalie_depth": null,
+      "gtd": false,
+      "injury": null,
+      "line": "Pair 1",
+      "linemates": [],
+      "pk": null,
+      "possible_scratch": false,
+      "pp": "PP1",
+      "team": "TOR",
+      "team_url": "https://www.dailyfaceoff.com/teams/toronto-maple-leafs/line-combinations"
+    },
+    "8470080": {
+      "goalie_depth": null,
+      "gtd": false,
+      "injury": null,
+      "line": "Pair 1",
+      "linemates": [],
+      "pk": null,
+      "possible_scratch": false,
+      "pp": "PP1",
+      "team": "CHI",
+      "team_url": "https://www.dailyfaceoff.com/teams/chicago-blackhawks/line-combinations"
+    },
+    "8470081": {
+      "goalie_depth": null,
+      "gtd": false,
+      "injury": "dtd",
+      "line": "Line 1",
+      "linemates": [
+        "Keith Adams",
+        "C. Hill"
+      ],
+      "pk": null,
+      "possible_scratch": false,
+      "pp": "PP1",
+      "team": "WSH",
+      "team_url": "https://www.dailyfaceoff.com/teams/washington-capitals/line-combinations"
+    },
+    "8470082": {
+      "goalie_depth": null,
+      "gtd": false,
+      "injury": null,
+      "line": "Line 1",
+      "linemates": [
+        "Charles Clark"
+      ],
+      "pk": null,
+      "possible_scratch": false,
+      "pp": "PP1",
+      "team": "BOS",
+      "team_url": "https://www.dailyfaceoff.com/teams/boston-bruins/line-combinations"
+    },
+    "8470083": {
+      "goalie_depth": 2,
+      "gtd": false,
+      "injury": null,
+      "line": null,
+      "linemates": [],
+      "pk": null,
+      "possible_scratch": false,
+      "pp": null,
+      "team": "LAK",
+      "team_url": "https://www.dailyfaceoff.com/teams/los-angeles-kings/line-combinations"
+    },
+    "8470084": {
+      "goalie_depth": null,
+      "gtd": false,
+      "injury": "dtd",
+      "line": "Line 2",
+      "linemates": [
+        "Philip Kelly"
+      ],
+      "pk": null,
+      "possible_scratch": false,
+      "pp": "PP2",
+      "team": "CBJ",
+      "team_url": "https://www.dailyfaceoff.com/teams/columbus-blue-jackets/line-combinations"
+    },
+    "8470085": {
+      "goalie_depth": null,
+      "gtd": false,
+      "injury": null,
+      "line": "Pair 1",
+      "linemates": [],
+      "pk": null,
+      "possible_scratch": false,
+      "pp": "PP1",
+      "team": "TBL",
+      "team_url": "https://www.dailyfaceoff.com/teams/tampa-bay-lightning/line-combinations"
+    },
+    "8470086": {
+      "goalie_depth": null,
+      "gtd": false,
+      "injury": "dtd",
+      "line": "Line 1",
+      "linemates": [
+        "David Jackson",
+        "Eric Davis"
+      ],
+      "pk": null,
+      "possible_scratch": false,
+      "pp": "PP1",
+      "team": "WPG",
+      "team_url": "https://www.dailyfaceoff.com/teams/winnipeg-jets/line-combinations"
+    },
+    "8470088": {
+      "goalie_depth": null,
+      "gtd": false,
+      "injury": "dtd",
+      "line": "Line 1",
+      "linemates": [
+        "A. Kim"
+      ],
+      "pk": null,
+      "possible_scratch": false,
+      "pp": "PP1",
+      "team": "BOS",
+      "team_url": "https://www.dailyfaceoff.com/teams/boston-bruins/line-combinations"
+    },
+    "8470089": {
+      "goalie_depth": null,
+      "gtd": false,
+      "injury": null,
+      "line": "Pair 1",
+      "linemates": [
+        "Bradley Mendoza"
+      ],
+      "pk": null,
+      "possible_scratch": false,
+      "pp": "PP2",
+      "team": "EDM",
+      "team_url": "https://www.dailyfaceoff.com/teams/edmonton-oilers/line-combinations"
+    },
+    "8470090": {
+      "goalie_depth": null,
+      "gtd": false,
+      "injury": null,
+      "line": "Pair 2",
+      "linemates": [],
+      "pk": null,
+      "possible_scratch": false,
+      "pp": null,
+      "team": "MTL",
+      "team_url": "https://www.dailyfaceoff.com/teams/montreal-canadiens/line-combinations"
+    },
+    "8470091": {
+      "goalie_depth": null,
+      "gtd": false,
+      "injury": "dtd",
+      "line": "Line 1",
+      "linemates": [
+        "Zachary Green"
+      ],
+      "pk": null,
+      "possible_scratch": false,
+      "pp": "PP1",
+      "team": "UTA",
+      "team_url": "https://www.dailyfaceoff.com/teams/utah-mammoth/line-combinations"
+    },
+    "8470092": {
+      "goalie_depth": null,
+      "gtd": false,
+      "injury": "dtd",
+      "line": "Line 1",
+      "linemates": [
+        "Jonathan Clark"
+      ],
+      "pk": null,
+      "possible_scratch": false,
+      "pp": "PP1",
+      "team": "CHI",
+      "team_url": "https://www.dailyfaceoff.com/teams/chicago-blackhawks/line-combinations"
+    },
+    "8470094": {
+      "goalie_depth": 1,
+      "gtd": false,
+      "injury": null,
+      "line": null,
+      "linemates": [],
+      "pk": null,
+      "possible_scratch": false,
+      "pp": null,
+      "team": "OTT",
+      "team_url": "https://www.dailyfaceoff.com/teams/ottawa-senators/line-combinations"
+    },
+    "8470095": {
+      "goalie_depth": null,
+      "gtd": false,
+      "injury": null,
+      "line": "Pair 2",
+      "linemates": [],
+      "pk": null,
+      "possible_scratch": false,
+      "pp": null,
+      "team": "OTT",
+      "team_url": "https://www.dailyfaceoff.com/teams/ottawa-senators/line-combinations"
+    },
+    "8470096": {
+      "goalie_depth": 1,
+      "gtd": false,
+      "injury": null,
+      "line": null,
+      "linemates": [],
+      "pk": null,
+      "possible_scratch": false,
+      "pp": null,
+      "team": "PIT",
+      "team_url": "https://www.dailyfaceoff.com/teams/pittsburgh-penguins/line-combinations"
+    },
+    "8470097": {
+      "goalie_depth": null,
+      "gtd": false,
+      "injury": "dtd",
+      "line": "Line 1",
+      "linemates": [
+        "Keith Thompson"
+      ],
+      "pk": null,
+      "possible_scratch": false,
+      "pp": "PP1",
+      "team": "ANA",
+      "team_url": "https://www.dailyfaceoff.com/teams/anaheim-ducks/line-combinations"
+    },
+    "8470098": {
+      "goalie_depth": null,
+      "gtd": false,
+      "injury": "dtd",
+      "line": "Line 1",
+      "linemates": [],
+      "pk": null,
+      "possible_scratch": false,
+      "pp": "PP1",
+      "team": "CAR",
+      "team_url": "https://www.dailyfaceoff.com/teams/carolina-hurricanes/line-combinations"
+    },
+    "8470100": {
+      "goalie_depth": 2,
+      "gtd": false,
+      "injury": null,
+      "line": null,
+      "linemates": [],
+      "pk": null,
+      "possible_scratch": false,
+      "pp": null,
+      "team": "CHI",
+      "team_url": "https://www.dailyfaceoff.com/teams/chicago-blackhawks/line-combinations"
+    }
+  },
+  "schema_version": 1,
+  "season": 2027,
+  "source": "dailyfaceoff.com",
+  "sport": "hockey",
+  "teams": {
+    "ANA": {
+      "full_lineup": false,
+      "goalies": [],
+      "injuries": {
+        "Jeremy Hernandez": "dtd"
+      },
+      "ir": [],
+      "lines": {
+        "1": [
+          {
+            "name": "Keith Thompson",
+            "nhl_id": 8470000
+          },
+          {
+            "name": "Jeremy Hernandez",
+            "nhl_id": 8470097
+          }
+        ]
+      },
+      "listed": 4,
+      "matched": 4,
+      "pairs": {
+        "1": [
+          {
+            "name": "Christopher Patel",
+            "nhl_id": 8470011
+          },
+          {
+            "name": "Adam Brooks",
+            "nhl_id": 8470040
+          }
+        ]
+      },
+      "pk": {},
+      "possible_scratches": [],
+      "pp": {
+        "1": [
+          {
+            "name": "Keith Thompson",
+            "nhl_id": 8470000
+          },
+          {
+            "name": "Jeremy Hernandez",
+            "nhl_id": 8470097
+          },
+          {
+            "name": "Christopher Patel",
+            "nhl_id": 8470011
+          }
+        ],
+        "2": [
+          {
+            "name": "Adam Brooks",
+            "nhl_id": 8470040
+          }
+        ]
+      },
+      "source": "DFO Projections",
+      "updated_at": "2026-10-01T12:00:00.000Z",
+      "url": "https://www.dailyfaceoff.com/teams/anaheim-ducks/line-combinations"
+    },
+    "BOS": {
+      "full_lineup": false,
+      "goalies": [],
+      "injuries": {
+        "Charles Clark": "dtd"
+      },
+      "ir": [],
+      "lines": {
+        "1": [
+          {
+            "name": "A. Kim",
+            "nhl_id": 8470082
+          },
+          {
+            "name": "Charles Clark",
+            "nhl_id": 8470088
+          }
+        ]
+      },
+      "listed": 2,
+      "matched": 2,
+      "pairs": {},
+      "pk": {},
+      "possible_scratches": [],
+      "pp": {
+        "1": [
+          {
+            "name": "A. Kim",
+            "nhl_id": 8470082
+          },
+          {
+            "name": "Charles Clark",
+            "nhl_id": 8470088
+          }
+        ]
+      },
+      "source": "DFO Projections",
+      "updated_at": "2026-10-01T12:00:00.000Z",
+      "url": "https://www.dailyfaceoff.com/teams/boston-bruins/line-combinations"
+    },
+    "BUF": {
+      "full_lineup": false,
+      "goalies": [],
+      "injuries": {
+        "D. Robinson": "dtd"
+      },
+      "ir": [],
+      "lines": {
+        "1": [
+          {
+            "name": "A. Clark",
+            "nhl_id": 8470005
+          },
+          {
+            "name": "D. Robinson",
+            "nhl_id": 8470049
+          }
+        ]
+      },
+      "listed": 2,
+      "matched": 2,
+      "pairs": {},
+      "pk": {},
+      "possible_scratches": [],
+      "pp": {
+        "1": [
+          {
+            "name": "A. Clark",
+            "nhl_id": 8470005
+          },
+          {
+            "name": "D. Robinson",
+            "nhl_id": 8470049
+          }
+        ]
+      },
+      "source": "DFO Projections",
+      "updated_at": "2026-10-01T12:00:00.000Z",
+      "url": "https://www.dailyfaceoff.com/teams/buffalo-sabres/line-combinations"
+    },
+    "CAR": {
+      "full_lineup": false,
+      "goalies": [],
+      "injuries": {
+        "Nicholas Sanders": "dtd"
+      },
+      "ir": [],
+      "lines": {
+        "1": [
+          {
+            "name": "Nicholas Sanders",
+            "nhl_id": 8470098
+          }
+        ]
+      },
+      "listed": 1,
+      "matched": 1,
+      "pairs": {},
+      "pk": {},
+      "possible_scratches": [],
+      "pp": {
+        "1": [
+          {
+            "name": "Nicholas Sanders",
+            "nhl_id": 8470098
+          }
+        ]
+      },
+      "source": "DFO Projections",
+      "updated_at": "2026-10-01T12:00:00.000Z",
+      "url": "https://www.dailyfaceoff.com/teams/carolina-hurricanes/line-combinations"
+    },
+    "CBJ": {
+      "full_lineup": false,
+      "goalies": [],
+      "injuries": {
+        "Stephen Gutierrez": "dtd"
+      },
+      "ir": [],
+      "lines": {
+        "1": [
+          {
+            "name": "James Jackson",
+            "nhl_id": 8470048
+          },
+          {
+            "name": "Roger Gomez",
+            "nhl_id": 8470054
+          },
+          {
+            "name": "Michael Edwards",
+            "nhl_id": 8470057
+          }
+        ],
+        "2": [
+          {
+            "name": "Philip Kelly",
+            "nhl_id": 8470077
+          },
+          {
+            "name": "Stephen Gutierrez",
+            "nhl_id": 8470084
+          }
+        ]
+      },
+      "listed": 5,
+      "matched": 5,
+      "pairs": {},
+      "pk": {},
+      "possible_scratches": [],
+      "pp": {
+        "1": [
+          {
+            "name": "James Jackson",
+            "nhl_id": 8470048
+          },
+          {
+            "name": "Roger Gomez",
+            "nhl_id": 8470054
+          },
+          {
+            "name": "Michael Edwards",
+            "nhl_id": 8470057
+          },
+          {
+            "name": "Philip Kelly",
+            "nhl_id": 8470077
+          }
+        ],
+        "2": [
+          {
+            "name": "Stephen Gutierrez",
+            "nhl_id": 8470084
+          }
+        ]
+      },
+      "source": "DFO Projections",
+      "updated_at": "2026-10-01T12:00:00.000Z",
+      "url": "https://www.dailyfaceoff.com/teams/columbus-blue-jackets/line-combinations"
+    },
+    "CGY": {
+      "full_lineup": false,
+      "goalies": [
+        {
+          "name": "Brandon Williams",
+          "nhl_id": 8470047
+        }
+      ],
+      "injuries": {
+        "Jesse Allen": "dtd"
+      },
+      "ir": [],
+      "lines": {
+        "1": [
+          {
+            "name": "Kyle Gonzalez",
+            "nhl_id": 8470020
+          },
+          {
+            "name": "Peter Rogers",
+            "nhl_id": 8470028
+          },
+          {
+            "name": "Jesse Allen",
+            "nhl_id": 8470061
+          }
+        ]
+      },
+      "listed": 4,
+      "matched": 4,
+      "pairs": {},
+      "pk": {},
+      "possible_scratches": [],
+      "pp": {
+        "1": [
+          {
+            "name": "Kyle Gonzalez",
+            "nhl_id": 8470020
+          },
+          {
+            "name": "Peter Rogers",
+            "nhl_id": 8470028
+          },
+          {
+            "name": "Jesse Allen",
+            "nhl_id": 8470061
+          }
+        ]
+      },
+      "source": "DFO Projections",
+      "updated_at": "2026-10-01T12:00:00.000Z",
+      "url": "https://www.dailyfaceoff.com/teams/calgary-flames/line-combinations"
+    },
+    "CHI": {
+      "full_lineup": false,
+      "goalies": [
+        {
+          "name": "Henry Green",
+          "nhl_id": 8470070
+        },
+        {
+          "name": "Alexander Foster",
+          "nhl_id": 8470100
+        }
+      ],
+      "injuries": {
+        "Henry Lee": "dtd"
+      },
+      "ir": [],
+      "lines": {
+        "1": [
+          {
+            "name": "Jonathan Clark",
+            "nhl_id": 8470004
+          },
+          {
+            "name": "Henry Lee",
+            "nhl_id": 8470092
+          }
+        ]
+      },
+      "listed": 5,
+      "matched": 5,
+      "pairs": {
+        "1": [
+          {
+            "name": "Jordan Green",
+            "nhl_id": 8470080
+          }
+        ]
+      },
+      "pk": {},
+      "possible_scratches": [],
+      "pp": {
+        "1": [
+          {
+            "name": "Jonathan Clark",
+            "nhl_id": 8470004
+          },
+          {
+            "name": "Henry Lee",
+            "nhl_id": 8470092
+          },
+          {
+            "name": "Jordan Green",
+            "nhl_id": 8470080
+          }
+        ]
+      },
+      "source": "DFO Projections",
+      "updated_at": "2026-10-01T12:00:00.000Z",
+      "url": "https://www.dailyfaceoff.com/teams/chicago-blackhawks/line-combinations"
+    },
+    "COL": {
+      "full_lineup": false,
+      "goalies": [],
+      "injuries": {},
+      "ir": [],
+      "lines": {},
+      "listed": 2,
+      "matched": 2,
+      "pairs": {
+        "1": [
+          {
+            "name": "Bradley Lewis",
+            "nhl_id": 8470010
+          },
+          {
+            "name": "Albert Miller",
+            "nhl_id": 8470037
+          }
+        ]
+      },
+      "pk": {},
+      "possible_scratches": [],
+      "pp": {
+        "1": [
+          {
+            "name": "Bradley Lewis",
+            "nhl_id": 8470010
+          }
+        ],
+        "2": [
+          {
+            "name": "Albert Miller",
+            "nhl_id": 8470037
+          }
+        ]
+      },
+      "source": "DFO Projections",
+      "updated_at": "2026-10-01T12:00:00.000Z",
+      "url": "https://www.dailyfaceoff.com/teams/colorado-avalanche/line-combinations"
+    },
+    "DAL": {
+      "full_lineup": false,
+      "goalies": [],
+      "injuries": {
+        "Gary Gonzalez": "dtd"
+      },
+      "ir": [],
+      "lines": {
+        "1": [
+          {
+            "name": "Gary Gonzalez",
+            "nhl_id": 8470030
+          }
+        ]
+      },
+      "listed": 1,
+      "matched": 1,
+      "pairs": {},
+      "pk": {},
+      "possible_scratches": [],
+      "pp": {
+        "1": [
+          {
+            "name": "Gary Gonzalez",
+            "nhl_id": 8470030
+          }
+        ]
+      },
+      "source": "DFO Projections",
+      "updated_at": "2026-10-01T12:00:00.000Z",
+      "url": "https://www.dailyfaceoff.com/teams/dallas-stars/line-combinations"
+    },
+    "EDM": {
+      "full_lineup": false,
+      "goalies": [
+        {
+          "name": "Daniel Hernandez",
+          "nhl_id": 8470018
+        },
+        {
+          "name": "Andrew Bennett",
+          "nhl_id": 8470069
+        }
+      ],
+      "injuries": {
+        "Nathan Hall": "dtd"
+      },
+      "ir": [],
+      "lines": {
+        "1": [
+          {
+            "name": "Patrick Rogers",
+            "nhl_id": 8470035
+          },
+          {
+            "name": "Nathan Hall",
+            "nhl_id": 8470056
+          }
+        ]
+      },
+      "listed": 6,
+      "matched": 6,
+      "pairs": {
+        "1": [
+          {
+            "name": "Bradley Mendoza",
+            "nhl_id": 8470009
+          },
+          {
+            "name": "Charles Ramos",
+            "nhl_id": 8470089
+          }
+        ]
+      },
+      "pk": {},
+      "possible_scratches": [],
+      "pp": {
+        "1": [
+          {
+            "name": "Patrick Rogers",
+            "nhl_id": 8470035
+          },
+          {
+            "name": "Nathan Hall",
+            "nhl_id": 8470056
+          },
+          {
+            "name": "Bradley Mendoza",
+            "nhl_id": 8470009
+          }
+        ],
+        "2": [
+          {
+            "name": "Charles Ramos",
+            "nhl_id": 8470089
+          }
+        ]
+      },
+      "source": "DFO Projections",
+      "updated_at": "2026-10-01T12:00:00.000Z",
+      "url": "https://www.dailyfaceoff.com/teams/edmonton-oilers/line-combinations"
+    },
+    "FLA": {
+      "full_lineup": false,
+      "goalies": [
+        {
+          "name": "Richard Castillo",
+          "nhl_id": 8470015
+        }
+      ],
+      "injuries": {
+        "Michael Johnson": "dtd"
+      },
+      "ir": [],
+      "lines": {
+        "1": [
+          {
+            "name": "Randy Castillo",
+            "nhl_id": 8470007
+          },
+          {
+            "name": "Scott Myers",
+            "nhl_id": 8470022
+          },
+          {
+            "name": "Michael Johnson",
+            "nhl_id": 8470046
+          }
+        ]
+      },
+      "listed": 5,
+      "matched": 5,
+      "pairs": {
+        "1": [
+          {
+            "name": "Kenneth Morales",
+            "nhl_id": 8470067
+          }
+        ]
+      },
+      "pk": {},
+      "possible_scratches": [],
+      "pp": {
+        "1": [
+          {
+            "name": "Randy Castillo",
+            "nhl_id": 8470007
+          },
+          {
+            "name": "Scott Myers",
+            "nhl_id": 8470022
+          },
+          {
+            "name": "Michael Johnson",
+            "nhl_id": 8470046
+          },
+          {
+            "name": "Kenneth Morales",
+            "nhl_id": 8470067
+          }
+        ]
+      },
+      "source": "DFO Projections",
+      "updated_at": "2026-10-01T12:00:00.000Z",
+      "url": "https://www.dailyfaceoff.com/teams/florida-panthers/line-combinations"
+    },
+    "LAK": {
+      "full_lineup": false,
+      "goalies": [
+        {
+          "name": "P. Lewis",
+          "nhl_id": 8470016
+        },
+        {
+          "name": "Ethan Williams",
+          "nhl_id": 8470083
+        }
+      ],
+      "injuries": {
+        "Elijah Martinez": "dtd"
+      },
+      "ir": [],
+      "lines": {
+        "1": [
+          {
+            "name": "Elijah Martinez",
+            "nhl_id": 8470034
+          }
+        ]
+      },
+      "listed": 3,
+      "matched": 3,
+      "pairs": {},
+      "pk": {},
+      "possible_scratches": [],
+      "pp": {
+        "1": [
+          {
+            "name": "Elijah Martinez",
+            "nhl_id": 8470034
+          }
+        ]
+      },
+      "source": "DFO Projections",
+      "updated_at": "2026-10-01T12:00:00.000Z",
+      "url": "https://www.dailyfaceoff.com/teams/los-angeles-kings/line-combinations"
+    },
+    "MIN": {
+      "full_lineup": false,
+      "goalies": [],
+      "injuries": {
+        "Jason Murphy": "dtd"
+      },
+      "ir": [],
+      "lines": {
+        "1": [
+          {
+            "name": "Jason Murphy",
+            "nhl_id": 8470033
+          }
+        ]
+      },
+      "listed": 1,
+      "matched": 1,
+      "pairs": {},
+      "pk": {},
+      "possible_scratches": [],
+      "pp": {
+        "1": [
+          {
+            "name": "Jason Murphy",
+            "nhl_id": 8470033
+          }
+        ]
+      },
+      "source": "DFO Projections",
+      "updated_at": "2026-10-01T12:00:00.000Z",
+      "url": "https://www.dailyfaceoff.com/teams/minnesota-wild/line-combinations"
+    },
+    "MTL": {
+      "full_lineup": false,
+      "goalies": [],
+      "injuries": {},
+      "ir": [],
+      "lines": {},
+      "listed": 3,
+      "matched": 3,
+      "pairs": {
+        "1": [
+          {
+            "name": "Christopher Wright",
+            "nhl_id": 8470012
+          },
+          {
+            "name": "Wayne Campbell",
+            "nhl_id": 8470063
+          }
+        ],
+        "2": [
+          {
+            "name": "Joseph Alvarez",
+            "nhl_id": 8470090
+          }
+        ]
+      },
+      "pk": {},
+      "possible_scratches": [],
+      "pp": {
+        "1": [
+          {
+            "name": "Christopher Wright",
+            "nhl_id": 8470012
+          }
+        ],
+        "2": [
+          {
+            "name": "Wayne Campbell",
+            "nhl_id": 8470063
+          }
+        ]
+      },
+      "source": "DFO Projections",
+      "updated_at": "2026-10-01T12:00:00.000Z",
+      "url": "https://www.dailyfaceoff.com/teams/montreal-canadiens/line-combinations"
+    },
+    "NJD": {
+      "full_lineup": false,
+      "goalies": [],
+      "injuries": {},
+      "ir": [],
+      "lines": {},
+      "listed": 2,
+      "matched": 2,
+      "pairs": {
+        "1": [
+          {
+            "name": "R. Flores",
+            "nhl_id": 8470038
+          },
+          {
+            "name": "N. Wright",
+            "nhl_id": 8470071
+          }
+        ]
+      },
+      "pk": {},
+      "possible_scratches": [],
+      "pp": {
+        "1": [
+          {
+            "name": "R. Flores",
+            "nhl_id": 8470038
+          }
+        ],
+        "2": [
+          {
+            "name": "N. Wright",
+            "nhl_id": 8470071
+          }
+        ]
+      },
+      "source": "DFO Projections",
+      "updated_at": "2026-10-01T12:00:00.000Z",
+      "url": "https://www.dailyfaceoff.com/teams/new-jersey-devils/line-combinations"
+    },
+    "NSH": {
+      "full_lineup": false,
+      "goalies": [
+        {
+          "name": "Ethan Richardson",
+          "nhl_id": 8470021
+        }
+      ],
+      "injuries": {},
+      "ir": [],
+      "lines": {},
+      "listed": 1,
+      "matched": 1,
+      "pairs": {},
+      "pk": {},
+      "possible_scratches": [],
+      "pp": {},
+      "source": "DFO Projections",
+      "updated_at": "2026-10-01T12:00:00.000Z",
+      "url": "https://www.dailyfaceoff.com/teams/nashville-predators/line-combinations"
+    },
+    "NYI": {
+      "full_lineup": false,
+      "goalies": [],
+      "injuries": {
+        "Randy Anderson": "dtd"
+      },
+      "ir": [],
+      "lines": {
+        "1": [
+          {
+            "name": "Randy Anderson",
+            "nhl_id": 8470017
+          }
+        ]
+      },
+      "listed": 1,
+      "matched": 1,
+      "pairs": {},
+      "pk": {},
+      "possible_scratches": [],
+      "pp": {
+        "1": [
+          {
+            "name": "Randy Anderson",
+            "nhl_id": 8470017
+          }
+        ]
+      },
+      "source": "DFO Projections",
+      "updated_at": "2026-10-01T12:00:00.000Z",
+      "url": "https://www.dailyfaceoff.com/teams/new-york-islanders/line-combinations"
+    },
+    "OTT": {
+      "full_lineup": false,
+      "goalies": [
+        {
+          "name": "Carl Sanchez",
+          "nhl_id": 8470094
+        }
+      ],
+      "injuries": {
+        "Roy Kelly": "dtd"
+      },
+      "ir": [],
+      "lines": {
+        "1": [
+          {
+            "name": "Roy Kelly",
+            "nhl_id": 8470006
+          }
+        ]
+      },
+      "listed": 5,
+      "matched": 5,
+      "pairs": {
+        "1": [
+          {
+            "name": "Paul Gomez",
+            "nhl_id": 8470064
+          },
+          {
+            "name": "Walter James",
+            "nhl_id": 8470074
+          }
+        ],
+        "2": [
+          {
+            "name": "Steven Mendoza",
+            "nhl_id": 8470095
+          }
+        ]
+      },
+      "pk": {},
+      "possible_scratches": [],
+      "pp": {
+        "1": [
+          {
+            "name": "Roy Kelly",
+            "nhl_id": 8470006
+          },
+          {
+            "name": "Paul Gomez",
+            "nhl_id": 8470064
+          }
+        ],
+        "2": [
+          {
+            "name": "Walter James",
+            "nhl_id": 8470074
+          }
+        ]
+      },
+      "source": "DFO Projections",
+      "updated_at": "2026-10-01T12:00:00.000Z",
+      "url": "https://www.dailyfaceoff.com/teams/ottawa-senators/line-combinations"
+    },
+    "PHI": {
+      "full_lineup": false,
+      "goalies": [],
+      "injuries": {
+        "David Jackson": "dtd"
+      },
+      "ir": [],
+      "lines": {
+        "1": [
+          {
+            "name": "Benjamin Long",
+            "nhl_id": 8470029
+          },
+          {
+            "name": "David Jackson",
+            "nhl_id": 8470058
+          }
+        ]
+      },
+      "listed": 3,
+      "matched": 3,
+      "pairs": {
+        "1": [
+          {
+            "name": "Eugene Ross",
+            "nhl_id": 8470075
+          }
+        ]
+      },
+      "pk": {},
+      "possible_scratches": [],
+      "pp": {
+        "1": [
+          {
+            "name": "Benjamin Long",
+            "nhl_id": 8470029
+          },
+          {
+            "name": "David Jackson",
+            "nhl_id": 8470058
+          },
+          {
+            "name": "Eugene Ross",
+            "nhl_id": 8470075
+          }
+        ]
+      },
+      "source": "DFO Projections",
+      "updated_at": "2026-10-01T12:00:00.000Z",
+      "url": "https://www.dailyfaceoff.com/teams/philadelphia-flyers/line-combinations"
+    },
+    "PIT": {
+      "full_lineup": false,
+      "goalies": [
+        {
+          "name": "Jeffrey Stewart",
+          "nhl_id": 8470096
+        }
+      ],
+      "injuries": {
+        "Wayne Scott": "dtd"
+      },
+      "ir": [],
+      "lines": {
+        "1": [
+          {
+            "name": "Bradley Murphy",
+            "nhl_id": 8470002
+          },
+          {
+            "name": "Elijah Wilson",
+            "nhl_id": 8470052
+          },
+          {
+            "name": "C. Richardson",
+            "nhl_id": 8470060
+          }
+        ],
+        "2": [
+          {
+            "name": "Wayne Scott",
+            "nhl_id": 8470068
+          }
+        ]
+      },
+      "listed": 7,
+      "matched": 7,
+      "pairs": {
+        "1": [
+          {
+            "name": "Bradley Kelly",
+            "nhl_id": 8470066
+          },
+          {
+            "name": "Thomas Nelson",
+            "nhl_id": 8470078
+          }
+        ]
+      },
+      "pk": {},
+      "possible_scratches": [],
+      "pp": {
+        "1": [
+          {
+            "name": "Bradley Murphy",
+            "nhl_id": 8470002
+          },
+          {
+            "name": "Elijah Wilson",
+            "nhl_id": 8470052
+          },
+          {
+            "name": "C. Richardson",
+            "nhl_id": 8470060
+          },
+          {
+            "name": "Wayne Scott",
+            "nhl_id": 8470068
+          },
+          {
+            "name": "Bradley Kelly",
+            "nhl_id": 8470066
+          }
+        ],
+        "2": [
+          {
+            "name": "Thomas Nelson",
+            "nhl_id": 8470078
+          }
+        ]
+      },
+      "source": "DFO Projections",
+      "updated_at": "2026-10-01T12:00:00.000Z",
+      "url": "https://www.dailyfaceoff.com/teams/pittsburgh-penguins/line-combinations"
+    },
+    "SJS": {
+      "full_lineup": false,
+      "goalies": [
+        {
+          "name": "Keith Williams",
+          "nhl_id": 8470023
+        },
+        {
+          "name": "Robert Phillips",
+          "nhl_id": 8470043
+        }
+      ],
+      "injuries": {
+        "Russell Cooper": "dtd"
+      },
+      "ir": [],
+      "lines": {
+        "1": [
+          {
+            "name": "Arthur Garcia",
+            "nhl_id": 8470001
+          },
+          {
+            "name": "Andrew Lopez",
+            "nhl_id": 8470014
+          },
+          {
+            "name": "Russell Cooper",
+            "nhl_id": 8470041
+          }
+        ]
+      },
+      "listed": 5,
+      "matched": 5,
+      "pairs": {},
+      "pk": {},
+      "possible_scratches": [],
+      "pp": {
+        "1": [
+          {
+            "name": "Arthur Garcia",
+            "nhl_id": 8470001
+          },
+          {
+            "name": "Andrew Lopez",
+            "nhl_id": 8470014
+          },
+          {
+            "name": "Russell Cooper",
+            "nhl_id": 8470041
+          }
+        ]
+      },
+      "source": "DFO Projections",
+      "updated_at": "2026-10-01T12:00:00.000Z",
+      "url": "https://www.dailyfaceoff.com/teams/san-jose-sharks/line-combinations"
+    },
+    "STL": {
+      "full_lineup": false,
+      "goalies": [],
+      "injuries": {
+        "Roy Bailey": "dtd"
+      },
+      "ir": [],
+      "lines": {
+        "1": [
+          {
+            "name": "Timothy King",
+            "nhl_id": 8470045
+          },
+          {
+            "name": "Roy Bailey",
+            "nhl_id": 8470053
+          }
+        ]
+      },
+      "listed": 4,
+      "matched": 4,
+      "pairs": {
+        "1": [
+          {
+            "name": "Ethan Roberts",
+            "nhl_id": 8470026
+          },
+          {
+            "name": "Paul Baker",
+            "nhl_id": 8470036
+          }
+        ]
+      },
+      "pk": {},
+      "possible_scratches": [],
+      "pp": {
+        "1": [
+          {
+            "name": "Timothy King",
+            "nhl_id": 8470045
+          },
+          {
+            "name": "Roy Bailey",
+            "nhl_id": 8470053
+          },
+          {
+            "name": "Ethan Roberts",
+            "nhl_id": 8470026
+          }
+        ],
+        "2": [
+          {
+            "name": "Paul Baker",
+            "nhl_id": 8470036
+          }
+        ]
+      },
+      "source": "DFO Projections",
+      "updated_at": "2026-10-01T12:00:00.000Z",
+      "url": "https://www.dailyfaceoff.com/teams/st-louis-blues/line-combinations"
+    },
+    "TBL": {
+      "full_lineup": false,
+      "goalies": [],
+      "injuries": {},
+      "ir": [],
+      "lines": {},
+      "listed": 1,
+      "matched": 1,
+      "pairs": {
+        "1": [
+          {
+            "name": "Austin Reed",
+            "nhl_id": 8470085
+          }
+        ]
+      },
+      "pk": {},
+      "possible_scratches": [],
+      "pp": {
+        "1": [
+          {
+            "name": "Austin Reed",
+            "nhl_id": 8470085
+          }
+        ]
+      },
+      "source": "DFO Projections",
+      "updated_at": "2026-10-01T12:00:00.000Z",
+      "url": "https://www.dailyfaceoff.com/teams/tampa-bay-lightning/line-combinations"
+    },
+    "TOR": {
+      "full_lineup": false,
+      "goalies": [],
+      "injuries": {
+        "Kevin Miller": "dtd"
+      },
+      "ir": [],
+      "lines": {
+        "1": [
+          {
+            "name": "Kevin Miller",
+            "nhl_id": 8470055
+          }
+        ]
+      },
+      "listed": 2,
+      "matched": 2,
+      "pairs": {
+        "1": [
+          {
+            "name": "Kevin Wright",
+            "nhl_id": 8470079
+          }
+        ]
+      },
+      "pk": {},
+      "possible_scratches": [],
+      "pp": {
+        "1": [
+          {
+            "name": "Kevin Miller",
+            "nhl_id": 8470055
+          },
+          {
+            "name": "Kevin Wright",
+            "nhl_id": 8470079
+          }
+        ]
+      },
+      "source": "DFO Projections",
+      "updated_at": "2026-10-01T12:00:00.000Z",
+      "url": "https://www.dailyfaceoff.com/teams/toronto-maple-leafs/line-combinations"
+    },
+    "UTA": {
+      "full_lineup": false,
+      "goalies": [
+        {
+          "name": "Nicholas Walker",
+          "nhl_id": 8470073
+        }
+      ],
+      "injuries": {
+        "Douglas Taylor": "dtd"
+      },
+      "ir": [],
+      "lines": {
+        "1": [
+          {
+            "name": "Zachary Green",
+            "nhl_id": 8470019
+          },
+          {
+            "name": "Douglas Taylor",
+            "nhl_id": 8470091
+          }
+        ]
+      },
+      "listed": 4,
+      "matched": 4,
+      "pairs": {
+        "1": [
+          {
+            "name": "Scott Miller",
+            "nhl_id": 8470065
+          }
+        ]
+      },
+      "pk": {},
+      "possible_scratches": [],
+      "pp": {
+        "1": [
+          {
+            "name": "Zachary Green",
+            "nhl_id": 8470019
+          },
+          {
+            "name": "Douglas Taylor",
+            "nhl_id": 8470091
+          },
+          {
+            "name": "Scott Miller",
+            "nhl_id": 8470065
+          }
+        ]
+      },
+      "source": "DFO Projections",
+      "updated_at": "2026-10-01T12:00:00.000Z",
+      "url": "https://www.dailyfaceoff.com/teams/utah-mammoth/line-combinations"
+    },
+    "VAN": {
+      "full_lineup": false,
+      "goalies": [],
+      "injuries": {
+        "Gary Edwards": "dtd"
+      },
+      "ir": [],
+      "lines": {
+        "1": [
+          {
+            "name": "Jordan Wood",
+            "nhl_id": 8470031
+          },
+          {
+            "name": "Jason Perez",
+            "nhl_id": 8470032
+          },
+          {
+            "name": "Gary Edwards",
+            "nhl_id": 8470051
+          }
+        ]
+      },
+      "listed": 3,
+      "matched": 3,
+      "pairs": {},
+      "pk": {},
+      "possible_scratches": [],
+      "pp": {
+        "1": [
+          {
+            "name": "Jordan Wood",
+            "nhl_id": 8470031
+          },
+          {
+            "name": "Jason Perez",
+            "nhl_id": 8470032
+          },
+          {
+            "name": "Gary Edwards",
+            "nhl_id": 8470051
+          }
+        ]
+      },
+      "source": "DFO Projections",
+      "updated_at": "2026-10-01T12:00:00.000Z",
+      "url": "https://www.dailyfaceoff.com/teams/vancouver-canucks/line-combinations"
+    },
+    "VGK": {
+      "full_lineup": false,
+      "goalies": [],
+      "injuries": {
+        "John Garcia": "dtd"
+      },
+      "ir": [],
+      "lines": {
+        "1": [
+          {
+            "name": "John Garcia",
+            "nhl_id": 8470062
+          }
+        ]
+      },
+      "listed": 1,
+      "matched": 1,
+      "pairs": {},
+      "pk": {},
+      "possible_scratches": [],
+      "pp": {
+        "1": [
+          {
+            "name": "John Garcia",
+            "nhl_id": 8470062
+          }
+        ]
+      },
+      "source": "DFO Projections",
+      "updated_at": "2026-10-01T12:00:00.000Z",
+      "url": "https://www.dailyfaceoff.com/teams/vegas-golden-knights/line-combinations"
+    },
+    "WPG": {
+      "full_lineup": false,
+      "goalies": [],
+      "injuries": {
+        "Juan Nguyen": "dtd"
+      },
+      "ir": [],
+      "lines": {
+        "1": [
+          {
+            "name": "David Jackson",
+            "nhl_id": 8470044
+          },
+          {
+            "name": "Eric Davis",
+            "nhl_id": 8470072
+          },
+          {
+            "name": "Juan Nguyen",
+            "nhl_id": 8470086
+          }
+        ]
+      },
+      "listed": 3,
+      "matched": 3,
+      "pairs": {},
+      "pk": {},
+      "possible_scratches": [],
+      "pp": {
+        "1": [
+          {
+            "name": "David Jackson",
+            "nhl_id": 8470044
+          },
+          {
+            "name": "Eric Davis",
+            "nhl_id": 8470072
+          },
+          {
+            "name": "Juan Nguyen",
+            "nhl_id": 8470086
+          }
+        ]
+      },
+      "source": "DFO Projections",
+      "updated_at": "2026-10-01T12:00:00.000Z",
+      "url": "https://www.dailyfaceoff.com/teams/winnipeg-jets/line-combinations"
+    },
+    "WSH": {
+      "full_lineup": false,
+      "goalies": [
+        {
+          "name": "Jose Johnson",
+          "nhl_id": 8470024
+        }
+      ],
+      "injuries": {
+        "Jacob Rodriguez": "dtd"
+      },
+      "ir": [],
+      "lines": {
+        "1": [
+          {
+            "name": "Keith Adams",
+            "nhl_id": 8470003
+          },
+          {
+            "name": "C. Hill",
+            "nhl_id": 8470027
+          },
+          {
+            "name": "Jacob Rodriguez",
+            "nhl_id": 8470081
+          }
+        ]
+      },
+      "listed": 5,
+      "matched": 5,
+      "pairs": {
+        "1": [
+          {
+            "name": "Gabriel Sanchez",
+            "nhl_id": 8470039
+          }
+        ]
+      },
+      "pk": {},
+      "possible_scratches": [],
+      "pp": {
+        "1": [
+          {
+            "name": "Keith Adams",
+            "nhl_id": 8470003
+          },
+          {
+            "name": "C. Hill",
+            "nhl_id": 8470027
+          },
+          {
+            "name": "Jacob Rodriguez",
+            "nhl_id": 8470081
+          },
+          {
+            "name": "Gabriel Sanchez",
+            "nhl_id": 8470039
+          }
+        ]
+      },
+      "source": "DFO Projections",
+      "updated_at": "2026-10-01T12:00:00.000Z",
+      "url": "https://www.dailyfaceoff.com/teams/washington-capitals/line-combinations"
+    }
+  }
+}
