@@ -1,5 +1,6 @@
 {
   "espn_league_id": 1023106173,
+  "games_method": "daily actual stats GP (34), else GS (0), else 1 when a daily line exists; starter slots only",
   "groups": {
     "goalies": [
       "Goalie"
@@ -15,6 +16,7 @@
   "method": "player.stats appliedTotal (statSourceId=0, statSplitTypeId=5) attributed to that day's lineupSlotId",
   "periods": {
     "failed": [],
+    "final": 190,
     "first": 1,
     "latest": 21,
     "ok": 21
@@ -35,6 +37,12 @@
       "bench_il": 631.2,
       "delta": -28.7,
       "espn_points": 2868.9,
+      "games": {
+        "Defense": 45,
+        "Forward": 81,
+        "Goalie": 18,
+        "Util": 9
+      },
       "goalies": 487.6,
       "name": "Crease Crashers",
       "skaters": 2352.6,
@@ -51,6 +59,12 @@
       "bench_il": 629.9,
       "delta": -28.7,
       "espn_points": 2863.0,
+      "games": {
+        "Defense": 42,
+        "Forward": 76,
+        "Goalie": 17,
+        "Util": 8
+      },
       "goalies": 496.3,
       "name": "Five Hole Heroes",
       "skaters": 2338.0,
@@ -67,6 +81,12 @@
       "bench_il": 547.4,
       "delta": -24.8,
       "espn_points": 2488.0,
+      "games": {
+        "Defense": 48,
+        "Forward": 86,
+        "Goalie": 19,
+        "Util": 10
+      },
       "goalies": 414.6,
       "name": "Biscuit Bandits",
       "skaters": 2048.6,

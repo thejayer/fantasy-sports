@@ -138,6 +138,15 @@ totals. The hub does **not** invent player week lines ESPN omitted, and does
   (`view=depth`). Open to every member; `team=` picks any franchise and
   defaults to the viewer's linked one. Reads `values.json`, `schedule.json`
   (`getHockeySchedule`) and the bios/lines join — server-rendered forms only.
+- **H5b (landed): daily tools.** **Start / sit** (`view=lineup&date=`: best
+  lineup for a day from ESPN slot counts, with reasons for every sit), **Goalie
+  starts** (`view=goalies&date=`: start chance from Daily Faceoff or share of
+  starts, win / saves / GA / shutout from `team_strength.json`
+  via `getHockeyTeamStrength`, scored with league weights), **Streaming
+  planner** (`view=streaming`: open slots per day and the free agents who fill
+  them) and **Games-played pace** (`view=pace`: starter games per slot against
+  ESPN's GP caps). Pacing reads `teams[].games` + `periods.final` that the
+  season-points analysis sync now writes for hockey.
 - The hockey **`projections` tab** is the values board: value, ROS, ESPN
   per-game, share played, age, data-source tag, a recent-form setting
   (`?recent=0…1`, re-blended from saved inputs in `lib/hockey-values.ts`),

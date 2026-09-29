@@ -60,7 +60,7 @@ export function windowStart(
 /** ``sj.fixtures.FIXED_TIMESTAMP`` date. */
 export const FIXTURE_STAMP = "2026-07-27";
 
-function addDays(iso: string, days: number): string {
+export function addDays(iso: string, days: number): string {
   const d = new Date(`${iso}T00:00:00Z`);
   d.setUTCDate(d.getUTCDate() + days);
   return d.toISOString().slice(0, 10);

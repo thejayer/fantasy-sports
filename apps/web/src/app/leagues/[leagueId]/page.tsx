@@ -5,7 +5,8 @@ import type { MatchupsView } from "@/components/MatchupsPanel";
 import type { ToolsView } from "@/components/ToolsPanel";
 import { parseAnalysisSeriesMode } from "@/lib/baseball-analysis";
 import { parseBaseballToolsView, parseTrailingWindow } from "@/lib/baseball-tools";
-import { parseHockeyToolsView } from "@/lib/hockey-tools";
+import { HOCKEY_DAILY_VIEWS, parseHockeyToolsView } from "@/lib/hockey-tools";
+import { parseDate } from "@/lib/hockey-daily";
 import type { ActivityView } from "@/lib/activity";
 import {
   getDraftSimSnapshot,
@@ -16,6 +17,7 @@ import {
   getHockeyNhl,
   getHockeyValues,
   getHockeySchedule,
+  getHockeyTeamStrength,
   getPlayerMap,
   getPlayoffOddsSamples,
   getPlayoffOddsSnapshot,
@@ -84,6 +86,7 @@ type Props = {
     rookies?: string;
     tall?: string;
     iron?: string;
+    date?: string;
   }>;
 };
 
@@ -141,6 +144,7 @@ export default async function LeagueDetailPage({ params, searchParams }: Props) 
     rookies: rookiesParam,
     tall: tallParam,
     iron: ironParam,
+    date: dateParam,
   } = await searchParams;
   const seasons = await getLeagueSeasons(leagueId);
   const season = seasonParam ? Number(seasonParam) : undefined;
@@ -205,7 +209,8 @@ export default async function LeagueDetailPage({ params, searchParams }: Props) 
 
   const baseballAnalysis =
     (league.sport === "baseball" || league.sport === "hockey") &&
-    tab === "analysis"
+    (tab === "analysis" ||
+      (league.sport === "hockey" && tab === "tools" && hockeyToolsView === "pace"))
       ? await getBaseballAnalysis(league.league_id, league.season)
       : null;
 
@@ -226,6 +231,11 @@ export default async function LeagueDetailPage({ params, searchParams }: Props) 
   const hockeySchedule = hockeyDecisionTools
     ? await getHockeySchedule(league.league_id, league.season)
     : null;
+  // H5b goalie start model: goals / shots for and against per club.
+  const hockeyTeamStrength =
+    league.sport === "hockey" && tab === "tools" && HOCKEY_DAILY_VIEWS.has(hockeyToolsView)
+      ? await getHockeyTeamStrength(league.league_id, league.season)
+      : null;
   const hockeyBoardQuery = parseHockeyBoardQuery({
     pos: posParam,
     who: whoParam,
@@ -430,6 +440,7 @@ export default async function LeagueDetailPage({ params, searchParams }: Props) 
     ids: parseIds(idsParam),
     drop: dropParam && /^\d+$/.test(dropParam) ? dropParam : null,
     add: addParam && /^\d+$/.test(addParam) ? addParam : null,
+    date: parseDate(dateParam),
   };
   const draftPage = Math.max(
     1,
@@ -501,6 +512,7 @@ export default async function LeagueDetailPage({ params, searchParams }: Props) 
       hockeyBoardQuery={hockeyBoardQuery}
       hockeySchedule={hockeySchedule}
       hockeyDecisionQuery={league.sport === "hockey" ? hockeyDecisionQuery : undefined}
+      hockeyTeamStrength={hockeyTeamStrength}
     />
   );
 }
