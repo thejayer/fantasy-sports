@@ -167,6 +167,8 @@ export type HockeyLinesSnapshot = {
   source: string;
   teams: Record<string, { url: string | null; updated_at: string | null; full_lineup: boolean }>;
   players: Record<string, HockeyLinePlayer>;
+  /** H4: `{nhl_id: {date: {status, opp, home}}}` for goalies Daily Faceoff names. */
+  goalie_starts?: Record<string, Record<string, { status: string; opp: string; home: boolean }>>;
   errors: string[];
 };
 

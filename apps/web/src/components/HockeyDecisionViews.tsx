@@ -25,6 +25,8 @@ export type DecisionQuery = {
   ids: string[];
   drop: string | null;
   add: string | null;
+  /** H5b daily tools: `date=YYYY-MM-DD` (defaults to the first day of the window). */
+  date?: string | null;
 };
 
 const WAIVER_ROWS = 50;

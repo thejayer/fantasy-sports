@@ -34,6 +34,12 @@ import type { BaseballToolsView, TrailingWindow } from "@/lib/baseball-tools";
 import type { HockeyToolsView } from "@/lib/hockey-tools";
 import type { DecisionQuery } from "@/components/HockeyDecisionViews";
 import { windowStart, type HockeyScheduleSnapshot } from "@/lib/hockey-decisions";
+import {
+  irIds,
+  leagueSlots,
+  leagueWeights,
+  type HockeyTeamStrengthSnapshot,
+} from "@/lib/hockey-daily";
 import { hockeyBioIndex, type HockeyNhlSnapshot } from "@/lib/hockey-nhl";
 import {
   hockeyValueIndex,
@@ -410,6 +416,7 @@ export function LeagueView({
   hockeyBoardQuery,
   hockeySchedule = null,
   hockeyDecisionQuery,
+  hockeyTeamStrength = null,
 }: {
   league: LeagueSnapshot;
   seasons: number[];
@@ -477,8 +484,16 @@ export function LeagueView({
   hockeySchedule?: HockeyScheduleSnapshot | null;
   /** Hockey decision-tool query (`team`, filters, `ids`, `drop`, `add`). */
   hockeyDecisionQuery?: DecisionQuery;
+  /** Hockey club strength (`nhl/team_strength.json`) for the goalie model (H5b). */
+  hockeyTeamStrength?: HockeyTeamStrengthSnapshot | null;
 }) {
   const leagueId = league.league_id;
+  const hockeyCtx = {
+    values: hockeyValues,
+    bios: hockeyBioIndex(hockeyNhl),
+    schedule: hockeySchedule,
+    start: windowStart(hockeyValues, hockeySchedule),
+  };
   const isBaseball = league.sport === "baseball";
   const isHockey = league.sport === "hockey";
   const isGolf = league.sport === "golf";
@@ -905,12 +920,16 @@ export function LeagueView({
             view={hockeyToolsView}
             viewerTeamId={viewerTeamId}
             query={hockeyDecisionQuery}
-            ctx={{
-              values: hockeyValues,
-              bios: hockeyBioIndex(hockeyNhl),
-              schedule: hockeySchedule,
-              start: windowStart(hockeyValues, hockeySchedule),
+            ctx={hockeyCtx}
+            daily={{
+              ...hockeyCtx,
+              strength: hockeyTeamStrength,
+              lines: hockeyNhl?.lines,
+              weights: leagueWeights(league),
+              slots: leagueSlots(league),
+              irIds: irIds(league),
             }}
+            slotPoints={baseballAnalysis?.slotPoints}
           />
         ) : (
           <ToolsPanel

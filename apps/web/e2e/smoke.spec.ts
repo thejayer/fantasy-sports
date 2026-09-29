@@ -630,6 +630,37 @@ test.describe("hub smoke", () => {
     await expect(page.locator(".depth-bar-row").first()).toBeVisible();
   });
 
+  test("hockey daily tools: start/sit, goalies, streaming, GP pace (HOCKEY-PORT H5b)", async ({
+    page,
+  }) => {
+    // Start/sit: day chips, a filled lineup, and reasons on the bench.
+    await page.goto("/leagues/hockey-main?tab=tools&view=lineup&team=1");
+    await expect(page.getByText(/Best lineup for/)).toBeVisible();
+    await expect(page.getByRole("columnheader", { name: "Expected" }).first()).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Sits" })).toBeVisible();
+    await page.locator('.table-filters a').nth(2).click();
+    await expect(page).toHaveURL(/date=\d{4}-\d{2}-\d{2}/);
+
+    // Goalie starts: model columns.
+    await page.goto("/leagues/hockey-main?tab=tools&view=goalies");
+    for (const header of ["Start", "Win", "Saves", "If starts"]) {
+      await expect(page.getByRole("columnheader", { name: header, exact: true })).toBeVisible();
+    }
+
+    // Streaming planner: weekly adds + day-by-day.
+    await page.goto("/leagues/hockey-main?tab=tools&view=streaming&team=1");
+    await expect(page.getByRole("heading", { name: "Best adds this week" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Day by day" })).toBeVisible();
+
+    // GP pace: every capped slot with a status.
+    await page.goto("/leagues/hockey-main?tab=tools&view=pace&team=1");
+    await expect(page.getByText(/Day \d+ of \d+/)).toBeVisible();
+    for (const slot of ["Forwards", "Defense", "Goalies", "Utility"]) {
+      await expect(page.getByRole("cell", { name: slot, exact: true })).toBeVisible();
+    }
+    await expect(page.locator(".pace-track").first()).toBeVisible();
+  });
+
   test("hockey roster and waivers show NHL bio + ice time (HOCKEY-PORT H1)", async ({
     page,
   }) => {

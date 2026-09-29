@@ -34,6 +34,14 @@ ANALYSIS_METHOD = (
 # Daily actuals on a scoring period (not season / projected / trailing).
 STAT_SOURCE_ACTUAL = 0
 STAT_SPLIT_DAILY = 5
+# Hockey GP-cap pacing (HOCKEY-PORT.md H5b): ESPN counts a starter-slot game
+# against the slot's GP limit. Daily stat ids: 34 = GP (skaters), 0 = GS
+# (goalies). A daily actual line without either still means a game played.
+GAMES_METHOD = (
+    "daily actual stats GP (34), else GS (0), else 1 when a daily line exists; "
+    "starter slots only"
+)
+GAME_STAT_KEYS = ("34", "0")
 
 
 @dataclass(frozen=True)
@@ -50,6 +58,8 @@ class AnalysisSportProfile:
     sample_slot_shares: dict[str, float]
     fallback_position_map: dict[int, str]
     espn_position_import: str
+    # Count games per starter slot (hockey GP caps).
+    count_games: bool = False
 
     @property
     def starter_slots(self) -> frozenset[str]:
@@ -160,6 +170,7 @@ HOCKEY_PROFILE = AnalysisSportProfile(
         8: "IR",
     },
     espn_position_import="espn_api.hockey.constant",
+    count_games=True,
 )
 
 PROFILE_BY_SPORT: dict[str, AnalysisSportProfile] = {
@@ -234,14 +245,12 @@ def round_points(value: float) -> float:
     return round(float(value), 1)
 
 
-def daily_applied_total(player: dict[str, Any], period: int) -> float | None:
-    """Return that period's actual daily ``appliedTotal``, or None.
-
-    Ignores ``playerPoolEntry.appliedStatTotal`` (season-to-date / inflated).
-    """
+def _daily_actual_entries(player: dict[str, Any], period: int) -> list[dict[str, Any]]:
+    """That period's daily actual stat entries (source 0, split 5)."""
     stats = player.get("stats")
     if not isinstance(stats, list):
-        return None
+        return []
+    out: list[dict[str, Any]] = []
     for entry in stats:
         if not isinstance(entry, dict):
             continue
@@ -253,6 +262,34 @@ def daily_applied_total(player: dict[str, Any], period: int) -> float | None:
         split = entry.get("statSplitTypeId")
         if split is not None and split != STAT_SPLIT_DAILY:
             continue
+        out.append(entry)
+    return out
+
+
+def daily_games(player: dict[str, Any], period: int) -> float:
+    """Games played that scoring period (0 when there is no daily line)."""
+    for entry in _daily_actual_entries(player, period):
+        stats = entry.get("stats")
+        if isinstance(stats, dict):
+            for key in GAME_STAT_KEYS:
+                raw = stats.get(key, stats.get(int(key)))
+                if raw is None:
+                    continue
+                try:
+                    return max(0.0, float(raw))
+                except (TypeError, ValueError):
+                    continue
+        if entry.get("appliedTotal") is not None:
+            return 1.0
+    return 0.0
+
+
+def daily_applied_total(player: dict[str, Any], period: int) -> float | None:
+    """Return that period's actual daily ``appliedTotal``, or None.
+
+    Ignores ``playerPoolEntry.appliedStatTotal`` (season-to-date / inflated).
+    """
+    for entry in _daily_actual_entries(player, period):
         raw = entry.get("appliedTotal")
         if raw is None:
             continue
@@ -315,6 +352,51 @@ def parse_mroster_period(
                 slots[slot] = slots.get(slot, 0.0) + points
             else:
                 slots[flex] = slots.get(flex, 0.0) + points
+    return by_team
+
+
+def parse_mroster_games(
+    payload: dict[str, Any],
+    period: int,
+    profile: AnalysisSportProfile | None = None,
+) -> dict[int, dict[str, float]]:
+    """One ``mRoster`` payload -> team_id -> starter slot -> games played.
+
+    Bench / IR games never count against a GP cap, so they are skipped.
+    Unknown non-bench slots collapse into the flex slot (as for points).
+    """
+    sport = profile or BASEBALL_PROFILE
+    by_team: dict[int, dict[str, float]] = {}
+    teams = payload.get("teams")
+    if not isinstance(teams, list):
+        return by_team
+    for team in teams:
+        if not isinstance(team, dict):
+            continue
+        try:
+            team_id = int(team.get("id") if team.get("id") is not None else team.get("teamId"))
+        except (TypeError, ValueError):
+            continue
+        roster = team.get("roster") if isinstance(team.get("roster"), dict) else {}
+        entries = roster.get("entries") if isinstance(roster, dict) else None
+        if not isinstance(entries, list):
+            continue
+        games = by_team.setdefault(team_id, {slot: 0.0 for slot in sport.slot_columns})
+        for entry in entries:
+            if not isinstance(entry, dict):
+                continue
+            slot = slot_name_from_id(entry.get("lineupSlotId"), sport) or sport.flex_slot
+            if slot in sport.bench_slots:
+                continue
+            if slot not in sport.starter_slots:
+                slot = sport.flex_slot
+            pool = entry.get("playerPoolEntry")
+            player = pool.get("player") if isinstance(pool, dict) else None
+            if not isinstance(player, dict):
+                player = entry.get("player") if isinstance(entry.get("player"), dict) else None
+            if not isinstance(player, dict):
+                continue
+            games[slot] = games.get(slot, 0.0) + daily_games(player, period)
     return by_team
 
 
@@ -565,11 +647,45 @@ def build_timeseries_teams(
     return teams
 
 
+def _positive(value: Any) -> int | None:
+    try:
+        number = int(value)
+    except (TypeError, ValueError):
+        return None
+    return number if number > 0 else None
+
+
+def current_period(league: Any, snapshot: dict[str, Any]) -> int | None:
+    """Today's scoring period, never past the season's final one.
+
+    ESPN ``status.finalScoringPeriod`` is the **last day of the season**, not
+    today — walking to it mid-season stores empty future days that the
+    incremental sync would never re-fetch.
+    """
+    current = _positive(getattr(league, "current_week", None))
+    if current is None:
+        current = _positive(getattr(league, "scoringPeriodId", None))
+    final = _positive(getattr(league, "finalScoringPeriod", None))
+    if current is not None and final is not None:
+        current = min(current, final)
+    if current is None:
+        current = _positive(snapshot.get("current_week"))
+    return current
+
+
+def final_period(league: Any) -> int | None:
+    """ESPN's last regular-season scoring period (season length in days)."""
+    return _positive(getattr(league, "finalScoringPeriod", None))
+
+
 def analysis_periods(league: Any, snapshot: dict[str, Any]) -> list[int]:
     """Scoring periods to walk (1..current), capped like the txn fallback."""
     discovered = discover_scoring_periods(league, max_periods=txn_max_periods())
     # Period 0 is preseason / undated — skip for daily applied totals.
     periods = [p for p in discovered if p >= 1]
+    today = current_period(league, snapshot)
+    if today is not None:
+        periods = [p for p in periods if p <= today]
     if periods:
         return periods
     current = int(snapshot.get("current_week") or 0)
@@ -635,14 +751,16 @@ def fetch_mteam(league: Any) -> dict[str, Any] | None:
     return data if isinstance(data, dict) else None
 
 
-def existing_period_slots(document: dict[str, Any] | None) -> dict[int, dict[int, dict[str, float]]]:
-    """Restore per-period slot maps from a prior ``slot_points.json``."""
+def existing_period_slots(
+    document: dict[str, Any] | None, key: str = "period_slots"
+) -> dict[int, dict[int, dict[str, float]]]:
+    """Restore per-period slot maps (``period_slots`` / ``period_games``)."""
     out: dict[int, dict[int, dict[str, float]]] = {}
     if not isinstance(document, dict):
         return out
     if document.get("method") != ANALYSIS_METHOD:
         return out
-    raw = document.get("period_slots")
+    raw = document.get(key)
     if not isinstance(raw, dict):
         return out
     for period_key, teams in raw.items():
@@ -696,10 +814,12 @@ def build_slot_points_document(
     synced_at: str | None,
     incremental: bool,
     profile: AnalysisSportProfile | None = None,
+    period_games: dict[int, dict[int, dict[str, float]]] | None = None,
+    season_final: int | None = None,
 ) -> dict[str, Any]:
     sport = profile or BASEBALL_PROFILE
     ok = sorted(periods_ok)
-    return {
+    doc = {
         "schema_version": ANALYSIS_SCHEMA_VERSION,
         "league_id": league_id,
         "espn_league_id": espn_league_id,
@@ -722,6 +842,37 @@ def build_slot_points_document(
         ),
         "period_slots": serialize_period_slots(period_slots),
     }
+    if sport.count_games and period_games is not None:
+        attach_games(doc, games_totals(period_games, sport), sport)
+        doc["period_games"] = serialize_period_slots(period_games)
+        doc["periods"]["final"] = season_final
+    return doc
+
+
+def games_totals(
+    period_games: dict[int, dict[int, dict[str, float]]],
+    profile: AnalysisSportProfile,
+) -> dict[int, dict[str, float]]:
+    totals: dict[int, dict[str, float]] = {}
+    for day in period_games.values():
+        for team_id, slots in day.items():
+            acc = totals.setdefault(team_id, {slot: 0.0 for slot in profile.slot_columns})
+            for slot, value in slots.items():
+                acc[slot] = acc.get(slot, 0.0) + float(value or 0.0)
+    return totals
+
+
+def attach_games(
+    doc: dict[str, Any],
+    totals: dict[int, dict[str, float]],
+    profile: AnalysisSportProfile,
+) -> None:
+    """Add ``games_method`` and ``teams[].games`` (hockey GP-cap pacing)."""
+    doc["games_method"] = GAMES_METHOD
+    for row in doc["teams"]:
+        got = totals.get(int(row["team_id"]))
+        if got is not None:
+            row["games"] = {slot: round(got.get(slot, 0.0)) for slot in profile.slot_columns}
 
 
 def build_timeseries_document(
@@ -815,6 +966,10 @@ def sync_season_points_analysis(
 
     prior = None if force else read_analysis(league_id, season, "slot_points", store_dir=store_dir)
     period_slots = existing_period_slots(prior)
+    period_games = existing_period_slots(prior, "period_games") if sport.count_games else {}
+    if sport.count_games and period_slots and not period_games:
+        # Older file without game counts: walk every period once more.
+        period_slots = {}
     already = set(period_slots)
     to_fetch = [p for p in periods if p not in already]
     # Re-fetch the latest period on an in-progress season so today's lineup
@@ -876,6 +1031,8 @@ def sync_season_points_analysis(
             failed.append(period)
             continue
         period_slots[period] = day
+        if sport.count_games:
+            period_games[period] = parse_mroster_games(payload, period, sport)
         names.update(extract_team_names(payload))
         espn_points.update(extract_espn_team_points(payload))
         fetched += 1
@@ -913,6 +1070,8 @@ def sync_season_points_analysis(
         synced_at=synced_at,
         incremental=bool(already) and not force,
         profile=sport,
+        period_games=period_games if sport.count_games else None,
+        season_final=final_period(league),
     )
     series_doc = build_timeseries_document(
         league_id=league_id,
@@ -929,6 +1088,37 @@ def sync_season_points_analysis(
     write_analysis(slot_doc, "slot_points", store_dir=store_dir)
     write_analysis(series_doc, "points_timeseries", store_dir=store_dir)
     return 2 if (fetched or already) else 0
+
+
+SAMPLE_SEASON_DAYS = 190
+
+
+def sample_games(
+    snapshot: dict[str, Any], n_periods: int, profile: AnalysisSportProfile
+) -> dict[int, dict[str, float]]:
+    """Synthetic starter games per slot for fixtures (not a live ESPN pull).
+
+    Lineup slots x days x the share of days a club plays (82 games in ~190
+    days), with a small per-team wobble so pacing differs between teams.
+    """
+    counts = (snapshot.get("settings") or {}).get("position_slot_counts") or {}
+    slot_count = {
+        "Forward": counts.get("F", 9),
+        "Defense": counts.get("D", 5),
+        "Goalie": counts.get("G", 2),
+        "Util": counts.get("UTIL", 1),
+    }
+    out: dict[int, dict[str, float]] = {}
+    for team in snapshot.get("teams") or []:
+        if not isinstance(team, dict) or team.get("team_id") is None:
+            continue
+        team_id = int(team["team_id"])
+        wobble = 1.0 + 0.06 * ((team_id % 5) - 2)
+        out[team_id] = {
+            slot: float(round(slot_count.get(slot, 0) * n_periods * 0.43 * wobble))
+            for slot in profile.slot_columns
+        }
+    return out
 
 
 def sample_analysis_for_snapshot(
@@ -1031,6 +1221,10 @@ def sample_analysis_for_snapshot(
     )
     # Fixtures omit the bulky period_slots map — hub only needs teams[].
     slot_doc.pop("period_slots", None)
+    if sport.count_games:
+        attach_games(slot_doc, sample_games(snapshot, n_periods, sport), sport)
+        # Synthetic season length: about an NHL regular season (Oct to mid-Apr).
+        slot_doc["periods"]["final"] = SAMPLE_SEASON_DAYS
     series_doc = build_timeseries_document(
         league_id=league_id,
         espn_league_id=int(espn_league_id) if espn_league_id else None,

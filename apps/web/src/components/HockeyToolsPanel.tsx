@@ -8,6 +8,14 @@ import {
   WaiverBoardView,
   type DecisionQuery,
 } from "@/components/HockeyDecisionViews";
+import {
+  GoaliesView,
+  LineupView,
+  PaceView,
+  StreamingView,
+} from "@/components/HockeyDailyViews";
+import type { SlotPointsSnapshot } from "@/lib/baseball-analysis";
+import type { DailyContext } from "@/lib/hockey-daily";
 import type { DecisionContext } from "@/lib/hockey-decisions";
 import {
   HOCKEY_TOOL_CARDS,
@@ -82,12 +90,18 @@ export function HockeyToolsPanel({
   ctx,
   query,
   viewerTeamId,
+  daily,
+  slotPoints,
 }: {
   league: LeagueSnapshot;
   view?: HockeyToolsView;
   ctx?: DecisionContext;
   query?: DecisionQuery;
   viewerTeamId?: number;
+  /** H5b: per-day inputs (team strength, goalie starts, slots, weights). */
+  daily?: DailyContext;
+  /** H5b: games used per slot (`analysis/slot_points.json`). */
+  slotPoints?: SlotPointsSnapshot | null;
 }) {
   const scoringType = league.scoring_type ?? league.settings?.scoring_type;
   const allowed = new Set(hockeyToolsForScoring(scoringType));
@@ -193,6 +207,22 @@ export function HockeyToolsPanel({
       ) : null}
       {ctx && query && active === "depth" ? (
         <DepthView league={league} ctx={ctx} query={query} viewerTeamId={viewerTeamId} />
+      ) : null}
+      {daily && query && active === "lineup" ? (
+        <LineupView league={league} ctx={daily} query={query} viewerTeamId={viewerTeamId} />
+      ) : null}
+      {daily && query && active === "goalies" ? <GoaliesView league={league} ctx={daily} query={query} /> : null}
+      {daily && query && active === "streaming" ? (
+        <StreamingView league={league} ctx={daily} query={query} viewerTeamId={viewerTeamId} />
+      ) : null}
+      {query && active === "pace" ? (
+        <PaceView
+          league={league}
+          slotPoints={slotPoints}
+          schedule={ctx?.schedule}
+          query={query}
+          viewerTeamId={viewerTeamId}
+        />
       ) : null}
       {active === "categories" && board ? <CategoryBoardView board={board} /> : null}
       {active === "categories" && !board ? (

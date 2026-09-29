@@ -57,6 +57,8 @@ export type SlotPointsTeam = {
   bench_il: number;
   espn_points: number | null;
   delta: number | null;
+  /** Hockey (H5b): starter games per slot, for GP-cap pacing. */
+  games?: Partial<Record<string, number>>;
 };
 
 export type SlotPointsSnapshot = {
@@ -69,11 +71,15 @@ export type SlotPointsSnapshot = {
   method?: string;
   synced_at?: string;
   incremental?: boolean;
+  /** Hockey (H5b): how `teams[].games` was counted. */
+  games_method?: string;
   periods?: {
     first?: number | null;
     latest?: number | null;
     ok?: number;
     failed?: number[];
+    /** Hockey (H5b): ESPN finalScoringPeriod — the regular season in days. */
+    final?: number | null;
   };
   slots?: string[];
   groups?: Record<string, string[]>;
