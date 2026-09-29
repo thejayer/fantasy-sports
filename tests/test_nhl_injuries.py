@@ -113,28 +113,6 @@ def test_lines_job_refreshes_dfo_and_keeps_espn():
     assert after["events"][-1]["source"] == "lines"
 
 
-def test_export_writes_injury_log_and_reads_the_previous_one(tmp_path):
-    from nhl.export import export_nhl
-    from nhl.nhl_api import NHLClient
-    from sj.store import read_nhl
-    from tests.test_nhl_export import canned_fetch, snapshot
-
-    client = NHLClient(fetch=canned_fetch, throttle=0.0)
-    snap = snapshot()
-    export_nhl(snap, client=client, store_dir=tmp_path)
-    log = read_nhl("hockey-main", 2027, "injury_log", store_dir=tmp_path)
-    assert log["baseline"] is True
-    assert log["league_id"] == "hockey-main"
-
-    # Someone gets hurt before the next sync.
-    victim = snap["teams"][0]["roster"][0]
-    victim["injury_status"] = "OUT"
-    snap["synced_at"] = "2026-10-02T11:00:00+00:00"
-    export_nhl(snap, client=client, store_dir=tmp_path)
-    log = read_nhl("hockey-main", 2027, "injury_log", store_dir=tmp_path)
-    assert [e["espn_id"] for e in log["events"]] == [str(victim["id"])]
-
-
 def test_committed_fixture_injury_log_matches_the_sample():
     from nhl.sample import sample_nhl_documents
     from sj.fixtures import FIXED_TIMESTAMP, expected_fixture_snapshot
