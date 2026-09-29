@@ -738,6 +738,12 @@ def sync_league_season(
         from sj.baseball_enrich import enrich_baseball_trailing_stats
 
         enrich_baseball_trailing_stats(league, snapshot)
+    if spec.sport == "hockey" and season == spec.current_season:
+        # ESPN-wide % rostered / 7-day change (HOCKEY-PORT H7) — "now" data,
+        # so current season only; failures never fail the league-season.
+        from sj.hockey_ownership import attach_hockey_ownership
+
+        attach_hockey_ownership(league, snapshot)
     location = write_snapshot(snapshot, store_dir=store_dir)
     # Football box scores are a side concern (roadmap 8.1) — after the season
     # write so a failed week pull never leaves a half-written manifest.

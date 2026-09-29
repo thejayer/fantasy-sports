@@ -380,7 +380,7 @@ Daily Faceoff side and carries ESPN over.
 - "Nearing return" in Evaluate a move (H5) can now read the log — not wired
   yet.
 
-### H7: market signals
+### H7: market signals — LANDED (ESPN; Yahoo deferred)
 
 - ESPN: `kona_player_info` with `x-fantasy-filter` `filterIds` **and**
   `scoringPeriodId` (without it ESPN returns 400); `ownership.percentOwned` /
@@ -391,6 +391,29 @@ Daily Faceoff side and carries ESPN over.
   Manager. Rinkside hit a 403 on the collection-with-`out=percent_owned` call;
   the three-step sequence is the fix but is unverified against live Yahoo.
 - Drop protection: average of available sources ≥ threshold (default 85%).
+
+**Landed as:** `src/sj/hockey_ownership.py`, called by `sj sync` for the
+current hockey season before the season write: every rostered player and
+free agent gets `percent_owned` / `percent_change` (7-day) /
+`percent_started` in chunks of 50. **Checked live** (2027 preseason, 248/248
+players): `kona_player_info` + `scoringPeriodId` + `filterIds` still 400s
+unless the filter also sorts (`sortPercOwned`) — with the sort it works;
+`kona_playercard` + bare `filterIds` is the fallback. Failures print to
+stderr and never fail the sync. `build_values` copies ownership into
+`values.json` (ESPN's -1 "omitted" → null).
+
+- Drop protection (ESPN only for now): `PROTECT_OWNED = 85` in
+  `lib/hockey-decisions.ts` — protected players (🔒) never count as a team's
+  "weakest", and Evaluate a move warns before dropping one. Live, 113 of 198
+  rostered players are protected and no free agent is (the best sit ~74%).
+- Waiver board: **ESPN %** column with the 7-day change and a **Rising**
+  filter (+1 point or more in 7 days); Compare adds ESPN % rostered;
+  Weakest to best marks protected players; the Waivers tab's % Own gains
+  the change.
+- Fixtures: `sj.sample.sample_hockey_ownership` derives a synthetic change
+  from the player id (not the seeded RNG, so nothing else moves).
+- Yahoo is deferred: it needs a Yahoo developer app and an owner refresh
+  token in Secret Manager, and Rinkside's call was never verified.
 
 ### H8: personal layer
 

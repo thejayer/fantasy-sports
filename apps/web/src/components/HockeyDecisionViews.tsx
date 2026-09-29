@@ -5,6 +5,8 @@ import type { LeagueSnapshot } from "@/lib/data";
 import {
   COMPARE_METRICS,
   MAX_GOALIES,
+  PROTECT_OWNED,
+  RISING_CHANGE,
   compareFreeAgents,
   depthChart,
   evaluateMove,
@@ -29,7 +31,7 @@ export type DecisionQuery = {
   date?: string | null;
 };
 
-const WAIVER_ROWS = 50;
+const WAIVER_ROWS = 25;
 
 function base(league: LeagueSnapshot, view: string): string {
   return `/leagues/${league.league_id}?season=${league.season}&tab=tools&view=${view}`;
@@ -90,6 +92,24 @@ function PlayerCell({ row }: { row: DecisionRow }) {
   );
 }
 
+/** ESPN % rostered with its 7-day change; 🔒 when protected. */
+function OwnedCell({ row }: { row: DecisionRow }) {
+  if (row.owned == null) return <>—</>;
+  const change = row.ownedChange;
+  return (
+    <>
+      {row.protected ? <span title={`Protected: ${PROTECT_OWNED}%+ of ESPN leagues`}>🔒 </span> : null}
+      {row.owned.toFixed(1)}
+      {change != null && change !== 0 ? (
+        <span className="league-meta" title="Change over the last 7 days">
+          {" "}
+          ({formatDelta(change, 1)})
+        </span>
+      ) : null}
+    </>
+  );
+}
+
 function noValues(league: LeagueSnapshot) {
   return (
     <EmptyState title="No hockey player values yet">
@@ -114,7 +134,8 @@ export function WaiverBoardView({
   viewerTeamId?: number;
 }) {
   if (!ctx.values) return noValues(league);
-  // Top 50 keeps the document under the HTML budget (roadmap 7.11).
+  // Top 25 (like the projections board) keeps a live 50-agent pool under the
+  // HTML budget (roadmap 7.11); the filters narrow the rest.
   const all = waiverBoard(ctx, query.teamId, query.filters);
   const rows = all.slice(0, WAIVER_ROWS);
   const f = query.filters;
@@ -123,7 +144,7 @@ export function WaiverBoardView({
     const params = new URLSearchParams();
     if (query.teamId != null) params.set("team", String(query.teamId));
     if (next.pos !== "all") params.set("pos", next.pos);
-    for (const k of ["healthy", "pp", "rookies", "tall", "iron"] as const) {
+    for (const k of ["healthy", "pp", "rookies", "tall", "iron", "rising"] as const) {
       if (next[k]) params.set(k, "1");
     }
     const q = params.toString();
@@ -155,6 +176,7 @@ export function WaiverBoardView({
         {chip("Rookies", f.rookies, { rookies: !f.rookies })}
         {chip(`6'3"+`, f.tall, { tall: !f.tall })}
         {chip("Iron men", f.iron, { iron: !f.iron })}
+        {chip("Rising", f.rising, { rising: !f.rising })}
       </div>
       <form method="get" action={`/leagues/${league.league_id}`}>
         <input type="hidden" name="season" value={league.season} />
@@ -174,6 +196,7 @@ export function WaiverBoardView({
                 <th>Replaces</th>
                 <th className="numeric">Next 7d</th>
                 <th className="numeric">Plays</th>
+                <th className="numeric" title="% of ESPN leagues rostering the player (7-day change)">ESPN %</th>
                 <th className="numeric">Ht</th>
               </tr>
             </thead>
@@ -210,6 +233,9 @@ export function WaiverBoardView({
                   <td className="numeric" data-label="Plays">
                     {formatPercent(row.player.durability?.rate)}
                   </td>
+                  <td className="numeric" data-label="ESPN %">
+                    <OwnedCell row={row} />
+                  </td>
                   <td className="numeric" data-label="Ht">
                     {formatHeight(row.bio?.heightIn)}
                   </td>
@@ -217,7 +243,7 @@ export function WaiverBoardView({
               ))}
               {!rows.length ? (
                 <tr className="table-empty-row">
-                  <td colSpan={8}>No free agents match these filters.</td>
+                  <td colSpan={9}>No free agents match these filters.</td>
                 </tr>
               ) : null}
             </tbody>
@@ -235,8 +261,8 @@ export function WaiverBoardView({
         </p>
       ) : null}
       <p className="league-meta">
-        No protected players yet — ownership (H7) and member tags (H8) will let the
-        board skip players you would never drop.
+        &ldquo;Weakest&rdquo; skips injured players and protected ones (🔒 rostered in {PROTECT_OWNED}%+ of
+        ESPN leagues). &ldquo;Rising&rdquo; = gaining {RISING_CHANGE}+ points of ESPN ownership in 7 days.
       </p>
     </section>
   );
@@ -266,7 +292,7 @@ export function CompareView({
     );
   }
   const fmt = (key: string, v: number | null) =>
-    key === "plays" ? formatPercent(v) : key === "age" ? (v == null ? "—" : String(v)) : formatValue(v, key === "value" ? 2 : 1);
+    key === "plays" ? formatPercent(v) : key === "owned" ? (v == null ? "—" : `${v.toFixed(1)}%`) : key === "age" ? (v == null ? "—" : String(v)) : formatValue(v, key === "value" ? 2 : 1);
   return (
     <section style={{ marginTop: "0.75rem" }}>
       {cmp.verdict ? (
@@ -480,7 +506,10 @@ export function DepthView({
                     r.player.durability?.rate,
                   )}${r.injured ? " · injured" : ""}`}
                 >
-                  <span className="depth-bar-name">{r.player.name}</span>
+                  <span className="depth-bar-name">
+                    {r.protected ? <span title={`Protected: rostered in ${r.owned?.toFixed(0)}% of ESPN leagues`}>🔒 </span> : null}
+                    {r.player.name}
+                  </span>
                   <span className="depth-bar-track" aria-hidden="true">
                     <span className="depth-bar-fill" style={{ width: `${pct}%` }} />
                   </span>

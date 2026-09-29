@@ -188,7 +188,20 @@ function columns(
       numeric: true,
       sortValue: (row) => row.percent_owned,
       cell: (row) =>
-        row.percent_owned == null ? "—" : row.percent_owned.toFixed(1),
+        row.percent_owned == null ? (
+          "—"
+        ) : (
+          <>
+            {row.percent_owned.toFixed(1)}
+            {row.percent_change != null && row.percent_change !== 0 ? (
+              <span className="league-meta" title="Change over the last 7 days (ESPN)">
+                {" "}
+                ({row.percent_change > 0 ? "+" : "−"}
+                {Math.abs(row.percent_change).toFixed(1)})
+              </span>
+            ) : null}
+          </>
+        ),
     },
     {
       id: "avg_points",

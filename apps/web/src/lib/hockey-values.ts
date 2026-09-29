@@ -35,6 +35,9 @@ export type HockeyPlayerValue = {
   fantasy_team_id: number | null;
   rostered: boolean;
   injury_status: string | null;
+  /** H7: ESPN-wide % rostered (null until synced) and its 7-day change. */
+  percent_owned?: number | null;
+  percent_change?: number | null;
   age: number | null;
   value: number | null;
   base: number | null;

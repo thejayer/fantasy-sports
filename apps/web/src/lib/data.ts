@@ -85,6 +85,8 @@ export type Player = {
   eligible_slots?: string[];
   acquisition_type?: string | null;
   percent_owned?: number | null;
+  /** Hockey (H7): ESPN 7-day change in % rostered. */
+  percent_change?: number | null;
   total_points: number | null;
   projected_total_points: number | null;
   avg_points: number | null;
