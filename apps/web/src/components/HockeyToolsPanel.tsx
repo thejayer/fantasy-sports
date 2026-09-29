@@ -14,7 +14,9 @@ import {
   PaceView,
   StreamingView,
 } from "@/components/HockeyDailyViews";
+import { HockeyAlertsView } from "@/components/HockeyAlertsView";
 import type { SlotPointsSnapshot } from "@/lib/baseball-analysis";
+import type { HockeyInjuryLog } from "@/lib/hockey-alerts";
 import type { DailyContext } from "@/lib/hockey-daily";
 import type { DecisionContext } from "@/lib/hockey-decisions";
 import {
@@ -92,6 +94,7 @@ export function HockeyToolsPanel({
   viewerTeamId,
   daily,
   slotPoints,
+  injuryLog,
 }: {
   league: LeagueSnapshot;
   view?: HockeyToolsView;
@@ -102,6 +105,8 @@ export function HockeyToolsPanel({
   daily?: DailyContext;
   /** H5b: games used per slot (`analysis/slot_points.json`). */
   slotPoints?: SlotPointsSnapshot | null;
+  /** H6: `nhl/injury_log.json`. */
+  injuryLog?: HockeyInjuryLog | null;
 }) {
   const scoringType = league.scoring_type ?? league.settings?.scoring_type;
   const allowed = new Set(hockeyToolsForScoring(scoringType));
@@ -207,6 +212,16 @@ export function HockeyToolsPanel({
       ) : null}
       {ctx && query && active === "depth" ? (
         <DepthView league={league} ctx={ctx} query={query} viewerTeamId={viewerTeamId} />
+      ) : null}
+      {daily && query && active === "alerts" ? (
+        <HockeyAlertsView
+          league={league}
+          log={injuryLog}
+          lines={daily.lines}
+          bios={daily.bios}
+          query={query}
+          viewerTeamId={viewerTeamId}
+        />
       ) : null}
       {daily && query && active === "lineup" ? (
         <LineupView league={league} ctx={daily} query={query} viewerTeamId={viewerTeamId} />

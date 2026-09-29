@@ -33,7 +33,7 @@ export function dayLabel(iso: string): string {
   return `${wd} ${mo} ${d.getUTCDate()}`;
 }
 
-function TeamForm({
+export function TeamForm({
   league,
   view,
   query,

@@ -15,13 +15,15 @@ export type HockeyToolsView =
   | "lineup"
   | "goalies"
   | "streaming"
-  | "pace";
+  | "pace"
+  | "alerts";
 
 /**
  * H5 decision tools (values.json-backed); open to every member. H5a: the
  * roster tools; H5b: the daily tools (schedule / goalie model / GP caps).
  */
 export const HOCKEY_DECISION_VIEWS = [
+  "alerts",
   "waivers",
   "compare",
   "move",
@@ -41,6 +43,12 @@ export const HOCKEY_TOOL_CARDS: Array<{
   promise: string;
   ready: boolean;
 }> = [
+  {
+    id: "alerts",
+    name: "Injuries & alerts",
+    promise: "Lineup problems (injured starters, benched goalies, IR) and the league's injury news.",
+    ready: true,
+  },
   {
     id: "waivers",
     name: "Waiver board",

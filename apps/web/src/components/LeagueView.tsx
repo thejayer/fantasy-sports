@@ -40,6 +40,7 @@ import {
   leagueWeights,
   type HockeyTeamStrengthSnapshot,
 } from "@/lib/hockey-daily";
+import type { HockeyInjuryLog } from "@/lib/hockey-alerts";
 import { hockeyBioIndex, type HockeyNhlSnapshot } from "@/lib/hockey-nhl";
 import {
   hockeyValueIndex,
@@ -417,6 +418,7 @@ export function LeagueView({
   hockeySchedule = null,
   hockeyDecisionQuery,
   hockeyTeamStrength = null,
+  hockeyInjuryLog = null,
 }: {
   league: LeagueSnapshot;
   seasons: number[];
@@ -486,6 +488,8 @@ export function LeagueView({
   hockeyDecisionQuery?: DecisionQuery;
   /** Hockey club strength (`nhl/team_strength.json`) for the goalie model (H5b). */
   hockeyTeamStrength?: HockeyTeamStrengthSnapshot | null;
+  /** Hockey injury log (`nhl/injury_log.json`) for the alerts view (H6). */
+  hockeyInjuryLog?: HockeyInjuryLog | null;
 }) {
   const leagueId = league.league_id;
   const hockeyCtx = {
@@ -930,6 +934,7 @@ export function LeagueView({
               irIds: irIds(league),
             }}
             slotPoints={baseballAnalysis?.slotPoints}
+            injuryLog={hockeyInjuryLog}
           />
         ) : (
           <ToolsPanel

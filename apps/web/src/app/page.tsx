@@ -5,6 +5,8 @@ import {
   getLeagueHistoryArchive,
   getLeagueIndex,
   getLeagueSnapshot,
+  getHockeyInjuryLog,
+  getHockeyNhl,
   getPlayoffOddsSnapshot,
   type LeagueSnapshot,
 } from "@/lib/data";
@@ -13,6 +15,7 @@ import {
   homeAvailableSeasons,
   leaguesAtSeason,
   resolveHomeSeason,
+  withHockeyAlerts,
   type HomeLeagueCard,
 } from "@/lib/member-home";
 import {
@@ -20,6 +23,8 @@ import {
   formatMonthDay,
   onThisDayClock,
 } from "@/lib/on-this-day";
+import { lineupAlerts } from "@/lib/hockey-alerts";
+import { hockeyBioIndex } from "@/lib/hockey-nhl";
 import { withPlayoffOdds } from "@/lib/portfolio";
 import { getViewer } from "@/lib/viewer";
 
@@ -94,6 +99,16 @@ export default async function HomePage({ searchParams }: Props) {
       ? link!.team_id
       : undefined;
     let card = buildLeagueCard(league, teamId);
+    if (league.sport === "hockey" && teamId != null) {
+      const [log, nhl] = await Promise.all([
+        getHockeyInjuryLog(league.league_id, league.season),
+        getHockeyNhl(league.league_id, league.season),
+      ]);
+      card = withHockeyAlerts(
+        card,
+        lineupAlerts(league, teamId, log, nhl.lines, hockeyBioIndex(nhl)),
+      );
+    }
     if (league.sport === "football" && teamId != null) {
       const odds = await getPlayoffOddsSnapshot(league.league_id, league.season);
       card = withPlayoffOdds(card, odds);

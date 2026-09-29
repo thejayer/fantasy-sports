@@ -1056,7 +1056,7 @@ W/L move — without writing ESPN or the live settings file.
 - **Auth:** same hub allowlist as every league tab. Sandbox is ephemeral,
   so any member can open it (admin-only stays on tools that write).
 
-### 8.6 Hockey: Rinkside port — H0–H5 + H2b LANDED
+### 8.6 Hockey: Rinkside port — H0–H6 + H2b LANDED
 Plan and phases live in [HOCKEY-PORT.md](HOCKEY-PORT.md) (H0–H8). This replaces
 "projection-free" for hockey one phase at a time; `src/ffa` stays NFL-only and
 hockey gets its own package, `src/nhl`.
@@ -1088,7 +1088,11 @@ hockey gets its own package, `src/nhl`.
   model over `team_strength.json` + Daily Faceoff), Streaming planner, GP-cap
   pacing (analysis sync counts starter games per slot; also stops walking
   past today's scoring period).
-- **Next:** H6 monitoring + alerts, then H7–H8.
+- ~~**H6 monitoring + alerts**~~ — **LANDED**: `nhl/injury_log.json` (ESPN +
+  Daily Faceoff transitions), Tools → Injuries & alerts, injury news in the
+  Feed, member-home alerts action; opt-in Discord post (repo variable
+  `SJ_HOCKEY_INJURY_DISCORD`).
+- **Next:** H7 market signals, then H8.
   SJ Hockey is Season Points (no weekly matchups); the fixture league matches.
 
 ---
@@ -1183,7 +1187,7 @@ Everything else in phase 7 is independent and can land in any order: ~~7.3~~
 | I — Social | ~~7.6 → 7.7~~ | feed.json + digest + Discord + tee reminders |
 | J — Tools packaging | ~~7.8~~ | Trade Desk Δ make-% via samples sidecar |
 | K — Craft | ~~7.10~~, ~~7.11~~ | `globals.css`, HTML + JS CI budgets |
-| L — Sport depth | 8.1 · 8.2 · 8.3 · 8.6 (hockey H0–H5 + H2b landed) | `src/sj` · `apps/web` · `src/sg` · `src/nhl` |
+| L — Sport depth | 8.1 · 8.2 · 8.3 · 8.6 (hockey H0–H6 + H2b landed) | `src/sj` · `apps/web` · `src/sg` · `src/nhl` |
 | Q — Shared memory | ~~7.10b~~ · ~~7.9b~~ · ~~7.12~~ · ~~7.13~~ · **7.14** · ~~P.6~~ | `hub_members`, rosters, `/u`, history, home, `apps/www` |
 
 G, H, and K barely overlap. I is the only track that introduces user-generated

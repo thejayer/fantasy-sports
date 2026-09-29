@@ -318,4 +318,35 @@ def sample_nhl_documents(
         landing_max=200,
         dfo=DfoClient(fetch=SampleDfo(nhl), throttle=0.0),
     )
-    return result.documents
+    docs = result.documents
+    docs["injury_log"] = sample_injury_log(snapshot, docs, generated_at=generated_at)
+    return docs
+
+
+def sample_injury_log(
+    snapshot: dict[str, Any], docs: dict[str, dict[str, Any]], *, generated_at: str
+) -> dict[str, Any]:
+    """Synthetic H6 log: yesterday's baseline, then today's statuses.
+
+    Yesterday flips a few rostered players (today's out → healthy, a
+    day-to-day → out, a healthy → day-to-day) so the fixture shows each
+    transition kind. Not live data.
+    """
+    from nhl.export import _header
+    from nhl.injuries import DAY_TO_DAY, HEALTHY, OUT, current_statuses, update_injury_log
+
+    header = _header(docs["values"])
+    today = current_statuses(snapshot, docs["player_map"], docs.get("lines"))
+    rostered = sorted(k for k, v in today.items() if v.get("team_id") is not None)
+    by_level = {lvl: [k for k in rostered if today[k]["level"] == lvl] for lvl in (HEALTHY, DAY_TO_DAY, OUT)}
+    before = {k: dict(v) for k, v in today.items()}
+    for k in by_level[OUT][:2]:
+        before[k]["level"] = HEALTHY  # -> hurt
+    for k in by_level[DAY_TO_DAY][:1]:
+        before[k]["level"] = OUT  # -> nearing return
+    for k in by_level[HEALTHY][:1]:
+        before[k]["level"] = DAY_TO_DAY  # -> back
+    when = dt.datetime.fromisoformat(generated_at.replace("Z", "+00:00"))
+    yesterday = (when - dt.timedelta(days=1)).isoformat()
+    base = update_injury_log(None, before, header=header, at=yesterday, source="sync")
+    return update_injury_log(base, today, header=header, at=generated_at, source="sync")

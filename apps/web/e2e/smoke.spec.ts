@@ -661,6 +661,27 @@ test.describe("hub smoke", () => {
     await expect(page.locator(".pace-track").first()).toBeVisible();
   });
 
+  test("hockey injuries & alerts: lineup alerts, injury news, feed (HOCKEY-PORT H6)", async ({
+    page,
+  }) => {
+    await page.goto("/leagues/hockey-main?tab=tools&view=alerts&team=1");
+    await expect(page.getByRole("heading", { name: /Lineup alerts/ })).toBeVisible();
+    await expect(page.locator(".alert-item").first()).toBeVisible();
+    await expect(page.locator(".alert-badge").first()).toContainText(/Fix|Check|FYI/);
+    await expect(page.getByRole("heading", { name: /Injury news/ })).toBeVisible();
+    for (const change of ["Hurt", "Nearing return", "Back"]) {
+      await expect(page.getByRole("cell", { name: new RegExp(`^${change}`) }).first()).toBeVisible();
+    }
+    // Player names link to ESPN news.
+    await expect(page.locator('a[href^="https://www.espn.com/nhl/player/news/_/id/"]').first()).toBeVisible();
+    // Discord stays off in CI (no SJ_HOCKEY_INJURY_DISCORD).
+    await expect(page.getByRole("button", { name: "Post injury news to Discord" })).toBeDisabled();
+
+    // Injury news rides in the league Feed.
+    await page.goto("/leagues/hockey-main?tab=activity");
+    await expect(page.getByText(/is nearing a return/).first()).toBeVisible();
+  });
+
   test("hockey roster and waivers show NHL bio + ice time (HOCKEY-PORT H1)", async ({
     page,
   }) => {

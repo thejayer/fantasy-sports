@@ -14,6 +14,8 @@ import {
   latestDigestPeriod,
 } from "@/lib/digest";
 import { systemFeedEvents, type FeedEventFilter } from "@/lib/feed-events";
+import { getHockeyInjuryLog } from "@/lib/data";
+import { injuryFeedEvents } from "@/lib/hockey-alerts";
 import { readFeed } from "@/lib/feed-store";
 import type { ActivityView } from "@/lib/activity";
 import { getViewer, getViewerFranchise } from "@/lib/viewer";
@@ -54,10 +56,16 @@ export async function ActivityPanel({
         })()
       : [];
 
+  // Hockey injury news (H6) rides with "all" only.
+  const injuryEvents =
+    league.sport === "hockey" && view === "all"
+      ? injuryFeedEvents(await getHockeyInjuryLog(league.league_id, league.season), league)
+      : [];
+
   // Digests ride with "all" and "results"; omit from other filters.
   const merged =
     view === "all" || view === "results"
-      ? [...digestEvents, ...events].sort(
+      ? [...digestEvents, ...injuryEvents, ...events].sort(
           (a, b) => b.sortKey - a.sortKey || a.id.localeCompare(b.id),
         )
       : events;

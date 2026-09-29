@@ -24,6 +24,7 @@ from pathlib import Path
 from typing import Any
 
 from nhl.dfo import DfoClient
+from nhl.injuries import current_statuses, update_injury_log
 from nhl.lineups import (
     build_lines,
     build_starting_goalies,
@@ -533,6 +534,32 @@ def build_nhl_documents(
     )
 
 
+def _header(doc: dict[str, Any]) -> dict[str, Any]:
+    return {k: doc[k] for k in ("league_id", "season", "sport", "nhl_season", "generated_at") if k in doc}
+
+
+def injury_log(
+    snapshot: dict[str, Any] | None,
+    *,
+    player_map: dict[str, Any] | None,
+    lines: dict[str, Any] | None,
+    previous: dict[str, Any] | None,
+    header: dict[str, Any],
+    at: str,
+    source: str,
+) -> dict[str, Any]:
+    """H6: ``nhl/injury_log.json`` from this sync's statuses + the prior log."""
+    current = current_statuses(snapshot, player_map, lines, previous)
+    return update_injury_log(previous, current, header=header, at=at, source=source)
+
+
+def _read_nhl(store: Any, league_id: str, season: int, name: str) -> dict[str, Any] | None:
+    try:
+        return store.read_nhl(league_id, season, name)
+    except Exception:  # noqa: BLE001 - a missing / unreadable prior log starts fresh
+        return None
+
+
 def _as_of(snapshot: dict[str, Any]) -> tuple[dt.date, str]:
     stamp = snapshot.get("synced_at")
     if isinstance(stamp, str) and stamp:
@@ -572,6 +599,17 @@ def export_nhl(
         from sj.store import resolve_store
 
         store = resolve_store(store_dir)
+    league_id, season = str(snapshot["league_id"]), int(snapshot["season"])
+    # H6: injury transitions need the previous log, so this happens at write time.
+    result.documents["injury_log"] = injury_log(
+        snapshot,
+        player_map=result.documents["player_map"],
+        lines=result.documents.get("lines") or _read_nhl(store, league_id, season, "lines"),
+        previous=_read_nhl(store, league_id, season, "injury_log"),
+        header=_header(result.documents["values"]),
+        at=generated_at,
+        source="sync",
+    )
     for name, doc in result.documents.items():
         store.write_nhl(doc, name)
     if fail_below is not None and (result.coverage or 0.0) < fail_below:
@@ -628,6 +666,18 @@ def export_lines(
         from sj.store import resolve_store
 
         store = resolve_store(store_dir)
+    # H6: refresh the Daily Faceoff side of the injury log (ESPN side carries over).
+    previous = _read_nhl(store, league_id, int(season), "injury_log")
+    if previous is not None:
+        docs["injury_log"] = injury_log(
+            None,
+            player_map=_read_nhl(store, league_id, int(season), "player_map"),
+            lines=docs["lines"],
+            previous=previous,
+            header={**_header(previous), "generated_at": header["generated_at"]},
+            at=header["generated_at"],
+            source="lines",
+        )
     for name, doc in docs.items():
         store.write_nhl(doc, name)
     return docs

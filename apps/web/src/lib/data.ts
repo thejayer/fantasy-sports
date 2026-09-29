@@ -17,6 +17,7 @@ import type {
 } from "@/lib/hockey-nhl";
 import type { HockeyScheduleSnapshot } from "@/lib/hockey-decisions";
 import type { HockeyTeamStrengthSnapshot } from "@/lib/hockey-daily";
+import type { HockeyInjuryLog } from "@/lib/hockey-alerts";
 import type { HockeyValuesSnapshot } from "@/lib/hockey-values";
 import { dataRoots } from "@/lib/hub-paths";
 import { requireSession } from "@/lib/session";
@@ -1347,6 +1348,36 @@ export const getHockeyTeamStrength = cache(
         doc.league_avg &&
         doc.teams &&
         typeof doc.teams === "object"
+      ) {
+        return doc;
+      }
+    }
+    return null;
+  },
+);
+
+/**
+ * Hockey injury log under ``{league}/{season}/nhl/injury_log.json``
+ * (HOCKEY-PORT.md H6): ESPN + Daily Faceoff statuses and their transitions,
+ * written by ``sj sync`` / ``sj nhl-lines``. Side concern, session-gated.
+ */
+export const getHockeyInjuryLog = cache(
+  async (leagueId: string, season: number): Promise<HockeyInjuryLog | null> => {
+    await requireSession();
+    const index = await getLeagueIndex();
+    const match = index.find(
+      (item) => item.league_id === leagueId && item.season === season,
+    );
+    if (!match) return null;
+    for (const root of dataRoots()) {
+      const doc = await readJson<HockeyInjuryLog>(
+        path.join(root, weekBoxScoreDir(match.path), "nhl", "injury_log.json"),
+      );
+      if (
+        doc?.league_id === leagueId &&
+        doc.season === season &&
+        doc.players &&
+        Array.isArray(doc.events)
       ) {
         return doc;
       }
