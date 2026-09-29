@@ -311,8 +311,40 @@ and the bios/lines join.
 - Weakest to best: one bar list per group, ascending, single accent hue,
   hover title with share played; the values are text beside each bar.
 
-**H5b (tools 5–8)** — next: daily start/sit, goalie start model, streaming
-planner, GP cap pacing.
+**H5b (tools 5–8) — LANDED.** `?tab=tools&view=lineup|goalies|streaming|pace`,
+logic in `apps/web/src/lib/hockey-daily.ts`, views in `HockeyDailyViews.tsx`.
+Same rules as H5a: any team can be picked, the linked team is the default.
+
+- **Start / sit** (`view=lineup&date=`): day chips for the next 7 days. Skaters
+  score value × share of games played (a possible scratch counts half);
+  injured / IR / no game → 0. Fill F, D, G by expected points, then UTIL with
+  the best skater left — positions are disjoint and UTIL takes any skater, so
+  the greedy fill is optimal. Slot counts come from ESPN settings.
+- **Goalie start model** (`view=goalies&date=`): expected goals each way =
+  club rate × opponent rate ÷ league average (`team_strength.json`); win =
+  Pythagorean split (exponent 2); losses split regulation / OT with a 23% OT
+  share; shots against = opponent shots for × own shots against ÷ average;
+  saves = shots − goals; shutout = Poisson P(0). Scored with the league's
+  weights (W / L / OTL / GA / SA / SV / SO / GS). Start chance: Daily Faceoff
+  when a starter is named (Confirmed 100%, Likely 80%, Unconfirmed 60%; a
+  named partner leaves 0 / 20 / 40%), else the goalie's share of starts (H3),
+  and only then the back-to-back rule (starter × 0.6, backup gets the rest).
+  The board lists every goalie with a game (top 40), owned or free.
+- **Streaming planner** (`view=streaming`): per day, the slots the best
+  lineup leaves open and the free agents with a game who fill them; a weekly
+  list sums each free agent's expected points on the days they would fill an
+  open slot.
+- **GP cap pacing** (`view=pace`): the season-points analysis sync now also
+  counts **starter games per slot** from the same daily `mRoster` walk (stat
+  34 GP, else 0 GS, else 1 when a daily line exists; bench / IR never count)
+  → `slot_points.json` `teams[].games` + `period_games`, and records ESPN
+  `finalScoringPeriod` as `periods.final` (season length in days). Pace =
+  cap × days elapsed ÷ season days; "on track for" = used ÷ that share; ±3% is
+  on pace. An older file without games is re-walked once.
+- **Sync fix found on the way:** ESPN `status.finalScoringPeriod` is the
+  season's last day, not today, so the analysis walk ran into future days
+  mid-season and stored them empty (the incremental sync then never
+  re-fetched them). `analysis_periods` now stops at the current period.
 
 ### H6: monitoring + alerts
 

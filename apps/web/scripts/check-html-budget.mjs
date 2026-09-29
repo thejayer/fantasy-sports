@@ -39,6 +39,9 @@ const DEFAULT_ROUTES = [
   // H5a: waiver board (every free agent) and the move selects (roster + FAs).
   "/leagues/hockey-main?tab=tools&view=waivers",
   "/leagues/hockey-main?tab=tools&view=move&team=1",
+  // H5b: day lineup (whole roster) and the goalie board (top 40).
+  "/leagues/hockey-main?tab=tools&view=lineup&team=1",
+  "/leagues/hockey-main?tab=tools&view=goalies",
 ];
 
 const ROUTES = (process.env.SJ_HTML_BUDGET_ROUTES ?? DEFAULT_ROUTES.join(","))

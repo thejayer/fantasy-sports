@@ -2917,3 +2917,25 @@ tr.is-upcoming td {
     grid-template-columns: 6.5rem 1fr 3rem;
   }
 }
+/* Hockey GP-cap pacing (HOCKEY-PORT.md H5b): bar = used, tick = pace today */
+.pace-track {
+  position: relative;
+  display: block;
+  min-width: 6rem;
+  height: 10px;
+  border-left: 1px solid var(--line);
+}
+.pace-fill {
+  display: block;
+  height: 100%;
+  background: var(--color-accent);
+  border-radius: 0 4px 4px 0;
+}
+.pace-mark {
+  position: absolute;
+  top: -3px;
+  width: 2px;
+  height: 16px;
+  margin-left: -1px;
+  background: var(--ink);
+}

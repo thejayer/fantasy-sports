@@ -16,6 +16,7 @@ import type {
   HockeyPlayerMapSnapshot,
 } from "@/lib/hockey-nhl";
 import type { HockeyScheduleSnapshot } from "@/lib/hockey-decisions";
+import type { HockeyTeamStrengthSnapshot } from "@/lib/hockey-daily";
 import type { HockeyValuesSnapshot } from "@/lib/hockey-values";
 import { dataRoots } from "@/lib/hub-paths";
 import { requireSession } from "@/lib/session";
@@ -1313,6 +1314,37 @@ export const getHockeySchedule = cache(
         doc?.league_id === leagueId &&
         doc.season === season &&
         doc.sport === "hockey" &&
+        doc.teams &&
+        typeof doc.teams === "object"
+      ) {
+        return doc;
+      }
+    }
+    return null;
+  },
+);
+
+/**
+ * Hockey club strength under ``{league}/{season}/nhl/team_strength.json``
+ * (HOCKEY-PORT.md H1) — the H5b goalie start model reads goals and shots for
+ * / against per game. Side concern, session-gated.
+ */
+export const getHockeyTeamStrength = cache(
+  async (leagueId: string, season: number): Promise<HockeyTeamStrengthSnapshot | null> => {
+    await requireSession();
+    const index = await getLeagueIndex();
+    const match = index.find(
+      (item) => item.league_id === leagueId && item.season === season,
+    );
+    if (!match) return null;
+    for (const root of dataRoots()) {
+      const doc = await readJson<HockeyTeamStrengthSnapshot>(
+        path.join(root, weekBoxScoreDir(match.path), "nhl", "team_strength.json"),
+      );
+      if (
+        doc?.league_id === leagueId &&
+        doc.season === season &&
+        doc.league_avg &&
         doc.teams &&
         typeof doc.teams === "object"
       ) {

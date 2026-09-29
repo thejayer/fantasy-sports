@@ -11,10 +11,29 @@ export type HockeyToolsView =
   | "waivers"
   | "compare"
   | "move"
-  | "depth";
+  | "depth"
+  | "lineup"
+  | "goalies"
+  | "streaming"
+  | "pace";
 
-/** H5a decision tools (values.json-backed); open to every member. */
-export const HOCKEY_DECISION_VIEWS = ["waivers", "compare", "move", "depth"] as const;
+/**
+ * H5 decision tools (values.json-backed); open to every member. H5a: the
+ * roster tools; H5b: the daily tools (schedule / goalie model / GP caps).
+ */
+export const HOCKEY_DECISION_VIEWS = [
+  "waivers",
+  "compare",
+  "move",
+  "depth",
+  "lineup",
+  "goalies",
+  "streaming",
+  "pace",
+] as const;
+
+/** Views that read the per-day inputs (team strength, goalie starts). */
+export const HOCKEY_DAILY_VIEWS: ReadonlySet<string> = new Set(["lineup", "goalies", "streaming"]);
 
 export const HOCKEY_TOOL_CARDS: Array<{
   id: Exclude<HockeyToolsView, "home">;
@@ -44,6 +63,30 @@ export const HOCKEY_TOOL_CARDS: Array<{
     id: "depth",
     name: "Weakest to best",
     promise: "Your roster ranked by value within forwards, defense, and goalies.",
+    ready: true,
+  },
+  {
+    id: "lineup",
+    name: "Start / sit",
+    promise: "Your best lineup for a day: who plays, expected points, and who sits.",
+    ready: true,
+  },
+  {
+    id: "goalies",
+    name: "Goalie starts",
+    promise: "Every goalie with a game: start chance, win odds, saves, and expected points.",
+    ready: true,
+  },
+  {
+    id: "streaming",
+    name: "Streaming planner",
+    promise: "Open lineup slots day by day and the free agents whose games fill them.",
+    ready: true,
+  },
+  {
+    id: "pace",
+    name: "Games-played pace",
+    promise: "Games used per slot against the season caps, and the pace to finish on them.",
     ready: true,
   },
   {

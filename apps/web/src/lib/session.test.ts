@@ -88,6 +88,7 @@ const SESSION_GATED_READERS = [
   "getHockeyNhl",
   "getHockeyValues",
   "getHockeySchedule",
+  "getHockeyTeamStrength",
   "listWeekBoxScoreWeeks",
   "getDraftSimSnapshot",
   "listDraftSimSlots",
