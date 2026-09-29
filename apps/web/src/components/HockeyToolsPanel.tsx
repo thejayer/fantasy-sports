@@ -2,6 +2,14 @@ import Link from "next/link";
 
 import { EmptyState } from "@/components/EmptyState";
 import {
+  CompareView,
+  DepthView,
+  MoveView,
+  WaiverBoardView,
+  type DecisionQuery,
+} from "@/components/HockeyDecisionViews";
+import type { DecisionContext } from "@/lib/hockey-decisions";
+import {
   HOCKEY_TOOL_CARDS,
   buildHockeyCategoryBoard,
   hockeyToolsForScoring,
@@ -71,14 +79,19 @@ function CategoryBoardView({ board }: { board: HockeyCategoryBoard }) {
 export function HockeyToolsPanel({
   league,
   view = "home",
+  ctx,
+  query,
+  viewerTeamId,
 }: {
   league: LeagueSnapshot;
   view?: HockeyToolsView;
+  ctx?: DecisionContext;
+  query?: DecisionQuery;
+  viewerTeamId?: number;
 }) {
   const scoringType = league.scoring_type ?? league.settings?.scoring_type;
   const allowed = new Set(hockeyToolsForScoring(scoringType));
-  const active: HockeyToolsView =
-    view === "categories" && allowed.has("categories") ? "categories" : "home";
+  const active: HockeyToolsView = view !== "home" && allowed.has(view) ? view : "home";
   const seasonPoints = isSeasonPointsScoring(scoringType);
   const category = isCategoryScoring(scoringType);
   const board = rosterHasHockeyStats(league)
@@ -94,22 +107,26 @@ export function HockeyToolsPanel({
         >
           Tools
         </Link>
-        {allowed.has("categories") ? (
+        {HOCKEY_TOOL_CARDS.filter((card) => allowed.has(card.id)).map((card) => (
           <Link
-            href={toolsHref(league.league_id, league.season, "categories")}
-            className={`tab${active === "categories" ? " active" : ""}`}
+            key={card.id}
+            href={`${toolsHref(league.league_id, league.season, card.id)}${
+              query?.teamId != null && card.id !== "categories" ? `&team=${query.teamId}` : ""
+            }`}
+            className={`tab${active === card.id ? " active" : ""}`}
           >
-            Category Board
+            {card.name}
           </Link>
-        ) : null}
+        ))}
       </div>
 
       {active === "home" ? (
         <>
           <p className="lede">
-            Hockey stays projection-free. Tools are snapshot arithmetic —
-            Category Board when counting stats exist, Scoring lab for weight
-            tweaks. No NHL model in <code>ffa</code>.
+            Decision tools read the synced hockey player values (per-game
+            value, rest of season, share of games played) and the NHL
+            schedule. Any team can be picked; yours is the default when your
+            franchise is linked. No NHL model in <code>ffa</code>.
           </p>
           <div
             style={{
@@ -165,6 +182,18 @@ export function HockeyToolsPanel({
         </>
       ) : null}
 
+      {ctx && query && active === "waivers" ? (
+        <WaiverBoardView league={league} ctx={ctx} query={query} viewerTeamId={viewerTeamId} />
+      ) : null}
+      {ctx && query && active === "compare" ? (
+        <CompareView league={league} ctx={ctx} query={query} />
+      ) : null}
+      {ctx && query && active === "move" ? (
+        <MoveView league={league} ctx={ctx} query={query} viewerTeamId={viewerTeamId} />
+      ) : null}
+      {ctx && query && active === "depth" ? (
+        <DepthView league={league} ctx={ctx} query={query} viewerTeamId={viewerTeamId} />
+      ) : null}
       {active === "categories" && board ? <CategoryBoardView board={board} /> : null}
       {active === "categories" && !board ? (
         <EmptyState title="No hockey counting stats on this snapshot">

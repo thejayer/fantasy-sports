@@ -4,6 +4,7 @@ import type { LeagueSnapshot, Player, Team } from "@/lib/data";
 import {
   buildHockeyCategoryBoard,
   hockeyCategoriesForLeague,
+  hockeyToolsForScoring,
   parseHockeyToolsView,
   rosterHasHockeyStats,
   sumHockeySeasonStats,
@@ -77,6 +78,18 @@ describe("hockey tools", () => {
   it("parses the category view and defaults home", () => {
     expect(parseHockeyToolsView("categories")).toBe("categories");
     expect(parseHockeyToolsView("nope")).toBe("home");
+    for (const view of ["waivers", "compare", "move", "depth"]) {
+      expect(parseHockeyToolsView(view)).toBe(view);
+    }
+  });
+
+  it("offers the H5a decision tools for every scoring type", () => {
+    for (const scoring of ["TOTAL_SEASON_POINTS", "H2H_POINTS", "H2H_CATEGORY"]) {
+      expect(hockeyToolsForScoring(scoring)).toEqual(
+        expect.arrayContaining(["waivers", "compare", "move", "depth"]),
+      );
+    }
+    expect(hockeyToolsForScoring("TOTAL_SEASON_POINTS")).not.toContain("categories");
   });
 
   it("reads official hockey categories from settings", () => {

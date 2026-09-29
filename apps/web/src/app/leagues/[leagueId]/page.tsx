@@ -15,6 +15,7 @@ import {
   getBaseballAnalysis,
   getHockeyNhl,
   getHockeyValues,
+  getHockeySchedule,
   getPlayerMap,
   getPlayoffOddsSamples,
   getPlayoffOddsSnapshot,
@@ -41,6 +42,7 @@ import {
 import { resolveGolfActingScope } from "@/lib/franchise-acl";
 import { getViewerTeamId } from "@/lib/viewer";
 import { parseHockeyBoardQuery } from "@/lib/hockey-values";
+import { parseIds, parseWaiverFilters } from "@/lib/hockey-decisions";
 import { parsePlayerTableQuery } from "@/lib/player-table";
 import { buildScoringSandboxModel } from "@/lib/scoring-sandbox";
 
@@ -74,6 +76,14 @@ type Props = {
     who?: string;
     recent?: string;
     open?: string;
+    ids?: string | string[];
+    drop?: string;
+    add?: string;
+    healthy?: string;
+    pp?: string;
+    rookies?: string;
+    tall?: string;
+    iron?: string;
   }>;
 };
 
@@ -123,6 +133,14 @@ export default async function LeagueDetailPage({ params, searchParams }: Props) 
     who: whoParam,
     recent: recentParam,
     open: openParam,
+    ids: idsParam,
+    drop: dropParam,
+    add: addParam,
+    healthy: healthyParam,
+    pp: ppParam,
+    rookies: rookiesParam,
+    tall: tallParam,
+    iron: ironParam,
   } = await searchParams;
   const seasons = await getLeagueSeasons(leagueId);
   const season = seasonParam ? Number(seasonParam) : undefined;
@@ -191,16 +209,23 @@ export default async function LeagueDetailPage({ params, searchParams }: Props) 
       ? await getBaseballAnalysis(league.league_id, league.season)
       : null;
 
-  // Hockey NHL sidecars (HOCKEY-PORT.md H1): only the Waivers board shows them.
+  // Hockey decision tools (H5a) read values + bios + the NHL schedule.
+  const hockeyDecisionTools =
+    league.sport === "hockey" && tab === "tools" && hockeyToolsView !== "home" && hockeyToolsView !== "categories";
+  // Hockey NHL sidecars (HOCKEY-PORT.md H1): Waivers board + decision tools.
   const hockeyNhl =
-    league.sport === "hockey" && tab === "waivers"
+    league.sport === "hockey" && (tab === "waivers" || hockeyDecisionTools)
       ? await getHockeyNhl(league.league_id, league.season)
       : null;
   // Hockey player values (H2/H3): projections board + Waivers value column.
   const hockeyValues =
-    league.sport === "hockey" && (tab === "projections" || tab === "waivers")
+    league.sport === "hockey" &&
+    (tab === "projections" || tab === "waivers" || hockeyDecisionTools)
       ? await getHockeyValues(league.league_id, league.season)
       : null;
+  const hockeySchedule = hockeyDecisionTools
+    ? await getHockeySchedule(league.league_id, league.season)
+    : null;
   const hockeyBoardQuery = parseHockeyBoardQuery({
     pos: posParam,
     who: whoParam,
@@ -386,6 +411,26 @@ export default async function LeagueDetailPage({ params, searchParams }: Props) 
         ? "vor"
         : "fpts",
   });
+  // Hockey tools are open to every member: any team can be picked; the linked
+  // member's own team is the default, else the first team.
+  const hockeyTeamId =
+    team != null && league.teams.some((t) => t.team_id === team)
+      ? team
+      : (viewerTeamId ?? league.teams[0]?.team_id ?? null);
+  const hockeyDecisionQuery = {
+    teamId: hockeyTeamId,
+    filters: parseWaiverFilters({
+      pos: posParam,
+      healthy: healthyParam,
+      pp: ppParam,
+      rookies: rookiesParam,
+      tall: tallParam,
+      iron: ironParam,
+    }),
+    ids: parseIds(idsParam),
+    drop: dropParam && /^\d+$/.test(dropParam) ? dropParam : null,
+    add: addParam && /^\d+$/.test(addParam) ? addParam : null,
+  };
   const draftPage = Math.max(
     1,
     Number.parseInt(draftPageParam ?? "1", 10) || 1,
@@ -454,6 +499,8 @@ export default async function LeagueDetailPage({ params, searchParams }: Props) 
       hockeyNhl={hockeyNhl}
       hockeyValues={hockeyValues}
       hockeyBoardQuery={hockeyBoardQuery}
+      hockeySchedule={hockeySchedule}
+      hockeyDecisionQuery={league.sport === "hockey" ? hockeyDecisionQuery : undefined}
     />
   );
 }

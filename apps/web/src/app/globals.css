@@ -2866,3 +2866,54 @@ tr.is-upcoming td {
   padding-left: 1.1rem;
   font-size: 0.85rem;
 }
+
+/* Hockey decision tools (HOCKEY-PORT.md H5a) */
+.compare-table td.is-best {
+  font-weight: 700;
+}
+.move-warnings {
+  margin: 0.75rem 0 0;
+  padding-left: 1.25rem;
+}
+.depth-bars {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 2px;
+}
+.depth-bar-row {
+  display: grid;
+  grid-template-columns: minmax(7rem, 12rem) 1fr 3.5rem;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.25rem 0;
+}
+.depth-bar-row:hover .depth-bar-fill {
+  filter: brightness(1.12);
+}
+.depth-bar-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.depth-bar-track {
+  display: block;
+  height: 10px;
+  border-left: 1px solid var(--line);
+}
+.depth-bar-fill {
+  display: block;
+  height: 100%;
+  background: var(--color-accent);
+  border-radius: 0 4px 4px 0;
+}
+.depth-bar-value {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+@media (max-width: 480px) {
+  .depth-bar-row {
+    grid-template-columns: 6.5rem 1fr 3rem;
+  }
+}
