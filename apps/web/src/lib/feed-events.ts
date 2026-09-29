@@ -21,6 +21,7 @@ export type FeedEventKind =
   | "draft"
   | "result"
   | "digest"
+  | "injury"
   | "other";
 
 export type SystemFeedEvent = {

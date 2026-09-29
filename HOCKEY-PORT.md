@@ -346,7 +346,7 @@ Same rules as H5a: any team can be picked, the linked team is the default.
   mid-season and stored them empty (the incremental sync then never
   re-fetched them). `analysis_periods` now stops at the current period.
 
-### H6: monitoring + alerts
+### H6: monitoring + alerts — LANDED
 
 - `injury_log.json`: ESPN and DFO statuses per sync; transitions newly hurt,
   nearing return (out → day-to-day), back.
@@ -355,6 +355,30 @@ Same rules as H5a: any team can be picked, the linked team is the default.
   injury disagreement, projected scratch in lineup.
 - Hook into the existing feed / Discord digest.
 - Status links to ESPN player news (`espn.com/nhl/player/news/_/id/{espnId}`).
+
+**Landed as:** `src/nhl/injuries.py` + `export_nhl` / `export_lines` write
+`nhl/injury_log.json` — per ESPN player: ESPN status, Daily Faceoff word
+(dtd / out / ir / ltir, or gtd), combined level (healthy / day-to-day / out,
+the worse source wins), `since`; plus `events` (hurt, nearing_return, back)
+kept 45 days. The first log for a league-season is a quiet baseline, so
+switching it on never floods the feed. The afternoon lines job refreshes the
+Daily Faceoff side and carries ESPN over.
+
+- Hub: `lib/hockey-alerts.ts`; Tools → **Injuries & alerts** (`view=alerts`,
+  any team, linked team default) with lineup alerts (injured starter — out is
+  "Fix", day-to-day "Check"; healthy on IR; lineup goalie whose partner is
+  Confirmed / Likely; Confirmed / Likely starter on the bench; possible
+  scratch in the lineup; ESPN vs DFO disagreement as FYI) and 14 days of
+  injury news for rostered players. Alerts use the ESPN lineup slots as of
+  the last sync.
+- Feed: injury news rides in the "all" view. Member home: one action for a
+  linked hockey team (replaces the ESPN-only injury nudge).
+- Discord (Austin: opt-in): admin button → `POST /api/leagues/{id}/injury-digest`,
+  off unless the repo variable `SJ_HOCKEY_INJURY_DISCORD` is `1` (deploy maps
+  the `sj-discord-webhook` secret only then); each update posts once. Steps
+  in HUB.md.
+- "Nearing return" in Evaluate a move (H5) can now read the log — not wired
+  yet.
 
 ### H7: market signals
 

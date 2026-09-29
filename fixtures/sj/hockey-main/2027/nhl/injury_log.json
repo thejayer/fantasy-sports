@@ -1,0 +1,1080 @@
+{
+  "baseline": false,
+  "events": [
+    {
+      "at": "2026-07-27T00:00:00+00:00",
+      "dfo": null,
+      "espn": null,
+      "espn_id": "202700001",
+      "from": "day-to-day",
+      "id": "202700001:2026-07-27T00:00:00+00:00",
+      "kind": "back",
+      "name": "Christian Hill",
+      "nhl_team": "WSH",
+      "source": "sync",
+      "team_id": 1,
+      "to": "healthy"
+    },
+    {
+      "at": "2026-07-27T00:00:00+00:00",
+      "dfo": null,
+      "espn": "OUT",
+      "espn_id": "202700002",
+      "from": "healthy",
+      "id": "202700002:2026-07-27T00:00:00+00:00",
+      "kind": "hurt",
+      "name": "Peter Rogers",
+      "nhl_team": "CGY",
+      "source": "sync",
+      "team_id": 1,
+      "to": "out"
+    },
+    {
+      "at": "2026-07-27T00:00:00+00:00",
+      "dfo": "dtd",
+      "espn": "INJURY_RESERVE",
+      "espn_id": "202700004",
+      "from": "healthy",
+      "id": "202700004:2026-07-27T00:00:00+00:00",
+      "kind": "hurt",
+      "name": "Gary Gonzalez",
+      "nhl_team": "DAL",
+      "source": "sync",
+      "team_id": 1,
+      "to": "out"
+    },
+    {
+      "at": "2026-07-27T00:00:00+00:00",
+      "dfo": "dtd",
+      "espn": null,
+      "espn_id": "202700007",
+      "from": "out",
+      "id": "202700007:2026-07-27T00:00:00+00:00",
+      "kind": "nearing_return",
+      "name": "Jason Murphy",
+      "nhl_team": "MIN",
+      "source": "sync",
+      "team_id": 1,
+      "to": "day-to-day"
+    }
+  ],
+  "generated_at": "2026-07-27T00:00:00+00:00",
+  "league_id": "hockey-main",
+  "nhl_season": "20262027",
+  "players": {
+    "202700001": {
+      "dfo": null,
+      "espn": null,
+      "level": 0,
+      "name": "Christian Hill",
+      "nhl_team": "WSH",
+      "since": "2026-07-27",
+      "slot": "F",
+      "team_id": 1
+    },
+    "202700002": {
+      "dfo": null,
+      "espn": "OUT",
+      "level": 2,
+      "name": "Peter Rogers",
+      "nhl_team": "CGY",
+      "since": "2026-07-27",
+      "slot": "F",
+      "team_id": 1
+    },
+    "202700003": {
+      "dfo": null,
+      "espn": null,
+      "level": 0,
+      "name": "Benjamin Long",
+      "nhl_team": "PHI",
+      "since": "2026-07-26",
+      "slot": "F",
+      "team_id": 1
+    },
+    "202700004": {
+      "dfo": "dtd",
+      "espn": "INJURY_RESERVE",
+      "level": 2,
+      "name": "Gary Gonzalez",
+      "nhl_team": "DAL",
+      "since": "2026-07-27",
+      "slot": "F",
+      "team_id": 1
+    },
+    "202700005": {
+      "dfo": null,
+      "espn": "INJURY_RESERVE",
+      "level": 2,
+      "name": "Jordan Wood",
+      "nhl_team": "VAN",
+      "since": "2026-07-26",
+      "slot": "F",
+      "team_id": 1
+    },
+    "202700006": {
+      "dfo": null,
+      "espn": null,
+      "level": 0,
+      "name": "Jason Perez",
+      "nhl_team": "VAN",
+      "since": "2026-07-26",
+      "slot": "F",
+      "team_id": 1
+    },
+    "202700007": {
+      "dfo": "dtd",
+      "espn": null,
+      "level": 1,
+      "name": "Jason Murphy",
+      "nhl_team": "MIN",
+      "since": "2026-07-27",
+      "slot": "F",
+      "team_id": 1
+    },
+    "202700008": {
+      "dfo": "dtd",
+      "espn": "OUT",
+      "level": 2,
+      "name": "Elijah Martinez",
+      "nhl_team": "LAK",
+      "since": "2026-07-26",
+      "slot": "F",
+      "team_id": 1
+    },
+    "202700009": {
+      "dfo": null,
+      "espn": null,
+      "level": 0,
+      "name": "Patrick Rogers",
+      "nhl_team": "EDM",
+      "since": "2026-07-26",
+      "slot": "F",
+      "team_id": 1
+    },
+    "202700010": {
+      "dfo": null,
+      "espn": null,
+      "level": 0,
+      "name": "Paul Baker",
+      "nhl_team": "STL",
+      "since": "2026-07-26",
+      "slot": "D",
+      "team_id": 1
+    },
+    "202700011": {
+      "dfo": null,
+      "espn": null,
+      "level": 0,
+      "name": "Albert Miller",
+      "nhl_team": "COL",
+      "since": "2026-07-26",
+      "slot": "D",
+      "team_id": 1
+    },
+    "202700012": {
+      "dfo": null,
+      "espn": null,
+      "level": 0,
+      "name": "Randy Flores",
+      "nhl_team": "NJD",
+      "since": "2026-07-26",
+      "slot": "D",
+      "team_id": 1
+    },
+    "202700013": {
+      "dfo": null,
+      "espn": null,
+      "level": 0,
+      "name": "Gabriel Sanchez",
+      "nhl_team": "WSH",
+      "since": "2026-07-26",
+      "slot": "D",
+      "team_id": 1
+    },
+    "202700014": {
+      "dfo": null,
+      "espn": "INJURY_RESERVE",
+      "level": 2,
+      "name": "Adam Brooks",
+      "nhl_team": "ANA",
+      "since": "2026-07-26",
+      "slot": "D",
+      "team_id": 1
+    },
+    "202700015": {
+      "dfo": "dtd",
+      "espn": "QUESTIONABLE",
+      "level": 1,
+      "name": "Russell Cooper",
+      "nhl_team": "SJS",
+      "since": "2026-07-26",
+      "slot": "Util",
+      "team_id": 1
+    },
+    "202700016": {
+      "dfo": null,
+      "espn": null,
+      "level": 0,
+      "name": "Samuel Lopez",
+      "nhl_team": "SEA",
+      "since": "2026-07-26",
+      "slot": "G",
+      "team_id": 1
+    },
+    "202700017": {
+      "dfo": null,
+      "espn": "OUT",
+      "level": 2,
+      "name": "Robert Phillips",
+      "nhl_team": "SJS",
+      "since": "2026-07-26",
+      "slot": "G",
+      "team_id": 1
+    },
+    "202700018": {
+      "dfo": null,
+      "espn": null,
+      "level": 0,
+      "name": "David Jackson",
+      "nhl_team": "WPG",
+      "since": "2026-07-26",
+      "slot": "BE",
+      "team_id": 1
+    },
+    "202700019": {
+      "dfo": null,
+      "espn": "OUT",
+      "level": 2,
+      "name": "Timothy King",
+      "nhl_team": "STL",
+      "since": "2026-07-26",
+      "slot": "BE",
+      "team_id": 1
+    },
+    "202700020": {
+      "dfo": "dtd",
+      "espn": null,
+      "level": 1,
+      "name": "Michael Johnson",
+      "nhl_team": "FLA",
+      "since": "2026-07-26",
+      "slot": "BE",
+      "team_id": 1
+    },
+    "202700021": {
+      "dfo": null,
+      "espn": null,
+      "level": 0,
+      "name": "Brandon Williams",
+      "nhl_team": "CGY",
+      "since": "2026-07-26",
+      "slot": "BE",
+      "team_id": 1
+    },
+    "202700022": {
+      "dfo": null,
+      "espn": null,
+      "level": 0,
+      "name": "James Jackson",
+      "nhl_team": "CBJ",
+      "since": "2026-07-26",
+      "slot": "BE",
+      "team_id": 1
+    },
+    "202700023": {
+      "dfo": "dtd",
+      "espn": "ACTIVE",
+      "level": 1,
+      "name": "Douglas Robinson",
+      "nhl_team": "BUF",
+      "since": "2026-07-26",
+      "slot": "BE",
+      "team_id": 1
+    },
+    "202700024": {
+      "dfo": null,
+      "espn": "DOUBTFUL",
+      "level": 1,
+      "name": "Adam Smith",
+      "nhl_team": "NSH",
+      "since": "2026-07-26",
+      "slot": "BE",
+      "team_id": 1
+    },
+    "202700025": {
+      "dfo": "dtd",
+      "espn": "INJURY_RESERVE",
+      "level": 2,
+      "name": "Gary Edwards",
+      "nhl_team": "VAN",
+      "since": "2026-07-26",
+      "slot": "IR",
+      "team_id": 1
+    },
+    "202700026": {
+      "dfo": null,
+      "espn": null,
+      "level": 0,
+      "name": "Elijah Wilson",
+      "nhl_team": "PIT",
+      "since": "2026-07-26",
+      "slot": "IR",
+      "team_id": 1
+    },
+    "202700027": {
+      "dfo": "dtd",
+      "espn": "OUT",
+      "level": 2,
+      "name": "Roy Bailey",
+      "nhl_team": "STL",
+      "since": "2026-07-26",
+      "slot": "IR",
+      "team_id": 1
+    },
+    "202700101": {
+      "dfo": null,
+      "espn": "QUESTIONABLE",
+      "level": 1,
+      "name": "Keith Thompson",
+      "nhl_team": "ANA",
+      "since": "2026-07-26",
+      "slot": "F",
+      "team_id": 2
+    },
+    "202700102": {
+      "dfo": null,
+      "espn": "ACTIVE",
+      "level": 0,
+      "name": "Arthur Garcia",
+      "nhl_team": "SJS",
+      "since": "2026-07-26",
+      "slot": "F",
+      "team_id": 2
+    },
+    "202700103": {
+      "dfo": null,
+      "espn": null,
+      "level": 0,
+      "name": "Bradley Murphy",
+      "nhl_team": "PIT",
+      "since": "2026-07-26",
+      "slot": "F",
+      "team_id": 2
+    },
+    "202700104": {
+      "dfo": null,
+      "espn": null,
+      "level": 0,
+      "name": "Keith Adams",
+      "nhl_team": "WSH",
+      "since": "2026-07-26",
+      "slot": "F",
+      "team_id": 2
+    },
+    "202700105": {
+      "dfo": null,
+      "espn": null,
+      "level": 0,
+      "name": "Jonathan Clark",
+      "nhl_team": "CHI",
+      "since": "2026-07-26",
+      "slot": "F",
+      "team_id": 2
+    },
+    "202700106": {
+      "dfo": null,
+      "espn": null,
+      "level": 0,
+      "name": "Austin Clark",
+      "nhl_team": "BUF",
+      "since": "2026-07-26",
+      "slot": "F",
+      "team_id": 2
+    },
+    "202700107": {
+      "dfo": "dtd",
+      "espn": "DOUBTFUL",
+      "level": 1,
+      "name": "Roy Kelly",
+      "nhl_team": "OTT",
+      "since": "2026-07-26",
+      "slot": "F",
+      "team_id": 2
+    },
+    "202700108": {
+      "dfo": null,
+      "espn": null,
+      "level": 0,
+      "name": "Randy Castillo",
+      "nhl_team": "FLA",
+      "since": "2026-07-26",
+      "slot": "F",
+      "team_id": 2
+    },
+    "202700109": {
+      "dfo": null,
+      "espn": "DOUBTFUL",
+      "level": 1,
+      "name": "Alan Lee",
+      "nhl_team": "CBJ",
+      "since": "2026-07-26",
+      "slot": "F",
+      "team_id": 2
+    },
+    "202700110": {
+      "dfo": null,
+      "espn": null,
+      "level": 0,
+      "name": "Bradley Mendoza",
+      "nhl_team": "EDM",
+      "since": "2026-07-26",
+      "slot": "D",
+      "team_id": 2
+    },
+    "202700111": {
+      "dfo": null,
+      "espn": "QUESTIONABLE",
+      "level": 1,
+      "name": "Bradley Lewis",
+      "nhl_team": "COL",
+      "since": "2026-07-26",
+      "slot": "D",
+      "team_id": 2
+    },
+    "202700112": {
+      "dfo": null,
+      "espn": null,
+      "level": 0,
+      "name": "Christopher Patel",
+      "nhl_team": "ANA",
+      "since": "2026-07-26",
+      "slot": "D",
+      "team_id": 2
+    },
+    "202700113": {
+      "dfo": null,
+      "espn": null,
+      "level": 0,
+      "name": "Christopher Wright",
+      "nhl_team": "MTL",
+      "since": "2026-07-26",
+      "slot": "D",
+      "team_id": 2
+    },
+    "202700114": {
+      "dfo": null,
+      "espn": "DOUBTFUL",
+      "level": 1,
+      "name": "Jacob Stewart",
+      "nhl_team": "TOR",
+      "since": "2026-07-26",
+      "slot": "D",
+      "team_id": 2
+    },
+    "202700115": {
+      "dfo": null,
+      "espn": "DOUBTFUL",
+      "level": 1,
+      "name": "Andrew Lopez",
+      "nhl_team": "SJS",
+      "since": "2026-07-26",
+      "slot": "Util",
+      "team_id": 2
+    },
+    "202700116": {
+      "dfo": null,
+      "espn": null,
+      "level": 0,
+      "name": "Richard Castillo",
+      "nhl_team": "FLA",
+      "since": "2026-07-26",
+      "slot": "G",
+      "team_id": 2
+    },
+    "202700117": {
+      "dfo": null,
+      "espn": null,
+      "level": 0,
+      "name": "Patrick Lewis",
+      "nhl_team": "LAK",
+      "since": "2026-07-26",
+      "slot": "G",
+      "team_id": 2
+    },
+    "202700118": {
+      "dfo": "dtd",
+      "espn": "DOUBTFUL",
+      "level": 1,
+      "name": "Randy Anderson",
+      "nhl_team": "NYI",
+      "since": "2026-07-26",
+      "slot": "BE",
+      "team_id": 2
+    },
+    "202700119": {
+      "dfo": null,
+      "espn": null,
+      "level": 0,
+      "name": "Daniel Hernandez",
+      "nhl_team": "EDM",
+      "since": "2026-07-26",
+      "slot": "BE",
+      "team_id": 2
+    },
+    "202700120": {
+      "dfo": null,
+      "espn": "ACTIVE",
+      "level": 0,
+      "name": "Zachary Green",
+      "nhl_team": "UTA",
+      "since": "2026-07-26",
+      "slot": "BE",
+      "team_id": 2
+    },
+    "202700121": {
+      "dfo": null,
+      "espn": null,
+      "level": 0,
+      "name": "Kyle Gonzalez",
+      "nhl_team": "CGY",
+      "since": "2026-07-26",
+      "slot": "BE",
+      "team_id": 2
+    },
+    "202700122": {
+      "dfo": null,
+      "espn": null,
+      "level": 0,
+      "name": "Ethan Richardson",
+      "nhl_team": "NSH",
+      "since": "2026-07-26",
+      "slot": "BE",
+      "team_id": 2
+    },
+    "202700123": {
+      "dfo": null,
+      "espn": null,
+      "level": 0,
+      "name": "Scott Myers",
+      "nhl_team": "FLA",
+      "since": "2026-07-26",
+      "slot": "BE",
+      "team_id": 2
+    },
+    "202700124": {
+      "dfo": null,
+      "espn": "OUT",
+      "level": 2,
+      "name": "Keith Williams",
+      "nhl_team": "SJS",
+      "since": "2026-07-26",
+      "slot": "BE",
+      "team_id": 2
+    },
+    "202700125": {
+      "dfo": null,
+      "espn": "QUESTIONABLE",
+      "level": 1,
+      "name": "Jose Johnson",
+      "nhl_team": "WSH",
+      "since": "2026-07-26",
+      "slot": "IR",
+      "team_id": 2
+    },
+    "202700126": {
+      "dfo": null,
+      "espn": "OUT",
+      "level": 2,
+      "name": "Patrick Howard",
+      "nhl_team": "DET",
+      "since": "2026-07-26",
+      "slot": "IR",
+      "team_id": 2
+    },
+    "202700127": {
+      "dfo": null,
+      "espn": null,
+      "level": 0,
+      "name": "Ethan Roberts",
+      "nhl_team": "STL",
+      "since": "2026-07-26",
+      "slot": "IR",
+      "team_id": 2
+    },
+    "202700201": {
+      "dfo": null,
+      "espn": null,
+      "level": 0,
+      "name": "Roger Gomez",
+      "nhl_team": "CBJ",
+      "since": "2026-07-26",
+      "slot": "F",
+      "team_id": 3
+    },
+    "202700202": {
+      "dfo": "dtd",
+      "espn": "ACTIVE",
+      "level": 1,
+      "name": "Kevin Miller",
+      "nhl_team": "TOR",
+      "since": "2026-07-26",
+      "slot": "F",
+      "team_id": 3
+    },
+    "202700203": {
+      "dfo": "dtd",
+      "espn": null,
+      "level": 1,
+      "name": "Nathan Hall",
+      "nhl_team": "EDM",
+      "since": "2026-07-26",
+      "slot": "F",
+      "team_id": 3
+    },
+    "202700204": {
+      "dfo": null,
+      "espn": null,
+      "level": 0,
+      "name": "Michael Edwards",
+      "nhl_team": "CBJ",
+      "since": "2026-07-26",
+      "slot": "F",
+      "team_id": 3
+    },
+    "202700205": {
+      "dfo": "dtd",
+      "espn": "ACTIVE",
+      "level": 1,
+      "name": "David Jackson",
+      "nhl_team": "PHI",
+      "since": "2026-07-26",
+      "slot": "F",
+      "team_id": 3
+    },
+    "202700206": {
+      "dfo": null,
+      "espn": null,
+      "level": 0,
+      "name": "Matthew Rogers",
+      "nhl_team": "CAR",
+      "since": "2026-07-26",
+      "slot": "F",
+      "team_id": 3
+    },
+    "202700207": {
+      "dfo": null,
+      "espn": null,
+      "level": 0,
+      "name": "Christopher Richardson",
+      "nhl_team": "PIT",
+      "since": "2026-07-26",
+      "slot": "F",
+      "team_id": 3
+    },
+    "202700208": {
+      "dfo": "dtd",
+      "espn": null,
+      "level": 1,
+      "name": "Jesse Allen",
+      "nhl_team": "CGY",
+      "since": "2026-07-26",
+      "slot": "F",
+      "team_id": 3
+    },
+    "202700209": {
+      "dfo": "dtd",
+      "espn": "QUESTIONABLE",
+      "level": 1,
+      "name": "John Garcia",
+      "nhl_team": "VGK",
+      "since": "2026-07-26",
+      "slot": "F",
+      "team_id": 3
+    },
+    "202700210": {
+      "dfo": null,
+      "espn": null,
+      "level": 0,
+      "name": "Wayne Campbell",
+      "nhl_team": "MTL",
+      "since": "2026-07-26",
+      "slot": "D",
+      "team_id": 3
+    },
+    "202700211": {
+      "dfo": null,
+      "espn": "DOUBTFUL",
+      "level": 1,
+      "name": "Paul Gomez",
+      "nhl_team": "OTT",
+      "since": "2026-07-26",
+      "slot": "D",
+      "team_id": 3
+    },
+    "202700212": {
+      "dfo": null,
+      "espn": null,
+      "level": 0,
+      "name": "Scott Miller",
+      "nhl_team": "UTA",
+      "since": "2026-07-26",
+      "slot": "D",
+      "team_id": 3
+    },
+    "202700213": {
+      "dfo": null,
+      "espn": "OUT",
+      "level": 2,
+      "name": "Bradley Kelly",
+      "nhl_team": "PIT",
+      "since": "2026-07-26",
+      "slot": "D",
+      "team_id": 3
+    },
+    "202700214": {
+      "dfo": null,
+      "espn": null,
+      "level": 0,
+      "name": "Kenneth Morales",
+      "nhl_team": "FLA",
+      "since": "2026-07-26",
+      "slot": "D",
+      "team_id": 3
+    },
+    "202700215": {
+      "dfo": "dtd",
+      "espn": "ACTIVE",
+      "level": 1,
+      "name": "Wayne Scott",
+      "nhl_team": "PIT",
+      "since": "2026-07-26",
+      "slot": "Util",
+      "team_id": 3
+    },
+    "202700216": {
+      "dfo": null,
+      "espn": null,
+      "level": 0,
+      "name": "Andrew Bennett",
+      "nhl_team": "EDM",
+      "since": "2026-07-26",
+      "slot": "G",
+      "team_id": 3
+    },
+    "202700217": {
+      "dfo": null,
+      "espn": null,
+      "level": 0,
+      "name": "Henry Green",
+      "nhl_team": "CHI",
+      "since": "2026-07-26",
+      "slot": "G",
+      "team_id": 3
+    },
+    "202700218": {
+      "dfo": null,
+      "espn": null,
+      "level": 0,
+      "name": "Noah Wright",
+      "nhl_team": "NJD",
+      "since": "2026-07-26",
+      "slot": "BE",
+      "team_id": 3
+    },
+    "202700219": {
+      "dfo": null,
+      "espn": null,
+      "level": 0,
+      "name": "Eric Davis",
+      "nhl_team": "WPG",
+      "since": "2026-07-26",
+      "slot": "BE",
+      "team_id": 3
+    },
+    "202700220": {
+      "dfo": null,
+      "espn": null,
+      "level": 0,
+      "name": "Nicholas Walker",
+      "nhl_team": "UTA",
+      "since": "2026-07-26",
+      "slot": "BE",
+      "team_id": 3
+    },
+    "202700221": {
+      "dfo": null,
+      "espn": null,
+      "level": 0,
+      "name": "Walter James",
+      "nhl_team": "OTT",
+      "since": "2026-07-26",
+      "slot": "BE",
+      "team_id": 3
+    },
+    "202700222": {
+      "dfo": null,
+      "espn": null,
+      "level": 0,
+      "name": "Eugene Ross",
+      "nhl_team": "PHI",
+      "since": "2026-07-26",
+      "slot": "BE",
+      "team_id": 3
+    },
+    "202700223": {
+      "dfo": null,
+      "espn": "OUT",
+      "level": 2,
+      "name": "Matthew Wood",
+      "nhl_team": "WPG",
+      "since": "2026-07-26",
+      "slot": "BE",
+      "team_id": 3
+    },
+    "202700224": {
+      "dfo": null,
+      "espn": null,
+      "level": 0,
+      "name": "Philip Kelly",
+      "nhl_team": "CBJ",
+      "since": "2026-07-26",
+      "slot": "BE",
+      "team_id": 3
+    },
+    "202700225": {
+      "dfo": null,
+      "espn": "DOUBTFUL",
+      "level": 1,
+      "name": "Thomas Nelson",
+      "nhl_team": "PIT",
+      "since": "2026-07-26",
+      "slot": "IR",
+      "team_id": 3
+    },
+    "202700226": {
+      "dfo": null,
+      "espn": "ACTIVE",
+      "level": 0,
+      "name": "Kevin Wright",
+      "nhl_team": "TOR",
+      "since": "2026-07-26",
+      "slot": "IR",
+      "team_id": 3
+    },
+    "202700227": {
+      "dfo": null,
+      "espn": null,
+      "level": 0,
+      "name": "Jordan Green",
+      "nhl_team": "CHI",
+      "since": "2026-07-26",
+      "slot": "IR",
+      "team_id": 3
+    },
+    "202750000": {
+      "dfo": null,
+      "espn": "ACTIVE",
+      "level": 0,
+      "name": "Andrew Kim",
+      "nhl_team": "BOS",
+      "since": "2026-07-26",
+      "slot": "FA",
+      "team_id": null
+    },
+    "202750001": {
+      "dfo": null,
+      "espn": null,
+      "level": 0,
+      "name": "Steven Mendoza",
+      "nhl_team": "OTT",
+      "since": "2026-07-26",
+      "slot": "FA",
+      "team_id": null
+    },
+    "202750002": {
+      "dfo": null,
+      "espn": "INJURY_RESERVE",
+      "level": 2,
+      "name": "Mason Kim",
+      "nhl_team": "CAR",
+      "since": "2026-07-26",
+      "slot": "FA",
+      "team_id": null
+    },
+    "202750003": {
+      "dfo": "dtd",
+      "espn": null,
+      "level": 1,
+      "name": "Jeremy Hernandez",
+      "nhl_team": "ANA",
+      "since": "2026-07-26",
+      "slot": "FA",
+      "team_id": null
+    },
+    "202750004": {
+      "dfo": "dtd",
+      "espn": "DOUBTFUL",
+      "level": 1,
+      "name": "Henry Lee",
+      "nhl_team": "CHI",
+      "since": "2026-07-26",
+      "slot": "FA",
+      "team_id": null
+    },
+    "202750005": {
+      "dfo": null,
+      "espn": null,
+      "level": 0,
+      "name": "Joshua Kim",
+      "nhl_team": "CBJ",
+      "since": "2026-07-26",
+      "slot": "FA",
+      "team_id": null
+    },
+    "202750006": {
+      "dfo": "dtd",
+      "espn": null,
+      "level": 1,
+      "name": "Nicholas Sanders",
+      "nhl_team": "CAR",
+      "since": "2026-07-26",
+      "slot": "FA",
+      "team_id": null
+    },
+    "202750007": {
+      "dfo": null,
+      "espn": null,
+      "level": 0,
+      "name": "Austin Reed",
+      "nhl_team": "TBL",
+      "since": "2026-07-26",
+      "slot": "FA",
+      "team_id": null
+    },
+    "202750008": {
+      "dfo": null,
+      "espn": null,
+      "level": 0,
+      "name": "Alexander Foster",
+      "nhl_team": "CHI",
+      "since": "2026-07-26",
+      "slot": "FA",
+      "team_id": null
+    },
+    "202750009": {
+      "dfo": null,
+      "espn": "INJURY_RESERVE",
+      "level": 2,
+      "name": "Jeffrey Stewart",
+      "nhl_team": "PIT",
+      "since": "2026-07-26",
+      "slot": "FA",
+      "team_id": null
+    },
+    "202750010": {
+      "dfo": null,
+      "espn": null,
+      "level": 0,
+      "name": "Ethan Williams",
+      "nhl_team": "LAK",
+      "since": "2026-07-26",
+      "slot": "FA",
+      "team_id": null
+    },
+    "202750011": {
+      "dfo": null,
+      "espn": "QUESTIONABLE",
+      "level": 1,
+      "name": "Charles Ramos",
+      "nhl_team": "EDM",
+      "since": "2026-07-26",
+      "slot": "FA",
+      "team_id": null
+    },
+    "202750012": {
+      "dfo": null,
+      "espn": null,
+      "level": 0,
+      "name": "Joseph Alvarez",
+      "nhl_team": "MTL",
+      "since": "2026-07-26",
+      "slot": "FA",
+      "team_id": null
+    },
+    "202750013": {
+      "dfo": "dtd",
+      "espn": null,
+      "level": 1,
+      "name": "Charles Clark",
+      "nhl_team": "BOS",
+      "since": "2026-07-26",
+      "slot": "FA",
+      "team_id": null
+    },
+    "202750014": {
+      "dfo": null,
+      "espn": null,
+      "level": 0,
+      "name": "Carl Sanchez",
+      "nhl_team": "OTT",
+      "since": "2026-07-26",
+      "slot": "FA",
+      "team_id": null
+    },
+    "202750015": {
+      "dfo": "dtd",
+      "espn": null,
+      "level": 1,
+      "name": "Juan Nguyen",
+      "nhl_team": "WPG",
+      "since": "2026-07-26",
+      "slot": "FA",
+      "team_id": null
+    },
+    "202750016": {
+      "dfo": null,
+      "espn": null,
+      "level": 0,
+      "name": "Juan Cooper",
+      "nhl_team": "SJS",
+      "since": "2026-07-26",
+      "slot": "FA",
+      "team_id": null
+    },
+    "202750017": {
+      "dfo": "dtd",
+      "espn": "QUESTIONABLE",
+      "level": 1,
+      "name": "Stephen Gutierrez",
+      "nhl_team": "CBJ",
+      "since": "2026-07-26",
+      "slot": "FA",
+      "team_id": null
+    },
+    "202750018": {
+      "dfo": "dtd",
+      "espn": null,
+      "level": 1,
+      "name": "Douglas Taylor",
+      "nhl_team": "UTA",
+      "since": "2026-07-26",
+      "slot": "FA",
+      "team_id": null
+    },
+    "202750019": {
+      "dfo": "dtd",
+      "espn": null,
+      "level": 1,
+      "name": "Jacob Rodriguez",
+      "nhl_team": "WSH",
+      "since": "2026-07-26",
+      "slot": "FA",
+      "team_id": null
+    }
+  },
+  "schema_version": 1,
+  "season": 2027,
+  "sport": "hockey",
+  "updated_at": "2026-07-27T00:00:00+00:00"
+}

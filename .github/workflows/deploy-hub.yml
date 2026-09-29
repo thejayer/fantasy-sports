@@ -85,6 +85,10 @@ jobs:
       EVENT_NAME: ${{ github.event_name }}
       DEFAULT_BUCKET: fantasy-sports-analytics-sj-data
       AUTH_URL_INPUT: ${{ github.event.inputs.auth_url || '' }}
+      # Hockey injury news -> Discord (HOCKEY-PORT.md H6). Off unless the repo
+      # variable SJ_HOCKEY_INJURY_DISCORD is "1"; then the Secret Manager
+      # secret sj-discord-webhook must exist (it is only referenced when on).
+      HOCKEY_INJURY_DISCORD: ${{ vars.SJ_HOCKEY_INJURY_DISCORD || '0' }}
       # Preferred public host after ./scripts/setup-hub-domain.sh --cutover
       PREFERRED_AUTH_HOST: fantasy.strictlyjayers.com
     steps:
@@ -182,6 +186,14 @@ jobs:
           fi
           echo "Using AUTH_URL=$AUTH_URL (Cloud Run URL: $RUN_URL)"
 
+          SECRETS="AUTH_SECRET=sj-auth-secret:latest,AUTH_GOOGLE_ID=sj-auth-google-id:latest,AUTH_GOOGLE_SECRET=sj-auth-google-secret:latest,ALLOWED_EMAILS=sj-allowed-emails:latest,OPENAI_API_KEY=openai-api-key:latest"
+          if [ "$HOCKEY_INJURY_DISCORD" = "1" ]; then
+            SECRETS="$SECRETS,SJ_DISCORD_WEBHOOK_URL=sj-discord-webhook:latest"
+            echo "Hockey injury Discord posts: on"
+          else
+            HOCKEY_INJURY_DISCORD=0
+          fi
+
           # Hub-native golf/members share the ESPN store path. Dual GCS FUSE
           # mounts (RO ESPN + RW hub bucket) failed Cloud Run PORT probes.
           # Sync skips platform:hub and refuses sport=golf overwrite.
@@ -196,8 +208,8 @@ jobs:
             --min-instances "$MIN_INSTANCES"
             --max-instances 5
             --cpu-boost
-            --set-env-vars "SJ_SYNC_ON_START=0,AUTH_TRUST_HOST=true,SJ_DATA_DIR=/app/data/sj,SJ_HUB_DIR=/app/data/sj,AUTH_URL=$AUTH_URL,SJ_RECAP_MODEL=gpt-5.6-luna"
-            --set-secrets "AUTH_SECRET=sj-auth-secret:latest,AUTH_GOOGLE_ID=sj-auth-google-id:latest,AUTH_GOOGLE_SECRET=sj-auth-google-secret:latest,ALLOWED_EMAILS=sj-allowed-emails:latest,OPENAI_API_KEY=openai-api-key:latest"
+            --set-env-vars "SJ_SYNC_ON_START=0,AUTH_TRUST_HOST=true,SJ_DATA_DIR=/app/data/sj,SJ_HUB_DIR=/app/data/sj,AUTH_URL=$AUTH_URL,SJ_RECAP_MODEL=gpt-5.6-luna,SJ_HOCKEY_INJURY_DISCORD=$HOCKEY_INJURY_DISCORD"
+            --set-secrets "$SECRETS"
           )
           if [ -n "$HUB_BUCKET" ]; then
             echo "Note: hub_bucket=$HUB_BUCKET is ignored (dual FUSE disabled; hub shares ESPN bucket)"

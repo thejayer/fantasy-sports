@@ -294,3 +294,21 @@ def test_committed_fixture_sidecars_match_the_sample_nhl():
     assert pm["unmatched"], "fixture should exercise the unmatched list"
     ctx = expected["nhl_context"]["players"]
     assert {str(p["nhl_id"]) for p in pm["players"].values()} <= set(ctx)
+
+
+def test_export_writes_injury_log_and_reads_the_previous_one(tmp_path):
+    """H6: the first log is a baseline; the next sync records the change."""
+    client = NHLClient(fetch=canned_fetch, throttle=0.0)
+    snap = snapshot()
+    export_nhl(snap, client=client, store_dir=tmp_path)
+    log = read_nhl("hockey-main", 2027, "injury_log", store_dir=tmp_path)
+    assert log["baseline"] is True
+    assert log["league_id"] == "hockey-main"
+
+    # Someone gets hurt before the next sync.
+    victim = snap["teams"][0]["roster"][0]
+    victim["injury_status"] = "OUT"
+    snap["synced_at"] = "2026-10-02T11:00:00+00:00"
+    export_nhl(snap, client=client, store_dir=tmp_path)
+    log = read_nhl("hockey-main", 2027, "injury_log", store_dir=tmp_path)
+    assert [e["espn_id"] for e in log["events"]] == [str(victim["id"])]

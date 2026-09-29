@@ -121,6 +121,35 @@ export type HomeLeagueCard = {
 
 const ORDER: Record<ActionTone, number> = { urgent: 0, attention: 1, info: 2 };
 
+/**
+ * Hockey (HOCKEY-PORT.md H6): replace the ESPN-only injury nudge with one
+ * action summarising the team's lineup alerts (ESPN + Daily Faceoff).
+ */
+export function withHockeyAlerts(
+  card: HomeLeagueCard,
+  alerts: Array<{ severity: "high" | "medium" | "low"; name: string; text: string }>,
+): HomeLeagueCard {
+  if (!card.team) return card;
+  const actions = card.actions.filter((a) => a.id !== `injuries-${card.leagueId}`);
+  const serious = alerts.filter((a) => a.severity !== "low");
+  if (serious.length) {
+    const first = serious[0]!;
+    actions.push({
+      id: `hockey-alerts-${card.leagueId}`,
+      tone: serious.some((a) => a.severity === "high") ? "urgent" : "attention",
+      label:
+        serious.length === 1
+          ? `${first.name} ${first.text}`
+          : `${serious.length} lineup alerts: ${serious
+              .slice(0, 3)
+              .map((a) => a.name)
+              .join(", ")}${serious.length > 3 ? "…" : ""}`,
+      href: `/leagues/${card.leagueId}?season=${card.season}&tab=tools&view=alerts&team=${card.team.teamId}`,
+    });
+  }
+  return { ...card, actions: sortActions(actions) };
+}
+
 export function sortActions(actions: ActionItem[]): ActionItem[] {
   return [...actions].sort(
     (a, b) => ORDER[a.tone] - ORDER[b.tone] || a.label.localeCompare(b.label),

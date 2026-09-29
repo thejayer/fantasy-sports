@@ -147,6 +147,16 @@ totals. The hub does **not** invent player week lines ESPN omitted, and does
   them) and **Games-played pace** (`view=pace`: starter games per slot against
   ESPN's GP caps). Pacing reads `teams[].games` + `periods.final` that the
   season-points analysis sync now writes for hockey.
+- **H6 (landed): injuries & alerts.** Each hockey sync (and the afternoon
+  `sj nhl-lines` job) updates `nhl/injury_log.json`: ESPN + Daily Faceoff
+  status per player and transitions (hurt / nearing return / back); the first
+  log is a silent baseline. Hockey → Tools → **Injuries & alerts**
+  (`view=alerts`) shows lineup alerts for the picked team (injured starter,
+  healthy player on IR, lineup goalie whose partner is named, named starter
+  on the bench, possible scratch in the lineup, ESPN vs Daily Faceoff
+  disagreeing) and the league's injury news with ESPN news links. Injury news
+  also appears in the Feed, and the member home shows one alerts action for
+  a linked hockey team. Discord posting is opt-in (below).
 - The hockey **`projections` tab** is the values board: value, ROS, ESPN
   per-game, share played, age, data-source tag, a recent-form setting
   (`?recent=0…1`, re-blended from saved inputs in `lib/hockey-values.ts`),
@@ -366,6 +376,27 @@ PORT probes. `getLeagueIndex` still merges roots when they differ (local sibling
 Optional outbound digest: set `SJ_DISCORD_WEBHOOK_URL` on the hub service.
 Admins can send the latest weekly digest from the Feed tab; delivery is
 idempotent per league-season-period. Digests still render in-app when unset.
+
+**Hockey injury news → Discord (HOCKEY-PORT.md H6)** is off by default. Deploy
+CD replaces the service's env vars on every push, so the switch lives in the
+repo, not on the service. To turn it on:
+
+1. Store the league channel's webhook URL in Secret Manager (once):
+   `printf %s "<webhook url>" | gcloud secrets create sj-discord-webhook --project fantasy-sports-analytics --data-file=-`
+2. Let the hub's runtime service account read it (the account that already
+   reads `sj-auth-secret`):
+   `gcloud secrets add-iam-policy-binding sj-discord-webhook --project fantasy-sports-analytics --member=serviceAccount:<hub runtime SA> --role=roles/secretmanager.secretAccessor`
+3. GitHub → Settings → Secrets and variables → Actions → **Variables** →
+   `SJ_HOCKEY_INJURY_DISCORD` = `1`, then Actions → **deploy hub** → Run
+   workflow (or wait for the next push to `main`).
+
+`deploy-hub.yml` then sets `SJ_HOCKEY_INJURY_DISCORD=1` and maps
+`SJ_DISCORD_WEBHOOK_URL=sj-discord-webhook:latest` (the secret is referenced
+only when the variable is `1`, so deploys never fail on a missing secret).
+Admins get **Post injury news to Discord** on Hockey → Tools → Injuries &
+alerts (`POST /api/leagues/{id}/injury-digest`): the last 3 days of rostered
+players' injury changes, each posted once (`injury_digest.json` under
+`SJ_HUB_DIR`). Set the variable back to `0` to switch it off.
 
 Weekly **Recap** column (`?tab=recap&week=N`, football/baseball): funny
 power-rankings prose on top of the same digest facts. Admins POST

@@ -18,6 +18,7 @@ import {
   getHockeyValues,
   getHockeySchedule,
   getHockeyTeamStrength,
+  getHockeyInjuryLog,
   getPlayerMap,
   getPlayoffOddsSamples,
   getPlayoffOddsSnapshot,
@@ -231,6 +232,11 @@ export default async function LeagueDetailPage({ params, searchParams }: Props) 
   const hockeySchedule = hockeyDecisionTools
     ? await getHockeySchedule(league.league_id, league.season)
     : null;
+  // H6 alerts: the injury log (ESPN + Daily Faceoff transitions).
+  const hockeyInjuryLog =
+    league.sport === "hockey" && tab === "tools" && hockeyToolsView === "alerts"
+      ? await getHockeyInjuryLog(league.league_id, league.season)
+      : null;
   // H5b goalie start model: goals / shots for and against per club.
   const hockeyTeamStrength =
     league.sport === "hockey" && tab === "tools" && HOCKEY_DAILY_VIEWS.has(hockeyToolsView)
@@ -513,6 +519,7 @@ export default async function LeagueDetailPage({ params, searchParams }: Props) 
       hockeySchedule={hockeySchedule}
       hockeyDecisionQuery={league.sport === "hockey" ? hockeyDecisionQuery : undefined}
       hockeyTeamStrength={hockeyTeamStrength}
+      hockeyInjuryLog={hockeyInjuryLog}
     />
   );
 }
