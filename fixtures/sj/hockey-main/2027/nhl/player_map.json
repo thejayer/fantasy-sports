@@ -21,7 +21,11 @@
       "total": 81
     }
   },
-  "errors": [],
+  "errors": [
+    "dfo DET: no lineup found on the page",
+    "dfo NYR: no lineup found on the page",
+    "dfo SEA: no lineup found on the page"
+  ],
   "generated_at": "2026-07-27T00:00:00+00:00",
   "league_id": "hockey-main",
   "nhl_season": "20262027",

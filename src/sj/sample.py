@@ -1125,14 +1125,13 @@ def seed_store(
             if spec.sport == "hockey" and season == spec.current_season:
                 from datetime import datetime, timezone
 
-                from nhl.export import ARTIFACTS
                 from nhl.sample import sample_nhl_documents
 
                 # Season snapshots carry no synced_at until the store stamps a copy.
                 stamp = snapshot.get("synced_at") or datetime.now(timezone.utc).isoformat()
                 docs = sample_nhl_documents(snapshot, generated_at=str(stamp))
-                for name in ARTIFACTS:
-                    store.write_nhl(docs[name], name)
+                for name, doc in docs.items():
+                    store.write_nhl(doc, name)
             if spec.sport == "baseball":
                 store.write_pro_schedule(sample_pro_schedule_for_snapshot(snapshot))
             if spec.sport in {"baseball", "hockey"}:

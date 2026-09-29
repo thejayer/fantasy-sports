@@ -666,11 +666,14 @@ def sync_hockey_nhl(
     if spec.sport != "hockey" or season != spec.current_season:
         return "skipped"
     try:
+        from nhl.dfo import DfoClient, dfo_sync_enabled
         from nhl.export import export_nhl, nhl_sync_enabled
 
         if not nhl_sync_enabled():
             return "disabled"
-        result = export_nhl(snapshot, store_dir=store_dir)
+        # H4: Daily Faceoff lines + starting goalies unless SJ_DFO_SYNC=0.
+        dfo = DfoClient() if dfo_sync_enabled() else None
+        result = export_nhl(snapshot, store_dir=store_dir, dfo=dfo)
     except Exception as exc:  # noqa: BLE001 - NHL is a side concern
         print(f"nhl {spec.id} {season}: failed: {exc}", file=sys.stderr)
         return f"failed: {exc}"

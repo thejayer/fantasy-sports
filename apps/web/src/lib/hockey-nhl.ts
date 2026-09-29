@@ -70,6 +70,8 @@ export type HockeyNhlPlayer = {
   weight_lb: number | null;
   on_nhl_roster: boolean;
   toi: HockeyToi | null;
+  /** Skaters: line/pair + PP unit (Daily Faceoff when synced, else ice time). */
+  role?: { line: string | null; pp: string | null; basis: string | null; trend: string[] };
   goalie?: {
     basis: string | null;
     gs: number | null;
@@ -93,7 +95,26 @@ export type HockeyNhlContextSnapshot = {
 export type HockeyNhlSnapshot = {
   playerMap: HockeyPlayerMapSnapshot | null;
   context: HockeyNhlContextSnapshot | null;
+  /** H4 Daily Faceoff lines (null before the first lines sync). */
+  lines?: HockeyLinesSnapshot | null;
 };
+
+/** "PP1" → { text, href } where href is the club's Daily Faceoff page. */
+export function ppLabel(bio: HockeyBio | undefined): { text: string; href?: string } {
+  if (!bio?.pp) return { text: "—" };
+  return bio.teamUrl ? { text: bio.pp, href: bio.teamUrl } : { text: bio.pp };
+}
+
+/** Role cell text: "Line 1", plus a flag for a possible scratch or injury. */
+export function roleLabel(bio: HockeyBio | undefined): { text: string; title?: string } {
+  if (!bio?.role && !bio?.possibleScratch) return { text: "—" };
+  const flags = [
+    bio.possibleScratch ? "possible scratch" : null,
+    bio.injury ? bio.injury.toUpperCase() : null,
+  ].filter(Boolean);
+  const text = [bio.role ?? "Not in lineup", ...flags].join(" · ");
+  return { text, title: bio.roleBasis ? `Role from ${bio.roleBasis}` : undefined };
+}
 
 /** One row's NHL columns: Age, Ht, Wt, Team, EV min, PP min. */
 export type HockeyBio = {
@@ -107,9 +128,47 @@ export type HockeyBio = {
   ppMin: number | null;
   /** Which TOI sample the minutes came from ("this season", "last season", …). */
   toiBasis: string | null;
+  /** H4: "Line 1" / "Pair 2" / "G1" — Daily Faceoff when synced, else ice time. */
+  role: string | null;
+  /** "PP1" / "PP2" / "No PP". */
+  pp: string | null;
+  linemates: string[];
+  /** Daily Faceoff team page (PP column links here). */
+  teamUrl: string | null;
+  /** "Daily Faceoff" or the ice-time sample the role was estimated from. */
+  roleBasis: string | null;
+  /** Daily Faceoff injury word (out / dtd / ir / gtd …). */
+  injury: string | null;
+  /** On the NHL roster but missing from a full Daily Faceoff lineup. */
+  possibleScratch: boolean;
 };
 
 export type HockeyBioIndex = Record<string, HockeyBio>;
+
+/** One NHL player's entry in ``nhl/lines.json`` (Daily Faceoff, H4). */
+export type HockeyLinePlayer = {
+  team: string;
+  line: string | null;
+  pp: string | null;
+  pk: string | null;
+  linemates: string[];
+  goalie_depth: number | null;
+  injury: string | null;
+  gtd: boolean;
+  possible_scratch: boolean;
+  team_url: string | null;
+};
+
+export type HockeyLinesSnapshot = {
+  league_id: string;
+  season: number;
+  sport: "hockey";
+  generated_at: string;
+  source: string;
+  teams: Record<string, { url: string | null; updated_at: string | null; full_lineup: boolean }>;
+  players: Record<string, HockeyLinePlayer>;
+  errors: string[];
+};
 
 /**
  * ESPN player id → NHL bio for the given ids (or every mapped player).
@@ -131,7 +190,18 @@ export function hockeyBioIndex(
     if (!entry) continue;
     const nhl = context[String(entry.nhl_id)];
     if (!nhl) continue;
+    // Prefer the afternoon lines refresh (lines.json) over the morning context.
+    const line = snapshot?.lines?.players?.[String(entry.nhl_id)];
+    const role = nhl.role ?? null;
+    const goalieRole = line?.goalie_depth != null ? `G${line.goalie_depth}` : null;
     out[espnId] = {
+      role: line?.line ?? goalieRole ?? role?.line ?? null,
+      pp: line?.pp ?? role?.pp ?? null,
+      linemates: line?.linemates ?? [],
+      teamUrl: line?.team_url ?? null,
+      roleBasis: line ? "Daily Faceoff" : (role?.basis ?? null),
+      injury: line?.injury ?? null,
+      possibleScratch: line?.possible_scratch ?? false,
       nhlId: nhl.nhl_id,
       age: nhl.age ?? null,
       heightIn: nhl.height_in ?? null,

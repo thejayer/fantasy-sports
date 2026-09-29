@@ -265,7 +265,8 @@ def test_sync_hook_never_fails_the_espn_sync(monkeypatch, tmp_path, capsys):
     assert sync_hockey_nhl(spec, 2027, snapshot(), store_dir=tmp_path) == "failed: NHL down"
     assert "NHL down" in capsys.readouterr().err
 
-    def canned_export(snap, store_dir=None):
+    def canned_export(snap, store_dir=None, dfo=None):
+        assert dfo is None  # conftest sets SJ_DFO_SYNC=0: tests never reach Daily Faceoff
         return export_nhl(snap, client=NHLClient(fetch=canned_fetch, throttle=0.0),
                           store_dir=store_dir)
 

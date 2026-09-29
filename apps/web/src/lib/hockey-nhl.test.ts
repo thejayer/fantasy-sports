@@ -8,8 +8,11 @@ import {
   formatMinutes,
   formatWhole,
   hockeyBioIndex,
+  ppLabel,
+  roleLabel,
   teamLabel,
   toiTitle,
+  type HockeyLinesSnapshot,
   type HockeyNhlContextSnapshot,
   type HockeyNhlSnapshot,
   type HockeyPlayerMapSnapshot,
@@ -120,8 +123,40 @@ describe("hockey NHL join (HOCKEY-PORT H1)", () => {
       evMin: 15,
       ppMin: 3,
       toiBasis: "last season, other team",
+      role: "Line 1",
+      pp: "PP1",
+      linemates: ["A", "B"],
+      teamUrl: "https://www.dailyfaceoff.com/teams/toronto-maple-leafs/line-combinations",
+      roleBasis: "Daily Faceoff",
+      injury: null,
+      possibleScratch: false,
     };
     expect(teamLabel(moved)).toEqual({ text: "TOR", title: "Last season: BOS" });
     expect(toiTitle(moved)).toBe("Per-game ice time, last season, other team");
+    expect(roleLabel(moved)).toEqual({ text: "Line 1", title: "Role from Daily Faceoff" });
+    expect(ppLabel(moved)).toEqual({ text: "PP1", href: moved.teamUrl });
+    expect(roleLabel({ ...moved, possibleScratch: true, role: null }).text).toBe(
+      "Not in lineup · possible scratch",
+    );
+    expect(roleLabel({ ...moved, injury: "dtd" }).text).toBe("Line 1 · DTD");
+    expect(ppLabel({ ...moved, pp: null })).toEqual({ text: "—" });
+    expect(roleLabel(undefined)).toEqual({ text: "—" });
+  });
+
+  it("joins Daily Faceoff lines (H4) and prefers them over the ice-time role", () => {
+    const nhl: HockeyNhlSnapshot = {
+      ...fixtureNhl(),
+      lines: loadJson<HockeyLinesSnapshot>("hockey-main/2027/nhl/lines.json"),
+    };
+    const bios = hockeyBioIndex(nhl);
+    const withLine = Object.values(bios).filter((b) => b.roleBasis === "Daily Faceoff");
+    expect(withLine.length).toBeGreaterThan(20);
+    const onLine = withLine.find((b) => b.role?.startsWith("Line") && b.linemates.length);
+    expect(onLine?.teamUrl).toMatch(/dailyfaceoff\.com\/teams\/.+\/line-combinations$/);
+    // Without lines.json the morning context's role still shows.
+    const noLines = hockeyBioIndex({ ...nhl, lines: null });
+    const [id] = Object.keys(noLines);
+    expect(noLines[id].linemates).toEqual([]);
+    expect(noLines[id].teamUrl).toBeNull();
   });
 });

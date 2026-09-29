@@ -1,6 +1,10 @@
 {
   "as_of": "2026-07-27",
-  "errors": [],
+  "errors": [
+    "dfo DET: no lineup found on the page",
+    "dfo NYR: no lineup found on the page",
+    "dfo SEA: no lineup found on the page"
+  ],
   "generated_at": "2026-07-27T00:00:00+00:00",
   "league_id": "hockey-main",
   "nhl_season": "20262027",
@@ -8,6 +12,19 @@
     "8470000": {
       "age": 21,
       "birth_date": "2004-08-19",
+      "dfo": {
+        "goalie_depth": null,
+        "gtd": false,
+        "injury": null,
+        "line": "Line 1",
+        "linemates": [
+          "Jeremy Hernandez"
+        ],
+        "pk": null,
+        "possible_scratch": false,
+        "pp": "PP1",
+        "team_url": "https://www.dailyfaceoff.com/teams/anaheim-ducks/line-combinations"
+      },
       "group": "F",
       "height_in": 77,
       "history": [
@@ -50,9 +67,9 @@
       "position": "L",
       "prior_team": null,
       "role": {
-        "basis": "last season",
+        "basis": "Daily Faceoff",
         "line": "Line 1",
-        "pp": "No PP",
+        "pp": "PP1",
         "trend": []
       },
       "team": "ANA",
@@ -69,6 +86,20 @@
     "8470001": {
       "age": 29,
       "birth_date": "1997-03-22",
+      "dfo": {
+        "goalie_depth": null,
+        "gtd": false,
+        "injury": null,
+        "line": "Line 1",
+        "linemates": [
+          "Andrew Lopez",
+          "Russell Cooper"
+        ],
+        "pk": null,
+        "possible_scratch": false,
+        "pp": "PP1",
+        "team_url": "https://www.dailyfaceoff.com/teams/san-jose-sharks/line-combinations"
+      },
       "group": "F",
       "height_in": 73,
       "history": [
@@ -111,9 +142,9 @@
       "position": "L",
       "prior_team": null,
       "role": {
-        "basis": "last season",
+        "basis": "Daily Faceoff",
         "line": "Line 1",
-        "pp": "No PP",
+        "pp": "PP1",
         "trend": []
       },
       "team": "SJS",
@@ -130,6 +161,20 @@
     "8470002": {
       "age": 21,
       "birth_date": "2004-10-07",
+      "dfo": {
+        "goalie_depth": null,
+        "gtd": false,
+        "injury": null,
+        "line": "Line 1",
+        "linemates": [
+          "Elijah Wilson",
+          "C. Richardson"
+        ],
+        "pk": null,
+        "possible_scratch": false,
+        "pp": "PP1",
+        "team_url": "https://www.dailyfaceoff.com/teams/pittsburgh-penguins/line-combinations"
+      },
       "group": "F",
       "height_in": 68,
       "history": [
@@ -172,9 +217,9 @@
       "position": "L",
       "prior_team": null,
       "role": {
-        "basis": "last season",
-        "line": "Line 2",
-        "pp": "PP2",
+        "basis": "Daily Faceoff",
+        "line": "Line 1",
+        "pp": "PP1",
         "trend": []
       },
       "team": "PIT",
@@ -191,6 +236,20 @@
     "8470003": {
       "age": 26,
       "birth_date": "1999-09-02",
+      "dfo": {
+        "goalie_depth": null,
+        "gtd": false,
+        "injury": null,
+        "line": "Line 1",
+        "linemates": [
+          "C. Hill",
+          "Jacob Rodriguez"
+        ],
+        "pk": null,
+        "possible_scratch": false,
+        "pp": "PP1",
+        "team_url": "https://www.dailyfaceoff.com/teams/washington-capitals/line-combinations"
+      },
       "group": "F",
       "height_in": 79,
       "history": [
@@ -217,7 +276,7 @@
       "position": "R",
       "prior_team": null,
       "role": {
-        "basis": "last season",
+        "basis": "Daily Faceoff",
         "line": "Line 1",
         "pp": "PP1",
         "trend": []
@@ -236,6 +295,19 @@
     "8470004": {
       "age": 33,
       "birth_date": "1993-01-04",
+      "dfo": {
+        "goalie_depth": null,
+        "gtd": false,
+        "injury": null,
+        "line": "Line 1",
+        "linemates": [
+          "Henry Lee"
+        ],
+        "pk": null,
+        "possible_scratch": false,
+        "pp": "PP1",
+        "team_url": "https://www.dailyfaceoff.com/teams/chicago-blackhawks/line-combinations"
+      },
       "draft": {
         "overall": 196,
         "pick_in_round": 4,
@@ -275,9 +347,9 @@
       "prior_nhl_gp": 0,
       "prior_team": null,
       "role": {
-        "basis": "no NHL ice time",
-        "line": null,
-        "pp": null,
+        "basis": "Daily Faceoff",
+        "line": "Line 1",
+        "pp": "PP1",
         "trend": []
       },
       "team": "CHI",
@@ -294,6 +366,19 @@
     "8470005": {
       "age": 22,
       "birth_date": "2004-05-04",
+      "dfo": {
+        "goalie_depth": null,
+        "gtd": false,
+        "injury": null,
+        "line": "Line 1",
+        "linemates": [
+          "D. Robinson"
+        ],
+        "pk": null,
+        "possible_scratch": false,
+        "pp": "PP1",
+        "team_url": "https://www.dailyfaceoff.com/teams/buffalo-sabres/line-combinations"
+      },
       "group": "F",
       "height_in": 74,
       "history": [
@@ -352,7 +437,7 @@
       "position": "L",
       "prior_team": null,
       "role": {
-        "basis": "last season",
+        "basis": "Daily Faceoff",
         "line": "Line 1",
         "pp": "PP1",
         "trend": []
@@ -371,6 +456,17 @@
     "8470006": {
       "age": 33,
       "birth_date": "1993-06-06",
+      "dfo": {
+        "goalie_depth": null,
+        "gtd": false,
+        "injury": "dtd",
+        "line": "Line 1",
+        "linemates": [],
+        "pk": null,
+        "possible_scratch": false,
+        "pp": "PP1",
+        "team_url": "https://www.dailyfaceoff.com/teams/ottawa-senators/line-combinations"
+      },
       "group": "F",
       "height_in": 77,
       "history": [
@@ -429,9 +525,9 @@
       "position": "R",
       "prior_team": null,
       "role": {
-        "basis": "last season",
+        "basis": "Daily Faceoff",
         "line": "Line 1",
-        "pp": "No PP",
+        "pp": "PP1",
         "trend": []
       },
       "team": "OTT",
@@ -448,6 +544,20 @@
     "8470007": {
       "age": 28,
       "birth_date": "1997-10-23",
+      "dfo": {
+        "goalie_depth": null,
+        "gtd": false,
+        "injury": null,
+        "line": "Line 1",
+        "linemates": [
+          "Scott Myers",
+          "Michael Johnson"
+        ],
+        "pk": null,
+        "possible_scratch": false,
+        "pp": "PP1",
+        "team_url": "https://www.dailyfaceoff.com/teams/florida-panthers/line-combinations"
+      },
       "group": "F",
       "height_in": 74,
       "history": [
@@ -490,7 +600,7 @@
       "position": "R",
       "prior_team": null,
       "role": {
-        "basis": "last season",
+        "basis": "Daily Faceoff",
         "line": "Line 1",
         "pp": "PP1",
         "trend": []
@@ -579,6 +689,19 @@
     "8470009": {
       "age": 32,
       "birth_date": "1994-03-14",
+      "dfo": {
+        "goalie_depth": null,
+        "gtd": false,
+        "injury": null,
+        "line": "Pair 1",
+        "linemates": [
+          "Charles Ramos"
+        ],
+        "pk": null,
+        "possible_scratch": false,
+        "pp": "PP1",
+        "team_url": "https://www.dailyfaceoff.com/teams/edmonton-oilers/line-combinations"
+      },
       "group": "D",
       "height_in": 69,
       "history": [
@@ -621,9 +744,9 @@
       "position": "D",
       "prior_team": null,
       "role": {
-        "basis": "last season",
+        "basis": "Daily Faceoff",
         "line": "Pair 1",
-        "pp": "PP2",
+        "pp": "PP1",
         "trend": []
       },
       "team": "EDM",
@@ -640,6 +763,19 @@
     "8470010": {
       "age": 22,
       "birth_date": "2004-07-13",
+      "dfo": {
+        "goalie_depth": null,
+        "gtd": false,
+        "injury": null,
+        "line": "Pair 1",
+        "linemates": [
+          "Albert Miller"
+        ],
+        "pk": null,
+        "possible_scratch": false,
+        "pp": "PP1",
+        "team_url": "https://www.dailyfaceoff.com/teams/colorado-avalanche/line-combinations"
+      },
       "group": "D",
       "height_in": 69,
       "history": [
@@ -698,7 +834,7 @@
       "position": "D",
       "prior_team": null,
       "role": {
-        "basis": "last season",
+        "basis": "Daily Faceoff",
         "line": "Pair 1",
         "pp": "PP1",
         "trend": []
@@ -717,6 +853,19 @@
     "8470011": {
       "age": 24,
       "birth_date": "2002-05-23",
+      "dfo": {
+        "goalie_depth": null,
+        "gtd": false,
+        "injury": null,
+        "line": "Pair 1",
+        "linemates": [
+          "Adam Brooks"
+        ],
+        "pk": null,
+        "possible_scratch": false,
+        "pp": "PP1",
+        "team_url": "https://www.dailyfaceoff.com/teams/anaheim-ducks/line-combinations"
+      },
       "group": "D",
       "height_in": 79,
       "history": [
@@ -775,7 +924,7 @@
       "position": "D",
       "prior_team": null,
       "role": {
-        "basis": "last season",
+        "basis": "Daily Faceoff",
         "line": "Pair 1",
         "pp": "PP1",
         "trend": []
@@ -794,6 +943,19 @@
     "8470012": {
       "age": 22,
       "birth_date": "2004-04-03",
+      "dfo": {
+        "goalie_depth": null,
+        "gtd": false,
+        "injury": null,
+        "line": "Pair 1",
+        "linemates": [
+          "Wayne Campbell"
+        ],
+        "pk": null,
+        "possible_scratch": false,
+        "pp": "PP1",
+        "team_url": "https://www.dailyfaceoff.com/teams/montreal-canadiens/line-combinations"
+      },
       "group": "D",
       "height_in": 71,
       "history": [
@@ -852,9 +1014,9 @@
       "position": "D",
       "prior_team": null,
       "role": {
-        "basis": "last season",
+        "basis": "Daily Faceoff",
         "line": "Pair 1",
-        "pp": "PP2",
+        "pp": "PP1",
         "trend": []
       },
       "team": "MTL",
@@ -871,6 +1033,20 @@
     "8470014": {
       "age": 32,
       "birth_date": "1994-06-20",
+      "dfo": {
+        "goalie_depth": null,
+        "gtd": false,
+        "injury": null,
+        "line": "Line 1",
+        "linemates": [
+          "Arthur Garcia",
+          "Russell Cooper"
+        ],
+        "pk": null,
+        "possible_scratch": false,
+        "pp": "PP1",
+        "team_url": "https://www.dailyfaceoff.com/teams/san-jose-sharks/line-combinations"
+      },
       "group": "F",
       "height_in": 71,
       "history": [
@@ -913,7 +1089,7 @@
       "position": "L",
       "prior_team": null,
       "role": {
-        "basis": "last season",
+        "basis": "Daily Faceoff",
         "line": "Line 1",
         "pp": "PP1",
         "trend": []
@@ -932,6 +1108,17 @@
     "8470015": {
       "age": 24,
       "birth_date": "2002-04-01",
+      "dfo": {
+        "goalie_depth": 1,
+        "gtd": false,
+        "injury": null,
+        "line": null,
+        "linemates": [],
+        "pk": null,
+        "possible_scratch": false,
+        "pp": null,
+        "team_url": "https://www.dailyfaceoff.com/teams/florida-panthers/line-combinations"
+      },
       "goalie": {
         "basis": "last season",
         "gs": 25,
@@ -965,6 +1152,17 @@
     "8470016": {
       "age": 26,
       "birth_date": "1999-09-03",
+      "dfo": {
+        "goalie_depth": 1,
+        "gtd": false,
+        "injury": null,
+        "line": null,
+        "linemates": [],
+        "pk": null,
+        "possible_scratch": false,
+        "pp": null,
+        "team_url": "https://www.dailyfaceoff.com/teams/los-angeles-kings/line-combinations"
+      },
       "goalie": {
         "basis": "last season",
         "gs": 64,
@@ -1020,6 +1218,17 @@
     "8470017": {
       "age": 25,
       "birth_date": "2000-09-18",
+      "dfo": {
+        "goalie_depth": null,
+        "gtd": false,
+        "injury": "dtd",
+        "line": "Line 1",
+        "linemates": [],
+        "pk": null,
+        "possible_scratch": false,
+        "pp": "PP1",
+        "team_url": "https://www.dailyfaceoff.com/teams/new-york-islanders/line-combinations"
+      },
       "group": "F",
       "height_in": 77,
       "history": [
@@ -1078,9 +1287,9 @@
       "position": "L",
       "prior_team": null,
       "role": {
-        "basis": "last season",
+        "basis": "Daily Faceoff",
         "line": "Line 1",
-        "pp": "PP2",
+        "pp": "PP1",
         "trend": []
       },
       "team": "NYI",
@@ -1097,6 +1306,17 @@
     "8470018": {
       "age": 31,
       "birth_date": "1994-12-01",
+      "dfo": {
+        "goalie_depth": 1,
+        "gtd": false,
+        "injury": null,
+        "line": null,
+        "linemates": [],
+        "pk": null,
+        "possible_scratch": false,
+        "pp": null,
+        "team_url": "https://www.dailyfaceoff.com/teams/edmonton-oilers/line-combinations"
+      },
       "goalie": {
         "basis": "last season",
         "gs": 47,
@@ -1152,6 +1372,19 @@
     "8470019": {
       "age": 32,
       "birth_date": "1994-02-05",
+      "dfo": {
+        "goalie_depth": null,
+        "gtd": false,
+        "injury": null,
+        "line": "Line 1",
+        "linemates": [
+          "Douglas Taylor"
+        ],
+        "pk": null,
+        "possible_scratch": false,
+        "pp": "PP1",
+        "team_url": "https://www.dailyfaceoff.com/teams/utah-mammoth/line-combinations"
+      },
       "group": "F",
       "height_in": 78,
       "history": [
@@ -1194,7 +1427,7 @@
       "position": "C",
       "prior_team": null,
       "role": {
-        "basis": "last season",
+        "basis": "Daily Faceoff",
         "line": "Line 1",
         "pp": "PP1",
         "trend": []
@@ -1213,6 +1446,20 @@
     "8470020": {
       "age": 28,
       "birth_date": "1997-11-28",
+      "dfo": {
+        "goalie_depth": null,
+        "gtd": false,
+        "injury": null,
+        "line": "Line 1",
+        "linemates": [
+          "Peter Rogers",
+          "Jesse Allen"
+        ],
+        "pk": null,
+        "possible_scratch": false,
+        "pp": "PP1",
+        "team_url": "https://www.dailyfaceoff.com/teams/calgary-flames/line-combinations"
+      },
       "group": "F",
       "height_in": 70,
       "history": [
@@ -1255,7 +1502,7 @@
       "position": "C",
       "prior_team": null,
       "role": {
-        "basis": "last season",
+        "basis": "Daily Faceoff",
         "line": "Line 1",
         "pp": "PP1",
         "trend": []
@@ -1274,6 +1521,17 @@
     "8470021": {
       "age": 23,
       "birth_date": "2003-04-17",
+      "dfo": {
+        "goalie_depth": 1,
+        "gtd": false,
+        "injury": null,
+        "line": null,
+        "linemates": [],
+        "pk": null,
+        "possible_scratch": false,
+        "pp": null,
+        "team_url": "https://www.dailyfaceoff.com/teams/nashville-predators/line-combinations"
+      },
       "goalie": {
         "basis": "last season",
         "gs": 11,
@@ -1318,6 +1576,20 @@
     "8470022": {
       "age": 32,
       "birth_date": "1993-10-11",
+      "dfo": {
+        "goalie_depth": null,
+        "gtd": false,
+        "injury": null,
+        "line": "Line 1",
+        "linemates": [
+          "Randy Castillo",
+          "Michael Johnson"
+        ],
+        "pk": null,
+        "possible_scratch": false,
+        "pp": "PP1",
+        "team_url": "https://www.dailyfaceoff.com/teams/florida-panthers/line-combinations"
+      },
       "draft": {
         "overall": 117,
         "pick_in_round": 21,
@@ -1357,9 +1629,9 @@
       "prior_nhl_gp": 0,
       "prior_team": null,
       "role": {
-        "basis": "no NHL ice time",
-        "line": null,
-        "pp": null,
+        "basis": "Daily Faceoff",
+        "line": "Line 1",
+        "pp": "PP1",
         "trend": []
       },
       "team": "FLA",
@@ -1376,6 +1648,17 @@
     "8470023": {
       "age": 32,
       "birth_date": "1994-02-15",
+      "dfo": {
+        "goalie_depth": 1,
+        "gtd": false,
+        "injury": null,
+        "line": null,
+        "linemates": [],
+        "pk": null,
+        "possible_scratch": false,
+        "pp": null,
+        "team_url": "https://www.dailyfaceoff.com/teams/san-jose-sharks/line-combinations"
+      },
       "goalie": {
         "basis": "last season",
         "gs": 46,
@@ -1431,6 +1714,17 @@
     "8470024": {
       "age": 24,
       "birth_date": "2002-04-01",
+      "dfo": {
+        "goalie_depth": 1,
+        "gtd": false,
+        "injury": null,
+        "line": null,
+        "linemates": [],
+        "pk": null,
+        "possible_scratch": false,
+        "pp": null,
+        "team_url": "https://www.dailyfaceoff.com/teams/washington-capitals/line-combinations"
+      },
       "goalie": {
         "basis": "last season",
         "gs": 62,
@@ -1540,6 +1834,19 @@
     "8470026": {
       "age": 32,
       "birth_date": "1994-02-02",
+      "dfo": {
+        "goalie_depth": null,
+        "gtd": false,
+        "injury": null,
+        "line": "Pair 1",
+        "linemates": [
+          "Paul Baker"
+        ],
+        "pk": null,
+        "possible_scratch": false,
+        "pp": "PP1",
+        "team_url": "https://www.dailyfaceoff.com/teams/st-louis-blues/line-combinations"
+      },
       "group": "D",
       "height_in": 79,
       "history": [
@@ -1582,9 +1889,9 @@
       "position": "D",
       "prior_team": null,
       "role": {
-        "basis": "last season",
+        "basis": "Daily Faceoff",
         "line": "Pair 1",
-        "pp": "No PP",
+        "pp": "PP1",
         "trend": []
       },
       "team": "STL",
@@ -1601,6 +1908,20 @@
     "8470027": {
       "age": 31,
       "birth_date": "1994-12-26",
+      "dfo": {
+        "goalie_depth": null,
+        "gtd": false,
+        "injury": null,
+        "line": "Line 1",
+        "linemates": [
+          "Keith Adams",
+          "Jacob Rodriguez"
+        ],
+        "pk": null,
+        "possible_scratch": false,
+        "pp": "PP1",
+        "team_url": "https://www.dailyfaceoff.com/teams/washington-capitals/line-combinations"
+      },
       "group": "F",
       "height_in": 79,
       "history": [
@@ -1643,7 +1964,7 @@
       "position": "L",
       "prior_team": null,
       "role": {
-        "basis": "last season",
+        "basis": "Daily Faceoff",
         "line": "Line 1",
         "pp": "PP1",
         "trend": []
@@ -1662,6 +1983,20 @@
     "8470028": {
       "age": 21,
       "birth_date": "2005-02-19",
+      "dfo": {
+        "goalie_depth": null,
+        "gtd": false,
+        "injury": null,
+        "line": "Line 1",
+        "linemates": [
+          "Kyle Gonzalez",
+          "Jesse Allen"
+        ],
+        "pk": null,
+        "possible_scratch": false,
+        "pp": "PP1",
+        "team_url": "https://www.dailyfaceoff.com/teams/calgary-flames/line-combinations"
+      },
       "group": "F",
       "height_in": 72,
       "history": [
@@ -1720,9 +2055,9 @@
       "position": "L",
       "prior_team": null,
       "role": {
-        "basis": "last season",
+        "basis": "Daily Faceoff",
         "line": "Line 1",
-        "pp": "No PP",
+        "pp": "PP1",
         "trend": []
       },
       "team": "CGY",
@@ -1739,6 +2074,19 @@
     "8470029": {
       "age": 19,
       "birth_date": "2006-10-26",
+      "dfo": {
+        "goalie_depth": null,
+        "gtd": false,
+        "injury": null,
+        "line": "Line 1",
+        "linemates": [
+          "David Jackson"
+        ],
+        "pk": null,
+        "possible_scratch": false,
+        "pp": "PP1",
+        "team_url": "https://www.dailyfaceoff.com/teams/philadelphia-flyers/line-combinations"
+      },
       "group": "F",
       "height_in": 77,
       "history": [
@@ -1797,9 +2145,9 @@
       "position": "R",
       "prior_team": null,
       "role": {
-        "basis": "last season",
+        "basis": "Daily Faceoff",
         "line": "Line 1",
-        "pp": "No PP",
+        "pp": "PP1",
         "trend": []
       },
       "team": "PHI",
@@ -1816,6 +2164,17 @@
     "8470030": {
       "age": 26,
       "birth_date": "2000-06-05",
+      "dfo": {
+        "goalie_depth": null,
+        "gtd": false,
+        "injury": "dtd",
+        "line": "Line 1",
+        "linemates": [],
+        "pk": null,
+        "possible_scratch": false,
+        "pp": "PP1",
+        "team_url": "https://www.dailyfaceoff.com/teams/dallas-stars/line-combinations"
+      },
       "group": "F",
       "height_in": 71,
       "history": [
@@ -1874,7 +2233,7 @@
       "position": "C",
       "prior_team": null,
       "role": {
-        "basis": "last season",
+        "basis": "Daily Faceoff",
         "line": "Line 1",
         "pp": "PP1",
         "trend": []
@@ -1893,6 +2252,20 @@
     "8470031": {
       "age": 23,
       "birth_date": "2002-12-03",
+      "dfo": {
+        "goalie_depth": null,
+        "gtd": false,
+        "injury": null,
+        "line": "Line 1",
+        "linemates": [
+          "Jason Perez",
+          "Gary Edwards"
+        ],
+        "pk": null,
+        "possible_scratch": false,
+        "pp": "PP1",
+        "team_url": "https://www.dailyfaceoff.com/teams/vancouver-canucks/line-combinations"
+      },
       "draft": {
         "overall": 176,
         "pick_in_round": 16,
@@ -1932,9 +2305,9 @@
       "prior_nhl_gp": 0,
       "prior_team": null,
       "role": {
-        "basis": "no NHL ice time",
-        "line": null,
-        "pp": null,
+        "basis": "Daily Faceoff",
+        "line": "Line 1",
+        "pp": "PP1",
         "trend": []
       },
       "team": "VAN",
@@ -1951,6 +2324,20 @@
     "8470032": {
       "age": 22,
       "birth_date": "2003-08-05",
+      "dfo": {
+        "goalie_depth": null,
+        "gtd": false,
+        "injury": null,
+        "line": "Line 1",
+        "linemates": [
+          "Jordan Wood",
+          "Gary Edwards"
+        ],
+        "pk": null,
+        "possible_scratch": false,
+        "pp": "PP1",
+        "team_url": "https://www.dailyfaceoff.com/teams/vancouver-canucks/line-combinations"
+      },
       "group": "F",
       "height_in": 77,
       "history": [
@@ -1993,9 +2380,9 @@
       "position": "L",
       "prior_team": null,
       "role": {
-        "basis": "last season",
+        "basis": "Daily Faceoff",
         "line": "Line 1",
-        "pp": "PP2",
+        "pp": "PP1",
         "trend": []
       },
       "team": "VAN",
@@ -2012,6 +2399,17 @@
     "8470033": {
       "age": 33,
       "birth_date": "1992-12-21",
+      "dfo": {
+        "goalie_depth": null,
+        "gtd": false,
+        "injury": "dtd",
+        "line": "Line 1",
+        "linemates": [],
+        "pk": null,
+        "possible_scratch": false,
+        "pp": "PP1",
+        "team_url": "https://www.dailyfaceoff.com/teams/minnesota-wild/line-combinations"
+      },
       "group": "F",
       "height_in": 78,
       "history": [
@@ -2038,9 +2436,9 @@
       "position": "L",
       "prior_team": null,
       "role": {
-        "basis": "last season",
+        "basis": "Daily Faceoff",
         "line": "Line 1",
-        "pp": "PP2",
+        "pp": "PP1",
         "trend": []
       },
       "team": "MIN",
@@ -2057,6 +2455,17 @@
     "8470034": {
       "age": 22,
       "birth_date": "2004-04-25",
+      "dfo": {
+        "goalie_depth": null,
+        "gtd": false,
+        "injury": "dtd",
+        "line": "Line 1",
+        "linemates": [],
+        "pk": null,
+        "possible_scratch": false,
+        "pp": "PP1",
+        "team_url": "https://www.dailyfaceoff.com/teams/los-angeles-kings/line-combinations"
+      },
       "group": "F",
       "height_in": 75,
       "history": [
@@ -2115,7 +2524,7 @@
       "position": "L",
       "prior_team": null,
       "role": {
-        "basis": "last season",
+        "basis": "Daily Faceoff",
         "line": "Line 1",
         "pp": "PP1",
         "trend": []
@@ -2134,6 +2543,19 @@
     "8470035": {
       "age": 19,
       "birth_date": "2006-09-22",
+      "dfo": {
+        "goalie_depth": null,
+        "gtd": false,
+        "injury": null,
+        "line": "Line 1",
+        "linemates": [
+          "Nathan Hall"
+        ],
+        "pk": null,
+        "possible_scratch": false,
+        "pp": "PP1",
+        "team_url": "https://www.dailyfaceoff.com/teams/edmonton-oilers/line-combinations"
+      },
       "group": "F",
       "height_in": 76,
       "history": [
@@ -2192,7 +2614,7 @@
       "position": "R",
       "prior_team": null,
       "role": {
-        "basis": "last season",
+        "basis": "Daily Faceoff",
         "line": "Line 1",
         "pp": "PP1",
         "trend": []
@@ -2211,6 +2633,19 @@
     "8470036": {
       "age": 31,
       "birth_date": "1994-09-05",
+      "dfo": {
+        "goalie_depth": null,
+        "gtd": false,
+        "injury": null,
+        "line": "Pair 1",
+        "linemates": [
+          "Ethan Roberts"
+        ],
+        "pk": null,
+        "possible_scratch": false,
+        "pp": "PP2",
+        "team_url": "https://www.dailyfaceoff.com/teams/st-louis-blues/line-combinations"
+      },
       "group": "D",
       "height_in": 73,
       "history": [
@@ -2269,9 +2704,9 @@
       "position": "D",
       "prior_team": null,
       "role": {
-        "basis": "last season",
+        "basis": "Daily Faceoff",
         "line": "Pair 1",
-        "pp": "PP1",
+        "pp": "PP2",
         "trend": []
       },
       "team": "STL",
@@ -2288,6 +2723,19 @@
     "8470037": {
       "age": 23,
       "birth_date": "2002-11-13",
+      "dfo": {
+        "goalie_depth": null,
+        "gtd": false,
+        "injury": null,
+        "line": "Pair 1",
+        "linemates": [
+          "Bradley Lewis"
+        ],
+        "pk": null,
+        "possible_scratch": false,
+        "pp": "PP2",
+        "team_url": "https://www.dailyfaceoff.com/teams/colorado-avalanche/line-combinations"
+      },
       "group": "D",
       "height_in": 74,
       "history": [
@@ -2346,7 +2794,7 @@
       "position": "D",
       "prior_team": null,
       "role": {
-        "basis": "last season",
+        "basis": "Daily Faceoff",
         "line": "Pair 1",
         "pp": "PP2",
         "trend": []
@@ -2365,6 +2813,19 @@
     "8470038": {
       "age": 21,
       "birth_date": "2005-01-10",
+      "dfo": {
+        "goalie_depth": null,
+        "gtd": false,
+        "injury": null,
+        "line": "Pair 1",
+        "linemates": [
+          "N. Wright"
+        ],
+        "pk": null,
+        "possible_scratch": false,
+        "pp": "PP1",
+        "team_url": "https://www.dailyfaceoff.com/teams/new-jersey-devils/line-combinations"
+      },
       "group": "D",
       "height_in": 69,
       "history": [
@@ -2391,9 +2852,9 @@
       "position": "D",
       "prior_team": null,
       "role": {
-        "basis": "last season",
+        "basis": "Daily Faceoff",
         "line": "Pair 1",
-        "pp": "PP2",
+        "pp": "PP1",
         "trend": []
       },
       "team": "NJD",
@@ -2410,6 +2871,17 @@
     "8470039": {
       "age": 34,
       "birth_date": "1992-02-22",
+      "dfo": {
+        "goalie_depth": null,
+        "gtd": false,
+        "injury": null,
+        "line": "Pair 1",
+        "linemates": [],
+        "pk": null,
+        "possible_scratch": false,
+        "pp": "PP1",
+        "team_url": "https://www.dailyfaceoff.com/teams/washington-capitals/line-combinations"
+      },
       "group": "D",
       "height_in": 70,
       "history": [
@@ -2452,7 +2924,7 @@
       "position": "D",
       "prior_team": null,
       "role": {
-        "basis": "last season",
+        "basis": "Daily Faceoff",
         "line": "Pair 1",
         "pp": "PP1",
         "trend": []
@@ -2471,6 +2943,19 @@
     "8470040": {
       "age": 27,
       "birth_date": "1999-02-16",
+      "dfo": {
+        "goalie_depth": null,
+        "gtd": false,
+        "injury": null,
+        "line": "Pair 1",
+        "linemates": [
+          "Christopher Patel"
+        ],
+        "pk": null,
+        "possible_scratch": false,
+        "pp": "PP2",
+        "team_url": "https://www.dailyfaceoff.com/teams/anaheim-ducks/line-combinations"
+      },
       "draft": {
         "overall": 100,
         "pick_in_round": 4,
@@ -2510,9 +2995,9 @@
       "prior_nhl_gp": 0,
       "prior_team": null,
       "role": {
-        "basis": "no NHL ice time",
-        "line": null,
-        "pp": null,
+        "basis": "Daily Faceoff",
+        "line": "Pair 1",
+        "pp": "PP2",
         "trend": []
       },
       "team": "ANA",
@@ -2529,6 +3014,20 @@
     "8470041": {
       "age": 23,
       "birth_date": "2003-07-06",
+      "dfo": {
+        "goalie_depth": null,
+        "gtd": false,
+        "injury": "dtd",
+        "line": "Line 1",
+        "linemates": [
+          "Arthur Garcia",
+          "Andrew Lopez"
+        ],
+        "pk": null,
+        "possible_scratch": false,
+        "pp": "PP1",
+        "team_url": "https://www.dailyfaceoff.com/teams/san-jose-sharks/line-combinations"
+      },
       "group": "F",
       "height_in": 68,
       "history": [
@@ -2571,9 +3070,9 @@
       "position": "R",
       "prior_team": null,
       "role": {
-        "basis": "last season",
+        "basis": "Daily Faceoff",
         "line": "Line 1",
-        "pp": "No PP",
+        "pp": "PP1",
         "trend": []
       },
       "team": "SJS",
@@ -2643,6 +3142,17 @@
     "8470043": {
       "age": 21,
       "birth_date": "2005-01-07",
+      "dfo": {
+        "goalie_depth": 2,
+        "gtd": false,
+        "injury": null,
+        "line": null,
+        "linemates": [],
+        "pk": null,
+        "possible_scratch": false,
+        "pp": null,
+        "team_url": "https://www.dailyfaceoff.com/teams/san-jose-sharks/line-combinations"
+      },
       "goalie": {
         "basis": "last season",
         "gs": 42,
@@ -2698,6 +3208,20 @@
     "8470044": {
       "age": 20,
       "birth_date": "2005-08-26",
+      "dfo": {
+        "goalie_depth": null,
+        "gtd": false,
+        "injury": null,
+        "line": "Line 1",
+        "linemates": [
+          "Eric Davis",
+          "Juan Nguyen"
+        ],
+        "pk": null,
+        "possible_scratch": false,
+        "pp": "PP1",
+        "team_url": "https://www.dailyfaceoff.com/teams/winnipeg-jets/line-combinations"
+      },
       "group": "F",
       "height_in": 69,
       "history": [
@@ -2756,7 +3280,7 @@
       "position": "C",
       "prior_team": null,
       "role": {
-        "basis": "last season",
+        "basis": "Daily Faceoff",
         "line": "Line 1",
         "pp": "PP1",
         "trend": []
@@ -2775,6 +3299,19 @@
     "8470045": {
       "age": 23,
       "birth_date": "2002-12-15",
+      "dfo": {
+        "goalie_depth": null,
+        "gtd": false,
+        "injury": null,
+        "line": "Line 1",
+        "linemates": [
+          "Roy Bailey"
+        ],
+        "pk": null,
+        "possible_scratch": false,
+        "pp": "PP1",
+        "team_url": "https://www.dailyfaceoff.com/teams/st-louis-blues/line-combinations"
+      },
       "group": "F",
       "height_in": 78,
       "history": [
@@ -2833,9 +3370,9 @@
       "position": "C",
       "prior_team": null,
       "role": {
-        "basis": "last season",
+        "basis": "Daily Faceoff",
         "line": "Line 1",
-        "pp": "PP2",
+        "pp": "PP1",
         "trend": []
       },
       "team": "STL",
@@ -2852,6 +3389,20 @@
     "8470046": {
       "age": 25,
       "birth_date": "2000-12-06",
+      "dfo": {
+        "goalie_depth": null,
+        "gtd": false,
+        "injury": "dtd",
+        "line": "Line 1",
+        "linemates": [
+          "Randy Castillo",
+          "Scott Myers"
+        ],
+        "pk": null,
+        "possible_scratch": false,
+        "pp": "PP1",
+        "team_url": "https://www.dailyfaceoff.com/teams/florida-panthers/line-combinations"
+      },
       "group": "F",
       "height_in": 68,
       "history": [
@@ -2910,7 +3461,7 @@
       "position": "R",
       "prior_team": null,
       "role": {
-        "basis": "last season",
+        "basis": "Daily Faceoff",
         "line": "Line 1",
         "pp": "PP1",
         "trend": []
@@ -2929,6 +3480,17 @@
     "8470047": {
       "age": 27,
       "birth_date": "1998-09-12",
+      "dfo": {
+        "goalie_depth": 1,
+        "gtd": false,
+        "injury": null,
+        "line": null,
+        "linemates": [],
+        "pk": null,
+        "possible_scratch": false,
+        "pp": null,
+        "team_url": "https://www.dailyfaceoff.com/teams/calgary-flames/line-combinations"
+      },
       "goalie": {
         "basis": "last season",
         "gs": 30,
@@ -2984,6 +3546,20 @@
     "8470048": {
       "age": 26,
       "birth_date": "2000-04-01",
+      "dfo": {
+        "goalie_depth": null,
+        "gtd": false,
+        "injury": null,
+        "line": "Line 1",
+        "linemates": [
+          "Roger Gomez",
+          "Michael Edwards"
+        ],
+        "pk": null,
+        "possible_scratch": false,
+        "pp": "PP1",
+        "team_url": "https://www.dailyfaceoff.com/teams/columbus-blue-jackets/line-combinations"
+      },
       "group": "F",
       "height_in": 78,
       "history": [
@@ -3042,9 +3618,9 @@
       "position": "C",
       "prior_team": null,
       "role": {
-        "basis": "last season",
-        "line": "Line 2",
-        "pp": "PP2",
+        "basis": "Daily Faceoff",
+        "line": "Line 1",
+        "pp": "PP1",
         "trend": []
       },
       "team": "CBJ",
@@ -3061,6 +3637,19 @@
     "8470049": {
       "age": 20,
       "birth_date": "2006-03-27",
+      "dfo": {
+        "goalie_depth": null,
+        "gtd": false,
+        "injury": "dtd",
+        "line": "Line 1",
+        "linemates": [
+          "A. Clark"
+        ],
+        "pk": null,
+        "possible_scratch": false,
+        "pp": "PP1",
+        "team_url": "https://www.dailyfaceoff.com/teams/buffalo-sabres/line-combinations"
+      },
       "draft": {
         "overall": 195,
         "pick_in_round": 3,
@@ -3100,9 +3689,9 @@
       "prior_nhl_gp": 0,
       "prior_team": null,
       "role": {
-        "basis": "no NHL ice time",
-        "line": null,
-        "pp": null,
+        "basis": "Daily Faceoff",
+        "line": "Line 1",
+        "pp": "PP1",
         "trend": []
       },
       "team": "BUF",
@@ -3119,6 +3708,20 @@
     "8470051": {
       "age": 27,
       "birth_date": "1998-11-19",
+      "dfo": {
+        "goalie_depth": null,
+        "gtd": false,
+        "injury": "dtd",
+        "line": "Line 1",
+        "linemates": [
+          "Jordan Wood",
+          "Jason Perez"
+        ],
+        "pk": null,
+        "possible_scratch": false,
+        "pp": "PP1",
+        "team_url": "https://www.dailyfaceoff.com/teams/vancouver-canucks/line-combinations"
+      },
       "group": "F",
       "height_in": 73,
       "history": [
@@ -3161,7 +3764,7 @@
       "position": "R",
       "prior_team": null,
       "role": {
-        "basis": "last season",
+        "basis": "Daily Faceoff",
         "line": "Line 1",
         "pp": "PP1",
         "trend": []
@@ -3180,6 +3783,20 @@
     "8470052": {
       "age": 29,
       "birth_date": "1997-07-27",
+      "dfo": {
+        "goalie_depth": null,
+        "gtd": false,
+        "injury": null,
+        "line": "Line 1",
+        "linemates": [
+          "Bradley Murphy",
+          "C. Richardson"
+        ],
+        "pk": null,
+        "possible_scratch": false,
+        "pp": "PP1",
+        "team_url": "https://www.dailyfaceoff.com/teams/pittsburgh-penguins/line-combinations"
+      },
       "group": "F",
       "height_in": 70,
       "history": [
@@ -3222,9 +3839,9 @@
       "position": "C",
       "prior_team": null,
       "role": {
-        "basis": "last season",
+        "basis": "Daily Faceoff",
         "line": "Line 1",
-        "pp": "PP2",
+        "pp": "PP1",
         "trend": []
       },
       "team": "PIT",
@@ -3241,6 +3858,19 @@
     "8470053": {
       "age": 30,
       "birth_date": "1996-05-11",
+      "dfo": {
+        "goalie_depth": null,
+        "gtd": false,
+        "injury": "dtd",
+        "line": "Line 1",
+        "linemates": [
+          "Timothy King"
+        ],
+        "pk": null,
+        "possible_scratch": false,
+        "pp": "PP1",
+        "team_url": "https://www.dailyfaceoff.com/teams/st-louis-blues/line-combinations"
+      },
       "group": "F",
       "height_in": 70,
       "history": [
@@ -3283,7 +3913,7 @@
       "position": "C",
       "prior_team": null,
       "role": {
-        "basis": "last season",
+        "basis": "Daily Faceoff",
         "line": "Line 1",
         "pp": "PP1",
         "trend": []
@@ -3302,6 +3932,20 @@
     "8470054": {
       "age": 30,
       "birth_date": "1996-01-22",
+      "dfo": {
+        "goalie_depth": null,
+        "gtd": false,
+        "injury": null,
+        "line": "Line 1",
+        "linemates": [
+          "James Jackson",
+          "Michael Edwards"
+        ],
+        "pk": null,
+        "possible_scratch": false,
+        "pp": "PP1",
+        "team_url": "https://www.dailyfaceoff.com/teams/columbus-blue-jackets/line-combinations"
+      },
       "group": "F",
       "height_in": 75,
       "history": [
@@ -3360,7 +4004,7 @@
       "position": "R",
       "prior_team": null,
       "role": {
-        "basis": "last season",
+        "basis": "Daily Faceoff",
         "line": "Line 1",
         "pp": "PP1",
         "trend": []
@@ -3379,6 +4023,17 @@
     "8470055": {
       "age": 23,
       "birth_date": "2003-06-20",
+      "dfo": {
+        "goalie_depth": null,
+        "gtd": false,
+        "injury": "dtd",
+        "line": "Line 1",
+        "linemates": [],
+        "pk": null,
+        "possible_scratch": false,
+        "pp": "PP1",
+        "team_url": "https://www.dailyfaceoff.com/teams/toronto-maple-leafs/line-combinations"
+      },
       "group": "F",
       "height_in": 71,
       "history": [
@@ -3437,9 +4092,9 @@
       "position": "R",
       "prior_team": null,
       "role": {
-        "basis": "last season",
+        "basis": "Daily Faceoff",
         "line": "Line 1",
-        "pp": "PP2",
+        "pp": "PP1",
         "trend": []
       },
       "team": "TOR",
@@ -3456,6 +4111,19 @@
     "8470056": {
       "age": 25,
       "birth_date": "2001-02-21",
+      "dfo": {
+        "goalie_depth": null,
+        "gtd": false,
+        "injury": "dtd",
+        "line": "Line 1",
+        "linemates": [
+          "Patrick Rogers"
+        ],
+        "pk": null,
+        "possible_scratch": false,
+        "pp": "PP1",
+        "team_url": "https://www.dailyfaceoff.com/teams/edmonton-oilers/line-combinations"
+      },
       "group": "F",
       "height_in": 78,
       "history": [
@@ -3498,9 +4166,9 @@
       "position": "R",
       "prior_team": null,
       "role": {
-        "basis": "last season",
+        "basis": "Daily Faceoff",
         "line": "Line 1",
-        "pp": "PP2",
+        "pp": "PP1",
         "trend": []
       },
       "team": "EDM",
@@ -3517,6 +4185,20 @@
     "8470057": {
       "age": 26,
       "birth_date": "2000-05-20",
+      "dfo": {
+        "goalie_depth": null,
+        "gtd": false,
+        "injury": null,
+        "line": "Line 1",
+        "linemates": [
+          "James Jackson",
+          "Roger Gomez"
+        ],
+        "pk": null,
+        "possible_scratch": false,
+        "pp": "PP1",
+        "team_url": "https://www.dailyfaceoff.com/teams/columbus-blue-jackets/line-combinations"
+      },
       "group": "F",
       "height_in": 73,
       "history": [
@@ -3575,8 +4257,8 @@
       "position": "C",
       "prior_team": null,
       "role": {
-        "basis": "last season",
-        "line": "Line 2",
+        "basis": "Daily Faceoff",
+        "line": "Line 1",
         "pp": "PP1",
         "trend": []
       },
@@ -3594,6 +4276,19 @@
     "8470058": {
       "age": 26,
       "birth_date": "2000-05-10",
+      "dfo": {
+        "goalie_depth": null,
+        "gtd": false,
+        "injury": "dtd",
+        "line": "Line 1",
+        "linemates": [
+          "Benjamin Long"
+        ],
+        "pk": null,
+        "possible_scratch": false,
+        "pp": "PP1",
+        "team_url": "https://www.dailyfaceoff.com/teams/philadelphia-flyers/line-combinations"
+      },
       "draft": {
         "overall": 94,
         "pick_in_round": 30,
@@ -3633,9 +4328,9 @@
       "prior_nhl_gp": 0,
       "prior_team": null,
       "role": {
-        "basis": "no NHL ice time",
-        "line": null,
-        "pp": null,
+        "basis": "Daily Faceoff",
+        "line": "Line 1",
+        "pp": "PP1",
         "trend": []
       },
       "team": "PHI",
@@ -3738,6 +4433,20 @@
     "8470060": {
       "age": 23,
       "birth_date": "2003-04-02",
+      "dfo": {
+        "goalie_depth": null,
+        "gtd": false,
+        "injury": null,
+        "line": "Line 1",
+        "linemates": [
+          "Bradley Murphy",
+          "Elijah Wilson"
+        ],
+        "pk": null,
+        "possible_scratch": false,
+        "pp": "PP1",
+        "team_url": "https://www.dailyfaceoff.com/teams/pittsburgh-penguins/line-combinations"
+      },
       "group": "F",
       "height_in": 68,
       "history": [
@@ -3796,9 +4505,9 @@
       "position": "L",
       "prior_team": null,
       "role": {
-        "basis": "last season",
+        "basis": "Daily Faceoff",
         "line": "Line 1",
-        "pp": "PP2",
+        "pp": "PP1",
         "trend": []
       },
       "team": "PIT",
@@ -3815,6 +4524,20 @@
     "8470061": {
       "age": 31,
       "birth_date": "1994-09-15",
+      "dfo": {
+        "goalie_depth": null,
+        "gtd": false,
+        "injury": "dtd",
+        "line": "Line 1",
+        "linemates": [
+          "Kyle Gonzalez",
+          "Peter Rogers"
+        ],
+        "pk": null,
+        "possible_scratch": false,
+        "pp": "PP1",
+        "team_url": "https://www.dailyfaceoff.com/teams/calgary-flames/line-combinations"
+      },
       "group": "F",
       "height_in": 72,
       "history": [
@@ -3873,9 +4596,9 @@
       "position": "L",
       "prior_team": null,
       "role": {
-        "basis": "last season",
+        "basis": "Daily Faceoff",
         "line": "Line 1",
-        "pp": "No PP",
+        "pp": "PP1",
         "trend": []
       },
       "team": "CGY",
@@ -3892,6 +4615,17 @@
     "8470062": {
       "age": 24,
       "birth_date": "2001-12-02",
+      "dfo": {
+        "goalie_depth": null,
+        "gtd": false,
+        "injury": "dtd",
+        "line": "Line 1",
+        "linemates": [],
+        "pk": null,
+        "possible_scratch": false,
+        "pp": "PP1",
+        "team_url": "https://www.dailyfaceoff.com/teams/vegas-golden-knights/line-combinations"
+      },
       "group": "F",
       "height_in": 77,
       "history": [
@@ -3950,9 +4684,9 @@
       "position": "R",
       "prior_team": null,
       "role": {
-        "basis": "last season",
+        "basis": "Daily Faceoff",
         "line": "Line 1",
-        "pp": "PP2",
+        "pp": "PP1",
         "trend": []
       },
       "team": "VGK",
@@ -3969,6 +4703,19 @@
     "8470063": {
       "age": 34,
       "birth_date": "1992-03-17",
+      "dfo": {
+        "goalie_depth": null,
+        "gtd": false,
+        "injury": null,
+        "line": "Pair 1",
+        "linemates": [
+          "Christopher Wright"
+        ],
+        "pk": null,
+        "possible_scratch": false,
+        "pp": "PP2",
+        "team_url": "https://www.dailyfaceoff.com/teams/montreal-canadiens/line-combinations"
+      },
       "group": "D",
       "height_in": 70,
       "history": [
@@ -4027,9 +4774,9 @@
       "position": "D",
       "prior_team": null,
       "role": {
-        "basis": "last season",
-        "line": "Pair 2",
-        "pp": "PP1",
+        "basis": "Daily Faceoff",
+        "line": "Pair 1",
+        "pp": "PP2",
         "trend": []
       },
       "team": "MTL",
@@ -4046,6 +4793,19 @@
     "8470064": {
       "age": 34,
       "birth_date": "1992-06-08",
+      "dfo": {
+        "goalie_depth": null,
+        "gtd": false,
+        "injury": null,
+        "line": "Pair 1",
+        "linemates": [
+          "Walter James"
+        ],
+        "pk": null,
+        "possible_scratch": false,
+        "pp": "PP1",
+        "team_url": "https://www.dailyfaceoff.com/teams/ottawa-senators/line-combinations"
+      },
       "group": "D",
       "height_in": 79,
       "history": [
@@ -4088,9 +4848,9 @@
       "position": "D",
       "prior_team": null,
       "role": {
-        "basis": "last season",
-        "line": "Pair 2",
-        "pp": "No PP",
+        "basis": "Daily Faceoff",
+        "line": "Pair 1",
+        "pp": "PP1",
         "trend": []
       },
       "team": "OTT",
@@ -4107,6 +4867,17 @@
     "8470065": {
       "age": 24,
       "birth_date": "2002-07-15",
+      "dfo": {
+        "goalie_depth": null,
+        "gtd": false,
+        "injury": null,
+        "line": "Pair 1",
+        "linemates": [],
+        "pk": null,
+        "possible_scratch": false,
+        "pp": "PP1",
+        "team_url": "https://www.dailyfaceoff.com/teams/utah-mammoth/line-combinations"
+      },
       "group": "D",
       "height_in": 75,
       "history": [
@@ -4165,7 +4936,7 @@
       "position": "D",
       "prior_team": null,
       "role": {
-        "basis": "last season",
+        "basis": "Daily Faceoff",
         "line": "Pair 1",
         "pp": "PP1",
         "trend": []
@@ -4184,6 +4955,19 @@
     "8470066": {
       "age": 28,
       "birth_date": "1998-02-06",
+      "dfo": {
+        "goalie_depth": null,
+        "gtd": false,
+        "injury": null,
+        "line": "Pair 1",
+        "linemates": [
+          "Thomas Nelson"
+        ],
+        "pk": null,
+        "possible_scratch": false,
+        "pp": "PP1",
+        "team_url": "https://www.dailyfaceoff.com/teams/pittsburgh-penguins/line-combinations"
+      },
       "group": "D",
       "height_in": 78,
       "history": [
@@ -4242,7 +5026,7 @@
       "position": "D",
       "prior_team": null,
       "role": {
-        "basis": "last season",
+        "basis": "Daily Faceoff",
         "line": "Pair 1",
         "pp": "PP1",
         "trend": []
@@ -4261,6 +5045,17 @@
     "8470067": {
       "age": 30,
       "birth_date": "1995-09-23",
+      "dfo": {
+        "goalie_depth": null,
+        "gtd": false,
+        "injury": null,
+        "line": "Pair 1",
+        "linemates": [],
+        "pk": null,
+        "possible_scratch": false,
+        "pp": "PP1",
+        "team_url": "https://www.dailyfaceoff.com/teams/florida-panthers/line-combinations"
+      },
       "draft": {
         "overall": 15,
         "pick_in_round": 15,
@@ -4300,9 +5095,9 @@
       "prior_nhl_gp": 0,
       "prior_team": null,
       "role": {
-        "basis": "no NHL ice time",
-        "line": null,
-        "pp": null,
+        "basis": "Daily Faceoff",
+        "line": "Pair 1",
+        "pp": "PP1",
         "trend": []
       },
       "team": "FLA",
@@ -4319,6 +5114,17 @@
     "8470068": {
       "age": 26,
       "birth_date": "2000-05-14",
+      "dfo": {
+        "goalie_depth": null,
+        "gtd": false,
+        "injury": "dtd",
+        "line": "Line 2",
+        "linemates": [],
+        "pk": null,
+        "possible_scratch": false,
+        "pp": "PP1",
+        "team_url": "https://www.dailyfaceoff.com/teams/pittsburgh-penguins/line-combinations"
+      },
       "group": "F",
       "height_in": 79,
       "history": [
@@ -4377,8 +5183,8 @@
       "position": "R",
       "prior_team": null,
       "role": {
-        "basis": "last season",
-        "line": "Line 1",
+        "basis": "Daily Faceoff",
+        "line": "Line 2",
         "pp": "PP1",
         "trend": []
       },
@@ -4396,6 +5202,17 @@
     "8470069": {
       "age": 31,
       "birth_date": "1994-10-23",
+      "dfo": {
+        "goalie_depth": 2,
+        "gtd": false,
+        "injury": null,
+        "line": null,
+        "linemates": [],
+        "pk": null,
+        "possible_scratch": false,
+        "pp": null,
+        "team_url": "https://www.dailyfaceoff.com/teams/edmonton-oilers/line-combinations"
+      },
       "goalie": {
         "basis": "last season",
         "gs": 47,
@@ -4451,6 +5268,17 @@
     "8470070": {
       "age": 34,
       "birth_date": "1992-01-15",
+      "dfo": {
+        "goalie_depth": 1,
+        "gtd": false,
+        "injury": null,
+        "line": null,
+        "linemates": [],
+        "pk": null,
+        "possible_scratch": false,
+        "pp": null,
+        "team_url": "https://www.dailyfaceoff.com/teams/chicago-blackhawks/line-combinations"
+      },
       "goalie": {
         "basis": "last season",
         "gs": 41,
@@ -4495,6 +5323,19 @@
     "8470071": {
       "age": 25,
       "birth_date": "2001-02-25",
+      "dfo": {
+        "goalie_depth": null,
+        "gtd": false,
+        "injury": null,
+        "line": "Pair 1",
+        "linemates": [
+          "R. Flores"
+        ],
+        "pk": null,
+        "possible_scratch": false,
+        "pp": "PP2",
+        "team_url": "https://www.dailyfaceoff.com/teams/new-jersey-devils/line-combinations"
+      },
       "group": "D",
       "height_in": 77,
       "history": [
@@ -4537,9 +5378,9 @@
       "position": "D",
       "prior_team": null,
       "role": {
-        "basis": "last season",
+        "basis": "Daily Faceoff",
         "line": "Pair 1",
-        "pp": "PP1",
+        "pp": "PP2",
         "trend": []
       },
       "team": "NJD",
@@ -4556,6 +5397,20 @@
     "8470072": {
       "age": 34,
       "birth_date": "1992-03-21",
+      "dfo": {
+        "goalie_depth": null,
+        "gtd": false,
+        "injury": null,
+        "line": "Line 1",
+        "linemates": [
+          "David Jackson",
+          "Juan Nguyen"
+        ],
+        "pk": null,
+        "possible_scratch": false,
+        "pp": "PP1",
+        "team_url": "https://www.dailyfaceoff.com/teams/winnipeg-jets/line-combinations"
+      },
       "group": "F",
       "height_in": 71,
       "history": [
@@ -4598,9 +5453,9 @@
       "position": "C",
       "prior_team": null,
       "role": {
-        "basis": "last season",
+        "basis": "Daily Faceoff",
         "line": "Line 1",
-        "pp": "PP2",
+        "pp": "PP1",
         "trend": []
       },
       "team": "WPG",
@@ -4617,6 +5472,17 @@
     "8470073": {
       "age": 27,
       "birth_date": "1999-06-16",
+      "dfo": {
+        "goalie_depth": 1,
+        "gtd": false,
+        "injury": null,
+        "line": null,
+        "linemates": [],
+        "pk": null,
+        "possible_scratch": false,
+        "pp": null,
+        "team_url": "https://www.dailyfaceoff.com/teams/utah-mammoth/line-combinations"
+      },
       "goalie": {
         "basis": "last season",
         "gs": 58,
@@ -4661,6 +5527,19 @@
     "8470074": {
       "age": 33,
       "birth_date": "1992-09-26",
+      "dfo": {
+        "goalie_depth": null,
+        "gtd": false,
+        "injury": null,
+        "line": "Pair 1",
+        "linemates": [
+          "Paul Gomez"
+        ],
+        "pk": null,
+        "possible_scratch": false,
+        "pp": "PP2",
+        "team_url": "https://www.dailyfaceoff.com/teams/ottawa-senators/line-combinations"
+      },
       "group": "D",
       "height_in": 76,
       "history": [
@@ -4719,7 +5598,7 @@
       "position": "D",
       "prior_team": null,
       "role": {
-        "basis": "last season",
+        "basis": "Daily Faceoff",
         "line": "Pair 1",
         "pp": "PP2",
         "trend": []
@@ -4738,6 +5617,17 @@
     "8470075": {
       "age": 22,
       "birth_date": "2003-10-12",
+      "dfo": {
+        "goalie_depth": null,
+        "gtd": false,
+        "injury": null,
+        "line": "Pair 1",
+        "linemates": [],
+        "pk": null,
+        "possible_scratch": false,
+        "pp": "PP1",
+        "team_url": "https://www.dailyfaceoff.com/teams/philadelphia-flyers/line-combinations"
+      },
       "group": "D",
       "height_in": 71,
       "history": [
@@ -4796,9 +5686,9 @@
       "position": "D",
       "prior_team": null,
       "role": {
-        "basis": "last season",
+        "basis": "Daily Faceoff",
         "line": "Pair 1",
-        "pp": "PP2",
+        "pp": "PP1",
         "trend": []
       },
       "team": "PHI",
@@ -4873,6 +5763,19 @@
     "8470077": {
       "age": 27,
       "birth_date": "1999-02-04",
+      "dfo": {
+        "goalie_depth": null,
+        "gtd": false,
+        "injury": null,
+        "line": "Line 2",
+        "linemates": [
+          "Stephen Gutierrez"
+        ],
+        "pk": null,
+        "possible_scratch": false,
+        "pp": "PP1",
+        "team_url": "https://www.dailyfaceoff.com/teams/columbus-blue-jackets/line-combinations"
+      },
       "group": "F",
       "height_in": 71,
       "history": [
@@ -4931,8 +5834,8 @@
       "position": "C",
       "prior_team": null,
       "role": {
-        "basis": "last season",
-        "line": "Line 1",
+        "basis": "Daily Faceoff",
+        "line": "Line 2",
         "pp": "PP1",
         "trend": []
       },
@@ -4950,6 +5853,19 @@
     "8470078": {
       "age": 20,
       "birth_date": "2005-09-11",
+      "dfo": {
+        "goalie_depth": null,
+        "gtd": false,
+        "injury": null,
+        "line": "Pair 1",
+        "linemates": [
+          "Bradley Kelly"
+        ],
+        "pk": null,
+        "possible_scratch": false,
+        "pp": "PP2",
+        "team_url": "https://www.dailyfaceoff.com/teams/pittsburgh-penguins/line-combinations"
+      },
       "group": "D",
       "height_in": 69,
       "history": [
@@ -4992,7 +5908,7 @@
       "position": "D",
       "prior_team": null,
       "role": {
-        "basis": "last season",
+        "basis": "Daily Faceoff",
         "line": "Pair 1",
         "pp": "PP2",
         "trend": []
@@ -5011,6 +5927,17 @@
     "8470079": {
       "age": 34,
       "birth_date": "1992-01-15",
+      "dfo": {
+        "goalie_depth": null,
+        "gtd": false,
+        "injury": null,
+        "line": "Pair 1",
+        "linemates": [],
+        "pk": null,
+        "possible_scratch": false,
+        "pp": "PP1",
+        "team_url": "https://www.dailyfaceoff.com/teams/toronto-maple-leafs/line-combinations"
+      },
       "group": "D",
       "height_in": 68,
       "history": [
@@ -5069,7 +5996,7 @@
       "position": "D",
       "prior_team": null,
       "role": {
-        "basis": "last season",
+        "basis": "Daily Faceoff",
         "line": "Pair 1",
         "pp": "PP1",
         "trend": []
@@ -5088,6 +6015,17 @@
     "8470080": {
       "age": 28,
       "birth_date": "1997-10-21",
+      "dfo": {
+        "goalie_depth": null,
+        "gtd": false,
+        "injury": null,
+        "line": "Pair 1",
+        "linemates": [],
+        "pk": null,
+        "possible_scratch": false,
+        "pp": "PP1",
+        "team_url": "https://www.dailyfaceoff.com/teams/chicago-blackhawks/line-combinations"
+      },
       "group": "D",
       "height_in": 76,
       "history": [
@@ -5130,7 +6068,7 @@
       "position": "D",
       "prior_team": null,
       "role": {
-        "basis": "last season",
+        "basis": "Daily Faceoff",
         "line": "Pair 1",
         "pp": "PP1",
         "trend": []
@@ -5149,6 +6087,20 @@
     "8470081": {
       "age": 20,
       "birth_date": "2005-10-12",
+      "dfo": {
+        "goalie_depth": null,
+        "gtd": false,
+        "injury": "dtd",
+        "line": "Line 1",
+        "linemates": [
+          "Keith Adams",
+          "C. Hill"
+        ],
+        "pk": null,
+        "possible_scratch": false,
+        "pp": "PP1",
+        "team_url": "https://www.dailyfaceoff.com/teams/washington-capitals/line-combinations"
+      },
       "group": "F",
       "height_in": 76,
       "history": [
@@ -5191,7 +6143,7 @@
       "position": "C",
       "prior_team": null,
       "role": {
-        "basis": "last season",
+        "basis": "Daily Faceoff",
         "line": "Line 1",
         "pp": "PP1",
         "trend": []
@@ -5210,6 +6162,19 @@
     "8470082": {
       "age": 31,
       "birth_date": "1994-08-12",
+      "dfo": {
+        "goalie_depth": null,
+        "gtd": false,
+        "injury": null,
+        "line": "Line 1",
+        "linemates": [
+          "Charles Clark"
+        ],
+        "pk": null,
+        "possible_scratch": false,
+        "pp": "PP1",
+        "team_url": "https://www.dailyfaceoff.com/teams/boston-bruins/line-combinations"
+      },
       "group": "F",
       "height_in": 69,
       "history": [
@@ -5268,9 +6233,9 @@
       "position": "R",
       "prior_team": null,
       "role": {
-        "basis": "last season",
+        "basis": "Daily Faceoff",
         "line": "Line 1",
-        "pp": "No PP",
+        "pp": "PP1",
         "trend": []
       },
       "team": "BOS",
@@ -5287,6 +6252,17 @@
     "8470083": {
       "age": 33,
       "birth_date": "1993-04-14",
+      "dfo": {
+        "goalie_depth": 2,
+        "gtd": false,
+        "injury": null,
+        "line": null,
+        "linemates": [],
+        "pk": null,
+        "possible_scratch": false,
+        "pp": null,
+        "team_url": "https://www.dailyfaceoff.com/teams/los-angeles-kings/line-combinations"
+      },
       "goalie": {
         "basis": "last season",
         "gs": 63,
@@ -5342,6 +6318,19 @@
     "8470084": {
       "age": 32,
       "birth_date": "1994-01-27",
+      "dfo": {
+        "goalie_depth": null,
+        "gtd": false,
+        "injury": "dtd",
+        "line": "Line 2",
+        "linemates": [
+          "Philip Kelly"
+        ],
+        "pk": null,
+        "possible_scratch": false,
+        "pp": "PP2",
+        "team_url": "https://www.dailyfaceoff.com/teams/columbus-blue-jackets/line-combinations"
+      },
       "group": "F",
       "height_in": 68,
       "history": [
@@ -5384,9 +6373,9 @@
       "position": "C",
       "prior_team": null,
       "role": {
-        "basis": "last season",
-        "line": "Line 1",
-        "pp": "PP1",
+        "basis": "Daily Faceoff",
+        "line": "Line 2",
+        "pp": "PP2",
         "trend": []
       },
       "team": "CBJ",
@@ -5403,6 +6392,17 @@
     "8470085": {
       "age": 34,
       "birth_date": "1992-06-28",
+      "dfo": {
+        "goalie_depth": null,
+        "gtd": false,
+        "injury": null,
+        "line": "Pair 1",
+        "linemates": [],
+        "pk": null,
+        "possible_scratch": false,
+        "pp": "PP1",
+        "team_url": "https://www.dailyfaceoff.com/teams/tampa-bay-lightning/line-combinations"
+      },
       "draft": {
         "overall": 190,
         "pick_in_round": 30,
@@ -5442,9 +6442,9 @@
       "prior_nhl_gp": 0,
       "prior_team": null,
       "role": {
-        "basis": "no NHL ice time",
-        "line": null,
-        "pp": null,
+        "basis": "Daily Faceoff",
+        "line": "Pair 1",
+        "pp": "PP1",
         "trend": []
       },
       "team": "TBL",
@@ -5461,6 +6461,20 @@
     "8470086": {
       "age": 27,
       "birth_date": "1999-06-03",
+      "dfo": {
+        "goalie_depth": null,
+        "gtd": false,
+        "injury": "dtd",
+        "line": "Line 1",
+        "linemates": [
+          "David Jackson",
+          "Eric Davis"
+        ],
+        "pk": null,
+        "possible_scratch": false,
+        "pp": "PP1",
+        "team_url": "https://www.dailyfaceoff.com/teams/winnipeg-jets/line-combinations"
+      },
       "group": "F",
       "height_in": 77,
       "history": [
@@ -5519,7 +6533,7 @@
       "position": "L",
       "prior_team": null,
       "role": {
-        "basis": "last season",
+        "basis": "Daily Faceoff",
         "line": "Line 1",
         "pp": "PP1",
         "trend": []
@@ -5538,6 +6552,19 @@
     "8470088": {
       "age": 25,
       "birth_date": "2000-08-15",
+      "dfo": {
+        "goalie_depth": null,
+        "gtd": false,
+        "injury": "dtd",
+        "line": "Line 1",
+        "linemates": [
+          "A. Kim"
+        ],
+        "pk": null,
+        "possible_scratch": false,
+        "pp": "PP1",
+        "team_url": "https://www.dailyfaceoff.com/teams/boston-bruins/line-combinations"
+      },
       "group": "F",
       "height_in": 68,
       "history": [
@@ -5596,7 +6623,7 @@
       "position": "R",
       "prior_team": null,
       "role": {
-        "basis": "last season",
+        "basis": "Daily Faceoff",
         "line": "Line 1",
         "pp": "PP1",
         "trend": []
@@ -5615,6 +6642,19 @@
     "8470089": {
       "age": 25,
       "birth_date": "2000-10-20",
+      "dfo": {
+        "goalie_depth": null,
+        "gtd": false,
+        "injury": null,
+        "line": "Pair 1",
+        "linemates": [
+          "Bradley Mendoza"
+        ],
+        "pk": null,
+        "possible_scratch": false,
+        "pp": "PP2",
+        "team_url": "https://www.dailyfaceoff.com/teams/edmonton-oilers/line-combinations"
+      },
       "group": "D",
       "height_in": 70,
       "history": [
@@ -5657,9 +6697,9 @@
       "position": "D",
       "prior_team": null,
       "role": {
-        "basis": "last season",
+        "basis": "Daily Faceoff",
         "line": "Pair 1",
-        "pp": "No PP",
+        "pp": "PP2",
         "trend": []
       },
       "team": "EDM",
@@ -5676,6 +6716,17 @@
     "8470090": {
       "age": 26,
       "birth_date": "2000-02-18",
+      "dfo": {
+        "goalie_depth": null,
+        "gtd": false,
+        "injury": null,
+        "line": "Pair 2",
+        "linemates": [],
+        "pk": null,
+        "possible_scratch": false,
+        "pp": null,
+        "team_url": "https://www.dailyfaceoff.com/teams/montreal-canadiens/line-combinations"
+      },
       "group": "D",
       "height_in": 74,
       "history": [
@@ -5702,8 +6753,8 @@
       "position": "D",
       "prior_team": null,
       "role": {
-        "basis": "last season",
-        "line": "Pair 1",
+        "basis": "Daily Faceoff",
+        "line": "Pair 2",
         "pp": "No PP",
         "trend": []
       },
@@ -5721,6 +6772,19 @@
     "8470091": {
       "age": 20,
       "birth_date": "2006-02-21",
+      "dfo": {
+        "goalie_depth": null,
+        "gtd": false,
+        "injury": "dtd",
+        "line": "Line 1",
+        "linemates": [
+          "Zachary Green"
+        ],
+        "pk": null,
+        "possible_scratch": false,
+        "pp": "PP1",
+        "team_url": "https://www.dailyfaceoff.com/teams/utah-mammoth/line-combinations"
+      },
       "group": "F",
       "height_in": 70,
       "history": [
@@ -5763,7 +6827,7 @@
       "position": "L",
       "prior_team": null,
       "role": {
-        "basis": "last season",
+        "basis": "Daily Faceoff",
         "line": "Line 1",
         "pp": "PP1",
         "trend": []
@@ -5782,6 +6846,19 @@
     "8470092": {
       "age": 20,
       "birth_date": "2005-10-22",
+      "dfo": {
+        "goalie_depth": null,
+        "gtd": false,
+        "injury": "dtd",
+        "line": "Line 1",
+        "linemates": [
+          "Jonathan Clark"
+        ],
+        "pk": null,
+        "possible_scratch": false,
+        "pp": "PP1",
+        "team_url": "https://www.dailyfaceoff.com/teams/chicago-blackhawks/line-combinations"
+      },
       "group": "F",
       "height_in": 77,
       "history": [
@@ -5824,7 +6901,7 @@
       "position": "C",
       "prior_team": null,
       "role": {
-        "basis": "last season",
+        "basis": "Daily Faceoff",
         "line": "Line 1",
         "pp": "PP1",
         "trend": []
@@ -5843,6 +6920,17 @@
     "8470094": {
       "age": 29,
       "birth_date": "1996-11-13",
+      "dfo": {
+        "goalie_depth": 1,
+        "gtd": false,
+        "injury": null,
+        "line": null,
+        "linemates": [],
+        "pk": null,
+        "possible_scratch": false,
+        "pp": null,
+        "team_url": "https://www.dailyfaceoff.com/teams/ottawa-senators/line-combinations"
+      },
       "draft": {
         "overall": 172,
         "pick_in_round": 12,
@@ -5894,6 +6982,17 @@
     "8470095": {
       "age": 23,
       "birth_date": "2003-06-03",
+      "dfo": {
+        "goalie_depth": null,
+        "gtd": false,
+        "injury": null,
+        "line": "Pair 2",
+        "linemates": [],
+        "pk": null,
+        "possible_scratch": false,
+        "pp": null,
+        "team_url": "https://www.dailyfaceoff.com/teams/ottawa-senators/line-combinations"
+      },
       "group": "D",
       "height_in": 72,
       "history": [
@@ -5952,8 +7051,8 @@
       "position": "D",
       "prior_team": null,
       "role": {
-        "basis": "last season",
-        "line": "Pair 1",
+        "basis": "Daily Faceoff",
+        "line": "Pair 2",
         "pp": "PP1",
         "trend": []
       },
@@ -5971,6 +7070,17 @@
     "8470096": {
       "age": 27,
       "birth_date": "1999-02-04",
+      "dfo": {
+        "goalie_depth": 1,
+        "gtd": false,
+        "injury": null,
+        "line": null,
+        "linemates": [],
+        "pk": null,
+        "possible_scratch": false,
+        "pp": null,
+        "team_url": "https://www.dailyfaceoff.com/teams/pittsburgh-penguins/line-combinations"
+      },
       "goalie": {
         "basis": "last season",
         "gs": 55,
@@ -6015,6 +7125,19 @@
     "8470097": {
       "age": 32,
       "birth_date": "1994-06-12",
+      "dfo": {
+        "goalie_depth": null,
+        "gtd": false,
+        "injury": "dtd",
+        "line": "Line 1",
+        "linemates": [
+          "Keith Thompson"
+        ],
+        "pk": null,
+        "possible_scratch": false,
+        "pp": "PP1",
+        "team_url": "https://www.dailyfaceoff.com/teams/anaheim-ducks/line-combinations"
+      },
       "group": "F",
       "height_in": 77,
       "history": [
@@ -6073,9 +7196,9 @@
       "position": "R",
       "prior_team": null,
       "role": {
-        "basis": "last season",
+        "basis": "Daily Faceoff",
         "line": "Line 1",
-        "pp": "PP2",
+        "pp": "PP1",
         "trend": []
       },
       "team": "ANA",
@@ -6092,6 +7215,17 @@
     "8470098": {
       "age": 25,
       "birth_date": "2001-04-07",
+      "dfo": {
+        "goalie_depth": null,
+        "gtd": false,
+        "injury": "dtd",
+        "line": "Line 1",
+        "linemates": [],
+        "pk": null,
+        "possible_scratch": false,
+        "pp": "PP1",
+        "team_url": "https://www.dailyfaceoff.com/teams/carolina-hurricanes/line-combinations"
+      },
       "group": "F",
       "height_in": 76,
       "history": [
@@ -6134,9 +7268,9 @@
       "position": "R",
       "prior_team": null,
       "role": {
-        "basis": "last season",
+        "basis": "Daily Faceoff",
         "line": "Line 1",
-        "pp": "No PP",
+        "pp": "PP1",
         "trend": []
       },
       "team": "CAR",
@@ -6197,6 +7331,17 @@
     "8470100": {
       "age": 29,
       "birth_date": "1997-07-05",
+      "dfo": {
+        "goalie_depth": 2,
+        "gtd": false,
+        "injury": null,
+        "line": null,
+        "linemates": [],
+        "pk": null,
+        "possible_scratch": false,
+        "pp": null,
+        "team_url": "https://www.dailyfaceoff.com/teams/chicago-blackhawks/line-combinations"
+      },
       "goalie": {
         "basis": "last season",
         "gs": 53,

@@ -21,6 +21,8 @@ import {
   formatMinutes,
   formatWhole,
   hockeyBioIndex,
+  ppLabel,
+  roleLabel,
   teamLabel,
   toiTitle,
 } from "@/lib/hockey-nhl";
@@ -186,6 +188,9 @@ export default async function TeamPage({ params, searchParams }: Props) {
                     <th>Ht</th>
                     <th>Wt</th>
                     <th>Team</th>
+                    <th>Role</th>
+                    <th>PP</th>
+                    <th>Linemates</th>
                     <th>EV min</th>
                     <th>PP min</th>
                   </>
@@ -237,6 +242,26 @@ export default async function TeamPage({ params, searchParams }: Props) {
                         <td data-label="Wt">{formatWhole(bio?.weightLb)}</td>
                         <td data-label="Team" title={team.title}>
                           {team.text}
+                        </td>
+                        <td data-label="Role" title={roleLabel(bio).title}>
+                          {roleLabel(bio).text}
+                        </td>
+                        <td data-label="PP">
+                          {ppLabel(bio).href ? (
+                            <a
+                              href={ppLabel(bio).href}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              title="Daily Faceoff lines"
+                            >
+                              {ppLabel(bio).text}
+                            </a>
+                          ) : (
+                            ppLabel(bio).text
+                          )}
+                        </td>
+                        <td data-label="Linemates">
+                          {bio?.linemates.join(", ") || "—"}
                         </td>
                         <td data-label="EV min" title={toiTitle(bio)}>
                           {formatMinutes(bio?.evMin)}

@@ -23,6 +23,16 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
 
+from nhl.dfo import DfoClient
+from nhl.lineups import (
+    build_lines,
+    build_starting_goalies,
+    goalie_documents,
+    goalie_starts_index,
+    goalies_by_team,
+    lines_document,
+    rosters_by_team,
+)
 from nhl.match import Matcher, grp, norm, pick_search_hit
 from nhl.nhl_api import (
     NHLClient,
@@ -208,8 +218,13 @@ def build_nhl_documents(
     generated_at: str,
     search_max: int | None = None,
     landing_max: int | None = None,
+    dfo: DfoClient | None = None,
 ) -> NhlExport:
-    """Fetch everything H1 needs and assemble the four documents."""
+    """Fetch everything H1–H4 needs and assemble the documents.
+
+    Without ``dfo`` the H4 Daily Faceoff step is skipped (no ``lines`` /
+    ``starting_goalies`` documents; roles stay the ice-time estimate).
+    """
     league_id = str(snapshot["league_id"])
     season = int(snapshot["season"])
     cur_id = season_id(season)
@@ -369,6 +384,17 @@ def build_nhl_documents(
     if len(landing_ids) > landing_cap:
         errors.append(f"landing pages capped at {landing_cap} of {len(landing_ids)}")
 
+    # --- H4: Daily Faceoff lines + starting goalies (optional) ---------------
+    dfo_teams: dict[str, Any] = {}
+    dfo_players: dict[str, dict[str, Any]] = {}
+    goalie_days: dict[str, list[dict[str, Any]]] = {}
+    goalie_starts: dict[str, dict[str, Any]] = {}
+    if dfo is not None:
+        clubs = rosters_by_team(nhl_players)
+        dfo_teams, dfo_players = build_lines(clubs, dfo, errors=errors)
+        goalie_days = build_starting_goalies(dfo, goalies_by_team(clubs), as_of, errors=errors)
+        goalie_starts = goalie_starts_index(goalie_days)
+
     context: dict[str, dict[str, Any]] = {}
     for nid in matched_ids:
         p = nhl_players[nid]
@@ -407,6 +433,24 @@ def build_nhl_documents(
                 "basis": role.get("basis"),
                 "trend": role.get("trend") or [],
             }
+        lineup = dfo_players.get(str(nid))
+        if lineup:
+            # H4: Daily Faceoff's published lines / PP units beat the ice-time
+            # estimate; keep the ice-time trend (DFO has none).
+            if group != "G" and (lineup.get("line") or lineup.get("pp")):
+                entry["role"] = {
+                    "line": lineup.get("line") or entry["role"]["line"],
+                    "pp": lineup.get("pp") or entry["role"]["pp"],
+                    "basis": "Daily Faceoff",
+                    "trend": entry["role"]["trend"],
+                }
+            entry["dfo"] = {
+                k: lineup.get(k)
+                for k in ("line", "pp", "pk", "linemates", "goalie_depth", "injury", "gtd",
+                          "possible_scratch", "team_url")
+            }
+        if group == "G" and goalie_starts.get(str(nid)):
+            entry.setdefault("dfo", {})["starts"] = goalie_starts[str(nid)]
         if land:
             entry["prior_nhl_gp"] = land.get("prior_nhl_gp")
             entry["draft"] = land.get("draft")
@@ -475,6 +519,11 @@ def build_nhl_documents(
         generated_at=generated_at,
         season_games=season_info.get("games") or 82,
     )
+    if dfo is not None:
+        lines_header = {**header(), "source": "dailyfaceoff.com"}
+        documents["lines"] = lines_document(lines_header, dfo_teams, dfo_players,
+                                            goalie_starts, errors)
+        documents.update(goalie_documents(lines_header, goalie_days, errors))
     for doc in documents.values():
         doc["errors"] = list(errors)
     return NhlExport(
@@ -503,31 +552,85 @@ def export_nhl(
     store_dir: Path | str | None = None,
     store: Any = None,
     fail_below: float | None = None,
+    dfo: DfoClient | None = None,
 ) -> NhlExport:
-    """Build the four H1 documents for one hockey snapshot and write them.
+    """Build the NHL documents for one hockey snapshot and write them.
 
-    ``store`` (a :class:`sj.store.FileStore` / ``GcsStore``) wins over
-    ``store_dir``. Raises ``RuntimeError`` when rostered coverage is under
-    ``fail_below`` — after writing, so the unmatched list is inspectable.
+    ``dfo`` adds H4 Daily Faceoff lines + starting goalies (callers pass one
+    only when ``SJ_DFO_SYNC`` allows it). ``store`` (a :class:`sj.store.FileStore`
+    / ``GcsStore``) wins over ``store_dir``. Raises ``RuntimeError`` when
+    rostered coverage is under ``fail_below`` — after writing, so the unmatched
+    list is inspectable.
     """
     if snapshot.get("sport") != "hockey":
         raise ValueError(f"{snapshot.get('league_id')}: not a hockey snapshot")
     as_of, generated_at = _as_of(snapshot)
     result = build_nhl_documents(
-        snapshot, client or NHLClient(), as_of=as_of, generated_at=generated_at
+        snapshot, client or NHLClient(), as_of=as_of, generated_at=generated_at, dfo=dfo
     )
     if store is None:
         from sj.store import resolve_store
 
         store = resolve_store(store_dir)
-    for name in ARTIFACTS:
-        store.write_nhl(result.documents[name], name)
+    for name, doc in result.documents.items():
+        store.write_nhl(doc, name)
     if fail_below is not None and (result.coverage or 0.0) < fail_below:
         raise RuntimeError(
             f"player map coverage {result.coverage!r} below {fail_below} "
             f"({len(result.documents['player_map']['unmatched'])} unmatched)"
         )
     return result
+
+
+def export_lines(
+    league_id: str,
+    season: int,
+    *,
+    client: NHLClient | None = None,
+    dfo: DfoClient | None = None,
+    store_dir: Path | str | None = None,
+    store: Any = None,
+    as_of: dt.date | None = None,
+) -> dict[str, dict[str, Any]]:
+    """Light H4 refresh: only ``lines.json`` + ``starting_goalies/*``.
+
+    For the late-afternoon job (goalie confirmations land after the 6:00 sync).
+    Re-reads the 32 NHL rosters (to match names) and the Daily Faceoff pages;
+    values are left as the morning sync wrote them.
+    """
+    client = client or NHLClient()
+    dfo = dfo or DfoClient()
+    today = as_of or dt.datetime.now(dt.timezone.utc).date()
+    errors: list[str] = []
+    players: dict[int, dict[str, Any]] = {}
+    for team in NHL_ABBREVS:
+        try:
+            for p in client.roster(team):
+                players[p["id"]] = p
+        except Exception as exc:  # noqa: BLE001
+            errors.append(f"roster {team}: {exc}")
+    if not players:
+        raise RuntimeError("NHL rosters unavailable: " + "; ".join(errors[:3]))
+    clubs = rosters_by_team(players)
+    teams, lineup = build_lines(clubs, dfo, errors=errors)
+    days = build_starting_goalies(dfo, goalies_by_team(clubs), today, errors=errors)
+    header = {
+        "league_id": league_id,
+        "season": int(season),
+        "sport": "hockey",
+        "nhl_season": season_id(int(season)),
+        "generated_at": dt.datetime.now(dt.timezone.utc).replace(microsecond=0).isoformat(),
+        "source": "dailyfaceoff.com",
+    }
+    docs = {"lines": lines_document(header, teams, lineup, goalie_starts_index(days), errors)}
+    docs.update(goalie_documents(header, days, errors))
+    if store is None:
+        from sj.store import resolve_store
+
+        store = resolve_store(store_dir)
+    for name, doc in docs.items():
+        store.write_nhl(doc, name)
+    return docs
 
 
 __all__ = [

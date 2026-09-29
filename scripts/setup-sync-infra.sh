@@ -133,6 +133,40 @@ else
   echo "created scheduler ${SCHEDULER_JOB}"
 fi
 
+# --- Hockey lines + starting goalies (HOCKEY-PORT.md H4) ---------------------
+# Goalie confirmations land late afternoon, after the 6:00 sync, so a light
+# `sj nhl-lines` run refreshes Daily Faceoff lines + starting goalies only
+# (32 NHL roster reads, 32 team pages, 3 goalie pages). Same Cloud Run job,
+# different args. SJ_HOCKEY_LINES=0 skips; SJ_HOCKEY_LINES_SCHEDULES is a
+# ';'-separated cron list (default 15:00 and 17:30).
+if [ "${SJ_HOCKEY_LINES:-1}" != "0" ]; then
+  RUN_JOB_V2_URI="https://run.googleapis.com/v2/projects/${PROJECT}/locations/${REGION}/jobs/${JOB}:run"
+  LINES_BODY='{"overrides":{"containerOverrides":[{"args":["nhl-lines"]}]}}'
+  IFS=';' read -r -a LINES_SCHEDULES <<< "${SJ_HOCKEY_LINES_SCHEDULES:-0 15 * * *;30 17 * * *}"
+  for LINES_SCHEDULE in "${LINES_SCHEDULES[@]}"; do
+    # sj-hockey-lines-1500, sj-hockey-lines-1730, ...
+    read -r MINUTE HOUR _ <<< "${LINES_SCHEDULE}"
+    LINES_JOB="sj-hockey-lines-$(printf '%02d%02d' "${HOUR}" "${MINUTE}")"
+    if gcloud scheduler jobs describe "${LINES_JOB}" \
+        --project="${PROJECT}" --location="${REGION}" >/dev/null 2>&1; then
+      VERB=update
+    else
+      VERB=create
+    fi
+    gcloud scheduler jobs "${VERB}" http "${LINES_JOB}" \
+      --project="${PROJECT}" \
+      --location="${REGION}" \
+      --schedule="${LINES_SCHEDULE}" \
+      --time-zone="${TIME_ZONE}" \
+      --uri="${RUN_JOB_V2_URI}" \
+      --http-method=POST \
+      --headers="Content-Type=application/json" \
+      --message-body="${LINES_BODY}" \
+      --oauth-service-account-email="${SCHEDULER_SA}"
+    echo "${VERB}d scheduler ${LINES_JOB} (${LINES_SCHEDULE}, args nhl-lines)"
+  done
+fi
+
 cat <<EOF
 
 ================================================================
@@ -147,6 +181,9 @@ Next:
   3. One-time history backfill:
        gcloud run jobs execute ${JOB} --args=backfill \\
          --region=${REGION} --project=${PROJECT}
+
+Hockey lines + starting goalies refresh at 15:00 and 17:30 (${TIME_ZONE}) via
+sj-hockey-lines-* (args nhl-lines). Skip with SJ_HOCKEY_LINES=0.
 
 The scheduler runs "${SCHEDULE}" (${TIME_ZONE}). Override with SJ_SCHEDULE
 (and optional SJ_TIMEZONE), or:

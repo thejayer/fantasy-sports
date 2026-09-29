@@ -594,7 +594,7 @@ test.describe("hub smoke", () => {
     page,
   }) => {
     await page.goto("/leagues/hockey-main/teams/1");
-    for (const header of ["Age", "Ht", "Wt", "Team", "EV min", "PP min"]) {
+    for (const header of ["Age", "Ht", "Wt", "Team", "Role", "PP", "Linemates", "EV min", "PP min"]) {
       await expect(
         page.getByRole("columnheader", { name: header, exact: true }),
       ).toBeVisible();
