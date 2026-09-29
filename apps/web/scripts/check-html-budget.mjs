@@ -36,6 +36,9 @@ const DEFAULT_ROUTES = [
   "/leagues/football-main?tab=tools&view=trade",
   // HOCKEY-PORT H2: 25 rows per page; one expanded input breakdown at a time.
   "/leagues/hockey-main?tab=projections",
+  // H5a: waiver board (every free agent) and the move selects (roster + FAs).
+  "/leagues/hockey-main?tab=tools&view=waivers",
+  "/leagues/hockey-main?tab=tools&view=move&team=1",
 ];
 
 const ROUTES = (process.env.SJ_HTML_BUDGET_ROUTES ?? DEFAULT_ROUTES.join(","))

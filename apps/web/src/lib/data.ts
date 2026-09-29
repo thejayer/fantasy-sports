@@ -15,6 +15,7 @@ import type {
   HockeyNhlSnapshot,
   HockeyPlayerMapSnapshot,
 } from "@/lib/hockey-nhl";
+import type { HockeyScheduleSnapshot } from "@/lib/hockey-decisions";
 import type { HockeyValuesSnapshot } from "@/lib/hockey-values";
 import { dataRoots } from "@/lib/hub-paths";
 import { requireSession } from "@/lib/session";
@@ -1288,6 +1289,37 @@ export const getHockeyNhl = cache(
       if (playerMap && context && lines) break;
     }
     return { playerMap, context, lines };
+  },
+);
+
+/**
+ * Hockey club schedules under ``{league}/{season}/nhl/schedule.json``
+ * (HOCKEY-PORT.md H1) — decision tools count upcoming games from it.
+ * Side concern, session-gated.
+ */
+export const getHockeySchedule = cache(
+  async (leagueId: string, season: number): Promise<HockeyScheduleSnapshot | null> => {
+    await requireSession();
+    const index = await getLeagueIndex();
+    const match = index.find(
+      (item) => item.league_id === leagueId && item.season === season,
+    );
+    if (!match) return null;
+    for (const root of dataRoots()) {
+      const doc = await readJson<HockeyScheduleSnapshot>(
+        path.join(root, weekBoxScoreDir(match.path), "nhl", "schedule.json"),
+      );
+      if (
+        doc?.league_id === leagueId &&
+        doc.season === season &&
+        doc.sport === "hockey" &&
+        doc.teams &&
+        typeof doc.teams === "object"
+      ) {
+        return doc;
+      }
+    }
+    return null;
   },
 );
 

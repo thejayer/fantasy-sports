@@ -32,6 +32,8 @@ import { HockeyToolsPanel } from "@/components/HockeyToolsPanel";
 import { ToolsPanel, type ToolsView } from "@/components/ToolsPanel";
 import type { BaseballToolsView, TrailingWindow } from "@/lib/baseball-tools";
 import type { HockeyToolsView } from "@/lib/hockey-tools";
+import type { DecisionQuery } from "@/components/HockeyDecisionViews";
+import { windowStart, type HockeyScheduleSnapshot } from "@/lib/hockey-decisions";
 import { hockeyBioIndex, type HockeyNhlSnapshot } from "@/lib/hockey-nhl";
 import {
   hockeyValueIndex,
@@ -406,6 +408,8 @@ export function LeagueView({
   hockeyNhl = null,
   hockeyValues = null,
   hockeyBoardQuery,
+  hockeySchedule = null,
+  hockeyDecisionQuery,
 }: {
   league: LeagueSnapshot;
   seasons: number[];
@@ -469,6 +473,10 @@ export function LeagueView({
   /** Hockey player values (HOCKEY-PORT.md H2/H3) for projections + Waivers. */
   hockeyValues?: HockeyValuesSnapshot | null;
   hockeyBoardQuery?: HockeyBoardQuery;
+  /** Hockey NHL schedule sidecar (`nhl/schedule.json`) for decision tools (H5a). */
+  hockeySchedule?: HockeyScheduleSnapshot | null;
+  /** Hockey decision-tool query (`team`, filters, `ids`, `drop`, `add`). */
+  hockeyDecisionQuery?: DecisionQuery;
 }) {
   const leagueId = league.league_id;
   const isBaseball = league.sport === "baseball";
@@ -505,7 +513,8 @@ export function LeagueView({
       );
     }
     if (isHockey) {
-      return `&view=${hockeyToolsView}`;
+      const team = hockeyDecisionQuery?.teamId;
+      return `&view=${hockeyToolsView}` + (team != null ? `&team=${team}` : "");
     }
     if (toolsView === "draft") return `&view=draft&slot=${draftSlot}`;
     if (toolsView === "start-sit") {
@@ -891,7 +900,18 @@ export function LeagueView({
             trailingWindow={baseballTrailingWindow}
           />
         ) : isHockey ? (
-          <HockeyToolsPanel league={league} view={hockeyToolsView} />
+          <HockeyToolsPanel
+            league={league}
+            view={hockeyToolsView}
+            viewerTeamId={viewerTeamId}
+            query={hockeyDecisionQuery}
+            ctx={{
+              values: hockeyValues,
+              bios: hockeyBioIndex(hockeyNhl),
+              schedule: hockeySchedule,
+              start: windowStart(hockeyValues, hockeySchedule),
+            }}
+          />
         ) : (
           <ToolsPanel
             league={league}

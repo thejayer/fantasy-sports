@@ -287,6 +287,33 @@ each club's roster (goalie pages: the club's goalies).
 
 Per-member tools need the member → franchise link already in `hub_members.json`.
 
+**H5a (tools 1–4) — LANDED.** `?tab=tools&view=waivers|compare|move|depth`,
+pure logic in `apps/web/src/lib/hockey-decisions.ts`, views in
+`HockeyDecisionViews.tsx`. All server-rendered GET forms and links (no client
+state), reading `nhl/values.json`, `nhl/schedule.json` (`getHockeySchedule`)
+and the bios/lines join.
+
+- **Open to every member** (Austin's call): a `team=` picker on every view;
+  the linked member's franchise is the default, else the first team.
+- "Your worst" per F / D / G skips injured players (IR candidates, not drop
+  candidates). No protected list yet — that needs H7 ownership / H8 tags.
+- Next 7 / 14 days = value × the club's games in the window × durability rate.
+  Committed fixtures (and preseason) start the window at the first scheduled
+  game, so offline views never depend on the wall clock (`windowStart`).
+- Filters: `pos=F|D|G`, `healthy`, `pp` (PP1/PP2), `rookies`, `tall` (6'3"+),
+  `iron` — flags are `=1`. Top 50 rows (HTML budget).
+- Compare: tick 2–4 on the board (`ids=`), bold best-in-row, verdict splits
+  best value vs best next 14 days.
+- Move: `drop=` (the picked team) / `add=` (free agent) → value, next-14, ROS,
+  plays deltas; warnings for more than four goalies, injured add, a different
+  position group, and a Daily Faceoff possible scratch. "Nearing return" waits
+  for H6's injury log.
+- Weakest to best: one bar list per group, ascending, single accent hue,
+  hover title with share played; the values are text beside each bar.
+
+**H5b (tools 5–8)** — next: daily start/sit, goalie start model, streaming
+planner, GP cap pacing.
+
 ### H6: monitoring + alerts
 
 - `injury_log.json`: ESPN and DFO statuses per sync; transitions newly hurt,

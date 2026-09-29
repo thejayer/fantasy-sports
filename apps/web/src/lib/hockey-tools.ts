@@ -5,7 +5,16 @@
 import type { LeagueSnapshot, Player, Team } from "@/lib/data";
 import { isCategoryScoring, isSeasonPointsScoring } from "@/lib/scoring-type";
 
-export type HockeyToolsView = "home" | "categories";
+export type HockeyToolsView =
+  | "home"
+  | "categories"
+  | "waivers"
+  | "compare"
+  | "move"
+  | "depth";
+
+/** H5a decision tools (values.json-backed); open to every member. */
+export const HOCKEY_DECISION_VIEWS = ["waivers", "compare", "move", "depth"] as const;
 
 export const HOCKEY_TOOL_CARDS: Array<{
   id: Exclude<HockeyToolsView, "home">;
@@ -13,6 +22,30 @@ export const HOCKEY_TOOL_CARDS: Array<{
   promise: string;
   ready: boolean;
 }> = [
+  {
+    id: "waivers",
+    name: "Waiver board",
+    promise: "Free agents by value, the upgrade over your weakest player, and next-7-day points.",
+    ready: true,
+  },
+  {
+    id: "compare",
+    name: "Compare free agents",
+    promise: "Two to four free agents side by side, with a verdict.",
+    ready: true,
+  },
+  {
+    id: "move",
+    name: "Evaluate a move",
+    promise: "Drop one, add one: value, next 14 days, and rest-of-season change.",
+    ready: true,
+  },
+  {
+    id: "depth",
+    name: "Weakest to best",
+    promise: "Your roster ranked by value within forwards, defense, and goalies.",
+    ready: true,
+  },
   {
     id: "categories",
     name: "Category Board",
@@ -162,15 +195,18 @@ export function buildHockeyCategoryBoard(
 
 export function hockeyToolsForScoring(
   scoringType: string | null | undefined,
-): ReadonlyArray<"categories"> {
-  if (isSeasonPointsScoring(scoringType)) return [];
-  if (isCategoryScoring(scoringType)) return ["categories"];
+): ReadonlyArray<Exclude<HockeyToolsView, "home">> {
+  // Decision tools work for every scoring type (value is per game, league-scored).
+  if (isSeasonPointsScoring(scoringType)) return [...HOCKEY_DECISION_VIEWS];
+  if (isCategoryScoring(scoringType)) return [...HOCKEY_DECISION_VIEWS, "categories"];
   // H2H points still has counting ranks when season_stats exist.
-  return ["categories"];
+  return [...HOCKEY_DECISION_VIEWS, "categories"];
 }
+
+const VIEWS: ReadonlySet<string> = new Set([...HOCKEY_DECISION_VIEWS, "categories"]);
 
 export function parseHockeyToolsView(
   raw: string | undefined | null,
 ): HockeyToolsView {
-  return raw === "categories" ? "categories" : "home";
+  return raw && VIEWS.has(raw) ? (raw as HockeyToolsView) : "home";
 }

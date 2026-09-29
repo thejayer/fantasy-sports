@@ -130,6 +130,14 @@ totals. The hub does **not** invent player week lines ESPN omitted, and does
   just lines + goalies after confirmations land. Roster and Waivers show
   **Role** (with possible-scratch / injury flags), **PP** (links to the club's
   Daily Faceoff page) and **Linemates**.
+- **H5a (landed): decision tools.** Hockey **Tools** gains **Waiver board**
+  (`view=waivers`: value, upgrade over the team's weakest healthy F / D / G,
+  next-7-day points, filters), **Compare free agents** (`view=compare&ids=`,
+  2–4 side by side with a verdict), **Evaluate a move** (`view=move&drop=&add=`:
+  value / next-14 / ROS deltas and warnings) and **Weakest to best**
+  (`view=depth`). Open to every member; `team=` picks any franchise and
+  defaults to the viewer's linked one. Reads `values.json`, `schedule.json`
+  (`getHockeySchedule`) and the bios/lines join — server-rendered forms only.
 - The hockey **`projections` tab** is the values board: value, ROS, ESPN
   per-game, share played, age, data-source tag, a recent-form setting
   (`?recent=0…1`, re-blended from saved inputs in `lib/hockey-values.ts`),

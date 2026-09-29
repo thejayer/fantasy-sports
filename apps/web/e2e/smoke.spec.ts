@@ -590,6 +590,46 @@ test.describe("hub smoke", () => {
     await expect(page.getByRole("columnheader", { name: "ROS" })).toBeVisible();
   });
 
+  test("hockey decision tools: waiver board, compare, move, depth (HOCKEY-PORT H5a)", async ({
+    page,
+  }) => {
+    await page.goto("/leagues/hockey-main?tab=tools");
+    for (const name of ["Waiver board", "Compare free agents", "Evaluate a move", "Weakest to best"]) {
+      await expect(page.getByRole("link", { name }).first()).toBeVisible();
+    }
+
+    // Waiver board: upgrade over the picked team's weakest player; filters are links.
+    await page.goto("/leagues/hockey-main?tab=tools&view=waivers&team=1");
+    for (const header of ["Value", "Upgrade", "Replaces", "Next 7d"]) {
+      await expect(page.getByRole("columnheader", { name: header, exact: true })).toBeVisible();
+    }
+    await page.getByRole("link", { name: "D", exact: true }).click();
+    await expect(page).toHaveURL(/pos=D/);
+    await expect(page).toHaveURL(/team=1/);
+
+    // Tick two free agents → compare with a verdict.
+    const boxes = page.getByRole("checkbox");
+    await boxes.nth(0).check();
+    await boxes.nth(1).check();
+    await page.getByRole("button", { name: /Compare selected/ }).click();
+    await expect(page).toHaveURL(/view=compare/);
+    await expect(page.getByText(/is the pick|is the better player/)).toBeVisible();
+    await expect(page.locator("td.is-best").first()).toBeVisible();
+
+    // Evaluate a move: pick a drop and an add.
+    await page.goto("/leagues/hockey-main?tab=tools&view=move&team=1");
+    await page.locator('select[name="drop"]').selectOption({ index: 1 });
+    await page.locator('select[name="add"]').selectOption({ index: 1 });
+    await page.getByRole("button", { name: "Evaluate", exact: true }).click();
+    await expect(page).toHaveURL(/drop=\d+&add=\d+/);
+    await expect(page.getByRole("columnheader", { name: "Change" })).toBeVisible();
+
+    // Weakest to best: one bar list per position group.
+    await page.goto("/leagues/hockey-main?tab=tools&view=depth&team=1");
+    await expect(page.getByText("Forwards — weakest first")).toBeVisible();
+    await expect(page.locator(".depth-bar-row").first()).toBeVisible();
+  });
+
   test("hockey roster and waivers show NHL bio + ice time (HOCKEY-PORT H1)", async ({
     page,
   }) => {
