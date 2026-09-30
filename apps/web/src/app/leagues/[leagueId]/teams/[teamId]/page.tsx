@@ -8,6 +8,7 @@ import { GolfRosterView } from "@/components/GolfRosterView";
 import { KeeperBadge } from "@/components/KeeperBadge";
 import { SeasonSwitcher } from "@/components/SeasonSwitcher";
 import { formatValue, hockeyValueIndex } from "@/lib/hockey-values";
+import { hockeyPositionLabel } from "@/lib/hockey-position";
 import {
   getHockeyNhl,
   getHockeyValues,
@@ -175,8 +176,14 @@ export default async function TeamPage({ params, searchParams }: Props) {
               <tr>
                 <th></th>
                 <th>Player</th>
-                <th>Pos</th>
-                <th>Slot</th>
+                {isHockey ? (
+                  <th>Position</th>
+                ) : (
+                  <>
+                    <th>Pos</th>
+                    <th>Slot</th>
+                  </>
+                )}
                 <th>Pro</th>
                 <th>Status</th>
                 <th>Points</th>
@@ -226,8 +233,16 @@ export default async function TeamPage({ params, searchParams }: Props) {
                       {player.name}
                       {kept ? <KeeperBadge /> : null}
                     </td>
-                    <td data-label="Pos">{player.position ?? "—"}</td>
-                    <td data-label="Slot">{player.slot ?? "—"}</td>
+                    {isHockey ? (
+                      <td data-label="Position">
+                        {hockeyPositionLabel(player.position, player.slot)}
+                      </td>
+                    ) : (
+                      <>
+                        <td data-label="Pos">{player.position ?? "—"}</td>
+                        <td data-label="Slot">{player.slot ?? "—"}</td>
+                      </>
+                    )}
                     <td data-label="Pro">{player.pro_team ?? "—"}</td>
                     <td data-label="Injury">{player.injury_status ?? "—"}</td>
                     <td data-label="Points">

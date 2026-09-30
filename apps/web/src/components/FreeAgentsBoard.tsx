@@ -14,6 +14,7 @@ import {
   type HockeyBioIndex,
 } from "@/lib/hockey-nhl";
 import { formatValue } from "@/lib/hockey-values";
+import { hockeyGroup } from "@/lib/hockey-position";
 
 /** Age / Ht / Wt / Team / EV / PP from the synced NHL sidecars (HOCKEY-PORT H1). */
 function hockeyColumns(bios: HockeyBioIndex): DataTableColumn<Player>[] {
@@ -145,15 +146,18 @@ function columns(
 ): DataTableColumn<Player>[] {
   const teamHeader =
     sport === "baseball" ? "MLB" : sport === "hockey" ? "NHL" : "NFL";
+  // SJ Hockey lineups are F / D / G only — not ESPN's C / LW / RW.
+  const pos = (row: Player) =>
+    sport === "hockey" ? (hockeyGroup(row.position) ?? row.position) : row.position;
   return [
     {
       id: "position",
       header: "Pos",
       sortable: true,
       filterable: true,
-      filterValue: (row) => row.position,
-      sortValue: (row) => row.position,
-      cell: (row) => row.position ?? "—",
+      filterValue: pos,
+      sortValue: pos,
+      cell: (row) => pos(row) ?? "—",
     },
     {
       id: "name",

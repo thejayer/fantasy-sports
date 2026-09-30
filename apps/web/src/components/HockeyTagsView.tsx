@@ -34,7 +34,7 @@ export function HockeyTagsView({
   const options: TagOption[] = Object.entries(players)
     .map(([id, p]) => ({
       espnId: id,
-      label: `${p.name ?? id} (${p.position ?? p.group}, ${
+      label: `${p.name ?? id} (${p.group}, ${
         p.rostered ? (teamName.get(p.fantasy_team_id ?? -1) ?? "rostered") : "FA"
       })`,
     }))

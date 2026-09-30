@@ -105,7 +105,7 @@ function PlayerCell({ row }: { row: DecisionRow }) {
       <PlayerName row={row} />
       <span className="league-meta">
         {" "}
-        · {row.player.position ?? row.group}
+        · {row.group}
         {row.player.nhl_team ? ` · ${row.player.nhl_team}` : ""}
         {role.text !== "—" ? ` · ${role.text}` : ""}
       </span>
@@ -391,7 +391,7 @@ export function MoveView({
   const agents = freeAgentRows(ctx).sort((a, b) => (b.value ?? 0) - (a.value ?? 0));
   const result = evaluateMove(ctx, query.teamId, query.drop, query.add);
   const option = (r: DecisionRow) =>
-    `${r.player.name} (${r.player.position ?? r.group}, ${formatValue(r.value)})`;
+    `${r.player.name} (${r.group}, ${formatValue(r.value)})`;
   return (
     <section style={{ marginTop: "0.75rem" }}>
       <form method="get" action={`/leagues/${league.league_id}`} className="table-toolbar">
