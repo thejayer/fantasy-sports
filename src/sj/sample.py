@@ -950,7 +950,25 @@ def sample_snapshot(
             golf=golf_settings_from_registry(spec),
             synced_at=None,  # callers (fixtures) may stamp after
         )
-    return build_snapshot(sample_league(spec, season, teams=teams), spec, season)
+    snapshot = build_snapshot(sample_league(spec, season, teams=teams), spec, season)
+    if spec.sport == "hockey" and season == spec.current_season:
+        sample_hockey_ownership(snapshot)
+    return snapshot
+
+
+def sample_hockey_ownership(snapshot: dict[str, Any]) -> None:
+    """Synthetic H7 7-day ownership change (the live sync asks ESPN).
+
+    Derived from the player id, not the seeded RNG, so adding it leaves every
+    other fixture value unchanged. ``percent_owned`` already comes from the
+    sample stubs; -1 (ESPN omitted it) gets no change.
+    """
+    rows = [p for team in snapshot.get("teams") or [] for p in team.get("roster") or []]
+    for p in rows + list(snapshot.get("free_agents") or []):
+        pid, owned = p.get("id"), p.get("percent_owned")
+        if pid is None or owned is None or owned < 0:
+            continue
+        p["percent_change"] = round(((int(pid) * 7919) % 81 - 40) / 10, 1)
 
 
 def sample_pro_schedule_for_snapshot(snapshot: dict[str, Any]) -> dict[str, Any]:

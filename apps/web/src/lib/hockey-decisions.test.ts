@@ -251,3 +251,44 @@ describe("formatDelta", () => {
     expect(formatDelta(null)).toBe("—");
   });
 });
+
+describe("H7 ownership", () => {
+  // Team 1's weakest healthy forward is 11 (2.0); protect it and 12 takes over.
+  const owned = (id: number, pct: number, change = 0) => {
+    const p = ctx.values!.players[String(id)]!;
+    return { ...p, percent_owned: pct, percent_change: change };
+  };
+  const protectedCtx: DecisionContext = {
+    ...ctx,
+    values: {
+      ...ctx.values!,
+      players: {
+        ...ctx.values!.players,
+        "11": owned(11, 97.5),
+        "21": owned(21, 40, 2.5),
+        "22": owned(22, 30, 0.4),
+      },
+    },
+  };
+
+  it("never suggests dropping a widely rostered player", () => {
+    const f = waiverBoard(protectedCtx, 1).find((r) => r.espnId === "21")!;
+    expect(f.replaces?.espnId).toBe("12");
+    expect(f.upgrade).toBeCloseTo(-0.5);
+  });
+
+  it("filters to rising free agents", () => {
+    const ids = waiverBoard(protectedCtx, 1, parseWaiverFilters({ rising: "1" })).map((r) => r.espnId);
+    expect(ids).toEqual(["21"]);
+  });
+
+  it("warns before dropping a protected player", () => {
+    const move = evaluateMove(protectedCtx, 1, "11", "21")!;
+    expect(move.warnings.join(" ")).toContain("rostered in 98% of ESPN leagues");
+    expect(evaluateMove(ctx, 1, "11", "21")!.warnings.join(" ")).not.toContain("protected");
+  });
+
+  it("compares ESPN ownership", () => {
+    expect(compareFreeAgents(protectedCtx, ["21", "22"]).best.owned).toBe("21");
+  });
+});

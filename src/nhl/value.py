@@ -370,6 +370,9 @@ def player_value(
         "fantasy_team_id": row.get("_team_id"),
         "rostered": bool(row.get("_rostered")),
         "injury_status": row.get("injury_status"),
+        # H7: ESPN-wide % rostered and its 7-day change (None when not synced).
+        "percent_owned": _owned(row.get("percent_owned")),
+        "percent_change": row.get("percent_change"),
         "age": (ctx or {}).get("age"),
         "value": value,
         "base": base,
@@ -382,6 +385,15 @@ def player_value(
         "ros": ros,
         "espn_proj": facts.get("espn_proj"),
     }
+
+
+def _owned(raw: Any) -> float | None:
+    """espn-api uses -1 when ESPN omitted ownership: treat it as unknown."""
+    try:
+        value = float(raw)
+    except (TypeError, ValueError):
+        return None
+    return value if value >= 0 else None
 
 
 def build_values(

@@ -147,6 +147,13 @@ totals. The hub does **not** invent player week lines ESPN omitted, and does
   them) and **Games-played pace** (`view=pace`: starter games per slot against
   ESPN's GP caps). Pacing reads `teams[].games` + `periods.final` that the
   season-points analysis sync now writes for hockey.
+- **H7 (landed): ESPN ownership.** `sj sync` (current hockey season) adds
+  ESPN-wide `percent_owned` / `percent_change` (7-day) / `percent_started`
+  to every rostered player and free agent (`sj.hockey_ownership`; failures
+  never fail the sync) and `values.json` carries them. Waiver board gains
+  **ESPN %** (with the change) and a **Rising** filter; players rostered in
+  85%+ of ESPN leagues are protected (🔒) — never a suggested drop, and
+  Evaluate a move warns first. The Waivers tab's % Own shows the change.
 - **H6 (landed): injuries & alerts.** Each hockey sync (and the afternoon
   `sj nhl-lines` job) updates `nhl/injury_log.json`: ESPN + Daily Faceoff
   status per player and transitions (hurt / nearing return / back); the first

@@ -28,6 +28,13 @@ export const MAX_GOALIES = 4;
 /** ESPN injury words that make an add "injured". */
 const UNAVAILABLE = new Set(["OUT", "INJURY_RESERVE", "IR", "SUSPENSION", "DAY_TO_DAY"]);
 export const TALL_INCHES = 75; // 6'3"
+/**
+ * H7 drop protection: rostered in this share of ESPN leagues or more (the
+ * average of available sources; ESPN is the only one synced). Rinkside default.
+ */
+export const PROTECT_OWNED = 85;
+/** A free agent gaining this much % rostered over 7 days is "rising". */
+export const RISING_CHANGE = 1;
 
 // ---------------------------------------------------------------------------
 // clock + schedule
@@ -107,6 +114,11 @@ export type DecisionRow = {
   next14: number | null;
   games7: number | null;
   injured: boolean;
+  /** ESPN-wide % rostered and its 7-day change (H7). */
+  owned: number | null;
+  ownedChange: number | null;
+  /** Widely rostered (≥ PROTECT_OWNED): never suggested as a drop. */
+  protected: boolean;
 };
 
 export function isInjured(player: HockeyPlayerValue, bio?: HockeyBio): boolean {
@@ -134,6 +146,9 @@ export function decisionRow(
     next14: windowPoints(player, schedule, start, 14),
     games7: gamesInWindow(player.nhl_team, schedule, start, 7),
     injured: isInjured(player, bio),
+    owned: player.percent_owned ?? null,
+    ownedChange: player.percent_change ?? null,
+    protected: (player.percent_owned ?? 0) >= PROTECT_OWNED,
   };
 }
 
@@ -161,13 +176,14 @@ export function freeAgentRows(ctx: DecisionContext): DecisionRow[] {
 
 /**
  * The weakest player per group on a roster: lowest value among players who
- * count (skips injured players — they are IR candidates, not drop candidates).
- * No "protected" list yet: that arrives with H7 ownership / H8 member tags.
+ * count. Skips injured players (IR candidates, not drop candidates) and
+ * protected ones (≥ PROTECT_OWNED% rostered on ESPN — H7). Member "Keep"
+ * tags arrive with H8.
  */
 export function weakestByGroup(rows: DecisionRow[]): Partial<Record<Group, DecisionRow>> {
   const out: Partial<Record<Group, DecisionRow>> = {};
   for (const row of rows) {
-    if (row.value == null || row.injured) continue;
+    if (row.value == null || row.injured || row.protected) continue;
     const cur = out[row.group];
     if (!cur || (cur.value ?? Infinity) > row.value) out[row.group] = row;
   }
@@ -185,6 +201,8 @@ export type WaiverFilters = {
   rookies: boolean;
   tall: boolean;
   iron: boolean;
+  /** H7: gaining ≥ RISING_CHANGE % rostered over 7 days. */
+  rising: boolean;
 };
 
 export const NO_FILTERS: WaiverFilters = {
@@ -194,6 +212,7 @@ export const NO_FILTERS: WaiverFilters = {
   rookies: false,
   tall: false,
   iron: false,
+  rising: false,
 };
 
 export type WaiverRow = DecisionRow & {
@@ -215,6 +234,7 @@ export function parseWaiverFilters(raw: Record<string, string | string[] | undef
     rookies: flag("rookies"),
     tall: flag("tall"),
     iron: flag("iron"),
+    rising: flag("rising"),
   };
 }
 
@@ -231,6 +251,7 @@ export function waiverBoard(
     .filter((r) => !filters.rookies || r.player.source === "rookie" || r.player.source === "rookie_playing")
     .filter((r) => !filters.tall || (r.bio?.heightIn ?? 0) >= TALL_INCHES)
     .filter((r) => !filters.iron || Boolean(r.player.durability?.iron_man))
+    .filter((r) => !filters.rising || (r.ownedChange ?? 0) >= RISING_CHANGE)
     .map((r) => {
       const worst = weakest[r.group] ?? null;
       const upgrade = worst && r.value != null && worst.value != null ? r.value - worst.value : null;
@@ -244,7 +265,7 @@ export function waiverBoard(
 // ---------------------------------------------------------------------------
 
 export type CompareMetric = {
-  key: "value" | "next14" | "ros" | "plays" | "age";
+  key: "value" | "next14" | "ros" | "plays" | "owned" | "age";
   label: string;
   higherIsBetter: boolean;
   get: (r: DecisionRow) => number | null;
@@ -255,6 +276,7 @@ export const COMPARE_METRICS: CompareMetric[] = [
   { key: "next14", label: "Next 14 days", higherIsBetter: true, get: (r) => r.next14 },
   { key: "ros", label: "Rest of season", higherIsBetter: true, get: (r) => r.ros },
   { key: "plays", label: "Plays", higherIsBetter: true, get: (r) => r.player.durability?.rate ?? null },
+  { key: "owned", label: "ESPN % rostered", higherIsBetter: true, get: (r) => r.owned },
   { key: "age", label: "Age", higherIsBetter: false, get: (r) => r.player.age },
 ];
 
@@ -338,6 +360,11 @@ export function evaluateMove(
   }
   if (drop.group !== add.group) {
     warnings.push(`Different position group (${drop.group} → ${add.group}); check your lineup slots.`);
+  }
+  if (drop.protected) {
+    warnings.push(
+      `${drop.player.name} is rostered in ${drop.owned!.toFixed(0)}% of ESPN leagues — protected (${PROTECT_OWNED}%+); think twice.`,
+    );
   }
   if (add.bio?.possibleScratch) {
     warnings.push(`${add.player.name} may be a healthy scratch next game (Daily Faceoff).`);

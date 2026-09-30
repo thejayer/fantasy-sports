@@ -603,6 +603,12 @@ test.describe("hub smoke", () => {
     for (const header of ["Value", "Upgrade", "Replaces", "Next 7d"]) {
       await expect(page.getByRole("columnheader", { name: header, exact: true })).toBeVisible();
     }
+    // H7: ESPN ownership with the 7-day change, and a Rising filter.
+    await expect(page.getByRole("columnheader", { name: "ESPN %" })).toBeVisible();
+    await expect(page.locator('td[data-label="ESPN %"]', { hasText: /^\d+\.\d/ }).first()).toBeVisible();
+    await page.getByRole("link", { name: "Rising", exact: true }).click();
+    await expect(page).toHaveURL(/rising=1/);
+    await page.goto("/leagues/hockey-main?tab=tools&view=waivers&team=1");
     await page.getByRole("link", { name: "D", exact: true }).click();
     await expect(page).toHaveURL(/pos=D/);
     await expect(page).toHaveURL(/team=1/);

@@ -134,6 +134,8 @@
           "label": "NHL history, age-adjusted (2 seasons, 144 GP)"
         }
       ],
+      "percent_change": -2.5,
+      "percent_owned": 43.7,
       "position": "LW",
       "pro_team": "WSH",
       "remaining_games": 2,
@@ -214,6 +216,8 @@
           "label": "NHL history, age-adjusted (3 seasons, 182 GP)"
         }
       ],
+      "percent_change": 3.7,
+      "percent_owned": 77.3,
       "position": "LW",
       "pro_team": "CGY",
       "remaining_games": 4,
@@ -294,6 +298,8 @@
           "label": "NHL history, age-adjusted (3 seasons, 115 GP)"
         }
       ],
+      "percent_change": 1.8,
+      "percent_owned": 70.9,
       "position": "RW",
       "pro_team": "PHI",
       "remaining_games": 6,
@@ -362,6 +368,8 @@
           "label": "NHL history, age-adjusted (3 seasons, 167 GP)"
         }
       ],
+      "percent_change": -0.1,
+      "percent_owned": 42.4,
       "position": "C",
       "pro_team": "DAL",
       "remaining_games": 8,
@@ -442,6 +450,8 @@
           "label": "prospect estimate (AHL 34pts/50gp; OHL 25pts/60gp; #176 overall pick)"
         }
       ],
+      "percent_change": -2.0,
+      "percent_owned": 94.1,
       "position": "RW",
       "pro_team": "VAN",
       "remaining_games": 4,
@@ -522,6 +532,8 @@
           "label": "NHL history, age-adjusted (2 seasons, 107 GP)"
         }
       ],
+      "percent_change": null,
+      "percent_owned": null,
       "position": "LW",
       "pro_team": "VAN",
       "remaining_games": 4,
@@ -602,6 +614,8 @@
           "label": "NHL history, age-adjusted (1 season, 81 GP)"
         }
       ],
+      "percent_change": 2.3,
+      "percent_owned": 61.8,
       "position": "LW",
       "pro_team": "MIN",
       "remaining_games": 6,
@@ -682,6 +696,8 @@
           "label": "NHL history, age-adjusted (3 seasons, 140 GP)"
         }
       ],
+      "percent_change": 0.4,
+      "percent_owned": 4.9,
       "position": "LW",
       "pro_team": "LA",
       "remaining_games": 5,
@@ -762,6 +778,8 @@
           "label": "NHL history, age-adjusted (3 seasons, 171 GP)"
         }
       ],
+      "percent_change": -1.5,
+      "percent_owned": 59.3,
       "position": "RW",
       "pro_team": "EDM",
       "remaining_games": 2,
@@ -834,6 +852,8 @@
           "label": "NHL history, age-adjusted (3 seasons, 188 GP)"
         }
       ],
+      "percent_change": -3.4,
+      "percent_owned": 39.4,
       "position": "D",
       "pro_team": "STL",
       "remaining_games": 8,
@@ -914,6 +934,8 @@
           "label": "NHL history, age-adjusted (3 seasons, 196 GP)"
         }
       ],
+      "percent_change": 2.8,
+      "percent_owned": 79.7,
       "position": "D",
       "pro_team": "COL",
       "remaining_games": 2,
@@ -994,6 +1016,8 @@
           "label": "NHL history, age-adjusted (1 season, 40 GP)"
         }
       ],
+      "percent_change": 0.9,
+      "percent_owned": 63.6,
       "position": "D",
       "pro_team": "NJ",
       "remaining_games": 7,
@@ -1074,6 +1098,8 @@
           "label": "NHL history, age-adjusted (2 seasons, 109 GP)"
         }
       ],
+      "percent_change": -1.0,
+      "percent_owned": 77.2,
       "position": "D",
       "pro_team": "WSH",
       "remaining_games": 2,
@@ -1154,6 +1180,8 @@
           "label": "prospect estimate (AHL 34pts/50gp; OHL 25pts/60gp; #100 overall pick)"
         }
       ],
+      "percent_change": -2.9,
+      "percent_owned": 73.4,
       "position": "D",
       "pro_team": "ANA",
       "remaining_games": 1,
@@ -1234,6 +1262,8 @@
           "label": "NHL history, age-adjusted (2 seasons, 126 GP)"
         }
       ],
+      "percent_change": 3.3,
+      "percent_owned": 23.3,
       "position": "RW",
       "pro_team": "SJ",
       "remaining_games": 8,
@@ -1314,6 +1344,8 @@
           "label": "NHL history, age-adjusted (2 seasons, 115 GP)"
         }
       ],
+      "percent_change": 1.4,
+      "percent_owned": 95.2,
       "position": "G",
       "pro_team": "SEA",
       "remaining_games": 7,
@@ -1382,6 +1414,8 @@
           "label": "NHL history, age-adjusted (3 seasons, 207 GP)"
         }
       ],
+      "percent_change": -0.5,
+      "percent_owned": 10.5,
       "position": "G",
       "pro_team": "SJ",
       "remaining_games": 8,
@@ -1462,6 +1496,8 @@
           "label": "NHL history, age-adjusted (3 seasons, 126 GP)"
         }
       ],
+      "percent_change": -2.4,
+      "percent_owned": 49.7,
       "position": "C",
       "pro_team": "WPG",
       "remaining_games": 7,
@@ -1542,6 +1578,8 @@
           "label": "NHL history, age-adjusted (3 seasons, 162 GP)"
         }
       ],
+      "percent_change": 3.8,
+      "percent_owned": 92.0,
       "position": "C",
       "pro_team": "STL",
       "remaining_games": 8,
@@ -1622,6 +1660,8 @@
           "label": "NHL history, age-adjusted (3 seasons, 176 GP)"
         }
       ],
+      "percent_change": 1.9,
+      "percent_owned": 54.1,
       "position": "RW",
       "pro_team": "FLA",
       "remaining_games": 4,
@@ -1702,6 +1742,8 @@
           "label": "NHL history, age-adjusted (3 seasons, 204 GP)"
         }
       ],
+      "percent_change": 0.0,
+      "percent_owned": 40.8,
       "position": "G",
       "pro_team": "CGY",
       "remaining_games": 4,
@@ -1782,6 +1824,8 @@
           "label": "NHL history, age-adjusted (3 seasons, 159 GP)"
         }
       ],
+      "percent_change": -1.9,
+      "percent_owned": 73.6,
       "position": "C",
       "pro_team": "CBJ",
       "remaining_games": 5,
@@ -1862,6 +1906,8 @@
           "label": "prospect estimate (AHL 34pts/50gp; OHL 25pts/60gp; #195 overall pick)"
         }
       ],
+      "percent_change": -3.8,
+      "percent_owned": 11.7,
       "position": "RW",
       "pro_team": "BUF",
       "remaining_games": 5,
@@ -1934,6 +1980,8 @@
           "label": "ESPN projection"
         }
       ],
+      "percent_change": 2.4,
+      "percent_owned": 94.2,
       "position": "D",
       "pro_team": "NSH",
       "remaining_games": 4,
@@ -2014,6 +2062,8 @@
           "label": "NHL history, age-adjusted (2 seasons, 110 GP)"
         }
       ],
+      "percent_change": 0.5,
+      "percent_owned": 10.2,
       "position": "RW",
       "pro_team": "VAN",
       "remaining_games": 4,
@@ -2094,6 +2144,8 @@
           "label": "NHL history, age-adjusted (2 seasons, 160 GP)"
         }
       ],
+      "percent_change": -1.4,
+      "percent_owned": 19.0,
       "position": "C",
       "pro_team": "PIT",
       "remaining_games": 5,
@@ -2166,6 +2218,8 @@
           "label": "NHL history, age-adjusted (2 seasons, 107 GP)"
         }
       ],
+      "percent_change": -3.3,
+      "percent_owned": 79.4,
       "position": "C",
       "pro_team": "STL",
       "remaining_games": 8,
@@ -2246,6 +2300,8 @@
           "label": "NHL history, age-adjusted (2 seasons, 79 GP)"
         }
       ],
+      "percent_change": 1.9,
+      "percent_owned": 12.9,
       "position": "LW",
       "pro_team": "ANA",
       "remaining_games": 1,
@@ -2326,6 +2382,8 @@
           "label": "NHL history, age-adjusted (2 seasons, 134 GP)"
         }
       ],
+      "percent_change": 0.0,
+      "percent_owned": 86.6,
       "position": "LW",
       "pro_team": "SJ",
       "remaining_games": 8,
@@ -2406,6 +2464,8 @@
           "label": "NHL history, age-adjusted (2 seasons, 97 GP)"
         }
       ],
+      "percent_change": -1.9,
+      "percent_owned": 7.7,
       "position": "LW",
       "pro_team": "PIT",
       "remaining_games": 5,
@@ -2486,6 +2546,8 @@
           "label": "NHL history, age-adjusted (1 season, 35 GP)"
         }
       ],
+      "percent_change": -3.8,
+      "percent_owned": 84.1,
       "position": "RW",
       "pro_team": "WSH",
       "remaining_games": 2,
@@ -2566,6 +2628,8 @@
           "label": "prospect estimate (AHL 34pts/50gp; OHL 25pts/60gp; #196 overall pick)"
         }
       ],
+      "percent_change": 2.4,
+      "percent_owned": 65.0,
       "position": "RW",
       "pro_team": "CHI",
       "remaining_games": 6,
@@ -2646,6 +2710,8 @@
           "label": "NHL history, age-adjusted (3 seasons, 131 GP)"
         }
       ],
+      "percent_change": 0.5,
+      "percent_owned": 93.1,
       "position": "LW",
       "pro_team": "BUF",
       "remaining_games": 5,
@@ -2726,6 +2792,8 @@
           "label": "NHL history, age-adjusted (3 seasons, 125 GP)"
         }
       ],
+      "percent_change": null,
+      "percent_owned": null,
       "position": "RW",
       "pro_team": "OTT",
       "remaining_games": 4,
@@ -2794,6 +2862,8 @@
           "label": "NHL history, age-adjusted (2 seasons, 135 GP)"
         }
       ],
+      "percent_change": -3.3,
+      "percent_owned": 12.2,
       "position": "RW",
       "pro_team": "FLA",
       "remaining_games": 4,
@@ -2874,6 +2944,8 @@
           "label": "NHL history, age-adjusted (2 seasons, 111 GP)"
         }
       ],
+      "percent_change": 2.9,
+      "percent_owned": 98.2,
       "position": "C",
       "pro_team": "CBJ",
       "remaining_games": 5,
@@ -2954,6 +3026,8 @@
           "label": "NHL history, age-adjusted (2 seasons, 97 GP)"
         }
       ],
+      "percent_change": 1.0,
+      "percent_owned": 60.1,
       "position": "D",
       "pro_team": "EDM",
       "remaining_games": 2,
@@ -3034,6 +3108,8 @@
           "label": "NHL history, age-adjusted (3 seasons, 183 GP)"
         }
       ],
+      "percent_change": -0.9,
+      "percent_owned": 78.7,
       "position": "D",
       "pro_team": "COL",
       "remaining_games": 2,
@@ -3106,6 +3182,8 @@
           "label": "NHL history, age-adjusted (3 seasons, 171 GP)"
         }
       ],
+      "percent_change": -2.8,
+      "percent_owned": 48.5,
       "position": "D",
       "pro_team": "ANA",
       "remaining_games": 1,
@@ -3186,6 +3264,8 @@
           "label": "NHL history, age-adjusted (3 seasons, 151 GP)"
         }
       ],
+      "percent_change": 3.4,
+      "percent_owned": 88.9,
       "position": "D",
       "pro_team": "MTL",
       "remaining_games": 6,
@@ -3258,6 +3338,8 @@
           "label": "ESPN projection"
         }
       ],
+      "percent_change": 1.5,
+      "percent_owned": 86.8,
       "position": "D",
       "pro_team": "TOR",
       "remaining_games": 2,
@@ -3338,6 +3420,8 @@
           "label": "NHL history, age-adjusted (2 seasons, 140 GP)"
         }
       ],
+      "percent_change": -0.4,
+      "percent_owned": 83.6,
       "position": "LW",
       "pro_team": "SJ",
       "remaining_games": 8,
@@ -3418,6 +3502,8 @@
           "label": "NHL history, age-adjusted (1 season, 72 GP)"
         }
       ],
+      "percent_change": -2.3,
+      "percent_owned": 51.4,
       "position": "G",
       "pro_team": "FLA",
       "remaining_games": 4,
@@ -3498,6 +3584,8 @@
           "label": "NHL history, age-adjusted (3 seasons, 197 GP)"
         }
       ],
+      "percent_change": 3.9,
+      "percent_owned": 0.1,
       "position": "G",
       "pro_team": "LA",
       "remaining_games": 5,
@@ -3578,6 +3666,8 @@
           "label": "NHL history, age-adjusted (3 seasons, 169 GP)"
         }
       ],
+      "percent_change": 2.0,
+      "percent_owned": 86.2,
       "position": "LW",
       "pro_team": "NYI",
       "remaining_games": 8,
@@ -3658,6 +3748,8 @@
           "label": "NHL history, age-adjusted (3 seasons, 147 GP)"
         }
       ],
+      "percent_change": 0.1,
+      "percent_owned": 10.5,
       "position": "G",
       "pro_team": "EDM",
       "remaining_games": 2,
@@ -3738,6 +3830,8 @@
           "label": "NHL history, age-adjusted (2 seasons, 136 GP)"
         }
       ],
+      "percent_change": -1.8,
+      "percent_owned": 38.9,
       "position": "C",
       "pro_team": "UTA",
       "remaining_games": 5,
@@ -3806,6 +3900,8 @@
           "label": "NHL history, age-adjusted (2 seasons, 68 GP)"
         }
       ],
+      "percent_change": -3.7,
+      "percent_owned": 11.8,
       "position": "C",
       "pro_team": "CGY",
       "remaining_games": 4,
@@ -3886,6 +3982,8 @@
           "label": "NHL history, age-adjusted (2 seasons, 79 GP)"
         }
       ],
+      "percent_change": 2.5,
+      "percent_owned": 97.1,
       "position": "G",
       "pro_team": "NSH",
       "remaining_games": 4,
@@ -3966,6 +4064,8 @@
           "label": "prospect estimate (AHL 34pts/50gp; OHL 25pts/60gp; #117 overall pick)"
         }
       ],
+      "percent_change": 0.6,
+      "percent_owned": 56.0,
       "position": "RW",
       "pro_team": "FLA",
       "remaining_games": 4,
@@ -4046,6 +4146,8 @@
           "label": "NHL history, age-adjusted (3 seasons, 157 GP)"
         }
       ],
+      "percent_change": -1.3,
+      "percent_owned": 68.9,
       "position": "G",
       "pro_team": "SJ",
       "remaining_games": 8,
@@ -4126,6 +4228,8 @@
           "label": "NHL history, age-adjusted (3 seasons, 172 GP)"
         }
       ],
+      "percent_change": -3.2,
+      "percent_owned": 25.1,
       "position": "G",
       "pro_team": "WSH",
       "remaining_games": 2,
@@ -4206,6 +4310,8 @@
           "label": "NHL history, age-adjusted (1 season, 43 GP)"
         }
       ],
+      "percent_change": 3.0,
+      "percent_owned": 37.2,
       "position": "C",
       "pro_team": "DET",
       "remaining_games": 5,
@@ -4286,6 +4392,8 @@
           "label": "NHL history, age-adjusted (2 seasons, 105 GP)"
         }
       ],
+      "percent_change": 1.1,
+      "percent_owned": 91.8,
       "position": "D",
       "pro_team": "STL",
       "remaining_games": 8,
@@ -4366,6 +4474,8 @@
           "label": "NHL history, age-adjusted (3 seasons, 214 GP)"
         }
       ],
+      "percent_change": -1.8,
+      "percent_owned": 32.9,
       "position": "RW",
       "pro_team": "CBJ",
       "remaining_games": 5,
@@ -4446,6 +4556,8 @@
           "label": "NHL history, age-adjusted (3 seasons, 180 GP)"
         }
       ],
+      "percent_change": -3.7,
+      "percent_owned": 22.9,
       "position": "RW",
       "pro_team": "TOR",
       "remaining_games": 2,
@@ -4526,6 +4638,8 @@
           "label": "NHL history, age-adjusted (2 seasons, 103 GP)"
         }
       ],
+      "percent_change": 2.5,
+      "percent_owned": 69.1,
       "position": "RW",
       "pro_team": "EDM",
       "remaining_games": 2,
@@ -4606,6 +4720,8 @@
           "label": "NHL history, age-adjusted (3 seasons, 170 GP)"
         }
       ],
+      "percent_change": 0.6,
+      "percent_owned": 15.9,
       "position": "C",
       "pro_team": "CBJ",
       "remaining_games": 5,
@@ -4686,6 +4802,8 @@
           "label": "prospect estimate (AHL 34pts/50gp; OHL 25pts/60gp; #94 overall pick)"
         }
       ],
+      "percent_change": -1.3,
+      "percent_owned": 17.4,
       "position": "C",
       "pro_team": "PHI",
       "remaining_games": 6,
@@ -4766,6 +4884,8 @@
           "label": "NHL history, age-adjusted (3 seasons, 168 GP)"
         }
       ],
+      "percent_change": -3.2,
+      "percent_owned": 13.1,
       "position": "RW",
       "pro_team": "CAR",
       "remaining_games": 4,
@@ -4846,6 +4966,8 @@
           "label": "NHL history, age-adjusted (3 seasons, 150 GP)"
         }
       ],
+      "percent_change": 3.0,
+      "percent_owned": 29.1,
       "position": "LW",
       "pro_team": "PIT",
       "remaining_games": 5,
@@ -4926,6 +5048,8 @@
           "label": "NHL history, age-adjusted (3 seasons, 162 GP)"
         }
       ],
+      "percent_change": 1.1,
+      "percent_owned": 48.2,
       "position": "LW",
       "pro_team": "CGY",
       "remaining_games": 4,
@@ -5006,6 +5130,8 @@
           "label": "NHL history, age-adjusted (3 seasons, 168 GP)"
         }
       ],
+      "percent_change": -0.8,
+      "percent_owned": 85.1,
       "position": "RW",
       "pro_team": "VGK",
       "remaining_games": 6,
@@ -5086,6 +5212,8 @@
           "label": "NHL history, age-adjusted (3 seasons, 154 GP)"
         }
       ],
+      "percent_change": -2.7,
+      "percent_owned": 44.0,
       "position": "D",
       "pro_team": "MTL",
       "remaining_games": 6,
@@ -5166,6 +5294,8 @@
           "label": "NHL history, age-adjusted (2 seasons, 126 GP)"
         }
       ],
+      "percent_change": 3.5,
+      "percent_owned": 92.9,
       "position": "D",
       "pro_team": "OTT",
       "remaining_games": 4,
@@ -5234,6 +5364,8 @@
           "label": "NHL history, age-adjusted (3 seasons, 168 GP)"
         }
       ],
+      "percent_change": 1.6,
+      "percent_owned": 16.1,
       "position": "D",
       "pro_team": "UTA",
       "remaining_games": 5,
@@ -5314,6 +5446,8 @@
           "label": "NHL history, age-adjusted (3 seasons, 180 GP)"
         }
       ],
+      "percent_change": -0.3,
+      "percent_owned": 5.4,
       "position": "D",
       "pro_team": "PIT",
       "remaining_games": 5,
@@ -5386,6 +5520,8 @@
           "label": "prospect estimate (AHL 34pts/50gp; OHL 25pts/60gp; #15 overall pick)"
         }
       ],
+      "percent_change": -2.2,
+      "percent_owned": 91.9,
       "position": "D",
       "pro_team": "FLA",
       "remaining_games": 4,
@@ -5466,6 +5602,8 @@
           "label": "NHL history, age-adjusted (3 seasons, 184 GP)"
         }
       ],
+      "percent_change": 4.0,
+      "percent_owned": 99.6,
       "position": "RW",
       "pro_team": "PIT",
       "remaining_games": 5,
@@ -5546,6 +5684,8 @@
           "label": "NHL history, age-adjusted (3 seasons, 131 GP)"
         }
       ],
+      "percent_change": 2.1,
+      "percent_owned": 81.4,
       "position": "G",
       "pro_team": "EDM",
       "remaining_games": 2,
@@ -5626,6 +5766,8 @@
           "label": "NHL history, age-adjusted (2 seasons, 147 GP)"
         }
       ],
+      "percent_change": null,
+      "percent_owned": null,
       "position": "G",
       "pro_team": "CHI",
       "remaining_games": 6,
@@ -5706,6 +5848,8 @@
           "label": "NHL history, age-adjusted (2 seasons, 83 GP)"
         }
       ],
+      "percent_change": null,
+      "percent_owned": null,
       "position": "D",
       "pro_team": "NJ",
       "remaining_games": 7,
@@ -5786,6 +5930,8 @@
           "label": "NHL history, age-adjusted (2 seasons, 139 GP)"
         }
       ],
+      "percent_change": -3.6,
+      "percent_owned": 42.0,
       "position": "C",
       "pro_team": "WPG",
       "remaining_games": 7,
@@ -5866,6 +6012,8 @@
           "label": "NHL history, age-adjusted (2 seasons, 127 GP)"
         }
       ],
+      "percent_change": 2.6,
+      "percent_owned": 42.5,
       "position": "G",
       "pro_team": "UTA",
       "remaining_games": 5,
@@ -5946,6 +6094,8 @@
           "label": "NHL history, age-adjusted (3 seasons, 166 GP)"
         }
       ],
+      "percent_change": 0.7,
+      "percent_owned": 92.4,
       "position": "D",
       "pro_team": "OTT",
       "remaining_games": 4,
@@ -6026,6 +6176,8 @@
           "label": "NHL history, age-adjusted (3 seasons, 163 GP)"
         }
       ],
+      "percent_change": -1.2,
+      "percent_owned": 2.6,
       "position": "D",
       "pro_team": "PHI",
       "remaining_games": 6,
@@ -6106,6 +6258,8 @@
           "label": "prospect estimate (AHL 34pts/50gp; OHL 25pts/60gp; #22 overall pick)"
         }
       ],
+      "percent_change": -3.1,
+      "percent_owned": 67.8,
       "position": "C",
       "pro_team": "WPG",
       "remaining_games": 7,
@@ -6186,6 +6340,8 @@
           "label": "NHL history, age-adjusted (3 seasons, 154 GP)"
         }
       ],
+      "percent_change": 3.1,
+      "percent_owned": 42.4,
       "position": "C",
       "pro_team": "CBJ",
       "remaining_games": 5,
@@ -6254,6 +6410,8 @@
           "label": "NHL history, age-adjusted (2 seasons, 75 GP)"
         }
       ],
+      "percent_change": 1.2,
+      "percent_owned": 57.9,
       "position": "D",
       "pro_team": "PIT",
       "remaining_games": 5,
@@ -6334,6 +6492,8 @@
           "label": "NHL history, age-adjusted (3 seasons, 200 GP)"
         }
       ],
+      "percent_change": -0.7,
+      "percent_owned": 68.3,
       "position": "D",
       "pro_team": "TOR",
       "remaining_games": 2,
@@ -6414,6 +6574,8 @@
           "label": "NHL history, age-adjusted (2 seasons, 141 GP)"
         }
       ],
+      "percent_change": null,
+      "percent_owned": null,
       "position": "D",
       "pro_team": "CHI",
       "remaining_games": 6,
@@ -6494,6 +6656,8 @@
           "label": "NHL history, age-adjusted (3 seasons, 186 GP)"
         }
       ],
+      "percent_change": -3.8,
+      "percent_owned": 95.7,
       "position": "RW",
       "pro_team": "BOS",
       "remaining_games": 4,
@@ -6574,6 +6738,8 @@
           "label": "NHL history, age-adjusted (3 seasons, 147 GP)"
         }
       ],
+      "percent_change": 2.4,
+      "percent_owned": 25.3,
       "position": "D",
       "pro_team": "OTT",
       "remaining_games": 4,
@@ -6634,6 +6800,8 @@
           "label": "this season"
         }
       ],
+      "percent_change": 0.5,
+      "percent_owned": 76.3,
       "position": "D",
       "pro_team": "CAR",
       "remaining_games": 4,
@@ -6714,6 +6882,8 @@
           "label": "NHL history, age-adjusted (3 seasons, 145 GP)"
         }
       ],
+      "percent_change": -1.4,
+      "percent_owned": 10.7,
       "position": "RW",
       "pro_team": "ANA",
       "remaining_games": 1,
@@ -6794,6 +6964,8 @@
           "label": "NHL history, age-adjusted (2 seasons, 100 GP)"
         }
       ],
+      "percent_change": -3.3,
+      "percent_owned": 50.3,
       "position": "C",
       "pro_team": "CHI",
       "remaining_games": 6,
@@ -6866,6 +7038,8 @@
           "label": "ESPN projection"
         }
       ],
+      "percent_change": 2.9,
+      "percent_owned": 38.4,
       "position": "C",
       "pro_team": "CBJ",
       "remaining_games": 5,
@@ -6946,6 +7120,8 @@
           "label": "NHL history, age-adjusted (2 seasons, 114 GP)"
         }
       ],
+      "percent_change": 1.0,
+      "percent_owned": 4.8,
       "position": "RW",
       "pro_team": "CAR",
       "remaining_games": 4,
@@ -7018,6 +7194,8 @@
           "label": "prospect estimate (AHL 34pts/50gp; OHL 25pts/60gp; #190 overall pick)"
         }
       ],
+      "percent_change": -0.9,
+      "percent_owned": 85.1,
       "position": "D",
       "pro_team": "TB",
       "remaining_games": 5,
@@ -7098,6 +7276,8 @@
           "label": "NHL history, age-adjusted (3 seasons, 181 GP)"
         }
       ],
+      "percent_change": null,
+      "percent_owned": null,
       "position": "G",
       "pro_team": "CHI",
       "remaining_games": 6,
@@ -7178,6 +7358,8 @@
           "label": "NHL history, age-adjusted (2 seasons, 94 GP)"
         }
       ],
+      "percent_change": 3.4,
+      "percent_owned": 21.2,
       "position": "G",
       "pro_team": "PIT",
       "remaining_games": 5,
@@ -7258,6 +7440,8 @@
           "label": "NHL history, age-adjusted (3 seasons, 175 GP)"
         }
       ],
+      "percent_change": 1.5,
+      "percent_owned": 94.2,
       "position": "G",
       "pro_team": "LA",
       "remaining_games": 5,
@@ -7338,6 +7522,8 @@
           "label": "NHL history, age-adjusted (2 seasons, 110 GP)"
         }
       ],
+      "percent_change": -0.4,
+      "percent_owned": 69.4,
       "position": "D",
       "pro_team": "EDM",
       "remaining_games": 2,
@@ -7418,6 +7604,8 @@
           "label": "NHL history, age-adjusted (1 season, 35 GP)"
         }
       ],
+      "percent_change": -2.3,
+      "percent_owned": 61.1,
       "position": "D",
       "pro_team": "MTL",
       "remaining_games": 6,
@@ -7498,6 +7686,8 @@
           "label": "NHL history, age-adjusted (3 seasons, 159 GP)"
         }
       ],
+      "percent_change": 3.9,
+      "percent_owned": 70.8,
       "position": "RW",
       "pro_team": "BOS",
       "remaining_games": 4,
@@ -7570,6 +7760,8 @@
           "label": "ESPN projection"
         }
       ],
+      "percent_change": 2.0,
+      "percent_owned": 34.9,
       "position": "G",
       "pro_team": "OTT",
       "remaining_games": 4,
@@ -7638,6 +7830,8 @@
           "label": "NHL history, age-adjusted (3 seasons, 149 GP)"
         }
       ],
+      "percent_change": 0.1,
+      "percent_owned": 82.2,
       "position": "LW",
       "pro_team": "WPG",
       "remaining_games": 7,
@@ -7718,6 +7912,8 @@
           "label": "NHL history, age-adjusted (2 seasons, 104 GP)"
         }
       ],
+      "percent_change": -1.8,
+      "percent_owned": 0.2,
       "position": "G",
       "pro_team": "SJ",
       "remaining_games": 8,
@@ -7798,6 +7994,8 @@
           "label": "NHL history, age-adjusted (2 seasons, 77 GP)"
         }
       ],
+      "percent_change": -3.7,
+      "percent_owned": 92.9,
       "position": "C",
       "pro_team": "CBJ",
       "remaining_games": 5,
@@ -7878,6 +8076,8 @@
           "label": "NHL history, age-adjusted (2 seasons, 104 GP)"
         }
       ],
+      "percent_change": 2.5,
+      "percent_owned": 54.8,
       "position": "LW",
       "pro_team": "UTA",
       "remaining_games": 5,
@@ -7958,6 +8158,8 @@
           "label": "NHL history, age-adjusted (2 seasons, 97 GP)"
         }
       ],
+      "percent_change": 0.6,
+      "percent_owned": 98.1,
       "position": "C",
       "pro_team": "WSH",
       "remaining_games": 2,
