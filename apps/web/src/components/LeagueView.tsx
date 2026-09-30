@@ -41,6 +41,7 @@ import {
   type HockeyTeamStrengthSnapshot,
 } from "@/lib/hockey-daily";
 import type { HockeyInjuryLog } from "@/lib/hockey-alerts";
+import { taggedBios, type MemberPrefs } from "@/lib/member-prefs";
 import { hockeyBioIndex, type HockeyNhlSnapshot } from "@/lib/hockey-nhl";
 import {
   hockeyValueIndex,
@@ -419,6 +420,8 @@ export function LeagueView({
   hockeyDecisionQuery,
   hockeyTeamStrength = null,
   hockeyInjuryLog = null,
+  hockeyMemberPrefs = null,
+  hockeyEditId = null,
 }: {
   league: LeagueSnapshot;
   seasons: number[];
@@ -490,13 +493,19 @@ export function LeagueView({
   hockeyTeamStrength?: HockeyTeamStrengthSnapshot | null;
   /** Hockey injury log (`nhl/injury_log.json`) for the alerts view (H6). */
   hockeyInjuryLog?: HockeyInjuryLog | null;
+  /** H8: the viewer's private hockey tags (null when signed out). */
+  hockeyMemberPrefs?: MemberPrefs | null;
+  /** H8: `?edit=` player on My tags. */
+  hockeyEditId?: string | null;
 }) {
   const leagueId = league.league_id;
   const hockeyCtx = {
     values: hockeyValues,
-    bios: hockeyBioIndex(hockeyNhl),
+    // H8: the viewer's role / PP tags replace the automatic ones in their tools.
+    bios: taggedBios(hockeyBioIndex(hockeyNhl), hockeyMemberPrefs),
     schedule: hockeySchedule,
     start: windowStart(hockeyValues, hockeySchedule),
+    prefs: hockeyMemberPrefs,
   };
   const isBaseball = league.sport === "baseball";
   const isHockey = league.sport === "hockey";
@@ -935,6 +944,8 @@ export function LeagueView({
             }}
             slotPoints={baseballAnalysis?.slotPoints}
             injuryLog={hockeyInjuryLog}
+            memberPrefs={hockeyMemberPrefs}
+            editId={hockeyEditId}
           />
         ) : (
           <ToolsPanel

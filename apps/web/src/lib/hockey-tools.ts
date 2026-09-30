@@ -16,7 +16,8 @@ export type HockeyToolsView =
   | "goalies"
   | "streaming"
   | "pace"
-  | "alerts";
+  | "alerts"
+  | "tags";
 
 /**
  * H5 decision tools (values.json-backed); open to every member. H5a: the
@@ -32,6 +33,7 @@ export const HOCKEY_DECISION_VIEWS = [
   "goalies",
   "streaming",
   "pace",
+  "tags",
 ] as const;
 
 /** Views that read the per-day inputs (team strength, goalie starts). */
@@ -95,6 +97,12 @@ export const HOCKEY_TOOL_CARDS: Array<{
     id: "pace",
     name: "Games-played pace",
     promise: "Games used per slot against the season caps, and the pace to finish on them.",
+    ready: true,
+  },
+  {
+    id: "tags",
+    name: "My tags",
+    promise: "Your private tags and notes: Keep (never drop), Watch, and your own PP / line roles.",
     ready: true,
   },
   {

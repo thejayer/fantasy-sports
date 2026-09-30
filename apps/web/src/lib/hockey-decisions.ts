@@ -13,6 +13,7 @@
 
 import type { HockeyBio, HockeyBioIndex } from "@/lib/hockey-nhl";
 import type { HockeyPlayerValue, HockeyValuesSnapshot } from "@/lib/hockey-values";
+import { isKept, isWatched, type MemberPrefs, type PlayerPref } from "@/lib/member-prefs";
 
 export type HockeyScheduleSnapshot = {
   league_id: string;
@@ -117,8 +118,13 @@ export type DecisionRow = {
   /** ESPN-wide % rostered and its 7-day change (H7). */
   owned: number | null;
   ownedChange: number | null;
-  /** Widely rostered (≥ PROTECT_OWNED): never suggested as a drop. */
+  /** Widely rostered (≥ PROTECT_OWNED) or tagged Keep: never suggested as a drop. */
   protected: boolean;
+  /** H8: the viewer's own tags / note for this player. */
+  tags: string[];
+  note: string;
+  kept: boolean;
+  watched: boolean;
 };
 
 export function isInjured(player: HockeyPlayerValue, bio?: HockeyBio): boolean {
@@ -133,8 +139,10 @@ export function decisionRow(
   bios: HockeyBioIndex,
   schedule: HockeyScheduleSnapshot | null | undefined,
   start: string,
+  pref?: PlayerPref,
 ): DecisionRow {
   const bio = bios[espnId];
+  const kept = isKept(pref);
   return {
     espnId,
     player,
@@ -148,7 +156,11 @@ export function decisionRow(
     injured: isInjured(player, bio),
     owned: player.percent_owned ?? null,
     ownedChange: player.percent_change ?? null,
-    protected: (player.percent_owned ?? 0) >= PROTECT_OWNED,
+    protected: kept || (player.percent_owned ?? 0) >= PROTECT_OWNED,
+    tags: pref?.tags ?? [],
+    note: pref?.note ?? "",
+    kept,
+    watched: isWatched(pref),
   };
 }
 
@@ -157,11 +169,13 @@ export type DecisionContext = {
   bios: HockeyBioIndex;
   schedule: HockeyScheduleSnapshot | null | undefined;
   start: string;
+  /** H8: the viewer's tags (bios should already carry their role tags). */
+  prefs?: MemberPrefs | null;
 };
 
 function allRows(ctx: DecisionContext): DecisionRow[] {
   return Object.entries(ctx.values?.players ?? {}).map(([id, p]) =>
-    decisionRow(id, p, ctx.bios, ctx.schedule, ctx.start),
+    decisionRow(id, p, ctx.bios, ctx.schedule, ctx.start, ctx.prefs?.players[id]),
   );
 }
 
@@ -203,6 +217,8 @@ export type WaiverFilters = {
   iron: boolean;
   /** H7: gaining ≥ RISING_CHANGE % rostered over 7 days. */
   rising: boolean;
+  /** H8: only players on the viewer's watchlist. */
+  watch: boolean;
 };
 
 export const NO_FILTERS: WaiverFilters = {
@@ -213,6 +229,7 @@ export const NO_FILTERS: WaiverFilters = {
   tall: false,
   iron: false,
   rising: false,
+  watch: false,
 };
 
 export type WaiverRow = DecisionRow & {
@@ -235,6 +252,7 @@ export function parseWaiverFilters(raw: Record<string, string | string[] | undef
     tall: flag("tall"),
     iron: flag("iron"),
     rising: flag("rising"),
+    watch: flag("watch"),
   };
 }
 
@@ -252,6 +270,7 @@ export function waiverBoard(
     .filter((r) => !filters.tall || (r.bio?.heightIn ?? 0) >= TALL_INCHES)
     .filter((r) => !filters.iron || Boolean(r.player.durability?.iron_man))
     .filter((r) => !filters.rising || (r.ownedChange ?? 0) >= RISING_CHANGE)
+    .filter((r) => !filters.watch || r.watched)
     .map((r) => {
       const worst = weakest[r.group] ?? null;
       const upgrade = worst && r.value != null && worst.value != null ? r.value - worst.value : null;
@@ -296,7 +315,7 @@ export function compareFreeAgents(ctx: DecisionContext, ids: string[]): Comparis
   const rows = ids
     .map((id) => {
       const p = ctx.values?.players?.[id];
-      return p ? decisionRow(id, p, ctx.bios, ctx.schedule, ctx.start) : null;
+      return p ? decisionRow(id, p, ctx.bios, ctx.schedule, ctx.start, ctx.prefs?.players[id]) : null;
     })
     .filter((r): r is DecisionRow => r != null);
   const best = {} as Comparison["best"];
@@ -361,7 +380,9 @@ export function evaluateMove(
   if (drop.group !== add.group) {
     warnings.push(`Different position group (${drop.group} → ${add.group}); check your lineup slots.`);
   }
-  if (drop.protected) {
+  if (drop.kept) {
+    warnings.push(`You tagged ${drop.player.name} Keep (never drop).`);
+  } else if (drop.protected) {
     warnings.push(
       `${drop.player.name} is rostered in ${drop.owned!.toFixed(0)}% of ESPN leagues — protected (${PROTECT_OWNED}%+); think twice.`,
     );
