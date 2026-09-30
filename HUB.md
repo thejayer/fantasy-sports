@@ -147,6 +147,15 @@ totals. The hub does **not** invent player week lines ESPN omitted, and does
   them) and **Games-played pace** (`view=pace`: starter games per slot against
   ESPN's GP caps). Pacing reads `teams[].games` + `periods.final` that the
   season-points analysis sync now writes for hockey.
+- **H8 (landed): My tags.** Hockey → Tools → **My tags** lets each member
+  tag players privately — PP1 / PP2 / No PP, Top 6 / Bottom 6 / Top 4 D /
+  Bottom pair / Starting or Backup goalie, **Keep** (never drop) and
+  **Watch** — with a short note. Stored per member at
+  `{SJ_HUB_DIR}/{league}/member_prefs/{emailHash}.json` via
+  `/api/leagues/{id}/member-prefs` (own file only). The member's tags drive
+  their decision tools: role / PP tags replace the automatic role, Keep is
+  protected from drop suggestions, Watch adds ★ and a Watchlist filter.
+  6'3"+ names show in bold magenta.
 - **H7 (landed): ESPN ownership.** `sj sync` (current hockey season) adds
   ESPN-wide `percent_owned` / `percent_change` (7-day) / `percent_started`
   to every rostered player and free agent (`sj.hockey_ownership`; failures

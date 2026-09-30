@@ -6,6 +6,7 @@ import {
   COMPARE_METRICS,
   MAX_GOALIES,
   PROTECT_OWNED,
+  TALL_INCHES,
   RISING_CHANGE,
   compareFreeAgents,
   depthChart,
@@ -76,12 +77,32 @@ function TeamPicker({
   );
 }
 
+/** H8 visual flag: 6'3"+ names in bold magenta (the height is also in the row). */
+export function PlayerName({ row }: { row: DecisionRow }) {
+  const tall = (row.bio?.heightIn ?? 0) >= TALL_INCHES;
+  return (
+    <>
+      {row.watched ? <span title="On your watchlist">★ </span> : null}
+      <span className={tall ? "tall-name" : undefined} title={tall ? "6'3\" or taller" : undefined}>
+        {row.player.name ?? "—"}
+      </span>
+      {row.player.durability?.iron_man ? <span title="Iron man: plays 95%+ of games"> 🦾</span> : null}
+      {row.tags
+        .filter((t) => t !== "Watch")
+        .map((t) => (
+          <span key={t} className="member-tag" title={row.note || "Your tag"}>
+            {t}
+          </span>
+        ))}
+    </>
+  );
+}
+
 function PlayerCell({ row }: { row: DecisionRow }) {
   const role = roleLabel(row.bio);
   return (
     <>
-      {row.player.name ?? "—"}
-      {row.player.durability?.iron_man ? <span title="Iron man: plays 95%+ of games"> 🦾</span> : null}
+      <PlayerName row={row} />
       <span className="league-meta">
         {" "}
         · {row.player.position ?? row.group}
@@ -98,7 +119,9 @@ function OwnedCell({ row }: { row: DecisionRow }) {
   const change = row.ownedChange;
   return (
     <>
-      {row.protected ? <span title={`Protected: ${PROTECT_OWNED}%+ of ESPN leagues`}>🔒 </span> : null}
+      {row.protected ? (
+        <span title={row.kept ? "You tagged this player Keep" : `Protected: ${PROTECT_OWNED}%+ of ESPN leagues`}>🔒 </span>
+      ) : null}
       {row.owned.toFixed(1)}
       {change != null && change !== 0 ? (
         <span className="league-meta" title="Change over the last 7 days">
@@ -144,7 +167,7 @@ export function WaiverBoardView({
     const params = new URLSearchParams();
     if (query.teamId != null) params.set("team", String(query.teamId));
     if (next.pos !== "all") params.set("pos", next.pos);
-    for (const k of ["healthy", "pp", "rookies", "tall", "iron", "rising"] as const) {
+    for (const k of ["healthy", "pp", "rookies", "tall", "iron", "rising", "watch"] as const) {
       if (next[k]) params.set(k, "1");
     }
     const q = params.toString();
@@ -177,6 +200,7 @@ export function WaiverBoardView({
         {chip(`6'3"+`, f.tall, { tall: !f.tall })}
         {chip("Iron men", f.iron, { iron: !f.iron })}
         {chip("Rising", f.rising, { rising: !f.rising })}
+        {chip("★ Watchlist", f.watch, { watch: !f.watch })}
       </div>
       <form method="get" action={`/leagues/${league.league_id}`}>
         <input type="hidden" name="season" value={league.season} />
@@ -507,8 +531,12 @@ export function DepthView({
                   )}${r.injured ? " · injured" : ""}`}
                 >
                   <span className="depth-bar-name">
-                    {r.protected ? <span title={`Protected: rostered in ${r.owned?.toFixed(0)}% of ESPN leagues`}>🔒 </span> : null}
-                    {r.player.name}
+                    {r.protected ? (
+                      <span title={r.kept ? "You tagged this player Keep" : `Protected: rostered in ${r.owned?.toFixed(0)}% of ESPN leagues`}>
+                        🔒{" "}
+                      </span>
+                    ) : null}
+                    <PlayerName row={r} />
                   </span>
                   <span className="depth-bar-track" aria-hidden="true">
                     <span className="depth-bar-fill" style={{ width: `${pct}%` }} />

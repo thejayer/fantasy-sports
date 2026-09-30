@@ -7,6 +7,14 @@ import { parseAnalysisSeriesMode } from "@/lib/baseball-analysis";
 import { parseBaseballToolsView, parseTrailingWindow } from "@/lib/baseball-tools";
 import { HOCKEY_DAILY_VIEWS, parseHockeyToolsView } from "@/lib/hockey-tools";
 import { parseDate } from "@/lib/hockey-daily";
+import { readMemberPrefs } from "@/lib/member-prefs-store";
+import { getViewer } from "@/lib/viewer";
+
+/** H8: the signed-in member's tags for this league, or null when anonymous. */
+async function readViewerHockeyPrefs(leagueId: string) {
+  const viewer = await getViewer();
+  return viewer.email ? readMemberPrefs(leagueId, viewer.email) : null;
+}
 import type { ActivityView } from "@/lib/activity";
 import {
   getDraftSimSnapshot,
@@ -88,6 +96,7 @@ type Props = {
     tall?: string;
     iron?: string;
     date?: string;
+    edit?: string;
   }>;
 };
 
@@ -146,6 +155,7 @@ export default async function LeagueDetailPage({ params, searchParams }: Props) 
     tall: tallParam,
     iron: ironParam,
     date: dateParam,
+    edit: editParam,
   } = await searchParams;
   const seasons = await getLeagueSeasons(leagueId);
   const season = seasonParam ? Number(seasonParam) : undefined;
@@ -232,6 +242,8 @@ export default async function LeagueDetailPage({ params, searchParams }: Props) 
   const hockeySchedule = hockeyDecisionTools
     ? await getHockeySchedule(league.league_id, league.season)
     : null;
+  // H8: the viewer's own private tags drive every hockey decision tool.
+  const hockeyMemberPrefs = hockeyDecisionTools ? await readViewerHockeyPrefs(league.league_id) : null;
   // H6 alerts: the injury log (ESPN + Daily Faceoff transitions).
   const hockeyInjuryLog =
     league.sport === "hockey" && tab === "tools" && hockeyToolsView === "alerts"
@@ -520,6 +532,8 @@ export default async function LeagueDetailPage({ params, searchParams }: Props) 
       hockeyDecisionQuery={league.sport === "hockey" ? hockeyDecisionQuery : undefined}
       hockeyTeamStrength={hockeyTeamStrength}
       hockeyInjuryLog={hockeyInjuryLog}
+      hockeyMemberPrefs={hockeyMemberPrefs}
+      hockeyEditId={editParam && /^\d{1,12}$/.test(editParam) ? editParam : null}
     />
   );
 }

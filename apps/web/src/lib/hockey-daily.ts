@@ -278,7 +278,7 @@ export function goalieBoard(ctx: DailyContext, date: string): GoalieRow[] {
   return Object.entries(ctx.values?.players ?? {})
     .filter(([, p]) => p.group === "G")
     .map(([id, p]) => {
-      const row = decisionRow(id, p, ctx.bios, ctx.schedule, ctx.start);
+      const row = decisionRow(id, p, ctx.bios, ctx.schedule, ctx.start, ctx.prefs?.players[id]);
       return { ...dayPlayer(row, date, ctx), owner: p.rostered ? p.fantasy_team_id : null };
     })
     .filter((r) => r.game != null)

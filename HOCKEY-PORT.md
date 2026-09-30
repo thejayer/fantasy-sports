@@ -415,13 +415,36 @@ stderr and never fail the sync. `build_values` copies ownership into
 - Yahoo is deferred: it needs a Yahoo developer app and an owner refresh
   token in Secret Manager, and Rinkside's call was never verified.
 
-### H8: personal layer
+### H8: personal layer — LANDED
 
 Per-member tags (PP1 / PP2 / No PP / Top 6 / Bottom 6 / Top 4 D / Bottom pair /
 Starting goalie / Backup goalie / Watch / Keep), note, Never drop list. Tags
 override automatic roles in the value model. Store per member (e.g.
 `member_prefs/{email}.json` in the hub store). Visual flags: data-source cell
 color, 6'3"+ bold magenta name, 🦾 iron man.
+
+**Landed as:** `lib/member-prefs.ts` (pure) + `lib/member-prefs-store.ts` →
+`{SJ_HUB_DIR}/{league}/member_prefs/{sha256(email)[:24]}.json` (per league,
+not per season — tags describe players; no address in any path). Private:
+`GET/POST /api/leagues/{id}/member-prefs` only ever touches the signed-in
+member's own file (401 when signed out; hockey leagues only).
+
+- Tags: at most one PP tag and one line tag per player (last wins), plus
+  **Keep** (= the Never-drop list) and **Watch**; note ≤ 280 chars; 500
+  players max.
+- Hockey → Tools → **My tags** (`view=tags`, `edit=` preselects a player):
+  a small client editor + the member's tagged players.
+- Every decision tool reads the viewer's tags: `taggedBios` puts PP / line
+  tags in place of the automatic role (so the PP filter and role labels
+  follow the member); **Keep** is protected like 85%+ ESPN ownership
+  (never the "weakest", Evaluate a move warns); **Watch** shows ★ and a
+  Waiver board **★ Watchlist** filter (`watch=1`).
+- "Override roles in the value model": the model's role adjustment is off
+  (H2b), so tags change what the member sees and what counts as a drop
+  candidate — never a player's value. The goalie start model still uses
+  Daily Faceoff / share of starts.
+- Visual flags: 6'3"+ names bold magenta (`.tall-name`, height also shown);
+  data-source cell colors (H2) and 🦾 (H3) were already in place.
 
 ## Reference map
 

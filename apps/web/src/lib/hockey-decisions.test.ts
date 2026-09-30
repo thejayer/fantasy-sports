@@ -292,3 +292,30 @@ describe("H7 ownership", () => {
     expect(compareFreeAgents(protectedCtx, ["21", "22"]).best.owned).toBe("21");
   });
 });
+
+describe("H8 member tags", () => {
+  const prefs = {
+    schema_version: 1 as const,
+    league_id: "hockey-main",
+    updated_at: "",
+    players: {
+      "11": { tags: ["Keep" as const], note: "never" },
+      "25": { tags: ["Watch" as const], note: "" },
+    },
+  };
+  const tagged: DecisionContext = { ...ctx, prefs };
+
+  it("Keep protects a player from being the weakest", () => {
+    const f = waiverBoard(tagged, 1).find((r) => r.espnId === "21")!;
+    expect(f.replaces?.espnId).toBe("12");
+    const move = evaluateMove(tagged, 1, "11", "21")!;
+    expect(move.warnings.join(" ")).toContain("You tagged P11 Keep");
+  });
+
+  it("filters to the watchlist and carries tags on rows", () => {
+    const rows = waiverBoard(tagged, 1, parseWaiverFilters({ watch: "1" }));
+    expect(rows.map((r) => r.espnId)).toEqual(["25"]);
+    expect(rows[0]!.watched).toBe(true);
+    expect(waiverBoard(ctx, 1, parseWaiverFilters({ watch: "1" }))).toEqual([]);
+  });
+});

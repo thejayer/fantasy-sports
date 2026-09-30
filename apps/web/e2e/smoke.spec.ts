@@ -688,6 +688,27 @@ test.describe("hub smoke", () => {
     await expect(page.getByText(/is nearing a return/).first()).toBeVisible();
   });
 
+  test("hockey My tags: watch a free agent, see it on the board, clear it (HOCKEY-PORT H8)", async ({
+    page,
+  }) => {
+    await page.goto("/leagues/hockey-main?tab=tools&view=tags");
+    const picker = page.locator(".tag-editor select").first();
+    const value = await picker.locator("option", { hasText: "FA)" }).first().getAttribute("value");
+    await picker.selectOption(value!);
+    await page.getByLabel("Watch").check();
+    await page.getByRole("button", { name: "Save", exact: true }).click();
+    await expect(page.getByRole("status")).toHaveText("Saved.");
+    await expect(page.getByRole("heading", { name: /Tagged players \(1\)/ })).toBeVisible();
+
+    await page.goto("/leagues/hockey-main?tab=tools&view=waivers&watch=1");
+    await expect(page.locator('td[data-label="Player"]', { hasText: "★" })).toHaveCount(1);
+
+    // Clean up so reruns start empty.
+    await page.goto(`/leagues/hockey-main?tab=tools&view=tags&edit=${value}`);
+    await page.getByRole("button", { name: "Clear tags" }).click();
+    await expect(page.getByRole("heading", { name: /Tagged players \(0\)/ })).toBeVisible();
+  });
+
   test("hockey roster and waivers show NHL bio + ice time (HOCKEY-PORT H1)", async ({
     page,
   }) => {
