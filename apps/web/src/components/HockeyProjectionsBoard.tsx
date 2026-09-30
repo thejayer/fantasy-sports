@@ -175,7 +175,7 @@ export function HockeyProjectionsBoard({ leagueId, season, snapshot, query, team
                     {isOpen ? "Hide inputs" : "Inputs"}
                   </Link>
                 </td>
-                <td data-label="Pos">{row.position ?? row.group}</td>
+                <td data-label="Pos">{row.group}</td>
                 <td data-label="Team">{row.nhl_team ?? "—"}</td>
                 <td data-label="Owner">
                   {row.rostered

@@ -193,7 +193,7 @@ export function LineupView({
               <tr key={p.row.espnId}>
                 <td data-label="Player">
                   {p.row.player.name}
-                  <span className="league-meta"> · {p.row.player.position ?? p.row.group}</span>
+                  <span className="league-meta"> · {p.row.group}</span>
                 </td>
                 <td data-label="Game">{gameText(p)}</td>
                 <td className="numeric" data-label="Expected">
@@ -362,7 +362,7 @@ export function StreamingView({
                   {w.row.player.name}
                   <span className="league-meta">
                     {" "}
-                    · {w.row.player.position ?? w.row.group} · {w.row.player.nhl_team ?? "—"}
+                    · {w.row.group} · {w.row.player.nhl_team ?? "—"}
                   </span>
                 </td>
                 <td className="numeric" data-label="Adds">

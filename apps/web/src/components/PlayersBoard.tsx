@@ -19,6 +19,7 @@ import {
   queryPlayerTable,
 } from "@/lib/player-table";
 import type { SortDirection } from "@/lib/table";
+import { hockeyGroup } from "@/lib/hockey-position";
 
 function StatusDot({ row }: { row: SlimPlayerRow }) {
   const stub: Player = {
@@ -126,7 +127,12 @@ export function PlayersBoard({
       projectionCoverage.mapped < projectionCoverage.total,
   );
   const useProj = showProjections && sport === "football" && !noCoverage;
-  const result = queryPlayerTable(players, query);
+  // SJ Hockey lineups are F / D / G only: filter chips and cells follow suit.
+  const rows =
+    sport === "hockey"
+      ? players.map((p) => ({ ...p, position: hockeyGroup(p.position) ?? p.position }))
+      : players;
+  const result = queryPlayerTable(rows, query);
   const rangeStart =
     result.filteredCount === 0
       ? 0

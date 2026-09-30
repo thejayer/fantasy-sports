@@ -720,6 +720,13 @@ test.describe("hub smoke", () => {
     }
     // Hockey no longer borrows football's projection columns.
     await expect(page.getByRole("columnheader", { name: "Floor" })).toHaveCount(0);
+    // SJ Hockey is F / D / G only: one Position column, no C/LW/RW or Slot.
+    await expect(page.getByRole("columnheader", { name: "Position", exact: true })).toBeVisible();
+    await expect(page.getByRole("columnheader", { name: "Slot", exact: true })).toHaveCount(0);
+    await expect(page.getByRole("columnheader", { name: "Pos", exact: true })).toHaveCount(0);
+    const cells = await page.locator('td[data-label="Position"]').allTextContents();
+    expect(cells.length).toBeGreaterThan(0);
+    expect(cells.every((c) => /^[FDG]( · (Bench|IR))?$/.test(c.trim()))).toBe(true);
     // Height renders from nhl_context.json (e.g. 6'1").
     await expect(page.locator('td[data-label="Ht"]', { hasText: /\d'\d+"/ }).first()).toBeVisible();
 
