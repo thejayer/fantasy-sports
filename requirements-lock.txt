@@ -43,7 +43,7 @@ duckdb==1.5.5
     # via ffa (pyproject.toml)
 espn-api==0.46.0
     # via ffa (pyproject.toml)
-google-api-core==2.33.0
+google-api-core==2.40.0
     # via
     #   google-cloud-core
     #   google-cloud-storage
