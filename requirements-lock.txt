@@ -105,7 +105,7 @@ numpy==2.4.6
     #   scikit-learn
     #   scipy
     #   streamlit
-packaging==26.2
+packaging==26.3
     # via
     #   altair
     #   pytest
