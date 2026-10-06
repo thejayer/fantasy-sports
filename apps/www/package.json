@@ -12,7 +12,7 @@
     "test:e2e": "playwright test e2e/smoke.spec.ts"
   },
   "dependencies": {
-    "next": "^16.3.4",
+    "next": "^16.3.6",
     "react": "^19.0.0",
     "react-dom": "^19.0.0"
   },
@@ -27,7 +27,7 @@
     "vitest": "^4.1.11"
   },
   "overrides": {
-    "brace-expansion": "^5.0.8",
+    "brace-expansion": "^5.0.12",
     "js-yaml": "^4.3.2",
     "minimatch": "^10.2.6",
     "postcss": "^8.5.23",
