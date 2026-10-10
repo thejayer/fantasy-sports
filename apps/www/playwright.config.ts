@@ -32,6 +32,9 @@ export default defineConfig({
         `cp -R "${path.join(appRoot, "public")}/." "${path.join(standaloneRoot, "apps/www/public")}/"; ` +
         `fi`,
       `cp -R "${path.join(appRoot, "public")}" "${path.join(standaloneRoot, "public")}" 2>/dev/null || true`,
+      `mkdir -p "${path.join(standaloneRoot, "fixtures")}" "${path.join(standaloneRoot, "apps/www/fixtures")}"`,
+      `cp -R "${path.join(appRoot, "fixtures")}/." "${path.join(standaloneRoot, "fixtures")}/"`,
+      `cp -R "${path.join(appRoot, "fixtures")}/." "${path.join(standaloneRoot, "apps/www/fixtures")}/"`,
       `node "${standaloneServer}"`,
     ].join(" && "),
     cwd: standaloneRoot,
@@ -43,6 +46,10 @@ export default defineConfig({
       HOSTNAME: "127.0.0.1",
       PORT: String(port),
       SITE_URL: baseURL,
+      AUTH_URL: process.env.AUTH_URL ?? baseURL,
+      AUTH_SECRET: process.env.AUTH_SECRET ?? "ci-www-secret",
+      AUTH_TRUST_HOST: "true",
+      SJ_BETS_DIR: path.join(appRoot, "fixtures/bets"),
       FANTASY_HUB_URL:
         process.env.FANTASY_HUB_URL ?? "https://fantasy.strictlyjayers.com",
       FITNESS_URL:

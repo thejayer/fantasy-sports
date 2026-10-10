@@ -185,6 +185,9 @@ Next:
 Hockey lines + starting goalies refresh at 15:00 and 17:30 (${TIME_ZONE}) via
 sj-hockey-lines-* (args nhl-lines). Skip with SJ_HOCKEY_LINES=0.
 
+Bet tracker (portal /bets): ./scripts/setup-bets-infra.sh creates
+sj-bets-reader + sj-bets-trigger (32 9-23/2, ${TIME_ZONE}).
+
 The scheduler runs "${SCHEDULE}" (${TIME_ZONE}). Override with SJ_SCHEDULE
 (and optional SJ_TIMEZONE), or:
   gcloud scheduler jobs update http ${SCHEDULER_JOB} \\

@@ -83,6 +83,16 @@ def nhl_rel(league_id: str, season: int, name: str) -> str:
     return f"{season_dir_rel(league_id, season)}/nhl/{safe}.json"
 
 
+def bets_rel(name: str) -> str:
+    """Side-concern bet tracker JSON (portal /bets, roadmap P.11).
+
+    Stored at the store root (``bets/bets.json``, ``bets/summary.json``) — not
+    a league-season path. Not listed in ``manifest.files``.
+    """
+    safe = str(name).strip().replace("..", "").replace("/", "")
+    return f"bets/{safe}.json"
+
+
 def manifest_rel(league_id: str, season: int) -> str:
     return f"{season_dir_rel(league_id, season)}/{MANIFEST_NAME}"
 
