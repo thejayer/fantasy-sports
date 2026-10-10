@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 import { encryptSecret } from "@/lib/crypto";
 import { fetchGithubUser } from "@/lib/github";
 import { exchangeGithubCode, readOauthState } from "@/lib/github-oauth";
+import { getVibeActor } from "@/lib/session";
 import { getVibeSiteConfig } from "@/lib/site";
 import { mutateVibeDocument } from "@/lib/vibe-store";
 
@@ -14,14 +15,15 @@ export async function GET(request: Request) {
   const code = url.searchParams.get("code");
   const state = url.searchParams.get("state");
   const parsed = state ? readOauthState(state) : null;
-  if (!code || !parsed) {
+  const actor = await getVibeActor();
+  if (!code || !parsed || !actor || actor.email !== parsed.email) {
     return NextResponse.redirect(`${site}/settings?error=github-denied`);
   }
   try {
     const token = await exchangeGithubCode(code);
     const user = await fetchGithubUser(token);
     await mutateVibeDocument(
-      { email: parsed.email, name: user.login, image: null, source: "session" },
+      { ...actor, name: user.login },
       (doc) => ({
         ...doc,
         github: {

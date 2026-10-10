@@ -15,6 +15,8 @@ describe("token encryption", () => {
 
   it("rejects a tampered payload", () => {
     const enc = encryptSecret("github_pat_secret", KEY);
-    expect(() => decryptSecret(enc.replace(/.$/, "x"), KEY)).toThrow();
+    const [iv, data, tag] = enc.split(".");
+    const flipped = tag && tag[0] === "A" ? "B" : "A";
+    expect(() => decryptSecret(`${iv}.${data}.${flipped}${tag?.slice(1)}`, KEY)).toThrow();
   });
 });

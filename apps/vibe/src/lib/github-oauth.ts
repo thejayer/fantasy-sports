@@ -4,8 +4,15 @@ import { getVibeSiteConfig } from "@/lib/site";
 
 const STATE_TTL_MS = 15 * 60 * 1000;
 
-function stateSecret(): string {
-  return process.env.AUTH_SECRET || process.env.SJ_VIBE_TOKEN_KEY || "dev-vibe";
+export function stateSecret(
+  env: Record<string, string | undefined> = process.env,
+): string {
+  const secret = env.AUTH_SECRET || env.SJ_VIBE_TOKEN_KEY;
+  if (secret) return secret;
+  if (env.NODE_ENV === "production") {
+    throw new Error("AUTH_SECRET or SJ_VIBE_TOKEN_KEY is not set");
+  }
+  return "dev-vibe";
 }
 
 export function githubRedirectUri(): string {

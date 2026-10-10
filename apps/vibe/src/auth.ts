@@ -30,6 +30,10 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       if (!email) {
         return false;
       }
+      const verified = (profile as { email_verified?: unknown }).email_verified;
+      if (verified !== true) {
+        return false;
+      }
       return emailOnAllowlist(email);
     },
   },

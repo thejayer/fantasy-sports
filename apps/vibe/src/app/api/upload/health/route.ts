@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 
 import {
+  MAX_HEALTH_UPLOAD_BYTES,
   createAppleHealthWorkoutScanner,
   extractExportXmlFromZip,
   parseAppleHealthWorkouts,
@@ -23,20 +24,34 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "file required" }, { status: 400 });
   }
 
+  if (file.size > MAX_HEALTH_UPLOAD_BYTES) {
+    return NextResponse.json(
+      { error: `file too large (max ${MAX_HEALTH_UPLOAD_BYTES} bytes)` },
+      { status: 413 },
+    );
+  }
+
   const name = file.name.toLowerCase();
   const buf = Buffer.from(await file.arrayBuffer());
   let xml: string;
-  if (name.endsWith(".zip") || buf.subarray(0, 2).toString() === "PK") {
-    const extracted = extractExportXmlFromZip(buf);
-    if (!extracted) {
-      return NextResponse.json(
-        { error: "export.xml not found in zip" },
-        { status: 400 },
-      );
+  try {
+    if (name.endsWith(".zip") || buf.subarray(0, 2).toString() === "PK") {
+      const extracted = extractExportXmlFromZip(buf);
+      if (!extracted) {
+        return NextResponse.json(
+          { error: "export.xml not found in zip" },
+          { status: 400 },
+        );
+      }
+      xml = extracted;
+    } else {
+      xml = buf.toString("utf8");
     }
-    xml = extracted;
-  } else {
-    xml = buf.toString("utf8");
+  } catch {
+    return NextResponse.json(
+      { error: "could not read export.xml (zip too large or corrupt)" },
+      { status: 400 },
+    );
   }
 
   const scanner = createAppleHealthWorkoutScanner();

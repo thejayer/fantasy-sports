@@ -2,6 +2,7 @@ import type { CodingEvent, CodingKind } from "@/lib/vibe-document";
 
 export const GITHUB_API = "https://api.github.com";
 export const GITHUB_STALE_MS = 30 * 60 * 1000;
+export const GITHUB_FETCH_MS = 20_000;
 
 export type GithubUser = {
   login: string;
@@ -19,6 +20,14 @@ function header(token: string): Record<string, string> {
     Authorization: `Bearer ${token}`,
     "X-GitHub-Api-Version": "2022-11-28",
     "User-Agent": "strictly-jayers-vibe",
+  };
+}
+
+function githubInit(token: string, init?: RequestInit): RequestInit {
+  return {
+    ...init,
+    headers: { ...header(token), ...(init?.headers ?? {}) },
+    signal: init?.signal ?? AbortSignal.timeout(GITHUB_FETCH_MS),
   };
 }
 
@@ -44,6 +53,17 @@ export function githubEventId(
   extra: string,
 ): string {
   return `gh:${kind}:${repo}:${at}:${extra}`.slice(0, 180);
+}
+
+/** Stable across PushEvent + search-commits so one SHA scores once. */
+export function githubCommitId(
+  repo: string,
+  sha: string | null | undefined,
+  fallbackAt: string,
+  fallbackExtra: string,
+): string {
+  if (sha) return `gh:commit:${repo}:${sha}`.slice(0, 180);
+  return githubEventId("commit", fallbackAt, repo, fallbackExtra);
 }
 
 type RawEvent = {
@@ -89,11 +109,11 @@ export function normalizeGithubUserEvent(raw: RawEvent): CodingEvent[] {
       ];
     }
     return commits.map((commit) => ({
-      id: githubEventId(
-        "commit",
-        created,
+      id: githubCommitId(
         repo,
-        commit.sha || commit.message || "",
+        commit.sha,
+        created,
+        commit.message || "",
       ),
       kind: "commit" as const,
       at: created,
@@ -199,7 +219,7 @@ export function normalizeSearchCommit(raw: SearchCommit): CodingEvent | null {
   const repo = raw.repository?.full_name || "unknown";
   if (!sha || !at) return null;
   return {
-    id: githubEventId("commit", at, repo, sha),
+    id: githubCommitId(repo, sha, at, sha),
     kind: "commit",
     at,
     repo,
@@ -215,9 +235,7 @@ export async function fetchGithubUser(
   token: string,
   fetchImpl: GithubFetch = fetch,
 ): Promise<GithubUser> {
-  const res = await fetchImpl(`${GITHUB_API}/user`, {
-    headers: header(token),
-  });
+  const res = await fetchImpl(`${GITHUB_API}/user`, githubInit(token));
   const body = await readJson<{ login?: string; id?: number }>(res);
   if (!body.login || !body.id) throw new Error("GitHub user missing login");
   return { login: body.login, id: body.id };
@@ -232,7 +250,7 @@ export async function fetchGithubEvents(
   const out: CodingEvent[] = [];
   let url: string | null = `${GITHUB_API}/user/events?per_page=100`;
   for (let page = 0; page < maxPages && url; page += 1) {
-    const res = await fetchImpl(url, { headers: header(token) });
+    const res = await fetchImpl(url, githubInit(token));
     const rows = await readJson<RawEvent[]>(res);
     for (const row of rows) out.push(...normalizeGithubUserEvent(row));
     url = nextLink(res.headers.get("link"));
@@ -255,7 +273,7 @@ export async function searchGithubCommits(
   const out: CodingEvent[] = [];
   for (let page = 1; page <= maxPages; page += 1) {
     const url = `${GITHUB_API}/search/commits?q=${q}&sort=author-date&order=desc&per_page=100&page=${page}`;
-    const res = await fetchImpl(url, { headers: header(token) });
+    const res = await fetchImpl(url, githubInit(token));
     const body = await readJson<{ items?: SearchCommit[] }>(res);
     const items = body.items ?? [];
     for (const item of items) {
@@ -294,7 +312,7 @@ export async function fillCommitStats(
     try {
       const res = await fetchImpl(
         `${GITHUB_API}/repos/${event.repo}/commits/${event.sha}`,
-        { headers: header(token) },
+        githubInit(token),
       );
       const body = await readJson<CommitDetail>(res);
       out.push({

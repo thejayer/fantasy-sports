@@ -40,9 +40,7 @@ function fromRow(raw: unknown): AgentRun | null {
     (typeof row.title === "string" && row.title.trim()) ||
     null;
   return {
-    id:
-      (typeof row.id === "string" && row.id.trim()) ||
-      runId(start.toISOString(), end.toISOString(), label),
+    id: runId(start.toISOString(), end.toISOString(), label),
     start: start.toISOString(),
     end: end.toISOString(),
     label,

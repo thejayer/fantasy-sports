@@ -63,4 +63,19 @@ describe("GitHub event normalization", () => {
     expect(merged).toHaveLength(1);
     expect(merged[0]?.additions).toBe(48);
   });
+
+  it("keys PushEvent and search-commits by repo+sha so one commit scores once", () => {
+    const fromPush = normalizeGithubUserEvent(events[0]!)[0]!;
+    const fromSearch = normalizeSearchCommit({
+      sha: fromPush.sha ?? "abc123",
+      html_url: fromPush.url,
+      commit: {
+        message: fromPush.title,
+        author: { date: "2026-10-09T11:04:00Z" },
+      },
+      repository: { full_name: fromPush.repo },
+    });
+    expect(fromSearch?.id).toBe(fromPush.id);
+    expect(mergeCodingEvents([fromPush], [fromSearch!])).toHaveLength(1);
+  });
 });

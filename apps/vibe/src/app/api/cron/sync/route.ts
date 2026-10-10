@@ -1,3 +1,4 @@
+import { timingSafeEqual } from "crypto";
 import { NextResponse } from "next/server";
 
 import { githubIsStale } from "@/lib/github";
@@ -7,12 +8,19 @@ import { syncGithubForActor } from "@/lib/sync-github";
 export const dynamic = "force-dynamic";
 export const maxDuration = 60;
 
+function secretsEqual(presented: string, expected: string): boolean {
+  const a = Buffer.from(presented);
+  const b = Buffer.from(expected);
+  if (a.length === 0 || a.length !== b.length) return false;
+  return timingSafeEqual(a, b);
+}
+
 function cronAuthorized(request: Request): boolean {
   const secret = process.env.CRON_SECRET?.trim();
   if (!secret) return false;
   const auth = request.headers.get("authorization") || "";
   const token = auth.replace(/^bearer\s+/i, "").trim();
-  return token === secret;
+  return secretsEqual(token, secret);
 }
 
 /**
@@ -26,21 +34,32 @@ export async function POST(request: Request) {
   const emails = await listVibeUserEmails();
   let synced = 0;
   let skipped = 0;
+  let failed = 0;
   for (const email of emails) {
-    const doc = await readVibeDocument(email);
-    if (!doc?.github.access_token_enc) {
-      skipped += 1;
-      continue;
+    try {
+      const doc = await readVibeDocument(email);
+      if (!doc?.github.access_token_enc) {
+        skipped += 1;
+        continue;
+      }
+      if (!githubIsStale(doc.github.last_sync_at)) {
+        skipped += 1;
+        continue;
+      }
+      await syncGithubForActor(
+        { email, name: doc.display_name, image: doc.image_url, source: "session" },
+        { force: true },
+      );
+      synced += 1;
+    } catch {
+      failed += 1;
     }
-    if (!githubIsStale(doc.github.last_sync_at)) {
-      skipped += 1;
-      continue;
-    }
-    await syncGithubForActor(
-      { email, name: doc.display_name, image: doc.image_url, source: "session" },
-      { force: true },
-    );
-    synced += 1;
   }
-  return NextResponse.json({ ok: true, synced, skipped, users: emails.length });
+  return NextResponse.json({
+    ok: true,
+    synced,
+    skipped,
+    failed,
+    users: emails.length,
+  });
 }

@@ -21,7 +21,7 @@ cd apps/vibe && cp .env.example .env.local
 npm install && npm run dev
 # http://localhost:3005
 
-cd apps/vibe && npm test && npm run build && npm run test:e2e
+npm test && npm run build && npm run test:e2e
 AUTH_DEV_BYPASS=0 npm run test:e2e:auth
 ```
 

@@ -13,6 +13,11 @@ import type { Workout } from "@/lib/vibe-document";
 
 const WORKOUT_TAG = /<Workout\b([^>]*?)(\/?)>/g;
 
+/** Reject Health uploads before buffering. Apple exports can be large; this is the Cloud Run cap. */
+export const MAX_HEALTH_UPLOAD_BYTES = 80 * 1024 * 1024;
+/** Cap inflated `export.xml` so a zip bomb cannot exhaust the instance. */
+export const MAX_EXPORT_XML_BYTES = 256 * 1024 * 1024;
+
 function attr(attrs: string, name: string): string | null {
   const match = attrs.match(new RegExp(`${name}="([^"]*)"`));
   return match ? decodeXml(match[1]) : null;
@@ -192,7 +197,9 @@ export function extractExportXmlFromZip(buf: Buffer): string | null {
       const data = buf.subarray(dataStart, dataEnd);
       if (method === 0) return data.toString("utf8");
       if (method === 8) {
-        return inflateRawSync(data).toString("utf8");
+        return inflateRawSync(data, {
+          maxOutputLength: MAX_EXPORT_XML_BYTES,
+        }).toString("utf8");
       }
       throw new Error(`unsupported zip compression method ${method}`);
     }
