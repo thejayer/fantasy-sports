@@ -3,6 +3,7 @@ import type { Session } from "next-auth";
 
 import { auth } from "@/auth";
 import { normalizeEmail } from "@/lib/allowlist";
+import { emailOnAllowlist } from "@/lib/auth-gate";
 import { DEFAULT_CALLBACK_URL, safeCallbackUrl } from "@/lib/safe-redirect";
 
 export type BetsActor = {
@@ -53,7 +54,10 @@ export async function getBetsActor(): Promise<BetsActor | null> {
   }
   const session = await auth();
   if (!session?.user) return null;
-  return actorFromSession(session);
+  const actor = actorFromSession(session);
+  if (!actor) return null;
+  if (!(await emailOnAllowlist(actor.email))) return null;
+  return actor;
 }
 
 /** Second authorization layer — pages must not rely on middleware alone. */

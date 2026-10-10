@@ -8,6 +8,7 @@ import path from "path";
 
 import type { BetsDocument, BetRow } from "@/lib/bets";
 import { betsDataRoots } from "@/lib/paths";
+import { getBetsActor } from "@/lib/session";
 
 function isBetRow(value: unknown): value is BetRow {
   if (!value || typeof value !== "object") return false;
@@ -28,6 +29,9 @@ function parseDocument(raw: string): BetsDocument | null {
 
 export async function getBetsDocument(): Promise<BetsDocument> {
   const empty: BetsDocument = { bets: [] };
+  if (!(await getBetsActor())) {
+    return empty;
+  }
   for (const root of betsDataRoots()) {
     const filePath = path.join(root, "bets.json");
     try {
