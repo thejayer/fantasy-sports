@@ -12,6 +12,7 @@ Fitness restyles the training-log PWA onto the same tokens (`FITNESS.md`).
 | `strictlyjayers.com` (and `www`) | `apps/www` | `sj-www` | Public community front door |
 | `fantasy.strictlyjayers.com` | `apps/web` | `sj-hub` | Authenticated member hub |
 | `fitness.strictlyjayers.com` | `apps/fitness` | `sj-fitness` | Local-first training log |
+| `vibe.strictlyjayers.com` | `apps/vibe` | `sj-vibe` | Coded-while-lifting |
 
 ## Why two hosts
 

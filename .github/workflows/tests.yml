@@ -246,6 +246,83 @@ jobs:
       - name: Audit dependencies
         run: npm audit --audit-level=high
 
+  # Vibe Split — apps/vibe. Sibling Cloud Run host.
+  vibe:
+    name: vibe
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    defaults:
+      run:
+        working-directory: apps/vibe
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: "22"
+          cache: "npm"
+          cache-dependency-path: apps/vibe/package-lock.json
+
+      - name: Install from the lockfile
+        run: npm ci
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Unit tests
+        run: npm test
+
+      - name: Build
+        run: npm run build
+        env:
+          SITE_URL: https://vibe.strictlyjayers.com
+          AUTH_URL: https://vibe.strictlyjayers.com
+          AUTH_SECRET: ci-vibe-secret
+          COMMUNITY_SITE_URL: https://strictlyjayers.com
+          FANTASY_HUB_URL: https://fantasy.strictlyjayers.com
+          FITNESS_URL: https://fitness.strictlyjayers.com
+          SJ_VIBE_TOKEN_KEY: "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef"
+
+      - name: Cache Playwright browsers
+        uses: actions/cache@v6
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-vibe-${{ runner.os }}-${{ hashFiles('apps/vibe/package-lock.json') }}
+
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: Vibe smoke
+        run: npm run test:e2e
+        env:
+          SITE_URL: http://127.0.0.1:3005
+          AUTH_URL: http://127.0.0.1:3005
+          AUTH_SECRET: ci-vibe-secret
+          AUTH_DEV_BYPASS: "1"
+          SJ_DEV_VIEWER_EMAIL: demo@example.com
+          SJ_VIBE_TOKEN_KEY: "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef"
+          COMMUNITY_SITE_URL: https://strictlyjayers.com
+          FANTASY_HUB_URL: https://fantasy.strictlyjayers.com
+          FITNESS_URL: https://fitness.strictlyjayers.com
+
+      - name: Vibe auth wall
+        run: npm run test:e2e:auth
+        env:
+          SITE_URL: http://127.0.0.1:3006
+          AUTH_URL: http://127.0.0.1:3006
+          AUTH_SECRET: ci-vibe-secret
+          AUTH_DEV_BYPASS: "0"
+          SJ_VIBE_TOKEN_KEY: "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef"
+          COMMUNITY_SITE_URL: https://strictlyjayers.com
+          FANTASY_HUB_URL: https://fantasy.strictlyjayers.com
+          FITNESS_URL: https://fitness.strictlyjayers.com
+
+      - name: Audit dependencies
+        run: npm audit --omit=dev --audit-level=high
+
   # Roadmap 1.2 — Playwright smoke against next start + fixtures.
   # Separate from `web` so Chromium install does not inflate the unit/build job.
   # Not required by branch protection yet; enable once stable on main.
@@ -323,13 +400,16 @@ jobs:
       - name: Build fitness image
         run: docker build -f apps/fitness/Dockerfile -t sj-fitness:ci .
 
+      - name: Build vibe image
+        run: docker build -f apps/vibe/Dockerfile -t sj-vibe:ci .
+
       - name: Build sync image
         run: docker build -f Dockerfile.sync -t sj-sync:ci .
 
       - name: Assert images do not run as root
         run: |
           status=0
-          for image in sj-hub:ci sj-www:ci sj-fitness:ci sj-sync:ci; do
+          for image in sj-hub:ci sj-www:ci sj-fitness:ci sj-vibe:ci sj-sync:ci; do
             uid="$(docker run --rm --entrypoint id "$image" -u)"
             if [ "$uid" = "0" ]; then
               echo "::error::$image runs as root (uid 0)"
@@ -428,5 +508,30 @@ jobs:
             sleep 1
           done
           echo "::error::fitness did not respond on :8080 with Cloud Run-like HOSTNAME"
+          docker logs "$cid" || true
+          exit 1
+
+      - name: Smoke vibe listens with Cloud Run-like HOSTNAME
+        run: |
+          cid="$(docker run -d \
+            -e PORT=8080 \
+            -e HOSTNAME=sj-vibe-ci-fake-instance \
+            -e SITE_URL=https://vibe.strictlyjayers.com \
+            -e COMMUNITY_SITE_URL=https://strictlyjayers.com \
+            -e FANTASY_HUB_URL=https://fantasy.strictlyjayers.com \
+            -e FITNESS_URL=https://fitness.strictlyjayers.com \
+            -p 18083:8080 \
+            sj-vibe:ci)"
+          cleanup() { docker rm -f "$cid" >/dev/null 2>&1 || true; }
+          trap cleanup EXIT
+          for i in $(seq 1 30); do
+            code="$(curl -sS -o /dev/null -w '%{http_code}' http://127.0.0.1:18083/api/health || true)"
+            if [ "$code" = "200" ]; then
+              echo "vibe health responded HTTP $code"
+              exit 0
+            fi
+            sleep 1
+          done
+          echo "::error::vibe did not respond on :8080 with Cloud Run-like HOSTNAME"
           docker logs "$cid" || true
           exit 1

@@ -2,7 +2,7 @@
 
 ## Cursor Cloud specific instructions
 
-This is a multi-product monorepo. See `README.md` (ffa engine), `HUB.md` (member hub), and `PORTAL.md` (apex community site) for standard commands; only non-obvious startup/run caveats are captured here.
+This is a multi-product monorepo. See `README.md` (ffa engine), `HUB.md` (member hub), `PORTAL.md` (apex community site), `FITNESS.md`, and `VIBE.md` for standard commands; only non-obvious startup/run caveats are captured here.
 
 - **Planning docs:** `AUDIT.md` (security/correctness baseline, phases 0–6 — largely closed), `AUDIT-COMPETITIVE.md` (feature + UI/UX gaps vs ESPN / Yahoo / Sleeper / FantasyPros, drives phase 7), `ROADMAP.md` (phases 0–9 + portal track P). Before proposing hub product work, check whether it is already a numbered roadmap item and use that number in the branch/PR.
 
@@ -10,6 +10,7 @@ This is a multi-product monorepo. See `README.md` (ffa engine), `HUB.md` (member
 - **Strictly Jayers hub** — Next.js member hub (`apps/web`) plus the ESPN sync CLI `sj` (`src/sj`).
 - **Community portal** — Next.js apex site (`apps/www`) at `strictlyjayers.com`; deep-links to `fantasy.strictlyjayers.com` and `fitness.strictlyjayers.com` (no Auth.js / no snapshot store).
 - **Fitness** — Next.js + static PWA (`apps/fitness`) at `fitness.strictlyjayers.com` (`sj-fitness`). Local: port 3003. Auth.js / Google + the same `ALLOWED_EMAILS` ∪ `hub_members.json` allowlist as the hub; per-user JSON under `SJ_FITNESS_DIR`. See `FITNESS.md`. Do not put the service worker on the apex.
+- **Vibe Split** — Next.js (`apps/vibe`) at `vibe.strictlyjayers.com` (`sj-vibe`). Local: port 3005. Same Auth.js Google + allowlist as the hub; per-user JSON under `SJ_VIBE_DIR` (`/app/data/sj/vibe/users/<email-hash>/vibe.json`). Health Auto Export ingest + GitHub sync. See `VIBE.md`. Do not mkdir/stat the FUSE mount in the entrypoint.
 
 ### Python env (venv)
 - Dependencies install into a virtualenv at `/workspace/.venv`. The update script creates it and installs from `requirements-lock.txt` then `pip install -e . --no-deps` (CI parity). `/workspace/.venv/bin` is prepended to `PATH` via `~/.bashrc`, so `ffa`, `sj`, `pytest`, and `ruff` work directly in a login shell; otherwise call them as `.venv/bin/<cmd>`.
