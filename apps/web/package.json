@@ -33,7 +33,7 @@
     "eslint-config-next": "16.3.8",
     "jsdom": "^29.1.1",
     "typescript": "^5",
-    "vitest": "^4.1.11"
+    "vitest": "^5.0.3"
   },
   "_overrides_note": [
     "Revisited under Next 16.3.8 (GHSA-5f7q-q25j-77w2 RCE on 16.0.0–16.3.7).",
