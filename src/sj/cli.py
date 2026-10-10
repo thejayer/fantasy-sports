@@ -501,7 +501,7 @@ def bets_cmd(
     sheet_id: str = typer.Option(
         "",
         "--sheet-id",
-        help="Google Sheet id (default: Trent & Steve 2026 tracker, or SJ_BETS_SHEET_ID).",
+        help="Drive file id (native Sheet or uploaded xlsx; default tracker, or SJ_BETS_SHEET_ID).",
     ),
     tab: str = typer.Option(
         "",
@@ -511,7 +511,7 @@ def bets_cmd(
     from_path: Path | None = typer.Option(
         None,
         "--from",
-        help="Read a local xlsx or Gamba JSON fixture instead of the Sheets API.",
+        help="Read a local xlsx or Gamba JSON fixture instead of Drive/Sheets.",
     ),
     store_dir: Path | None = typer.Option(
         None, help="Write bets/ here instead of the configured store."
@@ -519,9 +519,11 @@ def bets_cmd(
 ) -> None:
     """Refresh the Trent/Steve bet tracker JSON (roadmap P.11).
 
-    Reads the Bets tab (read-only Sheets API + ADC) unless ``--from`` points at
-    a local xlsx/JSON fixture. Writes ``bets/bets.json`` and ``bets/summary.json``
-    to the store (``SJ_GCS_BUCKET`` in prod). Formula tabs are ignored.
+    Reads the Bets tab unless ``--from`` points at a local xlsx/JSON fixture.
+    Live ingest looks up the Drive mimeType (read-only) and then uses the
+    Sheets API or downloads an uploaded .xlsx. Writes ``bets/bets.json`` and
+    ``bets/summary.json`` to the store (``SJ_GCS_BUCKET`` in prod). Formula
+    tabs are ignored.
     """
     import os
 

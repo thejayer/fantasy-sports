@@ -48,8 +48,15 @@ AUTH_DEV_BYPASS=0 npm run test:e2e:auth
 
 ## Bets ingest
 
-`sj bets` reads the Google Sheet Bets tab (read-only Sheets API + ADC) and
-writes `bets/bets.json` + `bets/summary.json` to the store
+`sj bets` looks up the Drive file's `mimeType` (read-only Drive + Sheets
+scopes via ADC) and then:
+
+- native Google Sheet (`application/vnd.google-apps.spreadsheet`) → Sheets API
+- uploaded `.xlsx` → `files.get?alt=media` + the same Bets-tab parser as `--from`
+
+The live tracker id is an uploaded `.xlsx` in Drive today — no conversion
+needed. Austin shares that file with the reader SA as Viewer. Writes
+`bets/bets.json` + `bets/summary.json` to the store
 (`gs://fantasy-sports-analytics-sj-data/bets/` when `SJ_GCS_BUCKET` is set).
 
 ```bash
@@ -57,13 +64,13 @@ writes `bets/bets.json` + `bets/summary.json` to the store
 sj bets --from tests/fixtures/bets/trent_steve_bet_tracker.xlsx \
   --store-dir apps/www/fixtures
 
-# Live sheet (needs the sheet shared with the job SA)
+# Live Drive file (xlsx or native Sheet; share with the job SA as Viewer)
 sj bets
 ```
 
-One-time GCP: `./scripts/setup-bets-infra.sh` (SA, Sheets API, scheduler
-`32 9-23/2 * * *` America/Chicago). Image updates ride
-**deploy sync job**. Share the sheet with
+One-time GCP: `./scripts/setup-bets-infra.sh` (SA, Drive + Sheets APIs,
+scheduler `32 9-23/2 * * *` America/Chicago). Image updates ride
+**deploy sync job**. Share the file with
 `sj-bets-reader@fantasy-sports-analytics.iam.gserviceaccount.com` as Viewer.
 
 ## Google OAuth (one-time, Austin)

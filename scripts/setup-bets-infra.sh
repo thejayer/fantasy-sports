@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # One-time infrastructure for the Trent / Steve bet tracker (roadmap P.11):
-#   - sj-bets-reader service account (share the Google Sheet with this email)
-#   - Sheets API
+#   - sj-bets-reader service account (share the Drive file with this email)
+#   - Drive API + Sheets API (xlsx download and native-Sheet fallback)
 #   - objectUser on the hub/ESPN bucket so the job can write bets/bets.json
 #   - Cloud Run job sj-bets (same image as sj-sync) + Scheduler at :32
 #
@@ -40,6 +40,7 @@ gcloud config set project "${PROJECT}" >/dev/null
 
 gcloud services enable \
   run.googleapis.com \
+  drive.googleapis.com \
   sheets.googleapis.com \
   storage.googleapis.com \
   cloudscheduler.googleapis.com \
@@ -105,8 +106,8 @@ Bet tracker infra ready.
 
 Austin still needs to:
 
-  1. Share the Google Sheet with ${BETS_SA} as Viewer
-       Sheet: Trent & Steve Bet Tracker — 2026 Football Season
+  1. Share the Drive file with ${BETS_SA} as Viewer (xlsx is fine — no conversion)
+       File: Trent & Steve Bet Tracker — 2026 Football Season
        id:    ${SHEET_ID}
   2. Add Google OAuth on the existing hub client:
        Authorized JavaScript origin:  https://strictlyjayers.com

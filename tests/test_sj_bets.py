@@ -1,16 +1,21 @@
-"""Bet tracker ingest + KPI math (roadmap P.11). Offline — no Sheets API."""
+"""Bet tracker ingest + KPI math (roadmap P.11). Offline — no Drive/Sheets."""
 
 from __future__ import annotations
 
 import json
 from pathlib import Path
 
+import pytest
+
 from sj.bets import (
+    SHEET_MIME,
+    XLSX_MIME,
     american_to_decimal,
     bettor_kpis,
     classify_parlay,
     dollar_pl,
     export_bets,
+    fetch_remote_rows,
     filter_bets,
     in_window,
     load_local_rows,
@@ -140,6 +145,50 @@ def test_xlsx_fixture_round_trip(tmp_path: Path):
     nfl = filter_bets(bets, window="nfl", sport="NFL")
     assert nfl
     assert all(in_window(b, "nfl") for b in nfl)
+
+
+def test_fetch_remote_dispatches_xlsx_via_drive_download(monkeypatch):
+    """Uploaded .xlsx uses files.get alt=media + the offline xlsx parser."""
+    monkeypatch.setattr("sj.bets.lookup_drive_mime", lambda *a, **k: XLSX_MIME)
+    monkeypatch.setattr("sj.bets.download_drive_file", lambda *a, **k: XLSX.read_bytes())
+
+    def boom(*_a, **_k):
+        raise AssertionError("Sheets API must not run for an uploaded xlsx")
+
+    monkeypatch.setattr("sj.bets.fetch_sheet_rows", boom)
+    bets, source = fetch_remote_rows("drive-file-id")
+    assert source == "drive-xlsx"
+    assert len(bets) >= 500
+    assert {b["who"] for b in bets} <= {"Trent", "Steve"}
+
+
+def test_fetch_remote_dispatches_native_sheet(monkeypatch):
+    canned = [
+        {
+            "id": "T-1",
+            "who": "Trent",
+            "res": "W",
+            "stake": 10,
+            "dec": 2.0,
+        }
+    ]
+    monkeypatch.setattr("sj.bets.lookup_drive_mime", lambda *a, **k: SHEET_MIME)
+    monkeypatch.setattr("sj.bets.fetch_sheet_rows", lambda *a, **k: canned)
+
+    def boom(*_a, **_k):
+        raise AssertionError("xlsx download must not run for a native Sheet")
+
+    monkeypatch.setattr("sj.bets.download_drive_file", boom)
+    monkeypatch.setattr("sj.bets.fetch_xlsx_rows", boom)
+    bets, source = fetch_remote_rows("native-sheet-id")
+    assert source == "sheets"
+    assert bets == canned
+
+
+def test_fetch_remote_rejects_unknown_mime(monkeypatch):
+    monkeypatch.setattr("sj.bets.lookup_drive_mime", lambda *a, **k: "application/pdf")
+    with pytest.raises(RuntimeError, match="Unsupported Drive mimeType"):
+        fetch_remote_rows("pdf-id")
 
 
 def test_gamba_row_passthrough():

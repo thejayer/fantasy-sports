@@ -1,11 +1,15 @@
 """Trent & Steve public-bet tracker — sheet ingest + KPI math (roadmap P.11).
 
-Reads the Bets tab (Google Sheets or a local xlsx/JSON fixture), normalizes
+Reads the Bets tab (Drive file or a local xlsx/JSON fixture), normalizes
 each row into the Gamba-shaped JSON the portal stores at ``bets/bets.json``,
 and computes records / ROI from those rows. Formula tabs and helper columns
 are ignored.
 
-Sheets API calls use ADC (the Cloud Run job SA). Tests never hit Google.
+Live ingest looks up the Drive ``mimeType`` (read-only) and then either
+calls the Sheets API (native spreadsheet) or downloads the uploaded
+``.xlsx`` (``files.get?alt=media``) and parses it with the same reader as
+``--from``. ADC uses ``drive.readonly`` + ``spreadsheets.readonly``.
+Tests never hit Google.
 """
 
 from __future__ import annotations
@@ -20,6 +24,7 @@ import urllib.request
 import zipfile
 from collections.abc import Iterable
 from datetime import date, datetime, timedelta, timezone
+from io import BytesIO
 from pathlib import Path
 from typing import Any
 from xml.etree import ElementTree as ET
@@ -29,7 +34,12 @@ from sj.store import write_bets
 
 DEFAULT_SHEET_ID = "1_F9HCU7uOPH5uo8cgXkxwKrvREolPid_ZoviVVcX3HU"
 DEFAULT_SHEET_TAB = "Bets"
+DRIVE_READONLY_SCOPE = "https://www.googleapis.com/auth/drive.readonly"
 SHEETS_READONLY_SCOPE = "https://www.googleapis.com/auth/spreadsheets.readonly"
+READONLY_SCOPES = (DRIVE_READONLY_SCOPE, SHEETS_READONLY_SCOPE)
+SHEET_MIME = "application/vnd.google-apps.spreadsheet"
+XLSX_MIME = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+DRIVE_FILE_URL = "https://www.googleapis.com/drive/v3/files/{file_id}"
 SHEETS_VALUES_URL = (
     "https://sheets.googleapis.com/v4/spreadsheets/{sheet_id}/values/{range_}"
 )
@@ -611,9 +621,19 @@ def _xlsx_cell_value(cell: ET.Element, shared: list[str]) -> Any:
     return text
 
 
-def read_xlsx_rows(path: Path | str, sheet_name: str = DEFAULT_SHEET_TAB) -> tuple[list[str], list[list[Any]]]:
+def read_xlsx_rows(
+    source: Path | str | bytes,
+    sheet_name: str = DEFAULT_SHEET_TAB,
+) -> tuple[list[str], list[list[Any]]]:
     """Read one worksheet as header + row lists (stdlib; no openpyxl)."""
-    with zipfile.ZipFile(path) as zf:
+    label = "xlsx"
+    zf_src: Path | str | BytesIO
+    if isinstance(source, (bytes, bytearray)):
+        zf_src = BytesIO(source)
+    else:
+        zf_src = source
+        label = str(source)
+    with zipfile.ZipFile(zf_src) as zf:
         wb = ET.fromstring(zf.read("xl/workbook.xml"))
         rels_root = ET.fromstring(zf.read("xl/_rels/workbook.xml.rels"))
         rels = {
@@ -628,7 +648,7 @@ def read_xlsx_rows(path: Path | str, sheet_name: str = DEFAULT_SHEET_TAB) -> tup
                 target = rels.get(rid or "")
                 break
         if not target:
-            raise FileNotFoundError(f"sheet {sheet_name!r} not in {path}")
+            raise FileNotFoundError(f"sheet {sheet_name!r} not in {label}")
         target = target.lstrip("/")
         if not target.startswith("xl/"):
             target = f"xl/{target}"
@@ -662,43 +682,118 @@ def load_local_rows(path: Path | str) -> list[dict[str, Any]]:
     return normalize_rows(rows, headers)
 
 
-def fetch_sheet_rows(
-    sheet_id: str = DEFAULT_SHEET_ID,
-    tab: str = DEFAULT_SHEET_TAB,
-    *,
-    opener=None,
-) -> list[dict[str, Any]]:
-    """Read the Bets tab via the Sheets API (readonly scope, ADC)."""
+def _adc_token(scopes: Iterable[str] = READONLY_SCOPES) -> str:
     try:
         import google.auth
         from google.auth.transport.requests import Request
     except ImportError as exc:  # pragma: no cover - image always has GCS extra
         raise RuntimeError(
-            "google-auth is required to read the sheet (sync image has it)"
+            "google-auth is required to read the tracker (sync image has it)"
         ) from exc
 
-    creds, _project = google.auth.default(scopes=[SHEETS_READONLY_SCOPE])
+    creds, _project = google.auth.default(scopes=list(scopes))
     if not creds.valid:
         creds.refresh(Request())
+    return creds.token
+
+
+def _http_get(url: str, *, token: str | None = None, opener=None, timeout: int = 30) -> bytes:
+    headers = {}
+    if token:
+        headers["Authorization"] = f"Bearer {token}"
+    req = urllib.request.Request(url, headers=headers)
+    fetch = opener or urllib.request.urlopen
+    try:
+        with fetch(req, timeout=timeout) as resp:
+            return resp.read()
+    except urllib.error.HTTPError as exc:
+        body = exc.read().decode("utf-8", errors="replace")[:400]
+        raise RuntimeError(f"Google API {exc.code}: {body}") from exc
+
+
+def lookup_drive_mime(
+    file_id: str,
+    *,
+    opener=None,
+    token: str | None = None,
+) -> str:
+    """Drive ``files.get`` mimeType (read-only)."""
+    token = token or _adc_token()
+    quoted = urllib.parse.quote(file_id, safe="")
+    qs = urllib.parse.urlencode({"fields": "id,name,mimeType", "supportsAllDrives": "true"})
+    url = f"{DRIVE_FILE_URL.format(file_id=quoted)}?{qs}"
+    payload = json.loads(_http_get(url, token=token, opener=opener).decode("utf-8"))
+    mime = str(payload.get("mimeType") or "").strip()
+    if not mime:
+        raise RuntimeError(f"Drive files.get returned no mimeType for {file_id}")
+    return mime
+
+
+def download_drive_file(
+    file_id: str,
+    *,
+    opener=None,
+    token: str | None = None,
+) -> bytes:
+    """Drive ``files.get?alt=media`` (read-only)."""
+    token = token or _adc_token()
+    quoted = urllib.parse.quote(file_id, safe="")
+    qs = urllib.parse.urlencode({"alt": "media", "supportsAllDrives": "true"})
+    url = f"{DRIVE_FILE_URL.format(file_id=quoted)}?{qs}"
+    return _http_get(url, token=token, opener=opener)
+
+
+def fetch_sheet_rows(
+    sheet_id: str = DEFAULT_SHEET_ID,
+    tab: str = DEFAULT_SHEET_TAB,
+    *,
+    opener=None,
+    token: str | None = None,
+) -> list[dict[str, Any]]:
+    """Read the Bets tab via the Sheets API (readonly scope, ADC)."""
+    token = token or _adc_token()
     range_ = urllib.parse.quote(f"{tab}!A:AD", safe="")
     url = SHEETS_VALUES_URL.format(sheet_id=sheet_id, range_=range_)
     url += "?valueRenderOption=UNFORMATTED_VALUE&dateTimeRenderOption=SERIAL_NUMBER"
-    req = urllib.request.Request(
-        url,
-        headers={"Authorization": f"Bearer {creds.token}"},
-    )
-    fetch = opener or urllib.request.urlopen
-    try:
-        with fetch(req, timeout=30) as resp:
-            payload = json.loads(resp.read().decode("utf-8"))
-    except urllib.error.HTTPError as exc:
-        body = exc.read().decode("utf-8", errors="replace")[:400]
-        raise RuntimeError(f"Sheets API {exc.code}: {body}") from exc
+    payload = json.loads(_http_get(url, token=token, opener=opener).decode("utf-8"))
     values = payload.get("values") or []
     if not values:
         return []
     headers, rows = values[0], values[1:]
     return normalize_rows(rows, headers)
+
+
+def fetch_xlsx_rows(
+    file_id: str = DEFAULT_SHEET_ID,
+    tab: str = DEFAULT_SHEET_TAB,
+    *,
+    opener=None,
+    token: str | None = None,
+) -> list[dict[str, Any]]:
+    """Download an uploaded .xlsx and parse the Bets tab."""
+    data = download_drive_file(file_id, opener=opener, token=token)
+    headers, rows = read_xlsx_rows(data, tab)
+    return normalize_rows(rows, headers)
+
+
+def fetch_remote_rows(
+    file_id: str = DEFAULT_SHEET_ID,
+    tab: str = DEFAULT_SHEET_TAB,
+    *,
+    opener=None,
+    mime_type: str | None = None,
+) -> tuple[list[dict[str, Any]], str]:
+    """Dispatch on Drive mimeType: native Sheet vs uploaded xlsx."""
+    mime = mime_type or lookup_drive_mime(file_id, opener=opener)
+    if mime == SHEET_MIME:
+        return fetch_sheet_rows(file_id, tab, opener=opener), "sheets"
+    if mime == XLSX_MIME:
+        return fetch_xlsx_rows(file_id, tab, opener=opener), "drive-xlsx"
+    raise RuntimeError(
+        f"Unsupported Drive mimeType {mime!r} for {file_id}. "
+        "Share a native Google Sheet or an uploaded .xlsx as Viewer; "
+        "no conversion is required."
+    )
 
 
 def export_bets(
@@ -714,8 +809,8 @@ def export_bets(
         bets = load_local_rows(from_path)
         src = source or f"fixture:{Path(from_path).name}"
     else:
-        bets = fetch_sheet_rows(sheet_id, tab)
-        src = source or "sheets"
+        bets, detected = fetch_remote_rows(sheet_id, tab)
+        src = source or detected
     document = build_document(bets, source=src)
     document["sheet_id"] = sheet_id
     document["tab"] = tab

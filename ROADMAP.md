@@ -1296,8 +1296,10 @@ Wired into the `www` CI job.
   tracker (Auth.js + the same `ALLOWED_EMAILS` ∪ `hub_members.json`
   allowlist as Fantasy / Fitness). Public apex routes stay ungated. No
   service worker on www.
-- Ingest: `sj bets` reads the shared Google Sheet Bets tab (Sheets API,
-  `sj-bets-reader` SA) and writes `bets/bets.json` + `bets/summary.json`.
+- Ingest: `sj bets` looks up the Drive file mimeType (`sj-bets-reader`
+  SA; Drive + Sheets read-only). Native Sheet → Sheets API; uploaded
+  `.xlsx` → `files.get?alt=media` + the offline Bets-tab parser. Writes
+  `bets/bets.json` + `bets/summary.json`.
   Scheduler `32 9-23/2` America/Chicago. Hub KPI math is from Bets rows
   only — formula tabs ignored. Ops: `./scripts/setup-bets-infra.sh`.
 

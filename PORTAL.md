@@ -70,7 +70,8 @@ destination list. Docs: [FITNESS.md](FITNESS.md).
 
 **Bets** lives at `/bets` (nav + home destination). Members-only tracker for
 public slips from Trent Attyah and Steve Will Do It. Same Google allowlist
-as Fantasy. Data is `sj bets` → `bets/bets.json` on the hub bucket. Docs:
+as Fantasy. Data is `sj bets` (Drive xlsx or native Sheet) → `bets/bets.json`
+on the hub bucket. Docs:
 [apps/www/README.md](apps/www/README.md) and `./scripts/setup-bets-infra.sh`.
 
 Home also ships a **Coming up** event strip and **Meet the crew** links into
