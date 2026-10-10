@@ -4,6 +4,9 @@
   font-weight: 400;
   font-style: normal;
   font-display: swap;
+  /* Local subset omits U+0020; keep space on the fallback face. */
+  unicode-range: U+0021-007E, U+00A0-00FF, U+0131, U+0152-0153, U+02C6, U+02DA,
+    U+02DC, U+2010-2027, U+2030-205E, U+20AC, U+2122;
 }
 
 @font-face {
@@ -12,6 +15,8 @@
   font-weight: 600;
   font-style: normal;
   font-display: swap;
+  unicode-range: U+0021-007E, U+00A0-00FF, U+0131, U+0152-0153, U+02C6, U+02DA,
+    U+02DC, U+2010-2027, U+2030-205E, U+20AC, U+2122;
 }
 
 @font-face {
@@ -20,6 +25,8 @@
   font-weight: 800;
   font-style: normal;
   font-display: swap;
+  unicode-range: U+0021-007E, U+00A0-00FF, U+0131, U+0152-0153, U+02C6, U+02DA,
+    U+02DC, U+2010-2027, U+2030-205E, U+20AC, U+2122;
 }
 
 :root {
