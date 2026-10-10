@@ -1291,6 +1291,16 @@ Wired into the `www` CI job.
   Spaceship click). Add the fitness origin/redirect to the existing Google
   OAuth client.
 
+### P.11 Bet tracker — LANDING
+- `/bets` on `apps/www`: members-only Trent Attyah vs Steve Will Do It
+  tracker (Auth.js + the same `ALLOWED_EMAILS` ∪ `hub_members.json`
+  allowlist as Fantasy / Fitness). Public apex routes stay ungated. No
+  service worker on www.
+- Ingest: `sj bets` reads the shared Google Sheet Bets tab (Sheets API,
+  `sj-bets-reader` SA) and writes `bets/bets.json` + `bets/summary.json`.
+  Scheduler `32 9-23/2` America/Chicago. Hub KPI math is from Bets rows
+  only — formula tabs ignored. Ops: `./scripts/setup-bets-infra.sh`.
+
 ### P.10 Living rooms + portal pulse — LANDING
 Phase E of the sitewide UX pass (A–D shipped in #153).
 - Home **pulse strip** under the hero: next dated event, Watch feed title/count

@@ -122,6 +122,34 @@ jobs:
             gcloud run jobs create "$JOB" "${COMMON[@]}"
           fi
 
+          # P.11 bet tracker — same image, no ESPN cookies. Prefers
+          # sj-bets-reader when that SA exists (Austin shares the sheet
+          # with that email); otherwise the default compute SA.
+          BETS_JOB="sj-bets"
+          BETS_SA="sj-bets-reader@${PROJECT_ID}.iam.gserviceaccount.com"
+          BETS_ARGS=(
+            --project "$PROJECT_ID"
+            --region "$REGION"
+            --image "$IMAGE"
+            --max-retries 2
+            --task-timeout 10m
+            --memory 512Mi --cpu 1
+            --args=bets
+            --set-env-vars "SJ_GCS_BUCKET=$BUCKET,SJ_BETS_SHEET_ID=1_F9HCU7uOPH5uo8cgXkxwKrvREolPid_ZoviVVcX3HU"
+          )
+          if gcloud iam service-accounts describe "$BETS_SA" --project "$PROJECT_ID" >/dev/null 2>&1; then
+            BETS_ARGS+=(--service-account "$BETS_SA")
+            echo "sj-bets will run as $BETS_SA"
+          else
+            echo "sj-bets-reader SA missing — sj-bets uses the job default SA"
+            echo "Create it with ./scripts/setup-bets-infra.sh"
+          fi
+          if gcloud run jobs describe "$BETS_JOB" --project "$PROJECT_ID" --region "$REGION" >/dev/null 2>&1; then
+            gcloud run jobs update "$BETS_JOB" "${BETS_ARGS[@]}"
+          else
+            gcloud run jobs create "$BETS_JOB" "${BETS_ARGS[@]}"
+          fi
+
       - name: Run once after deploy
         if: ${{ inputs.run_after_deploy == 'true' }}
         run: |
@@ -135,3 +163,7 @@ jobs:
           echo
           echo "Backfill every season (one-time, slower):"
           echo "  gcloud run jobs execute $JOB --args=backfill --region=$REGION --project=$PROJECT_ID"
+          echo
+          echo "Bet tracker (after the sheet is shared with the job SA):"
+          echo "  gcloud run jobs execute sj-bets --region=$REGION --project=$PROJECT_ID"
+          echo "  ./scripts/setup-bets-infra.sh"

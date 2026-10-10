@@ -83,6 +83,11 @@ describe("portal destinations", () => {
     expect(portalCopy.destinations.items.fitness.action).toBe("Open Fitness");
   });
 
+  it("includes a Bets destination", () => {
+    expect(portalCopy.destinations.items.bets.title).toBe("Bets");
+    expect(portalCopy.destinations.secondary).toContain("bets");
+  });
+
   it("splits primary rooms from compact stubs", () => {
     expect([...portalCopy.destinations.primary]).toEqual([
       "fantasy",
@@ -93,6 +98,7 @@ describe("portal destinations", () => {
     expect([...portalCopy.destinations.secondary]).toEqual([
       "ai",
       "people",
+      "bets",
       "palworld",
     ]);
     expect(portalCopy.destinations.items.fantasy.title).toBe("Fantasy");

@@ -496,6 +496,75 @@ def nhl_backtest_cmd(
     )
 
 
+@app.command("bets")
+def bets_cmd(
+    sheet_id: str = typer.Option(
+        "",
+        "--sheet-id",
+        help="Google Sheet id (default: Trent & Steve 2026 tracker, or SJ_BETS_SHEET_ID).",
+    ),
+    tab: str = typer.Option(
+        "",
+        "--tab",
+        help="Worksheet name (default: Bets, or SJ_BETS_SHEET_TAB).",
+    ),
+    from_path: Path | None = typer.Option(
+        None,
+        "--from",
+        help="Read a local xlsx or Gamba JSON fixture instead of the Sheets API.",
+    ),
+    store_dir: Path | None = typer.Option(
+        None, help="Write bets/ here instead of the configured store."
+    ),
+) -> None:
+    """Refresh the Trent/Steve bet tracker JSON (roadmap P.11).
+
+    Reads the Bets tab (read-only Sheets API + ADC) unless ``--from`` points at
+    a local xlsx/JSON fixture. Writes ``bets/bets.json`` and ``bets/summary.json``
+    to the store (``SJ_GCS_BUCKET`` in prod). Formula tabs are ignored.
+    """
+    import os
+
+    from sj.bets import (
+        DEFAULT_SHEET_ID,
+        DEFAULT_SHEET_TAB,
+        bets_sync_enabled,
+        export_bets,
+    )
+
+    if not bets_sync_enabled():
+        typer.echo("SJ_BETS_SYNC is off; nothing to do")
+        return
+    typer.echo(f"store: {describe_store(store_dir)}")
+    resolved_id = (
+        sheet_id.strip()
+        or os.environ.get("SJ_BETS_SHEET_ID", "").strip()
+        or DEFAULT_SHEET_ID
+    )
+    resolved_tab = (
+        tab.strip()
+        or os.environ.get("SJ_BETS_SHEET_TAB", "").strip()
+        or DEFAULT_SHEET_TAB
+    )
+    try:
+        result = export_bets(
+            sheet_id=resolved_id,
+            tab=resolved_tab,
+            from_path=from_path,
+            store_dir=store_dir,
+        )
+    except Exception as exc:
+        typer.echo(f"error: {exc}", err=True)
+        raise typer.Exit(code=1) from exc
+    summary = result["summary"]
+    document = result["bets"]
+    typer.echo(
+        f"bets: {document['bet_count']} rows "
+        f"(Trent {summary['trent']['bets']}, Steve {summary['steve']['bets']}) "
+        f"synced_at={document['synced_at']}"
+    )
+
+
 @app.command("regenerate-fixtures")
 def regenerate_fixtures_cmd(
     fixtures_dir: Path | None = typer.Option(
