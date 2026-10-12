@@ -593,6 +593,11 @@ def ai_rankings_cmd(
     dry_run: bool = typer.Option(
         False, "--dry-run", help="Build facts / call the model but do not persist."
     ),
+    force: bool = typer.Option(
+        False,
+        "--force",
+        help="Regenerate even when facts_hash matches (or set SJ_RANKINGS_FORCE=1).",
+    ),
 ) -> None:
     """Write weekly AI rankings (roadmap 7.16).
 
@@ -604,6 +609,7 @@ def ai_rankings_cmd(
     """
     from sj.ai_rankings import (
         FANTASY_LEAGUES,
+        rankings_force,
         rankings_llm_config_from_env,
         run_cfb_board,
     )
@@ -623,6 +629,13 @@ def ai_rankings_cmd(
         typer.echo("cfbd: key present")
     else:
         typer.echo("cfbd: key missing (will degrade CFB)")
+    forced = force or rankings_force()
+    if forced:
+        typer.echo("force: regenerating (facts_hash reuse off)")
+    if llm:
+        typer.echo(
+            f"llm timeout: {llm.timeout_s:.0f}s attempts={llm.max_attempts}"
+        )
 
     failed = False
     wrote = 0
@@ -633,6 +646,7 @@ def ai_rankings_cmd(
                 week=week,
                 store_dir=store_dir,
                 persist=not dry_run,
+                force=forced,
             )
         except Exception as exc:  # noqa: BLE001 - report and continue the other board
             typer.echo(f"failed cfb: {exc}", err=True)
@@ -657,6 +671,7 @@ def ai_rankings_cmd(
                     store_dir=store_dir,
                     registry_path=registry,
                     persist=not dry_run,
+                    force=forced,
                 )
             except Exception as exc:  # noqa: BLE001 - one league must not abort the rest
                 typer.echo(f"failed fantasy {league_id}: {exc}", err=True)

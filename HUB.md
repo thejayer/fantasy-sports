@@ -518,10 +518,15 @@ Cloud Scheduler ──▶ Cloud Run Job (sj-sync) ──▶ gs://<project>-sj-da
   Fantasy offseason/preseason writes `{season}-off-YYYYMMDD` (not ESPN daily
   scoring periods — those produced `2026-w187` / `2027-w14` on the first
   live run). In-season football still uses the H2H week; baseball/hockey
-  season-points use a calendar week-of-season. Deploy preserves the live
+  season-points use a calendar week-of-season.   Deploy preserves the live
   `SJ_RANKINGS_PROVIDER` / `SJ_RANKINGS_MODEL` unless the workflow inputs
-  override them (prod is `openai` / `gpt-4.1-mini` until an xAI key exists).
-  Temperature 0.2.
+  override them (prod is `xai` / `grok-4.7`). LLM HTTP timeout is
+  `SJ_RANKINGS_TIMEOUT_S` (default 600) with `SJ_RANKINGS_MAX_ATTEMPTS`
+  (default 3) and exponential backoff — Grok 4.7 on the full FBS prompt
+  outlasts a 120s socket. The sync job `task-timeout` is 60m; the Sunday
+  CFB scheduler also overrides the run to 3600s. `--force` /
+  `SJ_RANKINGS_FORCE=1` skips `facts_hash` reuse so a model change can
+  rewrite the same week. Temperature 0.2.
 - **Cold starts:** deploy uses `--cpu-boost` and `--min-instances=0` by default.
   Set **min_instances=1** on a manual deploy if first-load latency bothers members.
 

@@ -3,12 +3,16 @@
 from __future__ import annotations
 
 import json
+import urllib.error
+import urllib.request
 from datetime import date
 from pathlib import Path
 
 import pytest
 
 from sj.ai_rankings import (
+    DEFAULT_LLM_MAX_ATTEMPTS,
+    DEFAULT_LLM_TIMEOUT_SECONDS,
     DEFAULT_TEMPERATURE,
     DEFAULT_XAI_BASE,
     DEFAULT_XAI_MODEL,
@@ -25,6 +29,7 @@ from sj.ai_rankings import (
     offseason_week_label,
     openai_compatible_body,
     persist_snapshot,
+    rankings_force,
     rankings_llm_config_from_env,
     resolve_cfb_week_number,
     run_cfb_board,
@@ -170,6 +175,8 @@ def test_llm_config_defaults_to_xai():
     assert config.model == DEFAULT_XAI_MODEL
     assert config.base_url == DEFAULT_XAI_BASE
     assert config.temperature == DEFAULT_TEMPERATURE
+    assert config.timeout_s == DEFAULT_LLM_TIMEOUT_SECONDS
+    assert config.max_attempts == DEFAULT_LLM_MAX_ATTEMPTS
     body = openai_compatible_body(config, "sys", "user")
     assert body["temperature"] == DEFAULT_TEMPERATURE
     assert body["messages"][0]["content"] == "sys"
@@ -191,11 +198,80 @@ def test_complete_rejects_empty_choices(monkeypatch: pytest.MonkeyPatch):
         def __exit__(self, *args):
             return False
 
-    import urllib.request
-
     monkeypatch.setattr(urllib.request, "urlopen", lambda *args, **kwargs: _Resp())
     with pytest.raises(RuntimeError, match="returned no text"):
         complete_openai_compatible(config, "sys", "user")
+
+
+def test_llm_timeout_and_attempts_from_env():
+    config = rankings_llm_config_from_env(
+        {
+            "SJ_RANKINGS_API_KEY": "xai-test",
+            "SJ_RANKINGS_TIMEOUT_S": "600",
+            "SJ_RANKINGS_MAX_ATTEMPTS": "3",
+        }
+    )
+    assert config is not None
+    assert config.timeout_s == 600
+    assert config.max_attempts == 3
+    assert rankings_force({}) is False
+    assert rankings_force({"SJ_RANKINGS_FORCE": "1"}) is True
+    assert rankings_force({"SJ_RANKINGS_FORCE": "yes"}) is True
+
+
+def test_complete_retries_read_timeout_then_succeeds(monkeypatch: pytest.MonkeyPatch):
+    config = rankings_llm_config_from_env(
+        {
+            "SJ_RANKINGS_API_KEY": "xai-test",
+            "SJ_RANKINGS_TIMEOUT_S": "600",
+            "SJ_RANKINGS_MAX_ATTEMPTS": "3",
+        }
+    )
+    assert config is not None
+    calls = {"n": 0}
+
+    class _Resp:
+        def read(self) -> bytes:
+            return b'{"choices":[{"message":{"content":"{\\"ok\\":true}"}}]}'
+
+        def __enter__(self):
+            return self
+
+        def __exit__(self, *args):
+            return False
+
+    def fake_urlopen(_req, timeout=None):
+        calls["n"] += 1
+        assert timeout == 600
+        if calls["n"] < 3:
+            raise urllib.error.URLError(TimeoutError("The read operation timed out"))
+        return _Resp()
+
+    sleeps: list[float] = []
+    monkeypatch.setattr(urllib.request, "urlopen", fake_urlopen)
+    text = complete_openai_compatible(config, "sys", "user", sleeper=sleeps.append)
+    assert '"ok"' in text
+    assert calls["n"] == 3
+    assert sleeps == [5.0, 10.0]
+
+
+def test_complete_does_not_retry_unauthorized(monkeypatch: pytest.MonkeyPatch):
+    config = rankings_llm_config_from_env({"SJ_RANKINGS_API_KEY": "xai-test"})
+    assert config is not None
+    calls = {"n": 0}
+
+    def fake_urlopen(req, timeout=None):
+        calls["n"] += 1
+        raise urllib.error.HTTPError(
+            req.full_url, 401, "Unauthorized", {}, None
+        )
+
+    sleeps: list[float] = []
+    monkeypatch.setattr(urllib.request, "urlopen", fake_urlopen)
+    with pytest.raises(RuntimeError, match="401"):
+        complete_openai_compatible(config, "sys", "user", sleeper=sleeps.append)
+    assert calls["n"] == 1
+    assert sleeps == []
 
 
 def test_cfb_prompt_omits_ap_poll():
@@ -337,6 +413,16 @@ def test_cfb_skips_llm_when_facts_hash_matches(tmp_path: Path):
     assert first["rankings"]
     assert second["facts_hash"] == first["facts_hash"]
     assert calls["n"] == 1
+    third = run_cfb_board(
+        season=2026,
+        week=7,
+        store_dir=tmp_path,
+        cfbd=client,
+        complete=complete,
+        force=True,
+    )
+    assert third["facts_hash"] == first["facts_hash"]
+    assert calls["n"] == 2
 
 
 def test_fantasy_facts_and_board(tmp_path: Path):
