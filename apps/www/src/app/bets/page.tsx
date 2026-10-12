@@ -77,9 +77,11 @@ export default async function BetsPage({ searchParams }: Props) {
   const parlayFiltered = filterParlayLegs(parlayDoc.legs, {
     who: who || null,
     sport: sport || null,
+    window,
   });
   const parlayForCards = filterParlayLegs(parlayDoc.legs, {
     sport: sport || null,
+    window,
   });
   const parlayNames = uniqueParlayBettors(parlayForCards);
   const parlayKpiCards = parlayNames.map((name) => parlayKpis(parlayForCards, name));
@@ -87,6 +89,7 @@ export default async function BetsPage({ searchParams }: Props) {
 
   const publicFiltered = filterWarnings(publicDoc.warnings, {
     sport: sport || null,
+    window,
   });
 
   return (

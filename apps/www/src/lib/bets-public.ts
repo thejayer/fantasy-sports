@@ -3,10 +3,12 @@
  */
 
 import {
+  type BetWindow,
   FADE_AMERICAN,
   FADE_STAKE,
   fadePl,
   invertResult,
+  inWindow,
   normalizeResult,
 } from "@/lib/bets";
 
@@ -159,11 +161,13 @@ export function publicBreakdown(
 
 export function filterWarnings(
   warnings: PublicWarning[],
-  opts: { sport?: string | null } = {},
+  opts: { sport?: string | null; window?: BetWindow } = {},
 ): PublicWarning[] {
   const sport = (opts.sport || "").trim().toLowerCase();
+  const window = opts.window ?? "all";
   return warnings.filter((row) => {
     if (sport && (row.sport || "").trim().toLowerCase() !== sport) return false;
+    if (!inWindow({ gd: row.gd, posted: row.posted }, window)) return false;
     return true;
   });
 }

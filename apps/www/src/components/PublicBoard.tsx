@@ -3,11 +3,13 @@ import Link from "next/link";
 import {
   FADE_AMERICAN,
   FADE_STAKE,
+  WINDOW_LABELS,
   betsHref,
   formatMoney,
   formatPct,
   formatSyncedAt,
   resultTone,
+  safeHttpUrl,
   type BetWindow,
 } from "@/lib/bets";
 import {
@@ -93,6 +95,18 @@ export function PublicBoard({
   return (
     <div className="bets-board">
       <div className="bets-filters" role="navigation" aria-label="Public warning filters">
+        <div className="bets-filter-row">
+          <span className="bets-filter-label">Window</span>
+          {(["all", "cfb", "nfl"] as const).map((key) => (
+            <Link
+              key={key}
+              href={betsHref({ tab: "warnings", window: key, sport, who })}
+              className={window === key ? "is-active" : undefined}
+            >
+              {WINDOW_LABELS[key]}
+            </Link>
+          ))}
+        </div>
         <div className="bets-filter-row">
           <span className="bets-filter-label">Sport</span>
           <Link
@@ -205,7 +219,9 @@ export function PublicBoard({
           Newest first. Showing {feed.length} of {warnings.length} in this filter.
         </p>
         <ol className="bets-feed-list">
-          {feed.map((row) => (
+          {feed.map((row) => {
+            const href = safeHttpUrl(row.url);
+            return (
             <li key={row.id} className="bets-feed-item">
               <div className="bets-feed-top">
                 <Chip result={row.public_res} />
@@ -223,17 +239,18 @@ export function PublicBoard({
                 {row.bucket || "—"}
                 {row.handle != null ? ` · handle ${row.handle}%` : ""}
                 {row.score ? ` · ${row.score}` : ""}
-                {row.url ? (
+                {href ? (
                   <>
                     {" · "}
-                    <a href={row.url} rel="noopener noreferrer">
+                    <a href={href} rel="noopener noreferrer">
                       X post
                     </a>
                   </>
                 ) : null}
               </p>
             </li>
-          ))}
+            );
+          })}
         </ol>
       </section>
 

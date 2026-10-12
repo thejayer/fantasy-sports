@@ -17,6 +17,7 @@ from sj.bets import (
     _sheet_text,
     format_game_date,
     format_posted,
+    in_window,
     invert_result,
     normalize_result,
     normalize_who,
@@ -237,6 +238,26 @@ def parlay_kpis(legs: Iterable[dict[str, Any]], who: str | None = None) -> dict[
         "fade_record": f"{fade['wins']}-{fade['losses']}-{fade['pushes']}",
         "fade_hit_rate": _ratio(float(fade["wins"]), float(fade_decided)),
     }
+
+
+def filter_parlay_legs(
+    legs: Iterable[dict[str, Any]],
+    *,
+    who: str | None = None,
+    sport: str | None = None,
+    window: str = "all",
+) -> list[dict[str, Any]]:
+    sport_key = _norm_key(sport) if sport else ""
+    out: list[dict[str, Any]] = []
+    for leg in legs:
+        if who and leg.get("who") != who:
+            continue
+        if sport_key and _norm_key(leg.get("sport")) != sport_key:
+            continue
+        if not in_window({"gd": leg.get("gd"), "posted": leg.get("posted")}, window):
+            continue
+        out.append(leg)
+    return out
 
 
 def parlay_breakdown(legs: Iterable[dict[str, Any]], key_fn) -> list[dict[str, Any]]:

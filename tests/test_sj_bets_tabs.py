@@ -18,17 +18,24 @@ from sj.bets import (
     invert_result,
     list_xlsx_sheets,
     load_local_workbook,
+    normalize_row,
     normalize_who,
     strip_value_prefix,
     unique_bettors,
 )
 from sj.bets_parlay import (
+    filter_parlay_legs,
     normalize_parlay_row,
     normalize_parlay_rows,
     ou_bucket,
     parlay_kpis,
 )
-from sj.bets_public import normalize_public_rows, public_kpis
+from sj.bets_public import (
+    filter_public_warnings,
+    normalize_public_row,
+    normalize_public_rows,
+    public_kpis,
+)
 from sj.store import FileStore
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -50,9 +57,11 @@ def test_strip_value_prefix_blank_and_line():
 
 def test_who_is_data_driven_not_a_closed_list():
     assert normalize_who("btidy216") == "btidy216"
-    assert normalize_who("@chellgod") == "@chellgod" or normalize_who("chellgod") == "chellgod"
+    assert normalize_who("@chellgod") == "chellgod"
+    assert normalize_who("@btidy216") == "btidy216"
     assert normalize_who("chellgod") == "chellgod"
     assert normalize_who("Trent Attyah") == "Trent"
+    assert normalize_who("@BookitWithTrent") == "Trent"
     names = unique_bettors(
         [
             {"who": "chellgod"},
@@ -173,6 +182,88 @@ def test_public_kpis_and_fade_pl():
     # 3 fades won @ -110 ($90.91) + 3 losses (-$100) + 1 push; pending excluded.
     assert kpi["fade_n"] == 7
     assert kpi["fade_pl"] == pytest.approx(3 * (100 * 100 / 110) + 3 * (-100) + 0)
+
+
+def test_bets_row_strips_value_prefix_and_at_handles():
+    bet = normalize_row(
+        {
+            "id": "C-1",
+            "who": "@chellgod",
+            "sport": "Value NFL",
+            "notes": "Value ",
+            "res": "Value W",
+            "odds": "Value -110",
+            "stake": "Value 100",
+            "bt": "Value",
+            "legs": "Value Chiefs -3",
+        }
+    )
+    assert bet is not None
+    assert bet["who"] == "chellgod"
+    assert bet["sport"] == "NFL"
+    assert bet["notes"] == ""
+    assert bet["res"] == "W"
+    assert bet["odds"] == "-110"
+    assert bet["stake"] == 100
+    assert bet["bt"] == ""
+    assert bet["legs"] == "Chiefs -3"
+
+
+def test_public_ticket_handle_accepts_fraction_or_percent():
+    fraction = normalize_public_row(
+        {"id": "MGM-P", "public_res": "W", "ticket": 0.82, "handle": "82%"}
+    )
+    assert fraction is not None
+    assert fraction["ticket"] == pytest.approx(82)
+    assert fraction["handle"] == pytest.approx(82)
+    leftover = normalize_public_row(
+        {"id": "MGM-Q", "public_res": "L", "ticket": 82, "handle": "Value 0.75"}
+    )
+    assert leftover is not None
+    assert leftover["ticket"] == pytest.approx(82)
+    assert leftover["handle"] == pytest.approx(75)
+
+
+def test_parlay_and_public_honor_season_windows():
+    pre = {
+        "id": "pre",
+        "who": "Trent",
+        "gd": "2026-08-20",
+        "posted": "2026-08-20 12:00:00",
+        "sport": "NFL",
+    }
+    cfb = {
+        "id": "cfb",
+        "who": "Trent",
+        "gd": "2026-08-28",
+        "posted": "2026-08-28 12:00:00",
+        "sport": "NFL",
+    }
+    nfl = {
+        "id": "nfl",
+        "who": "Steve",
+        "gd": "2026-09-10",
+        "posted": "2026-09-10 12:00:00",
+        "sport": "NFL",
+    }
+    assert [row["id"] for row in filter_parlay_legs([pre, cfb, nfl], window="cfb")] == [
+        "cfb",
+        "nfl",
+    ]
+    assert [row["id"] for row in filter_parlay_legs([pre, cfb, nfl], window="nfl")] == [
+        "nfl"
+    ]
+    assert [
+        row["id"] for row in filter_parlay_legs([pre, cfb, nfl], who="Steve")
+    ] == ["nfl"]
+    assert [row["id"] for row in filter_public_warnings([pre, cfb, nfl], window="nfl")] == [
+        "nfl"
+    ]
+    assert [row["id"] for row in filter_public_warnings([pre, cfb, nfl], window="all")] == [
+        "pre",
+        "cfb",
+        "nfl",
+    ]
 
 
 def test_extra_column_is_ignored():

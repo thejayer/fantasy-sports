@@ -3,6 +3,8 @@
  */
 
 import {
+  type BetWindow,
+  inWindow,
   invertResult,
   isBlank,
   normalizeResult,
@@ -154,13 +156,15 @@ export function parlayBreakdown(
 
 export function filterParlayLegs(
   legs: ParlayLeg[],
-  opts: { who?: string | null; sport?: string | null } = {},
+  opts: { who?: string | null; sport?: string | null; window?: BetWindow } = {},
 ): ParlayLeg[] {
   const who = opts.who || "";
   const sport = (opts.sport || "").trim().toLowerCase();
+  const window = opts.window ?? "all";
   return legs.filter((leg) => {
     if (who && leg.who !== who) return false;
     if (sport && (leg.sport || "").trim().toLowerCase() !== sport) return false;
+    if (!inWindow({ gd: leg.gd, posted: leg.posted }, window)) return false;
     return true;
   });
 }

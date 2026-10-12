@@ -1,11 +1,13 @@
 import Link from "next/link";
 
 import {
+  WINDOW_LABELS,
   betsHref,
   bettorMeta,
   formatPct,
   formatSyncedAt,
   resultTone,
+  safeHttpUrl,
   type BetWindow,
 } from "@/lib/bets";
 import {
@@ -166,6 +168,18 @@ export function ParlayBoard({
           ))}
         </div>
         <div className="bets-filter-row">
+          <span className="bets-filter-label">Window</span>
+          {(["all", "cfb", "nfl"] as const).map((key) => (
+            <Link
+              key={key}
+              href={betsHref({ tab: "parlays", window: key, sport, who })}
+              className={window === key ? "is-active" : undefined}
+            >
+              {WINDOW_LABELS[key]}
+            </Link>
+          ))}
+        </div>
+        <div className="bets-filter-row">
           <span className="bets-filter-label">Sport</span>
           <Link
             href={betsHref({ tab: "parlays", window, sport: "", who })}
@@ -235,7 +249,9 @@ export function ParlayBoard({
           Newest first. Showing {feed.length} of {legs.length} in this filter.
         </p>
         <ol className="bets-feed-list">
-          {feed.map((leg) => (
+          {feed.map((leg) => {
+            const href = safeHttpUrl(leg.url);
+            return (
             <li key={leg.id} className="bets-feed-item">
               <div className="bets-feed-top">
                 <Chip result={leg.res} />
@@ -250,17 +266,18 @@ export function ParlayBoard({
                 {leg.stat || "—"}
                 {leg.line ? ` · ${leg.line}` : ""}
                 {leg.dir ? ` · ${leg.dir}` : ""}
-                {leg.url ? (
+                {href ? (
                   <>
                     {" · "}
-                    <a href={leg.url} rel="noopener noreferrer">
+                    <a href={href} rel="noopener noreferrer">
                       X post
                     </a>
                   </>
                 ) : null}
               </p>
             </li>
-          ))}
+            );
+          })}
         </ol>
       </section>
 

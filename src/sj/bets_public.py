@@ -19,9 +19,24 @@ from sj.bets import (
     fade_pl,
     format_game_date,
     format_posted,
+    in_window,
     invert_result,
     normalize_result,
+    strip_value_prefix,
 )
+
+
+def _as_percent(value: Any) -> float | None:
+    """Ticket/handle % — accept 82, ``82%``, or a Sheets fraction ``0.82``."""
+    if isinstance(value, str) and "%" in value:
+        value = value.replace("%", "")
+    num = _as_float(strip_value_prefix(value) if not isinstance(value, (int, float)) else value)
+    if num is None:
+        return None
+    if 0 < num <= 1:
+        return num * 100.0
+    return num
+
 
 _HEADER_ALIASES: dict[str, tuple[str, ...]] = {
     "id": ("warning id", "id"),
@@ -111,8 +126,8 @@ def normalize_public_row(
         "market": _sheet_text(source.get("market")) or "—",
         "public_side": _sheet_text(source.get("public_side")),
         "line": _sheet_text(source.get("line")),
-        "ticket": _as_float(source.get("ticket")),
-        "handle": _as_float(source.get("handle")),
+        "ticket": _as_percent(source.get("ticket")),
+        "handle": _as_percent(source.get("handle")),
         "wording": _sheet_text(source.get("wording")),
         "prime": _sheet_text(source.get("prime")) or "",
         "slot": _sheet_text(source.get("slot")),
@@ -210,6 +225,23 @@ def public_kpis(warnings: Iterable[dict[str, Any]]) -> dict[str, Any]:
         "fade_stake": FADE_STAKE,
         "fade_roi": _ratio(pl, FADE_STAKE * pl_n) if pl_n else None,
     }
+
+
+def filter_public_warnings(
+    warnings: Iterable[dict[str, Any]],
+    *,
+    sport: str | None = None,
+    window: str = "all",
+) -> list[dict[str, Any]]:
+    sport_key = _norm_key(sport) if sport else ""
+    out: list[dict[str, Any]] = []
+    for row in warnings:
+        if sport_key and _norm_key(row.get("sport")) != sport_key:
+            continue
+        if not in_window({"gd": row.get("gd"), "posted": row.get("posted")}, window):
+            continue
+        out.append(row)
+    return out
 
 
 def public_breakdown(warnings: Iterable[dict[str, Any]], key_fn) -> list[dict[str, Any]]:

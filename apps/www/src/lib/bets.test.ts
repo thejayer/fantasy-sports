@@ -16,6 +16,7 @@ import {
   parseBetTab,
   parseOdds,
   stripValuePrefix,
+  safeHttpUrl,
   uniqueBettors,
   unitsPl,
   windowDate,
@@ -115,6 +116,15 @@ describe("data-driven bettors and fade math", () => {
     expect(fadePl("W")).toBeCloseTo(100 * (100 / 110));
     expect(fadePl("L")).toBe(-100);
     expect(fadePl("Pending")).toBeNull();
+  });
+
+  it("keeps only http(s) feed links", () => {
+    expect(safeHttpUrl("https://x.com/chellgod")).toBe("https://x.com/chellgod");
+    expect(safeHttpUrl("http://example.com/a")).toBe("http://example.com/a");
+    expect(safeHttpUrl("javascript:alert(1)")).toBeNull();
+    expect(safeHttpUrl("data:text/html,hi")).toBeNull();
+    expect(safeHttpUrl("/relative")).toBeNull();
+    expect(safeHttpUrl("")).toBeNull();
   });
 });
 

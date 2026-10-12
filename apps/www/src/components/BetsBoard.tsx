@@ -24,6 +24,7 @@ import {
   primeSlot,
   recentBets,
   resultTone,
+  safeHttpUrl,
   uniqueBettors,
 } from "@/lib/bets";
 import type { BetsActor } from "@/lib/session";
@@ -341,7 +342,9 @@ export function BetsBoard({
           Newest first. Showing {feed.length} of {bets.length} in this filter.
         </p>
         <ol className="bets-feed-list">
-          {feed.map((bet) => (
+          {feed.map((bet) => {
+            const href = safeHttpUrl(bet.url);
+            return (
             <li key={bet.id} className="bets-feed-item">
               <div className="bets-feed-top">
                 <Chip result={bet.res} />
@@ -357,17 +360,18 @@ export function BetsBoard({
                 {bet.stake != null ? formatMoney(bet.stake, 2) : "no $ stake"}
                 {bet.units != null ? ` · ${formatUnits(bet.units)}` : ""}
                 {bet.book ? ` · ${bet.book}` : ""}
-                {bet.url ? (
+                {href ? (
                   <>
                     {" · "}
-                    <a href={bet.url} rel="noopener noreferrer">
+                    <a href={href} rel="noopener noreferrer">
                       X post
                     </a>
                   </>
                 ) : null}
               </p>
             </li>
-          ))}
+            );
+          })}
         </ol>
       </section>
 

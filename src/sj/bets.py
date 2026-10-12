@@ -207,7 +207,8 @@ def normalize_who(value: Any) -> str:
         return "Trent"
     if key in STEVE_ALIASES:
         return "Steve"
-    return text or "Unknown"
+    stripped = text[1:].strip() if text.startswith("@") else text
+    return stripped or "Unknown"
 
 
 def unique_bettors(bets: Iterable[dict[str, Any]]) -> list[str]:
@@ -477,39 +478,42 @@ def normalize_row(row: dict[str, Any] | list[Any], headers: list[Any] | None = N
             return None
         source = {field: _cell(row, mapping, field) for field in _HEADER_ALIASES}
 
-    bet_id = _as_text(source.get("id"))
+    bet_id = _sheet_text(source.get("id"))
     if not bet_id or _norm_key(bet_id) in {"bet id", "id"}:
         return None
 
-    odds, dec = parse_odds(source.get("odds"), source.get("dec"))
-    units_raw = source.get("units")
+    odds, dec = parse_odds(
+        strip_value_prefix(source.get("odds")),
+        strip_value_prefix(source.get("dec")),
+    )
+    units_raw = strip_value_prefix(source.get("units"))
     units = None if _is_blank(units_raw) else _as_float(units_raw)
-    n = _as_int(source.get("n"))
+    n = _as_int(strip_value_prefix(source.get("n")))
     bet = {
         "id": bet_id,
         "who": normalize_who(source.get("who")),
         "posted": format_posted(source.get("posted")),
         "gd": format_game_date(source.get("gd")),
-        "kt": _as_text(source.get("kt")) or None,
-        "prime": _as_text(source.get("prime")) or "",
-        "slot": _as_text(source.get("slot")),
-        "sport": _as_text(source.get("sport")) or "Other",
-        "lg": _as_text(source.get("lg")),
-        "bt": _as_text(source.get("bt")),
-        "legs": _as_text(source.get("legs")),
+        "kt": _sheet_text(source.get("kt")) or None,
+        "prime": _sheet_text(source.get("prime")) or "",
+        "slot": _sheet_text(source.get("slot")),
+        "sport": _sheet_text(source.get("sport")) or "Other",
+        "lg": _sheet_text(source.get("lg")),
+        "bt": _sheet_text(source.get("bt")),
+        "legs": _sheet_text(source.get("legs")),
         "n": n,
         "odds": odds,
         "dec": dec,
-        "stake": _as_float(source.get("stake")),
+        "stake": _as_float(strip_value_prefix(source.get("stake"))),
         "units": units,
-        "towin": _as_float(source.get("towin")),
-        "book": _as_text(source.get("book")),
-        "res": normalize_result(source.get("res")),
-        "src": _as_text(source.get("src")),
-        "promo": _as_text(source.get("promo")) or "N",
-        "url": _as_text(source.get("url")),
-        "notes": _as_text(source.get("notes")),
-        "ps": _as_text(source.get("ps")),
+        "towin": _as_float(strip_value_prefix(source.get("towin"))),
+        "book": _sheet_text(source.get("book")),
+        "res": normalize_result(strip_value_prefix(source.get("res"))),
+        "src": _sheet_text(source.get("src")),
+        "promo": _sheet_text(source.get("promo")) or "N",
+        "url": _sheet_text(source.get("url")),
+        "notes": _sheet_text(source.get("notes")),
+        "ps": _sheet_text(source.get("ps")),
     }
     if not bet["ps"]:
         bet["ps"] = "Parlay/multi-leg" if classify_parlay(bet) == "multi" else "Single"

@@ -26,9 +26,19 @@ test.describe("bets fixture board", () => {
     await page.goto("/bets?tab=parlays");
     await expect(page.getByRole("heading", { name: "Recent legs" })).toBeVisible();
     await expect(page.getByRole("heading", { name: "Props vs team picks" })).toBeVisible();
+    await expect(page.getByRole("navigation", { name: "Parlay filters" })).toBeVisible();
+    await expect(
+      page.getByRole("navigation", { name: "Parlay filters" }).getByRole("link", { name: "Since NFL start" }),
+    ).toBeVisible();
     await page.goto("/bets?tab=warnings");
     await expect(page.getByRole("heading", { name: "Fade the public" })).toBeVisible();
     await expect(page.getByRole("heading", { name: "Recent warnings" })).toBeVisible();
     await expect(page.getByText(/assumes -110/i)).toBeVisible();
+    await expect(page.getByRole("navigation", { name: "Public warning filters" })).toBeVisible();
+    await expect(
+      page
+        .getByRole("navigation", { name: "Public warning filters" })
+        .getByRole("link", { name: "Since NFL start" }),
+    ).toBeVisible();
   });
 });

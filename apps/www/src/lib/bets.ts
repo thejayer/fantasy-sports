@@ -208,6 +208,18 @@ export function invertResult(value: unknown): string {
   return res;
 }
 
+export function safeHttpUrl(raw: string | null | undefined): string | null {
+  const text = (raw || "").trim();
+  if (!text) return null;
+  try {
+    const url = new URL(text);
+    if (url.protocol === "http:" || url.protocol === "https:") return url.toString();
+  } catch {
+    return null;
+  }
+  return null;
+}
+
 export function fadePl(
   result: unknown,
   american = FADE_AMERICAN,
