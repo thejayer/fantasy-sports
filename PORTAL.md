@@ -22,7 +22,7 @@ Fitness restyles the training-log PWA onto the same tokens (`FITNESS.md`).
   Public Community / AI / People / Watch / Palworld routes never require a
   session. Do not put a service worker on the apex.
 - **Snapshot / hub data**: `sj-www` mounts the hub bucket **read-only** so
-  `/bets` can read `hub_members.json` and `bets/bets.json`. Home and other
+  `/bets` can read `hub_members.json` and `bets/{bets,parlay_legs,public_warnings}.json`. Home and other
   public pages do not touch that mount.
 - **Product boundary**: Discord / Palworld / Watch / AI / People live on
   the apex; leagues, tools, and auction rooms live on the hub.
@@ -70,8 +70,9 @@ card); missing shots use a monogram. Edit `INFLUENTIAL_PEOPLE` in
 destination list. Docs: [FITNESS.md](FITNESS.md).
 
 **Bets** lives at `/bets` (nav + home destination). Members-only tracker for
-public slips from Trent Attyah and Steve Will Do It. Same Google allowlist
-as Fantasy. Data is `sj bets` (Drive xlsx or native Sheet) → `bets/bets.json`
+public slips (data-driven bettors), parlay legs, and BetMGM public-money
+warnings. Same Google allowlist as Fantasy. Data is `sj bets` (Drive xlsx
+or native Sheet) → `bets/{bets,summary,parlay_legs,public_warnings}.json`
 on the hub bucket. Docs:
 [apps/www/README.md](apps/www/README.md) and `./scripts/setup-bets-infra.sh`.
 

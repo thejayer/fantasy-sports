@@ -517,13 +517,14 @@ def bets_cmd(
         None, help="Write bets/ here instead of the configured store."
     ),
 ) -> None:
-    """Refresh the Trent/Steve bet tracker JSON (roadmap P.11).
+    """Refresh the public-bet tracker JSON (roadmap P.11).
 
-    Reads the Bets tab unless ``--from`` points at a local xlsx/JSON fixture.
+    Reads the Bets tab plus Parlay Legs and BetMGM Public Warnings when
+    those sheets exist. ``--from`` points at a local xlsx/JSON fixture.
     Live ingest looks up the Drive mimeType (read-only) and then uses the
-    Sheets API or downloads an uploaded .xlsx. Writes ``bets/bets.json`` and
-    ``bets/summary.json`` to the store (``SJ_GCS_BUCKET`` in prod). Formula
-    tabs are ignored.
+    Sheets API or downloads an uploaded .xlsx. Writes ``bets/bets.json``,
+    ``bets/summary.json``, ``bets/parlay_legs.json``, and
+    ``bets/public_warnings.json``. Formula / summary tabs are ignored.
     """
     import os
 
@@ -560,9 +561,16 @@ def bets_cmd(
         raise typer.Exit(code=1) from exc
     summary = result["summary"]
     document = result["bets"]
+    who_bits = ", ".join(
+        f"{row['who']} {row['bets']}" for row in (summary.get("bettors") or [])
+    )
+    parlays = result.get("parlay_legs") or {}
+    warnings = result.get("public_warnings") or {}
     typer.echo(
-        f"bets: {document['bet_count']} rows "
-        f"(Trent {summary['trent']['bets']}, Steve {summary['steve']['bets']}) "
+        f"bets: {document['bet_count']} rows"
+        f"{f' ({who_bits})' if who_bits else ''} "
+        f"legs={parlays.get('leg_count', 0)} "
+        f"warnings={warnings.get('warning_count', 0)} "
         f"synced_at={document['synced_at']}"
     )
 
