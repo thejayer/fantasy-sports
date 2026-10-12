@@ -353,6 +353,8 @@ Do not commit secret values.
 | `sj-espn-s2` | `ESPN_S2` | ESPN sync (container start / CLI) |
 | `sj-espn-swid` | `ESPN_SWID` | ESPN sync (container start / CLI) |
 | `openai-api-key` | `OPENAI_API_KEY` | Weekly recap columnist (Cloud Run `sj-hub`, not CI) |
+| `sj-cfbd-api-key` | `SJ_CFBD_API_KEY` | College Football Data API (Cloud Run job `sj-sync`; optional — CFB board degrades) |
+| `sj-rankings-api-key` | `SJ_RANKINGS_API_KEY` | AI rankings model (default xAI Grok; Cloud Run job `sj-sync`) |
 
 Optional: `ADMIN_EMAILS` (not a Secret Manager entry yet) bootstraps who can open
 `/admin` until `hub_members.json` contains at least one `admin` role.
@@ -502,6 +504,16 @@ Cloud Scheduler ──▶ Cloud Run Job (sj-sync) ──▶ gs://<project>-sj-da
   them. Playoff odds promote only when refresh wrote them from live `data/sj`
   (marker `.from_live_sj`); committed `fixtures/sj/playoff_odds/` remain the
   offline hub fallback and are never promoted from a fixtures-only run.
+- **AI rankings (roadmap 7.16):** `sj ai-rankings --board cfb|fantasy` writes
+  `ai_rankings/cfb/{season}-wNN.json` and
+  `ai_rankings/fantasy/{league_id}/{season}-wNN.json` (plus `latest.json`,
+  `index.json`, and a sibling `.trace.json` with the raw prompt/response).
+  Hub pages `/rankings`, `/rankings/cfb`, `/rankings/fantasy` (Auth.js). Same
+  `sj-sync` image; Cloud Scheduler `sj-ai-rankings-cfb` (Sunday 08:00
+  America/Chicago) and `sj-ai-rankings-fantasy` (Monday 08:00). CFB uses the
+  College Football Data API; a missing `sj-cfbd-api-key` writes an empty
+  snapshot that names the gap. Model defaults: `SJ_RANKINGS_PROVIDER=xai`,
+  `SJ_RANKINGS_MODEL=grok-4-fast`, temperature 0.2.
 - **Cold starts:** deploy uses `--cpu-boost` and `--min-instances=0` by default.
   Set **min_instances=1** on a manual deploy if first-load latency bothers members.
 

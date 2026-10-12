@@ -1,0 +1,91 @@
+{
+  "board": "fantasy",
+  "degraded": [],
+  "facts_hash": "8833b41508281d6a",
+  "format": "redraft",
+  "generated_at": "2026-10-12T14:00:00+00:00",
+  "headline": "Strictly Jayers Hockey power rankings",
+  "last_week_review": "First committed fixture week \u2014 no prior ballot to grade.",
+  "league_id": "hockey-main",
+  "methodology": "Record, points for/against, recent form, and top roster scorers from the ESPN snapshot.",
+  "model": "fixture",
+  "movers": {
+    "dropped": [],
+    "fallers": [],
+    "new": [],
+    "risers": []
+  },
+  "name": "Strictly Jayers Hockey",
+  "notes": [
+    "Committed fixture for offline hub / CI."
+  ],
+  "phase": "in_season",
+  "rankings": [
+    {
+      "abbrev": "CC",
+      "blurb": "Crease Crashers sits 0-0 with 2868.9 points for. Recent form: n/a.",
+      "conference": "",
+      "delta": null,
+      "losses": 0,
+      "name": "Crease Crashers",
+      "owners": [
+        "Michael Cruz"
+      ],
+      "points_against": null,
+      "points_for": 2868.9,
+      "prev_rank": null,
+      "rank": 1,
+      "record": "0-0",
+      "standing": 1,
+      "team_id": 2,
+      "ties": 0,
+      "wins": 0
+    },
+    {
+      "abbrev": "FHH",
+      "blurb": "Five Hole Heroes sits 0-0 with 2863.0 points for. Recent form: n/a.",
+      "conference": "",
+      "delta": null,
+      "losses": 0,
+      "name": "Five Hole Heroes",
+      "owners": [
+        "Eugene Peterson"
+      ],
+      "points_against": null,
+      "points_for": 2863.0,
+      "prev_rank": null,
+      "rank": 2,
+      "record": "0-0",
+      "standing": 2,
+      "team_id": 1,
+      "ties": 0,
+      "wins": 0
+    },
+    {
+      "abbrev": "BB",
+      "blurb": "Biscuit Bandits sits 0-0 with 2488.0 points for. Recent form: n/a.",
+      "conference": "",
+      "delta": null,
+      "losses": 0,
+      "name": "Biscuit Bandits",
+      "owners": [
+        "Joseph Wright"
+      ],
+      "points_against": null,
+      "points_for": 2488.0,
+      "prev_rank": null,
+      "rank": 3,
+      "record": "0-0",
+      "standing": 3,
+      "team_id": 3,
+      "ties": 0,
+      "wins": 0
+    }
+  ],
+  "schema_version": 1,
+  "season": 2027,
+  "sport": "hockey",
+  "temperature": 0.2,
+  "week": 21,
+  "week_label": "2027-w21"
+}

@@ -19,6 +19,13 @@ import type { HockeyScheduleSnapshot } from "@/lib/hockey-decisions";
 import type { HockeyTeamStrengthSnapshot } from "@/lib/hockey-daily";
 import type { HockeyInjuryLog } from "@/lib/hockey-alerts";
 import type { HockeyValuesSnapshot } from "@/lib/hockey-values";
+import {
+  isAiRankingsIndex,
+  isAiRankingsSnapshot,
+  type AiRankingsBoard,
+  type AiRankingsIndex,
+  type AiRankingsSnapshot,
+} from "@/lib/ai-rankings";
 import { dataRoots } from "@/lib/hub-paths";
 import { requireSession } from "@/lib/session";
 import {
@@ -1717,3 +1724,59 @@ async function loadTeamSelective(
   };
   return { league, team };
 }
+
+export type { AiRankingsIndex, AiRankingsSnapshot };
+
+function aiRankingsPrefix(board: AiRankingsBoard, leagueId?: string): string {
+  if (board === "cfb") return path.join("ai_rankings", "cfb");
+  return path.join("ai_rankings", "fantasy", leagueId ?? "");
+}
+
+/**
+ * Week index for an AI rankings board (roadmap 7.16).
+ * Session-gated; produced offline by ``sj ai-rankings``.
+ */
+export const getAiRankingsIndex = cache(
+  async (
+    board: AiRankingsBoard,
+    leagueId?: string,
+  ): Promise<AiRankingsIndex | null> => {
+    await requireSession();
+    const relative = path.join(aiRankingsPrefix(board, leagueId), "index.json");
+    for (const root of dataRoots()) {
+      const doc = await readJson<AiRankingsIndex>(path.join(root, relative));
+      if (isAiRankingsIndex(doc) && doc.weeks.length) {
+        return doc;
+      }
+    }
+    return null;
+  },
+);
+
+/**
+ * One weekly AI rankings snapshot. Prefer the week file; fall back to latest.
+ */
+export const getAiRankingsSnapshot = cache(
+  async (
+    board: AiRankingsBoard,
+    weekLabel: string,
+    leagueId?: string,
+  ): Promise<AiRankingsSnapshot | null> => {
+    await requireSession();
+    const prefix = aiRankingsPrefix(board, leagueId);
+    const names = [`${weekLabel}.json`, "latest.json"];
+    for (const root of dataRoots()) {
+      for (const name of names) {
+        const doc = await readJson<AiRankingsSnapshot>(
+          path.join(root, prefix, name),
+        );
+        if (isAiRankingsSnapshot(doc)) {
+          if (name === "latest.json" || doc.week_label === weekLabel) {
+            return doc;
+          }
+        }
+      }
+    }
+    return null;
+  },
+);

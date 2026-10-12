@@ -106,6 +106,19 @@ jobs:
 
       - name: Deploy Cloud Run Job
         run: |
+          SECRETS="ESPN_S2=sj-espn-s2:latest,ESPN_SWID=sj-espn-swid:latest"
+          # Roadmap 7.16 — attach only when the secret exists so a first
+          # deploy does not fail closed on a missing CFBD / model key.
+          if gcloud secrets describe sj-cfbd-api-key --project "$PROJECT_ID" >/dev/null 2>&1; then
+            SECRETS="$SECRETS,SJ_CFBD_API_KEY=sj-cfbd-api-key:latest"
+          else
+            echo "sj-cfbd-api-key missing — CFB rankings will degrade"
+          fi
+          if gcloud secrets describe sj-rankings-api-key --project "$PROJECT_ID" >/dev/null 2>&1; then
+            SECRETS="$SECRETS,SJ_RANKINGS_API_KEY=sj-rankings-api-key:latest"
+          else
+            echo "sj-rankings-api-key missing — AI rankings need this key"
+          fi
           COMMON=(
             --project "$PROJECT_ID"
             --region "$REGION"
@@ -113,8 +126,8 @@ jobs:
             --max-retries 2
             --task-timeout 30m
             --memory 1Gi --cpu 1
-            --set-env-vars "SJ_GCS_BUCKET=$BUCKET"
-            --set-secrets "ESPN_S2=sj-espn-s2:latest,ESPN_SWID=sj-espn-swid:latest"
+            --set-env-vars "SJ_GCS_BUCKET=$BUCKET,SJ_RANKINGS_PROVIDER=xai,SJ_RANKINGS_MODEL=grok-4-fast"
+            --set-secrets "$SECRETS"
           )
           if gcloud run jobs describe "$JOB" --project "$PROJECT_ID" --region "$REGION" >/dev/null 2>&1; then
             gcloud run jobs update "$JOB" "${COMMON[@]}"
@@ -167,3 +180,8 @@ jobs:
           echo "Bet tracker (after the sheet is shared with the job SA):"
           echo "  gcloud run jobs execute sj-bets --region=$REGION --project=$PROJECT_ID"
           echo "  ./scripts/setup-bets-infra.sh"
+          echo
+          echo "AI rankings (after sj-cfbd-api-key / sj-rankings-api-key exist):"
+          echo "  gcloud run jobs execute $JOB --args=ai-rankings,--board,cfb --region=$REGION --project=$PROJECT_ID"
+          echo "  gcloud run jobs execute $JOB --args=ai-rankings,--board,fantasy --region=$REGION --project=$PROJECT_ID"
+          echo "  ./scripts/setup-sync-infra.sh   # registers Sunday/Monday schedulers"
