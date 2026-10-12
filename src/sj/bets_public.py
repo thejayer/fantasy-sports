@@ -111,8 +111,7 @@ def normalize_public_row(
         return None
 
     public_res = normalize_result(_sheet_text(source.get("public_res")))
-    mgm_raw = _sheet_text(source.get("mgm_res"))
-    mgm_res = normalize_result(mgm_raw) if mgm_raw else invert_result(public_res)
+    mgm_res = normalize_result(_sheet_text(source.get("mgm_res")))
     fade_res = invert_result(public_res)
 
     return {

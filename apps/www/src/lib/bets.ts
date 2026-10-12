@@ -60,8 +60,8 @@ export const KNOWN_BETTORS: Record<
 
 export function bettorMeta(who: string): { name: string; handle: string; href: string } {
   if (KNOWN_BETTORS[who]) return KNOWN_BETTORS[who];
-  const handle = who.replace(/^@/, "") || "unknown";
-  return { name: who, handle, href: `https://x.com/${handle}` };
+  const handle = who.replace(/^@/, "").replace(/[^\w.]/g, "") || "unknown";
+  return { name: who, handle, href: `https://x.com/${encodeURIComponent(handle)}` };
 }
 
 export function uniqueBettors(bets: Array<{ who: string }>): string[] {

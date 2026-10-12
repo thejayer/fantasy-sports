@@ -291,7 +291,7 @@ export function BetsBoard({
               key={kpi.who || meta.name}
               title={meta.name}
               handle={meta.handle}
-              href={meta.href}
+              href={safeHttpUrl(meta.href) ?? undefined}
               kpi={kpi}
             />
           );

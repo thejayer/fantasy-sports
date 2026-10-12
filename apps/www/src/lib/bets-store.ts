@@ -44,8 +44,16 @@ async function readFirstFile(name: string): Promise<string | null> {
   return null;
 }
 
+function parseJson(raw: string): unknown | null {
+  try {
+    return JSON.parse(raw) as unknown;
+  } catch {
+    return null;
+  }
+}
+
 function parseBetsDocument(raw: string): BetsDocument | null {
-  const parsed = JSON.parse(raw) as unknown;
+  const parsed = parseJson(raw);
   if (Array.isArray(parsed)) {
     return { bets: parsed.filter(isBetRow) };
   }
@@ -56,7 +64,7 @@ function parseBetsDocument(raw: string): BetsDocument | null {
 }
 
 function parseParlayDocument(raw: string): ParlayDocument | null {
-  const parsed = JSON.parse(raw) as unknown;
+  const parsed = parseJson(raw);
   if (!parsed || typeof parsed !== "object") return null;
   const doc = parsed as ParlayDocument;
   const legs = Array.isArray(doc.legs) ? doc.legs.filter(isParlayLeg) : [];
@@ -64,7 +72,7 @@ function parseParlayDocument(raw: string): ParlayDocument | null {
 }
 
 function parsePublicDocument(raw: string): PublicDocument | null {
-  const parsed = JSON.parse(raw) as unknown;
+  const parsed = parseJson(raw);
   if (!parsed || typeof parsed !== "object") return null;
   const doc = parsed as PublicDocument;
   const warnings = Array.isArray(doc.warnings) ? doc.warnings.filter(isPublicWarning) : [];

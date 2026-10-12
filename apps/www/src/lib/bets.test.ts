@@ -17,6 +17,7 @@ import {
   parseOdds,
   stripValuePrefix,
   safeHttpUrl,
+  bettorMeta,
   uniqueBettors,
   unitsPl,
   windowDate,
@@ -125,6 +126,8 @@ describe("data-driven bettors and fade math", () => {
     expect(safeHttpUrl("data:text/html,hi")).toBeNull();
     expect(safeHttpUrl("/relative")).toBeNull();
     expect(safeHttpUrl("")).toBeNull();
+    expect(safeHttpUrl(bettorMeta("chellgod").href)).toBe("https://x.com/chellgod");
+    expect(safeHttpUrl(bettorMeta("odd name?").href)).toBe("https://x.com/oddname");
   });
 });
 

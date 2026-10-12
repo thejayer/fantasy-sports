@@ -12,6 +12,7 @@ from sj.bets import (
     PUBLIC_TAB,
     SHEET_MIME,
     XLSX_MIME,
+    bettor_kpis,
     export_bets,
     fade_pl,
     fetch_remote_workbook,
@@ -19,6 +20,7 @@ from sj.bets import (
     list_xlsx_sheets,
     load_local_workbook,
     normalize_row,
+    normalize_rows,
     normalize_who,
     strip_value_prefix,
     unique_bettors,
@@ -209,6 +211,25 @@ def test_bets_row_strips_value_prefix_and_at_handles():
     assert bet["legs"] == "Chiefs -3"
 
 
+def test_blank_mgm_result_stays_unknown_fade_still_inverts():
+    row = normalize_public_row({"id": "MGM-BLANK", "public_res": "W", "mgm_res": ""})
+    assert row is not None
+    assert row["public_res"] == "W"
+    assert row["mgm_res"] == "Unknown"
+    assert row["fade_res"] == "L"
+    assert row["fade_pl"] == -100.0
+
+
+def test_combined_pl_equals_sum_of_per_bettor_pl():
+    headers, rows = load_local_workbook(TABS)["Bets"]
+    bets = normalize_rows(rows, headers)
+    names = unique_bettors(bets)
+    combined = bettor_kpis(bets)
+    parts = [bettor_kpis(bets, name)["pl"] or 0.0 for name in names]
+    assert combined["pl"] == pytest.approx(sum(parts))
+    assert combined["bets"] == sum(bettor_kpis(bets, name)["bets"] for name in names)
+
+
 def test_public_ticket_handle_accepts_fraction_or_percent():
     fraction = normalize_public_row(
         {"id": "MGM-P", "public_res": "W", "ticket": 0.82, "handle": "82%"}
@@ -222,6 +243,10 @@ def test_public_ticket_handle_accepts_fraction_or_percent():
     assert leftover is not None
     assert leftover["ticket"] == pytest.approx(82)
     assert leftover["handle"] == pytest.approx(75)
+    one = normalize_public_row({"id": "MGM-R", "public_res": "W", "ticket": 1, "handle": 0.01})
+    assert one is not None
+    assert one["ticket"] == pytest.approx(100)
+    assert one["handle"] == pytest.approx(1)
 
 
 def test_parlay_and_public_honor_season_windows():
