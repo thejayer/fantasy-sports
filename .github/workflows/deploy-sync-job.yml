@@ -34,13 +34,13 @@ on:
         required: true
         default: "true"
       rankings_provider:
-        description: "SJ_RANKINGS_PROVIDER (xai or openai)"
-        required: true
-        default: "xai"
+        description: "Optional SJ_RANKINGS_PROVIDER override (blank keeps the live job value)"
+        required: false
+        default: ""
       rankings_model:
-        description: "SJ_RANKINGS_MODEL"
-        required: true
-        default: "grok-4-fast"
+        description: "Optional SJ_RANKINGS_MODEL override (blank keeps the live job value)"
+        required: false
+        default: ""
 
 permissions:
   contents: read
@@ -65,11 +65,21 @@ jobs:
     steps:
       - name: Validate inputs
         run: |
-          for pair in "project_id=$PROJECT_ID" "region=$REGION" "job=$JOB" "bucket=$BUCKET" "rankings_provider=$RANKINGS_PROVIDER" "rankings_model=$RANKINGS_MODEL"; do
+          for pair in "project_id=$PROJECT_ID" "region=$REGION" "job=$JOB" "bucket=$BUCKET"; do
             name=${pair%%=*}
             value=${pair#*=}
             case "$value" in
               ""|*[!A-Za-z0-9_.-]*)
+                echo "Invalid $name: only letters, digits, '.', '-' and '_' are allowed." >&2
+                exit 1 ;;
+            esac
+          done
+          for pair in "rankings_provider=$RANKINGS_PROVIDER" "rankings_model=$RANKINGS_MODEL"; do
+            name=${pair%%=*}
+            value=${pair#*=}
+            [ -z "$value" ] && continue
+            case "$value" in
+              *[!A-Za-z0-9_.-]*)
                 echo "Invalid $name: only letters, digits, '.', '-' and '_' are allowed." >&2
                 exit 1 ;;
             esac
@@ -150,6 +160,16 @@ jobs:
           }
           attach_rankings_secret SJ_CFBD_API_KEY sj-cfbd-api-key
           attach_rankings_secret SJ_RANKINGS_API_KEY sj-rankings-api-key
+          # --update-env-vars merges. Do not --set-env-vars the rankings
+          # provider/model: production is openai/gpt-4.1-mini until an xAI
+          # key exists, and a default of xai/grok-4-fast would reset that.
+          RANKINGS_ENV="SJ_GCS_BUCKET=$BUCKET"
+          if [ -n "$RANKINGS_PROVIDER" ]; then
+            RANKINGS_ENV="$RANKINGS_ENV,SJ_RANKINGS_PROVIDER=$RANKINGS_PROVIDER"
+          fi
+          if [ -n "$RANKINGS_MODEL" ]; then
+            RANKINGS_ENV="$RANKINGS_ENV,SJ_RANKINGS_MODEL=$RANKINGS_MODEL"
+          fi
           COMMON=(
             --project "$PROJECT_ID"
             --region "$REGION"
@@ -157,13 +177,12 @@ jobs:
             --max-retries 2
             --task-timeout 30m
             --memory 1Gi --cpu 1
-            --set-env-vars "SJ_GCS_BUCKET=$BUCKET,SJ_RANKINGS_PROVIDER=$RANKINGS_PROVIDER,SJ_RANKINGS_MODEL=$RANKINGS_MODEL"
             --set-secrets "$SECRETS"
           )
           if gcloud run jobs describe "$JOB" --project "$PROJECT_ID" --region "$REGION" >/dev/null 2>&1; then
-            gcloud run jobs update "$JOB" "${COMMON[@]}"
+            gcloud run jobs update "$JOB" "${COMMON[@]}" --update-env-vars "$RANKINGS_ENV"
           else
-            gcloud run jobs create "$JOB" "${COMMON[@]}"
+            gcloud run jobs create "$JOB" "${COMMON[@]}" --set-env-vars "$RANKINGS_ENV"
           fi
 
           # P.11 bet tracker — same image, no ESPN cookies. Prefers

@@ -3,7 +3,8 @@
  *
  * Snapshots are produced offline by `sj ai-rankings` and stored under
  * `ai_rankings/cfb/{season}-wNN.json` and
- * `ai_rankings/fantasy/{league_id}/{season}-wNN.json`.
+ * `ai_rankings/fantasy/{league_id}/{season}-wNN.json`. Offseason and
+ * preseason fantasy boards use `{season}-off-YYYYMMDD`.
  */
 
 export const AI_RANKINGS_FANTASY_LEAGUES = [
@@ -138,6 +139,28 @@ export function resolveWeekLabel(
 }
 
 export function formatWeekChip(label: string): string {
+  const offDay = label.match(/^(\d+)-off-(\d{8})$/i);
+  if (offDay) {
+    const stamp = offDay[2];
+    const month = Number(stamp.slice(4, 6));
+    const day = Number(stamp.slice(6, 8));
+    const months = [
+      "Jan",
+      "Feb",
+      "Mar",
+      "Apr",
+      "May",
+      "Jun",
+      "Jul",
+      "Aug",
+      "Sep",
+      "Oct",
+      "Nov",
+      "Dec",
+    ];
+    const mon = months[month - 1] ?? stamp.slice(4, 6);
+    return `${offDay[1]} · ${mon} ${day}`;
+  }
   const off = label.match(/^(\d+)-off$/i);
   if (off) return `${off[1]} offseason`;
   const week = label.match(/^(\d+)-w(\d+)$/i);

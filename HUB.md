@@ -515,8 +515,13 @@ Cloud Scheduler ──▶ Cloud Run Job (sj-sync) ──▶ gs://<project>-sj-da
   `{season}-wNN` snapshot (calendar week in Aug–Dec, never `-off` mid-season)
   that names the gap and is indexed so the hub does not fall through to
   fixtures. `latest.json` is only overwritten when the ballot has ranks.
-  Model defaults: `SJ_RANKINGS_PROVIDER=xai`,
-  `SJ_RANKINGS_MODEL=grok-4-fast`, temperature 0.2.
+  Fantasy offseason/preseason writes `{season}-off-YYYYMMDD` (not ESPN daily
+  scoring periods — those produced `2026-w187` / `2027-w14` on the first
+  live run). In-season football still uses the H2H week; baseball/hockey
+  season-points use a calendar week-of-season. Deploy preserves the live
+  `SJ_RANKINGS_PROVIDER` / `SJ_RANKINGS_MODEL` unless the workflow inputs
+  override them (prod is `openai` / `gpt-4.1-mini` until an xAI key exists).
+  Temperature 0.2.
 - **Cold starts:** deploy uses `--cpu-boost` and `--min-instances=0` by default.
   Set **min_instances=1** on a manual deploy if first-load latency bothers members.
 

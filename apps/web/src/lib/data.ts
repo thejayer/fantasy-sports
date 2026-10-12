@@ -1757,7 +1757,7 @@ export const getAiRankingsIndex = cache(
 
 /**
  * One weekly AI rankings snapshot. Week-file only; label must match
- * ``/^\d+-(w\d+|off)$/i``.
+ * ``/^\\d+-(w\\d+|off(?:-\\d{8})?)$/i``.
  */
 export const getAiRankingsSnapshot = cache(
   async (
@@ -1768,7 +1768,7 @@ export const getAiRankingsSnapshot = cache(
     await requireSession();
     const prefix = aiRankingsPrefix(board, leagueId);
     const safe = weekLabel.trim();
-    if (!/^\d+-(w\d+|off)$/i.test(safe)) {
+    if (!/^\d+-(w\d+|off(?:-\d{8})?)$/i.test(safe)) {
       return null;
     }
     for (const root of dataRoots()) {

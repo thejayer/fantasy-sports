@@ -20,7 +20,9 @@ from sj.ai_rankings import (
     cfb_prompt,
     complete_openai_compatible,
     extract_json_object,
+    fantasy_phase_and_label,
     load_prior,
+    offseason_week_label,
     openai_compatible_body,
     persist_snapshot,
     rankings_llm_config_from_env,
@@ -38,6 +40,7 @@ from sj.cfbd import (
     latest_completed_week,
     parse_ap_poll,
     parse_games,
+    parse_week_label,
 )
 from sj.cfbd import (
     week_label as cfbd_week_label,
@@ -95,6 +98,9 @@ def test_week_label_and_season_clock():
     assert estimated_cfb_week(date(2027, 3, 1)) == 0
     assert resolve_cfb_week_number(None, date(2026, 10, 12)) == 7
     assert resolve_cfb_week_number(8, date(2026, 10, 12)) == 8
+    assert parse_week_label("2026-off") == (2026, 0)
+    assert parse_week_label("2026-off-20261013") == (2026, 20261013)
+    assert parse_week_label("2026-off-20261013") > parse_week_label("2026-w24")
 
 
 def test_ai_rankings_rel_strips_traversal():
@@ -337,9 +343,10 @@ def test_fantasy_facts_and_board(tmp_path: Path):
     store = FileStore(FIXTURES)
     snap = store.read("football-main", 2026)
     assert snap is not None
-    facts = build_fantasy_facts(snap)
+    facts = build_fantasy_facts(snap, today=date(2026, 10, 12))
     assert facts["league_id"] == "football-main"
     assert facts["week_label"] == "2026-w14"
+    assert facts["phase"] == "in_season"
     assert len(facts["teams"]) == 4
     heroes = next(row for row in facts["teams"] if row["name"] == "Hail Mary Heroes")
     assert heroes["record"] == "8-6"
@@ -382,6 +389,7 @@ def test_fantasy_facts_and_board(tmp_path: Path):
         store_dir=FIXTURES,
         complete=complete,
         persist=False,
+        today=date(2026, 10, 12),
     )
     assert document["board"] == "fantasy"
     assert document["rankings"][0]["name"] == "Hail Mary Heroes"
@@ -394,6 +402,96 @@ def test_fantasy_facts_and_board(tmp_path: Path):
     assert read_ai_rankings("fantasy/football-main/2026-w14", store_dir=tmp_path)[
         "headline"
     ].startswith("Heroes")
+
+
+def test_fantasy_offseason_uses_dated_label_not_espn_period():
+    when = date(2026, 10, 12)
+    baseball = {
+        "league_id": "baseball-dynasty",
+        "sport": "baseball",
+        "scoring_type": "TOTAL_SEASON_POINTS",
+        "season": 2026,
+        "current_week": 187,
+        "teams": [],
+    }
+    hockey = {
+        "league_id": "hockey-main",
+        "sport": "hockey",
+        "scoring_type": "TOTAL_SEASON_POINTS",
+        "season": 2027,
+        "current_week": 14,
+        "teams": [],
+    }
+    football = {
+        "league_id": "football-main",
+        "sport": "football",
+        "season": 2026,
+        "current_week": 6,
+        "teams": [],
+    }
+    b_phase, b_label, b_week = fantasy_phase_and_label(baseball, when)
+    h_phase, h_label, h_week = fantasy_phase_and_label(hockey, when)
+    f_phase, f_label, f_week = fantasy_phase_and_label(football, when)
+    assert b_phase == "offseason"
+    assert b_label == "2026-off-20261012"
+    assert b_week == 0
+    assert h_phase == "preseason"
+    assert h_label == "2027-off-20261012"
+    assert h_week == 0
+    assert f_phase == "in_season"
+    assert f_label == "2026-w06"
+    assert f_week == 6
+    assert offseason_week_label(2026, when) == "2026-off-20261012"
+    mid = fantasy_phase_and_label(
+        {**baseball, "current_week": 80}, date(2026, 7, 4)
+    )
+    assert mid[0] == "in_season"
+    assert mid[1] == "2026-w16"
+    jan = fantasy_phase_and_label(baseball, date(2027, 1, 12))
+    assert jan[1] == "2026-off-20270112"
+    assert parse_week_label(jan[1]) > parse_week_label("2026-off-20261012")
+    hockey_open = fantasy_phase_and_label(hockey, date(2026, 10, 20))
+    assert hockey_open[0] == "in_season"
+    assert hockey_open[1] == "2027-w01"
+    football_off = fantasy_phase_and_label(
+        {**football, "current_week": 18}, date(2027, 3, 2)
+    )
+    assert football_off[0] == "offseason"
+    assert football_off[1] == "2026-off-20270302"
+    baseball_facts = build_fantasy_facts(baseball, today=when)
+    assert baseball_facts["week_label"] == "2026-off-20261012"
+    assert baseball_facts["phase"] == "offseason"
+    assert baseball_facts["week"] == 0
+
+
+def test_load_prior_orders_dated_offseason_after_in_season(tmp_path: Path):
+    in_season = {
+        "schema_version": 1,
+        "board": "fantasy",
+        "league_id": "baseball-dynasty",
+        "season": 2026,
+        "week": 24,
+        "week_label": "2026-w24",
+        "rankings": [{"rank": 1, "name": "A"}],
+        "generated_at": "2026-10-01T00:00:00+00:00",
+    }
+    first_off = {
+        **in_season,
+        "week": 0,
+        "week_label": "2026-off-20261006",
+        "rankings": [{"rank": 1, "name": "B"}],
+        "generated_at": "2026-10-06T00:00:00+00:00",
+    }
+    persist_snapshot(in_season, prompt="", raw_response="", store_dir=tmp_path)
+    persist_snapshot(first_off, prompt="", raw_response="", store_dir=tmp_path)
+    prior = load_prior(
+        "fantasy", "2026-off-20261013", "baseball-dynasty", store_dir=tmp_path
+    )
+    assert prior is not None
+    assert prior["week_label"] == "2026-off-20261006"
+    assert load_prior(
+        "fantasy", "2026-off-20261006", "baseball-dynasty", store_dir=tmp_path
+    )["week_label"] == "2026-w24"
 
 
 def test_assemble_rejects_unknown_teams():
