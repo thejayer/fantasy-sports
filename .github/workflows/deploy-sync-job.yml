@@ -33,6 +33,14 @@ on:
         description: "Execute the job once after deploying (true/false)"
         required: true
         default: "true"
+      rankings_provider:
+        description: "SJ_RANKINGS_PROVIDER (xai or openai)"
+        required: true
+        default: "xai"
+      rankings_model:
+        description: "SJ_RANKINGS_MODEL"
+        required: true
+        default: "grok-4-fast"
 
 permissions:
   contents: read
@@ -52,10 +60,12 @@ jobs:
       JOB: ${{ inputs.job }}
       BUCKET: ${{ inputs.bucket }}
       RUN_AFTER: ${{ inputs.run_after_deploy }}
+      RANKINGS_PROVIDER: ${{ inputs.rankings_provider }}
+      RANKINGS_MODEL: ${{ inputs.rankings_model }}
     steps:
       - name: Validate inputs
         run: |
-          for pair in "project_id=$PROJECT_ID" "region=$REGION" "job=$JOB" "bucket=$BUCKET"; do
+          for pair in "project_id=$PROJECT_ID" "region=$REGION" "job=$JOB" "bucket=$BUCKET" "rankings_provider=$RANKINGS_PROVIDER" "rankings_model=$RANKINGS_MODEL"; do
             name=${pair%%=*}
             value=${pair#*=}
             case "$value" in
@@ -106,6 +116,40 @@ jobs:
 
       - name: Deploy Cloud Run Job
         run: |
+          SECRETS="ESPN_S2=sj-espn-s2:latest,ESPN_SWID=sj-espn-swid:latest"
+          # Job SA (or the project compute SA on first create). Grant
+          # secretAccessor *before* --set-secrets so a new rankings secret
+          # cannot take down the daily ESPN sync.
+          SYNC_SA="$(gcloud run jobs describe "$JOB" --project "$PROJECT_ID" --region "$REGION" --format='value(spec.template.spec.serviceAccountName)' 2>/dev/null || true)"
+          if [ -z "$SYNC_SA" ]; then
+            PROJECT_NUMBER="$(gcloud projects describe "$PROJECT_ID" --format='value(projectNumber)')"
+            SYNC_SA="${PROJECT_NUMBER}-compute@developer.gserviceaccount.com"
+          fi
+          attach_rankings_secret() {
+            local env_name="$1"
+            local secret_name="$2"
+            if ! gcloud secrets describe "$secret_name" --project "$PROJECT_ID" >/dev/null 2>&1; then
+              echo "$secret_name missing — not attaching $env_name"
+              return 0
+            fi
+            gcloud secrets add-iam-policy-binding "$secret_name" \
+              --project "$PROJECT_ID" \
+              --member="serviceAccount:${SYNC_SA}" \
+              --role="roles/secretmanager.secretAccessor" \
+              --quiet >/dev/null || true
+            local payload
+            if ! payload="$(gcloud secrets versions access latest --secret="$secret_name" --project "$PROJECT_ID")"; then
+              echo "failed to read $secret_name — aborting so --set-secrets cannot drop an attached key" >&2
+              exit 1
+            fi
+            if [ -z "$payload" ] || [ "$payload" = "REPLACE_ME" ]; then
+              echo "$secret_name latest is empty or REPLACE_ME — not attaching $env_name"
+              return 0
+            fi
+            SECRETS="$SECRETS,$env_name=$secret_name:latest"
+          }
+          attach_rankings_secret SJ_CFBD_API_KEY sj-cfbd-api-key
+          attach_rankings_secret SJ_RANKINGS_API_KEY sj-rankings-api-key
           COMMON=(
             --project "$PROJECT_ID"
             --region "$REGION"
@@ -113,8 +157,8 @@ jobs:
             --max-retries 2
             --task-timeout 30m
             --memory 1Gi --cpu 1
-            --set-env-vars "SJ_GCS_BUCKET=$BUCKET"
-            --set-secrets "ESPN_S2=sj-espn-s2:latest,ESPN_SWID=sj-espn-swid:latest"
+            --set-env-vars "SJ_GCS_BUCKET=$BUCKET,SJ_RANKINGS_PROVIDER=$RANKINGS_PROVIDER,SJ_RANKINGS_MODEL=$RANKINGS_MODEL"
+            --set-secrets "$SECRETS"
           )
           if gcloud run jobs describe "$JOB" --project "$PROJECT_ID" --region "$REGION" >/dev/null 2>&1; then
             gcloud run jobs update "$JOB" "${COMMON[@]}"
@@ -167,3 +211,8 @@ jobs:
           echo "Bet tracker (after the sheet is shared with the job SA):"
           echo "  gcloud run jobs execute sj-bets --region=$REGION --project=$PROJECT_ID"
           echo "  ./scripts/setup-bets-infra.sh"
+          echo
+          echo "AI rankings (after sj-cfbd-api-key / sj-rankings-api-key exist):"
+          echo "  gcloud run jobs execute $JOB --args=ai-rankings,--board,cfb --region=$REGION --project=$PROJECT_ID"
+          echo "  gcloud run jobs execute $JOB --args=ai-rankings,--board,fantasy --region=$REGION --project=$PROJECT_ID"
+          echo "  ./scripts/setup-sync-infra.sh   # registers Sunday/Monday schedulers"

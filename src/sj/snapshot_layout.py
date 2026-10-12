@@ -93,6 +93,23 @@ def bets_rel(name: str) -> str:
     return f"bets/{safe}.json"
 
 
+def ai_rankings_rel(name: str) -> str:
+    """Side-concern AI rankings JSON (roadmap 7.16).
+
+    Store-root paths such as ``ai_rankings/cfb/2026-w08.json`` and
+    ``ai_rankings/fantasy/football-main/2026-w14.json``. ``name`` may include
+    slashes (board / league / week). Path parts that are ``.`` or ``..`` are
+    dropped so ``....`` cannot collapse into a parent hop.
+    Not listed in ``manifest.files``.
+    """
+    raw = str(name).strip().replace("\\", "/").strip("/")
+    raw = raw.removesuffix(".json")
+    parts = [part for part in raw.split("/") if part and part not in {".", ".."}]
+    if not parts:
+        raise ValueError("ai_rankings path is empty")
+    return "ai_rankings/" + "/".join(parts) + ".json"
+
+
 def manifest_rel(league_id: str, season: int) -> str:
     return f"{season_dir_rel(league_id, season)}/{MANIFEST_NAME}"
 

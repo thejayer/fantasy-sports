@@ -167,6 +167,57 @@ if [ "${SJ_HOCKEY_LINES:-1}" != "0" ]; then
   done
 fi
 
+# --- AI rankings (roadmap 7.16) ---------------------------------------------
+# Same Cloud Run job, different args. Sunday morning CFB (after Saturday
+# slates), Monday morning fantasy (after Sunday NFL + weekend ESPN sync).
+# SJ_AI_RANKINGS=0 skips. Override cron with SJ_AI_RANKINGS_CFB_SCHEDULE /
+# SJ_AI_RANKINGS_FANTASY_SCHEDULE.
+if [ "${SJ_AI_RANKINGS:-1}" != "0" ]; then
+  RUN_JOB_V2_URI="${RUN_JOB_V2_URI:-https://run.googleapis.com/v2/projects/${PROJECT}/locations/${REGION}/jobs/${JOB}:run}"
+  upsert_rankings_scheduler() {
+    local name="$1"
+    local schedule="$2"
+    local args_json="$3"
+    if gcloud scheduler jobs describe "${name}" \
+        --project="${PROJECT}" --location="${REGION}" >/dev/null 2>&1; then
+      local verb=update
+    else
+      local verb=create
+    fi
+    gcloud scheduler jobs "${verb}" http "${name}" \
+      --project="${PROJECT}" \
+      --location="${REGION}" \
+      --schedule="${schedule}" \
+      --time-zone="${TIME_ZONE}" \
+      --uri="${RUN_JOB_V2_URI}" \
+      --http-method=POST \
+      --headers="Content-Type=application/json" \
+      --message-body="${args_json}" \
+      --oauth-service-account-email="${SCHEDULER_SA}"
+    echo "${verb}d scheduler ${name} (${schedule})"
+  }
+  upsert_rankings_scheduler \
+    "sj-ai-rankings-cfb" \
+    "${SJ_AI_RANKINGS_CFB_SCHEDULE:-0 8 * * 0}" \
+    '{"overrides":{"containerOverrides":[{"args":["ai-rankings","--board","cfb"]}]}}'
+    upsert_rankings_scheduler \
+    "sj-ai-rankings-fantasy" \
+    "${SJ_AI_RANKINGS_FANTASY_SCHEDULE:-0 8 * * 1}" \
+    '{"overrides":{"containerOverrides":[{"args":["ai-rankings","--board","fantasy"]}]}}'
+  for SECRET_NAME in sj-cfbd-api-key sj-rankings-api-key; do
+    if gcloud secrets describe "${SECRET_NAME}" --project="${PROJECT}" >/dev/null 2>&1; then
+      gcloud secrets add-iam-policy-binding "${SECRET_NAME}" \
+        --project="${PROJECT}" \
+        --member="serviceAccount:${SYNC_SA}" \
+        --role="roles/secretmanager.secretAccessor" \
+        --quiet >/dev/null
+      echo "granted secretAccessor on ${SECRET_NAME} to ${SYNC_SA}"
+    else
+      echo "secret ${SECRET_NAME} not created yet — ./scripts/create-hub-secrets.sh then add a version"
+    fi
+  done
+fi
+
 cat <<EOF
 
 ================================================================
@@ -184,6 +235,12 @@ Next:
 
 Hockey lines + starting goalies refresh at 15:00 and 17:30 (${TIME_ZONE}) via
 sj-hockey-lines-* (args nhl-lines). Skip with SJ_HOCKEY_LINES=0.
+
+AI rankings (roadmap 7.16):
+  sj-ai-rankings-cfb      Sunday 08:00 (${TIME_ZONE})  args ai-rankings --board cfb
+  sj-ai-rankings-fantasy  Monday 08:00 (${TIME_ZONE})  args ai-rankings --board fantasy
+Skip with SJ_AI_RANKINGS=0. Needs secrets sj-cfbd-api-key (optional; degrades)
+and sj-rankings-api-key (xAI / OpenAI-compatible). See HUB.md.
 
 Bet tracker (portal /bets): ./scripts/setup-bets-infra.sh creates
 sj-bets-reader + sj-bets-trigger (32 9-23/2, ${TIME_ZONE}).
