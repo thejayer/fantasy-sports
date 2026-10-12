@@ -1831,6 +1831,29 @@ a.news-card:focus-visible .news-card-read {
   color: color-mix(in srgb, var(--color-text) 58%, transparent);
 }
 
+.bets-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem 0.7rem;
+  margin: var(--space-4) 0 0;
+}
+
+.bets-tabs a {
+  padding: 0.3rem 0.7rem;
+  border: 2px solid var(--color-divider);
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.bets-tabs a.is-active,
+.bets-tabs a:hover,
+.bets-tabs a:focus-visible {
+  border-color: var(--color-text);
+  color: var(--color-accent);
+}
+
 .bets-signout {
   border: 0;
   background: none;
@@ -1884,7 +1907,7 @@ a.news-card:focus-visible .news-card-read {
 
 .bets-kpi-grid {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
   gap: 0;
   border: 2px solid var(--color-divider);
 }
@@ -1892,9 +1915,10 @@ a.news-card:focus-visible .news-card-read {
 .bets-card {
   padding: var(--space-4);
   border-right: 2px solid var(--color-divider);
+  border-bottom: 2px solid var(--color-divider);
 }
 
-.bets-card:last-child {
+.bets-kpi-grid .bets-card:last-child {
   border-right: 0;
 }
 

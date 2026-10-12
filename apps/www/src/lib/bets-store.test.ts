@@ -22,7 +22,9 @@ afterEach(() => {
 describe("getBetsDocument", () => {
   it("returns empty when there is no allowlisted actor", async () => {
     getBetsActor.mockResolvedValue(null);
-    const { getBetsDocument } = await loadStore();
+    const { getBetsDocument, getParlayDocument, getPublicDocument } = await loadStore();
     await expect(getBetsDocument()).resolves.toEqual({ bets: [] });
+    await expect(getParlayDocument()).resolves.toEqual({ legs: [] });
+    await expect(getPublicDocument()).resolves.toEqual({ warnings: [] });
   });
 });

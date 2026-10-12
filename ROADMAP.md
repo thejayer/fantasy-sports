@@ -1316,16 +1316,20 @@ Wired into the `www` CI job.
   OAuth client.
 
 ### P.11 Bet tracker — LANDING
-- `/bets` on `apps/www`: members-only Trent Attyah vs Steve Will Do It
-  tracker (Auth.js + the same `ALLOWED_EMAILS` ∪ `hub_members.json`
-  allowlist as Fantasy / Fitness). Public apex routes stay ungated. No
-  service worker on www.
+- `/bets` on `apps/www`: members-only public-slip tracker (Auth.js + the
+  same `ALLOWED_EMAILS` ∪ `hub_members.json` allowlist as Fantasy /
+  Fitness). Bettors are data-driven from the Bets tab (Trent, Steve,
+  btidy216, chellgod, …) plus a combined all-bettors view. Tabs: Bets,
+  Parlay legs, Public fade. Public apex routes stay ungated. No service
+  worker on www.
 - Ingest: `sj bets` looks up the Drive file mimeType (`sj-bets-reader`
-  SA; Drive + Sheets read-only). Native Sheet → Sheets API; uploaded
-  `.xlsx` → `files.get?alt=media` + the offline Bets-tab parser. Writes
-  `bets/bets.json` + `bets/summary.json`.
-  Scheduler `32 9-23/2` America/Chicago. Hub KPI math is from Bets rows
-  only — formula tabs ignored. Ops: `./scripts/setup-bets-infra.sh`.
+  SA; Drive + Sheets read-only). Native Sheet → Sheets API (whole used
+  range, headers by name); uploaded `.xlsx` → `files.get?alt=media`.
+  Writes `bets/bets.json` + `bets/summary.json` (stable `trent`/`steve`/
+  `all` keys plus `bettors`) + `bets/parlay_legs.json` +
+  `bets/public_warnings.json`. Scheduler `32 9-23/2` America/Chicago.
+  KPI math is from raw rows only — formula / summary tabs ignored.
+  Ops: `./scripts/setup-bets-infra.sh`.
 
 ### P.10 Living rooms + portal pulse — LANDING
 Phase E of the sitewide UX pass (A–D shipped in #153).
