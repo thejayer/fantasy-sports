@@ -1764,17 +1764,16 @@ export const getAiRankingsSnapshot = cache(
   ): Promise<AiRankingsSnapshot | null> => {
     await requireSession();
     const prefix = aiRankingsPrefix(board, leagueId);
-    const names = [`${weekLabel}.json`, "latest.json"];
+    const safe = weekLabel.trim();
+    if (!/^\d+-(w\d+|off)$/i.test(safe)) {
+      return null;
+    }
     for (const root of dataRoots()) {
-      for (const name of names) {
-        const doc = await readJson<AiRankingsSnapshot>(
-          path.join(root, prefix, name),
-        );
-        if (isAiRankingsSnapshot(doc)) {
-          if (name === "latest.json" || doc.week_label === weekLabel) {
-            return doc;
-          }
-        }
+      const doc = await readJson<AiRankingsSnapshot>(
+        path.join(root, prefix, `${safe}.json`),
+      );
+      if (isAiRankingsSnapshot(doc) && doc.week_label === safe) {
+        return doc;
       }
     }
     return null;

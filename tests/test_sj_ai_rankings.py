@@ -303,6 +303,113 @@ def test_assemble_rejects_unknown_teams():
     assert "Made Up U" not in names
 
 
+def test_load_prior_uses_previous_week_not_later(tmp_path: Path):
+    from sj.ai_rankings import load_prior, persist_snapshot
+
+    older = {
+        "schema_version": 1,
+        "board": "cfb",
+        "season": 2026,
+        "week": 6,
+        "week_label": "2026-w06",
+        "rankings": [{"rank": 1, "name": "Ohio State"}],
+        "generated_at": "2026-10-05T00:00:00+00:00",
+    }
+    newer = {
+        **older,
+        "week": 7,
+        "week_label": "2026-w07",
+        "rankings": [{"rank": 1, "name": "Alabama"}],
+        "generated_at": "2026-10-12T00:00:00+00:00",
+    }
+    persist_snapshot(older, prompt="", raw_response="", store_dir=tmp_path)
+    persist_snapshot(newer, prompt="", raw_response="", store_dir=tmp_path)
+    prior = load_prior("cfb", "2026-w06", store_dir=tmp_path)
+    assert prior is None or prior["week_label"] != "2026-w07"
+    assert load_prior("cfb", "2026-w07", store_dir=tmp_path)["week_label"] == "2026-w06"
+
+
+def test_degraded_cfb_does_not_overwrite_latest(tmp_path: Path, monkeypatch: pytest.MonkeyPatch):
+    good = run_cfb_board(
+        season=2026,
+        week=7,
+        store_dir=tmp_path,
+        cfbd=CfbdClient(
+            api_key="test",
+            fetch=lambda path, params: json.loads(
+                (CFBD / ("games.json" if path == "/games" else "rankings.json")).read_text()
+            ),
+        ),
+        complete=_fake_cfb_complete,
+    )
+    assert good["rankings"]
+    monkeypatch.delenv("SJ_CFBD_API_KEY", raising=False)
+    monkeypatch.delenv("CFBD_API_KEY", raising=False)
+    empty = run_cfb_board(season=2026, week=8, store_dir=tmp_path, persist=True)
+    assert empty["rankings"] == []
+    latest = read_ai_rankings("cfb/latest", store_dir=tmp_path)
+    assert latest["week_label"] == "2026-w07"
+    assert latest["rankings"]
+
+
+def test_lookup_is_exact_name():
+    facts = build_cfb_facts(_games(), 7, 2026, _ap())
+    snapshot = assemble_cfb_snapshot(
+        facts,
+        {
+            "headline": "x",
+            "methodology": "y",
+            "last_week_review": "",
+            "rankings": [
+                {"rank": 1, "name": "Ohio", "blurb": "Too short — must not match Ohio State."},
+            ],
+            "also_ranked": [],
+        },
+        model="test",
+        temperature=0.2,
+        prior=None,
+        degraded=[],
+    )
+    names = [row["name"] for row in snapshot["rankings"]]
+    assert "Ohio State" not in names or snapshot["rankings"][0]["blurb"] != (
+        "Too short — must not match Ohio State."
+    )
+    assert all(row["name"] != "Ohio" for row in snapshot["rankings"])
+
+
+def test_cfb_movers_drop_from_top25_only():
+    facts = build_cfb_facts(_games(), 7, 2026, _ap())
+    prior = {
+        "rankings": [
+            {"rank": 1, "name": "Ohio State"},
+            {"rank": 2, "name": "Texas"},
+            {"rank": 24, "name": "Iowa"},
+        ]
+    }
+    snapshot = assemble_cfb_snapshot(
+        facts,
+        {
+            "headline": "x",
+            "methodology": "y",
+            "last_week_review": "",
+            "rankings": [
+                {"rank": 1, "name": "Ohio State", "blurb": "Still 1."},
+                {"rank": 2, "name": "Alabama", "blurb": "In."},
+            ],
+            "also_ranked": [{"rank": 26, "name": "Kentucky"}],
+        },
+        model="test",
+        temperature=0.2,
+        prior=prior,
+        degraded=[],
+    )
+    dropped_names = [row["name"] for row in snapshot["movers"]["dropped"]]
+    texas = next(row for row in snapshot["rankings"] if row["name"] == "Texas")
+    assert texas["prev_rank"] == 2
+    assert (texas["delta"] or 0) < 0
+    assert "Iowa" in dropped_names
+
+
 def test_fantasy_appends_omitted_team():
     facts = {
         "league_id": "football-main",

@@ -30,10 +30,11 @@ from sj.cfbd import (
     default_cfb_season,
     fbs_teams,
     latest_completed_week,
+    parse_week_label,
     week_label,
 )
 from sj.registry import load_registry
-from sj.store import read_ai_rankings, read_snapshot, write_ai_rankings
+from sj.store import read_ai_rankings, resolve_store, write_ai_rankings
 
 SCHEMA_VERSION = 1
 BOARD_CFB = "cfb"
@@ -250,14 +251,7 @@ def _lookup_team(
     name: str,
     known: dict[str, dict[str, Any]],
 ) -> dict[str, Any] | None:
-    direct = known.get(_norm_name(name))
-    if direct:
-        return direct
-    needle = _norm_name(name)
-    for key, row in known.items():
-        if needle and (needle in key or key in needle):
-            return row
-    return None
+    return known.get(_norm_name(name))
 
 
 def _sanitize_rank_rows(
@@ -301,7 +295,6 @@ def _sanitize_rank_rows(
         }
         for extra in (
             "abbrev",
-            "owners",
             "points_for",
             "points_against",
             "standing",
@@ -350,9 +343,8 @@ def cfb_prompt(
     payload = {
         "instruction": (
             f"Produce a Top {TOP_N} for FBS week {facts.get('week')} "
-            f"{facts.get('season')}. Also list ranks {TOP_N + 1}+ for every other "
-            "FBS team in also_ranked (name + rank only, no blurbs). "
-            "Write a short blurb per Top 25 team. "
+            f"{facts.get('season')}. Write a short blurb per Top 25 team. "
+            "You may optionally list a few also_ranked names (rank + name only). "
             "If last week's board is present, write last_week_review: what the "
             "previous ranking got right or wrong after this week's results. "
             "Prefer recent results and strength of schedule implied by opponents; "
@@ -459,7 +451,6 @@ def build_fantasy_facts(snapshot: dict[str, Any]) -> dict[str, Any]:
                 "team_id": team.get("team_id"),
                 "name": team.get("name"),
                 "abbrev": team.get("abbrev"),
-                "owners": team.get("owners") or [],
                 "wins": wins,
                 "losses": losses,
                 "ties": ties,
@@ -538,7 +529,10 @@ def assemble_cfb_snapshot(
     for index, row in enumerate(rest + extras, start=len(top) + 1):
         row["rank"] = index
     ranked = top + rest + extras
-    ranked, movers = attach_movers(ranked, (prior or {}).get("rankings") if prior else None)
+    prior_top = (prior or {}).get("rankings") if prior else None
+    top_with_movers, movers = attach_movers(ranked[:TOP_N], prior_top)
+    rest_with_movers, _ = attach_movers(ranked[TOP_N:], prior_top)
+    ranked = top_with_movers + rest_with_movers
     attach_ap(ranked, facts.get("ap_poll") or [])
     notes: list[str] = []
     if facts.get("ap_poll"):
@@ -596,7 +590,6 @@ def assemble_fantasy_snapshot(
                 "points_for": team.get("points_for"),
                 "points_against": team.get("points_against"),
                 "standing": team.get("standing"),
-                "owners": team.get("owners") or [],
             }
         )
     if len(have) < len(known_names) and "model omitted a team" not in degraded:
@@ -646,6 +639,7 @@ def persist_snapshot(
     prompt: str,
     raw_response: str,
     store_dir: Any = None,
+    promote_latest: bool | None = None,
 ) -> dict[str, str]:
     board = document["board"]
     league_id = document.get("league_id")
@@ -653,6 +647,9 @@ def persist_snapshot(
     public_name = _week_name(board, week_lbl, league_id)
     latest_name = _week_name(board, "latest", league_id)
     index_name = _index_name(board, league_id)
+    has_ranks = bool(document.get("rankings"))
+    if promote_latest is None:
+        promote_latest = has_ranks
     trace = {
         "schema_version": SCHEMA_VERSION,
         "board": board,
@@ -667,26 +664,36 @@ def persist_snapshot(
     }
     paths = {
         "snapshot": write_ai_rankings(document, public_name, store_dir=store_dir),
-        "latest": write_ai_rankings(document, latest_name, store_dir=store_dir),
         "trace": write_ai_rankings(trace, f"{public_name}.trace", store_dir=store_dir),
     }
+    if promote_latest:
+        paths["latest"] = write_ai_rankings(document, latest_name, store_dir=store_dir)
     index = read_ai_rankings(index_name, store_dir=store_dir) or {
         "board": board,
         "league_id": league_id,
         "weeks": [],
     }
     weeks = [str(item) for item in index.get("weeks") or [] if item != week_lbl]
-    weeks.append(week_lbl)
-    weeks = sorted(set(weeks))
+    if has_ranks:
+        weeks.append(week_lbl)
+    weeks = sorted(set(weeks), key=_week_sort_key)
+    latest = week_lbl if promote_latest else index.get("latest")
+    if latest not in weeks and weeks:
+        latest = weeks[-1]
     index = {
         "board": board,
         "league_id": league_id,
-        "latest": week_lbl,
+        "latest": latest,
         "weeks": weeks,
         "updated_at": document.get("generated_at"),
     }
     paths["index"] = write_ai_rankings(index, index_name, store_dir=store_dir)
     return paths
+
+
+def _week_sort_key(label: str) -> tuple[int, int]:
+    parsed = parse_week_label(label)
+    return parsed if parsed else (0, 0)
 
 
 def load_prior(
@@ -697,11 +704,23 @@ def load_prior(
 ) -> dict[str, Any] | None:
     index = read_ai_rankings(_index_name(board, league_id), store_dir=store_dir)
     if not index:
-        return read_ai_rankings(_week_name(board, "latest", league_id), store_dir=store_dir)
-    weeks = [str(item) for item in index.get("weeks") or [] if item != week_lbl]
-    if not weeks:
+        latest = read_ai_rankings(_week_name(board, "latest", league_id), store_dir=store_dir)
+        if latest and latest.get("week_label") != week_lbl:
+            return latest
         return None
-    return read_ai_rankings(_week_name(board, weeks[-1], league_id), store_dir=store_dir)
+    current = parse_week_label(week_lbl) or (0, 0)
+    prior_labels = []
+    for item in index.get("weeks") or []:
+        label = str(item)
+        parsed = parse_week_label(label)
+        if parsed and parsed < current:
+            prior_labels.append((parsed, label))
+    if not prior_labels:
+        return None
+    prior_labels.sort()
+    return read_ai_rankings(
+        _week_name(board, prior_labels[-1][1], league_id), store_dir=store_dir
+    )
 
 
 def _complete(
@@ -857,7 +876,9 @@ def run_fantasy_board(
 ) -> dict[str, Any]:
     spec = load_registry(registry_path).by_id(league_id)
     year = season or spec.current_season
-    snapshot = read_snapshot(spec.id, year, store_dir=store_dir)
+    snapshot = resolve_store(store_dir).read(spec.id, year)
+    if snapshot is None:
+        raise FileNotFoundError(f"No snapshot for {spec.id} season {year}")
     facts = build_fantasy_facts(snapshot)
     if week is not None:
         facts["week"] = week

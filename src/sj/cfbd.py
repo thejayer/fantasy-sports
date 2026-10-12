@@ -151,12 +151,10 @@ def parse_game(row: dict[str, Any]) -> CfbdGame | None:
         away_conference=_text(_pick(row, "awayConference", "away_conference")),
         home_classification=_text(
             _pick(row, "homeClassification", "home_classification")
-        ).lower()
-        or "fbs",
+        ).lower(),
         away_classification=_text(
             _pick(row, "awayClassification", "away_classification")
-        ).lower()
-        or "fbs",
+        ).lower(),
         home_points=_int(_pick(row, "homePoints", "home_points")),
         away_points=_int(_pick(row, "awayPoints", "away_points")),
     )
