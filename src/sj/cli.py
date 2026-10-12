@@ -584,7 +584,7 @@ def ai_rankings_cmd(
         None, "--season", "-s", help="CFB fall year or hub season. Default: current."
     ),
     week: int | None = typer.Option(
-        None, "--week", "-w", help="CFB week or fantasy period. Default: latest completed."
+        None, "--week", "-w", help="CFB week or fantasy H2H week (1–25). Offseason uses a dated label."
     ),
     store_dir: Path | None = typer.Option(
         None, help="Write here instead of the configured store."

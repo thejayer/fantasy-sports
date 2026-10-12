@@ -67,8 +67,13 @@ def week_label(season: int, week: int) -> str:
 def parse_week_label(label: str) -> tuple[int, int] | None:
     raw = str(label).strip().lower()
     if "-off" in raw:
-        year = raw.split("-off", 1)[0]
-        return (int(year), 0) if year.isdigit() else None
+        year, _, rest = raw.partition("-off")
+        if not year.isdigit():
+            return None
+        stamp = rest.lstrip("-")
+        if stamp.isdigit():
+            return int(year), int(stamp)
+        return int(year), 0
     if "-w" not in raw:
         return None
     year, _, week = raw.partition("-w")

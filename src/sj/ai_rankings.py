@@ -47,6 +47,7 @@ FANTASY_LEAGUES = (
     "hockey-main",
 )
 TOP_N = 25
+MAX_H2H_WEEK = 25
 DEFAULT_PROVIDER = "xai"
 DEFAULT_XAI_MODEL = "grok-4-fast"
 DEFAULT_OPENAI_MODEL = "gpt-4.1-mini"
@@ -418,6 +419,79 @@ def _team_recent(outcomes: list[Any] | None, limit: int = 4) -> list[str]:
     return marks[-limit:]
 
 
+def _clock_date(today: date | None = None) -> date:
+    return today or datetime.now(timezone.utc).date()
+
+
+def offseason_week_label(season: int, today: date | None = None) -> str:
+    """Dated offseason/preseason label so Monday jobs keep history and movers."""
+    return f"{int(season)}-off-{_clock_date(today).strftime('%Y%m%d')}"
+
+
+def _season_points_week(sport: str, season: int, today: date) -> int:
+    if sport == "baseball":
+        start = date(int(season), 3, 20)
+    elif sport == "hockey":
+        start = date(int(season) - 1, 10, 15)
+    else:
+        start = date(int(season), 1, 1)
+    if today < start:
+        return 1
+    return min(1 + (today - start).days // 7, MAX_H2H_WEEK)
+
+
+def fantasy_phase_and_label(
+    snapshot: dict[str, Any],
+    today: date | None = None,
+) -> tuple[str, str, int]:
+    """Pick a weekly label that ESPN daily scoring periods must not drive.
+
+    Football H2H uses ``current_week`` when it is a plausible matchup week.
+    Baseball/hockey season-points use a calendar week-of-season in-window, and
+    ``{season}-off-YYYYMMDD`` in the offseason or preseason (so ``2026-w187``
+    and a preseason ``2027-w14`` cannot happen again).
+    """
+    when = _clock_date(today)
+    season = int(snapshot.get("season") or when.year)
+    period = int(snapshot.get("current_week") or 0)
+    sport = str(snapshot.get("sport") or "").strip().lower()
+    scoring = str(
+        (snapshot.get("settings") or {}).get("scoring_type")
+        or snapshot.get("scoring_type")
+        or ""
+    )
+    daily = sport in {"baseball", "hockey"} or scoring == "TOTAL_SEASON_POINTS"
+    if not daily:
+        in_window = date(season, 8, 1) <= when <= date(season + 1, 2, 15)
+        if in_window and 1 <= period <= MAX_H2H_WEEK:
+            return "in_season", week_label(season, period), period
+        if date(season, 7, 15) <= when < date(season, 9, 1):
+            return "preseason", offseason_week_label(season, when), 0
+        return "offseason", offseason_week_label(season, when), 0
+    if sport == "baseball":
+        if date(season, 2, 15) <= when < date(season, 3, 20):
+            phase = "preseason"
+        elif date(season, 3, 20) <= when <= date(season, 10, 5):
+            phase = "in_season"
+        else:
+            phase = "offseason"
+    elif sport == "hockey":
+        start = date(season - 1, 10, 15)
+        end = date(season, 6, 15)
+        if start <= when <= end:
+            phase = "in_season"
+        elif date(season - 1, 9, 1) <= when < start:
+            phase = "preseason"
+        else:
+            phase = "offseason"
+    else:
+        phase = "in_season" if 1 <= period <= MAX_H2H_WEEK else "offseason"
+    if phase != "in_season":
+        return phase, offseason_week_label(season, when), 0
+    week_n = _season_points_week(sport, season, when)
+    return "in_season", week_label(season, week_n), week_n
+
+
 def _top_players(roster: list[Any] | None, limit: int = 4) -> list[dict[str, Any]]:
     players: list[dict[str, Any]] = []
     for player in roster or []:
@@ -438,9 +512,12 @@ def _top_players(roster: list[Any] | None, limit: int = 4) -> list[dict[str, Any
     return players[:limit]
 
 
-def build_fantasy_facts(snapshot: dict[str, Any]) -> dict[str, Any]:
-    week = int(snapshot.get("current_week") or 0)
+def build_fantasy_facts(
+    snapshot: dict[str, Any],
+    today: date | None = None,
+) -> dict[str, Any]:
     season = int(snapshot.get("season") or 0)
+    phase, label, week = fantasy_phase_and_label(snapshot, today)
     teams_out: list[dict[str, Any]] = []
     for team in snapshot.get("teams") or []:
         if not isinstance(team, dict):
@@ -465,7 +542,6 @@ def build_fantasy_facts(snapshot: dict[str, Any]) -> dict[str, Any]:
                 "top_players": _top_players(team.get("roster")),
             }
         )
-    phase = "in_season" if week > 0 else "offseason"
     return {
         "league_id": snapshot.get("league_id"),
         "name": snapshot.get("name"),
@@ -473,7 +549,7 @@ def build_fantasy_facts(snapshot: dict[str, Any]) -> dict[str, Any]:
         "format": snapshot.get("format"),
         "season": season,
         "week": week,
-        "week_label": week_label(season, week),
+        "week_label": label,
         "phase": phase,
         "scoring_type": (snapshot.get("settings") or {}).get("scoring_type")
         or snapshot.get("scoring_type"),
@@ -902,6 +978,7 @@ def run_fantasy_board(
     llm: RankingsLlmConfig | None = None,
     complete: CompleteFn | None = None,
     now: datetime | None = None,
+    today: date | None = None,
     persist: bool = True,
 ) -> dict[str, Any]:
     spec = load_registry(registry_path).by_id(league_id)
@@ -909,11 +986,17 @@ def run_fantasy_board(
     snapshot = resolve_store(store_dir).read(spec.id, year)
     if snapshot is None:
         raise FileNotFoundError(f"No snapshot for {spec.id} season {year}")
-    facts = build_fantasy_facts(snapshot)
+    clock = today or (now.date() if now is not None else None)
+    facts = build_fantasy_facts(snapshot, today=clock)
     if week is not None:
-        facts["week"] = week
-        facts["week_label"] = week_label(year, week)
-        facts["phase"] = "in_season" if week > 0 else "offseason"
+        if 1 <= int(week) <= MAX_H2H_WEEK:
+            facts["week"] = int(week)
+            facts["week_label"] = week_label(year, int(week))
+            facts["phase"] = "in_season"
+        else:
+            facts["week"] = 0
+            facts["week_label"] = offseason_week_label(year, clock)
+            facts["phase"] = "offseason"
     reused = _reuse_if_unchanged(
         BOARD_FANTASY,
         facts["week_label"],

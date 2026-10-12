@@ -29,6 +29,7 @@ describe("ai rankings helpers", () => {
     expect(resolveWeekLabel({ board: "cfb", weeks: [] }, "2026-w07")).toBeNull();
     expect(formatWeekChip("2026-w07")).toBe("2026 · W7");
     expect(formatWeekChip("2026-off")).toBe("2026 offseason");
+    expect(formatWeekChip("2026-off-20261013")).toBe("2026 · Oct 13");
     expect(modelLabel("xai/grok-4-fast")).toBe("xai/grok-4-fast");
     expect(modelLabel("fixture")).toBe("Fixture ballot");
   });
