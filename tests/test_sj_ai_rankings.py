@@ -20,6 +20,7 @@ from sj.ai_rankings import (
     cfb_prompt,
     complete_openai_compatible,
     extract_json_object,
+    load_prior,
     openai_compatible_body,
     persist_snapshot,
     rankings_llm_config_from_env,
@@ -122,6 +123,22 @@ def test_cfbd_parse_records_and_ap():
     ap = _ap()
     assert ap[0]["name"] == "Ohio State"
     assert ap[1]["rank"] == 2
+    mixed = parse_ap_poll(
+        [
+            {
+                "week": 7,
+                "polls": [
+                    {"poll": "Map Poll", "ranks": [{"rank": 1, "school": "Wrong"}]},
+                    {
+                        "poll": "AP Top 25",
+                        "ranks": [{"rank": 1, "school": "Ohio State"}],
+                    },
+                ],
+            }
+        ],
+        week=7,
+    )
+    assert mixed[0]["name"] == "Ohio State"
 
 
 def test_cfbd_client_uses_injected_fetch():
@@ -404,8 +421,6 @@ def test_assemble_rejects_unknown_teams():
 
 
 def test_load_prior_uses_previous_week_not_later(tmp_path: Path):
-    from sj.ai_rankings import load_prior, persist_snapshot
-
     older = {
         "schema_version": 1,
         "board": "cfb",
@@ -427,6 +442,63 @@ def test_load_prior_uses_previous_week_not_later(tmp_path: Path):
     prior = load_prior("cfb", "2026-w06", store_dir=tmp_path)
     assert prior is None or prior["week_label"] != "2026-w07"
     assert load_prior("cfb", "2026-w07", store_dir=tmp_path)["week_label"] == "2026-w06"
+
+
+def test_load_prior_skips_empty_degraded_week(tmp_path: Path):
+    good = {
+        "schema_version": 1,
+        "board": "cfb",
+        "season": 2026,
+        "week": 6,
+        "week_label": "2026-w06",
+        "rankings": [{"rank": 1, "name": "Ohio State"}],
+        "generated_at": "2026-10-05T00:00:00+00:00",
+    }
+    empty = {
+        **good,
+        "week": 7,
+        "week_label": "2026-w07",
+        "rankings": [],
+        "generated_at": "2026-10-12T00:00:00+00:00",
+    }
+    persist_snapshot(good, prompt="", raw_response="", store_dir=tmp_path)
+    persist_snapshot(empty, prompt="", raw_response="", store_dir=tmp_path)
+    prior = load_prior("cfb", "2026-w08", store_dir=tmp_path)
+    assert prior is not None
+    assert prior["week_label"] == "2026-w06"
+    assert prior["rankings"]
+
+
+def test_cfb_fetch_failure_does_not_persist(tmp_path: Path):
+    good = run_cfb_board(
+        season=2026,
+        week=7,
+        store_dir=tmp_path,
+        cfbd=CfbdClient(
+            api_key="test",
+            fetch=lambda path, params: json.loads(
+                (CFBD / ("games.json" if path == "/games" else "rankings.json")).read_text()
+            ),
+        ),
+        complete=_fake_cfb_complete,
+    )
+    assert good["rankings"]
+
+    def boom(_path: str, _params):
+        raise RuntimeError("cfbd down")
+
+    empty = run_cfb_board(
+        season=2026,
+        week=7,
+        store_dir=tmp_path,
+        cfbd=CfbdClient(api_key="test", fetch=boom),
+        persist=True,
+    )
+    assert empty["rankings"] == []
+    assert "CFBD games fetch failed" in empty["degraded"][0]
+    stored = read_ai_rankings("cfb/2026-w07", store_dir=tmp_path)
+    assert stored["rankings"]
+    assert stored["week_label"] == "2026-w07"
 
 
 def test_degraded_cfb_does_not_overwrite_latest(tmp_path: Path, monkeypatch: pytest.MonkeyPatch):

@@ -210,7 +210,7 @@ def parse_ap_poll(payload: Any, week: int | None = None) -> list[dict[str, Any]]
         if not isinstance(poll, dict):
             continue
         label = _text(poll.get("poll")).lower()
-        if "ap" in label:
+        if label == "ap top 25" or label == "ap" or label.startswith("ap "):
             ap = poll
             break
     if ap is None:

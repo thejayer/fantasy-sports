@@ -84,20 +84,27 @@ export const FANTASY_LEAGUE_LABELS: Record<string, string> = {
   "hockey-main": "Hockey Main",
 };
 
+function isAiRankingRow(value: unknown): value is AiRankingRow {
+  if (!value || typeof value !== "object") return false;
+  const row = value as AiRankingRow;
+  return typeof row.name === "string" && typeof row.rank === "number";
+}
+
 export function isAiRankingsSnapshot(value: unknown): value is AiRankingsSnapshot {
   if (!value || typeof value !== "object") return false;
   const row = value as AiRankingsSnapshot;
   return (
     typeof row.week_label === "string" &&
     typeof row.season === "number" &&
-    Array.isArray(row.rankings)
+    Array.isArray(row.rankings) &&
+    row.rankings.every(isAiRankingRow)
   );
 }
 
 export function isAiRankingsIndex(value: unknown): value is AiRankingsIndex {
   if (!value || typeof value !== "object") return false;
   const row = value as AiRankingsIndex;
-  return Array.isArray(row.weeks);
+  return Array.isArray(row.weeks) && row.weeks.every((week) => typeof week === "string");
 }
 
 export function deltaLabel(delta: number | null | undefined): string {

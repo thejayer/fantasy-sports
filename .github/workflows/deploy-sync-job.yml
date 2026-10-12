@@ -33,6 +33,14 @@ on:
         description: "Execute the job once after deploying (true/false)"
         required: true
         default: "true"
+      rankings_provider:
+        description: "SJ_RANKINGS_PROVIDER (xai or openai)"
+        required: true
+        default: "xai"
+      rankings_model:
+        description: "SJ_RANKINGS_MODEL"
+        required: true
+        default: "grok-4-fast"
 
 permissions:
   contents: read
@@ -52,10 +60,12 @@ jobs:
       JOB: ${{ inputs.job }}
       BUCKET: ${{ inputs.bucket }}
       RUN_AFTER: ${{ inputs.run_after_deploy }}
+      RANKINGS_PROVIDER: ${{ inputs.rankings_provider }}
+      RANKINGS_MODEL: ${{ inputs.rankings_model }}
     steps:
       - name: Validate inputs
         run: |
-          for pair in "project_id=$PROJECT_ID" "region=$REGION" "job=$JOB" "bucket=$BUCKET"; do
+          for pair in "project_id=$PROJECT_ID" "region=$REGION" "job=$JOB" "bucket=$BUCKET" "rankings_provider=$RANKINGS_PROVIDER" "rankings_model=$RANKINGS_MODEL"; do
             name=${pair%%=*}
             value=${pair#*=}
             case "$value" in
@@ -128,7 +138,10 @@ jobs:
               --role="roles/secretmanager.secretAccessor" \
               --quiet >/dev/null || true
             local payload
-            payload="$(gcloud secrets versions access latest --secret="$secret_name" --project "$PROJECT_ID" 2>/dev/null || true)"
+            if ! payload="$(gcloud secrets versions access latest --secret="$secret_name" --project "$PROJECT_ID")"; then
+              echo "failed to read $secret_name — aborting so --set-secrets cannot drop an attached key" >&2
+              exit 1
+            fi
             if [ -z "$payload" ] || [ "$payload" = "REPLACE_ME" ]; then
               echo "$secret_name latest is empty or REPLACE_ME — not attaching $env_name"
               return 0
@@ -144,7 +157,7 @@ jobs:
             --max-retries 2
             --task-timeout 30m
             --memory 1Gi --cpu 1
-            --set-env-vars "SJ_GCS_BUCKET=$BUCKET,SJ_RANKINGS_PROVIDER=xai,SJ_RANKINGS_MODEL=grok-4-fast"
+            --set-env-vars "SJ_GCS_BUCKET=$BUCKET,SJ_RANKINGS_PROVIDER=$RANKINGS_PROVIDER,SJ_RANKINGS_MODEL=$RANKINGS_MODEL"
             --set-secrets "$SECRETS"
           )
           if gcloud run jobs describe "$JOB" --project "$PROJECT_ID" --region "$REGION" >/dev/null 2>&1; then

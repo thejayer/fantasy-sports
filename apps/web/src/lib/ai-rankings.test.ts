@@ -45,6 +45,14 @@ describe("ai rankings helpers", () => {
       }),
     ).toBe(true);
     expect(isAiRankingsSnapshot({ week_label: "x" })).toBe(false);
+    expect(
+      isAiRankingsSnapshot({
+        week_label: "2026-w07",
+        season: 2026,
+        rankings: [null],
+      }),
+    ).toBe(false);
     expect(isAiRankingsIndex({ board: "cfb", weeks: [] })).toBe(true);
+    expect(isAiRankingsIndex({ board: "cfb", weeks: ["2026-w06", 42] })).toBe(false);
   });
 });

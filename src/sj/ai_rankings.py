@@ -707,7 +707,7 @@ def load_prior(
     index = read_ai_rankings(_index_name(board, league_id), store_dir=store_dir)
     if not index:
         latest = read_ai_rankings(_week_name(board, "latest", league_id), store_dir=store_dir)
-        if latest and latest.get("week_label") != week_lbl:
+        if latest and latest.get("week_label") != week_lbl and latest.get("rankings"):
             return latest
         return None
     current = parse_week_label(week_lbl) or (0, 0)
@@ -717,12 +717,14 @@ def load_prior(
         parsed = parse_week_label(label)
         if parsed and parsed < current:
             prior_labels.append((parsed, label))
-    if not prior_labels:
-        return None
     prior_labels.sort()
-    return read_ai_rankings(
-        _week_name(board, prior_labels[-1][1], league_id), store_dir=store_dir
-    )
+    for _parsed, label in reversed(prior_labels):
+        prior = read_ai_rankings(
+            _week_name(board, label, league_id), store_dir=store_dir
+        )
+        if prior and prior.get("rankings"):
+            return prior
+    return None
 
 
 def _reuse_if_unchanged(
@@ -837,11 +839,13 @@ def run_cfb_board(
             persist_snapshot(snapshot, prompt="", raw_response="", store_dir=store_dir)
         return snapshot
 
+    fetch_failed = False
     try:
         games = client.games(year)
     except RuntimeError as exc:
         degraded.append(f"CFBD games fetch failed: {exc}")
         games = []
+        fetch_failed = True
     if not games:
         if "CFBD games fetch failed" not in " ".join(degraded):
             degraded.append(f"CFBD returned no FBS games for {year}.")
@@ -851,7 +855,8 @@ def run_cfb_board(
             degraded=degraded,
             now=now,
         )
-        if persist:
+        # Transient CFBD outages must not overwrite or index a published week.
+        if persist and not fetch_failed:
             persist_snapshot(snapshot, prompt="", raw_response="", store_dir=store_dir)
         return snapshot
     resolved_week = week or latest_completed_week(games)

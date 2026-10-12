@@ -210,7 +210,7 @@ if [ "${SJ_AI_RANKINGS:-1}" != "0" ]; then
         --project="${PROJECT}" \
         --member="serviceAccount:${SYNC_SA}" \
         --role="roles/secretmanager.secretAccessor" \
-        --quiet >/dev/null || true
+        --quiet >/dev/null
       echo "granted secretAccessor on ${SECRET_NAME} to ${SYNC_SA}"
     else
       echo "secret ${SECRET_NAME} not created yet — ./scripts/create-hub-secrets.sh then add a version"
