@@ -199,7 +199,7 @@ if [ "${SJ_AI_RANKINGS:-1}" != "0" ]; then
   upsert_rankings_scheduler \
     "sj-ai-rankings-cfb" \
     "${SJ_AI_RANKINGS_CFB_SCHEDULE:-0 8 * * 0}" \
-    '{"overrides":{"containerOverrides":[{"args":["ai-rankings","--board","cfb"]}]}}'
+    '{"overrides":{"timeout":"3600s","containerOverrides":[{"args":["ai-rankings","--board","cfb"]}]}}'
     upsert_rankings_scheduler \
     "sj-ai-rankings-fantasy" \
     "${SJ_AI_RANKINGS_FANTASY_SCHEDULE:-0 8 * * 1}" \
@@ -237,7 +237,7 @@ Hockey lines + starting goalies refresh at 15:00 and 17:30 (${TIME_ZONE}) via
 sj-hockey-lines-* (args nhl-lines). Skip with SJ_HOCKEY_LINES=0.
 
 AI rankings (roadmap 7.16):
-  sj-ai-rankings-cfb      Sunday 08:00 (${TIME_ZONE})  args ai-rankings --board cfb
+  sj-ai-rankings-cfb      Sunday 08:00 (${TIME_ZONE})  args ai-rankings --board cfb (3600s override)
   sj-ai-rankings-fantasy  Monday 08:00 (${TIME_ZONE})  args ai-rankings --board fantasy
 Skip with SJ_AI_RANKINGS=0. Needs secrets sj-cfbd-api-key (optional; degrades)
 and sj-rankings-api-key (xAI / OpenAI-compatible). See HUB.md.

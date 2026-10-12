@@ -15,6 +15,7 @@ from __future__ import annotations
 import hashlib
 import json
 import os
+import time
 import urllib.error
 import urllib.request
 from collections.abc import Callable
@@ -55,6 +56,10 @@ DEFAULT_XAI_BASE = "https://api.x.ai/v1"
 DEFAULT_OPENAI_BASE = "https://api.openai.com/v1"
 DEFAULT_TEMPERATURE = 0.2
 DEFAULT_MAX_TOKENS = 6000
+DEFAULT_LLM_TIMEOUT_SECONDS = 600.0
+DEFAULT_LLM_MAX_ATTEMPTS = 3
+DEFAULT_LLM_RETRY_BACKOFF_SECONDS = 5.0
+RETRYABLE_LLM_HTTP = frozenset({408, 429, 500, 502, 503, 504})
 USER_AGENT = "sj-ai-rankings/1 (Strictly Jayers hub)"
 
 CompleteFn = Callable[[str, str], str]
@@ -69,6 +74,8 @@ class RankingsLlmConfig:
         base_url: str,
         temperature: float = DEFAULT_TEMPERATURE,
         max_tokens: int = DEFAULT_MAX_TOKENS,
+        timeout_s: float = DEFAULT_LLM_TIMEOUT_SECONDS,
+        max_attempts: int = DEFAULT_LLM_MAX_ATTEMPTS,
     ) -> None:
         self.provider = provider
         self.api_key = api_key
@@ -76,6 +83,8 @@ class RankingsLlmConfig:
         self.base_url = base_url.rstrip("/")
         self.temperature = temperature
         self.max_tokens = max_tokens
+        self.timeout_s = timeout_s
+        self.max_attempts = max_attempts
 
     @property
     def label(self) -> str:
@@ -111,6 +120,14 @@ def rankings_llm_config_from_env(
         max_tokens = int(source.get("SJ_RANKINGS_MAX_TOKENS") or DEFAULT_MAX_TOKENS)
     except (TypeError, ValueError):
         max_tokens = DEFAULT_MAX_TOKENS
+    try:
+        timeout_s = float(source.get("SJ_RANKINGS_TIMEOUT_S") or DEFAULT_LLM_TIMEOUT_SECONDS)
+    except (TypeError, ValueError):
+        timeout_s = DEFAULT_LLM_TIMEOUT_SECONDS
+    try:
+        max_attempts = int(source.get("SJ_RANKINGS_MAX_ATTEMPTS") or DEFAULT_LLM_MAX_ATTEMPTS)
+    except (TypeError, ValueError):
+        max_attempts = DEFAULT_LLM_MAX_ATTEMPTS
     return RankingsLlmConfig(
         provider=provider,
         api_key=key,
@@ -118,7 +135,42 @@ def rankings_llm_config_from_env(
         base_url=base,
         temperature=max(0.0, min(temperature, 1.0)),
         max_tokens=max(256, max_tokens),
+        timeout_s=max(30.0, timeout_s),
+        max_attempts=max(1, max_attempts),
     )
+
+
+def rankings_force(env: dict[str, str] | None = None) -> bool:
+    source = env if env is not None else os.environ
+    return (source.get("SJ_RANKINGS_FORCE") or "").strip().lower() in {
+        "1",
+        "true",
+        "yes",
+        "on",
+    }
+
+
+def _is_retryable_llm_error(exc: BaseException) -> bool:
+    if isinstance(exc, urllib.error.HTTPError):
+        return exc.code in RETRYABLE_LLM_HTTP
+    if isinstance(exc, urllib.error.URLError):
+        reason = exc.reason
+        if isinstance(reason, BaseException) and _is_retryable_llm_error(reason):
+            return True
+        return "timed out" in str(reason).lower() or "timeout" in str(reason).lower()
+    return isinstance(exc, (TimeoutError, ConnectionError))
+
+
+def _wrap_llm_http_error(config: RankingsLlmConfig, exc: BaseException) -> RuntimeError:
+    if isinstance(exc, urllib.error.HTTPError):
+        try:
+            detail = exc.read().decode("utf-8", errors="replace")[:240]
+        except Exception:  # noqa: BLE001 - body is optional on some HTTPError stubs
+            detail = str(exc.reason or exc)
+        return RuntimeError(f"{config.provider} {exc.code}: {detail}")
+    if isinstance(exc, urllib.error.URLError):
+        return RuntimeError(f"{config.provider} network error: {exc.reason}")
+    return RuntimeError(f"{config.provider} network error: {exc}")
 
 
 def openai_compatible_body(
@@ -138,7 +190,12 @@ def openai_compatible_body(
     }
 
 
-def complete_openai_compatible(config: RankingsLlmConfig, system: str, prompt: str) -> str:
+def _openai_compatible_once(
+    config: RankingsLlmConfig,
+    system: str,
+    prompt: str,
+    timeout_s: float,
+) -> str:
     body = json.dumps(openai_compatible_body(config, system, prompt)).encode("utf-8")
     request = urllib.request.Request(
         f"{config.base_url}/chat/completions",
@@ -150,14 +207,8 @@ def complete_openai_compatible(config: RankingsLlmConfig, system: str, prompt: s
         },
         method="POST",
     )
-    try:
-        with urllib.request.urlopen(request, timeout=120) as response:
-            payload = json.loads(response.read().decode("utf-8"))
-    except urllib.error.HTTPError as exc:
-        detail = exc.read().decode("utf-8", errors="replace")[:240]
-        raise RuntimeError(f"{config.provider} {exc.code}: {detail}") from exc
-    except urllib.error.URLError as exc:
-        raise RuntimeError(f"{config.provider} network error: {exc.reason}") from exc
+    with urllib.request.urlopen(request, timeout=timeout_s) as response:
+        payload = json.loads(response.read().decode("utf-8"))
     choices = payload.get("choices") if isinstance(payload, dict) else None
     first = choices[0] if isinstance(choices, list) and choices else None
     message = first.get("message") if isinstance(first, dict) else None
@@ -165,6 +216,37 @@ def complete_openai_compatible(config: RankingsLlmConfig, system: str, prompt: s
     if not text:
         raise RuntimeError(f"{config.provider} returned no text")
     return str(text)
+
+
+def complete_openai_compatible(
+    config: RankingsLlmConfig,
+    system: str,
+    prompt: str,
+    *,
+    sleeper: Callable[[float], None] | None = None,
+) -> str:
+    """POST /chat/completions with timeout + exponential backoff on transients.
+
+    Grok 4.7 on the full FBS prompt can take several minutes; the default
+    ``SJ_RANKINGS_TIMEOUT_S`` is 600s (was a hard 120s). Timeouts, URL
+    errors, and 408/429/5xx retry up to ``SJ_RANKINGS_MAX_ATTEMPTS``.
+    """
+    attempts = max(1, int(config.max_attempts))
+    timeout_s = float(config.timeout_s)
+    sleep = sleeper or time.sleep
+    last_exc: BaseException | None = None
+    for attempt in range(1, attempts + 1):
+        try:
+            return _openai_compatible_once(config, system, prompt, timeout_s)
+        except RuntimeError:
+            raise
+        except (urllib.error.HTTPError, urllib.error.URLError, TimeoutError, ConnectionError) as exc:
+            last_exc = exc
+            if attempt >= attempts or not _is_retryable_llm_error(exc):
+                raise _wrap_llm_http_error(config, exc) from exc
+            sleep(DEFAULT_LLM_RETRY_BACKOFF_SECONDS * (2 ** (attempt - 1)))
+    assert last_exc is not None  # pragma: no cover
+    raise _wrap_llm_http_error(config, last_exc) from last_exc
 
 
 def extract_json_object(text: str) -> dict[str, Any]:
@@ -896,6 +978,7 @@ def run_cfb_board(
     now: datetime | None = None,
     today: date | None = None,
     persist: bool = True,
+    force: bool = False,
 ) -> dict[str, Any]:
     degraded: list[str] = []
     year = season or default_cfb_season(today)
@@ -942,11 +1025,12 @@ def run_cfb_board(
         degraded.append(f"AP poll fetch failed: {exc}")
         ap_poll = []
     facts = build_cfb_facts(games, resolved_week, year, ap_poll)
-    reused = _reuse_if_unchanged(
-        BOARD_CFB, facts["week_label"], facts_hash(facts), store_dir=store_dir
-    )
-    if reused is not None:
-        return reused
+    if not force:
+        reused = _reuse_if_unchanged(
+            BOARD_CFB, facts["week_label"], facts_hash(facts), store_dir=store_dir
+        )
+        if reused is not None:
+            return reused
     prior = load_prior(BOARD_CFB, facts["week_label"], store_dir=store_dir)
     prompt = cfb_prompt(facts, prior)
     model, raw, parsed = _complete(llm or rankings_llm_config_from_env(), CFB_SYSTEM, prompt, complete)
@@ -980,6 +1064,7 @@ def run_fantasy_board(
     now: datetime | None = None,
     today: date | None = None,
     persist: bool = True,
+    force: bool = False,
 ) -> dict[str, Any]:
     spec = load_registry(registry_path).by_id(league_id)
     year = season or spec.current_season
@@ -997,15 +1082,16 @@ def run_fantasy_board(
             facts["week"] = 0
             facts["week_label"] = offseason_week_label(year, clock)
             facts["phase"] = "offseason"
-    reused = _reuse_if_unchanged(
-        BOARD_FANTASY,
-        facts["week_label"],
-        facts_hash(facts),
-        spec.id,
-        store_dir=store_dir,
-    )
-    if reused is not None:
-        return reused
+    if not force:
+        reused = _reuse_if_unchanged(
+            BOARD_FANTASY,
+            facts["week_label"],
+            facts_hash(facts),
+            spec.id,
+            store_dir=store_dir,
+        )
+        if reused is not None:
+            return reused
     prior = load_prior(BOARD_FANTASY, facts["week_label"], spec.id, store_dir=store_dir)
     prompt = fantasy_prompt(facts, prior)
     config = llm or rankings_llm_config_from_env()
@@ -1037,6 +1123,7 @@ def run_all_fantasy(
     complete: CompleteFn | None = None,
     now: datetime | None = None,
     persist: bool = True,
+    force: bool = False,
 ) -> list[dict[str, Any]]:
     wanted = list(league_ids or FANTASY_LEAGUES)
     results: list[dict[str, Any]] = []
@@ -1052,6 +1139,7 @@ def run_all_fantasy(
                 complete=complete,
                 now=now,
                 persist=persist,
+                force=force,
             )
         )
     return results

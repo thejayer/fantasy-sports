@@ -175,7 +175,7 @@ jobs:
             --region "$REGION"
             --image "$IMAGE"
             --max-retries 2
-            --task-timeout 30m
+            --task-timeout 60m
             --memory 1Gi --cpu 1
             --set-secrets "$SECRETS"
           )
@@ -234,4 +234,6 @@ jobs:
           echo "AI rankings (after sj-cfbd-api-key / sj-rankings-api-key exist):"
           echo "  gcloud run jobs execute $JOB --args=ai-rankings,--board,cfb --region=$REGION --project=$PROJECT_ID"
           echo "  gcloud run jobs execute $JOB --args=ai-rankings,--board,fantasy --region=$REGION --project=$PROJECT_ID"
+          echo "  gcloud run jobs execute $JOB --args=ai-rankings,--board,cfb,--force --region=$REGION --project=$PROJECT_ID"
+          echo "  Job task-timeout is 60m (Grok CFB prompt). LLM timeout SJ_RANKINGS_TIMEOUT_S=600."
           echo "  ./scripts/setup-sync-infra.sh   # registers Sunday/Monday schedulers"
