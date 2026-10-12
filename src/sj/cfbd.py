@@ -40,6 +40,24 @@ def default_cfb_season(today: date | None = None) -> int:
     return when.year - 1
 
 
+def estimated_cfb_week(today: date | None = None) -> int:
+    """Calendar FBS week when CFBD games are unavailable.
+
+    Week 1 ≈ the last week of August (2026-10-12 → 7). January is treated as
+    bowl week 15; Feb–Jul is offseason (0). Never invent ``-off`` in Aug–Dec
+    so a Sunday degrade writes ``{season}-wNN`` instead of leaking fixtures.
+    """
+    when = today or datetime.now(timezone.utc).date()
+    if 2 <= when.month <= 7:
+        return 0
+    if when.month == 1:
+        return 15
+    start = date(when.year, 8, 26)
+    if when < start:
+        return 0
+    return min(1 + (when - start).days // 7, 16)
+
+
 def week_label(season: int, week: int) -> str:
     if week <= 0:
         return f"{int(season)}-off"

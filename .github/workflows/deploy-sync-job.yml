@@ -107,18 +107,36 @@ jobs:
       - name: Deploy Cloud Run Job
         run: |
           SECRETS="ESPN_S2=sj-espn-s2:latest,ESPN_SWID=sj-espn-swid:latest"
-          # Roadmap 7.16 — attach only when the secret exists so a first
-          # deploy does not fail closed on a missing CFBD / model key.
-          if gcloud secrets describe sj-cfbd-api-key --project "$PROJECT_ID" >/dev/null 2>&1; then
-            SECRETS="$SECRETS,SJ_CFBD_API_KEY=sj-cfbd-api-key:latest"
-          else
-            echo "sj-cfbd-api-key missing — CFB rankings will degrade"
+          # Job SA (or the project compute SA on first create). Grant
+          # secretAccessor *before* --set-secrets so a new rankings secret
+          # cannot take down the daily ESPN sync.
+          SYNC_SA="$(gcloud run jobs describe "$JOB" --project "$PROJECT_ID" --region "$REGION" --format='value(spec.template.spec.serviceAccountName)' 2>/dev/null || true)"
+          if [ -z "$SYNC_SA" ]; then
+            PROJECT_NUMBER="$(gcloud projects describe "$PROJECT_ID" --format='value(projectNumber)')"
+            SYNC_SA="${PROJECT_NUMBER}-compute@developer.gserviceaccount.com"
           fi
-          if gcloud secrets describe sj-rankings-api-key --project "$PROJECT_ID" >/dev/null 2>&1; then
-            SECRETS="$SECRETS,SJ_RANKINGS_API_KEY=sj-rankings-api-key:latest"
-          else
-            echo "sj-rankings-api-key missing — AI rankings need this key"
-          fi
+          attach_rankings_secret() {
+            local env_name="$1"
+            local secret_name="$2"
+            if ! gcloud secrets describe "$secret_name" --project "$PROJECT_ID" >/dev/null 2>&1; then
+              echo "$secret_name missing — not attaching $env_name"
+              return 0
+            fi
+            gcloud secrets add-iam-policy-binding "$secret_name" \
+              --project "$PROJECT_ID" \
+              --member="serviceAccount:${SYNC_SA}" \
+              --role="roles/secretmanager.secretAccessor" \
+              --quiet >/dev/null || true
+            local payload
+            payload="$(gcloud secrets versions access latest --secret="$secret_name" --project "$PROJECT_ID" 2>/dev/null || true)"
+            if [ -z "$payload" ] || [ "$payload" = "REPLACE_ME" ]; then
+              echo "$secret_name latest is empty or REPLACE_ME — not attaching $env_name"
+              return 0
+            fi
+            SECRETS="$SECRETS,$env_name=$secret_name:latest"
+          }
+          attach_rankings_secret SJ_CFBD_API_KEY sj-cfbd-api-key
+          attach_rankings_secret SJ_RANKINGS_API_KEY sj-rankings-api-key
           COMMON=(
             --project "$PROJECT_ID"
             --region "$REGION"

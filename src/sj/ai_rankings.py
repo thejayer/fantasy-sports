@@ -28,6 +28,7 @@ from sj.cfbd import (
     compact_team_facts,
     compact_week_results,
     default_cfb_season,
+    estimated_cfb_week,
     fbs_teams,
     latest_completed_week,
     parse_week_label,
@@ -128,6 +129,7 @@ def openai_compatible_body(
         "model": config.model,
         "temperature": config.temperature,
         "max_tokens": config.max_tokens,
+        "response_format": {"type": "json_object"},
         "messages": [
             {"role": "system", "content": system},
             {"role": "user", "content": prompt},
@@ -155,11 +157,10 @@ def complete_openai_compatible(config: RankingsLlmConfig, system: str, prompt: s
         raise RuntimeError(f"{config.provider} {exc.code}: {detail}") from exc
     except urllib.error.URLError as exc:
         raise RuntimeError(f"{config.provider} network error: {exc.reason}") from exc
-    text = (
-        payload.get("choices", [{}])[0].get("message", {}).get("content")
-        if isinstance(payload, dict)
-        else None
-    )
+    choices = payload.get("choices") if isinstance(payload, dict) else None
+    first = choices[0] if isinstance(choices, list) and choices else None
+    message = first.get("message") if isinstance(first, dict) else None
+    text = message.get("content") if isinstance(message, dict) else None
     if not text:
         raise RuntimeError(f"{config.provider} returned no text")
     return str(text)
@@ -357,7 +358,9 @@ def cfb_prompt(
             "rankings": [{"rank": 1, "name": "Team", "blurb": "short"}],
             "also_ranked": [{"rank": 26, "name": "Team"}],
         },
-        "facts": facts,
+        # AP is applied after the call (attach_ap). Sending it here invites
+        # the model to hug the poll we told it not to copy.
+        "facts": {key: value for key, value in facts.items() if key != "ap_poll"},
         "last_week_top25": prior_top,
     }
     return json.dumps(payload, indent=2)
@@ -674,8 +677,7 @@ def persist_snapshot(
         "weeks": [],
     }
     weeks = [str(item) for item in index.get("weeks") or [] if item != week_lbl]
-    if has_ranks:
-        weeks.append(week_lbl)
+    weeks.append(week_lbl)
     weeks = sorted(set(weeks), key=_week_sort_key)
     latest = week_lbl if promote_latest else index.get("latest")
     if latest not in weeks and weeks:
@@ -723,6 +725,70 @@ def load_prior(
     )
 
 
+def _reuse_if_unchanged(
+    board: str,
+    week_lbl: str,
+    digest: str,
+    league_id: str | None = None,
+    store_dir: Any = None,
+) -> dict[str, Any] | None:
+    existing = read_ai_rankings(_week_name(board, week_lbl, league_id), store_dir=store_dir)
+    if (
+        existing
+        and existing.get("facts_hash") == digest
+        and existing.get("rankings")
+    ):
+        return existing
+    return None
+
+
+def _unavailable_cfb_snapshot(
+    *,
+    season: int,
+    week: int,
+    degraded: list[str],
+    now: datetime | None = None,
+) -> dict[str, Any]:
+    facts = {
+        "season": season,
+        "week": week,
+        "week_label": week_label(season, week),
+        "team_count": 0,
+        "teams": [],
+        "week_results": [],
+        "ap_poll": [],
+    }
+    return {
+        "schema_version": SCHEMA_VERSION,
+        "board": BOARD_CFB,
+        "season": season,
+        "week": week,
+        "week_label": facts["week_label"],
+        "generated_at": _now_iso(now),
+        "model": "none",
+        "temperature": DEFAULT_TEMPERATURE,
+        "facts_hash": facts_hash(facts),
+        "headline": "CFB rankings unavailable",
+        "methodology": "",
+        "last_week_review": "",
+        "notes": [],
+        "degraded": degraded,
+        "rankings": [],
+        "full_rankings": [],
+        "movers": {"risers": [], "fallers": [], "new": [], "dropped": []},
+        "ap_available": False,
+    }
+
+
+def resolve_cfb_week_number(
+    week: int | None,
+    today: date | None = None,
+) -> int:
+    if week is not None:
+        return int(week)
+    return estimated_cfb_week(today)
+
+
 def _complete(
     config: RankingsLlmConfig | None,
     system: str,
@@ -761,35 +827,12 @@ def run_cfb_board(
             "College Football Data API key missing (Secret Manager sj-cfbd-api-key / "
             "SJ_CFBD_API_KEY). No games were fetched."
         )
-        facts = {
-            "season": year,
-            "week": week or 0,
-            "week_label": week_label(year, week or 0),
-            "team_count": 0,
-            "teams": [],
-            "week_results": [],
-            "ap_poll": [],
-        }
-        snapshot = {
-            "schema_version": SCHEMA_VERSION,
-            "board": BOARD_CFB,
-            "season": year,
-            "week": facts["week"],
-            "week_label": facts["week_label"],
-            "generated_at": _now_iso(now),
-            "model": "none",
-            "temperature": DEFAULT_TEMPERATURE,
-            "facts_hash": facts_hash(facts),
-            "headline": "CFB rankings unavailable",
-            "methodology": "",
-            "last_week_review": "",
-            "notes": [],
-            "degraded": degraded,
-            "rankings": [],
-            "full_rankings": [],
-            "movers": {"risers": [], "fallers": [], "new": [], "dropped": []},
-            "ap_available": False,
-        }
+        snapshot = _unavailable_cfb_snapshot(
+            season=year,
+            week=resolve_cfb_week_number(week, today),
+            degraded=degraded,
+            now=now,
+        )
         if persist:
             persist_snapshot(snapshot, prompt="", raw_response="", store_dir=store_dir)
         return snapshot
@@ -802,35 +845,12 @@ def run_cfb_board(
     if not games:
         if "CFBD games fetch failed" not in " ".join(degraded):
             degraded.append(f"CFBD returned no FBS games for {year}.")
-        facts = {
-            "season": year,
-            "week": week or 0,
-            "week_label": week_label(year, week or 0),
-            "team_count": 0,
-            "teams": [],
-            "week_results": [],
-            "ap_poll": [],
-        }
-        snapshot = {
-            "schema_version": SCHEMA_VERSION,
-            "board": BOARD_CFB,
-            "season": year,
-            "week": facts["week"],
-            "week_label": facts["week_label"],
-            "generated_at": _now_iso(now),
-            "model": "none",
-            "temperature": DEFAULT_TEMPERATURE,
-            "facts_hash": facts_hash(facts),
-            "headline": "CFB rankings unavailable",
-            "methodology": "",
-            "last_week_review": "",
-            "notes": [],
-            "degraded": degraded,
-            "rankings": [],
-            "full_rankings": [],
-            "movers": {"risers": [], "fallers": [], "new": [], "dropped": []},
-            "ap_available": False,
-        }
+        snapshot = _unavailable_cfb_snapshot(
+            season=year,
+            week=resolve_cfb_week_number(week, today),
+            degraded=degraded,
+            now=now,
+        )
         if persist:
             persist_snapshot(snapshot, prompt="", raw_response="", store_dir=store_dir)
         return snapshot
@@ -841,6 +861,11 @@ def run_cfb_board(
         degraded.append(f"AP poll fetch failed: {exc}")
         ap_poll = []
     facts = build_cfb_facts(games, resolved_week, year, ap_poll)
+    reused = _reuse_if_unchanged(
+        BOARD_CFB, facts["week_label"], facts_hash(facts), store_dir=store_dir
+    )
+    if reused is not None:
+        return reused
     prior = load_prior(BOARD_CFB, facts["week_label"], store_dir=store_dir)
     prompt = cfb_prompt(facts, prior)
     model, raw, parsed = _complete(llm or rankings_llm_config_from_env(), CFB_SYSTEM, prompt, complete)
@@ -884,6 +909,15 @@ def run_fantasy_board(
         facts["week"] = week
         facts["week_label"] = week_label(year, week)
         facts["phase"] = "in_season" if week > 0 else "offseason"
+    reused = _reuse_if_unchanged(
+        BOARD_FANTASY,
+        facts["week_label"],
+        facts_hash(facts),
+        spec.id,
+        store_dir=store_dir,
+    )
+    if reused is not None:
+        return reused
     prior = load_prior(BOARD_FANTASY, facts["week_label"], spec.id, store_dir=store_dir)
     prompt = fantasy_prompt(facts, prior)
     config = llm or rankings_llm_config_from_env()

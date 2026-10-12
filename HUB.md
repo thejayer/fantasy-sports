@@ -512,7 +512,10 @@ Cloud Scheduler ──▶ Cloud Run Job (sj-sync) ──▶ gs://<project>-sj-da
   `sj-sync` image; Cloud Scheduler `sj-ai-rankings-cfb` (Sunday 08:00
   America/Chicago) and `sj-ai-rankings-fantasy` (Monday 08:00). CFB uses the
   College Football Data API; a missing `sj-cfbd-api-key` writes an empty
-  snapshot that names the gap. Model defaults: `SJ_RANKINGS_PROVIDER=xai`,
+  `{season}-wNN` snapshot (calendar week in Aug–Dec, never `-off` mid-season)
+  that names the gap and is indexed so the hub does not fall through to
+  fixtures. `latest.json` is only overwritten when the ballot has ranks.
+  Model defaults: `SJ_RANKINGS_PROVIDER=xai`,
   `SJ_RANKINGS_MODEL=grok-4-fast`, temperature 0.2.
 - **Cold starts:** deploy uses `--cpu-boost` and `--min-instances=0` by default.
   Set **min_instances=1** on a manual deploy if first-load latency bothers members.

@@ -17,10 +17,13 @@ from sj.ai_rankings import (
     attach_movers,
     build_cfb_facts,
     build_fantasy_facts,
+    cfb_prompt,
+    complete_openai_compatible,
     extract_json_object,
     openai_compatible_body,
     persist_snapshot,
     rankings_llm_config_from_env,
+    resolve_cfb_week_number,
     run_cfb_board,
     run_fantasy_board,
     week_label,
@@ -30,6 +33,7 @@ from sj.cfbd import (
     accumulate_records,
     compact_week_results,
     default_cfb_season,
+    estimated_cfb_week,
     latest_completed_week,
     parse_ap_poll,
     parse_games,
@@ -84,6 +88,12 @@ def test_week_label_and_season_clock():
     assert default_cfb_season(date(2026, 10, 12)) == 2026
     assert default_cfb_season(date(2027, 1, 8)) == 2026
     assert default_cfb_season(date(2027, 3, 1)) == 2026
+    assert estimated_cfb_week(date(2026, 10, 12)) == 7
+    assert estimated_cfb_week(date(2026, 8, 20)) == 0
+    assert estimated_cfb_week(date(2027, 1, 8)) == 15
+    assert estimated_cfb_week(date(2027, 3, 1)) == 0
+    assert resolve_cfb_week_number(None, date(2026, 10, 12)) == 7
+    assert resolve_cfb_week_number(8, date(2026, 10, 12)) == 8
 
 
 def test_ai_rankings_rel_strips_traversal():
@@ -91,9 +101,13 @@ def test_ai_rankings_rel_strips_traversal():
     assert ai_rankings_rel("fantasy/football-main/2026-w14.json") == (
         "ai_rankings/fantasy/football-main/2026-w14.json"
     )
-    assert ".." not in ai_rankings_rel("cfb/../secret")
+    assert ai_rankings_rel("cfb/../secret") == "ai_rankings/cfb/secret.json"
+    # ``....`` must stay a literal segment — do not collapse it into ``..``.
+    assert ai_rankings_rel("cfb/..../secret") == "ai_rankings/cfb/..../secret.json"
     with pytest.raises(ValueError):
         ai_rankings_rel("///")
+    with pytest.raises(ValueError):
+        ai_rankings_rel("..")
 
 
 def test_cfbd_parse_records_and_ap():
@@ -136,7 +150,35 @@ def test_llm_config_defaults_to_xai():
     body = openai_compatible_body(config, "sys", "user")
     assert body["temperature"] == DEFAULT_TEMPERATURE
     assert body["messages"][0]["content"] == "sys"
+    assert body["response_format"] == {"type": "json_object"}
     assert rankings_llm_config_from_env({}) is None
+
+
+def test_complete_rejects_empty_choices(monkeypatch: pytest.MonkeyPatch):
+    config = rankings_llm_config_from_env({"SJ_RANKINGS_API_KEY": "xai-test"})
+    assert config is not None
+
+    class _Resp:
+        def read(self) -> bytes:
+            return b'{"choices":[]}'
+
+        def __enter__(self):
+            return self
+
+        def __exit__(self, *args):
+            return False
+
+    import urllib.request
+
+    monkeypatch.setattr(urllib.request, "urlopen", lambda *args, **kwargs: _Resp())
+    with pytest.raises(RuntimeError, match="returned no text"):
+        complete_openai_compatible(config, "sys", "user")
+
+
+def test_cfb_prompt_omits_ap_poll():
+    facts = build_cfb_facts(_games(), 7, 2026, _ap())
+    assert facts["ap_poll"]
+    assert "ap_poll" not in cfb_prompt(facts, None)
 
 
 def test_extract_json_object_fenced_and_plain():
@@ -200,6 +242,7 @@ def test_cfb_board_injected_model(tmp_path: Path):
     assert "prompt" not in stored
     trace = read_ai_rankings("cfb/2026-w07.trace", store_dir=tmp_path)
     assert "Ohio State" in trace["prompt"]
+    assert "ap_poll" not in trace["prompt"]
     assert "Buckeyes stay on top" in trace["raw_response"]
     index = read_ai_rankings("cfb/index", store_dir=tmp_path)
     assert index["latest"] == "2026-w07"
@@ -214,6 +257,63 @@ def test_cfb_degrades_without_api_key(tmp_path: Path, monkeypatch: pytest.Monkey
     assert snapshot["degraded"]
     assert "sj-cfbd-api-key" in snapshot["degraded"][0]
     assert read_ai_rankings("cfb/2026-w07", store_dir=tmp_path)["degraded"]
+    index = read_ai_rankings("cfb/index", store_dir=tmp_path)
+    assert index["weeks"] == ["2026-w07"]
+
+
+def test_cfb_degrades_without_week_uses_calendar_and_indexes(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+):
+    monkeypatch.delenv("SJ_CFBD_API_KEY", raising=False)
+    monkeypatch.delenv("CFBD_API_KEY", raising=False)
+    snapshot = run_cfb_board(
+        season=2026,
+        week=None,
+        store_dir=tmp_path,
+        persist=True,
+        today=date(2026, 10, 12),
+    )
+    assert snapshot["week_label"] == "2026-w07"
+    assert snapshot["rankings"] == []
+    index = read_ai_rankings("cfb/index", store_dir=tmp_path)
+    assert "2026-w07" in index["weeks"]
+    assert read_ai_rankings("cfb/2026-w07", store_dir=tmp_path)["degraded"]
+
+
+def test_cfb_skips_llm_when_facts_hash_matches(tmp_path: Path):
+    payload_games = json.loads((CFBD / "games.json").read_text(encoding="utf-8"))
+    payload_ap = json.loads((CFBD / "rankings.json").read_text(encoding="utf-8"))
+    calls = {"n": 0}
+
+    def fetch(path: str, params):
+        if path == "/games":
+            return payload_games
+        if path == "/rankings":
+            return payload_ap
+        raise AssertionError(path)
+
+    def complete(_system: str, _prompt: str) -> str:
+        calls["n"] += 1
+        return _fake_cfb_complete(_system, _prompt)
+
+    client = CfbdClient(api_key="test", fetch=fetch)
+    first = run_cfb_board(
+        season=2026,
+        week=7,
+        store_dir=tmp_path,
+        cfbd=client,
+        complete=complete,
+    )
+    second = run_cfb_board(
+        season=2026,
+        week=7,
+        store_dir=tmp_path,
+        cfbd=client,
+        complete=complete,
+    )
+    assert first["rankings"]
+    assert second["facts_hash"] == first["facts_hash"]
+    assert calls["n"] == 1
 
 
 def test_fantasy_facts_and_board(tmp_path: Path):
@@ -350,6 +450,9 @@ def test_degraded_cfb_does_not_overwrite_latest(tmp_path: Path, monkeypatch: pyt
     latest = read_ai_rankings("cfb/latest", store_dir=tmp_path)
     assert latest["week_label"] == "2026-w07"
     assert latest["rankings"]
+    index = read_ai_rankings("cfb/index", store_dir=tmp_path)
+    assert "2026-w08" in index["weeks"]
+    assert index["latest"] == "2026-w07"
 
 
 def test_lookup_is_exact_name():

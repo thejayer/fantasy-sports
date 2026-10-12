@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 import {
   deltaLabel,
   formatWeekChip,
+  isAiRankingsIndex,
   isAiRankingsSnapshot,
   modelLabel,
   resolveWeekLabel,
@@ -25,6 +26,7 @@ describe("ai rankings helpers", () => {
     expect(resolveWeekLabel(index, "2026-w06")).toBe("2026-w06");
     expect(resolveWeekLabel(index, "nope")).toBe("2026-w07");
     expect(resolveWeekLabel(null, "2026-w07")).toBeNull();
+    expect(resolveWeekLabel({ board: "cfb", weeks: [] }, "2026-w07")).toBeNull();
     expect(formatWeekChip("2026-w07")).toBe("2026 · W7");
     expect(formatWeekChip("2026-off")).toBe("2026 offseason");
     expect(modelLabel("xai/grok-4-fast")).toBe("xai/grok-4-fast");
@@ -43,5 +45,6 @@ describe("ai rankings helpers", () => {
       }),
     ).toBe(true);
     expect(isAiRankingsSnapshot({ week_label: "x" })).toBe(false);
+    expect(isAiRankingsIndex({ board: "cfb", weeks: [] })).toBe(true);
   });
 });

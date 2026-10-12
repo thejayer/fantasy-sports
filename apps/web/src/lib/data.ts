@@ -1745,7 +1745,9 @@ export const getAiRankingsIndex = cache(
     const relative = path.join(aiRankingsPrefix(board, leagueId), "index.json");
     for (const root of dataRoots()) {
       const doc = await readJson<AiRankingsIndex>(path.join(root, relative));
-      if (isAiRankingsIndex(doc) && doc.weeks.length) {
+      // A live index with weeks: [] is authoritative — do not fall through
+      // to committed fixtures (first degrade / empty ballot).
+      if (isAiRankingsIndex(doc)) {
         return doc;
       }
     }
@@ -1754,7 +1756,8 @@ export const getAiRankingsIndex = cache(
 );
 
 /**
- * One weekly AI rankings snapshot. Prefer the week file; fall back to latest.
+ * One weekly AI rankings snapshot. Week-file only; label must match
+ * ``/^\d+-(w\d+|off)$/i``.
  */
 export const getAiRankingsSnapshot = cache(
   async (

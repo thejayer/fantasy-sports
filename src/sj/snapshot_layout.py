@@ -98,12 +98,13 @@ def ai_rankings_rel(name: str) -> str:
 
     Store-root paths such as ``ai_rankings/cfb/2026-w08.json`` and
     ``ai_rankings/fantasy/football-main/2026-w14.json``. ``name`` may include
-    slashes (board / league / week); ``..`` and leading slashes are stripped.
+    slashes (board / league / week). Path parts that are ``.`` or ``..`` are
+    dropped so ``....`` cannot collapse into a parent hop.
     Not listed in ``manifest.files``.
     """
-    raw = str(name).strip().replace("\\", "/").replace("..", "").strip("/")
+    raw = str(name).strip().replace("\\", "/").strip("/")
     raw = raw.removesuffix(".json")
-    parts = [part for part in raw.split("/") if part]
+    parts = [part for part in raw.split("/") if part and part not in {".", ".."}]
     if not parts:
         raise ValueError("ai_rankings path is empty")
     return "ai_rankings/" + "/".join(parts) + ".json"
