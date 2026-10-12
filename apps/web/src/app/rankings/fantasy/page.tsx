@@ -40,6 +40,8 @@ export default async function FantasyRankingsPage({ searchParams }: Props) {
         <div>
           <p className="ai-rank-crumb">
             <Link href="/rankings">AI Rankings</Link>
+            {" / "}
+            <span>Fantasy</span>
             {" · "}
             <Link href="/rankings/cfb">College football</Link>
           </p>

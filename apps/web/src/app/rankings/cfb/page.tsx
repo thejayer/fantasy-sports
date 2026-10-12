@@ -22,6 +22,8 @@ export default async function CfbRankingsPage({ searchParams }: Props) {
         <div>
           <p className="ai-rank-crumb">
             <Link href="/rankings">AI Rankings</Link>
+            {" / "}
+            <span>College football</span>
             {" · "}
             <Link href="/rankings/fantasy">Fantasy</Link>
           </p>
