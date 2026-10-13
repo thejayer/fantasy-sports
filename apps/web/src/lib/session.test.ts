@@ -94,6 +94,8 @@ const SESSION_GATED_READERS = [
   "getDraftSimSnapshot",
   "listDraftSimSlots",
   "getPlayerMap",
+  "getAiRankingsIndex",
+  "getAiRankingsSnapshot",
 ] as const;
 
 describe("data layer gating", () => {

@@ -37,5 +37,7 @@ USER sjsync
 # Cloud Run Jobs override args per execution, e.g.
 #   --args=sync,--current-only        (scheduled refresh)
 #   --args=backfill                   (one-time history load)
+#   --args=ai-rankings,--board,cfb    (Sunday CFB ballot)
+#   --args=ai-rankings,--board,fantasy (Monday fantasy ballots)
 ENTRYPOINT ["python", "-m", "sj.cli"]
 CMD ["sync", "--current-only"]

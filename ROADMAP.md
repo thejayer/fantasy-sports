@@ -850,6 +850,30 @@ article per decided week.
   deterministic template columnist. Cloud Run timeout is 300s; the route caps
   at 60s.
 
+### 7.16 AI Rankings — LANDING
+
+One configurable model (default xAI Grok via an OpenAI-compatible client)
+writes a weekly ballot — not an average of several LLMs.
+
+- **CFB.** `sj ai-rankings --board cfb` pulls completed FBS games from the
+  College Football Data API (`SJ_CFBD_API_KEY` / Secret Manager
+  `sj-cfbd-api-key`). Missing key degrades: empty snapshot + note. The model
+  sees results, margins, opponents, and venue; we attach movers vs last week
+  and vs AP when `/rankings` is present. Top 25 get blurbs; remaining FBS
+  teams are rank-only.
+- **Fantasy.** `--board fantasy` ranks baseball-dynasty, football-main,
+  football-dynasty, and hockey-main from the ESPN snapshot already in the
+  store (record, PF/PA, recent form, top roster scorers). In-season and
+  offseason both run.
+- **Storage.** `{SJ_DATA_DIR}/ai_rankings/cfb/{season}-wNN.json` and
+  `ai_rankings/fantasy/{league}/{season}-wNN.json` plus `latest.json` /
+  `index.json`. Sibling `.trace.json` keeps the raw prompt and response.
+  Temperature pinned at 0.2.
+- **Job.** Same `sj-sync` image. Cloud Scheduler `sj-ai-rankings-cfb`
+  (Sunday 08:00 America/Chicago) and `sj-ai-rankings-fantasy` (Monday 08:00).
+- **UI.** `/rankings`, `/rankings/cfb`, `/rankings/fantasy` behind Auth.js.
+  Committed fixtures so the pages work offline.
+
 ### 7.8 Package the decision tools — LANDED
 
 - Tools tab opens on a **landing grid** (`view=home`) with proper nouns and
@@ -1291,6 +1315,22 @@ Wired into the `www` CI job.
   Spaceship click). Add the fitness origin/redirect to the existing Google
   OAuth client.
 
+### P.11 Bet tracker — LANDING
+- `/bets` on `apps/www`: members-only public-slip tracker (Auth.js + the
+  same `ALLOWED_EMAILS` ∪ `hub_members.json` allowlist as Fantasy /
+  Fitness). Bettors are data-driven from the Bets tab (Trent, Steve,
+  btidy216, chellgod, …) plus a combined all-bettors view. Tabs: Bets,
+  Parlay legs, Public fade. Public apex routes stay ungated. No service
+  worker on www.
+- Ingest: `sj bets` looks up the Drive file mimeType (`sj-bets-reader`
+  SA; Drive + Sheets read-only). Native Sheet → Sheets API (whole used
+  range, headers by name); uploaded `.xlsx` → `files.get?alt=media`.
+  Writes `bets/bets.json` + `bets/summary.json` (stable `trent`/`steve`/
+  `all` keys plus `bettors`) + `bets/parlay_legs.json` +
+  `bets/public_warnings.json`. Scheduler `32 9-23/2` America/Chicago.
+  KPI math is from raw rows only — formula / summary tabs ignored.
+  Ops: `./scripts/setup-bets-infra.sh`.
+
 ### P.10 Living rooms + portal pulse — LANDING
 Phase E of the sitewide UX pass (A–D shipped in #153).
 - Home **pulse strip** under the hero: next dated event, Watch feed title/count
@@ -1321,6 +1361,7 @@ and tools. Builds on ~~7.1~~ / ~~7.6~~ / ~~7.9~~ / ~~7.10~~ and portal Watch
 | **7.13** Trophy case / hall of fame | landing | History `?view=trophies` packages **playoff titles** (`final_standing`) + regular-season #1 + record shelf; fixtures invent a divergent football title for disclosure; live seasons need re-sync/backfill for the field. |
 | **7.14** This day in SJ | landing | Member home shelf of calendar anniversaries: digest week anchors (Sep 1 + 7×period), ESPN transaction dates, golf `starts_at`. Multi-season archives label “N years ago.” `SJ_ON_THIS_DAY_NOW` freezes the clock for e2e. |
 | **7.15** Weekly recap column | landing | Per-league funny power-rankings article (`?tab=recap&week=N`); facts from 7.7 digest; LLM admin POST, fixtures committed. |
+| **7.16** AI Rankings | landing | Weekly single-model ballots: CFB Top 25 (`/rankings/cfb`, CFBD results + AP compare) and fantasy power rankings (`/rankings/fantasy`) for baseball-dynasty / football-main / football-dynasty / hockey-main. `sj ai-rankings` in the sync image; Sunday/Monday Cloud Scheduler; snapshots under `ai_rankings/`. |
 | **P.6** Watch surface | landed | Playlist RSS queue + room CTAs on `apps/www` `/watch`. |
 
 **Build order:** ~~7.10b~~ → ~~7.9b~~ → ~~7.12~~ → ~~7.13~~ → **7.14** · ~~P.6~~.

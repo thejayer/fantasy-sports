@@ -1750,3 +1750,395 @@ a.news-card:focus-visible .news-card-read {
     align-items: stretch;
   }
 }
+
+/* —— Bets tracker (/bets) + member login —— */
+.bets-page,
+.login-page {
+  padding-bottom: var(--space-8);
+}
+
+.login-panel {
+  display: grid;
+  gap: 1rem;
+  max-width: 28rem;
+  padding: var(--space-6) 0;
+}
+
+.login-error {
+  margin: 0;
+  color: var(--color-accent);
+}
+
+.login-help {
+  margin: 0;
+  color: color-mix(in srgb, var(--color-text) 62%, transparent);
+}
+
+.login-help a {
+  color: var(--color-accent);
+  font-weight: 600;
+}
+
+.login-google-wrap {
+  position: relative;
+  display: block;
+}
+
+.login-last-used {
+  position: absolute;
+  top: -0.55rem;
+  right: 0.65rem;
+  z-index: 1;
+  padding: 0.12rem 0.4rem;
+  background: var(--color-bg);
+  color: var(--color-text);
+  border: 2px solid var(--color-divider);
+  font-size: 0.68rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.login-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.55rem;
+  min-height: 48px;
+  width: 100%;
+  padding: 0.65rem 1rem;
+  border: 2px solid var(--color-text);
+  background: var(--color-bg);
+  color: var(--color-text);
+  font: inherit;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+}
+
+.login-button:hover,
+.login-button:focus-visible {
+  color: var(--color-accent);
+  border-color: var(--color-accent);
+}
+
+.bets-toolbar {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  margin: var(--space-4) 0 0;
+  font-size: 13px;
+  color: color-mix(in srgb, var(--color-text) 58%, transparent);
+}
+
+.bets-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem 0.7rem;
+  margin: var(--space-4) 0 0;
+}
+
+.bets-tabs a {
+  padding: 0.3rem 0.7rem;
+  border: 2px solid var(--color-divider);
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.bets-tabs a.is-active,
+.bets-tabs a:hover,
+.bets-tabs a:focus-visible {
+  border-color: var(--color-text);
+  color: var(--color-accent);
+}
+
+.bets-signout {
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+.bets-filters {
+  margin: var(--space-5) 0;
+  padding: var(--space-4) 0;
+  border-top: 2px solid var(--color-divider);
+  border-bottom: 2px solid var(--color-divider);
+}
+
+.bets-filter-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem 0.7rem;
+  align-items: center;
+  margin-bottom: 0.65rem;
+}
+
+.bets-filter-label {
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  font-weight: 700;
+  min-width: 4.5rem;
+}
+
+.bets-filter-row a {
+  padding: 0.15rem 0.45rem;
+  border: 2px solid var(--color-divider);
+  font-size: 13px;
+}
+
+.bets-filter-row a.is-active,
+.bets-filter-row a:hover,
+.bets-filter-row a:focus-visible {
+  border-color: var(--color-text);
+  color: var(--color-accent);
+}
+
+.bets-filter-note {
+  margin: 0.35rem 0 0;
+  font-size: 13px;
+  color: color-mix(in srgb, var(--color-text) 58%, transparent);
+}
+
+.bets-kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 0;
+  border: 2px solid var(--color-divider);
+}
+
+.bets-card {
+  padding: var(--space-4);
+  border-right: 2px solid var(--color-divider);
+  border-bottom: 2px solid var(--color-divider);
+}
+
+.bets-kpi-grid .bets-card:last-child {
+  border-right: 0;
+}
+
+.bets-card-kicker {
+  margin: 0;
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.bets-card h2 {
+  margin: 0.2rem 0 0.4rem;
+  font-size: 22px;
+  text-transform: uppercase;
+  letter-spacing: -0.02em;
+}
+
+.bets-record {
+  margin: 0 0 0.75rem;
+  font-size: 28px;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+}
+
+.bets-dl {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.45rem 0.75rem;
+  margin: 0;
+}
+
+.bets-dl dt {
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: color-mix(in srgb, var(--color-text) 52%, transparent);
+}
+
+.bets-dl dd {
+  margin: 0.1rem 0 0;
+  font-weight: 700;
+}
+
+.bets-h2h-note,
+.bets-who-heading {
+  margin: var(--space-5) 0 var(--space-3);
+}
+
+.bets-who-heading {
+  font-size: 20px;
+  text-transform: uppercase;
+  letter-spacing: -0.02em;
+  border-top: 2px solid var(--color-divider);
+  padding-top: var(--space-5);
+}
+
+.bets-breakdown {
+  margin: 0 0 var(--space-5);
+}
+
+.bets-breakdown h3 {
+  margin: 0 0 0.45rem;
+  font-size: 14px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.table-scroll {
+  overflow-x: auto;
+}
+
+.bets-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.bets-table th,
+.bets-table td {
+  padding: 0.4rem 0.5rem;
+  border-bottom: 1px solid var(--color-divider);
+  text-align: left;
+  white-space: nowrap;
+}
+
+.bets-table th {
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.bets-feed-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  border-top: 2px solid var(--color-divider);
+}
+
+.bets-feed-item {
+  padding: 0.7rem 0;
+  border-bottom: 1px solid var(--color-divider);
+}
+
+.bets-feed-top {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem 0.7rem;
+  align-items: center;
+}
+
+.bets-feed-who {
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  font-size: 12px;
+}
+
+.bets-feed-legs {
+  margin: 0.25rem 0 0.15rem;
+  font-weight: 600;
+}
+
+.bets-feed-meta {
+  margin: 0;
+  font-size: 13px;
+  color: color-mix(in srgb, var(--color-text) 58%, transparent);
+}
+
+.bets-feed-meta a {
+  color: var(--color-accent);
+  font-weight: 600;
+}
+
+.bets-chip {
+  display: inline-block;
+  min-width: 4.2rem;
+  padding: 0.1rem 0.4rem;
+  border: 2px solid var(--color-divider);
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  text-align: center;
+}
+
+.bets-chip-w {
+  border-color: var(--color-text);
+}
+
+.bets-chip-l {
+  color: var(--color-accent);
+  border-color: var(--color-accent);
+}
+
+.bets-chip-pending {
+  opacity: 0.7;
+}
+
+.bets-caveats {
+  margin: var(--space-6) 0 var(--space-4);
+  padding: var(--space-4);
+  border: 2px solid var(--color-divider);
+}
+
+.bets-caveats h2 {
+  margin: 0 0 0.5rem;
+  font-size: 14px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.bets-caveats ul {
+  margin: 0;
+  padding-left: 1.1rem;
+}
+
+.bets-caveats li + li {
+  margin-top: 0.35rem;
+}
+
+@media (max-width: 900px) {
+  .bets-kpi-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .bets-card {
+    border-right: 0;
+    border-bottom: 2px solid var(--color-divider);
+  }
+
+  .bets-card:last-child {
+    border-bottom: 0;
+  }
+}
+
+@media (max-width: 720px) {
+  .bets-table thead {
+    display: none;
+  }
+
+  .bets-table tr {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.15rem 0.75rem;
+    padding: 0.55rem 0;
+    border-bottom: 2px solid var(--color-divider);
+  }
+
+  .bets-table td {
+    border: 0;
+    padding: 0;
+    white-space: normal;
+  }
+
+  .bets-table td::before {
+    content: attr(data-label);
+    display: block;
+    font-size: 10px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: color-mix(in srgb, var(--color-text) 50%, transparent);
+  }
+}
