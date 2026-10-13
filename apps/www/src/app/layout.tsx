@@ -73,7 +73,7 @@ export default function RootLayout({
       <head>
         <script dangerouslySetInnerHTML={{ __html: ACCENT_INIT_SCRIPT }} />
       </head>
-      <body style={{ fontFamily: "var(--font-archivo), var(--font-body)" }}>
+      <body className={archivo.className}>
         <div className="shell">
           <header className="site-header">
             <Link href="/" className="brand-mark">

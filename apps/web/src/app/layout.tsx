@@ -111,7 +111,7 @@ export default async function RootLayout({
         <script dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }} />
         <script dangerouslySetInnerHTML={{ __html: ACCENT_INIT_SCRIPT }} />
       </head>
-      <body>
+      <body className={archivo.className}>
         <div className="atmosphere" aria-hidden />
         <div className="shell">
           <header className="site-header">
