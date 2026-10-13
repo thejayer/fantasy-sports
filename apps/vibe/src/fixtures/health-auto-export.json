@@ -1,0 +1,29 @@
+{
+  "data": {
+    "workouts": [
+      {
+        "id": "550e8400-e29b-41d4-a716-446655440000",
+        "name": "Traditional Strength Training",
+        "start": "2026-10-05 06:00:00 -0500",
+        "end": "2026-10-05 07:15:00 -0500",
+        "duration": 4500,
+        "activeEnergyBurned": { "qty": 412, "units": "kcal" },
+        "distance": { "qty": 0, "units": "km" },
+        "heartRate": {
+          "min": { "qty": 92, "units": "bpm" },
+          "avg": { "qty": 138, "units": "bpm" },
+          "max": { "qty": 172, "units": "bpm" }
+        }
+      },
+      {
+        "id": "660e8400-e29b-41d4-a716-446655440111",
+        "name": "Indoor Cycle",
+        "start": "2026-10-07 06:05:00 -0500",
+        "end": "2026-10-07 06:52:00 -0500",
+        "duration": 2820,
+        "activeEnergy": { "qty": 390, "units": "kcal" },
+        "avgHeartRate": { "qty": 148, "units": "bpm" }
+      }
+    ]
+  }
+}

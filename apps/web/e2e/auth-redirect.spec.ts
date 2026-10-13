@@ -21,4 +21,13 @@ test.describe("auth redirect", () => {
     ).toBeVisible();
     await expect(page.getByRole("navigation", { name: "Strictly Jayers" })).toBeVisible();
   });
+
+  test("protected rankings route redirects to login with callbackUrl", async ({
+    page,
+  }) => {
+    await page.goto("/rankings/cfb");
+    await expect(page).toHaveURL(/\/login/);
+    const url = new URL(page.url());
+    expect(url.searchParams.get("callbackUrl")).toMatch(/\/rankings\/cfb/);
+  });
 });

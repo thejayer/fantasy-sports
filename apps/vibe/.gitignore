@@ -1,0 +1,8 @@
+node_modules
+.next
+out
+e2e-vibe-data
+*.tsbuildinfo
+.env*.local
+test-results
+playwright-report

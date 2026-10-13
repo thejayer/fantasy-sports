@@ -38,8 +38,10 @@ from sj.jsonutil import dumps_snapshot
 from sj.snapshot_layout import (
     CONCERN_FILES,
     MANIFEST_NAME,
+    ai_rankings_rel,
     analysis_rel,
     assemble_snapshot,
+    bets_rel,
     manifest_rel,
     monolith_rel,
     nhl_rel,
@@ -176,6 +178,14 @@ class SnapshotStore(Protocol):
         self, league_id: str, season: int, name: str
     ) -> dict[str, Any] | None: ...
 
+    def write_bets(self, document: dict[str, Any], name: str) -> str: ...
+
+    def read_bets(self, name: str) -> dict[str, Any] | None: ...
+
+    def write_ai_rankings(self, document: dict[str, Any], name: str) -> str: ...
+
+    def read_ai_rankings(self, name: str) -> dict[str, Any] | None: ...
+
 
 class FileStore:
     """Snapshots as JSON files under ``root``."""
@@ -276,6 +286,32 @@ class FileStore:
         self, league_id: str, season: int, name: str
     ) -> dict[str, Any] | None:
         path = self.root / nhl_rel(league_id, season, name)
+        if not path.exists():
+            return None
+        return json.loads(path.read_text(encoding="utf-8"))
+
+    def write_bets(self, document: dict[str, Any], name: str) -> str:
+        """Write ``bets/{name}.json`` without touching ``index.json`` (P.11)."""
+        path = self.root / bets_rel(name)
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(_dump(document), encoding="utf-8")
+        return str(path)
+
+    def read_bets(self, name: str) -> dict[str, Any] | None:
+        path = self.root / bets_rel(name)
+        if not path.exists():
+            return None
+        return json.loads(path.read_text(encoding="utf-8"))
+
+    def write_ai_rankings(self, document: dict[str, Any], name: str) -> str:
+        """Write ``ai_rankings/{name}.json`` without touching ``index.json`` (7.16)."""
+        path = self.root / ai_rankings_rel(name)
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(_dump(document), encoding="utf-8")
+        return str(path)
+
+    def read_ai_rankings(self, name: str) -> dict[str, Any] | None:
+        path = self.root / ai_rankings_rel(name)
         if not path.exists():
             return None
         return json.loads(path.read_text(encoding="utf-8"))
@@ -477,6 +513,34 @@ class GcsStore:
             return None
         return json.loads(blob.download_as_text())
 
+    def write_bets(self, document: dict[str, Any], name: str) -> str:
+        """Write ``bets/{name}.json`` without touching ``index.json`` (P.11)."""
+        key = self._key(bets_rel(name))
+        blob = self._get_bucket().blob(key)
+        blob.cache_control = "no-cache"
+        blob.upload_from_string(_dump(document), content_type="application/json")
+        return f"gs://{self.bucket_name}/{key}"
+
+    def read_bets(self, name: str) -> dict[str, Any] | None:
+        blob = self._get_bucket().blob(self._key(bets_rel(name)))
+        if not blob.exists():
+            return None
+        return json.loads(blob.download_as_text())
+
+    def write_ai_rankings(self, document: dict[str, Any], name: str) -> str:
+        """Write ``ai_rankings/{name}.json`` without touching ``index.json`` (7.16)."""
+        key = self._key(ai_rankings_rel(name))
+        blob = self._get_bucket().blob(key)
+        blob.cache_control = "no-cache"
+        blob.upload_from_string(_dump(document), content_type="application/json")
+        return f"gs://{self.bucket_name}/{key}"
+
+    def read_ai_rankings(self, name: str) -> dict[str, Any] | None:
+        blob = self._get_bucket().blob(self._key(ai_rankings_rel(name)))
+        if not blob.exists():
+            return None
+        return json.loads(blob.download_as_text())
+
     def read(self, league_id: str, season: int) -> dict[str, Any] | None:
         assembled = self._read_v2(league_id, season)
         if assembled is not None:
@@ -657,6 +721,40 @@ def read_nhl(
 ) -> dict[str, Any] | None:
     """Read ``nhl/{name}.json`` from the active store (no fixture fallback)."""
     return resolve_store(store_dir).read_nhl(league_id, season, name)
+
+
+def write_bets(
+    document: dict[str, Any],
+    name: str,
+    store_dir: Path | str | None = None,
+) -> str:
+    """Persist one bet-tracker sidecar (``bets/{name}.json``, no index upsert)."""
+    return resolve_store(store_dir).write_bets(document, name)
+
+
+def read_bets(
+    name: str,
+    store_dir: Path | str | None = None,
+) -> dict[str, Any] | None:
+    """Read ``bets/{name}.json`` from the active store (no fixture fallback)."""
+    return resolve_store(store_dir).read_bets(name)
+
+
+def write_ai_rankings(
+    document: dict[str, Any],
+    name: str,
+    store_dir: Path | str | None = None,
+) -> str:
+    """Persist one AI rankings snapshot (``ai_rankings/{name}.json``, no index upsert)."""
+    return resolve_store(store_dir).write_ai_rankings(document, name)
+
+
+def read_ai_rankings(
+    name: str,
+    store_dir: Path | str | None = None,
+) -> dict[str, Any] | None:
+    """Read ``ai_rankings/{name}.json`` from the active store (no fixture fallback)."""
+    return resolve_store(store_dir).read_ai_rankings(name)
 
 
 def read_snapshot(
