@@ -13,6 +13,7 @@ RUN npm ci
 
 FROM deps AS build
 WORKDIR /app
+COPY packages/sj-ui ./packages/sj-ui
 COPY apps/vibe ./apps/vibe
 WORKDIR /app/apps/vibe
 ENV NEXT_TELEMETRY_DISABLED=1 \

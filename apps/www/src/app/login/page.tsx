@@ -15,7 +15,8 @@ export default async function LoginPage({ searchParams }: Props) {
   const session = await auth();
   const { callbackUrl: requestedCallbackUrl, error } = await searchParams;
   const callbackUrl = safeCallbackUrl(requestedCallbackUrl);
-  const { fantasyHubUrl, fitnessUrl, discordInviteUrl } = getSiteConfig();
+  const { fantasyHubUrl, fitnessUrl, vibeUrl, discordInviteUrl } =
+    getSiteConfig();
 
   if (process.env.AUTH_DEV_BYPASS === "1") {
     redirect(callbackUrl);
@@ -64,6 +65,10 @@ export default async function LoginPage({ searchParams }: Props) {
           {" · "}
           <a href={fitnessUrl} rel="noopener noreferrer">
             Fitness
+          </a>
+          {" · "}
+          <a href={vibeUrl} rel="noopener noreferrer">
+            Vibe
           </a>
         </p>
       </div>

@@ -1,0 +1,248 @@
+/*
+  Strictly Jayers tokens — dark-first.
+  Spec: 4px spacing, Inter/Geist-like ramp (Archivo self-hosted), hairlines
+  instead of shadows, one brand accent used sparingly.
+*/
+
+:root {
+  color-scheme: dark;
+
+  --sj-bg: #0b0d10;
+  --sj-surface-1: #12151a;
+  --sj-surface-2: #1a1e24;
+  --sj-hairline: rgba(255, 255, 255, 0.08);
+  --sj-text: #f2f4f7;
+  --sj-muted: #9aa3ae;
+  --sj-subtle: #5f6873;
+  --sj-accent: #ec3013;
+  --sj-win: #22c55e;
+  --sj-loss: #ef4444;
+  --sj-push: #a1a1aa;
+  --sj-on-accent: #0b0d10;
+
+  --sj-space-1: 4px;
+  --sj-space-2: 8px;
+  --sj-space-3: 12px;
+  --sj-space-4: 16px;
+  --sj-space-6: 24px;
+  --sj-space-8: 32px;
+  --sj-space-12: 48px;
+  --sj-space-16: 64px;
+  --sj-gutter: 16px;
+  --sj-section-gap: 32px;
+  --sj-row: 48px;
+
+  --sj-display: 32px;
+  --sj-display-lh: 1.15;
+  --sj-h1: 24px;
+  --sj-h1-lh: 1.2;
+  --sj-h2: 18px;
+  --sj-h2-lh: 1.3;
+  --sj-body: 15px;
+  --sj-body-lh: 1.47;
+  --sj-label: 13px;
+  --sj-label-lh: 1.38;
+  --sj-caption: 12px;
+  --sj-caption-lh: 1.33;
+  --sj-stat: 32px;
+
+  --sj-radius-control: 8px;
+  --sj-radius-surface: 12px;
+  --sj-radius-pill: 999px;
+
+  --sj-font: var(--font-archivo), var(--font-heading), "Archivo", Inter, ui-sans-serif,
+    system-ui, sans-serif;
+  --sj-font-weight-heading: 700;
+  --sj-shadow: none;
+  --sj-sidebar: 232px;
+
+  /* Compat — existing apps already speak these names. */
+  --color-bg: var(--sj-bg);
+  --color-surface: var(--sj-surface-1);
+  --color-text: var(--sj-text);
+  --color-accent: var(--sj-accent);
+  --color-accent-2: #e15b47;
+  --color-divider: var(--sj-hairline);
+  --color-neutral-100: #1a1e24;
+  --color-neutral-200: #22262d;
+  --color-neutral-300: #2c313a;
+  --color-neutral-400: #5f6873;
+  --color-neutral-500: #9aa3ae;
+  --color-neutral-600: #c5cbd3;
+  --color-neutral-700: #dce1e7;
+  --color-neutral-800: #eef1f4;
+  --color-neutral-900: #f2f4f7;
+  --color-accent-100: color-mix(in srgb, var(--color-accent) 16%, var(--sj-bg));
+  --color-accent-200: color-mix(in srgb, var(--color-accent) 24%, var(--sj-bg));
+  --color-accent-300: color-mix(in srgb, var(--color-accent) 36%, var(--sj-bg));
+  --color-accent-400: color-mix(in srgb, var(--color-accent) 55%, #fff);
+  --color-accent-500: var(--color-accent);
+  --color-accent-600: color-mix(in srgb, var(--color-accent) 78%, #000);
+  --color-accent-700: color-mix(in srgb, var(--color-accent) 62%, #000);
+  --color-accent-800: color-mix(in srgb, var(--color-accent) 42%, #fff);
+  --color-accent-900: color-mix(in srgb, var(--color-accent) 24%, #fff);
+  --color-accent-2-100: var(--color-accent-100);
+  --color-accent-2-200: var(--color-accent-200);
+  --color-accent-2-300: var(--color-accent-300);
+  --color-accent-2-400: var(--color-accent-400);
+  --color-accent-2-500: var(--color-accent-2);
+  --color-accent-2-600: var(--color-accent-600);
+  --color-accent-2-700: var(--color-accent-700);
+  --color-accent-2-800: var(--color-accent-800);
+  --color-accent-2-900: var(--color-accent-900);
+
+  --font-heading: var(--sj-font);
+  --font-heading-weight: var(--sj-font-weight-heading);
+  --font-body: var(--sj-font);
+  --font-display: var(--sj-font);
+  --font-display-face: var(--sj-font);
+  --font-body-face: var(--sj-font);
+
+  --space-1: var(--sj-space-1);
+  --space-2: var(--sj-space-2);
+  --space-3: var(--sj-space-3);
+  --space-4: var(--sj-space-4);
+  --space-5: 20px;
+  --space-6: var(--sj-space-6);
+  --space-8: var(--sj-space-8);
+  --space-12: var(--sj-space-12);
+  --space-16: var(--sj-space-16);
+
+  --radius-sm: var(--sj-radius-control);
+  --radius-md: var(--sj-radius-control);
+  --radius-lg: var(--sj-radius-surface);
+  --radius: var(--sj-radius-surface);
+  --control-radius: var(--sj-radius-control);
+
+  --shadow-sm: none;
+  --shadow-md: none;
+  --shadow-lg: none;
+
+  --accent-deep: color-mix(in srgb, var(--color-accent) 72%, #fff);
+  --accent-tint: color-mix(in srgb, var(--color-accent) 12%, var(--sj-bg));
+
+  --ink: var(--sj-text);
+  --field: var(--color-accent);
+  --field-deep: var(--accent-deep);
+  --chalk: var(--sj-bg);
+  --mist: var(--sj-surface-1);
+  --signal: var(--color-accent);
+  --ember: var(--sj-loss);
+  --good: var(--sj-win);
+  --caution: #eab308;
+  --line: var(--sj-hairline);
+  --surface: var(--sj-surface-1);
+  --surface-strong: var(--sj-surface-2);
+  --raise: var(--sj-surface-2);
+  --on-accent: var(--sj-on-accent);
+  --glow-a: transparent;
+  --glow-b: transparent;
+  --wash-top: var(--sj-bg);
+  --wash-mid: var(--sj-bg);
+  --wash-bottom: var(--sj-bg);
+  --page-bg: var(--sj-bg);
+  --paper: var(--sj-bg);
+  --bg: var(--sj-bg);
+  --bg-2: var(--sj-surface-1);
+  --surface-solid: var(--sj-surface-1);
+  --surface-tint: var(--sj-surface-2);
+  --surface-hover: var(--sj-surface-2);
+  --muted: var(--sj-muted);
+  --soft: var(--sj-subtle);
+  --green: var(--sj-win);
+  --green-deep: color-mix(in srgb, var(--sj-win) 70%, #000);
+  --blue: var(--color-accent);
+  --clay: var(--accent-deep);
+  --gold: var(--caution);
+  --accent-soft: var(--accent-tint);
+}
+
+@media (min-width: 768px) {
+  :root {
+    --sj-gutter: 32px;
+    --sj-section-gap: 48px;
+    --sj-display: 40px;
+    --sj-h1: 32px;
+    --sj-stat: 40px;
+  }
+}
+
+:root[data-theme="light"] {
+  color-scheme: only light;
+  --sj-bg: #f4f5f7;
+  --sj-surface-1: #ffffff;
+  --sj-surface-2: #eef0f3;
+  --sj-hairline: rgba(15, 18, 22, 0.1);
+  --sj-text: #12151a;
+  --sj-muted: #5f6873;
+  --sj-subtle: #8b939d;
+  --sj-on-accent: #ffffff;
+  --color-neutral-100: #f8f4f4;
+  --color-neutral-200: #eae7e7;
+  --color-neutral-300: #d7d3d3;
+  --color-neutral-400: #bab6b6;
+  --color-neutral-500: #9b9797;
+  --color-neutral-600: #7d7979;
+  --color-neutral-700: #605d5d;
+  --color-neutral-800: #444141;
+  --color-neutral-900: #2d2b2b;
+  --color-accent-100: #fff2ef;
+  --color-accent-200: #ffe0d9;
+  --color-accent-300: #ffc4b8;
+  --color-accent-400: #ff9783;
+  --color-accent-800: #7c1405;
+  --color-accent-900: #4d170e;
+  --accent-deep: color-mix(in srgb, var(--color-accent) 78%, #000);
+  --accent-tint: color-mix(in srgb, var(--color-accent) 10%, #fff);
+}
+
+:root[data-theme="dark"] {
+  color-scheme: only dark;
+}
+
+html,
+body {
+  background: var(--sj-bg);
+  color: var(--sj-text);
+  font-family: var(--sj-font);
+  font-size: var(--sj-body);
+  line-height: var(--sj-body-lh);
+  font-variant-numeric: lining-nums;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+}
+
+h1,
+h2,
+h3,
+h4 {
+  font-family: var(--sj-font);
+  font-weight: var(--sj-font-weight-heading);
+  letter-spacing: -0.02em;
+}
+
+h1 {
+  font-size: var(--sj-h1);
+  line-height: var(--sj-h1-lh);
+}
+
+h2 {
+  font-size: var(--sj-h2);
+  line-height: var(--sj-h2-lh);
+  font-weight: 600;
+}
+
+.tabular,
+th,
+td.numeric,
+.home-score,
+.matchup-score,
+.stat-value,
+.bets-record,
+.record-value,
+.sj-stat-value {
+  font-variant-numeric: tabular-nums;
+}

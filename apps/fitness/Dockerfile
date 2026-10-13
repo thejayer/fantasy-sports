@@ -13,6 +13,7 @@ RUN npm ci
 
 FROM deps AS build
 WORKDIR /app
+COPY packages/sj-ui ./packages/sj-ui
 COPY apps/fitness ./apps/fitness
 WORKDIR /app/apps/fitness
 ENV NEXT_TELEMETRY_DISABLED=1 \

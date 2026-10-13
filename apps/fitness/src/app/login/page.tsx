@@ -15,7 +15,7 @@ export default async function LoginPage({ searchParams }: Props) {
   const session = await auth();
   const { callbackUrl: requestedCallbackUrl, error } = await searchParams;
   const callbackUrl = safeCallbackUrl(requestedCallbackUrl);
-  const { communitySiteUrl, fantasyHubUrl, discordInviteUrl } =
+  const { communitySiteUrl, fantasyHubUrl, vibeUrl, discordInviteUrl } =
     getFitnessSiteConfig();
 
   if (process.env.AUTH_DEV_BYPASS === "1") {
@@ -34,6 +34,7 @@ export default async function LoginPage({ searchParams }: Props) {
           <a href={communitySiteUrl}>Portal</a>
           <a href={fantasyHubUrl}>Fantasy</a>
           <span aria-current="page">Fitness</span>
+          <a href={vibeUrl}>Vibe</a>
         </nav>
       </header>
       <div className="login-shell">
@@ -83,6 +84,7 @@ export default async function LoginPage({ searchParams }: Props) {
         <a href={communitySiteUrl}>Portal</a>
         <a href={fantasyHubUrl}>Fantasy</a>
         <span aria-current="page">Fitness</span>
+        <a href={vibeUrl}>Vibe</a>
       </footer>
     </main>
   );

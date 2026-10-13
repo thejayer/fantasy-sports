@@ -2,6 +2,7 @@ import Link from "next/link";
 
 import { signOut } from "@/auth";
 import { getVibeSiteConfig } from "@/lib/site";
+import { AppSwitcher } from "../../../../packages/sj-ui/app-switcher";
 
 type Props = {
   current: "home" | "history" | "settings";
@@ -9,13 +10,21 @@ type Props = {
 };
 
 export function Chrome({ current, children }: Props) {
-  const { communitySiteUrl, fantasyHubUrl, fitnessUrl } = getVibeSiteConfig();
+  const { communitySiteUrl, fantasyHubUrl, fitnessUrl, vibeUrl } =
+    getVibeSiteConfig();
   return (
     <div className="shell">
       <header className="topbar">
         <Link className="brand" href="/">
           Vibe Split <small>SJ</small>
         </Link>
+        <AppSwitcher
+          current="vibe"
+          hubUrl={fantasyHubUrl}
+          betsUrl={`${communitySiteUrl}/bets`}
+          fitnessUrl={fitnessUrl}
+          vibeUrl={vibeUrl}
+        />
         <nav className="top-nav" aria-label="App">
           <Link href="/" aria-current={current === "home" ? "page" : undefined}>
             Home

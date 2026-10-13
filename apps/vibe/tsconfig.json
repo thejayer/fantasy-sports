@@ -24,7 +24,8 @@
     "src/**/*.tsx",
     "e2e/**/*.ts",
     ".next/types/**/*.ts",
-    ".next/dev/types/**/*.ts"
+    ".next/dev/types/**/*.ts",
+    "../../packages/sj-ui/**/*.tsx"
   ],
   "exclude": ["node_modules", "public"]
 }
