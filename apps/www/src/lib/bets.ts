@@ -1,6 +1,7 @@
 /**
- * Trent / Steve bet-tracker math (roadmap P.11).
- * Mirrors `sj.bets` — compute from Bets rows only; ignore sheet formula tabs.
+ * Public-bet tracker math (roadmap P.11).
+ * Mirrors `sj.bets` — compute from raw Bets rows only; ignore sheet formula tabs.
+ * Bettor cards are data-driven (whoever appears in col B).
  */
 
 export const CFB_START = "2026-08-27";
@@ -21,11 +22,18 @@ export const WINDOW_DATES: Record<BetWindow, string | null> = {
   nfl: NFL_START,
 };
 
-export const BETTORS = ["Trent", "Steve"] as const;
-export type Bettor = (typeof BETTORS)[number];
+export const BET_TABS = ["bets", "parlays", "warnings"] as const;
+export type BetTab = (typeof BET_TABS)[number];
 
-export const BETTOR_META: Record<
-  Bettor,
+export const TAB_LABELS: Record<BetTab, string> = {
+  bets: "Bets",
+  parlays: "Parlay legs",
+  warnings: "Public fade",
+};
+
+/** Display overlay only — not the list of who appears on the board. */
+export const KNOWN_BETTORS: Record<
+  string,
   { name: string; handle: string; href: string }
 > = {
   Trent: {
@@ -38,7 +46,42 @@ export const BETTOR_META: Record<
     handle: "stevewilldoit",
     href: "https://x.com/stevewilldoit",
   },
+  btidy216: {
+    name: "btidy216",
+    handle: "btidy216",
+    href: "https://x.com/btidy216",
+  },
+  chellgod: {
+    name: "chellgod",
+    handle: "chellgod",
+    href: "https://x.com/chellgod",
+  },
 };
+
+export function bettorMeta(who: string): { name: string; handle: string; href: string } {
+  if (KNOWN_BETTORS[who]) return KNOWN_BETTORS[who];
+  const handle = who.replace(/^@/, "").replace(/[^\w.]/g, "") || "unknown";
+  return { name: who, handle, href: `https://x.com/${encodeURIComponent(handle)}` };
+}
+
+export function uniqueBettors(bets: Array<{ who: string }>): string[] {
+  const counts = new Map<string, number>();
+  for (const bet of bets) {
+    const who = bet.who || "Unknown";
+    counts.set(who, (counts.get(who) ?? 0) + 1);
+  }
+  return [...counts.entries()]
+    .sort(
+      (a, b) =>
+        b[1] - a[1] ||
+        a[0].toLowerCase().localeCompare(b[0].toLowerCase()) ||
+        a[0].localeCompare(b[0]),
+    )
+    .map(([who]) => who);
+}
+
+export const FADE_AMERICAN = -110;
+export const FADE_STAKE = 100;
 
 export type BetRow = {
   id: string;
@@ -115,6 +158,80 @@ export function parseBetWindow(raw: string | null | undefined): BetWindow {
   const key = (raw || "").trim().toLowerCase();
   if (key === "cfb" || key === "nfl") return key;
   return "all";
+}
+
+export function parseBetTab(raw: string | null | undefined): BetTab {
+  const key = (raw || "").trim().toLowerCase();
+  if (key === "parlays" || key === "parlay" || key === "legs") return "parlays";
+  if (key === "warnings" || key === "public" || key === "fade") return "warnings";
+  return "bets";
+}
+
+export function parseBettor(
+  raw: string | null | undefined,
+  names: string[],
+): string {
+  const who = (raw || "").trim();
+  if (who && names.includes(who)) return who;
+  return "";
+}
+
+export function betsHref(opts: {
+  tab?: BetTab;
+  window?: BetWindow;
+  sport?: string;
+  who?: string;
+}): string {
+  const params = new URLSearchParams();
+  if (opts.tab && opts.tab !== "bets") params.set("tab", opts.tab);
+  if (opts.window && opts.window !== "all") params.set("window", opts.window);
+  if (opts.sport) params.set("sport", opts.sport);
+  if (opts.who) params.set("who", opts.who);
+  const query = params.toString();
+  return query ? `/bets?${query}` : "/bets";
+}
+
+export function stripValuePrefix(value: unknown): unknown {
+  if (value == null || typeof value === "boolean" || typeof value === "number") {
+    return value;
+  }
+  const text = String(value).trim();
+  if (text.toLowerCase() === "value") return "";
+  if (text.toLowerCase().startsWith("value ")) return text.slice(6).trim();
+  return text;
+}
+
+export function invertResult(value: unknown): string {
+  const res = normalizeResult(value);
+  if (res === "W") return "L";
+  if (res === "L") return "W";
+  return res;
+}
+
+export function safeHttpUrl(raw: string | null | undefined): string | null {
+  const text = (raw || "").trim();
+  if (!text) return null;
+  try {
+    const url = new URL(text);
+    if (url.protocol === "http:" || url.protocol === "https:") return url.toString();
+  } catch {
+    return null;
+  }
+  return null;
+}
+
+export function fadePl(
+  result: unknown,
+  american = FADE_AMERICAN,
+  stake = FADE_STAKE,
+): number | null {
+  const res = normalizeResult(result);
+  if (!isGraded(res)) return null;
+  if (res === "Push") return 0;
+  if (res === "L") return -stake;
+  const dec = americanToDecimal(american);
+  if (dec == null) return null;
+  return stake * (dec - 1);
 }
 
 export function isBlank(value: unknown): boolean {

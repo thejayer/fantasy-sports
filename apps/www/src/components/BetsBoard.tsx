@@ -1,16 +1,17 @@
 import Link from "next/link";
 
 import { SignOutButton } from "@/components/SignOutButton";
-import type { BetsActor } from "@/lib/session";
 import {
-  BETTOR_META,
-  BETTORS,
+  TAB_LABELS,
   type BetRow,
   type BetsDocument,
   type BettorKpis,
+  type BetTab,
   type BetWindow,
   type BreakdownRow,
   WINDOW_LABELS,
+  betsHref,
+  bettorMeta,
   breakdown,
   classifyParlay,
   formatMoney,
@@ -23,26 +24,62 @@ import {
   primeSlot,
   recentBets,
   resultTone,
-  uniqueSports,
+  safeHttpUrl,
+  uniqueBettors,
 } from "@/lib/bets";
+import type { BetsActor } from "@/lib/session";
+
+
+type FilterState = {
+  tab: BetTab;
+  window: BetWindow;
+  sport: string;
+  who: string;
+};
 
 type Props = {
   document: BetsDocument;
   bets: BetRow[];
+  allBets: BetRow[];
   window: BetWindow;
   sport: string;
+  who: string;
   sports: string[];
-  trent: BettorKpis;
-  steve: BettorKpis;
-  actor: BetsActor;
+  kpis: BettorKpis[];
+  combined: BettorKpis;
 };
 
-function hrefFor(window: BetWindow, sport: string): string {
-  const params = new URLSearchParams();
-  if (window !== "all") params.set("window", window);
-  if (sport) params.set("sport", sport);
-  const query = params.toString();
-  return query ? `/bets?${query}` : "/bets";
+export function BetsTabs({
+  tab,
+  window,
+  sport,
+  who,
+}: FilterState) {
+  return (
+    <nav className="bets-tabs" aria-label="Bet tracker sections">
+      {(["bets", "parlays", "warnings"] as const).map((key) => (
+        <Link
+          key={key}
+          href={betsHref({ tab: key, window, sport, who })}
+          className={tab === key ? "is-active" : undefined}
+        >
+          {TAB_LABELS[key]}
+        </Link>
+      ))}
+    </nav>
+  );
+}
+
+export function BetsToolbar({ actor }: { actor: BetsActor }) {
+  return (
+    <p className="bets-toolbar">
+      <span>
+        Signed in as {actor.email}
+        {actor.source === "bypass" ? " (dev bypass)" : ""}
+      </span>
+      {actor.source === "session" ? <SignOutButton /> : null}
+    </p>
+  );
 }
 
 function KpiCard({
@@ -58,7 +95,7 @@ function KpiCard({
 }) {
   return (
     <article className="bets-card">
-      <p className="bets-card-kicker">{handle ? `@${handle}` : "Head to head"}</p>
+      <p className="bets-card-kicker">{handle ? `@${handle}` : "Combined"}</p>
       <h2>
         {href ? (
           <a href={href} rel="noopener noreferrer">
@@ -107,12 +144,14 @@ function KpiCard({
   );
 }
 
-function BreakdownTable({
+export function BreakdownTable({
   caption,
   rows,
+  countKey = "bets",
 }: {
   caption: string;
   rows: BreakdownRow[];
+  countKey?: string;
 }) {
   if (!rows.length) {
     return (
@@ -130,7 +169,7 @@ function BreakdownTable({
           <thead>
             <tr>
               <th>{caption}</th>
-              <th>Bets</th>
+              <th>{countKey === "legs" ? "Legs" : "Bets"}</th>
               <th>W-L-P</th>
               <th>Win %</th>
               <th>P/L $</th>
@@ -142,7 +181,7 @@ function BreakdownTable({
             {rows.map((row) => (
               <tr key={row.key}>
                 <td data-label={caption}>{row.key}</td>
-                <td data-label="Bets">{row.bets}</td>
+                <td data-label={countKey === "legs" ? "Legs" : "Bets"}>{row.bets}</td>
                 <td data-label="W-L-P">{row.record}</td>
                 <td data-label="Win %">{formatPct(row.winPct)}</td>
                 <td data-label="P/L $">{formatMoney(row.pl)}</td>
@@ -165,36 +204,52 @@ function Chip({ result }: { result: string }) {
 export function BetsBoard({
   document,
   bets,
+  allBets,
   window,
   sport,
+  who,
   sports,
-  trent,
-  steve,
-  actor,
+  kpis,
+  combined,
 }: Props) {
   const feed = recentBets(bets, 50);
+  const names = uniqueBettors(allBets);
   const windows = (["all", "cfb", "nfl"] as const).map((key) => ({
     key,
     label: WINDOW_LABELS[key],
   }));
+  const focus = who || "all";
 
   return (
     <div className="bets-board">
-      <p className="bets-toolbar">
-        <span>
-          Signed in as {actor.email}
-          {actor.source === "bypass" ? " (dev bypass)" : ""}
-        </span>
-        {actor.source === "session" ? <SignOutButton /> : null}
-      </p>
-
       <div className="bets-filters" role="navigation" aria-label="Bet filters">
+        <div className="bets-filter-row">
+          <span className="bets-filter-label">Bettor</span>
+          <Link
+            href={betsHref({ tab: "bets", window, sport, who: "" })}
+            className={!who ? "is-active" : undefined}
+          >
+            All
+          </Link>
+          {names.map((name) => {
+            const meta = bettorMeta(name);
+            return (
+              <Link
+                key={name}
+                href={betsHref({ tab: "bets", window, sport, who: name })}
+                className={who === name ? "is-active" : undefined}
+              >
+                {meta.name}
+              </Link>
+            );
+          })}
+        </div>
         <div className="bets-filter-row">
           <span className="bets-filter-label">Window</span>
           {windows.map((item) => (
             <Link
               key={item.key}
-              href={hrefFor(item.key, sport)}
+              href={betsHref({ tab: "bets", window: item.key, sport, who })}
               className={window === item.key ? "is-active" : undefined}
             >
               {item.label}
@@ -204,7 +259,7 @@ export function BetsBoard({
         <div className="bets-filter-row">
           <span className="bets-filter-label">Sport</span>
           <Link
-            href={hrefFor(window, "")}
+            href={betsHref({ tab: "bets", window, sport: "", who })}
             className={!sport ? "is-active" : undefined}
           >
             All sports
@@ -212,7 +267,7 @@ export function BetsBoard({
           {sports.map((name) => (
             <Link
               key={name}
-              href={hrefFor(window, name)}
+              href={betsHref({ tab: "bets", window, sport: name, who })}
               className={sport === name ? "is-active" : undefined}
             >
               {name}
@@ -222,98 +277,64 @@ export function BetsBoard({
         <p className="bets-filter-note">
           Windows use <strong>game date</strong> when present, otherwise the{" "}
           <strong>X post date (CT)</strong>. CFB start is {WINDOW_LABELS.cfb}{" "}
-          (2026-08-27); NFL start is {WINDOW_LABELS.nfl} (2026-09-09).
+          (2026-08-27); NFL start is {WINDOW_LABELS.nfl} (2026-09-09). Bettors
+          come from the Bets tab — no hardcoded list.
         </p>
       </div>
 
       <div className="bets-kpi-grid">
-        {BETTORS.map((who) => {
-          const meta = BETTOR_META[who];
-          const kpi = who === "Trent" ? trent : steve;
+        <KpiCard title="All bettors" kpi={combined} />
+        {kpis.map((kpi) => {
+          const meta = bettorMeta(kpi.who || "");
           return (
             <KpiCard
-              key={who}
+              key={kpi.who || meta.name}
               title={meta.name}
               handle={meta.handle}
-              href={meta.href}
+              href={safeHttpUrl(meta.href) ?? undefined}
               kpi={kpi}
             />
           );
         })}
-        <KpiCard
-          title="Trent vs Steve"
-          kpi={{
-            ...trent,
-            who: "H2H",
-            bets: trent.bets + steve.bets,
-            wins: trent.wins + steve.wins,
-            losses: trent.losses + steve.losses,
-            pushes: trent.pushes + steve.pushes,
-            pending: trent.pending + steve.pending,
-            unknown: trent.unknown + steve.unknown,
-            record: `${trent.record} vs ${steve.record}`,
-            winPct: null,
-            stake: null,
-            pl:
-              trent.pl != null || steve.pl != null
-                ? (trent.pl ?? 0) - (steve.pl ?? 0)
-                : null,
-            roi: null,
-            unitsStaked: null,
-            unitsPl:
-              trent.unitsPl != null || steve.unitsPl != null
-                ? (trent.unitsPl ?? 0) - (steve.unitsPl ?? 0)
-                : null,
-            unitsRoi: null,
-          }}
-        />
       </div>
       <p className="bets-h2h-note">
-        Head-to-head P/L is Trent minus Steve (positive = Trent ahead). Records
-        stay on each card. Combined slice: {trent.bets + steve.bets} bets.
+        Combined card is every tracked slip in this filter ({combined.bets}{" "}
+        bets). Per-bettor cards stay independent. Breakdowns below follow{" "}
+        <strong>{focus === "all" ? "all bettors" : bettorMeta(focus).name}</strong>.
       </p>
 
-      {BETTORS.map((who) => {
-        const rows = bets.filter((b) => b.who === who);
-        return (
-          <div key={who} className="bets-who-block">
-            <h2 className="bets-who-heading">{BETTOR_META[who].name}</h2>
-            <BreakdownTable
-              caption="By sport"
-              rows={breakdown(rows, (b) => b.sport || "Other")}
-            />
-            <BreakdownTable
-              caption="Prime time"
-              rows={breakdown(rows, primeBucket)}
-            />
-            <BreakdownTable
-              caption="Prime-time slot"
-              rows={breakdown(
-                rows.filter((b) => primeBucket(b) === "Prime time"),
-                primeSlot,
-              )}
-            />
-            <BreakdownTable
-              caption="Game day"
-              rows={breakdown(rows, gameWeekday)}
-            />
-            <BreakdownTable
-              caption="Bet type"
-              rows={breakdown(rows, (b) => b.bt || "—")}
-            />
-            <BreakdownTable
-              caption="Single vs multi"
-              rows={breakdown(rows, (b) =>
-                classifyParlay(b) === "multi" ? "Parlay / SGP / multi" : "Single",
-              )}
-            />
-            <BreakdownTable
-              caption="Number of legs"
-              rows={breakdown(rows, legsBucket)}
-            />
-          </div>
-        );
-      })}
+      <div className="bets-who-block">
+        <h2 className="bets-who-heading">
+          {focus === "all" ? "All bettors" : bettorMeta(focus).name}
+        </h2>
+        <BreakdownTable
+          caption="By sport"
+          rows={breakdown(bets, (b) => b.sport || "Other")}
+        />
+        <BreakdownTable caption="Prime time" rows={breakdown(bets, primeBucket)} />
+        <BreakdownTable
+          caption="Prime-time slot"
+          rows={breakdown(
+            bets.filter((b) => primeBucket(b) === "Prime time"),
+            primeSlot,
+          )}
+        />
+        <BreakdownTable caption="Game day" rows={breakdown(bets, gameWeekday)} />
+        <BreakdownTable
+          caption="Bet type"
+          rows={breakdown(bets, (b) => b.bt || "—")}
+        />
+        <BreakdownTable
+          caption="Single vs multi"
+          rows={breakdown(bets, (b) =>
+            classifyParlay(b) === "multi" ? "Parlay / SGP / multi" : "Single",
+          )}
+        />
+        <BreakdownTable
+          caption="Number of legs"
+          rows={breakdown(bets, legsBucket)}
+        />
+      </div>
 
       <section className="bets-feed" aria-labelledby="bets-feed-heading">
         <h2 id="bets-feed-heading">Recent bets</h2>
@@ -321,7 +342,9 @@ export function BetsBoard({
           Newest first. Showing {feed.length} of {bets.length} in this filter.
         </p>
         <ol className="bets-feed-list">
-          {feed.map((bet) => (
+          {feed.map((bet) => {
+            const href = safeHttpUrl(bet.url);
+            return (
             <li key={bet.id} className="bets-feed-item">
               <div className="bets-feed-top">
                 <Chip result={bet.res} />
@@ -337,17 +360,18 @@ export function BetsBoard({
                 {bet.stake != null ? formatMoney(bet.stake, 2) : "no $ stake"}
                 {bet.units != null ? ` · ${formatUnits(bet.units)}` : ""}
                 {bet.book ? ` · ${bet.book}` : ""}
-                {bet.url ? (
+                {href ? (
                   <>
                     {" · "}
-                    <a href={bet.url} rel="noopener noreferrer">
+                    <a href={href} rel="noopener noreferrer">
                       X post
                     </a>
                   </>
                 ) : null}
               </p>
             </li>
-          ))}
+            );
+          })}
         </ol>
       </section>
 
@@ -355,20 +379,23 @@ export function BetsBoard({
         <h2>Caveats</h2>
         <ul>
           <li>
+            KPIs are computed from raw Bets-tab rows only. Summary / By Sport
+            formula tabs are ignored (their old row cap was wrong).
+          </li>
+          <li>
             Trent mostly posts units without odds, so his dollar P/L covers only
             slips with a visible stake.
           </li>
           <li>
             Steve&apos;s totals include bets he placed for friends on his own
-            Gamdom account.
+            Gamdom account. Large-stake slips dominate his dollar P/L.
           </li>
           <li>
             Pending and Unknown bets are excluded from the record and P/L.
           </li>
           <li>
             Last synced: <strong>{formatSyncedAt(document.synced_at)}</strong>
-            {document.source ? ` · ${document.source}` : ""}. Computed from the
-            Bets tab only — sheet formula tabs are ignored.
+            {document.source ? ` · ${document.source}` : ""}.
           </li>
         </ul>
       </aside>
@@ -383,8 +410,4 @@ export function BetsEmpty() {
       <code>sj bets</code> job has not written <code>bets/bets.json</code> yet.
     </p>
   );
-}
-
-export function availableSports(allBets: BetRow[]): string[] {
-  return uniqueSports(allBets);
 }

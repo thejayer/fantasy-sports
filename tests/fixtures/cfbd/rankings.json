@@ -1,0 +1,44 @@
+[
+  {
+    "season": 2026,
+    "seasonType": "regular",
+    "week": 7,
+    "polls": [
+      {
+        "poll": "AP Top 25",
+        "ranks": [
+          {
+            "rank": 1,
+            "school": "Ohio State",
+            "conference": "Big Ten",
+            "firstPlaceVotes": 48
+          },
+          {
+            "rank": 2,
+            "school": "Georgia",
+            "conference": "SEC",
+            "firstPlaceVotes": 8
+          },
+          {
+            "rank": 3,
+            "school": "Alabama",
+            "conference": "SEC",
+            "firstPlaceVotes": 0
+          },
+          {
+            "rank": 4,
+            "school": "Oregon",
+            "conference": "Big Ten",
+            "firstPlaceVotes": 0
+          },
+          {
+            "rank": 5,
+            "school": "Texas",
+            "conference": "SEC",
+            "firstPlaceVotes": 0
+          }
+        ]
+      }
+    ]
+  }
+]

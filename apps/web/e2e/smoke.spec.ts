@@ -1033,4 +1033,28 @@ test.describe("hub smoke", () => {
       0,
     );
   });
+
+  test("AI rankings landing and CFB board (roadmap 7.16)", async ({ page }) => {
+    await page.goto("/rankings");
+    await expect(page.getByRole("heading", { name: /AI Rankings/i })).toBeVisible();
+    await expect(
+      page.getByRole("link", { name: /College football/i }),
+    ).toBeVisible();
+    await page.goto("/rankings/cfb");
+    await expect(page.getByRole("heading", { name: /College football/i })).toBeVisible();
+    await expect(page.getByText(/Buckeyes hold serve/i)).toBeVisible();
+    await expect(page.getByText("Ohio State").first()).toBeVisible();
+    await expect(page.getByText(/What last week got right/i)).toBeVisible();
+  });
+
+  test("AI fantasy power rankings (roadmap 7.16)", async ({ page }) => {
+    await page.goto("/rankings/fantasy?league=football-main");
+    await expect(
+      page.getByRole("heading", { name: /Fantasy power rankings/i }),
+    ).toBeVisible();
+    await expect(page.getByText("Hail Mary Heroes").first()).toBeVisible();
+    await expect(page.getByRole("link", { name: /Hockey Main/i })).toBeVisible();
+    await page.goto("/rankings/fantasy?league=hockey-main");
+    await expect(page.getByText("Crease Crashers").first()).toBeVisible();
+  });
 });
