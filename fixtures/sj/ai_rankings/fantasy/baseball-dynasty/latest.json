@@ -1,0 +1,91 @@
+{
+  "board": "fantasy",
+  "degraded": [],
+  "facts_hash": "8f19570ce4f24640",
+  "format": "dynasty",
+  "generated_at": "2026-10-12T14:00:00+00:00",
+  "headline": "Strictly Jayers Baseball power rankings",
+  "last_week_review": "First committed fixture week \u2014 no prior ballot to grade.",
+  "league_id": "baseball-dynasty",
+  "methodology": "Record, points for/against, recent form, and top roster scorers from the ESPN snapshot.",
+  "model": "fixture",
+  "movers": {
+    "dropped": [],
+    "fallers": [],
+    "new": [],
+    "risers": []
+  },
+  "name": "Strictly Jayers Baseball",
+  "notes": [
+    "Committed fixture for offline hub / CI."
+  ],
+  "phase": "in_season",
+  "rankings": [
+    {
+      "abbrev": "BFB",
+      "blurb": "Bat Flip Bandits sits 0-0 with 6505.8 points for. Recent form: n/a.",
+      "conference": "",
+      "delta": null,
+      "losses": 0,
+      "name": "Bat Flip Bandits",
+      "owners": [
+        "Anthony Roberts"
+      ],
+      "points_against": null,
+      "points_for": 6505.8,
+      "prev_rank": null,
+      "rank": 1,
+      "record": "0-0",
+      "standing": 1,
+      "team_id": 2,
+      "ties": 0,
+      "wins": 0
+    },
+    {
+      "abbrev": "DD",
+      "blurb": "Diamond Dogs sits 0-0 with 5732.1 points for. Recent form: n/a.",
+      "conference": "",
+      "delta": null,
+      "losses": 0,
+      "name": "Diamond Dogs",
+      "owners": [
+        "Bruce Green"
+      ],
+      "points_against": null,
+      "points_for": 5732.1,
+      "prev_rank": null,
+      "rank": 2,
+      "record": "0-0",
+      "standing": 2,
+      "team_id": 1,
+      "ties": 0,
+      "wins": 0
+    },
+    {
+      "abbrev": "CC",
+      "blurb": "Curveball Crew sits 0-0 with 5210.1 points for. Recent form: n/a.",
+      "conference": "",
+      "delta": null,
+      "losses": 0,
+      "name": "Curveball Crew",
+      "owners": [
+        "Philip Gray"
+      ],
+      "points_against": null,
+      "points_for": 5210.1,
+      "prev_rank": null,
+      "rank": 3,
+      "record": "0-0",
+      "standing": 3,
+      "team_id": 3,
+      "ties": 0,
+      "wins": 0
+    }
+  ],
+  "schema_version": 1,
+  "season": 2026,
+  "sport": "baseball",
+  "temperature": 0.2,
+  "week": 24,
+  "week_label": "2026-w24"
+}

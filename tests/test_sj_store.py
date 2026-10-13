@@ -342,3 +342,25 @@ def test_nhl_sidecars_round_trip_without_index(tmp_path: Path):
     assert store.read_nhl("hockey-main", 2027, "player_map") == doc
     assert store.read_nhl("hockey-main", 2027, "nhl_context") is None
     assert not (tmp_path / "index.json").exists()
+
+
+def test_bets_sidecars_round_trip_without_index(tmp_path: Path):
+    """P.11: bets/{name}.json is a store-root side concern, not a league path."""
+    store = FileStore(tmp_path)
+    doc = {"synced_at": "2026-10-10T00:00:00+00:00", "bets": [{"id": "T-1"}]}
+    path = store.write_bets(doc, "bets")
+    assert Path(path) == tmp_path / "bets" / "bets.json"
+    assert store.read_bets("bets") == doc
+    assert store.read_bets("summary") is None
+    assert not (tmp_path / "index.json").exists()
+
+
+def test_ai_rankings_sidecars_round_trip_without_index(tmp_path: Path):
+    """7.16: ai_rankings/{board}/{week}.json is a store-root side concern."""
+    store = FileStore(tmp_path)
+    doc = {"board": "cfb", "week_label": "2026-w07", "rankings": []}
+    path = store.write_ai_rankings(doc, "cfb/2026-w07")
+    assert Path(path) == tmp_path / "ai_rankings" / "cfb" / "2026-w07.json"
+    assert store.read_ai_rankings("cfb/2026-w07") == doc
+    assert store.read_ai_rankings("cfb/latest") is None
+    assert not (tmp_path / "index.json").exists()
