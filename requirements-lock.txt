@@ -43,7 +43,7 @@ duckdb==1.5.5
     # via ffa (pyproject.toml)
 espn-api==0.46.0
     # via ffa (pyproject.toml)
-google-api-core==2.33.0
+google-api-core==2.40.0
     # via
     #   google-cloud-core
     #   google-cloud-storage
@@ -54,7 +54,7 @@ google-auth==2.56.2
     #   google-cloud-storage
 google-cloud-core==2.7.0
     # via google-cloud-storage
-google-cloud-storage==3.13.0
+google-cloud-storage==3.16.0
     # via ffa (pyproject.toml)
 google-crc32c==1.8.0
     # via
@@ -105,7 +105,7 @@ numpy==2.4.6
     #   scikit-learn
     #   scipy
     #   streamlit
-packaging==26.2
+packaging==26.3
     # via
     #   altair
     #   pytest
@@ -202,7 +202,7 @@ shellingham==1.5.4
     # via typer
 six==1.17.0
     # via python-dateutil
-starlette==1.3.1
+starlette==1.7.0
     # via streamlit
 streamlit==1.64.0
     # via ffa (pyproject.toml)
