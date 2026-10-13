@@ -42,6 +42,9 @@ const DEFAULT_ROUTES = [
   // H5b: day lineup (whole roster) and the goalie board (top 40).
   "/leagues/hockey-main?tab=tools&view=lineup&team=1",
   "/leagues/hockey-main?tab=tools&view=goalies",
+  // 7.16: CFB board can include a full FBS table; fixtures stay small.
+  "/rankings/cfb",
+  "/rankings/fantasy",
 ];
 
 const ROUTES = (process.env.SJ_HTML_BUDGET_ROUTES ?? DEFAULT_ROUTES.join(","))

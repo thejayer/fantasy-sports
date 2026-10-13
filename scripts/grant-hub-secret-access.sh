@@ -22,6 +22,11 @@ SECRETS=(
   openai-api-key
   # Read by the ffa dashboard service, which shares the runtime SA by default.
   ffa-dashboard-password
+  # Vibe Split (sj-vibe) GitHub OAuth + encrypted PAT key + cron bearer.
+  sj-vibe-github-client-id
+  sj-vibe-github-client-secret
+  sj-vibe-token-key
+  sj-vibe-cron-secret
 )
 
 if [[ -n "${CLOUD_RUN_SA:-}" ]]; then

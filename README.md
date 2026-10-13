@@ -9,6 +9,8 @@ leagues, teams, players, standings), and the `ffa` NFL analytics engine.
   `src/sj` sync CLI, and `apps/web` Next.js app at `fantasy.strictlyjayers.com`.
 - **Fitness (training log):** see [FITNESS.md](FITNESS.md) — `apps/fitness` at
   `fitness.strictlyjayers.com` (Modernist restyle of the athlete-log PWA).
+- **Vibe Split:** see [VIBE.md](VIBE.md) — `apps/vibe` at
+  `vibe.strictlyjayers.com` (workouts overlapped with GitHub).
 - **Analytics engine:** `ffa` below — projections, ranking, draft tools, Streamlit dashboard.
 - **Where the site stands and where it's going:** [AUDIT.md](AUDIT.md) (findings,
   with reproductions) and [ROADMAP.md](ROADMAP.md) (the phased plan).
