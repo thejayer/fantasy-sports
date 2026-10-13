@@ -962,6 +962,104 @@ tr:last-child td {
   text-transform: uppercase;
 }
 
+.ai-rank-crumb {
+  margin: 0 0 0.35rem;
+  font-size: 0.85rem;
+}
+
+.ai-rank-crumb a {
+  text-decoration: underline;
+  text-underline-offset: 0.15em;
+}
+
+.ai-rank-kicker {
+  margin: 0.85rem 0 0.35rem;
+  font-family: var(--font-heading);
+  font-weight: 600;
+  font-size: 12px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--field-deep);
+}
+
+.ai-rank-headline {
+  margin: 0.25rem 0 0.65rem;
+  font-size: clamp(1.45rem, 3vw, 2rem);
+  line-height: 1.15;
+  letter-spacing: -0.02em;
+  max-width: 24ch;
+}
+
+.ai-rank-degraded {
+  margin: 0.75rem 0;
+  padding: 0.65rem 0.8rem;
+  border: 1.5px solid var(--ember, #c45c26);
+  border-radius: var(--radius);
+}
+
+.ai-rank-review {
+  margin: 1rem 0 1.25rem;
+  padding: 0.9rem 1rem;
+}
+
+.ai-rank-review h3 {
+  margin: 0 0 0.4rem;
+  font-size: 0.95rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.ai-rank-review p {
+  margin: 0;
+  line-height: 1.5;
+  max-width: 62ch;
+}
+
+.ai-rank-movers {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(11rem, 1fr));
+  gap: 0.85rem 1.25rem;
+  margin: 0 0 1.35rem;
+}
+
+.ai-rank-movers-col h3 {
+  margin: 0 0 0.35rem;
+  font-size: 0.8rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.ai-rank-movers-col ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.ai-rank-movers-col li {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem 0.6rem;
+  align-items: baseline;
+  padding: 0.2rem 0;
+}
+
+.ai-rank-delta {
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.ai-rank-delta.up {
+  color: var(--signal);
+}
+
+.ai-rank-delta.down {
+  color: var(--ember, #c45c26);
+}
+
+.ai-rank-list {
+  margin-top: 0.35rem;
+}
+
 .recap-rankings {
   list-style: none;
   margin: 0;

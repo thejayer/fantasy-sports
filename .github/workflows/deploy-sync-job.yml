@@ -33,6 +33,14 @@ on:
         description: "Execute the job once after deploying (true/false)"
         required: true
         default: "true"
+      rankings_provider:
+        description: "Optional SJ_RANKINGS_PROVIDER override (blank keeps the live job value)"
+        required: false
+        default: ""
+      rankings_model:
+        description: "Optional SJ_RANKINGS_MODEL override (blank keeps the live job value)"
+        required: false
+        default: ""
 
 permissions:
   contents: read
@@ -52,6 +60,8 @@ jobs:
       JOB: ${{ inputs.job }}
       BUCKET: ${{ inputs.bucket }}
       RUN_AFTER: ${{ inputs.run_after_deploy }}
+      RANKINGS_PROVIDER: ${{ inputs.rankings_provider }}
+      RANKINGS_MODEL: ${{ inputs.rankings_model }}
     steps:
       - name: Validate inputs
         run: |
@@ -60,6 +70,16 @@ jobs:
             value=${pair#*=}
             case "$value" in
               ""|*[!A-Za-z0-9_.-]*)
+                echo "Invalid $name: only letters, digits, '.', '-' and '_' are allowed." >&2
+                exit 1 ;;
+            esac
+          done
+          for pair in "rankings_provider=$RANKINGS_PROVIDER" "rankings_model=$RANKINGS_MODEL"; do
+            name=${pair%%=*}
+            value=${pair#*=}
+            [ -z "$value" ] && continue
+            case "$value" in
+              *[!A-Za-z0-9_.-]*)
                 echo "Invalid $name: only letters, digits, '.', '-' and '_' are allowed." >&2
                 exit 1 ;;
             esac
@@ -106,20 +126,63 @@ jobs:
 
       - name: Deploy Cloud Run Job
         run: |
+          SECRETS="ESPN_S2=sj-espn-s2:latest,ESPN_SWID=sj-espn-swid:latest"
+          # Job SA (or the project compute SA on first create). Grant
+          # secretAccessor *before* --set-secrets so a new rankings secret
+          # cannot take down the daily ESPN sync.
+          SYNC_SA="$(gcloud run jobs describe "$JOB" --project "$PROJECT_ID" --region "$REGION" --format='value(spec.template.spec.serviceAccountName)' 2>/dev/null || true)"
+          if [ -z "$SYNC_SA" ]; then
+            PROJECT_NUMBER="$(gcloud projects describe "$PROJECT_ID" --format='value(projectNumber)')"
+            SYNC_SA="${PROJECT_NUMBER}-compute@developer.gserviceaccount.com"
+          fi
+          attach_rankings_secret() {
+            local env_name="$1"
+            local secret_name="$2"
+            if ! gcloud secrets describe "$secret_name" --project "$PROJECT_ID" >/dev/null 2>&1; then
+              echo "$secret_name missing — not attaching $env_name"
+              return 0
+            fi
+            gcloud secrets add-iam-policy-binding "$secret_name" \
+              --project "$PROJECT_ID" \
+              --member="serviceAccount:${SYNC_SA}" \
+              --role="roles/secretmanager.secretAccessor" \
+              --quiet >/dev/null || true
+            local payload
+            if ! payload="$(gcloud secrets versions access latest --secret="$secret_name" --project "$PROJECT_ID")"; then
+              echo "failed to read $secret_name — aborting so --set-secrets cannot drop an attached key" >&2
+              exit 1
+            fi
+            if [ -z "$payload" ] || [ "$payload" = "REPLACE_ME" ]; then
+              echo "$secret_name latest is empty or REPLACE_ME — not attaching $env_name"
+              return 0
+            fi
+            SECRETS="$SECRETS,$env_name=$secret_name:latest"
+          }
+          attach_rankings_secret SJ_CFBD_API_KEY sj-cfbd-api-key
+          attach_rankings_secret SJ_RANKINGS_API_KEY sj-rankings-api-key
+          # --update-env-vars merges. Do not --set-env-vars the rankings
+          # provider/model: production is openai/gpt-4.1-mini until an xAI
+          # key exists, and a default of xai/grok-4-fast would reset that.
+          RANKINGS_ENV="SJ_GCS_BUCKET=$BUCKET"
+          if [ -n "$RANKINGS_PROVIDER" ]; then
+            RANKINGS_ENV="$RANKINGS_ENV,SJ_RANKINGS_PROVIDER=$RANKINGS_PROVIDER"
+          fi
+          if [ -n "$RANKINGS_MODEL" ]; then
+            RANKINGS_ENV="$RANKINGS_ENV,SJ_RANKINGS_MODEL=$RANKINGS_MODEL"
+          fi
           COMMON=(
             --project "$PROJECT_ID"
             --region "$REGION"
             --image "$IMAGE"
             --max-retries 2
-            --task-timeout 30m
+            --task-timeout 60m
             --memory 1Gi --cpu 1
-            --set-env-vars "SJ_GCS_BUCKET=$BUCKET"
-            --set-secrets "ESPN_S2=sj-espn-s2:latest,ESPN_SWID=sj-espn-swid:latest"
+            --set-secrets "$SECRETS"
           )
           if gcloud run jobs describe "$JOB" --project "$PROJECT_ID" --region "$REGION" >/dev/null 2>&1; then
-            gcloud run jobs update "$JOB" "${COMMON[@]}"
+            gcloud run jobs update "$JOB" "${COMMON[@]}" --update-env-vars "$RANKINGS_ENV"
           else
-            gcloud run jobs create "$JOB" "${COMMON[@]}"
+            gcloud run jobs create "$JOB" "${COMMON[@]}" --set-env-vars "$RANKINGS_ENV"
           fi
 
           # P.11 bet tracker — same image, no ESPN cookies. Prefers
@@ -167,3 +230,10 @@ jobs:
           echo "Bet tracker (after the sheet is shared with the job SA):"
           echo "  gcloud run jobs execute sj-bets --region=$REGION --project=$PROJECT_ID"
           echo "  ./scripts/setup-bets-infra.sh"
+          echo
+          echo "AI rankings (after sj-cfbd-api-key / sj-rankings-api-key exist):"
+          echo "  gcloud run jobs execute $JOB --args=ai-rankings,--board,cfb --region=$REGION --project=$PROJECT_ID"
+          echo "  gcloud run jobs execute $JOB --args=ai-rankings,--board,fantasy --region=$REGION --project=$PROJECT_ID"
+          echo "  gcloud run jobs execute $JOB --args=ai-rankings,--board,cfb,--force --region=$REGION --project=$PROJECT_ID"
+          echo "  Job task-timeout is 60m (Grok CFB prompt). LLM timeout SJ_RANKINGS_TIMEOUT_S=600."
+          echo "  ./scripts/setup-sync-infra.sh   # registers Sunday/Monday schedulers"

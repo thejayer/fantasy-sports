@@ -1,15 +1,15 @@
-"""Trent & Steve public-bet tracker — sheet ingest + KPI math (roadmap P.11).
+"""Public-bet tracker — sheet ingest + KPI math (roadmap P.11).
 
-Reads the Bets tab (Drive file or a local xlsx/JSON fixture), normalizes
-each row into the Gamba-shaped JSON the portal stores at ``bets/bets.json``,
-and computes records / ROI from those rows. Formula tabs and helper columns
-are ignored.
+Reads the Bets tab (and optional Parlay Legs / BetMGM Public Warnings
+tabs) from a Drive file or a local xlsx/JSON fixture. Bettors are
+discovered from col B — no closed Trent/Steve list. Formula / summary
+tabs are ignored; KPIs come from raw rows only.
 
 Live ingest looks up the Drive ``mimeType`` (read-only) and then either
-calls the Sheets API (native spreadsheet) or downloads the uploaded
-``.xlsx`` (``files.get?alt=media``) and parses it with the same reader as
-``--from``. ADC uses ``drive.readonly`` + ``spreadsheets.readonly``.
-Tests never hit Google.
+calls the Sheets API (native spreadsheet) or downloads an uploaded
+``.xlsx`` (``files.get?alt=media``). Headers are matched by name so
+added columns are tolerated. ADC uses ``drive.readonly`` +
+``spreadsheets.readonly``. Tests never hit Google.
 """
 
 from __future__ import annotations
@@ -22,6 +22,7 @@ import urllib.error
 import urllib.parse
 import urllib.request
 import zipfile
+from collections import Counter
 from collections.abc import Iterable
 from datetime import date, datetime, timedelta, timezone
 from io import BytesIO
@@ -34,15 +35,26 @@ from sj.store import write_bets
 
 DEFAULT_SHEET_ID = "1_F9HCU7uOPH5uo8cgXkxwKrvREolPid_ZoviVVcX3HU"
 DEFAULT_SHEET_TAB = "Bets"
+PARLAY_TAB = "Parlay Legs"
+PUBLIC_TAB = "BetMGM Public Warnings"
+TRACKER_TABS = (DEFAULT_SHEET_TAB, PARLAY_TAB, PUBLIC_TAB)
 DRIVE_READONLY_SCOPE = "https://www.googleapis.com/auth/drive.readonly"
 SHEETS_READONLY_SCOPE = "https://www.googleapis.com/auth/spreadsheets.readonly"
 READONLY_SCOPES = (DRIVE_READONLY_SCOPE, SHEETS_READONLY_SCOPE)
 SHEET_MIME = "application/vnd.google-apps.spreadsheet"
 XLSX_MIME = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
 DRIVE_FILE_URL = "https://www.googleapis.com/drive/v3/files/{file_id}"
+SHEETS_SPREADSHEET_URL = "https://sheets.googleapis.com/v4/spreadsheets/{sheet_id}"
 SHEETS_VALUES_URL = (
     "https://sheets.googleapis.com/v4/spreadsheets/{sheet_id}/values/{range_}"
 )
+SHEETS_BATCH_URL = (
+    "https://sheets.googleapis.com/v4/spreadsheets/{sheet_id}/values:batchGet"
+)
+
+# Assumed juice when fading the public / a parlay leg with no posted price.
+FADE_AMERICAN = -110
+FADE_STAKE = 100.0
 
 # Excel's date serial epoch (Lotus 123 leap-year bug).
 _EXCEL_EPOCH = datetime(1899, 12, 30, tzinfo=timezone.utc)
@@ -146,6 +158,24 @@ def _as_text(value: Any) -> str:
     return str(value).strip()
 
 
+def strip_value_prefix(value: Any) -> Any:
+    """Sheet export artifact: ``Value`` / ``Value `` is blank; ``Value -6.5`` → ``-6.5``."""
+    if value is None or isinstance(value, bool):
+        return value
+    if isinstance(value, (int, float)):
+        return value
+    text = str(value).strip()
+    if _norm_key(text) == "value":
+        return ""
+    if text.lower().startswith("value "):
+        return text[6:].strip()
+    return text
+
+
+def _sheet_text(value: Any) -> str:
+    return _as_text(strip_value_prefix(value))
+
+
 def _as_float(value: Any) -> float | None:
     if _is_blank(value):
         return None
@@ -177,7 +207,50 @@ def normalize_who(value: Any) -> str:
         return "Trent"
     if key in STEVE_ALIASES:
         return "Steve"
-    return text or "Unknown"
+    stripped = text[1:].strip() if text.startswith("@") else text
+    return stripped or "Unknown"
+
+
+def unique_bettors(bets: Iterable[dict[str, Any]]) -> list[str]:
+    """Distinct ``who`` values, most slips first (stable alpha tie-break)."""
+    counts: Counter[str] = Counter()
+    for bet in bets:
+        who = _as_text(bet.get("who")) or "Unknown"
+        counts[who] += 1
+    return [
+        who
+        for who, _n in sorted(counts.items(), key=lambda kv: (-kv[1], kv[0].lower(), kv[0]))
+    ]
+
+
+def invert_result(value: Any) -> str:
+    """W↔L; Push / Pending / Unknown stay put."""
+    res = normalize_result(value)
+    if res == "W":
+        return "L"
+    if res == "L":
+        return "W"
+    return res
+
+
+def fade_pl(
+    result: Any,
+    *,
+    american: float = FADE_AMERICAN,
+    stake: float = FADE_STAKE,
+) -> float | None:
+    """Net $ for a graded fade priced at ``american`` on ``stake`` (default −110 / $100)."""
+    res = normalize_result(result)
+    if not is_graded(res):
+        return None
+    if res == "Push":
+        return 0.0
+    if res == "L":
+        return -stake
+    dec = american_to_decimal(american)
+    if dec is None:
+        return None
+    return stake * (dec - 1.0)
 
 
 def normalize_result(value: Any) -> str:
@@ -405,39 +478,42 @@ def normalize_row(row: dict[str, Any] | list[Any], headers: list[Any] | None = N
             return None
         source = {field: _cell(row, mapping, field) for field in _HEADER_ALIASES}
 
-    bet_id = _as_text(source.get("id"))
+    bet_id = _sheet_text(source.get("id"))
     if not bet_id or _norm_key(bet_id) in {"bet id", "id"}:
         return None
 
-    odds, dec = parse_odds(source.get("odds"), source.get("dec"))
-    units_raw = source.get("units")
+    odds, dec = parse_odds(
+        strip_value_prefix(source.get("odds")),
+        strip_value_prefix(source.get("dec")),
+    )
+    units_raw = strip_value_prefix(source.get("units"))
     units = None if _is_blank(units_raw) else _as_float(units_raw)
-    n = _as_int(source.get("n"))
+    n = _as_int(strip_value_prefix(source.get("n")))
     bet = {
         "id": bet_id,
         "who": normalize_who(source.get("who")),
         "posted": format_posted(source.get("posted")),
         "gd": format_game_date(source.get("gd")),
-        "kt": _as_text(source.get("kt")) or None,
-        "prime": _as_text(source.get("prime")) or "",
-        "slot": _as_text(source.get("slot")),
-        "sport": _as_text(source.get("sport")) or "Other",
-        "lg": _as_text(source.get("lg")),
-        "bt": _as_text(source.get("bt")),
-        "legs": _as_text(source.get("legs")),
+        "kt": _sheet_text(source.get("kt")) or None,
+        "prime": _sheet_text(source.get("prime")) or "",
+        "slot": _sheet_text(source.get("slot")),
+        "sport": _sheet_text(source.get("sport")) or "Other",
+        "lg": _sheet_text(source.get("lg")),
+        "bt": _sheet_text(source.get("bt")),
+        "legs": _sheet_text(source.get("legs")),
         "n": n,
         "odds": odds,
         "dec": dec,
-        "stake": _as_float(source.get("stake")),
+        "stake": _as_float(strip_value_prefix(source.get("stake"))),
         "units": units,
-        "towin": _as_float(source.get("towin")),
-        "book": _as_text(source.get("book")),
-        "res": normalize_result(source.get("res")),
-        "src": _as_text(source.get("src")),
-        "promo": _as_text(source.get("promo")) or "N",
-        "url": _as_text(source.get("url")),
-        "notes": _as_text(source.get("notes")),
-        "ps": _as_text(source.get("ps")),
+        "towin": _as_float(strip_value_prefix(source.get("towin"))),
+        "book": _sheet_text(source.get("book")),
+        "res": normalize_result(strip_value_prefix(source.get("res"))),
+        "src": _sheet_text(source.get("src")),
+        "promo": _sheet_text(source.get("promo")) or "N",
+        "url": _sheet_text(source.get("url")),
+        "notes": _sheet_text(source.get("notes")),
+        "ps": _sheet_text(source.get("ps")),
     }
     if not bet["ps"]:
         bet["ps"] = "Parlay/multi-leg" if classify_parlay(bet) == "multi" else "Single"
@@ -573,13 +649,16 @@ def build_document(
 
 def build_summary(document: dict[str, Any]) -> dict[str, Any]:
     bets = list(document.get("bets") or [])
+    names = unique_bettors(bets)
     return {
         "synced_at": document.get("synced_at"),
         "source": document.get("source"),
         "bet_count": len(bets),
+        # Stable keys from P.11 — empty KPI objects when that name is absent.
         "trent": bettor_kpis(bets, "Trent"),
         "steve": bettor_kpis(bets, "Steve"),
         "all": bettor_kpis(bets),
+        "bettors": [bettor_kpis(bets, who) for who in names],
     }
 
 
@@ -621,6 +700,34 @@ def _xlsx_cell_value(cell: ET.Element, shared: list[str]) -> Any:
     return text
 
 
+def list_xlsx_sheets(source: Path | str | bytes | zipfile.ZipFile) -> list[str]:
+    """Worksheet names in workbook order."""
+    own = False
+    if isinstance(source, zipfile.ZipFile):
+        zf = source
+    else:
+        own = True
+        zf_src: Path | str | BytesIO
+        if isinstance(source, (bytes, bytearray)):
+            zf_src = BytesIO(source)
+        else:
+            zf_src = source
+        zf = zipfile.ZipFile(zf_src)
+    try:
+        wb = ET.fromstring(zf.read("xl/workbook.xml"))
+        return [sheet.get("name") or "" for sheet in wb.findall("m:sheets/m:sheet", _SSML)]
+    finally:
+        if own:
+            zf.close()
+
+
+def sheet_a1_range(tab: str) -> str:
+    """Quote a worksheet name for the Sheets API (whole used range)."""
+    if re.fullmatch(r"[A-Za-z0-9_]+", tab):
+        return tab
+    return "'" + tab.replace("'", "''") + "'"
+
+
 def read_xlsx_rows(
     source: Path | str | bytes,
     sheet_name: str = DEFAULT_SHEET_TAB,
@@ -648,7 +755,9 @@ def read_xlsx_rows(
                 target = rels.get(rid or "")
                 break
         if not target:
-            raise FileNotFoundError(f"sheet {sheet_name!r} not in {label}")
+            raise FileNotFoundError(
+                f"sheet {sheet_name!r} not in {label}; have {list_xlsx_sheets(zf)}"
+            )
         target = target.lstrip("/")
         if not target.startswith("xl/"):
             target = f"xl/{target}"
@@ -680,6 +789,19 @@ def load_local_rows(path: Path | str) -> list[dict[str, Any]]:
         return normalize_rows(payload)
     headers, rows = read_xlsx_rows(file)
     return normalize_rows(rows, headers)
+
+
+def load_local_workbook(
+    path: Path | str,
+) -> dict[str, tuple[list[str], list[list[Any]]]]:
+    """Read every named tracker tab that exists in an xlsx (missing tabs omitted)."""
+    file = Path(path)
+    names = set(list_xlsx_sheets(file))
+    out: dict[str, tuple[list[str], list[list[Any]]]] = {}
+    for tab in TRACKER_TABS:
+        if tab in names:
+            out[tab] = read_xlsx_rows(file, tab)
+    return out
 
 
 def _adc_token(scopes: Iterable[str] = READONLY_SCOPES) -> str:
@@ -743,6 +865,73 @@ def download_drive_file(
     return _http_get(url, token=token, opener=opener)
 
 
+def fetch_sheet_values(
+    sheet_id: str,
+    tab: str,
+    *,
+    opener=None,
+    token: str | None = None,
+) -> tuple[list[str], list[list[Any]]]:
+    """One worksheet via Sheets ``values.get`` — whole used range, headers by name."""
+    token = token or _adc_token()
+    range_ = urllib.parse.quote(sheet_a1_range(tab), safe="")
+    url = SHEETS_VALUES_URL.format(sheet_id=sheet_id, range_=range_)
+    url += "?valueRenderOption=UNFORMATTED_VALUE&dateTimeRenderOption=SERIAL_NUMBER"
+    payload = json.loads(_http_get(url, token=token, opener=opener).decode("utf-8"))
+    values = payload.get("values") or []
+    if not values:
+        return [], []
+    headers = [str(h) for h in values[0]]
+    return headers, values[1:]
+
+
+def list_remote_tabs(
+    sheet_id: str,
+    *,
+    opener=None,
+    token: str | None = None,
+) -> list[str]:
+    """Native-Sheet tab titles (readonly)."""
+    token = token or _adc_token()
+    qs = urllib.parse.urlencode({"fields": "sheets.properties.title"})
+    url = f"{SHEETS_SPREADSHEET_URL.format(sheet_id=sheet_id)}?{qs}"
+    payload = json.loads(_http_get(url, token=token, opener=opener).decode("utf-8"))
+    names: list[str] = []
+    for sheet in payload.get("sheets") or []:
+        title = ((sheet.get("properties") or {}).get("title") or "").strip()
+        if title:
+            names.append(title)
+    return names
+
+
+def fetch_sheet_workbook(
+    sheet_id: str = DEFAULT_SHEET_ID,
+    tabs: Iterable[str] = TRACKER_TABS,
+    *,
+    opener=None,
+    token: str | None = None,
+) -> dict[str, tuple[list[str], list[list[Any]]]]:
+    """Fetch named tabs that exist on a native Sheet (missing tabs omitted)."""
+    token = token or _adc_token()
+    present = set(list_remote_tabs(sheet_id, opener=opener, token=token))
+    wanted = [tab for tab in tabs if tab in present]
+    out: dict[str, tuple[list[str], list[list[Any]]]] = {}
+    if not wanted:
+        return out
+    # One batchGet so added columns on any tab are included (no A:AD cap).
+    params = [("valueRenderOption", "UNFORMATTED_VALUE"), ("dateTimeRenderOption", "SERIAL_NUMBER")]
+    params.extend(("ranges", sheet_a1_range(tab)) for tab in wanted)
+    url = SHEETS_BATCH_URL.format(sheet_id=sheet_id) + "?" + urllib.parse.urlencode(params)
+    payload = json.loads(_http_get(url, token=token, opener=opener).decode("utf-8"))
+    for tab, vr in zip(wanted, payload.get("valueRanges") or []):
+        values = vr.get("values") or []
+        if not values:
+            out[tab] = ([], [])
+            continue
+        out[tab] = ([str(h) for h in values[0]], values[1:])
+    return out
+
+
 def fetch_sheet_rows(
     sheet_id: str = DEFAULT_SHEET_ID,
     tab: str = DEFAULT_SHEET_TAB,
@@ -750,17 +939,26 @@ def fetch_sheet_rows(
     opener=None,
     token: str | None = None,
 ) -> list[dict[str, Any]]:
-    """Read the Bets tab via the Sheets API (readonly scope, ADC)."""
-    token = token or _adc_token()
-    range_ = urllib.parse.quote(f"{tab}!A:AD", safe="")
-    url = SHEETS_VALUES_URL.format(sheet_id=sheet_id, range_=range_)
-    url += "?valueRenderOption=UNFORMATTED_VALUE&dateTimeRenderOption=SERIAL_NUMBER"
-    payload = json.loads(_http_get(url, token=token, opener=opener).decode("utf-8"))
-    values = payload.get("values") or []
-    if not values:
-        return []
-    headers, rows = values[0], values[1:]
+    """Read one tab via the Sheets API and normalize as Bets rows."""
+    headers, rows = fetch_sheet_values(sheet_id, tab, opener=opener, token=token)
     return normalize_rows(rows, headers)
+
+
+def fetch_xlsx_workbook(
+    file_id: str = DEFAULT_SHEET_ID,
+    tabs: Iterable[str] = TRACKER_TABS,
+    *,
+    opener=None,
+    token: str | None = None,
+) -> dict[str, tuple[list[str], list[list[Any]]]]:
+    """Download an uploaded .xlsx once and parse every named tracker tab."""
+    data = download_drive_file(file_id, opener=opener, token=token)
+    names = set(list_xlsx_sheets(data))
+    out: dict[str, tuple[list[str], list[list[Any]]]] = {}
+    for tab in tabs:
+        if tab in names:
+            out[tab] = read_xlsx_rows(data, tab)
+    return out
 
 
 def fetch_xlsx_rows(
@@ -776,6 +974,26 @@ def fetch_xlsx_rows(
     return normalize_rows(rows, headers)
 
 
+def fetch_remote_workbook(
+    file_id: str = DEFAULT_SHEET_ID,
+    tabs: Iterable[str] = TRACKER_TABS,
+    *,
+    opener=None,
+    mime_type: str | None = None,
+) -> tuple[dict[str, tuple[list[str], list[list[Any]]]], str]:
+    """Dispatch on Drive mimeType: native Sheet vs uploaded xlsx (all tracker tabs)."""
+    mime = mime_type or lookup_drive_mime(file_id, opener=opener)
+    if mime == SHEET_MIME:
+        return fetch_sheet_workbook(file_id, tabs, opener=opener), "sheets"
+    if mime == XLSX_MIME:
+        return fetch_xlsx_workbook(file_id, tabs, opener=opener), "drive-xlsx"
+    raise RuntimeError(
+        f"Unsupported Drive mimeType {mime!r} for {file_id}. "
+        "Share a native Google Sheet or an uploaded .xlsx as Viewer; "
+        "no conversion is required."
+    )
+
+
 def fetch_remote_rows(
     file_id: str = DEFAULT_SHEET_ID,
     tab: str = DEFAULT_SHEET_TAB,
@@ -783,7 +1001,7 @@ def fetch_remote_rows(
     opener=None,
     mime_type: str | None = None,
 ) -> tuple[list[dict[str, Any]], str]:
-    """Dispatch on Drive mimeType: native Sheet vs uploaded xlsx."""
+    """Dispatch on Drive mimeType and normalize one tab as Bets rows."""
     mime = mime_type or lookup_drive_mime(file_id, opener=opener)
     if mime == SHEET_MIME:
         return fetch_sheet_rows(file_id, tab, opener=opener), "sheets"
@@ -804,20 +1022,56 @@ def export_bets(
     store_dir: Path | str | None = None,
     source: str | None = None,
 ) -> dict[str, Any]:
-    """Normalize rows and write ``bets/bets.json`` + ``bets/summary.json``."""
+    """Normalize tracker tabs and write bets / summary / parlay_legs / public_warnings."""
+    from sj.bets_parlay import build_parlay_document, normalize_parlay_rows
+    from sj.bets_public import build_public_document, normalize_public_rows
+
+    book: dict[str, tuple[list[str], list[list[Any]]]] = {}
+    bets: list[dict[str, Any]]
     if from_path:
-        bets = load_local_rows(from_path)
         src = source or f"fixture:{Path(from_path).name}"
+        if Path(from_path).suffix.lower() == ".json":
+            bets = load_local_rows(from_path)
+        else:
+            book = load_local_workbook(from_path)
+            headers, rows = book.get(tab, book.get(DEFAULT_SHEET_TAB, ([], [])))
+            bets = normalize_rows(rows, headers)
     else:
-        bets, detected = fetch_remote_rows(sheet_id, tab)
+        book, detected = fetch_remote_workbook(sheet_id)
         src = source or detected
+        headers, rows = book.get(tab, book.get(DEFAULT_SHEET_TAB, ([], [])))
+        bets = normalize_rows(rows, headers)
+
     document = build_document(bets, source=src)
     document["sheet_id"] = sheet_id
     document["tab"] = tab
     summary = build_summary(document)
+
+    parlay_headers, parlay_rows = book.get(PARLAY_TAB, ([], []))
+    parlay_doc = build_parlay_document(
+        normalize_parlay_rows(parlay_rows, parlay_headers),
+        synced_at=document["synced_at"],
+        source=src,
+        sheet_id=sheet_id,
+    )
+    public_headers, public_rows = book.get(PUBLIC_TAB, ([], []))
+    public_doc = build_public_document(
+        normalize_public_rows(public_rows, public_headers),
+        synced_at=document["synced_at"],
+        source=src,
+        sheet_id=sheet_id,
+    )
+
     write_bets(document, "bets", store_dir=store_dir)
     write_bets(summary, "summary", store_dir=store_dir)
-    return {"bets": document, "summary": summary}
+    write_bets(parlay_doc, "parlay_legs", store_dir=store_dir)
+    write_bets(public_doc, "public_warnings", store_dir=store_dir)
+    return {
+        "bets": document,
+        "summary": summary,
+        "parlay_legs": parlay_doc,
+        "public_warnings": public_doc,
+    }
 
 
 def dumps_bets(document: dict[str, Any]) -> str:

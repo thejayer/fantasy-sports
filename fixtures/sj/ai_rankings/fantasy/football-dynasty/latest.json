@@ -1,0 +1,91 @@
+{
+  "board": "fantasy",
+  "degraded": [],
+  "facts_hash": "2eda7ee375faa21c",
+  "format": "dynasty",
+  "generated_at": "2026-10-12T14:00:00+00:00",
+  "headline": "Strictly Jayers Football Dynasty power rankings",
+  "last_week_review": "First committed fixture week \u2014 no prior ballot to grade.",
+  "league_id": "football-dynasty",
+  "methodology": "Record, points for/against, recent form, and top roster scorers from the ESPN snapshot.",
+  "model": "fixture",
+  "movers": {
+    "dropped": [],
+    "fallers": [],
+    "new": [],
+    "risers": []
+  },
+  "name": "Strictly Jayers Football Dynasty",
+  "notes": [
+    "Committed fixture for offline hub / CI."
+  ],
+  "phase": "in_season",
+  "rankings": [
+    {
+      "abbrev": "GG",
+      "blurb": "Gridiron Goons sits 7-7 with 1644.3 points for. Recent form: L, L, W, L.",
+      "conference": "",
+      "delta": null,
+      "losses": 7,
+      "name": "Gridiron Goons",
+      "owners": [
+        "Anthony Nguyen"
+      ],
+      "points_against": 1585.4,
+      "points_for": 1644.3,
+      "prev_rank": null,
+      "rank": 1,
+      "record": "7-7",
+      "standing": 1,
+      "team_id": 1,
+      "ties": 0,
+      "wins": 7
+    },
+    {
+      "abbrev": "TT",
+      "blurb": "Turf Titans sits 5-2 with 927.3 points for. Recent form: W, L, W, W.",
+      "conference": "",
+      "delta": null,
+      "losses": 2,
+      "name": "Turf Titans",
+      "owners": [
+        "Logan Jones"
+      ],
+      "points_against": 2104.8,
+      "points_for": 927.3,
+      "prev_rank": null,
+      "rank": 2,
+      "record": "5-2",
+      "standing": 2,
+      "team_id": 2,
+      "ties": 0,
+      "wins": 5
+    },
+    {
+      "abbrev": "EZE",
+      "blurb": "End Zone Enforcers sits 2-5 with 747.7 points for. Recent form: L, L, W, L.",
+      "conference": "",
+      "delta": null,
+      "losses": 5,
+      "name": "End Zone Enforcers",
+      "owners": [
+        "Gary Miller"
+      ],
+      "points_against": 1860.0,
+      "points_for": 747.7,
+      "prev_rank": null,
+      "rank": 3,
+      "record": "2-5",
+      "standing": 3,
+      "team_id": 3,
+      "ties": 0,
+      "wins": 2
+    }
+  ],
+  "schema_version": 1,
+  "season": 2026,
+  "sport": "football",
+  "temperature": 0.2,
+  "week": 14,
+  "week_label": "2026-w14"
+}

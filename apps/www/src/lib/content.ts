@@ -150,7 +150,7 @@ export const portalCopy = {
         index: "07",
         kicker: "Slips",
         title: "Bets",
-        body: "Trent vs Steve — public-bet records, ROI, and the recent slip feed. Members only.",
+        body: "Public-bet records, parlay-leg fades, and BetMGM public-money warnings. Members only.",
         action: "Open Bets",
         actionPending: "Open Bets",
       },
