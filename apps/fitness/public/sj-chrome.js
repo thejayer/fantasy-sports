@@ -15,12 +15,16 @@
 
   const community = meta("sj-community") || "https://strictlyjayers.com";
   const fantasy = meta("sj-fantasy") || "https://fantasy.strictlyjayers.com";
+  const vibe = meta("sj-vibe") || "https://vibe.strictlyjayers.com";
 
   document.querySelectorAll("[data-sj-community]").forEach((el) => {
     if (el.tagName === "A") el.setAttribute("href", community);
   });
   document.querySelectorAll("[data-sj-fantasy]").forEach((el) => {
     if (el.tagName === "A") el.setAttribute("href", fantasy);
+  });
+  document.querySelectorAll("[data-sj-vibe]").forEach((el) => {
+    if (el.tagName === "A") el.setAttribute("href", vibe);
   });
 
   function readAccent() {

@@ -14,7 +14,8 @@ export default async function LoginPage({ searchParams }: Props) {
   const { callbackUrl: requestedCallbackUrl, error } = await searchParams;
   // Attacker-controlled: never hand this to redirect() or signIn() unlaundered.
   const callbackUrl = safeCallbackUrl(requestedCallbackUrl);
-  const { communitySiteUrl, fitnessUrl, discordInviteUrl } = getHubSiteConfig();
+  const { communitySiteUrl, fitnessUrl, vibeUrl, discordInviteUrl } =
+    getHubSiteConfig();
 
   if (process.env.AUTH_DEV_BYPASS === "1") {
     redirect(callbackUrl);
@@ -37,6 +38,9 @@ export default async function LoginPage({ searchParams }: Props) {
           <span aria-current="page">Fantasy</span>
           <a href={fitnessUrl} rel="noopener noreferrer">
             Fitness
+          </a>
+          <a href={vibeUrl} rel="noopener noreferrer">
+            Vibe
           </a>
         </nav>
       </header>
@@ -93,6 +97,9 @@ export default async function LoginPage({ searchParams }: Props) {
         <span aria-current="page">Fantasy</span>
         <a href={fitnessUrl} rel="noopener noreferrer">
           Fitness
+        </a>
+        <a href={vibeUrl} rel="noopener noreferrer">
+          Vibe
         </a>
       </footer>
     </main>

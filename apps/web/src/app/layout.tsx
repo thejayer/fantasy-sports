@@ -12,8 +12,11 @@ import {
   parseAllowedEmailsEnv,
 } from "@/lib/hub-members";
 import { readHubMembers } from "@/lib/hub-members-store";
+import { getHubSiteConfig } from "@/lib/site";
+import { AppSwitcher } from "@/components/AppSwitcher";
 import { devBypassEnabled } from "@/lib/session";
 import "./globals.css";
+import "../sj-ui/index.css";
 
 /** Self-hosted so Docker/CI builds do not fetch Google Fonts at compile time. */
 const archivo = localFont({
@@ -98,9 +101,8 @@ export default async function RootLayout({
     memberRow?.image_url?.trim() ||
     session?.user?.image?.trim() ||
     null;
-  const communityUrl =
-    process.env.COMMUNITY_SITE_URL?.replace(/\/$/, "") ||
-    "https://strictlyjayers.com";
+  const { communitySiteUrl, fitnessUrl, vibeUrl, siteUrl } = getHubSiteConfig();
+  const communityUrl = communitySiteUrl;
 
   return (
     <html lang="en" className={archivo.variable} suppressHydrationWarning>
@@ -109,13 +111,20 @@ export default async function RootLayout({
         <script dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }} />
         <script dangerouslySetInnerHTML={{ __html: ACCENT_INIT_SCRIPT }} />
       </head>
-      <body>
+      <body className={archivo.className}>
         <div className="atmosphere" aria-hidden />
         <div className="shell">
           <header className="site-header">
             <Link href="/" className="brand-mark">
               Strictly Jayers
             </Link>
+            <AppSwitcher
+              current="hub"
+              hubUrl={siteUrl}
+              betsUrl={`${communityUrl}/bets`}
+              fitnessUrl={fitnessUrl}
+              vibeUrl={vibeUrl}
+            />
             <nav className="nav-links">
               <Link href="/">Home</Link>
               <Link href="/leagues">Leagues</Link>

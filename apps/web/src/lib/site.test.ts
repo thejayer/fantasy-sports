@@ -8,6 +8,7 @@ describe("getHubSiteConfig", () => {
     "SITE_URL",
     "COMMUNITY_SITE_URL",
     "FITNESS_URL",
+    "VIBE_URL",
     "DISCORD_INVITE_URL",
   ] as const;
   const prior = Object.fromEntries(keys.map((key) => [key, process.env[key]]));
@@ -25,10 +26,12 @@ describe("getHubSiteConfig", () => {
     delete process.env.SITE_URL;
     delete process.env.COMMUNITY_SITE_URL;
     delete process.env.FITNESS_URL;
+    delete process.env.VIBE_URL;
     delete process.env.DISCORD_INVITE_URL;
     const config = getHubSiteConfig();
     expect(config.communitySiteUrl).toBe("https://strictlyjayers.com");
     expect(config.fitnessUrl).toBe("https://fitness.strictlyjayers.com");
+    expect(config.vibeUrl).toBe("https://vibe.strictlyjayers.com");
     expect(config.discordInviteUrl).toBe(DEFAULT_DISCORD_INVITE_URL);
     expect(config.siteUrl).toMatch(/^https?:\/\//);
   });

@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" data-theme="dark" style="--font-archivo: Archivo, ui-sans-serif, system-ui, sans-serif">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -10,8 +10,10 @@
     <link rel="icon" href="assets/app-icon.svg" type="image/svg+xml" />
     <link rel="apple-touch-icon" href="/apple-icon" />
     <link rel="stylesheet" href="styles.css" />
+    <link rel="stylesheet" href="sj-ui/index.css" />
     <meta name="sj-community" content="https://strictlyjayers.com" />
     <meta name="sj-fantasy" content="https://fantasy.strictlyjayers.com" />
+    <meta name="sj-vibe" content="https://vibe.strictlyjayers.com" />
     <meta name="application-name" content="Strictly Jayers" />
     <script>
       (function () {
@@ -24,7 +26,7 @@
       })();
     </script>
   </head>
-  <body data-view="dashboard">
+  <body class="dark" data-view="dashboard">
     <a class="skip-link" href="#dashboard-title">Skip to main content</a>
     <header class="site-header">
       <a class="sj-brand" data-sj-community href="https://strictlyjayers.com">Strictly Jayers</a>
@@ -32,6 +34,7 @@
         <a data-sj-community href="https://strictlyjayers.com">Community</a>
         <a data-sj-fantasy href="https://fantasy.strictlyjayers.com">Fantasy</a>
         <a href="/" aria-current="page">Fitness</a>
+        <a data-sj-vibe href="https://vibe.strictlyjayers.com">Vibe</a>
         <span class="sj-account" id="sjAccount" hidden>
           <span class="sj-account-name" id="sjAccountName"></span>
           <button class="sj-sign-out" id="sjSignOut" type="button">Sign out</button>

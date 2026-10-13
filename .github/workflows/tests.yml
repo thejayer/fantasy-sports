@@ -45,6 +45,9 @@ jobs:
       - name: Lint
         run: ruff check .
 
+      - name: Vendored CSS matches packages/sj-ui
+        run: sh packages/sj-ui/check.sh
+
       - name: Run pytest
         run: pytest -q
 

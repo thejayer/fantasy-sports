@@ -6,6 +6,7 @@ export type FitnessSiteConfig = {
   siteUrl: string;
   communitySiteUrl: string;
   fantasyHubUrl: string;
+  vibeUrl: string;
   discordInviteUrl: string | null;
 };
 
@@ -33,6 +34,9 @@ export function getFitnessSiteConfig(): FitnessSiteConfig {
     fantasyHubUrl: trimTrailingSlash(
       process.env.FANTASY_HUB_URL?.trim() ||
         "https://fantasy.strictlyjayers.com",
+    ),
+    vibeUrl: trimTrailingSlash(
+      process.env.VIBE_URL?.trim() || "https://vibe.strictlyjayers.com",
     ),
     discordInviteUrl:
       optionalUrl(process.env.DISCORD_INVITE_URL) || DEFAULT_DISCORD_INVITE_URL,

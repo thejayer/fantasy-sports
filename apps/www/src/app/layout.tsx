@@ -4,9 +4,11 @@ import { PortalNav } from "@/components/PortalNav";
 import { ACCENT_INIT_SCRIPT } from "@/components/AccentPicker";
 import { portalCopy } from "@/lib/content";
 import { getSiteConfig } from "@/lib/site";
+import { AppSwitcher } from "@/components/AppSwitcher";
 import localFont from "next/font/local";
 import type { Metadata } from "next";
 import "./globals.css";
+import "../sj-ui/index.css";
 
 /** Self-hosted so Docker/CI builds do not fetch Google Fonts at compile time. */
 const archivo = localFont({
@@ -63,19 +65,26 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const { fantasyHubUrl, fitnessUrl, discordInviteUrl } = getSiteConfig();
+  const { fantasyHubUrl, fitnessUrl, vibeUrl, siteUrl, discordInviteUrl } =
+    getSiteConfig();
 
   return (
     <html lang="en" className={archivo.variable}>
       <head>
         <script dangerouslySetInnerHTML={{ __html: ACCENT_INIT_SCRIPT }} />
       </head>
-      <body style={{ fontFamily: "var(--font-archivo), var(--font-body)" }}>
+      <body className={archivo.className}>
         <div className="shell">
           <header className="site-header">
             <Link href="/" className="brand-mark">
               Strictly Jayers
             </Link>
+            <AppSwitcher
+              hubUrl={fantasyHubUrl}
+              betsUrl={`${siteUrl}/bets`}
+              fitnessUrl={fitnessUrl}
+              vibeUrl={vibeUrl}
+            />
             <PortalNav
               fantasyHubUrl={fantasyHubUrl}
               fitnessUrl={fitnessUrl}

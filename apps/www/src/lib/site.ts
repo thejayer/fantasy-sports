@@ -6,6 +6,7 @@ export type SiteConfig = {
   siteUrl: string;
   fantasyHubUrl: string;
   fitnessUrl: string;
+  vibeUrl: string;
   discordInviteUrl: string | null;
   palworldInfoUrl: string | null;
   /** Public world line only — never put IPs or passwords here. */
@@ -36,6 +37,9 @@ export function getSiteConfig(): SiteConfig {
     ),
     fitnessUrl: trimTrailingSlash(
       process.env.FITNESS_URL?.trim() || "https://fitness.strictlyjayers.com",
+    ),
+    vibeUrl: trimTrailingSlash(
+      process.env.VIBE_URL?.trim() || "https://vibe.strictlyjayers.com",
     ),
     discordInviteUrl:
       optionalUrl(process.env.DISCORD_INVITE_URL) || DEFAULT_DISCORD_INVITE_URL,

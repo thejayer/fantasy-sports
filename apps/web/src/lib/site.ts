@@ -6,6 +6,7 @@ export type HubSiteConfig = {
   siteUrl: string;
   communitySiteUrl: string;
   fitnessUrl: string;
+  vibeUrl: string;
   discordInviteUrl: string | null;
 };
 
@@ -34,6 +35,9 @@ export function getHubSiteConfig(): HubSiteConfig {
     ),
     fitnessUrl: trimTrailingSlash(
       process.env.FITNESS_URL?.trim() || "https://fitness.strictlyjayers.com",
+    ),
+    vibeUrl: trimTrailingSlash(
+      process.env.VIBE_URL?.trim() || "https://vibe.strictlyjayers.com",
     ),
     discordInviteUrl:
       optionalUrl(process.env.DISCORD_INVITE_URL) || DEFAULT_DISCORD_INVITE_URL,
