@@ -12,14 +12,19 @@ Fitness restyles the training-log PWA onto the same tokens (`FITNESS.md`).
 | `strictlyjayers.com` (and `www`) | `apps/www` | `sj-www` | Public community front door |
 | `fantasy.strictlyjayers.com` | `apps/web` | `sj-hub` | Authenticated member hub |
 | `fitness.strictlyjayers.com` | `apps/fitness` | `sj-fitness` | Local-first training log |
+| `vibe.strictlyjayers.com` | `apps/vibe` | `sj-vibe` | Coded-while-lifting |
 
 ## Why two hosts
 
-- **Auth.js cookies** for the hub must be scoped to `fantasy.strictlyjayers.com`.
-  Sharing the apex would mix community traffic with league OAuth redirects.
-- **Snapshot / hub data** mounts stay on `sj-hub` only. The portal has no GCS
-  dependency and can scale to zero independently.
-- **Product boundary**: Discord / Palworld / future community surfaces live on
+- **Auth.js cookies** for the hub stay on `fantasy.strictlyjayers.com`.
+  The apex now has a **second**, scoped Auth.js install for `/bets` only
+  (same Google client + allowlist; callback host `strictlyjayers.com`).
+  Public Community / AI / People / Watch / Palworld routes never require a
+  session. Do not put a service worker on the apex.
+- **Snapshot / hub data**: `sj-www` mounts the hub bucket **read-only** so
+  `/bets` can read `hub_members.json` and `bets/{bets,parlay_legs,public_warnings}.json`. Home and other
+  public pages do not touch that mount.
+- **Product boundary**: Discord / Palworld / Watch / AI / People live on
   the apex; leagues, tools, and auction rooms live on the hub.
 
 ## How visitors reach fantasy
@@ -64,6 +69,13 @@ card); missing shots use a monogram. Edit `INFLUENTIAL_PEOPLE` in
 `https://fitness.strictlyjayers.com`) — nav More, People, and the home
 destination list. Docs: [FITNESS.md](FITNESS.md).
 
+**Bets** lives at `/bets` (nav + home destination). Members-only tracker for
+public slips (data-driven bettors), parlay legs, and BetMGM public-money
+warnings. Same Google allowlist as Fantasy. Data is `sj bets` (Drive xlsx
+or native Sheet) → `bets/{bets,summary,parlay_legs,public_warnings}.json`
+on the hub bucket. Docs:
+[apps/www/README.md](apps/www/README.md) and `./scripts/setup-bets-infra.sh`.
+
 Home also ships a **Coming up** event strip and **Meet the crew** links into
 hub `/u/{handle}` profiles (edit handles in `lib/content.ts`). The hub chrome
 links back with **Community** → `strictlyjayers.com` (`COMMUNITY_SITE_URL`).
@@ -79,6 +91,8 @@ cd apps/web && npm run dev
 
 # Portal unit + smoke (after npm run build for Playwright)
 cd apps/www && npm test && npm run test:e2e
+AUTH_DEV_BYPASS=1 npm run test:e2e:bets
+AUTH_DEV_BYPASS=0 npm run test:e2e:auth
 ```
 
 ## Deploy

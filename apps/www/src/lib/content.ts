@@ -96,7 +96,7 @@ export const portalCopy = {
     support: "Four rooms first. The rest stay close — stubs stay small.",
     marker: "ROOMS",
     primary: ["fantasy", "fitness", "discord", "watch"] as const,
-    secondary: ["ai", "people", "palworld"] as const,
+    secondary: ["ai", "people", "bets", "palworld"] as const,
     items: {
       fitness: {
         index: "02",
@@ -146,8 +146,16 @@ export const portalCopy = {
         action: "Join the server",
         actionPending: "Invite soon",
       },
-      palworld: {
+      bets: {
         index: "07",
+        kicker: "Slips",
+        title: "Bets",
+        body: "Public-bet records, parlay-leg fades, and BetMGM public-money warnings. Members only.",
+        action: "Open Bets",
+        actionPending: "Open Bets",
+      },
+      palworld: {
+        index: "08",
         kicker: "Games",
         title: "Palworld",
         body: "Co-op when the world’s up — join details live on the room page, passwords stay in Discord.",

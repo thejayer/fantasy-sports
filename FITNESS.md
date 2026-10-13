@@ -8,6 +8,7 @@ not on the apex portal and not as a standalone GitHub Pages PWA.
 | `strictlyjayers.com` | `apps/www` | `sj-www` | Public community front door |
 | `fantasy.strictlyjayers.com` | `apps/web` | `sj-hub` | Authenticated member hub |
 | `fitness.strictlyjayers.com` | `apps/fitness` | `sj-fitness` | Member training log |
+| `vibe.strictlyjayers.com` | `apps/vibe` | `sj-vibe` | Coded-while-lifting (see `VIBE.md`) |
 
 Visual language is the shared **Modernist** system (Archivo, Signal Red
 `--color-accent`, 0 radius, 2px rules) — the same tokens as

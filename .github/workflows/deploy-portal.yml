@@ -3,7 +3,8 @@ name: deploy portal
 # Deploy the Strictly Jayers community portal (apex) to Cloud Run.
 #
 # Auth: Workload Identity Federation (same deployer SA as the hub).
-# No Secret Manager / GCS — public site with absolute links to the fantasy hub.
+# Public site plus members-only /bets (Auth.js + GCS mount for hub_members
+# and bets/bets.json). Reuses sj-hub Secret Manager names.
 #
 # Deploys on merge to main when apps/www changes, and on workflow_dispatch.
 
@@ -40,6 +41,10 @@ on:
         description: "Absolute FITNESS_URL"
         required: true
         default: "https://fitness.strictlyjayers.com"
+      bucket:
+        description: "GCS bucket RO at /app/data/sj (hub_members + bets/). Blank on manual = leave mounts; push CD defaults to …-sj-data"
+        required: false
+        default: ""
       min_instances:
         description: "Cloud Run min instances (0=scale-to-zero)"
         required: true
@@ -66,6 +71,9 @@ jobs:
       SITE_URL_INPUT: ${{ github.event.inputs.site_url || '' }}
       FANTASY_HUB_URL: ${{ github.event.inputs.fantasy_hub_url || 'https://fantasy.strictlyjayers.com' }}
       FITNESS_URL: ${{ github.event.inputs.fitness_url || 'https://fitness.strictlyjayers.com' }}
+      BUCKET: ${{ github.event.inputs.bucket || '' }}
+      EVENT_NAME: ${{ github.event_name }}
+      DEFAULT_BUCKET: fantasy-sports-analytics-sj-data
       PREFERRED_SITE_HOST: strictlyjayers.com
     steps:
       - name: Validate inputs
@@ -159,18 +167,38 @@ jobs:
 
           # --update-env-vars merges; --set-env-vars would wipe Discord /
           # Palworld / YOUTUBE_PLAYLIST_ID and any other ops-set keys.
-          gcloud run deploy "$SERVICE" \
-            --project "$PROJECT_ID" \
-            --region "$REGION" \
-            --image "$IMAGE" \
-            --platform managed \
-            --allow-unauthenticated \
-            --memory 512Mi --cpu 1 --port 8080 \
-            --timeout 60 \
-            --min-instances "$MIN_INSTANCES" \
-            --max-instances 3 \
-            --cpu-boost \
-            --update-env-vars "SITE_URL=$SITE_URL,FANTASY_HUB_URL=$FANTASY_HUB_URL,FITNESS_URL=$FITNESS_URL"
+          # Same Google + allowlist secrets as sj-hub / sj-fitness.
+          ARGS=(
+            --project "$PROJECT_ID"
+            --region "$REGION"
+            --image "$IMAGE"
+            --platform managed
+            --allow-unauthenticated
+            --memory 512Mi --cpu 1 --port 8080
+            --timeout 60
+            --min-instances "$MIN_INSTANCES"
+            --max-instances 3
+            --cpu-boost
+            --update-env-vars "SITE_URL=$SITE_URL,AUTH_URL=$SITE_URL,AUTH_TRUST_HOST=true,SJ_HUB_DIR=/app/data/sj,FANTASY_HUB_URL=$FANTASY_HUB_URL,FITNESS_URL=$FITNESS_URL"
+            --set-secrets "AUTH_SECRET=sj-auth-secret:latest,AUTH_GOOGLE_ID=sj-auth-google-id:latest,AUTH_GOOGLE_SECRET=sj-auth-google-secret:latest,ALLOWED_EMAILS=sj-allowed-emails:latest"
+          )
+          if [ -z "$BUCKET" ] && [ "$EVENT_NAME" = "push" ]; then
+            BUCKET="$DEFAULT_BUCKET"
+            echo "Push CD: defaulting bucket to $BUCKET"
+          fi
+          if [ -n "$BUCKET" ]; then
+            echo "Mounting gs://$BUCKET RO at /app/data/sj (hub_members + bets/)"
+            # uid/gid must match non-root sjwww (1001). Semicolons, not commas.
+            ARGS+=(
+              --clear-volumes
+              --clear-volume-mounts
+              --add-volume "name=sjdata,type=cloud-storage,bucket=$BUCKET,readonly=true,mount-options=uid=1001;gid=1001"
+              --add-volume-mount "volume=sjdata,mount-path=/app/data/sj"
+            )
+          else
+            echo "No bucket input — leaving Cloud Run volumes unchanged"
+          fi
+          gcloud run deploy "$SERVICE" "${ARGS[@]}"
 
           LIVE_URL="$(gcloud run services describe "$SERVICE" \
             --project "$PROJECT_ID" --region "$REGION" \
@@ -180,7 +208,7 @@ jobs:
             gcloud run services update "$SERVICE" \
               --project "$PROJECT_ID" \
               --region "$REGION" \
-              --update-env-vars "SITE_URL=$LIVE_URL"
+              --update-env-vars "SITE_URL=$LIVE_URL,AUTH_URL=$LIVE_URL,AUTH_TRUST_HOST=true"
             SITE_URL="$LIVE_URL"
           fi
           echo "SITE_URL=$SITE_URL" >> "$GITHUB_ENV"
@@ -196,3 +224,11 @@ jobs:
           echo
           echo "Custom domain (Spaceship): ./scripts/setup-portal-domain.sh"
           echo "  Preferred host: https://$PREFERRED_SITE_HOST"
+          echo
+          echo "Add these to the existing Google OAuth client (same as sj-hub):"
+          echo "  Authorized JavaScript origin:  $SERVICE_URL"
+          echo "  Authorized redirect URI:       $SERVICE_URL/api/auth/callback/google"
+          if [ -n "$RUN_URL" ] && [ "$RUN_URL" != "$SERVICE_URL" ]; then
+            echo "  Also keep origin/redirect for:  $RUN_URL"
+            echo "  Also keep redirect URI:         $RUN_URL/api/auth/callback/google"
+          fi
