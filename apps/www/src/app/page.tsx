@@ -67,6 +67,14 @@ function RoomGlyph({ id }: { id: DestinationId }) {
       </svg>
     );
   }
+  if (id === "bets") {
+    return (
+      <svg {...common}>
+        <rect x="4" y="5" width="16" height="14" />
+        <path d="M7 9h10M7 13h6" />
+      </svg>
+    );
+  }
   return (
     <svg {...common}>
       <circle cx="12" cy="12" r="8" />
@@ -89,6 +97,7 @@ function destinationHref(
   if (id === "watch") return "/watch";
   if (id === "ai") return "/ai";
   if (id === "people") return "/people";
+  if (id === "bets") return "/bets";
   return "/palworld";
 }
 

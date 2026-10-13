@@ -119,6 +119,7 @@ export default async function RootLayout({
             <nav className="nav-links">
               <Link href="/">Home</Link>
               <Link href="/leagues">Leagues</Link>
+              <Link href="/rankings">Rankings</Link>
               <a href={communityUrl} rel="noopener noreferrer">
                 Community
               </a>

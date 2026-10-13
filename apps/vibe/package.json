@@ -1,0 +1,39 @@
+{
+  "name": "strictly-jayers-vibe",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev --turbopack --port 3005",
+    "build": "next build",
+    "start": "next start --port 3005",
+    "lint": "eslint .",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:e2e": "playwright test e2e/smoke.spec.ts",
+    "test:e2e:auth": "AUTH_DEV_BYPASS=0 PORT=3006 PLAYWRIGHT_BASE_URL=http://127.0.0.1:3006 playwright test e2e/auth-redirect.spec.ts"
+  },
+  "dependencies": {
+    "next": "^16.4.0",
+    "next-auth": "^5.0.0-beta.32",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.62.0",
+    "@types/node": "^22",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "eslint": "^9",
+    "eslint-config-next": "^16.4.0",
+    "typescript": "^5",
+    "vitest": "^4.1.11"
+  },
+  "overrides": {
+    "brace-expansion": "^5.0.8",
+    "js-yaml": "^4.3.2",
+    "minimatch": "^10.2.6",
+    "postcss": "^8.5.23",
+    "sharp": "^0.35.5",
+    "source-map-js": "^1.2.2"
+  }
+}

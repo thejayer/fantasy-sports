@@ -42,6 +42,7 @@ export function PortalNav({
         <a href={fantasyHubUrl} rel="noopener noreferrer">
           Fantasy
         </a>
+        <Link href="/bets">Bets</Link>
         {discordInviteUrl ? (
           <a href={discordInviteUrl} rel="noopener noreferrer">
             Discord
@@ -76,6 +77,9 @@ export function PortalNav({
         </Link>
         <Link href="/people" onClick={() => setOpen(false)}>
           People
+        </Link>
+        <Link href="/bets" onClick={() => setOpen(false)}>
+          Bets
         </Link>
         <a href={fitnessUrl} rel="noopener noreferrer" onClick={() => setOpen(false)}>
           Fitness

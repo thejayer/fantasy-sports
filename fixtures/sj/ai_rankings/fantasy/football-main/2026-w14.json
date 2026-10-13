@@ -1,0 +1,111 @@
+{
+  "board": "fantasy",
+  "degraded": [],
+  "facts_hash": "0a95c3d2289ae679",
+  "format": "redraft",
+  "generated_at": "2026-10-12T14:00:00+00:00",
+  "headline": "Strictly Jayers Football power rankings",
+  "last_week_review": "First committed fixture week \u2014 no prior ballot to grade.",
+  "league_id": "football-main",
+  "methodology": "Record, points for/against, recent form, and top roster scorers from the ESPN snapshot.",
+  "model": "fixture",
+  "movers": {
+    "dropped": [],
+    "fallers": [],
+    "new": [],
+    "risers": []
+  },
+  "name": "Strictly Jayers Football",
+  "notes": [
+    "Committed fixture for offline hub / CI."
+  ],
+  "phase": "in_season",
+  "rankings": [
+    {
+      "abbrev": "HMH",
+      "blurb": "Hail Mary Heroes sits 8-6 with 1737.3 points for. Recent form: W, W, W, L.",
+      "conference": "",
+      "delta": null,
+      "losses": 6,
+      "name": "Hail Mary Heroes",
+      "owners": [
+        "Samuel Turner"
+      ],
+      "points_against": 1139.3,
+      "points_for": 1737.3,
+      "prev_rank": null,
+      "rank": 1,
+      "record": "8-6",
+      "standing": 1,
+      "team_id": 4,
+      "ties": 0,
+      "wins": 8
+    },
+    {
+      "abbrev": "EZE",
+      "blurb": "End Zone Enforcers sits 8-6 with 1649.2 points for. Recent form: L, W, W, W.",
+      "conference": "",
+      "delta": null,
+      "losses": 6,
+      "name": "End Zone Enforcers",
+      "owners": [
+        "Henry James"
+      ],
+      "points_against": 1947.6,
+      "points_for": 1649.2,
+      "prev_rank": null,
+      "rank": 2,
+      "record": "8-6",
+      "standing": 2,
+      "team_id": 3,
+      "ties": 0,
+      "wins": 8
+    },
+    {
+      "abbrev": "TT",
+      "blurb": "Turf Titans sits 7-7 with 1634.2 points for. Recent form: W, L, L, W.",
+      "conference": "",
+      "delta": null,
+      "losses": 7,
+      "name": "Turf Titans",
+      "owners": [
+        "Christopher Allen"
+      ],
+      "points_against": 1408.2,
+      "points_for": 1634.2,
+      "prev_rank": null,
+      "rank": 3,
+      "record": "7-7",
+      "standing": 3,
+      "team_id": 2,
+      "ties": 0,
+      "wins": 7
+    },
+    {
+      "abbrev": "GG",
+      "blurb": "Gridiron Goons sits 5-9 with 1546.9 points for. Recent form: L, L, L, L.",
+      "conference": "",
+      "delta": null,
+      "losses": 9,
+      "name": "Gridiron Goons",
+      "owners": [
+        "James Young"
+      ],
+      "points_against": 1033.7,
+      "points_for": 1546.9,
+      "prev_rank": null,
+      "rank": 4,
+      "record": "5-9",
+      "standing": 4,
+      "team_id": 1,
+      "ties": 0,
+      "wins": 5
+    }
+  ],
+  "schema_version": 1,
+  "season": 2026,
+  "sport": "football",
+  "temperature": 0.2,
+  "week": 14,
+  "week_label": "2026-w14"
+}
