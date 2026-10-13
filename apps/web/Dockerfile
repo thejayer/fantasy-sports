@@ -16,8 +16,6 @@ RUN npm ci
 
 FROM web-deps AS web-build
 WORKDIR /app
-# Shared design system (tokens + component CSS) lives outside the app tree.
-COPY packages/sj-ui ./packages/sj-ui
 # Fixtures are runtime-only (seed / fallback) — do not bake a second copy into
 # the Node build stage (Phase 5: stop copying fixtures twice).
 COPY apps/web ./apps/web

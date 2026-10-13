@@ -9,6 +9,9 @@ const exists = (file) => fs.existsSync(path.join(publicDir, file));
 const requiredFiles = [
   "app.html",
   "styles.css",
+  "sj-ui/index.css",
+  "sj-ui/tokens.css",
+  "sj-ui/components.css",
   "sj-chrome.js",
   "utils.js",
   "hevy-import.js",

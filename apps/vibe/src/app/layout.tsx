@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 
 import { getVibeSiteConfig } from "@/lib/site";
 import "./globals.css";
-import "../../../../packages/sj-ui/index.css";
+import "../sj-ui/index.css";
 
 export function generateMetadata(): Metadata {
   const { siteUrl } = getVibeSiteConfig();

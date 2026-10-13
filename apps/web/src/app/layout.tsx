@@ -13,10 +13,10 @@ import {
 } from "@/lib/hub-members";
 import { readHubMembers } from "@/lib/hub-members-store";
 import { getHubSiteConfig } from "@/lib/site";
-import { AppSwitcher } from "../../../../packages/sj-ui/app-switcher";
+import { AppSwitcher } from "@/components/AppSwitcher";
 import { devBypassEnabled } from "@/lib/session";
 import "./globals.css";
-import "../../../../packages/sj-ui/index.css";
+import "../sj-ui/index.css";
 
 /** Self-hosted so Docker/CI builds do not fetch Google Fonts at compile time. */
 const archivo = localFont({

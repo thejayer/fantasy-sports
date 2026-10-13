@@ -2,7 +2,7 @@ import Link from "next/link";
 
 import { signOut } from "@/auth";
 import { getVibeSiteConfig } from "@/lib/site";
-import { AppSwitcher } from "../../../../packages/sj-ui/app-switcher";
+import { AppSwitcher } from "@/components/AppSwitcher";
 
 type Props = {
   current: "home" | "history" | "settings";

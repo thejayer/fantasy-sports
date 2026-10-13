@@ -1,0 +1,903 @@
+/*
+  Shared primitives + restyle of existing app classnames.
+  No new behavior — hairlines, one surface level, sports-product density.
+*/
+
+.sj-section {
+  display: grid;
+  gap: var(--sj-space-4);
+  margin-bottom: var(--sj-section-gap);
+}
+
+.sj-section-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--sj-space-4);
+}
+
+.sj-section-head h2,
+.sj-section-title {
+  margin: 0;
+  font-size: var(--sj-h2);
+  font-weight: 600;
+  letter-spacing: -0.015em;
+  text-transform: none;
+}
+
+.sj-see-all {
+  font-size: var(--sj-label);
+  font-weight: 500;
+  color: var(--sj-muted);
+}
+
+.sj-see-all:hover {
+  color: var(--sj-text);
+}
+
+.sj-row,
+.sj-list-row {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: var(--sj-space-3);
+  align-items: center;
+  min-height: var(--sj-row);
+  padding: var(--sj-space-3) 0;
+  border-bottom: 1px solid var(--sj-hairline);
+  background: transparent;
+  box-shadow: none;
+}
+
+.sj-row:last-child,
+.sj-list-row:last-child {
+  border-bottom: 0;
+}
+
+.sj-row-rank {
+  width: 1.75rem;
+  font-variant-numeric: tabular-nums;
+  font-size: var(--sj-label);
+  color: var(--sj-subtle);
+  text-align: right;
+}
+
+.sj-avatar,
+.sj-logo {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.sj-row-primary {
+  font-weight: 600;
+  line-height: 1.25;
+}
+
+.sj-row-secondary {
+  font-size: var(--sj-label);
+  color: var(--sj-muted);
+}
+
+.sj-row-value {
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+  text-align: right;
+}
+
+.sj-stat-strip {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(7.5rem, 1fr));
+  background: var(--sj-surface-1);
+  border-radius: var(--sj-radius-surface);
+  overflow: hidden;
+}
+
+.sj-stat-strip > * {
+  padding: var(--sj-space-4) var(--sj-space-6);
+  border-right: 1px solid var(--sj-hairline);
+  background: transparent;
+  box-shadow: none;
+}
+
+.sj-stat-strip > *:last-child {
+  border-right: 0;
+}
+
+.sj-stat-value {
+  display: block;
+  font-size: var(--sj-stat);
+  font-weight: 600;
+  letter-spacing: -0.03em;
+  line-height: 1.05;
+  font-variant-numeric: tabular-nums;
+}
+
+.sj-stat-label {
+  display: block;
+  margin-top: var(--sj-space-1);
+  font-size: var(--sj-caption);
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--sj-muted);
+}
+
+.sj-tabs-underline {
+  display: flex;
+  gap: var(--sj-space-6);
+  border-bottom: 1px solid var(--sj-hairline);
+}
+
+.sj-tabs-underline a,
+.sj-tabs-underline button {
+  padding: var(--sj-space-3) 0;
+  border: 0;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+  background: none;
+  color: var(--sj-muted);
+  font: inherit;
+  font-weight: 600;
+}
+
+.sj-tabs-underline a.is-active,
+.sj-tabs-underline a[aria-current="page"],
+.sj-tabs-underline .active,
+.sj-tabs-underline button[aria-current="page"] {
+  color: var(--sj-text);
+  border-bottom-color: var(--color-accent);
+}
+
+.sj-tabs-pill,
+.sj-segmented {
+  display: inline-flex;
+  gap: var(--sj-space-1);
+  padding: 3px;
+  border-radius: var(--sj-radius-pill);
+  background: var(--sj-surface-1);
+}
+
+.sj-tabs-pill a,
+.sj-tabs-pill button,
+.sj-segmented a,
+.sj-segmented button {
+  min-height: 36px;
+  padding: 0 var(--sj-space-4);
+  border: 0;
+  border-radius: var(--sj-radius-pill);
+  background: transparent;
+  color: var(--sj-muted);
+  font: inherit;
+  font-size: var(--sj-label);
+  font-weight: 600;
+}
+
+.sj-tabs-pill a.is-active,
+.sj-tabs-pill a.active,
+.sj-tabs-pill .active,
+.sj-segmented a.is-active,
+.sj-segmented .active {
+  background: var(--sj-surface-2);
+  color: var(--sj-text);
+}
+
+.sj-pill,
+.sj-badge {
+  display: inline-flex;
+  align-items: center;
+  min-height: 22px;
+  padding: 0 8px;
+  border-radius: var(--sj-radius-pill);
+  background: var(--sj-surface-2);
+  color: var(--sj-text);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.sj-pill-win,
+.outcome-pill.outcome-win,
+.bets-chip-w {
+  background: color-mix(in srgb, var(--sj-win) 16%, transparent);
+  color: var(--sj-win);
+  border-color: transparent;
+}
+
+.sj-pill-loss,
+.outcome-pill.outcome-loss,
+.bets-chip-l {
+  background: color-mix(in srgb, var(--sj-loss) 16%, transparent);
+  color: var(--sj-loss);
+  border-color: transparent;
+}
+
+.sj-pill-push,
+.outcome-pill.outcome-tie {
+  background: color-mix(in srgb, var(--sj-push) 16%, transparent);
+  color: var(--sj-push);
+}
+
+.sj-delta-up {
+  color: var(--sj-win);
+}
+
+.sj-delta-down {
+  color: var(--sj-loss);
+}
+
+.sj-app-switcher {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sj-space-1);
+}
+
+.sj-app-switcher a,
+.sj-app-switcher span {
+  min-height: 28px;
+  padding: 0 10px;
+  border-radius: var(--sj-radius-pill);
+  display: inline-flex;
+  align-items: center;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  color: var(--sj-muted);
+}
+
+.sj-app-switcher a:hover,
+.sj-app-switcher [aria-current="page"],
+.sj-app-switcher .is-current {
+  color: var(--sj-text);
+  background: var(--sj-surface-2);
+}
+
+/* —— App shell: desktop sidebar from the existing header —— */
+@media (min-width: 960px) {
+  body:has(> .shell):not(:has(.login-page)) {
+    display: grid;
+    grid-template-columns: var(--sj-sidebar) minmax(0, 1fr);
+    align-items: start;
+  }
+
+  body:has(> .shell):not(:has(.login-page)) > .atmosphere {
+    display: none;
+  }
+
+  body:has(> .shell):not(:has(.login-page)) > .shell,
+  body:has(> .shell):not(:has(.login-page)) > .sj-app {
+    min-width: 0;
+    width: auto;
+    max-width: none;
+    margin: 0;
+    padding: 0 var(--sj-gutter) var(--sj-space-16);
+    grid-column: 2;
+  }
+
+  body:has(> .shell):not(:has(.login-page)) > .shell > .site-header,
+  body:has(> .shell):not(:has(.login-page)) > .shell > .topbar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: var(--sj-sidebar);
+    height: 100vh;
+    flex-direction: column;
+    align-items: stretch;
+    justify-content: flex-start;
+    gap: var(--sj-space-6);
+    margin: 0;
+    padding: var(--sj-space-6) var(--sj-space-4);
+    border-bottom: 0;
+    border-right: 1px solid var(--sj-hairline);
+    background: var(--sj-bg);
+    z-index: 20;
+  }
+
+  body:has(> .shell):not(:has(.login-page)) .nav-links,
+  body:has(> .shell):not(:has(.login-page)) .top-nav,
+  body:has(> .shell):not(:has(.login-page)) .portal-nav,
+  body:has(> .shell):not(:has(.login-page)) .nav-links-primary {
+    flex-direction: column;
+    align-items: stretch;
+    gap: var(--sj-space-1);
+  }
+
+  body:has(> .shell):not(:has(.login-page)) .nav-links a,
+  body:has(> .shell):not(:has(.login-page)) .top-nav a,
+  body:has(> .shell):not(:has(.login-page)) .nav-links-primary a {
+    min-height: 40px;
+    padding: 0 var(--sj-space-3);
+    border-radius: var(--sj-radius-control);
+  }
+
+  body:has(> .shell):not(:has(.login-page)) .nav-links a[aria-current="page"],
+  body:has(> .shell):not(:has(.login-page)) .top-nav a[aria-current="page"] {
+    background: var(--sj-surface-2);
+  }
+
+  body:has(> .shell):not(:has(.login-page)) .nav-menu-toggle {
+    display: none;
+  }
+
+  body:has(> .shell):not(:has(.login-page)) .nav-links-more {
+    display: flex;
+    position: static;
+    flex-direction: column;
+    min-width: 0;
+    padding: 0;
+    border: 0;
+    box-shadow: none;
+    background: transparent;
+  }
+
+  body:has(> .shell):not(:has(.login-page)) .nav-accent-desktop,
+  body:has(> .shell):not(:has(.login-page)) .nav-accent-mobile {
+    display: block;
+    margin-top: var(--sj-space-4);
+    padding: 0;
+    border: 0;
+  }
+
+  .mobile-nav,
+  .bottom-nav {
+    display: none !important;
+  }
+}
+
+.shell,
+.page {
+  width: min(1120px, calc(100% - (var(--sj-gutter) * 2)));
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.site-header,
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sj-space-4);
+  padding: var(--sj-space-4) 0;
+  border-bottom: 1px solid var(--sj-hairline);
+  background: var(--sj-bg);
+}
+
+.brand-mark,
+.brand,
+.sj-brand {
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  text-transform: none;
+  color: var(--sj-text);
+}
+
+/* —— Unbox surfaces —— */
+.panel,
+.home-card,
+.home-todo,
+.home-this-day,
+.portfolio-panel,
+.league-pulse,
+.league-link,
+.matchup-card,
+.record-card,
+.card,
+.room-tile,
+.room-compact,
+.event-card,
+.crew-card,
+.news-card,
+.timeline-card,
+.join-card,
+.bets-card,
+.bets-caveats,
+.watch-queue-panel,
+.watch-player,
+.empty,
+.help,
+.stat,
+.profile-section,
+.profile-activity-row,
+.home-this-day-row,
+.home-matchup,
+.feed-composer,
+.feed-item,
+.scoring-sandbox-controls,
+.ai-rank-review,
+.ai-rank-degraded,
+.state-panel,
+.empty-state,
+.alert-item,
+.metric-card,
+.analytics-card,
+.advanced-card,
+.program-card,
+.sport-dashboard-card,
+.drill-card,
+.trend-card,
+.compare-card,
+.must-read-hero {
+  background: transparent;
+  box-shadow: none;
+  border-color: var(--sj-hairline);
+  border-width: 0;
+  border-radius: 0;
+  transform: none !important;
+}
+
+.panel,
+.table-scroll.panel,
+.data-table .panel {
+  background: transparent;
+  box-shadow: none;
+}
+
+.league-link,
+.home-card,
+.home-this-day-row,
+.profile-activity-row,
+.destination,
+.story-row,
+.headline-row,
+.editor-pick-row,
+.bets-feed-item,
+.card-row,
+.tonight-card {
+  display: grid;
+  gap: var(--sj-space-2);
+  min-height: var(--sj-row);
+  padding: var(--sj-space-3) 0;
+  border-radius: 0;
+  border-bottom: 1px solid var(--sj-hairline);
+  background: transparent;
+  box-shadow: none;
+}
+
+.league-link:hover,
+.home-card:hover,
+.destination:hover,
+.story-row:hover,
+.room-tile:hover,
+.room-compact:hover,
+.event-card:hover,
+.news-card:hover,
+.crew-card:hover {
+  background: transparent;
+  box-shadow: none;
+  transform: none;
+}
+
+.league-link.is-viewer,
+.matchup-card.is-viewer,
+tr.is-viewer {
+  background: color-mix(in srgb, var(--sj-surface-2) 88%, transparent);
+  box-shadow: inset 3px 0 0 var(--color-accent);
+}
+
+.stat-chips,
+.league-pulse-grid,
+.bets-kpi-grid,
+.stat-grid,
+.record-grid,
+.home-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(8rem, 1fr));
+  gap: 0;
+  background: var(--sj-surface-1);
+  border: 0;
+  border-radius: var(--sj-radius-surface);
+  overflow: hidden;
+}
+
+.stat-chip,
+.league-pulse-grid > *,
+.bets-card,
+.stat,
+.record-card,
+.home-card {
+  padding: var(--sj-space-4);
+  border: 0;
+  border-right: 1px solid var(--sj-hairline);
+  border-bottom: 1px solid var(--sj-hairline);
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+.home-grid {
+  background: transparent;
+  gap: 0;
+}
+
+.home-grid .home-card {
+  border-right: 0;
+  border-bottom: 1px solid var(--sj-hairline);
+  padding: var(--sj-space-4) 0;
+}
+
+.stat-chip dd,
+.stat-value,
+.bets-record,
+.record-value,
+.league-pulse-grid strong {
+  font-size: clamp(1.5rem, 3vw, 2rem);
+  font-weight: 600;
+  letter-spacing: -0.03em;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Tables — Fixtured / Apple News */
+table,
+.bets-table,
+.data-table table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+th,
+.bets-table th {
+  padding: 10px 12px;
+  font-size: var(--sj-caption);
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--sj-muted);
+  border-bottom: 1px solid var(--sj-hairline);
+  background: transparent;
+}
+
+td,
+.bets-table td {
+  padding: 12px;
+  min-height: var(--sj-row);
+  border-bottom: 1px solid var(--sj-hairline);
+  font-variant-numeric: tabular-nums;
+}
+
+.panel.table-scroll thead th,
+.table-scroll thead th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  background: var(--sj-bg);
+}
+
+/* Tabs */
+.tabs,
+.bets-tabs,
+.league-tabs,
+.season-switch,
+.week-switch {
+  gap: var(--sj-space-2);
+  border-bottom-color: var(--sj-hairline);
+  border-bottom-width: 1px;
+}
+
+.tab,
+.season-chip,
+.week-chip,
+.filter-chip,
+.bets-tabs a,
+.bets-filter-row a {
+  min-height: 36px;
+  padding: 6px 12px;
+  border-radius: var(--sj-radius-pill);
+  border: 0;
+  box-shadow: none;
+  background: transparent;
+  color: var(--sj-muted);
+}
+
+.tab.active,
+.season-chip.active,
+.week-chip.active,
+.filter-chip.active,
+.bets-tabs a.is-active,
+.bets-filter-row a.is-active {
+  background: var(--sj-surface-2);
+  color: var(--sj-text);
+  box-shadow: none;
+}
+
+.pill,
+.sport-pill,
+.soon-badge,
+.viewer-badge,
+.keeper-badge,
+.member-tag,
+.value-source,
+.bets-chip {
+  border-radius: var(--sj-radius-pill);
+  border: 0;
+  box-shadow: none;
+}
+
+.button,
+.btn,
+.cta,
+.login-button,
+.login-google-button,
+.primary-button {
+  min-height: 44px;
+  border-radius: var(--sj-radius-control);
+  border: 0;
+  box-shadow: none;
+}
+
+.button,
+.btn-primary,
+.cta-primary,
+.btn-accent,
+.primary-button {
+  background: var(--color-accent);
+  color: var(--sj-on-accent);
+}
+
+.button.secondary,
+.btn-secondary,
+.cta-secondary,
+.cta-ghost {
+  background: var(--sj-surface-2);
+  color: var(--sj-text);
+  box-shadow: none;
+  border: 0;
+}
+
+input,
+select,
+textarea,
+.input,
+.table-search input {
+  min-height: 40px;
+  border-radius: var(--sj-radius-control);
+  border: 1px solid var(--sj-hairline);
+  box-shadow: none;
+  background: var(--sj-surface-1);
+  color: var(--sj-text);
+}
+
+/* Auth — Variant-style centered column */
+.login-page {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  padding: var(--sj-space-8) var(--sj-gutter);
+  background: var(--sj-bg);
+}
+
+.login-brand,
+.login-foot {
+  width: min(360px, 100%);
+  justify-content: center;
+  border: 0;
+  color: var(--sj-muted);
+}
+
+.login-shell {
+  width: min(360px, 100%);
+  display: grid;
+  grid-template-columns: 1fr;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+.login-aside {
+  display: none;
+}
+
+.login-panel {
+  width: min(360px, 100%);
+  margin: 0 auto;
+  padding: var(--sj-space-6) 0;
+  gap: var(--sj-space-4);
+}
+
+.login-panel h1,
+.login-page .page-hero h1 {
+  font-size: var(--sj-h1);
+  text-transform: none;
+  letter-spacing: -0.02em;
+}
+
+.login-page .page-hero {
+  width: min(360px, 100%);
+  margin: 0 auto;
+  padding: 0;
+  border: 0;
+}
+
+.login-google-button,
+.login-button {
+  width: 100%;
+  min-height: 44px;
+  border-radius: var(--sj-radius-control);
+  border: 1px solid var(--sj-hairline);
+  background: var(--sj-surface-2);
+  color: var(--sj-text);
+}
+
+.login-copy,
+.login-help {
+  color: var(--sj-muted);
+  font-size: var(--sj-label);
+}
+
+/* Apex room tiles → list rows on the destinations pattern */
+.room-grid,
+.room-secondary,
+.crew-grid,
+.news-card-grid,
+.join-steps {
+  display: grid;
+  gap: 0;
+}
+
+.room-tile,
+.room-compact,
+.event-card,
+.crew-card,
+.news-card,
+.join-card,
+.timeline-card {
+  min-height: 0;
+  padding: var(--sj-space-4) 0;
+  border-bottom: 1px solid var(--sj-hairline);
+}
+
+.hero {
+  color: inherit;
+}
+
+.hero-brand {
+  font-size: clamp(2.4rem, 7vw, 4.5rem);
+  letter-spacing: -0.04em;
+}
+
+/* Fitness PWA cards */
+.app-shell .metric-card,
+.app-shell .analytics-card,
+.app-shell .panel,
+.app-shell .program-card,
+.app-shell .sport-dashboard-card,
+.app-shell .today-card,
+.app-shell .week-day,
+.app-shell .week-plan,
+.app-shell .planned-session,
+.app-shell .persistence-card,
+.app-shell .timer-card,
+.app-shell .profile-card,
+.app-shell .sidebar-panel,
+.app-shell .hero-band {
+  background: transparent;
+  border: 0;
+  box-shadow: none;
+  border-radius: 0;
+}
+
+.app-shell .metric-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0;
+  background: var(--sj-surface-1);
+  border-radius: var(--sj-radius-surface);
+  overflow: hidden;
+}
+
+.app-shell .metric-card {
+  padding: var(--sj-space-4);
+  border-right: 1px solid var(--sj-hairline);
+}
+
+.app-shell .metric-card:last-child {
+  border-right: 0;
+}
+
+.app-shell .metric-card strong {
+  font-size: var(--sj-stat);
+  font-weight: 600;
+  letter-spacing: -0.03em;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Mobile stacked tables stay rows, not inset cards */
+@media (max-width: 720px) {
+  .table-cards tbody {
+    padding: 0;
+    gap: 0;
+  }
+
+  .table-cards tr,
+  .table-cards tr.is-viewer {
+    padding: var(--sj-space-3) 0;
+    border-radius: 0;
+    background: transparent;
+    box-shadow: none;
+    border-bottom: 1px solid var(--sj-hairline);
+  }
+
+  .sj-stat-strip,
+  .stat-chips,
+  .stat-grid,
+  .bets-kpi-grid,
+  .league-pulse-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .sj-stat-strip > *,
+  .stat-chip,
+  .stat,
+  .bets-card {
+    border-right: 1px solid var(--sj-hairline);
+    border-bottom: 1px solid var(--sj-hairline);
+  }
+}
+
+.section h2,
+.section-head h2,
+.home-card-title,
+.page-hero h1,
+.page h1,
+.page h2,
+.league-link strong {
+  text-transform: none;
+  letter-spacing: -0.025em;
+  font-weight: 700;
+}
+
+@media (max-width: 959px) {
+  body:has(.mobile-nav) .site-header .nav-links,
+  body:has(.bottom-nav) .topbar .top-nav {
+    display: none;
+  }
+
+  .sj-app-switcher {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+@media (min-width: 960px) {
+  body:has(> .shell):not(:has(.login-page)) .sj-app-switcher {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}
+
+.empty-state,
+.empty-note,
+.empty {
+  padding: var(--sj-space-8) 0;
+  border: 0;
+  background: transparent;
+}
+
+.skeleton {
+  background: linear-gradient(
+    90deg,
+    var(--sj-surface-1) 0%,
+    var(--sj-surface-2) 45%,
+    var(--sj-surface-1) 100%
+  );
+}
+
+.sparkline,
+.season-points-chart {
+  background: var(--sj-surface-1);
+  box-shadow: none;
+  border-radius: var(--sj-radius-surface);
+}
+
+.season-points-grid {
+  stroke: var(--sj-hairline);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation: none !important;
+    transition: none !important;
+  }
+}

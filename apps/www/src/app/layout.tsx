@@ -4,11 +4,11 @@ import { PortalNav } from "@/components/PortalNav";
 import { ACCENT_INIT_SCRIPT } from "@/components/AccentPicker";
 import { portalCopy } from "@/lib/content";
 import { getSiteConfig } from "@/lib/site";
-import { AppSwitcher } from "../../../../packages/sj-ui/app-switcher";
+import { AppSwitcher } from "@/components/AppSwitcher";
 import localFont from "next/font/local";
 import type { Metadata } from "next";
 import "./globals.css";
-import "../../../../packages/sj-ui/index.css";
+import "../sj-ui/index.css";
 
 /** Self-hosted so Docker/CI builds do not fetch Google Fonts at compile time. */
 const archivo = localFont({

@@ -14,7 +14,6 @@ RUN npm ci
 
 FROM deps AS build
 WORKDIR /app
-COPY packages/sj-ui ./packages/sj-ui
 COPY apps/www ./apps/www
 WORKDIR /app/apps/www
 ENV NEXT_TELEMETRY_DISABLED=1 \
