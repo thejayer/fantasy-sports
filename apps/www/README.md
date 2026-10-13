@@ -56,12 +56,15 @@ scopes via ADC) and then:
 
 The live tracker id is an uploaded `.xlsx` in Drive today — no conversion
 needed. Austin shares that file with the reader SA as Viewer. Writes
-`bets/bets.json` + `bets/summary.json` to the store
+`bets/bets.json` + `bets/summary.json` + `bets/parlay_legs.json` +
+`bets/public_warnings.json` to the store
 (`gs://fantasy-sports-analytics-sj-data/bets/` when `SJ_GCS_BUCKET` is set).
+KPI math is from raw Bets / Parlay Legs / Public Warnings rows — never the
+formula summary tabs.
 
 ```bash
 # Offline fixture → local JSON (what CI / the fallback UI use)
-sj bets --from tests/fixtures/bets/trent_steve_bet_tracker.xlsx \
+sj bets --from tests/fixtures/bets/tracker_tabs.xlsx \
   --store-dir apps/www/fixtures
 
 # Live Drive file (xlsx or native Sheet; share with the job SA as Viewer)

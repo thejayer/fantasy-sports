@@ -9,9 +9,16 @@ import {
   bettorKpis,
   classifyParlay,
   dollarPl,
+  fadePl,
   filterBets,
   inWindow,
+  invertResult,
+  parseBetTab,
   parseOdds,
+  stripValuePrefix,
+  safeHttpUrl,
+  bettorMeta,
+  uniqueBettors,
   unitsPl,
   windowDate,
 } from "./bets";
@@ -84,6 +91,43 @@ describe("record / ROI / windows / parlays", () => {
     expect(classifyParlay({ n: null, bt: "SGP", ps: "" })).toBe("multi");
     expect(classifyParlay({ n: 4, bt: "PrizePicks/DFS", ps: "" })).toBe("multi");
     expect(classifyParlay({ n: 1, bt: "PrizePicks/DFS", ps: "" })).toBe("single");
+  });
+});
+
+describe("data-driven bettors and fade math", () => {
+  it("lists whoever appears, not a closed Trent/Steve set", () => {
+    expect(uniqueBettors(SAMPLE)).toEqual(["Trent"]);
+    expect(
+      uniqueBettors([
+        baseBet({ who: "chellgod" }),
+        baseBet({ who: "Trent" }),
+        baseBet({ who: "chellgod" }),
+        baseBet({ who: "btidy216" }),
+      ]),
+    ).toEqual(["chellgod", "btidy216", "Trent"]);
+  });
+
+  it("parses tabs and strips Value prefixes", () => {
+    expect(parseBetTab("parlays")).toBe("parlays");
+    expect(parseBetTab("warnings")).toBe("warnings");
+    expect(parseBetTab("")).toBe("bets");
+    expect(stripValuePrefix("Value")).toBe("");
+    expect(stripValuePrefix("Value -6.5")).toBe("-6.5");
+    expect(invertResult("W")).toBe("L");
+    expect(fadePl("W")).toBeCloseTo(100 * (100 / 110));
+    expect(fadePl("L")).toBe(-100);
+    expect(fadePl("Pending")).toBeNull();
+  });
+
+  it("keeps only http(s) feed links", () => {
+    expect(safeHttpUrl("https://x.com/chellgod")).toBe("https://x.com/chellgod");
+    expect(safeHttpUrl("http://example.com/a")).toBe("http://example.com/a");
+    expect(safeHttpUrl("javascript:alert(1)")).toBeNull();
+    expect(safeHttpUrl("data:text/html,hi")).toBeNull();
+    expect(safeHttpUrl("/relative")).toBeNull();
+    expect(safeHttpUrl("")).toBeNull();
+    expect(safeHttpUrl(bettorMeta("chellgod").href)).toBe("https://x.com/chellgod");
+    expect(safeHttpUrl(bettorMeta("odd name?").href)).toBe("https://x.com/oddname");
   });
 });
 

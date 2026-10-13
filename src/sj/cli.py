@@ -517,13 +517,14 @@ def bets_cmd(
         None, help="Write bets/ here instead of the configured store."
     ),
 ) -> None:
-    """Refresh the Trent/Steve bet tracker JSON (roadmap P.11).
+    """Refresh the public-bet tracker JSON (roadmap P.11).
 
-    Reads the Bets tab unless ``--from`` points at a local xlsx/JSON fixture.
+    Reads the Bets tab plus Parlay Legs and BetMGM Public Warnings when
+    those sheets exist. ``--from`` points at a local xlsx/JSON fixture.
     Live ingest looks up the Drive mimeType (read-only) and then uses the
-    Sheets API or downloads an uploaded .xlsx. Writes ``bets/bets.json`` and
-    ``bets/summary.json`` to the store (``SJ_GCS_BUCKET`` in prod). Formula
-    tabs are ignored.
+    Sheets API or downloads an uploaded .xlsx. Writes ``bets/bets.json``,
+    ``bets/summary.json``, ``bets/parlay_legs.json``, and
+    ``bets/public_warnings.json``. Formula / summary tabs are ignored.
     """
     import os
 
@@ -560,11 +561,141 @@ def bets_cmd(
         raise typer.Exit(code=1) from exc
     summary = result["summary"]
     document = result["bets"]
+    who_bits = ", ".join(
+        f"{row['who']} {row['bets']}" for row in (summary.get("bettors") or [])
+    )
+    parlays = result.get("parlay_legs") or {}
+    warnings = result.get("public_warnings") or {}
     typer.echo(
-        f"bets: {document['bet_count']} rows "
-        f"(Trent {summary['trent']['bets']}, Steve {summary['steve']['bets']}) "
+        f"bets: {document['bet_count']} rows"
+        f"{f' ({who_bits})' if who_bits else ''} "
+        f"legs={parlays.get('leg_count', 0)} "
+        f"warnings={warnings.get('warning_count', 0)} "
         f"synced_at={document['synced_at']}"
     )
+
+
+@app.command("ai-rankings")
+def ai_rankings_cmd(
+    board: str = typer.Option(
+        "all",
+        "--board",
+        help="cfb, fantasy, or all.",
+    ),
+    league: list[str] | None = typer.Option(
+        None,
+        "--league",
+        "-l",
+        help="Fantasy league id (repeatable). Default: baseball + both football + hockey.",
+    ),
+    season: int | None = typer.Option(
+        None, "--season", "-s", help="CFB fall year or hub season. Default: current."
+    ),
+    week: int | None = typer.Option(
+        None, "--week", "-w", help="CFB week or fantasy H2H week (1–25). Offseason uses a dated label."
+    ),
+    store_dir: Path | None = typer.Option(
+        None, help="Write here instead of the configured store."
+    ),
+    registry: Path | None = typer.Option(None, help="Path to leagues.yaml"),
+    dry_run: bool = typer.Option(
+        False, "--dry-run", help="Build facts / call the model but do not persist."
+    ),
+    force: bool = typer.Option(
+        False,
+        "--force",
+        help="Regenerate even when facts_hash matches (or set SJ_RANKINGS_FORCE=1).",
+    ),
+) -> None:
+    """Write weekly AI rankings (roadmap 7.16).
+
+    CFB uses the College Football Data API (``SJ_CFBD_API_KEY``). A missing
+    key degrades: the job writes an empty snapshot that names the gap.
+    Fantasy reads ESPN snapshots already in the store. The model is one
+    OpenAI-compatible client (default xAI Grok via ``SJ_RANKINGS_PROVIDER`` /
+    ``SJ_RANKINGS_MODEL`` / ``SJ_RANKINGS_API_KEY``).
+    """
+    from sj.ai_rankings import (
+        FANTASY_LEAGUES,
+        rankings_force,
+        rankings_llm_config_from_env,
+        run_cfb_board,
+    )
+    from sj.cfbd import cfbd_api_key
+
+    choice = board.strip().lower()
+    if choice not in {"cfb", "fantasy", "all"}:
+        typer.echo("error: --board must be cfb, fantasy, or all", err=True)
+        raise typer.Exit(code=1)
+    typer.echo(f"store: {describe_store(store_dir)}")
+    llm = rankings_llm_config_from_env()
+    if llm:
+        typer.echo(f"model: {llm.label} temp={llm.temperature}")
+    else:
+        typer.echo("model: not configured (SJ_RANKINGS_API_KEY / XAI_API_KEY / OPENAI_API_KEY)")
+    if cfbd_api_key():
+        typer.echo("cfbd: key present")
+    else:
+        typer.echo("cfbd: key missing (will degrade CFB)")
+    forced = force or rankings_force()
+    if forced:
+        typer.echo("force: regenerating (facts_hash reuse off)")
+    if llm:
+        typer.echo(
+            f"llm timeout: {llm.timeout_s:.0f}s attempts={llm.max_attempts}"
+        )
+
+    failed = False
+    wrote = 0
+    if choice in {"cfb", "all"}:
+        try:
+            snapshot = run_cfb_board(
+                season=season,
+                week=week,
+                store_dir=store_dir,
+                persist=not dry_run,
+                force=forced,
+            )
+        except Exception as exc:  # noqa: BLE001 - report and continue the other board
+            typer.echo(f"failed cfb: {exc}", err=True)
+            failed = True
+        else:
+            wrote += 1
+            note = f" degraded={snapshot['degraded']}" if snapshot.get("degraded") else ""
+            typer.echo(
+                f"cfb {snapshot.get('week_label')}: {len(snapshot.get('rankings') or [])} "
+                f"ranked model={snapshot.get('model')}{note}"
+            )
+    if choice in {"fantasy", "all"}:
+        from sj.ai_rankings import run_fantasy_board
+
+        wanted = list(league) if league else list(FANTASY_LEAGUES)
+        for league_id in wanted:
+            try:
+                snapshot = run_fantasy_board(
+                    league_id,
+                    season=season,
+                    week=week,
+                    store_dir=store_dir,
+                    registry_path=registry,
+                    persist=not dry_run,
+                    force=forced,
+                )
+            except Exception as exc:  # noqa: BLE001 - one league must not abort the rest
+                typer.echo(f"failed fantasy {league_id}: {exc}", err=True)
+                failed = True
+                continue
+            wrote += 1
+            typer.echo(
+                f"fantasy {snapshot.get('league_id')} {snapshot.get('week_label')}: "
+                f"{len(snapshot.get('rankings') or [])} ranked "
+                f"model={snapshot.get('model')}"
+            )
+    if wrote and not dry_run:
+        typer.echo(f"hub revalidate: {notify_hub_revalidate()}")
+    typer.echo(f"done: {wrote} boards" + (" (dry-run)" if dry_run else ""))
+    if failed:
+        raise typer.Exit(code=1)
 
 
 @app.command("regenerate-fixtures")
