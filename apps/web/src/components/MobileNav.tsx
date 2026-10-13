@@ -20,6 +20,7 @@ export function MobileNav({
     <nav className="mobile-nav" aria-label="Primary">
       <Link href="/">Home</Link>
       <Link href="/leagues">Leagues</Link>
+      <Link href="/rankings">Rankings</Link>
       <a href={communityUrl} rel="noopener noreferrer">
         Community
       </a>

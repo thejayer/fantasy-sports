@@ -23,6 +23,17 @@ describe("portal chrome after Phase E audit", () => {
     expect(source).toMatch(/Open on X/);
   });
 
+  it("does not ship a service worker on the apex", () => {
+    const files = [
+      path.join(WWW_ROOT, "public/service-worker.js"),
+      path.join(WWW_ROOT, "public/sw.js"),
+      path.join(APP_DIR, "bets"),
+    ];
+    expect(existsSync(files[0])).toBe(false);
+    expect(existsSync(files[1])).toBe(false);
+    expect(existsSync(path.join(APP_DIR, "bets/page.tsx"))).toBe(true);
+  });
+
   it("keeps firehose cards content-sized and clips home overflow", () => {
     const css = readFileSync(path.join(APP_DIR, "globals.css"), "utf8");
     expect(css).toMatch(/overflow-x:\s*clip/);

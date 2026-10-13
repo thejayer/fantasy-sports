@@ -3,8 +3,9 @@
 # Build from the repo root:
 #   docker build -f apps/www/Dockerfile -t sj-www .
 #
-# No Auth.js, no ESPN sync, no GCS mount — public marketing surface that
-# deep-links to https://fantasy.strictlyjayers.com for the member hub.
+# Public marketing surface plus a members-only /bets page (Auth.js + GCS
+# mount for hub_members.json and bets/bets.json). Do not mkdir the FUSE
+# mount in the entrypoint — a slow mount hangs the Cloud Run PORT probe.
 
 FROM node:22-bookworm-slim AS deps
 WORKDIR /app/apps/www
@@ -28,6 +29,7 @@ WORKDIR /app
 COPY --from=build /app/apps/www/.next/standalone ./apps/www/
 COPY --from=build /app/apps/www/.next/static ./apps/www/.next/static
 COPY --from=build /app/apps/www/public ./apps/www/public
+COPY apps/www/fixtures ./apps/www/fixtures
 COPY apps/www/docker-entrypoint.sh /app/docker-entrypoint.sh
 RUN chmod +x /app/docker-entrypoint.sh \
     && groupadd --gid 1001 sjwww \
