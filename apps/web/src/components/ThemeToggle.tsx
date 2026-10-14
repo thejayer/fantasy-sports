@@ -28,7 +28,7 @@ export const THEME_STORAGE_KEY = "sj-theme";
  * execute synchronously, ahead of hydration, to avoid a flash of the OS palette
  * when a member has overridden it.
  */
-export const THEME_INIT_SCRIPT = `try{var t=localStorage.getItem(${JSON.stringify(
+export const THEME_INIT_SCRIPT = `try{var m=document.cookie.match(/(?:^|; )sj-theme=([^;]*)/);var t=m?decodeURIComponent(m[1]):localStorage.getItem(${JSON.stringify(
   THEME_STORAGE_KEY,
 )});if(t==="light"||t==="dark"){document.documentElement.setAttribute("data-theme",t)}}catch(e){}`;
 
@@ -60,6 +60,18 @@ export function setTheme(next: Theme): void {
     else window.localStorage.setItem(THEME_STORAGE_KEY, next);
   } catch {
     // Private-mode storage failures must not break the page.
+  }
+  // Shared across *.strictlyjayers.com so apex / fitness / vibe follow it.
+  try {
+    const shared = /(^|\.)strictlyjayers\.com$/.test(window.location.hostname)
+      ? ";domain=.strictlyjayers.com"
+      : "";
+    document.cookie =
+      next === "system"
+        ? `${THEME_STORAGE_KEY}=;path=/;max-age=0;samesite=lax${shared}`
+        : `${THEME_STORAGE_KEY}=${next};path=/;max-age=31536000;samesite=lax${shared}`;
+  } catch {
+    // ignore
   }
   for (const listener of listeners) listener();
 }

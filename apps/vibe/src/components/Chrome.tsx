@@ -1,6 +1,7 @@
 import Link from "next/link";
 
-import { signOut } from "@/auth";
+import { auth, signOut } from "@/auth";
+import { SideProfile } from "@/components/SideProfile";
 import { getVibeSiteConfig } from "@/lib/site";
 import { AppSwitcher } from "@/components/AppSwitcher";
 
@@ -9,7 +10,8 @@ type Props = {
   children: React.ReactNode;
 };
 
-export function Chrome({ current, children }: Props) {
+export async function Chrome({ current, children }: Props) {
+  const session = await auth().catch(() => null);
   const { communitySiteUrl, fantasyHubUrl, fitnessUrl, vibeUrl } =
     getVibeSiteConfig();
   return (
@@ -55,6 +57,10 @@ export function Chrome({ current, children }: Props) {
           </nav>
         </div>
         <div className="sj-side-foot">
+          <SideProfile
+            settingsUrl={`${fantasyHubUrl}/settings`}
+            initialUser={session?.user ?? null}
+          />
           <form
             action={async () => {
               "use server";

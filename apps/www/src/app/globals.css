@@ -2368,7 +2368,7 @@ a.news-card:focus-visible .news-card-read {
   color: var(--sj-muted);
 }
 
-/* Where to go: one consistent grid of cards */
+/* Sites: one consistent grid of cards */
 .apex-rooms {
   list-style: none;
   margin: 0;

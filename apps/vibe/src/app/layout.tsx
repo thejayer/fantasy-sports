@@ -4,6 +4,7 @@ import localFont from "next/font/local";
 import { getVibeSiteConfig } from "@/lib/site";
 import "./globals.css";
 import "../sj-ui/index.css";
+import { SHARED_THEME_INIT_SCRIPT } from "@/components/SideProfile";
 
 /** Self-hosted so Docker/CI builds do not fetch Google Fonts at compile time. */
 const archivo = localFont({
@@ -49,6 +50,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className={archivo.variable}>
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: SHARED_THEME_INIT_SCRIPT }} />
+      </head>
       <body className={archivo.className}>{children}</body>
     </html>
   );

@@ -15,6 +15,7 @@ import {
   memberProfileHandle,
   resolveMemberDisplayName,
   slugifyProfileHandle,
+  memberAvatarUrl,
 } from "@/lib/hub-members";
 import { readHubMembers } from "@/lib/hub-members-store";
 import {
@@ -121,7 +122,7 @@ export default async function MemberProfilePage({ params }: Props) {
         <div className="profile-public-hero">
           <MemberAvatar
             name={displayName}
-            imageUrl={member.image_url}
+            imageUrl={memberAvatarUrl(member)}
             size="lg"
           />
           <div>

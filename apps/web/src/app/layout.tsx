@@ -8,7 +8,6 @@ import { MobileNav } from "@/components/MobileNav";
 import { THEME_INIT_SCRIPT } from "@/components/ThemeToggle";
 import {
   canAccessAdmin,
-  findMember,
   parseAllowedEmailsEnv,
 } from "@/lib/hub-members";
 import { readHubMembers } from "@/lib/hub-members-store";
@@ -16,6 +15,7 @@ import { getHubSiteConfig } from "@/lib/site";
 import { AppSwitcher } from "@/components/AppSwitcher";
 import { SideNav } from "@/components/SideNav";
 import { devBypassEnabled } from "@/lib/session";
+import { getViewer } from "@/lib/viewer";
 import "./globals.css";
 import "../sj-ui/index.css";
 
@@ -89,19 +89,18 @@ export default async function RootLayout({
     }
   }
 
-  const profileLabel = session?.user
-    ? (session.user.name ?? session.user.email ?? "Profile")
-    : bypass
-      ? "Profile"
-      : null;
-  const memberRow =
-    session?.user?.email && membersFile
-      ? findMember(membersFile, session.user.email)
-      : undefined;
+  // Viewer = hub_members display_name / avatar override (what Profile &
+  // settings saves), falling back to the Google session.
+  const viewer = await getViewer().catch(() => null);
+  const profileLabel = viewer?.email
+    ? viewer.name || viewer.email
+    : session?.user
+      ? (session.user.name ?? session.user.email ?? "Profile")
+      : bypass
+        ? "Profile"
+        : null;
   const profileImage =
-    memberRow?.image_url?.trim() ||
-    session?.user?.image?.trim() ||
-    null;
+    viewer?.imageUrl || session?.user?.image?.trim() || null;
   const { communitySiteUrl, fitnessUrl, vibeUrl, siteUrl } = getHubSiteConfig();
   const communityUrl = communitySiteUrl;
 

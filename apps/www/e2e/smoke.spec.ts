@@ -11,7 +11,7 @@ test.describe("portal smoke", () => {
       page.getByRole("link", { name: /Open fantasy hub/i }).first(),
     ).toBeVisible();
     await expect(
-      page.getByRole("heading", { name: /Where to go/i }),
+      page.getByRole("heading", { name: /^Sites$/i }),
     ).toBeVisible();
     await expect(page.getByRole("link", { name: /^Fantasy/i }).first()).toBeVisible();
     await expect(page.getByRole("link", { name: /People/i }).first()).toBeVisible();

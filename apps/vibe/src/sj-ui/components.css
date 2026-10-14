@@ -1005,7 +1005,7 @@ textarea,
          <nav class="sj-app-switcher">…</nav></div>
        <div class="sj-side-group"><p class="sj-side-label">Fantasy</p>
          <nav class="sj-side-nav"><a class="sj-side-item" aria-current="page">…</a></nav></div>
-       <div class="sj-side-foot">profile · <div class="sj-side-theme">…</div> · sign out</div>
+       <div class="sj-side-foot">profile row (→ hub /settings) · sign out</div>
      </header>
    ========================================================================== */
 .sj-side {
@@ -1135,25 +1135,31 @@ textarea,
   flex: none;
 }
 
-.sj-side .sj-side-theme {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--sj-space-2);
-  min-height: var(--sj-side-row);
-  padding: 0 10px;
-  color: var(--sj-muted);
-  font: 500 14px/20px var(--sj-font);
+.sj-side .sj-side-avatar {
+  flex: none;
+  display: inline-grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 999px;
+  overflow: hidden;
+  background: var(--sj-surface-2);
+  color: var(--sj-text);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
 }
 
-.sj-side .sj-side-theme .accent-picker,
-.sj-side .sj-side-theme > span:last-child {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  margin: 0;
-  padding: 0;
-  border: 0;
+.sj-side .sj-side-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.sj-side .sj-side-profile-label {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .sj-side .sj-side-signout {
@@ -1248,15 +1254,13 @@ textarea,
     gap: var(--sj-space-1);
   }
 
-  .sj-side .sj-side-foot .sj-side-theme-label,
   .sj-side .sj-side-foot .sj-side-profile-label {
     display: none;
   }
 
   .sj-side .sj-side-foot .sj-side-item,
   .sj-side .sj-side-foot > a,
-  .sj-side .sj-side-signout,
-  .sj-side .sj-side-theme {
+  .sj-side .sj-side-signout {
     height: 32px;
     min-height: 32px;
     padding: 0 6px;

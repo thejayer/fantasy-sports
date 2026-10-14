@@ -50,16 +50,11 @@
         </nav>
       </div>
       <div class="sj-side-foot">
-        <span class="sj-account" id="sjAccount" hidden>
-          <span class="sj-side-item sj-account-name"><span class="sj-side-profile-label" id="sjAccountName"></span></span>
-        </span>
-        <div class="sj-side-theme">
-          <span class="sj-side-theme-label">Theme</span>
-          <span>
-            <button class="icon-button header-theme" id="themeToggle" type="button" aria-label="Toggle light/dark" title="Toggle light/dark">T</button>
-            <span class="accent-picker" id="accentPicker" aria-label="Accent color"></span>
-          </span>
-        </div>
+        <a class="sj-side-item sj-side-profile" data-sj-settings href="https://fantasy.strictlyjayers.com/settings" title="Profile &amp; settings">
+          <span class="sj-side-avatar" id="sjAccountAvatar" aria-hidden="true">SJ</span>
+          <span class="sj-side-profile-label" id="sjAccountName">Profile &amp; settings</span>
+        </a>
+        <span class="sj-account" id="sjAccount" hidden></span>
         <button class="sj-side-signout sj-sign-out" id="sjSignOut" type="button" hidden>Sign out</button>
       </div>
     </header>

@@ -28,6 +28,11 @@ export type HubMember = {
    */
   image_url?: string;
   /**
+   * Member-chosen HTTPS avatar from Profile & settings. Wins over the
+   * Google-synced `image_url` (which sign-in keeps overwriting).
+   */
+  avatar_url?: string;
+  /**
    * Short public blurb on `/u/{handle}` (roadmap 7.12). Optional plain text.
    */
   bio?: string;
@@ -291,10 +296,8 @@ export function memberImageMap(
 ): Record<string, string> {
   const map: Record<string, string> = {};
   for (const member of file?.members ?? []) {
-    const url = member.image_url?.trim();
-    if (url && /^https:\/\//i.test(url)) {
-      map[normalizeEmail(member.email)] = url;
-    }
+    const url = memberAvatarUrl(member);
+    if (url) map[normalizeEmail(member.email)] = url;
   }
   return map;
 }
@@ -311,6 +314,8 @@ export function upsertMember(
     image_url?: string | null;
     /** Pass `null` to clear; omit to leave unchanged. */
     bio?: string | null;
+    /** Pass `null` to clear; omit to leave unchanged. */
+    avatar_url?: string | null;
   },
   now = new Date(),
 ): HubMembersFile {
@@ -331,6 +336,12 @@ export function upsertMember(
   if (input.image_url !== undefined) {
     const validated = validateImageUrl(input.image_url ?? "");
     image_url = validated || undefined;
+  }
+
+  let avatar_url: string | undefined = existing?.avatar_url;
+  if (input.avatar_url !== undefined) {
+    const validated = validateImageUrl(input.avatar_url ?? "");
+    avatar_url = validated || undefined;
   }
 
   let bio: string | undefined = existing?.bio;
@@ -362,6 +373,9 @@ export function upsertMember(
 
   if (bio) next.bio = bio;
   else delete next.bio;
+
+  if (avatar_url) next.avatar_url = avatar_url;
+  else delete next.avatar_url;
 
   const members = existing
     ? file.members.map((m) => (m.email === email ? next : m))
@@ -397,6 +411,24 @@ export function setMemberBio(
   now = new Date(),
 ): HubMembersFile {
   return upsertMember(file, { email, bio }, now);
+}
+
+/** Self-service avatar override (empty string clears back to Google photo). */
+export function setMemberAvatarUrl(
+  file: HubMembersFile,
+  email: string,
+  avatarUrl: string,
+  now = new Date(),
+): HubMembersFile {
+  return upsertMember(file, { email, avatar_url: avatarUrl }, now);
+}
+
+/** Avatar to show: member-chosen override, else the Google-synced photo. */
+export function memberAvatarUrl(
+  member: Pick<HubMember, "avatar_url" | "image_url"> | null | undefined,
+): string | undefined {
+  const pick = member?.avatar_url?.trim() || member?.image_url?.trim();
+  return pick && /^https:\/\//i.test(pick) ? pick : undefined;
 }
 
 /**

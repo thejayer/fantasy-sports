@@ -1,6 +1,7 @@
 import Link from "next/link";
 
-import { ACCENT_INIT_SCRIPT, AccentPicker } from "@/components/AccentPicker";
+import { ACCENT_INIT_SCRIPT } from "@/components/AccentPicker";
+import { SHARED_THEME_INIT_SCRIPT, SideProfile } from "@/components/SideProfile";
 import { portalCopy } from "@/lib/content";
 import { getSiteConfig } from "@/lib/site";
 import { AppSwitcher } from "@/components/AppSwitcher";
@@ -72,6 +73,7 @@ export default function RootLayout({
     <html lang="en" className={archivo.variable}>
       <head>
         <script dangerouslySetInnerHTML={{ __html: ACCENT_INIT_SCRIPT }} />
+        <script dangerouslySetInnerHTML={{ __html: SHARED_THEME_INIT_SCRIPT }} />
       </head>
       <body className={archivo.className}>
         <div className="shell">
@@ -109,10 +111,7 @@ export default function RootLayout({
               ]}
             />
             <div className="sj-side-foot">
-              <div className="sj-side-theme">
-                <span className="sj-side-theme-label">Theme</span>
-                <AccentPicker />
-              </div>
+              <SideProfile settingsUrl={`${fantasyHubUrl}/settings`} />
             </div>
           </header>
           {children}
