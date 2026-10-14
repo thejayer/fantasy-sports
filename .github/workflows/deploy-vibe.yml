@@ -165,15 +165,15 @@ jobs:
             fi
             # The deployer SA (ffa-deployer) has no secretmanager.secrets.setIamPolicy,
             # so this binding 403'd and failed every deploy (#201/#207/#208).
-            # Best-effort: if the runtime SA already reads secrets (project-level
-            # secretAccessor, as for the sj-* hub secrets) the deploy works; if not,
+            # Best-effort: the runtime SA was granted secretAccessor on the four
+            # sj-vibe-* secrets once by an IAM admin, so the deploy works; if not,
             # Cloud Run's deploy step fails with a clear secret-access error.
             if ! gcloud secrets add-iam-policy-binding "$name" \
               --project "$PROJECT_ID" \
               --member="serviceAccount:${RUNTIME_SA}" \
               --role="roles/secretmanager.secretAccessor" \
               --quiet >/dev/null 2>bind.err; then
-              echo "::warning title=secret IAM binding skipped::Could not grant roles/secretmanager.secretAccessor on $name to ${RUNTIME_SA} ($(tr '\n' ' ' < bind.err | cut -c1-200)). Grant it once by hand, or give ${GCP_SERVICE_ACCOUNT} roles/secretmanager.admin on the secret."
+              echo "::warning title=secret IAM binding skipped::Could not grant roles/secretmanager.secretAccessor on $name to ${RUNTIME_SA} ($(tr '\n' ' ' < bind.err | cut -c1-200)). Expected when the runtime SA already has access (granted once by an IAM admin). Otherwise have an IAM admin add that binding; do not widen ${GCP_SERVICE_ACCOUNT} to secretmanager.admin."
             fi
           }
           ensure_secret sj-vibe-github-client-id
