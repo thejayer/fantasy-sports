@@ -14,6 +14,7 @@ import {
 import { readHubMembers } from "@/lib/hub-members-store";
 import { getHubSiteConfig } from "@/lib/site";
 import { AppSwitcher } from "@/components/AppSwitcher";
+import { SideNav } from "@/components/SideNav";
 import { devBypassEnabled } from "@/lib/session";
 import "./globals.css";
 import "../sj-ui/index.css";
@@ -114,54 +115,59 @@ export default async function RootLayout({
       <body className={archivo.className}>
         <div className="atmosphere" aria-hidden />
         <div className="shell">
-          <header className="site-header">
+          <header className="site-header sj-side">
             <Link href="/" className="brand-mark">
               Strictly Jayers
             </Link>
-            <AppSwitcher
-              current="hub"
-              hubUrl={siteUrl}
-              betsUrl={`${communityUrl}/bets`}
-              fitnessUrl={fitnessUrl}
-              vibeUrl={vibeUrl}
+            <div className="sj-side-group sj-side-group-apps">
+              <p className="sj-side-label">Apps</p>
+              <AppSwitcher
+                current="hub"
+                hubUrl={siteUrl}
+                betsUrl={`${communityUrl}/bets`}
+                fitnessUrl={fitnessUrl}
+                vibeUrl={vibeUrl}
+              />
+            </div>
+            <SideNav
+              label="Fantasy"
+              className="sj-side-desktop-only"
+              items={[
+                { label: "Home", href: "/" },
+                { label: "Leagues", href: "/leagues", match: ["/league"] },
+                { label: "Rankings", href: "/rankings" },
+                { label: "Community", href: communityUrl, external: true },
+                ...(showAdmin ? [{ label: "Admin", href: "/admin" }] : []),
+              ]}
             />
-            <nav className="nav-links">
-              <Link href="/">Home</Link>
-              <Link href="/leagues">Leagues</Link>
-              <Link href="/rankings">Rankings</Link>
-              <a href={communityUrl} rel="noopener noreferrer">
-                Community
-              </a>
-              {showAdmin ? <Link href="/admin">Admin</Link> : null}
+            <div className="sj-side-foot">
               {profileLabel ? (
-                <>
-                  <Link
-                    href="/settings"
-                    className="nav-user"
-                    title={session?.user?.email ?? "Profile & appearance"}
-                  >
-                    <MemberAvatar
-                      name={profileLabel}
-                      imageUrl={profileImage}
-                      size="sm"
-                    />
-                    <span className="nav-user-label">{profileLabel}</span>
-                  </Link>
-                  {session?.user ? (
-                    <form
-                      action={async () => {
-                        "use server";
-                        await signOut({ redirectTo: "/login" });
-                      }}
-                    >
-                      <button className="button secondary" type="submit">
-                        Sign out
-                      </button>
-                    </form>
-                  ) : null}
-                </>
+                <Link
+                  href="/settings"
+                  className="nav-user"
+                  title={session?.user?.email ?? "Profile & appearance"}
+                >
+                  <MemberAvatar
+                    name={profileLabel}
+                    imageUrl={profileImage}
+                    size="sm"
+                  />
+                  <span className="sj-side-profile-label">{profileLabel}</span>
+                </Link>
               ) : null}
-            </nav>
+              {session?.user ? (
+                <form
+                  action={async () => {
+                    "use server";
+                    await signOut({ redirectTo: "/login" });
+                  }}
+                >
+                  <button className="sj-side-signout" type="submit">
+                    Sign out
+                  </button>
+                </form>
+              ) : null}
+            </div>
           </header>
           {children}
         </div>

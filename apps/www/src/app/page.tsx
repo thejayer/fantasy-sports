@@ -144,62 +144,46 @@ export default async function HomePage() {
   const secondary = copy.destinations.secondary.map(buildDestination);
 
   return (
-    <main>
-      <section className="hero" aria-label="Strictly Jayers home">
-        <div className="hero-media" aria-hidden>
-          <Image
-            className="hero-media-img"
-            src="/hero-atmosphere.jpg"
-            alt=""
-            width={1280}
-            height={853}
-            priority
-          />
-          <div className="hero-media-wash" />
-        </div>
-        <div className="hero-copy">
-          <p className="hero-kicker">{copy.hero.kicker}</p>
-          <div className="hero-brand">
-            Strictly
-            <br />
-            Jayers
-          </div>
-          <hr className="hero-rule" />
-          <h1>{copy.hero.headline}</h1>
-          <p>{copy.hero.support}</p>
-          <div className="cta-row hero-cta">
+    <main className="apex-home">
+      <section className="apex-hero" aria-label="Strictly Jayers home">
+        <p className="apex-kicker">{copy.hero.kicker}</p>
+        <h1 className="apex-title">Strictly Jayers</h1>
+        <p className="apex-headline">{copy.hero.headline}</p>
+        <p className="apex-support">{copy.hero.support}</p>
+        <div className="apex-cta">
+          <a
+            className="apex-btn apex-btn-primary"
+            href={fantasyHubUrl}
+            rel="noopener noreferrer"
+          >
+            {copy.hero.ctaFantasy} →
+          </a>
+          {discordInviteUrl ? (
             <a
-              className="cta cta-primary"
-              href={fantasyHubUrl}
+              className="apex-btn"
+              href={discordInviteUrl}
               rel="noopener noreferrer"
             >
-              {copy.hero.ctaFantasy} →
+              {copy.hero.ctaDiscord}
             </a>
-            {discordInviteUrl ? (
-              <a
-                className="cta cta-secondary"
-                href={discordInviteUrl}
-                rel="noopener noreferrer"
-              >
-                {copy.hero.ctaDiscord}
-              </a>
-            ) : (
-              <a className="cta cta-secondary" href="#destinations">
-                {copy.hero.ctaExplore}
-              </a>
-            )}
-          </div>
+          ) : (
+            <a className="apex-btn" href="#destinations">
+              {copy.hero.ctaExplore}
+            </a>
+          )}
         </div>
       </section>
 
       {pulse.length > 0 ? (
-        <section className="pulse-strip" aria-label="Crew pulse">
-          <ul className="pulse-strip-inner">
+        <section className="apex-pulse" aria-label="Crew pulse">
+          <ul className="apex-pulse-list">
             {pulse.map((cell) => {
               const inner = (
                 <>
                   <span className="pulse-kicker">{cell.kicker}</span>
-                  <span className="pulse-title">{cell.title}</span>
+                  <span className="pulse-title" title={cell.title}>
+                    {cell.title}
+                  </span>
                   {cell.detail ? (
                     <span className="pulse-detail">{cell.detail}</span>
                   ) : null}
@@ -308,88 +292,40 @@ export default async function HomePage() {
           </div>
           <div className="section-marker">{copy.destinations.marker}</div>
         </div>
-        <ul className="room-grid">
-          {primary.map((item) => {
+        <ul className="apex-rooms">
+          {[...primary, ...secondary].map((item) => {
             const className = item.pending
-              ? "room-tile is-muted"
-              : "room-tile";
+              ? "apex-room is-muted"
+              : "apex-room";
             const inner = (
               <>
-                <div className="room-tile-top">
-                  <span className="room-icon">
-                    <RoomGlyph id={item.id} />
-                  </span>
-                  {item.pending ? (
-                    <span className="soon-badge">{item.action}</span>
-                  ) : null}
-                </div>
-                <p className="destination-index">
-                  {item.index} · {item.kicker}
-                </p>
-                <h3>{item.title}</h3>
-                <p>{item.body}</p>
-                {item.pending ? null : (
-                  <div className="destination-action">{item.action} →</div>
-                )}
-              </>
-            );
-            return (
-              <li key={item.id}>
-                {item.href ? (
-                  item.href.startsWith("/") ? (
-                    <a className={className} href={item.href}>
-                      {inner}
-                    </a>
-                  ) : (
-                    <a
-                      className={className}
-                      href={item.href}
-                      rel="noopener noreferrer"
-                    >
-                      {inner}
-                    </a>
-                  )
-                ) : (
-                  <div className={className}>{inner}</div>
-                )}
-              </li>
-            );
-          })}
-        </ul>
-        <ul className="room-secondary">
-          {secondary.map((item) => {
-            const className = item.pending
-              ? "room-compact is-muted"
-              : "room-compact";
-            const inner = (
-              <>
-                <div className="room-compact-copy">
-                  <h3>{item.title}</h3>
-                  <p>{item.body}</p>
-                </div>
+                <span className="apex-room-icon">
+                  <RoomGlyph id={item.id} />
+                </span>
+                <span className="apex-room-copy">
+                  <span className="apex-room-title">{item.title}</span>
+                  <span className="apex-room-body">{item.body}</span>
+                </span>
                 {item.pending ? (
                   <span className="soon-badge">{item.action}</span>
                 ) : (
-                  <span className="destination-action">{item.action} →</span>
+                  <span className="apex-room-action" aria-hidden>
+                    →
+                  </span>
                 )}
               </>
             );
             return (
               <li key={item.id}>
                 {item.href ? (
-                  item.href.startsWith("/") ? (
-                    <a className={className} href={item.href}>
-                      {inner}
-                    </a>
-                  ) : (
-                    <a
-                      className={className}
-                      href={item.href}
-                      rel="noopener noreferrer"
-                    >
-                      {inner}
-                    </a>
-                  )
+                  <a
+                    className={className}
+                    href={item.href}
+                    aria-label={item.pending ? undefined : `${item.action}: ${item.title}`}
+                    rel={item.href.startsWith("/") ? undefined : "noopener noreferrer"}
+                  >
+                    {inner}
+                  </a>
                 ) : (
                   <div className={className}>{inner}</div>
                 )}

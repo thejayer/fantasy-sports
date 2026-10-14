@@ -1,3 +1,7 @@
+"use client";
+
+import { usePathname } from "next/navigation";
+
 type AppId = "hub" | "bets" | "fitness" | "vibe";
 
 export type AppSwitcherProps = {
@@ -22,6 +26,10 @@ export function AppSwitcher({
   fitnessUrl,
   vibeUrl,
 }: AppSwitcherProps) {
+  const pathname = usePathname() ?? "/";
+  // Apex hosts Bets at /bets: highlight it there (it was never marked active).
+  const active: AppId | undefined =
+    current ?? (pathname === "/bets" || pathname.startsWith("/bets/") ? "bets" : undefined);
   const href: Record<AppId, string> = {
     hub: hubUrl,
     bets: betsUrl,
@@ -32,7 +40,7 @@ export function AppSwitcher({
   return (
     <nav className="sj-app-switcher" aria-label="Strictly Jayers apps">
       {APPS.map((app) =>
-        app.id === current ? (
+        app.id === active ? (
           <span key={app.id} aria-current="page" className="is-current">
             {app.label}
           </span>

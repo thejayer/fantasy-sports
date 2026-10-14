@@ -1,10 +1,10 @@
 import Link from "next/link";
 
-import { PortalNav } from "@/components/PortalNav";
-import { ACCENT_INIT_SCRIPT } from "@/components/AccentPicker";
+import { ACCENT_INIT_SCRIPT, AccentPicker } from "@/components/AccentPicker";
 import { portalCopy } from "@/lib/content";
 import { getSiteConfig } from "@/lib/site";
 import { AppSwitcher } from "@/components/AppSwitcher";
+import { SideNav } from "@/components/SideNav";
 import localFont from "next/font/local";
 import type { Metadata } from "next";
 import "./globals.css";
@@ -75,21 +75,45 @@ export default function RootLayout({
       </head>
       <body className={archivo.className}>
         <div className="shell">
-          <header className="site-header">
+          <header className="site-header sj-side">
             <Link href="/" className="brand-mark">
               Strictly Jayers
             </Link>
-            <AppSwitcher
-              hubUrl={fantasyHubUrl}
-              betsUrl={`${siteUrl}/bets`}
-              fitnessUrl={fitnessUrl}
-              vibeUrl={vibeUrl}
+            <div className="sj-side-group sj-side-group-apps">
+              <p className="sj-side-label">Apps</p>
+              <AppSwitcher
+                hubUrl={fantasyHubUrl}
+                betsUrl={`${siteUrl}/bets`}
+                fitnessUrl={fitnessUrl}
+                vibeUrl={vibeUrl}
+              />
+            </div>
+            <SideNav
+              label="Strictly Jayers"
+              items={[
+                { label: "Home", href: "/" },
+                { label: "Fantasy", href: fantasyHubUrl, external: true },
+                discordInviteUrl
+                  ? { label: "Discord", href: discordInviteUrl, external: true }
+                  : { label: "Discord", href: "/#destinations", external: true },
+              ]}
             />
-            <PortalNav
-              fantasyHubUrl={fantasyHubUrl}
-              fitnessUrl={fitnessUrl}
-              discordInviteUrl={discordInviteUrl}
+            <SideNav
+              label="More"
+              items={[
+                { label: "Places", href: "/#destinations", external: true },
+                { label: "AI News", href: "/ai" },
+                { label: "People", href: "/people" },
+                { label: "Watch", href: "/watch" },
+                { label: "Palworld", href: "/palworld" },
+              ]}
             />
+            <div className="sj-side-foot">
+              <div className="sj-side-theme">
+                <span className="sj-side-theme-label">Theme</span>
+                <AccentPicker />
+              </div>
+            </div>
           </header>
           {children}
         </div>

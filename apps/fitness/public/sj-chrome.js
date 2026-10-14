@@ -51,6 +51,7 @@
     if (!wrap || !name || !signOut || !user) return;
     name.textContent = user.name || user.email || "Member";
     wrap.hidden = false;
+    signOut.hidden = false;
     signOut.addEventListener("click", async () => {
       try {
         const csrfRes = await fetch("/api/auth/csrf", { credentials: "same-origin" });

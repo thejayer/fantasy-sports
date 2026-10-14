@@ -93,7 +93,7 @@ export const portalCopy = {
   },
   destinations: {
     heading: "Where to go",
-    support: "Four rooms first. The rest stay close — stubs stay small.",
+    support: "Every room, one click away.",
     marker: "ROOMS",
     primary: ["fantasy", "fitness", "discord", "watch"] as const,
     secondary: ["ai", "people", "bets", "palworld"] as const,

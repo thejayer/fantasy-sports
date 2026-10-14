@@ -2144,3 +2144,352 @@ a.news-card:focus-visible .news-card-read {
     color: color-mix(in srgb, var(--color-text) 50%, transparent);
   }
 }
+
+/* ==========================================================================
+   Apex home (strictlyjayers.com) — dark, left-aligned to the page grid.
+   Red is accent only. Sections 56px apart; headings on the sj-ui scale.
+   ========================================================================== */
+.apex-home {
+  --apex-gap: 56px;
+  display: flex;
+  flex-direction: column;
+  gap: var(--apex-gap);
+  width: 100%;
+  max-width: none;
+  margin: 0;
+  padding: var(--sj-space-8, 32px) 0 var(--sj-space-16, 64px);
+  font-family: var(--sj-font);
+  color: var(--sj-text);
+}
+
+.apex-home > section,
+.apex-home > .section {
+  width: auto;
+  max-width: none;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+/* Hero: ~360px, hairline-bordered dark surface with a faint accent glow */
+.apex-home > .apex-hero {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: var(--sj-space-3, 12px);
+  min-height: 320px;
+  max-height: 400px;
+  padding: var(--sj-space-12, 48px) var(--sj-space-12, 48px);
+  border: 1px solid var(--sj-hairline);
+  border-radius: var(--sj-radius-surface, 12px);
+  background:
+    radial-gradient(
+      120% 140% at 100% 0%,
+      color-mix(in srgb, var(--color-accent, var(--sj-accent)) 16%, transparent) 0%,
+      transparent 55%
+    ),
+    var(--sj-surface-1);
+  overflow: hidden;
+}
+
+.apex-kicker {
+  margin: 0;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--color-accent, var(--sj-accent));
+}
+
+.apex-title {
+  margin: 0;
+  font-size: clamp(36px, 4.2vw, 56px);
+  line-height: 1.05;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  text-transform: none;
+  color: var(--sj-text);
+}
+
+.apex-headline {
+  margin: 0;
+  font-size: var(--sj-h2, 18px);
+  line-height: 1.35;
+  font-weight: 600;
+  color: var(--sj-text);
+}
+
+.apex-support {
+  margin: 0;
+  max-width: 60ch;
+  font-size: var(--sj-body, 15px);
+  line-height: var(--sj-body-lh, 1.47);
+  color: var(--sj-muted);
+}
+
+.apex-cta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sj-space-2, 8px);
+  margin-top: var(--sj-space-3, 12px);
+}
+
+.apex-btn {
+  display: inline-flex;
+  align-items: center;
+  height: 40px;
+  padding: 0 var(--sj-space-4, 16px);
+  border: 1px solid var(--sj-hairline);
+  border-radius: var(--sj-radius-control, 8px);
+  background: var(--sj-surface-2);
+  color: var(--sj-text);
+  font-size: 14px;
+  font-weight: 600;
+  text-decoration: none;
+  text-transform: none;
+  letter-spacing: 0;
+}
+
+.apex-btn:hover {
+  border-color: color-mix(in srgb, var(--sj-text) 24%, transparent);
+}
+
+.apex-btn-primary {
+  border-color: transparent;
+  background: var(--color-accent, var(--sj-accent));
+  color: #fff;
+}
+
+.apex-btn-primary:hover {
+  filter: brightness(1.08);
+  border-color: transparent;
+}
+
+/* Crew pulse: divided strip, titles wrap to two lines instead of truncating */
+.apex-pulse {
+  margin-top: calc(var(--apex-gap) * -0.6) !important;
+}
+
+.apex-pulse-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  border: 1px solid var(--sj-hairline);
+  border-radius: var(--sj-radius-surface, 12px);
+  overflow: hidden;
+}
+
+.apex-pulse-list > li + li {
+  border-left: 1px solid var(--sj-hairline);
+}
+
+.apex-pulse .pulse-cell,
+.apex-pulse-list > li:first-child .pulse-cell {
+  display: grid;
+  gap: 4px;
+  height: 100%;
+  padding: var(--sj-space-4, 16px);
+  border: 0;
+  color: inherit;
+  text-decoration: none;
+}
+
+.apex-pulse .pulse-cell:hover {
+  background: var(--sj-surface-1);
+}
+
+.apex-pulse .pulse-kicker {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-accent, var(--sj-accent));
+}
+
+.apex-pulse .pulse-title {
+  font-size: 15px;
+  line-height: 1.35;
+  font-weight: 600;
+  letter-spacing: 0;
+  text-transform: none;
+  white-space: normal;
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
+.apex-pulse .pulse-detail {
+  font-size: 13px;
+  color: var(--sj-muted);
+  white-space: normal;
+}
+
+.apex-home .empty-note {
+  margin: 0;
+  padding: var(--sj-space-4, 16px);
+  border: 1px dashed var(--sj-hairline);
+  border-radius: var(--sj-radius-surface, 12px);
+  font-size: 14px;
+  color: var(--sj-muted);
+}
+
+/* Section heads on the sj-ui scale */
+.apex-home .section-head {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--sj-space-4, 16px);
+  margin: 0 0 var(--sj-space-6, 24px);
+}
+
+.apex-home .section-head h2 {
+  margin: 0;
+  font-size: var(--sj-h1, 24px);
+  line-height: var(--sj-h1-lh, 1.2);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  text-transform: none;
+}
+
+.apex-home .section-head p {
+  margin: 6px 0 0;
+  font-size: 14px;
+  color: var(--sj-muted);
+}
+
+.apex-home .section-marker {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  color: var(--sj-muted);
+}
+
+/* Where to go: one consistent grid of cards */
+.apex-rooms {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: var(--sj-space-3, 12px);
+}
+
+.apex-rooms > li {
+  display: flex;
+  min-width: 0;
+}
+
+.apex-room {
+  flex: 1;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: start;
+  gap: var(--sj-space-3, 12px);
+  min-height: 112px;
+  padding: var(--sj-space-4, 16px);
+  border: 1px solid var(--sj-hairline);
+  border-radius: var(--sj-radius-surface, 12px);
+  background: var(--sj-surface-1);
+  color: inherit;
+  text-decoration: none;
+  transition: border-color 120ms ease, background 120ms ease;
+}
+
+a.apex-room:hover {
+  border-color: color-mix(in srgb, var(--sj-text) 22%, transparent);
+  background: var(--sj-surface-2);
+}
+
+.apex-room-icon {
+  display: inline-grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border-radius: var(--sj-radius-control, 8px);
+  background: var(--sj-surface-2);
+  color: var(--color-accent, var(--sj-accent));
+}
+
+.apex-room-icon svg {
+  width: 20px;
+  height: 20px;
+}
+
+.apex-room-copy {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+}
+
+.apex-room-title {
+  font-size: 15px;
+  line-height: 20px;
+  font-weight: 600;
+  color: var(--sj-text);
+}
+
+.apex-room-body {
+  font-size: 13px;
+  line-height: 1.45;
+  color: var(--sj-muted);
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+  overflow: hidden;
+}
+
+.apex-room-action {
+  color: var(--sj-muted);
+  font-size: 16px;
+  line-height: 20px;
+}
+
+a.apex-room:hover .apex-room-action {
+  color: var(--sj-text);
+}
+
+.apex-room.is-muted {
+  opacity: 0.6;
+}
+
+@media (max-width: 1279px) {
+  .apex-rooms {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 720px) {
+  .apex-home {
+    --apex-gap: 48px;
+    padding-top: var(--sj-space-4, 16px);
+  }
+
+  .apex-home > .apex-hero {
+    min-height: 0;
+    max-height: none;
+    padding: var(--sj-space-6, 24px) var(--sj-space-5, 20px);
+  }
+
+  .apex-rooms {
+    grid-template-columns: 1fr;
+    gap: var(--sj-space-2, 8px);
+  }
+
+  .apex-room {
+    min-height: 0;
+  }
+
+  .apex-pulse-list > li + li {
+    border-left: 0;
+    border-top: 1px solid var(--sj-hairline);
+  }
+
+  .apex-home .section-head {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}

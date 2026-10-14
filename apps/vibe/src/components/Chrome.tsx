@@ -14,42 +14,58 @@ export function Chrome({ current, children }: Props) {
     getVibeSiteConfig();
   return (
     <div className="shell">
-      <header className="topbar">
+      <header className="topbar sj-side">
         <Link className="brand brand-mark" href="/">
           Strictly Jayers
         </Link>
-        <AppSwitcher
-          current="vibe"
-          hubUrl={fantasyHubUrl}
-          betsUrl={`${communitySiteUrl}/bets`}
-          fitnessUrl={fitnessUrl}
-          vibeUrl={vibeUrl}
-        />
-        <nav className="top-nav" aria-label="App">
-          <Link href="/" aria-current={current === "home" ? "page" : undefined}>
-            Home
-          </Link>
-          <Link
-            href="/leaderboard"
-            aria-current={current === "history" ? "page" : undefined}
-          >
-            History
-          </Link>
-          <Link
-            href="/settings"
-            aria-current={current === "settings" ? "page" : undefined}
-          >
-            Settings
-          </Link>
+        <div className="sj-side-group sj-side-group-apps">
+          <p className="sj-side-label">Apps</p>
+          <AppSwitcher
+            current="vibe"
+            hubUrl={fantasyHubUrl}
+            betsUrl={`${communitySiteUrl}/bets`}
+            fitnessUrl={fitnessUrl}
+            vibeUrl={vibeUrl}
+          />
+        </div>
+        <div className="sj-side-group sj-side-desktop-only">
+          <p className="sj-side-label">Vibe</p>
+          <nav className="sj-side-nav" aria-label="Vibe">
+            <Link
+              className="sj-side-item"
+              href="/"
+              aria-current={current === "home" ? "page" : undefined}
+            >
+              Home
+            </Link>
+            <Link
+              className="sj-side-item"
+              href="/leaderboard"
+              aria-current={current === "history" ? "page" : undefined}
+            >
+              History
+            </Link>
+            <Link
+              className="sj-side-item"
+              href="/settings"
+              aria-current={current === "settings" ? "page" : undefined}
+            >
+              Settings
+            </Link>
+          </nav>
+        </div>
+        <div className="sj-side-foot">
           <form
             action={async () => {
               "use server";
               await signOut({ redirectTo: "/login" });
             }}
           >
-            <button type="submit">Sign out</button>
+            <button className="sj-side-signout" type="submit">
+              Sign out
+            </button>
           </form>
-        </nav>
+        </div>
       </header>
       <div>{children}</div>
       <nav className="bottom-nav" aria-label="App sections">
