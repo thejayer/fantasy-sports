@@ -20,6 +20,9 @@
   document.querySelectorAll("[data-sj-community]").forEach((el) => {
     if (el.tagName === "A") el.setAttribute("href", community);
   });
+  document.querySelectorAll("[data-sj-community-bets]").forEach((el) => {
+    if (el.tagName === "A") el.setAttribute("href", community + "/bets");
+  });
   document.querySelectorAll("[data-sj-fantasy]").forEach((el) => {
     if (el.tagName === "A") el.setAttribute("href", fantasy);
   });

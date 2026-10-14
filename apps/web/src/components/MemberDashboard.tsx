@@ -205,7 +205,7 @@ export function MemberDashboard({
       {pulse?.team ? (
         <section className="league-pulse" aria-label="League pulse">
           <p className="league-pulse-kicker">{pulse.name}</p>
-          <div className="league-pulse-grid">
+          <div className="sj-stat-strip league-pulse-grid">
             <div>
               <span className="muted">Standing</span>
               <strong>
