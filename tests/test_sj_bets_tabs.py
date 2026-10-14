@@ -330,3 +330,32 @@ def test_fetch_remote_workbook_native_sheet(monkeypatch):
     book, source = fetch_remote_workbook("native-sheet-id")
     assert source == "sheets"
     assert book[PARLAY_TAB][1][0][0] == "T-1-1"
+
+
+def test_dollar_pl_uses_posted_payout_when_odds_not_shown():
+    from sj.bets import dollar_pl
+
+    # LC posts payout but no American odds; sheet decimal is a rounded helper.
+    bet = {"res": "W", "stake": 198.02, "odds": "not shown", "dec": 2.232, "towin": 442.0}
+    assert dollar_pl(bet) == pytest.approx(243.98)
+    priced = {"res": "W", "stake": 100.0, "odds": "+150", "dec": None, "towin": 999.0}
+    assert dollar_pl(priced) == pytest.approx(150.0)
+
+
+def test_laurencowling_no_units_and_header_lookup_tolerates_shifted_columns():
+    from sj.bets import TRACKER_TABS, bettor_kpis, normalize_rows
+
+    # Summary / Leg Fade Summary are formula tabs and never read (no fixed rows).
+    assert "Leg Fade Summary" not in TRACKER_TABS and "Summary" not in TRACKER_TABS
+    headers = ["Notes", "Result", "Bettor", "Bet ID", "Stake $", "Odds (American)",
+               "To win/payout $ (total return)", "Units", "Date posted (CT)"]
+    rows = [
+        ["", "W", "laurencowling", "L-1", 100, "not shown", 250, "", 46235],
+        ["", "L", "@laurencowling", "L-2", 50, "-110", "", "", 46236],
+    ]
+    bets = normalize_rows(rows, headers)
+    assert [b["id"] for b in bets] == ["L-1", "L-2"]
+    assert {b["who"] for b in bets} == {"laurencowling"}
+    k = bettor_kpis(bets, "laurencowling")
+    assert k["record"] == "1-1-0" and k["pl"] == pytest.approx(100.0)
+    assert k["units_pl"] is None and k["units_roi"] is None

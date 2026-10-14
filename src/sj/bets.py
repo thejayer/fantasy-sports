@@ -406,12 +406,16 @@ def dollar_pl(bet: dict[str, Any]) -> float | None:
         return -stake
     if res == "Push":
         return 0.0
+    towin = _as_float(bet.get("towin"))
+    if towin is not None and _is_blank(bet.get("odds")):
+        # No posted American price: the sheet's decimal is a rounded helper,
+        # so the posted payout is the exact figure (matches sheet P/L $).
+        return towin - stake if towin > stake else towin
     dec = _as_float(bet.get("dec"))
     if dec is None:
         _odds, dec = parse_odds(bet.get("odds"), bet.get("dec"))
     if dec is not None:
         return stake * (dec - 1.0)
-    towin = _as_float(bet.get("towin"))
     if towin is None:
         return None
     # Sheet mixes "profit" and "total return"; total return is always > stake.
