@@ -321,7 +321,14 @@
   }
 
   body:has(> .shell):not(:has(.login-page)) .nav-links-more {
-    display: none !important;
+    display: flex;
+    position: static;
+    flex-direction: column;
+    min-width: 0;
+    padding: 0;
+    border: 0;
+    box-shadow: none;
+    background: transparent;
   }
 
   body:has(> .shell):not(:has(.login-page)) .nav-accent-desktop {

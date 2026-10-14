@@ -12,6 +12,7 @@ export function TeamLogoImg({ src, monogram }: { src: string; monogram: string }
   const ref = useRef<HTMLImageElement>(null);
 
   useEffect(() => {
+    setFailed(false);
     const img = ref.current;
     if (img && img.complete && img.naturalWidth === 0) setFailed(true);
   }, [src]);

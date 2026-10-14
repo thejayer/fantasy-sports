@@ -3163,7 +3163,6 @@ tr.is-upcoming td {
   box-shadow: none !important;
   border-radius: 0 !important;
   border-top: 0 !important;
-  border-bottom: 0 !important;
   border-left: 0 !important;
   border-right: 1px solid var(--sj-hairline) !important;
   margin: 0 !important;
@@ -3172,6 +3171,14 @@ tr.is-upcoming td {
 .league-pulse .sj-stat-strip > *:last-child,
 .league-pulse-grid.sj-stat-strip > *:last-child {
   border-right: 0 !important;
+}
+
+/* Desktop only: clear bottom borders so stacked mobile dividers (≤720px) still show */
+@media (min-width: 721px) {
+  .league-pulse .sj-stat-strip > *,
+  .league-pulse-grid.sj-stat-strip > * {
+    border-bottom: 0 !important;
+  }
 }
 
 .ai-rank-board {
