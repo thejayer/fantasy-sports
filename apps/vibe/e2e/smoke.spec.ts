@@ -14,7 +14,7 @@ test.describe("vibe smoke", () => {
     await page.goto("/");
     await expect(page.getByRole("heading", { name: /coded while lifting/i })).toBeVisible();
     await expect(page.getByText(/week vibe/i)).toBeVisible();
-    await expect(page.getByRole("link", { name: /vibe split/i })).toBeVisible();
+    await expect(page.getByRole("link", { name: /strictly jayers/i })).toBeVisible();
     await expect(
       page.getByRole("navigation", { name: "App" }).getByRole("link", { name: "Home" }),
     ).toBeVisible();

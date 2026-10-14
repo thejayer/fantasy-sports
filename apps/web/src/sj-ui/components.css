@@ -331,13 +331,17 @@
     background: transparent;
   }
 
-  body:has(> .shell):not(:has(.login-page)) .nav-accent-desktop,
-  body:has(> .shell):not(:has(.login-page)) .nav-accent-mobile {
+  body:has(> .shell):not(:has(.login-page)) .nav-accent-desktop {
     display: block;
     margin-top: var(--sj-space-4);
     padding: 0;
     border: 0;
   }
+
+  body:has(> .shell):not(:has(.login-page)) .nav-accent-mobile {
+    display: none !important;
+  }
+
 
   .mobile-nav,
   .bottom-nav {
@@ -477,7 +481,6 @@ tr.is-viewer {
 
 .stat-chips,
 .league-pulse-grid,
-.bets-kpi-grid,
 .stat-grid,
 .record-grid,
 .home-grid {
@@ -490,9 +493,19 @@ tr.is-viewer {
   overflow: hidden;
 }
 
+/* Bettor KPIs: hairline rows, not a card grid */
+.bets-kpi-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+  overflow: visible;
+}
+
 .stat-chip,
 .league-pulse-grid > *,
-.bets-card,
 .stat,
 .record-card,
 .home-card {
@@ -503,6 +516,60 @@ tr.is-viewer {
   border-radius: 0;
   background: transparent;
   box-shadow: none;
+}
+
+.bets-card {
+  display: grid;
+  grid-template-columns: minmax(9rem, 13rem) 7rem minmax(0, 1fr);
+  column-gap: var(--sj-space-6);
+  align-items: center;
+  min-height: var(--sj-row);
+  padding: var(--sj-space-3) 0;
+  border: 0;
+  border-bottom: 1px solid var(--sj-hairline);
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+.bets-card > .bets-card-kicker {
+  grid-column: 1;
+  grid-row: 1;
+  margin: 0;
+  color: var(--sj-subtle);
+}
+
+.bets-card > h2 {
+  grid-column: 1;
+  grid-row: 2;
+  margin: 0;
+  font-size: var(--sj-body);
+  font-weight: 600;
+  text-transform: none;
+  letter-spacing: 0;
+}
+
+.bets-card > .bets-record {
+  grid-column: 2;
+  grid-row: 1 / span 2;
+  margin: 0;
+  font-size: var(--sj-h2);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.bets-card > .bets-dl {
+  grid-column: 3;
+  grid-row: 1 / span 2;
+  display: grid;
+  grid-template-columns: repeat(8, minmax(0, 1fr));
+  gap: var(--sj-space-1) var(--sj-space-3);
+  margin: 0;
+}
+
+.bets-card > .bets-dl dd {
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
 }
 
 .home-grid {
@@ -820,17 +887,28 @@ textarea,
   .sj-stat-strip,
   .stat-chips,
   .stat-grid,
-  .bets-kpi-grid,
   .league-pulse-grid {
     grid-template-columns: 1fr 1fr;
   }
 
   .sj-stat-strip > *,
   .stat-chip,
-  .stat,
-  .bets-card {
+  .stat {
     border-right: 1px solid var(--sj-hairline);
     border-bottom: 1px solid var(--sj-hairline);
+  }
+
+  .bets-card {
+    grid-template-columns: 1fr auto;
+    border-right: 0;
+    border-bottom: 1px solid var(--sj-hairline);
+  }
+
+  .bets-card > .bets-dl {
+    grid-column: 1 / -1;
+    grid-row: 3;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    margin-top: var(--sj-space-2);
   }
 }
 

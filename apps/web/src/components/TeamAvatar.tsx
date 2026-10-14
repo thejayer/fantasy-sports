@@ -5,7 +5,12 @@
  * every team on every screen was a bare text string. ESPN hosts arbitrary
  * uploads, so this uses a plain `img` rather than `next/image` to avoid
  * whitelisting remote hosts for user-supplied league art.
+ *
+ * Broken remote logos (403 / dead CDN) fall back to the monogram via onError
+ * so standings never show empty circles.
  */
+
+import { TeamLogoImg } from "@/components/TeamLogoImg";
 
 export function teamMonogram(name: string): string {
   const words = name
@@ -27,14 +32,15 @@ export function TeamAvatar({
   size?: "sm" | "md" | "lg";
 }) {
   const url = logoUrl?.trim();
-  const usable = url && /^https?:\/\//i.test(url);
+  const usable = Boolean(url && /^https?:\/\//i.test(url));
+  const monogram = teamMonogram(name);
+
   return (
     <span className={`team-avatar team-avatar-${size}`} aria-hidden>
       {usable ? (
-        // eslint-disable-next-line @next/next/no-img-element -- remote ESPN uploads, no known host list
-        <img src={url} alt="" loading="lazy" />
+        <TeamLogoImg src={url!} monogram={monogram} />
       ) : (
-        <span className="team-avatar-monogram">{teamMonogram(name)}</span>
+        <span className="team-avatar-monogram">{monogram}</span>
       )}
     </span>
   );

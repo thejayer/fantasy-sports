@@ -11,10 +11,13 @@ type Props = {
   discordInviteUrl: string | null;
 };
 
-/** Collapses Places / AI / People / Fitness / Watch / Palworld on small screens; Fantasy + Discord stay visible. */
+/**
+ * Portal destinations under the shared AppSwitcher shell.
+ * Bets / Fitness live in AppSwitcher — do not repeat them here (desktop
+ * sidebar was showing Bets twice and two AccentPickers).
+ */
 export function PortalNav({
   fantasyHubUrl,
-  fitnessUrl,
   discordInviteUrl,
 }: Props) {
   const [open, setOpen] = useState(false);
@@ -42,7 +45,6 @@ export function PortalNav({
         <a href={fantasyHubUrl} rel="noopener noreferrer">
           Fantasy
         </a>
-        <Link href="/bets">Bets</Link>
         {discordInviteUrl ? (
           <a href={discordInviteUrl} rel="noopener noreferrer">
             Discord
@@ -78,12 +80,6 @@ export function PortalNav({
         <Link href="/people" onClick={() => setOpen(false)}>
           People
         </Link>
-        <Link href="/bets" onClick={() => setOpen(false)}>
-          Bets
-        </Link>
-        <a href={fitnessUrl} rel="noopener noreferrer" onClick={() => setOpen(false)}>
-          Fitness
-        </a>
         <Link href="/watch" onClick={() => setOpen(false)}>
           Watch
         </Link>

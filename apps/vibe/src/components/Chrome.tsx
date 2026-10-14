@@ -15,8 +15,8 @@ export function Chrome({ current, children }: Props) {
   return (
     <div className="shell">
       <header className="topbar">
-        <Link className="brand" href="/">
-          Vibe Split <small>SJ</small>
+        <Link className="brand brand-mark" href="/">
+          Strictly Jayers
         </Link>
         <AppSwitcher
           current="vibe"

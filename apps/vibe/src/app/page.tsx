@@ -30,20 +30,7 @@ export default async function HomePage() {
           Workout windows plus a {document.settings.buffer_minutes}-minute
           buffer. Commits, PRs, and beta agent minutes land on the bar.
         </p>
-        {setupNeeded ? (
-          <section className="empty">
-            <h2>Three hooks</h2>
-            <p className="lede">
-              1. Connect GitHub in Settings. 2. Create an ingest token and
-              point Health Auto Export at this host. 3. Or upload an Apple
-              Health export.zip.
-            </p>
-            <Link className="btn btn-accent" href="/settings">
-              Open setup
-            </Link>
-          </section>
-        ) : null}
-        <section className="stat-grid" aria-label="This week">
+        <section className="stat-grid sj-stat-strip" aria-label="This week">
           <div className="stat">
             <div className="stat-value">{stats.weekScore}</div>
             <div className="stat-label">Week vibe</div>
@@ -61,6 +48,16 @@ export default async function HomePage() {
             <div className="stat-label">Workouts with code</div>
           </div>
         </section>
+        {setupNeeded ? (
+          <p className="setup-hint lede">
+            New here?{" "}
+            <Link className="btn btn-quiet" href="/settings">
+              Open setup
+            </Link>{" "}
+            — GitHub, Health Auto Export ingest token, or an Apple Health
+            export.zip.
+          </p>
+        ) : null}
         {stats.top ? (
           <section className="card">
             <p className="kicker">Top workout of all time</p>

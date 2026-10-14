@@ -1906,20 +1906,22 @@ a.news-card:focus-visible .news-card-read {
 }
 
 .bets-kpi-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  display: flex;
+  flex-direction: column;
   gap: 0;
-  border: 2px solid var(--color-divider);
+  border: 0;
 }
 
 .bets-card {
-  padding: var(--space-4);
-  border-right: 2px solid var(--color-divider);
-  border-bottom: 2px solid var(--color-divider);
+  padding: var(--space-4) 0;
+  border: 0;
+  border-bottom: 1px solid var(--color-divider);
+  background: transparent;
+  box-shadow: none;
 }
 
 .bets-kpi-grid .bets-card:last-child {
-  border-right: 0;
+  border-bottom: 0;
 }
 
 .bets-card-kicker {

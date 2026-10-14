@@ -3549,7 +3549,7 @@ body[data-view="dashboard"] .topbar {
   color: var(--color-text);
   box-shadow: none;
   border: 0;
-  border-bottom: 2px solid var(--color-divider);
+  border-bottom: 1px solid var(--color-divider);
 }
 
 .brand,
@@ -3572,6 +3572,11 @@ body[data-view="dashboard"] .topbar {
 .nav-primary {
   display: flex;
   flex-wrap: nowrap;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+  padding: 0;
+  gap: 0;
 }
 
 .nav-more:not(.is-open),
@@ -3587,10 +3592,11 @@ body[data-view="dashboard"] .topbar {
 
 .nav-item,
 .nav-more-toggle {
-  color: var(--color-text);
+  color: var(--sj-muted, var(--color-text));
   background: transparent;
   border: 0;
-  border-right: 2px solid var(--color-divider);
+  border-right: 0;
+  border-bottom: 2px solid transparent;
   border-radius: 0;
   min-height: 40px;
   padding: 0 0.85rem;
@@ -3613,7 +3619,7 @@ body[data-view="dashboard"] .topbar {
 .nav-more-toggle[aria-expanded="true"] {
   background: transparent;
   color: var(--color-accent);
-  border-color: var(--color-divider);
+  border-bottom-color: var(--color-accent);
 }
 
 .nav-item.active::before {
@@ -3709,13 +3715,14 @@ body[data-view="dashboard"] .topbar {
 .sport-chip {
   min-height: 2rem;
   padding: 0.25rem 0.7rem;
-  border: 2px solid var(--color-divider);
-  background: #fff;
-  color: inherit;
+  border: 1px solid var(--color-divider);
+  background: var(--color-surface);
+  color: var(--color-text);
   font: inherit;
   font-size: 13px;
   font-weight: 600;
   cursor: pointer;
+  border-radius: var(--sj-radius-pill, 999px);
 }
 
 .sport-chip:hover,
@@ -3734,10 +3741,13 @@ body[data-view="dashboard"] .topbar {
   grid-template-columns: 6.5rem 1fr auto;
   gap: 0.75rem;
   align-items: center;
-  padding: 0.7rem 0.85rem;
-  border: 2px solid var(--color-divider);
-  background: #fff;
+  padding: 0.7rem 0;
+  border: 0;
+  border-bottom: 1px solid var(--color-divider);
+  background: transparent;
+  color: var(--color-text);
   cursor: pointer;
+  border-radius: 0;
 }
 
 .home-session-card:hover,
@@ -3958,4 +3968,125 @@ body.dark .page-hero {
     border-right: 0;
     border-bottom: 2px solid var(--color-divider);
   }
+}
+
+
+/* Dark-first chips / session rows (redesign fidelity) */
+body.dark .sport-chip,
+[data-theme="dark"] .sport-chip {
+  background: var(--sj-surface-1, var(--color-surface));
+  color: var(--sj-text, var(--color-text));
+  border-color: var(--sj-hairline, var(--color-divider));
+}
+
+body.dark .home-session-card,
+[data-theme="dark"] .home-session-card {
+  background: transparent;
+  color: var(--sj-text, var(--color-text));
+  border-color: var(--sj-hairline, var(--color-divider));
+}
+
+body.dark .home-session-card p,
+[data-theme="dark"] .home-session-card p {
+  color: var(--sj-muted, color-mix(in srgb, var(--color-text) 58%, transparent));
+}
+
+body.dark .topbar {
+  background: transparent;
+  border-bottom-color: var(--sj-hairline, var(--color-divider));
+}
+
+/* Shared sidebar shell (sj-ui) — fitness chrome matches hub/apex/vibe */
+.site-header .sj-brand {
+  display: block;
+  font-weight: 700;
+  font-size: 17px;
+  letter-spacing: -0.02em;
+  color: var(--sj-text, var(--color-text));
+  text-decoration: none;
+}
+
+.site-header .sj-app-switcher a,
+.site-header .sj-app-switcher span {
+  text-decoration: none;
+  text-transform: none;
+}
+
+.site-header .sj-nav {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--sj-space-3, 12px);
+}
+
+.site-header .sj-account {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--sj-space-2, 8px);
+  font-size: 13px;
+  color: var(--sj-muted, var(--color-text));
+}
+
+.site-header .sj-account[hidden] {
+  display: none;
+}
+
+.site-header .sj-sign-out,
+.site-header .header-theme {
+  min-height: 32px;
+  padding: 0 var(--sj-space-3, 12px);
+  border: 0;
+  border-radius: var(--sj-radius-control, 8px);
+  background: var(--sj-surface-2, var(--color-surface));
+  color: var(--sj-text, var(--color-text));
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.site-header .accent-picker {
+  display: flex;
+  gap: 6px;
+}
+
+.site-header .accent-picker button,
+.site-header .accent-picker span {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  border: 0;
+}
+
+.site-header .accent-picker .accent-swatch.is-active {
+  outline: 2px solid var(--sj-text, var(--color-text));
+  outline-offset: 2px;
+}
+
+
+/* redesign-fidelity tabs — underline only, no boxed strip */
+.app-shell .sidebar,
+.app-shell .nav-list,
+.app-shell .nav-primary {
+  background: transparent !important;
+  box-shadow: none !important;
+  border-radius: 0 !important;
+  border: 0 !important;
+  border-bottom: 1px solid var(--sj-hairline, var(--color-divider)) !important;
+}
+
+.app-shell .nav-item,
+.app-shell .nav-more-toggle {
+  border-right: 0 !important;
+  border-left: 0 !important;
+  border-top: 0 !important;
+  border-bottom: 2px solid transparent !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+.app-shell .nav-item.active {
+  border-bottom-color: var(--color-accent) !important;
+  color: var(--color-accent) !important;
 }

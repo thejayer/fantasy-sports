@@ -14,6 +14,11 @@ function signed(value: number | null | undefined): string {
   return deltaLabel(value);
 }
 
+/** Avoid raw IEEE floats like 493.94000000000005 in rankings meta. */
+function formatRankPoints(value: number): string {
+  return (Math.round(value * 100) / 100).toFixed(2);
+}
+
 function WeekChips({
   index,
   current,
@@ -183,8 +188,8 @@ export function AiRankingsBoard({
               <div className="league-meta">
                 {[
                   row.conference,
-                  row.points_for != null ? `PF ${row.points_for}` : null,
-                  row.points_against != null ? `PA ${row.points_against}` : null,
+                  row.points_for != null ? `PF ${formatRankPoints(row.points_for)}` : null,
+                  row.points_against != null ? `PA ${formatRankPoints(row.points_against)}` : null,
                   row.standing != null ? `ESPN #${row.standing}` : null,
                 ]
                   .filter(Boolean)
