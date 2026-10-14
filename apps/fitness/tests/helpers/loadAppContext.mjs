@@ -84,6 +84,7 @@ const ANALYTICS_EXPORTS = [
   "getSportRecovery",
   "getTodayCheckin",
   "getTrainingStats",
+  "getThisWeekSessions",
   "getWeekBuckets",
   "recordDefinitions",
 ];

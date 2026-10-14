@@ -275,6 +275,19 @@
     grid-column: 2;
   }
 
+  /* Content column: fill the main area, left-aligned at the gutter (matches hub).
+     App-local wrappers (vibe .page, fitness .app-shell) must not re-center/cap. */
+  body:has(> .shell):not(:has(.login-page)) > .shell .page,
+  body:has(> .shell):not(:has(.login-page)) > .shell > .page-hero,
+  body:has(> .shell):not(:has(.login-page)) > .shell > .app-shell {
+    width: auto;
+    max-width: none;
+    margin-left: 0;
+    margin-right: 0;
+    padding-left: 0;
+    padding-right: 0;
+  }
+
   body:has(> .shell):not(:has(.login-page)) > .shell > .site-header,
   body:has(> .shell):not(:has(.login-page)) > .shell > .topbar {
     position: fixed;
@@ -305,8 +318,11 @@
 
   body:has(> .shell):not(:has(.login-page)) .nav-links a,
   body:has(> .shell):not(:has(.login-page)) .top-nav a,
+  body:has(> .shell):not(:has(.login-page)) .top-nav button,
   body:has(> .shell):not(:has(.login-page)) .nav-links-primary a {
-    min-height: 40px;
+    min-height: 32px;
+    display: flex;
+    align-items: center;
     padding: 0 var(--sj-space-3);
     border-radius: var(--sj-radius-control);
   }

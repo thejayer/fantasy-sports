@@ -210,3 +210,32 @@ function ctx_today(offsetDays) {
   const day = String(d.getDate()).padStart(2, "0");
   return `${y}-${m}-${day}`;
 }
+
+describe("weekly load", () => {
+  const dayKey = (daysAgo) => {
+    const d = new Date();
+    d.setDate(d.getDate() - daysAgo);
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+  };
+
+  it("counts only the last 7 days, not the all-time log (regression: 1029.0h this week)", () => {
+    const old = Array.from({ length: 600 }, (_, i) => ({
+      type: "Strength",
+      date: dayKey(8 + (i % 300)),
+      durationMinutes: 100,
+    }));
+    const ctx = loadAnalyticsContext({
+      sessions: [
+        ...old,
+        { type: "Strength", date: dayKey(0), durationMinutes: 60 },
+        { type: "Strength", date: dayKey(3), durationMinutes: 90 },
+        { type: "Strength", date: dayKey(6), durationMinutes: 30 },
+      ],
+    });
+    const stats = ctx.getTrainingStats();
+    expect(stats.weekMinutes).toBe(180);
+    expect(stats.weekHours).toBe(3);
+    expect(stats.totalHours).toBeCloseTo(1003);
+    expect(ctx.getWeekBuckets().at(-1).minutes).toBe(stats.weekMinutes);
+  });
+});
