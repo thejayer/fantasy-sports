@@ -1,10 +1,11 @@
 import Link from "next/link";
 
-import { PortalNav } from "@/components/PortalNav";
 import { ACCENT_INIT_SCRIPT } from "@/components/AccentPicker";
+import { SHARED_THEME_INIT_SCRIPT, SideProfile } from "@/components/SideProfile";
 import { portalCopy } from "@/lib/content";
 import { getSiteConfig } from "@/lib/site";
 import { AppSwitcher } from "@/components/AppSwitcher";
+import { SideNav } from "@/components/SideNav";
 import localFont from "next/font/local";
 import type { Metadata } from "next";
 import "./globals.css";
@@ -72,24 +73,46 @@ export default function RootLayout({
     <html lang="en" className={archivo.variable}>
       <head>
         <script dangerouslySetInnerHTML={{ __html: ACCENT_INIT_SCRIPT }} />
+        <script dangerouslySetInnerHTML={{ __html: SHARED_THEME_INIT_SCRIPT }} />
       </head>
       <body className={archivo.className}>
         <div className="shell">
-          <header className="site-header">
+          <header className="site-header sj-side">
             <Link href="/" className="brand-mark">
               Strictly Jayers
             </Link>
-            <AppSwitcher
-              hubUrl={fantasyHubUrl}
-              betsUrl={`${siteUrl}/bets`}
-              fitnessUrl={fitnessUrl}
-              vibeUrl={vibeUrl}
+            <div className="sj-side-group sj-side-group-apps">
+              <p className="sj-side-label">Apps</p>
+              <AppSwitcher
+                hubUrl={fantasyHubUrl}
+                betsUrl={`${siteUrl}/bets`}
+                fitnessUrl={fitnessUrl}
+                vibeUrl={vibeUrl}
+              />
+            </div>
+            <SideNav
+              label="Strictly Jayers"
+              items={[
+                { label: "Home", href: "/" },
+                { label: "Fantasy", href: fantasyHubUrl, external: true },
+                discordInviteUrl
+                  ? { label: "Discord", href: discordInviteUrl, external: true }
+                  : { label: "Discord", href: "/#destinations", external: true },
+              ]}
             />
-            <PortalNav
-              fantasyHubUrl={fantasyHubUrl}
-              fitnessUrl={fitnessUrl}
-              discordInviteUrl={discordInviteUrl}
+            <SideNav
+              label="More"
+              items={[
+                { label: "Places", href: "/#destinations", external: true },
+                { label: "AI News", href: "/ai" },
+                { label: "People", href: "/people" },
+                { label: "Watch", href: "/watch" },
+                { label: "Palworld", href: "/palworld" },
+              ]}
             />
+            <div className="sj-side-foot">
+              <SideProfile settingsUrl={`${fantasyHubUrl}/settings`} />
+            </div>
           </header>
           {children}
         </div>

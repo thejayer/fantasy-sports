@@ -11,13 +11,13 @@ test.describe("portal smoke", () => {
       page.getByRole("link", { name: /Open fantasy hub/i }).first(),
     ).toBeVisible();
     await expect(
-      page.getByRole("heading", { name: /Where to go/i }),
+      page.getByRole("heading", { name: /^Sites$/i }),
     ).toBeVisible();
     await expect(page.getByRole("link", { name: /^Fantasy/i }).first()).toBeVisible();
     await expect(page.getByRole("link", { name: /People/i }).first()).toBeVisible();
     await expect(page.getByRole("link", { name: /Fitness/i }).first()).toBeVisible();
     await expect(page.getByRole("region", { name: /Crew pulse/i })).toBeVisible();
-    const palworld = page.locator(".room-compact").filter({ hasText: "Palworld" });
+    const palworld = page.locator(".apex-room").filter({ hasText: "Palworld" });
     await expect(palworld).toHaveAttribute("href", "/palworld");
     await expect(palworld.getByText(/^Soon$/i)).toHaveCount(0);
     await expect(

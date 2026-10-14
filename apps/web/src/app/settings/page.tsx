@@ -3,6 +3,7 @@ import Link from "next/link";
 
 import { AppearanceSettings } from "@/components/AppearanceSettings";
 import { MemberAvatar } from "@/components/MemberAvatar";
+import { ProfileAvatarForm } from "@/components/ProfileAvatarForm";
 import { ProfileBioForm } from "@/components/ProfileBioForm";
 import { ProfileUsernameForm } from "@/components/ProfileUsernameForm";
 import { auth, signOut } from "@/auth";
@@ -13,7 +14,7 @@ export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
   title: "Profile",
-  description: "Your Strictly Jayers account and appearance settings.",
+  description: "Profile & settings for every Strictly Jayers app.",
 };
 
 export default async function SettingsPage() {
@@ -29,10 +30,11 @@ export default async function SettingsPage() {
     <main className="section profile-settings">
       <div className="section-head">
         <div>
-          <h2>Profile</h2>
+          <h2>Profile &amp; settings</h2>
           <p className="lede">
-            Your public username, bio, account details, and how the hub looks on
-            this device.
+            One page for every Strictly Jayers app — Hub, Bets, Fitness, and
+            Vibe. Your name, avatar, and bio are saved to your member profile;
+            theme applies across all four sites on this browser.
           </p>
         </div>
         <Link className="button secondary" href="/">
@@ -52,9 +54,11 @@ export default async function SettingsPage() {
           />
           <div>
             <p className="league-meta" style={{ margin: 0 }}>
-              {viewer.imageUrl
-                ? "Photo from your Google account — updates when you sign in."
-                : "Sign in with Google to show your photo here and in the feed."}
+              {viewer.avatarOverride
+                ? "Custom avatar — shown across the apps and in the feed."
+                : viewer.imageUrl
+                  ? "Photo from your Google account — set a custom avatar below."
+                  : "Sign in with Google, or set a custom avatar below."}
             </p>
             {viewer.handle ? (
               <p className="league-meta" style={{ margin: "0.35rem 0 0" }}>
@@ -73,6 +77,7 @@ export default async function SettingsPage() {
               initialUsername={viewer.displayName}
               googleName={googleName || (bypass ? email : null)}
             />
+            <ProfileAvatarForm initialUrl={viewer.avatarOverride} />
             <ProfileBioForm initialBio={viewer.bio} />
           </>
         ) : (
@@ -146,7 +151,8 @@ export default async function SettingsPage() {
           Appearance
         </h3>
         <p className="league-meta" style={{ marginTop: 0 }}>
-          Saved on this browser only — not synced across devices.
+          Saved on this browser for all four Strictly Jayers sites — not synced
+          across devices.
         </p>
         <AppearanceSettings />
       </section>

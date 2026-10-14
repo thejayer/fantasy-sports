@@ -320,7 +320,7 @@
   body:has(> .shell):not(:has(.login-page)) .top-nav a,
   body:has(> .shell):not(:has(.login-page)) .top-nav button,
   body:has(> .shell):not(:has(.login-page)) .nav-links-primary a {
-    min-height: 32px;
+    min-height: 36px;
     display: flex;
     align-items: center;
     padding: 0 var(--sj-space-3);
@@ -993,5 +993,280 @@ textarea,
   *::after {
     animation: none !important;
     transition: none !important;
+  }
+}
+
+/* ==========================================================================
+   Shared sidebar (sj-side) — one contract for hub, apex, fitness, vibe.
+   Markup:
+     <header class="site-header sj-side">
+       <a class="brand-mark">Strictly Jayers</a>
+       <div class="sj-side-group"><p class="sj-side-label">Apps</p>
+         <nav class="sj-app-switcher">…</nav></div>
+       <div class="sj-side-group"><p class="sj-side-label">Fantasy</p>
+         <nav class="sj-side-nav"><a class="sj-side-item" aria-current="page">…</a></nav></div>
+       <div class="sj-side-foot">profile row (→ hub /settings) · sign out</div>
+     </header>
+   ========================================================================== */
+.sj-side {
+  --sj-side-row: 36px;
+  font-family: var(--sj-font);
+}
+
+.sj-side .sj-side-label {
+  margin: 0 0 var(--sj-space-1);
+  padding: 0 10px;
+  font-size: 11px;
+  line-height: 16px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--sj-muted);
+}
+
+.sj-side .sj-side-group {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.sj-side .sj-side-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin: 0;
+  padding: 0;
+}
+
+/* Every nav row: same font, size, weight, indent, height. */
+.sj-side .sj-side-item,
+.sj-side .sj-side-nav > a,
+.sj-side .sj-side-nav > button,
+.sj-side .sj-side-foot > a,
+.sj-side .sj-side-signout {
+  display: flex;
+  align-items: center;
+  gap: var(--sj-space-2);
+  min-height: var(--sj-side-row);
+  height: var(--sj-side-row);
+  margin: 0;
+  padding: 0 10px;
+  border: 0;
+  border-radius: var(--sj-radius-control);
+  background: transparent;
+  color: var(--sj-muted);
+  font: 500 14px/20px var(--sj-font);
+  letter-spacing: 0;
+  text-transform: none;
+  text-decoration: none;
+  text-align: left;
+  white-space: nowrap;
+  cursor: pointer;
+  box-shadow: none;
+}
+
+.sj-side .sj-side-item:hover,
+.sj-side .sj-side-foot > a:hover,
+.sj-side .sj-side-nav > a:hover,
+.sj-side .sj-side-nav > button:hover,
+.sj-side .sj-side-signout:hover {
+  color: var(--sj-text);
+  background: color-mix(in srgb, var(--sj-surface-2) 60%, transparent);
+}
+
+.sj-side .sj-side-item[aria-current="page"],
+.sj-side .sj-side-nav > a[aria-current="page"],
+.sj-side .sj-side-nav > button[aria-current="page"],
+.sj-side .sj-side-item.is-active {
+  color: var(--sj-text);
+  background: var(--sj-surface-2);
+}
+
+.sj-side form {
+  margin: 0;
+  display: contents;
+}
+
+/* App switcher → compact segmented control */
+.sj-side .sj-app-switcher {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 2px;
+  padding: 2px;
+  border: 1px solid var(--sj-hairline);
+  border-radius: var(--sj-radius-control);
+  background: var(--sj-surface-1);
+}
+
+.sj-side .sj-app-switcher a,
+.sj-side .sj-app-switcher span {
+  justify-content: center;
+  min-height: 28px;
+  padding: 0 4px;
+  border-radius: 6px;
+  font: 600 12px/16px var(--sj-font);
+  letter-spacing: 0;
+  color: var(--sj-muted);
+  background: transparent;
+  text-decoration: none;
+}
+
+.sj-side .sj-app-switcher a:hover {
+  color: var(--sj-text);
+}
+
+.sj-side .sj-app-switcher [aria-current="page"],
+.sj-side .sj-app-switcher .is-current {
+  color: var(--sj-text);
+  background: var(--sj-surface-2);
+  box-shadow: inset 0 0 0 1px var(--sj-hairline);
+}
+
+/* Footer: profile, theme, sign out */
+.sj-side .sj-side-foot {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.sj-side .sj-side-foot .sj-side-item img,
+.sj-side .sj-side-foot .sj-side-item .member-avatar {
+  flex: none;
+}
+
+.sj-side .sj-side-avatar {
+  flex: none;
+  display: inline-grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 999px;
+  overflow: hidden;
+  background: var(--sj-surface-2);
+  color: var(--sj-text);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+.sj-side .sj-side-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.sj-side .sj-side-profile-label {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.sj-side .sj-side-signout {
+  font-weight: 500;
+}
+
+.sj-side .sj-side-signout-label {
+  color: inherit;
+}
+
+/* Desktop: fixed sidebar column */
+@media (min-width: 960px) {
+  body:has(> .shell):not(:has(.login-page)) > .shell > .site-header.sj-side,
+  body:has(> .shell):not(:has(.login-page)) > .shell > .topbar.sj-side {
+    gap: var(--sj-space-5, 20px);
+    padding: var(--sj-space-5, 20px) var(--sj-space-3) var(--sj-space-4);
+    overflow-y: auto;
+  }
+
+  .sj-side > .brand-mark,
+  .sj-side > .brand,
+  .sj-side > .sj-brand {
+    padding: 0 10px;
+    font-size: 15px;
+    line-height: 20px;
+  }
+
+  .sj-side .sj-side-foot {
+    margin-top: auto;
+    padding-top: var(--sj-space-3);
+    border-top: 1px solid var(--sj-hairline);
+  }
+
+  .sj-side .sj-side-mobile-only {
+    display: none !important;
+  }
+}
+
+/* Mobile: brand + segmented switcher, then a single scrollable row */
+@media (max-width: 959px) {
+  .site-header.sj-side,
+  .topbar.sj-side {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+    gap: var(--sj-space-2) var(--sj-space-3);
+    padding: var(--sj-space-3) 0;
+    position: static;
+    height: auto;
+  }
+
+  .sj-side > .brand-mark,
+  .sj-side > .brand,
+  .sj-side > .sj-brand {
+    font-size: 16px;
+    line-height: 24px;
+    white-space: nowrap;
+  }
+
+  .sj-side .sj-side-label {
+    display: none;
+  }
+
+  .sj-side .sj-side-group-apps {
+    grid-column: 1 / -1;
+    grid-row: 2;
+  }
+
+  .sj-side .sj-side-group:not(.sj-side-group-apps) {
+    grid-column: 1 / -1;
+  }
+
+  .sj-side .sj-side-nav {
+    flex-direction: row;
+    overflow-x: auto;
+    scrollbar-width: none;
+    gap: 2px;
+  }
+
+  .sj-side .sj-side-nav > *,
+  .sj-side .sj-side-item {
+    flex: none;
+    height: 32px;
+    min-height: 32px;
+  }
+
+  .sj-side .sj-side-foot {
+    grid-column: 2;
+    grid-row: 1;
+    flex-direction: row;
+    align-items: center;
+    gap: var(--sj-space-1);
+  }
+
+  .sj-side .sj-side-foot .sj-side-profile-label {
+    display: none;
+  }
+
+  .sj-side .sj-side-foot .sj-side-item,
+  .sj-side .sj-side-foot > a,
+  .sj-side .sj-side-signout {
+    height: 32px;
+    min-height: 32px;
+    padding: 0 6px;
+  }
+
+  .sj-side .sj-side-desktop-only {
+    display: none !important;
   }
 }

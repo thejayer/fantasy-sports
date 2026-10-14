@@ -6,10 +6,12 @@
 import { NextResponse } from "next/server";
 
 import {
+  setMemberAvatarUrl,
   setMemberBio,
   setMemberDisplayName,
   validateBio,
   validateDisplayName,
+  validateImageUrl,
 } from "@/lib/hub-members";
 import { updateHubMembers } from "@/lib/hub-members-store";
 import { getViewer } from "@/lib/viewer";
@@ -20,6 +22,8 @@ export const dynamic = "force-dynamic";
 type Body = {
   display_name?: string;
   bio?: string;
+  /** HTTPS avatar override; "" clears back to the Google photo. */
+  avatar_url?: string;
 };
 
 export async function PATCH(request: Request) {
@@ -42,9 +46,13 @@ export async function PATCH(request: Request) {
     return NextResponse.json({ error: "invalid JSON" }, { status: 400 });
   }
 
-  if (body.display_name === undefined && body.bio === undefined) {
+  if (
+    body.display_name === undefined &&
+    body.bio === undefined &&
+    body.avatar_url === undefined
+  ) {
     return NextResponse.json(
-      { error: "display_name or bio is required" },
+      { error: "display_name, bio, or avatar_url is required" },
       { status: 400 },
     );
   }
@@ -53,6 +61,7 @@ export async function PATCH(request: Request) {
     // Validate before touching disk so bad input never enters the write queue.
     if (body.display_name !== undefined) validateDisplayName(body.display_name);
     if (body.bio !== undefined) validateBio(body.bio);
+    if (body.avatar_url !== undefined) validateImageUrl(body.avatar_url);
 
     const email = viewer.email;
     const written = await updateHubMembers((file) => {
@@ -63,6 +72,9 @@ export async function PATCH(request: Request) {
       if (body.bio !== undefined) {
         next = setMemberBio(next, email, body.bio);
       }
+      if (body.avatar_url !== undefined) {
+        next = setMemberAvatarUrl(next, email, body.avatar_url);
+      }
       return next;
     });
     const member = written.members.find(
@@ -72,6 +84,7 @@ export async function PATCH(request: Request) {
       display_name: member?.display_name ?? null,
       name: member?.display_name ?? viewer.name,
       bio: member?.bio ?? null,
+      avatar_url: member?.avatar_url ?? null,
     });
   } catch (err) {
     return NextResponse.json(

@@ -20,7 +20,7 @@ test.describe("bets auth redirect", () => {
   test("home stays public", async ({ page }) => {
     await page.goto("/");
     await expect(
-      page.getByRole("heading", { name: /Where to go/i }),
+      page.getByRole("heading", { name: /^Sites$/i }),
     ).toBeVisible();
   });
 });

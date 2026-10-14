@@ -47,7 +47,7 @@ function setupEventListeners() {
     });
   });
 
-  document.querySelector("#themeToggle").addEventListener("click", () => {
+  document.querySelector("#themeToggle")?.addEventListener("click", () => {
     const root = document.documentElement;
     const next = root.getAttribute("data-theme") === "light" ? "dark" : "light";
     root.setAttribute("data-theme", next);

@@ -21,6 +21,7 @@ import {
   parseAllowedEmailsEnv,
   resolveMemberDisplayName,
   type HubMemberTeamLink,
+  memberAvatarUrl,
 } from "@/lib/hub-members";
 import { readHubMembers } from "@/lib/hub-members-store";
 import { auth } from "@/auth";
@@ -36,6 +37,8 @@ export type Viewer = {
   bio: string | null;
   /** HTTPS avatar (hub_members or Google session); null → monogram. */
   imageUrl: string | null;
+  /** Member-chosen avatar override (null = using Google photo). */
+  avatarOverride: string | null;
   /** Profile URL slug (`/u/{handle}`) when the viewer has an email. */
   handle: string | null;
   isAdmin: boolean;
@@ -54,6 +57,7 @@ const ANONYMOUS: Viewer = {
   displayName: null,
   bio: null,
   imageUrl: null,
+  avatarOverride: null,
   handle: null,
   isAdmin: false,
   franchises: [],
@@ -103,7 +107,8 @@ export const getViewer = cache(async (): Promise<Viewer> => {
       name: resolveMemberDisplayName(member, email),
       displayName: custom,
       bio,
-      imageUrl: httpsImage(member?.image_url),
+      imageUrl: httpsImage(memberAvatarUrl(member)),
+      avatarOverride: httpsImage(member?.avatar_url),
       handle,
       isAdmin: true,
       franchises: memberFranchises(file, email),
@@ -134,7 +139,8 @@ export const getViewer = cache(async (): Promise<Viewer> => {
     name: resolveMemberDisplayName(member, fallback),
     displayName: custom,
     bio,
-    imageUrl: httpsImage(member?.image_url) ?? httpsImage(session?.user?.image),
+    imageUrl: httpsImage(memberAvatarUrl(member)) ?? httpsImage(session?.user?.image),
+    avatarOverride: httpsImage(member?.avatar_url),
     handle,
     isAdmin: canAccessAdmin(email, file, adminOpts),
     franchises: memberFranchises(file, email),

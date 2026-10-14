@@ -29,22 +29,34 @@
   <body class="dark" data-view="dashboard">
     <a class="skip-link" href="#dashboard-title">Skip to main content</a>
     <div class="shell">
-    <header class="site-header">
+    <header class="site-header sj-side">
       <a class="sj-brand" data-sj-community href="https://strictlyjayers.com">Strictly Jayers</a>
-      <nav class="sj-app-switcher" aria-label="Strictly Jayers apps">
-        <a data-sj-fantasy href="https://fantasy.strictlyjayers.com">Hub</a>
-        <a data-sj-community-bets href="https://strictlyjayers.com/bets">Bets</a>
-        <span aria-current="page" class="is-current">Fitness</span>
-        <a data-sj-vibe href="https://vibe.strictlyjayers.com">Vibe</a>
-      </nav>
-      <nav class="nav-links sj-nav" aria-label="Fitness">
-        <span class="sj-account" id="sjAccount" hidden>
-          <span class="sj-account-name" id="sjAccountName"></span>
-          <button class="sj-sign-out" id="sjSignOut" type="button">Sign out</button>
-        </span>
-        <button class="icon-button header-theme" id="themeToggle" type="button" aria-label="Toggle theme" title="Toggle theme">T</button>
-        <span class="accent-picker nav-accent-desktop" id="accentPicker" aria-label="Accent color"></span>
-      </nav>
+      <div class="sj-side-group sj-side-group-apps">
+        <p class="sj-side-label">Apps</p>
+        <nav class="sj-app-switcher" aria-label="Strictly Jayers apps">
+          <a data-sj-fantasy href="https://fantasy.strictlyjayers.com">Hub</a>
+          <a data-sj-community-bets href="https://strictlyjayers.com/bets">Bets</a>
+          <span aria-current="page" class="is-current">Fitness</span>
+          <a data-sj-vibe href="https://vibe.strictlyjayers.com">Vibe</a>
+        </nav>
+      </div>
+      <div class="sj-side-group sj-side-desktop-only">
+        <p class="sj-side-label">Fitness</p>
+        <nav class="sj-side-nav" aria-label="Fitness">
+          <button class="nav-item sj-side-item" data-view="dashboard" type="button">Dashboard</button>
+          <button class="nav-item sj-side-item" data-view="log" type="button">Log</button>
+          <button class="nav-item sj-side-item" data-view="planner" type="button">Planner</button>
+          <button class="nav-item sj-side-item" data-view="progress" type="button">Progress</button>
+        </nav>
+      </div>
+      <div class="sj-side-foot">
+        <a class="sj-side-item sj-side-profile" data-sj-settings href="https://fantasy.strictlyjayers.com/settings" title="Profile &amp; settings">
+          <span class="sj-side-avatar" id="sjAccountAvatar" aria-hidden="true">SJ</span>
+          <span class="sj-side-profile-label" id="sjAccountName">Profile &amp; settings</span>
+        </a>
+        <span class="sj-account" id="sjAccount" hidden></span>
+        <button class="sj-side-signout sj-sign-out" id="sjSignOut" type="button" hidden>Sign out</button>
+      </div>
     </header>
     <section class="page-hero" aria-label="Fitness">
       <p class="hero-kicker">Train</p>

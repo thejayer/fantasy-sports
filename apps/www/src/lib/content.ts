@@ -92,9 +92,9 @@ export const portalCopy = {
     ] satisfies PortalEvent[],
   },
   destinations: {
-    heading: "Where to go",
-    support: "Four rooms first. The rest stay close — stubs stay small.",
-    marker: "ROOMS",
+    heading: "Sites",
+    support: "Every Strictly Jayers app in one place.",
+    marker: "SITES",
     primary: ["fantasy", "fitness", "discord", "watch"] as const,
     secondary: ["ai", "people", "bets", "palworld"] as const,
     items: {
