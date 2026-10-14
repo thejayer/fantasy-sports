@@ -56,6 +56,11 @@ export const KNOWN_BETTORS: Record<
     handle: "chellgod",
     href: "https://x.com/chellgod",
   },
+  laurencowling: {
+    name: "LC",
+    handle: "laurencowling",
+    href: "https://x.com/laurencowling",
+  },
 };
 
 export function bettorMeta(who: string): { name: string; handle: string; href: string } {
@@ -337,10 +342,14 @@ export function dollarPl(bet: Pick<BetRow, "res" | "stake" | "dec" | "odds" | "t
   if (stake == null) return null;
   if (res === "L") return -stake;
   if (res === "Push") return 0;
+  const towin = asNumber(bet.towin);
+  const oddsBlank = isBlank(bet.odds);
+  // No posted American price: the decimal is a rounded helper, so the posted
+  // payout is exact (matches the sheet's P/L $).
+  if (towin != null && oddsBlank) return towin > stake ? towin - stake : towin;
   let dec = asNumber(bet.dec);
   if (dec == null) dec = parseOdds(bet.odds, bet.dec).dec;
   if (dec != null) return stake * (dec - 1);
-  const towin = asNumber(bet.towin);
   if (towin == null) return null;
   return towin > stake ? towin - stake : towin;
 }

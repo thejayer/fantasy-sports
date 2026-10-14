@@ -9,6 +9,7 @@ import {
   bettorKpis,
   classifyParlay,
   dollarPl,
+  formatUnits,
   fadePl,
   filterBets,
   inWindow,
@@ -176,3 +177,28 @@ function baseBet(overrides: Partial<BetRow>): BetRow {
     ...overrides,
   };
 }
+
+describe("laurencowling (LC): payout-only $ and no units", () => {
+  it("prices a win from the posted payout when odds are not shown", () => {
+    const bet = { res: "W", stake: 198.02, odds: "not shown", dec: 2.232, towin: 442 };
+    expect(dollarPl(bet)).toBeCloseTo(243.98, 6);
+    expect(dollarPl({ ...bet, odds: "+150", towin: 999, stake: 100, dec: null })).toBeCloseTo(150, 6);
+  });
+
+  it("shows LC display name and leaves units blank (no NaN / 0u)", () => {
+    expect(bettorMeta("laurencowling")).toEqual({
+      name: "LC",
+      handle: "laurencowling",
+      href: "https://x.com/laurencowling",
+    });
+    const kpi = bettorKpis([
+      { ...baseBet({ who: "laurencowling" }), res: "W", stake: 100, odds: "not shown", dec: null, towin: 250, units: null },
+      { ...baseBet({ who: "laurencowling" }), res: "L", stake: 50, odds: "-110", dec: null, towin: null, units: null },
+    ]);
+    expect(kpi.pl).toBeCloseTo(100, 6);
+    expect(kpi.unitsPl).toBeNull();
+    expect(kpi.unitsRoi).toBeNull();
+    expect(formatUnits(kpi.unitsPl)).toBe("—");
+    expect(formatUnits(kpi.unitsPl)).not.toMatch(/NaN|0u/);
+  });
+});
