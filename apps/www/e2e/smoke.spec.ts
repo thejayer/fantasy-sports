@@ -17,7 +17,7 @@ test.describe("portal smoke", () => {
     await expect(page.getByRole("link", { name: /People/i }).first()).toBeVisible();
     await expect(page.getByRole("link", { name: /Fitness/i }).first()).toBeVisible();
     await expect(page.getByRole("region", { name: /Crew pulse/i })).toBeVisible();
-    const palworld = page.locator(".room-compact").filter({ hasText: "Palworld" });
+    const palworld = page.locator(".apex-room").filter({ hasText: "Palworld" });
     await expect(palworld).toHaveAttribute("href", "/palworld");
     await expect(palworld.getByText(/^Soon$/i)).toHaveCount(0);
     await expect(

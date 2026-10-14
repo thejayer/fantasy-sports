@@ -30,7 +30,7 @@ export function Chrome({ current, children }: Props) {
         </div>
         <div className="sj-side-group sj-side-desktop-only">
           <p className="sj-side-label">Vibe</p>
-          <nav className="sj-side-nav" aria-label="Vibe">
+          <nav className="sj-side-nav" aria-label="App">
             <Link
               className="sj-side-item"
               href="/"
