@@ -1318,7 +1318,7 @@ const renderAnalytics = () => {
   document.querySelector("#analyticsGrid").innerHTML = `
     <article class="analytics-card">
       <p class="eyebrow">Weekly Load</p>
-      <strong>${analytics.stats.totalHours.toFixed(1)}h</strong>
+      <strong>${analytics.stats.weekHours.toFixed(1)}h</strong>
       <div class="mini-chart">
         ${analytics.weekBuckets
           .map(
@@ -1445,7 +1445,7 @@ const renderDashboard = () => {
   const flag = stats.highestFlag;
   const recommendation = getRecommendation(stats);
   const loadLabel =
-    stats.totalHours >= 8
+    stats.weekHours >= 8
       ? "High training week, watch recovery"
       : "Workload is in a manageable range";
   const recoveryLevel = flag.score >= 7 ? "High" : flag.score >= 5 ? "Moderate" : "Low";
@@ -1453,7 +1453,7 @@ const renderDashboard = () => {
   document.querySelector("#readinessMetric").textContent = stats.readiness;
   document.querySelector("#readinessLabel").textContent =
     stats.readiness >= 75 ? "Green light with smart warmups" : "Dial intensity based on soreness";
-  document.querySelector("#loadMetric").textContent = `${stats.totalHours.toFixed(1)}h`;
+  document.querySelector("#loadMetric").textContent = `${stats.weekHours.toFixed(1)}h`;
   document.querySelector("#loadLabel").textContent = loadLabel;
   document.querySelector("#mixMetric").textContent = stats.sportCount;
   document.querySelector("#mixLabel").textContent = stats.sportCount
@@ -1465,7 +1465,7 @@ const renderDashboard = () => {
   document.querySelector("#recoveryLabel").textContent =
     `${flag.area} is the top flag at ${flag.score}/10`;
   document.querySelector("#topbarReadiness").textContent = stats.readiness;
-  document.querySelector("#topbarLoad").textContent = `${stats.totalHours.toFixed(1)}h`;
+  document.querySelector("#topbarLoad").textContent = `${stats.weekHours.toFixed(1)}h`;
   document.querySelector("#topbarFocus").textContent = athleteProfile.primarySport;
   document.querySelector("#recommendationType").textContent = recommendation.type;
   document.querySelector("#recommendationTitle").textContent = recommendation.title;
@@ -1478,7 +1478,7 @@ const renderDashboard = () => {
     todayTitle.textContent = sessions.length ? "Keep the log going" : "Log a session";
   }
   if (todayLead) {
-    todayLead.textContent = `${athleteProfile.primarySport} · ${stats.totalHours.toFixed(1)}h this week · Ready ${stats.readiness}`;
+    todayLead.textContent = `${athleteProfile.primarySport} · ${stats.weekHours.toFixed(1)}h this week · Ready ${stats.readiness}`;
   }
   if (todayNext) {
     todayNext.textContent = `Next up: ${recommendation.type}`;

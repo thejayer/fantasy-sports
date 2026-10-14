@@ -24,8 +24,22 @@ const getReadinessScoreFromCheckin = (checkin = getTodayCheckin()) => {
   return Math.max(25, Math.min(98, Math.round(58 + positive - negative)));
 };
 
+// Rolling 7-day window ending today (same window as the "This week" bucket).
+const getThisWeekSessions = (today = new Date()) => {
+  const start = new Date(today);
+  start.setDate(today.getDate() - 6);
+  const startKey = getDateKey(start);
+  const endKey = getDateKey(today);
+  return sessions.filter((session) => session.date >= startKey && session.date <= endKey);
+};
+
 const getTrainingStats = () => {
+  // totalMinutes is all-time; weekMinutes is what "Weekly Load" / "this week" shows.
   const totalMinutes = sessions.reduce((sum, session) => sum + getSessionMinutes(session), 0);
+  const weekMinutes = getThisWeekSessions().reduce(
+    (sum, session) => sum + getSessionMinutes(session),
+    0
+  );
   const averageEffort = sessions.length
     ? sessions.reduce((sum, session) => sum + getSessionEffort(session), 0) / sessions.length
     : 0;
@@ -33,7 +47,7 @@ const getTrainingStats = () => {
   const highestFlag = getHighestRecoveryFlag();
   const recoveryPenalty = recovery.reduce((sum, item) => sum + Math.max(0, item.score - 4), 0) * 3;
   const effortPenalty = Math.max(0, averageEffort - 6) * 5;
-  const loadPenalty = Math.max(0, totalMinutes / 60 - 8) * 2;
+  const loadPenalty = Math.max(0, weekMinutes / 60 - 8) * 2;
   const baseReadiness = Math.max(
     35,
     Math.round(92 - recoveryPenalty - effortPenalty - loadPenalty)
@@ -47,6 +61,8 @@ const getTrainingStats = () => {
   return {
     totalMinutes,
     totalHours: totalMinutes / 60,
+    weekMinutes,
+    weekHours: weekMinutes / 60,
     averageEffort,
     sportCounts,
     sportCount: Object.keys(sportCounts).length,
