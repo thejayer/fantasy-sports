@@ -9,8 +9,8 @@ import pytest
 
 from sj.registry import LeagueSpec
 from sj.season_points_analysis import (
-    analysis_method,
     HOCKEY_PROFILE,
+    analysis_method,
     parse_mroster_period,
     period_date,
     sample_analysis_for_snapshot,
