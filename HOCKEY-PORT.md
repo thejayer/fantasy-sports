@@ -341,6 +341,15 @@ Same rules as H5a: any team can be picked, the linked team is the default.
   `finalScoringPeriod` as `periods.final` (season length in days). Pace =
   cap × days elapsed ÷ season days; "on track for" = used ÷ that share; ±3% is
   on pace. An older file without games is re-walked once.
+- **Analysis freshness (rev 2):** a period is not final when first fetched, so
+  every sync re-fetches the last 3 scoring periods (`SJ_ANALYSIS_REFRESH_TAIL`)
+  instead of freezing each day at whatever ESPN had mid-slate. Periods are
+  dated from the sync day (`points_timeseries.json` `date_anchor`), not a
+  hardcoded opening night, while a season is in progress. The `method` string
+  carries a revision, so files written by the older logic are rebuilt once on
+  the next sync. `sync_league_season` now runs every side concern (week boxes,
+  NHL, analysis) independently and raises `SideConcernError` at the end, so a
+  failing writer can no longer starve the analysis sync.
 - **Sync fix found on the way:** ESPN `status.finalScoringPeriod` is the
   season's last day, not today, so the analysis walk ran into future days
   mid-season and stored them empty (the incremental sync then never

@@ -9,7 +9,7 @@ import pytest
 
 from sj.registry import LeagueSpec
 from sj.season_points_analysis import (
-    ANALYSIS_METHOD,
+    analysis_method,
     HOCKEY_PROFILE,
     parse_mroster_period,
     period_date,
@@ -149,7 +149,7 @@ def test_sync_hockey_writes_analysis(tmp_path: Path):
     assert written == 2
     slot = read_analysis("hockey-main", 2027, "slot_points", store_dir=tmp_path)
     assert slot["sport"] == "hockey"
-    assert slot["method"] == ANALYSIS_METHOD
+    assert slot["method"] == analysis_method(HOCKEY_PROFILE)
     assert slot["slots"] == ["Forward", "Defense", "Goalie", "Util"]
     assert slot["teams"][0]["slots"]["Forward"] == 3.0
     assert slot["teams"][0]["skaters"] == 3.0
@@ -305,7 +305,7 @@ def test_sync_hockey_writes_games_and_reuses_them(tmp_path: Path):
     calls.clear()
     sync_season_points_analysis(_league(4), _hockey_spec(), 2027, _hockey_snapshot(4),
                                 fetch_period=fetch, **kw)
-    assert calls == [4]
+    assert calls == [2, 3, 4]  # new day + the trailing refresh tail
     slot = read_analysis("hockey-main", 2027, "slot_points", store_dir=tmp_path)
     assert slot["teams"][0]["games"]["Forward"] == 4
 

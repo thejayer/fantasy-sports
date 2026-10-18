@@ -714,6 +714,33 @@ def build_snapshot(league: Any, spec: LeagueSpec, season: int) -> dict[str, Any]
     return snapshot
 
 
+class SideConcernError(RuntimeError):
+    """One or more side concerns failed after all of them had been attempted."""
+
+
+class _SideConcerns:
+    """Run optional per-league writers; keep going past failures, raise at the end."""
+
+    def __init__(self) -> None:
+        self.errors: list[tuple[str, BaseException]] = []
+
+    def run(self, label: str, fn: Callable[[], Any]) -> Any:
+        try:
+            return fn()
+        except Exception as exc:  # noqa: BLE001 - isolate, re-raised in raise_if_failed
+            self.errors.append((label, exc))
+            return None
+
+    def raise_if_failed(self, league_id: str, season: int) -> None:
+        if not self.errors:
+            return
+        detail = "; ".join(f"{label}: {type(exc).__name__}: {exc}" for label, exc in self.errors)
+        raise SideConcernError(
+            f"{league_id} {season}: {len(self.errors)} side concern(s) failed "
+            f"(the others ran): {detail}"
+        ) from self.errors[0][1]
+
+
 def sync_league_season(
     spec: LeagueSpec,
     season: int,
@@ -745,32 +772,59 @@ def sync_league_season(
 
         attach_hockey_ownership(league, snapshot)
     location = write_snapshot(snapshot, store_dir=store_dir)
-    # Football box scores are a side concern (roadmap 8.1) — after the season
-    # write so a failed week pull never leaves a half-written manifest.
-    sync_football_box_scores(league, spec, season, snapshot, store_dir=store_dir)
-    sync_hockey_week_boxes(league, spec, season, snapshot, store_dir=store_dir)
-    sync_hockey_nhl(spec, season, snapshot, store_dir=store_dir)
+    # Side concerns run independently: one failing (e.g. hockey week boxes)
+    # must never starve the others, least of all the season-points analysis,
+    # which used to sit behind them and silently stopped updating. Failures
+    # are collected and raised together at the end so the job still fails loudly.
+    side = _SideConcerns()
+    # Football box scores (roadmap 8.1) — after the season write so a failed
+    # week pull never leaves a half-written manifest.
+    side.run(
+        "football_box_scores",
+        lambda: sync_football_box_scores(
+            league, spec, season, snapshot, store_dir=store_dir
+        ),
+    )
+    side.run(
+        "hockey_week_boxes",
+        lambda: sync_hockey_week_boxes(
+            league, spec, season, snapshot, store_dir=store_dir
+        ),
+    )
+    side.run(
+        "hockey_nhl",
+        lambda: sync_hockey_nhl(spec, season, snapshot, store_dir=store_dir),
+    )
     if spec.sport == "baseball":
         from sj.baseball_enrich import (
             sync_baseball_category_boxes,
             sync_baseball_pro_schedule,
         )
 
-        sync_baseball_pro_schedule(
-            league, spec, season, snapshot, store_dir=store_dir
+        side.run(
+            "baseball_pro_schedule",
+            lambda: sync_baseball_pro_schedule(
+                league, spec, season, snapshot, store_dir=store_dir
+            ),
         )
-        sync_baseball_category_boxes(
-            league, spec, season, snapshot, store_dir=store_dir
+        side.run(
+            "baseball_category_boxes",
+            lambda: sync_baseball_category_boxes(
+                league, spec, season, snapshot, store_dir=store_dir
+            ),
         )
     if spec.sport in ("baseball", "hockey"):
         from sj.season_points_analysis import sync_season_points_analysis
 
-        # Season-points slot / timeseries analysis (roadmap 8.5). Side
-        # concern after the season write; period failures are recorded in
-        # the JSON rather than failing the league-season.
-        sync_season_points_analysis(
-            league, spec, season, snapshot, store_dir=store_dir
+        # Season-points slot / timeseries analysis (roadmap 8.5). Period
+        # failures are recorded in the JSON rather than failing the run.
+        side.run(
+            "season_points_analysis",
+            lambda: sync_season_points_analysis(
+                league, spec, season, snapshot, store_dir=store_dir
+            ),
         )
+    side.raise_if_failed(spec.id, season)
     return SyncResult(
         league_id=spec.id,
         season=season,

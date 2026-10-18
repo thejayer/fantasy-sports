@@ -8,6 +8,7 @@ import { ViewerBadge } from "@/components/ViewerBadge";
 import { DataTable, type DataTableColumn } from "@/components/DataTable";
 import type { LeagueSnapshot } from "@/lib/data";
 import {
+  analysisFreshness,
   buildChartModel,
   fpLabel,
   linePath,
@@ -328,6 +329,7 @@ export function BaseballAnalysisPanel({
   const chart = buildChartModel(analysis?.timeseries ?? null, seriesMode);
   const periods = analysis?.slotPoints?.periods;
   const method = analysis?.slotPoints?.method;
+  const freshness = analysisFreshness(analysis?.slotPoints ?? null);
 
   if (!rows.length) {
     return (
@@ -358,6 +360,7 @@ export function BaseballAnalysisPanel({
         {periods?.first != null && periods?.latest != null
           ? ` · ${periods.first}–${periods.latest}`
           : ""}
+        {freshness.asOf ? ` · as of ${freshness.asOf}` : ""}
         {periods?.failed?.length
           ? ` · ${periods.failed.length} period${periods.failed.length === 1 ? "" : "s"} failed`
           : ""}
@@ -366,6 +369,17 @@ export function BaseballAnalysisPanel({
         bench/IR unused production plus missing days
         {isHockey ? "." : " or pitcher caps."}
       </p>
+
+      {freshness.behind && freshness.coverage != null ? (
+        <p className="league-meta" role="status" data-testid="analysis-behind">
+          <strong>Analysis is behind ESPN.</strong> Starter totals are{" "}
+          {(freshness.coverage * 100).toFixed(0)}% of ESPN team points
+          {freshness.asOf ? ` (last synced ${freshness.asOf})` : ""} — some
+          days are missing or were captured before games finished. The next
+          sync re-fetches recent days; treat the table as a lower bound until
+          then.
+        </p>
+      ) : null}
 
       <section style={{ marginTop: "1rem" }}>
         <h3 className="roster-group-title">Points by lineup slot</h3>
