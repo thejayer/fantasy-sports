@@ -2,7 +2,9 @@ import { describe, expect, it } from "vitest";
 
 import {
   SLOT_COLUMNS,
+  analysisFreshness,
   buildChartModel,
+  reanchorTimeseries,
   deriveBats,
   derivePitchers,
   isoWeekKey,
@@ -163,5 +165,74 @@ describe("weekly rollup + chart", () => {
 
   it("returns null without timeseries", () => {
     expect(buildChartModel(null, "cumulative")).toBeNull();
+  });
+});
+
+describe("hockey analysis freshness (stale / future-dated sidecars)", () => {
+  const hockeySeries = (): PointsTimeseriesSnapshot => ({
+    schema_version: 1,
+    league_id: "hockey-main",
+    season: 2027,
+    sport: "hockey",
+    // Sync on Sun 2026-10-18 (Eastern); period 15 is "today".
+    synced_at: "2026-10-18T16:00:00+00:00",
+    teams: [
+      {
+        team_id: 1,
+        name: "Solo",
+        // Old file: dated from a hardcoded Oct 7 opening night, so period 15
+        // lands on Oct 21 — three days after the sync.
+        points: [1, 14, 15].map((period) => ({
+          period,
+          date: `2026-10-${String(6 + period).padStart(2, "0")}`,
+          daily_starters: 10,
+          cumulative_starters: period * 10,
+        })),
+      },
+    ],
+  });
+
+  it("re-dates a series that runs past its sync day", () => {
+    const fixed = reanchorTimeseries(hockeySeries())!;
+    expect(fixed.teams[0].points.map((p) => p.date)).toEqual([
+      "2026-10-04",
+      "2026-10-17",
+      "2026-10-18",
+    ]);
+    const model = buildChartModel(hockeySeries(), "cumulative")!;
+    expect(model.lines[0].points.at(-1)?.label).toBe("2026-10-18");
+  });
+
+  it("trusts files that carry a date_anchor and finished seasons", () => {
+    const anchored = { ...hockeySeries(), date_anchor: { period: 15, date: "2026-10-18" } };
+    expect(reanchorTimeseries(anchored)).toBe(anchored);
+    const done = hockeySeries();
+    done.synced_at = "2027-05-01T12:00:00+00:00";
+    expect(reanchorTimeseries(done)).toBe(done);
+  });
+
+  it("flags starters that trail ESPN points_for", () => {
+    const team = (starters: number, espn: number) => ({
+      team_id: 1,
+      name: "t",
+      slots: {},
+      starters,
+      bench_il: 0,
+      espn_points: espn,
+      delta: starters - espn,
+    });
+    const behind = analysisFreshness({
+      ...slotSnap(),
+      sport: "hockey",
+      synced_at: "2026-10-18T16:00:00+00:00",
+      teams: [team(800, 1000), team(780, 1000)],
+    });
+    expect(behind.behind).toBe(true);
+    expect(behind.coverage).toBeCloseTo(0.79);
+    expect(behind.asOf).toBe("2026-10-18");
+    expect(
+      analysisFreshness({ ...slotSnap(), teams: [team(995, 1000)] }).behind,
+    ).toBe(false);
+    expect(analysisFreshness(null).coverage).toBeNull();
   });
 });

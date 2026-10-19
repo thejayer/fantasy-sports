@@ -8,6 +8,11 @@ day's ``lineupSlotId``. Writes side-concern JSON under
 Do **not** use ``playerPoolEntry.appliedStatTotal`` — it runs ~1.7× high vs
 ESPN official team season points. Starter sum (all non-bench slots) should
 land within ~1% of ESPN team points; small gaps are missing days / usage caps.
+
+Freshness: a period is **not** final when first fetched (ESPN is still adding
+that day's lines), so each sync re-fetches the last ``refresh_tail`` periods.
+Hockey additionally dates periods from the sync day (``date_anchor``) because
+ESPN's period numbering is not guaranteed to start on NHL opening night.
 """
 
 from __future__ import annotations
@@ -31,6 +36,14 @@ ANALYSIS_METHOD = (
     "player.stats appliedTotal (statSourceId=0, statSplitTypeId=5) "
     "attributed to that day's lineupSlotId"
 )
+# Hockey files written before the freshness fixes (below) froze every period
+# at whatever ESPN had when it was first fetched. A different ``method`` makes
+# ``existing_period_slots`` discard them, so the next sync rebuilds the season.
+HOCKEY_METHOD_REVISION = "; trailing periods re-fetched each sync (rev 2)"
+# How many of the most recent scoring periods every sync re-fetches. ESPN adds
+# a day's lines while games finish and corrects them overnight, so a period
+# fetched on the day it was current is not final.
+HOCKEY_REFRESH_TAIL = 3
 # Daily actuals on a scoring period (not season / projected / trailing).
 STAT_SOURCE_ACTUAL = 0
 STAT_SPLIT_DAILY = 5
@@ -60,6 +73,11 @@ class AnalysisSportProfile:
     espn_position_import: str
     # Count games per starter slot (hockey GP caps).
     count_games: bool = False
+    # Date periods from the sync day (period N today) rather than a hardcoded
+    # opening night, while the season is in progress.
+    anchor_dates: bool = False
+    # Most recent periods re-fetched each sync (see ``refresh_tail``).
+    refresh_tail: int = 1
 
     @property
     def starter_slots(self) -> frozenset[str]:
@@ -171,12 +189,32 @@ HOCKEY_PROFILE = AnalysisSportProfile(
     },
     espn_position_import="espn_api.hockey.constant",
     count_games=True,
+    anchor_dates=True,
+    refresh_tail=HOCKEY_REFRESH_TAIL,
 )
 
 PROFILE_BY_SPORT: dict[str, AnalysisSportProfile] = {
     "baseball": BASEBALL_PROFILE,
     "hockey": HOCKEY_PROFILE,
 }
+
+
+def analysis_method(profile: AnalysisSportProfile | None = None) -> str:
+    """Provenance string stored in the files; also the incremental-cache key."""
+    sport = profile or BASEBALL_PROFILE
+    return ANALYSIS_METHOD + (HOCKEY_METHOD_REVISION if sport.sport == "hockey" else "")
+
+
+def refresh_tail(profile: AnalysisSportProfile | None = None) -> int:
+    """Recent periods re-fetched on every sync (``SJ_ANALYSIS_REFRESH_TAIL``)."""
+    import os
+
+    sport = profile or BASEBALL_PROFILE
+    raw = os.environ.get("SJ_ANALYSIS_REFRESH_TAIL", "").strip()
+    try:
+        return max(1, min(int(raw), 30)) if raw else sport.refresh_tail
+    except ValueError:
+        return sport.refresh_tail
 
 
 def profile_for_sport(sport: str | None) -> AnalysisSportProfile | None:
@@ -498,11 +536,58 @@ def period_date(
     period: int,
     schedule_dates: dict[int, str] | None = None,
     profile: AnalysisSportProfile | None = None,
+    anchor: tuple[int, date] | None = None,
 ) -> str:
-    """ISO date for a scoring period (calendar day of the season)."""
+    """ISO date for a scoring period (calendar day of the season).
+
+    Order: ESPN schedule dates, then ``anchor`` (= ``(period, date)`` observed
+    at sync time: "period N is today"), then opening night + offset.
+    """
     if schedule_dates and period in schedule_dates:
         return schedule_dates[period]
+    if anchor is not None:
+        anchor_period, anchor_day = anchor
+        return (anchor_day + timedelta(days=period - anchor_period)).isoformat()
     return (opening_day(season, profile) + timedelta(days=max(0, period - 1))).isoformat()
+
+
+# ESPN rolls hockey scoring periods over on US Eastern time.
+SYNC_DAY_TZ = "America/New_York"
+# An anchor that disagrees with the opening-night table by more than this is a
+# bad read (wrong period / clock), not a calendar correction.
+MAX_ANCHOR_DRIFT_DAYS = 21
+
+
+def sync_anchor(
+    *,
+    season: int,
+    profile: AnalysisSportProfile,
+    today_period: int | None,
+    season_final: int | None,
+    synced_at: str | None,
+) -> tuple[int, date] | None:
+    """``(period, date)`` for "today's" scoring period, or None.
+
+    Only for in-progress seasons: a finished season's last period is not
+    today, so backfills keep the opening-night calendar.
+    """
+    if not profile.anchor_dates or today_period is None or not synced_at:
+        return None
+    if season_final is not None and today_period >= season_final:
+        return None
+    try:
+        from zoneinfo import ZoneInfo
+
+        moment = datetime.fromisoformat(synced_at.replace("Z", "+00:00"))
+        if moment.tzinfo is None:
+            moment = moment.replace(tzinfo=timezone.utc)
+        today = moment.astimezone(ZoneInfo(SYNC_DAY_TZ)).date()
+    except (ValueError, KeyError, ImportError):
+        return None
+    first = today - timedelta(days=today_period - 1)
+    if abs((first - opening_day(season, profile)).days) > MAX_ANCHOR_DRIFT_DAYS:
+        return None
+    return today_period, today
 
 
 def dates_from_pro_schedule(document: dict[str, Any] | None) -> dict[int, str]:
@@ -608,6 +693,7 @@ def build_timeseries_teams(
     schedule_dates: dict[int, str] | None = None,
     espn_daily: dict[int, dict[int, float]] | None = None,
     profile: AnalysisSportProfile | None = None,
+    anchor: tuple[int, date] | None = None,
 ) -> list[dict[str, Any]]:
     """Per-team cumulative starter series from per-period slot maps."""
     sport = profile or BASEBALL_PROFILE
@@ -628,7 +714,7 @@ def build_timeseries_teams(
                 official = espn_daily[team_id].get(period)
             point: dict[str, Any] = {
                 "period": period,
-                "date": period_date(season, period, schedule_dates, sport),
+                "date": period_date(season, period, schedule_dates, sport, anchor),
                 "daily_starters": derived["starters"],
                 "cumulative_starters": running,
             }
@@ -752,13 +838,15 @@ def fetch_mteam(league: Any) -> dict[str, Any] | None:
 
 
 def existing_period_slots(
-    document: dict[str, Any] | None, key: str = "period_slots"
+    document: dict[str, Any] | None,
+    key: str = "period_slots",
+    profile: AnalysisSportProfile | None = None,
 ) -> dict[int, dict[int, dict[str, float]]]:
     """Restore per-period slot maps (``period_slots`` / ``period_games``)."""
     out: dict[int, dict[int, dict[str, float]]] = {}
     if not isinstance(document, dict):
         return out
-    if document.get("method") != ANALYSIS_METHOD:
+    if document.get("method") != analysis_method(profile):
         return out
     raw = document.get(key)
     if not isinstance(raw, dict):
@@ -826,7 +914,7 @@ def build_slot_points_document(
         "season": season,
         "sport": sport.sport,
         "scoring_type": scoring_type,
-        "method": ANALYSIS_METHOD,
+        "method": analysis_method(sport),
         "synced_at": synced_at,
         "incremental": incremental,
         "periods": {
@@ -887,6 +975,7 @@ def build_timeseries_document(
     espn_daily: dict[int, dict[int, float]] | None,
     synced_at: str | None,
     profile: AnalysisSportProfile | None = None,
+    anchor: tuple[int, date] | None = None,
 ) -> dict[str, Any]:
     sport = profile or BASEBALL_PROFILE
     return {
@@ -896,8 +985,11 @@ def build_timeseries_document(
         "season": season,
         "sport": sport.sport,
         "scoring_type": scoring_type,
-        "method": ANALYSIS_METHOD,
+        "method": analysis_method(sport),
         "synced_at": synced_at,
+        "date_anchor": (
+            {"period": anchor[0], "date": anchor[1].isoformat()} if anchor else None
+        ),
         "grain": "scoring_period",
         "period_label": "day",
         "teams": build_timeseries_teams(
@@ -907,6 +999,7 @@ def build_timeseries_document(
             schedule_dates=schedule_dates,
             espn_daily=espn_daily,
             profile=sport,
+            anchor=anchor,
         ),
     }
 
@@ -965,23 +1058,21 @@ def sync_season_points_analysis(
         synced_at = datetime.now(timezone.utc).isoformat()
 
     prior = None if force else read_analysis(league_id, season, "slot_points", store_dir=store_dir)
-    period_slots = existing_period_slots(prior)
-    period_games = existing_period_slots(prior, "period_games") if sport.count_games else {}
+    period_slots = existing_period_slots(prior, profile=sport)
+    period_games = (
+        existing_period_slots(prior, "period_games", sport) if sport.count_games else {}
+    )
     if sport.count_games and period_slots and not period_games:
         # Older file without game counts: walk every period once more.
         period_slots = {}
     already = set(period_slots)
     to_fetch = [p for p in periods if p not in already]
-    # Re-fetch the latest period on an in-progress season so today's lineup
-    # updates land without a full recompute.
-    if (
-        not force
-        and to_fetch == []
-        and periods
-        and periods[-1] in already
-        and int(snapshot.get("current_week") or 0) == periods[-1]
-    ):
-        to_fetch = [periods[-1]]
+    if not force:
+        # A stored period is not final: it was fetched while ESPN was still
+        # adding that day's lines. Re-fetch the most recent few every sync so
+        # totals settle (and keep moving) instead of freezing at first read.
+        recent = set(periods[-refresh_tail(sport):])
+        to_fetch = sorted(set(to_fetch) | recent)
 
     names: dict[int, str] = {}
     for team in snapshot.get("teams") or []:
@@ -1056,6 +1147,13 @@ def sync_season_points_analysis(
         except Exception:  # noqa: BLE001 — sidecar optional
             schedule_dates = {}
 
+    anchor = sync_anchor(
+        season=season,
+        profile=sport,
+        today_period=current_period(league, snapshot),
+        season_final=final_period(league),
+        synced_at=synced_at,
+    )
     slot_doc = build_slot_points_document(
         league_id=league_id,
         espn_league_id=int(espn_league_id) if espn_league_id else None,
@@ -1084,6 +1182,7 @@ def sync_season_points_analysis(
         espn_daily=espn_daily or None,
         synced_at=synced_at,
         profile=sport,
+        anchor=anchor,
     )
     write_analysis(slot_doc, "slot_points", store_dir=store_dir)
     write_analysis(series_doc, "points_timeseries", store_dir=store_dir)

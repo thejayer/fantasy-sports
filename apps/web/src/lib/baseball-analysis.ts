@@ -112,6 +112,8 @@ export type PointsTimeseriesSnapshot = {
   scoring_type?: string | null;
   method?: string;
   synced_at?: string;
+  /** Hockey: "period N was this date" at sync time (absent on pre-fix files). */
+  date_anchor?: { period: number; date: string } | null;
   grain?: string;
   period_label?: string;
   teams: TimeseriesTeam[];
@@ -320,10 +322,97 @@ function monthTickLabel(isoDate: string | null | undefined, period: number): str
   return `P${period}`;
 }
 
-export function buildChartModel(
+/** US Eastern calendar day (ESPN's scoring-period rollover) of an ISO instant. */
+export function easternDay(iso: string | null | undefined): string | null {
+  if (!iso) return null;
+  const when = new Date(iso);
+  if (Number.isNaN(when.getTime())) return null;
+  const parts = new Intl.DateTimeFormat("en-CA", {
+    timeZone: "America/New_York",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).format(when);
+  return /^\d{4}-\d{2}-\d{2}$/.test(parts) ? parts : null;
+}
+
+function shiftDay(isoDay: string, days: number): string {
+  const t = new Date(`${isoDay}T00:00:00Z`);
+  t.setUTCDate(t.getUTCDate() + days);
+  return t.toISOString().slice(0, 10);
+}
+
+/**
+ * Files written before the date-anchor fix dated hockey periods from a
+ * hardcoded opening night, so the series could run past the sync day. Until
+ * the next sync rewrites them, re-label from the sync day: the latest period
+ * is the day of ``synced_at``. Files with ``date_anchor`` are trusted as is.
+ */
+export function reanchorTimeseries(
   snapshot: PointsTimeseriesSnapshot | null,
+): PointsTimeseriesSnapshot | null {
+  if (!snapshot || snapshot.sport !== "hockey" || snapshot.date_anchor) return snapshot;
+  const syncDay = easternDay(snapshot.synced_at);
+  if (!syncDay) return snapshot;
+  const latest = Math.max(
+    0,
+    ...snapshot.teams.flatMap((team) => (team.points ?? []).map((p) => p.period)),
+  );
+  if (latest < 1) return snapshot;
+  // Only touch a series that really is dated past its own sync day, and never
+  // for a finished season (its last period is not "today").
+  const lastDates = snapshot.teams.flatMap((team) =>
+    (team.points ?? []).map((p) => p.date ?? ""),
+  );
+  if (!lastDates.some((d) => d && d.slice(0, 10) > syncDay)) return snapshot;
+  return {
+    ...snapshot,
+    teams: snapshot.teams.map((team) => ({
+      ...team,
+      points: (team.points ?? []).map((point) => ({
+        ...point,
+        date: shiftDay(syncDay, point.period - latest),
+      })),
+    })),
+  };
+}
+
+export type AnalysisFreshness = {
+  /** ISO day the newest scoring period covers (sync day), if known. */
+  asOf: string | null;
+  /** Σ starters ÷ Σ ESPN points across teams, null when ESPN totals missing. */
+  coverage: number | null;
+  /** True when starters trail ESPN points by more than ``tolerance``. */
+  behind: boolean;
+};
+
+/**
+ * Whether the analysis agrees with ESPN's standings. The starter sum should
+ * land within ~1% of ``espn_points``; a larger gap means the sidecar is
+ * missing points (stale or partial days) and must not be presented as exact.
+ */
+export function analysisFreshness(
+  snapshot: SlotPointsSnapshot | null,
+  tolerance = 0.05,
+): AnalysisFreshness {
+  const asOf = easternDay(snapshot?.synced_at);
+  let starters = 0;
+  let espn = 0;
+  for (const team of snapshot?.teams ?? []) {
+    if (team.espn_points == null || !Number.isFinite(team.espn_points)) continue;
+    starters += team.starters ?? 0;
+    espn += team.espn_points;
+  }
+  if (espn <= 0) return { asOf, coverage: null, behind: false };
+  const coverage = starters / espn;
+  return { asOf, coverage, behind: coverage < 1 - tolerance };
+}
+
+export function buildChartModel(
+  rawSnapshot: PointsTimeseriesSnapshot | null,
   mode: AnalysisSeriesMode,
 ): ChartModel | null {
+  const snapshot = reanchorTimeseries(rawSnapshot);
   if (!snapshot?.teams?.length) return null;
   const lines: ChartLine[] = snapshot.teams.map((team, index) => {
     const values = seriesValues(team.points ?? [], mode);
