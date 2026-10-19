@@ -146,12 +146,12 @@ pyasn1-modules==0.4.2
     # via google-auth
 pycparser==3.0
     # via cffi
-pydantic==2.14.0
+pydantic==2.14.1
     # via
     #   ffa (pyproject.toml)
     #   nflreadpy
     #   pydantic-settings
-pydantic-core==2.50.0
+pydantic-core==2.50.1
     # via pydantic
 pydantic-settings==2.15.0
     # via nflreadpy
