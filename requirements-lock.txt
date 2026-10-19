@@ -126,7 +126,7 @@ polars==1.43.1
     # via nflreadpy
 polars-runtime-32==1.43.1
     # via polars
-proto-plus==1.28.2
+proto-plus==1.29.0
     # via google-api-core
 protobuf==7.35.1
     # via
