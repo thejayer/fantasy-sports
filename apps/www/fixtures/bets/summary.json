@@ -1,11 +1,11 @@
 {
   "all": {
-    "bets": 10,
-    "losses": 3,
+    "bets": 12,
+    "losses": 4,
     "pending": 1,
     "pl": -431.80999999999995,
     "pushes": 1,
-    "record": "5-3-1",
+    "record": "6-4-1",
     "roi": -0.11484308510638297,
     "stake": 3760.0,
     "units_pl": -1.0,
@@ -13,10 +13,10 @@
     "units_staked": 1.0,
     "unknown": 0,
     "who": null,
-    "win_pct": 0.625,
-    "wins": 5
+    "win_pct": 0.6,
+    "wins": 6
   },
-  "bet_count": 10,
+  "bet_count": 12,
   "bettors": [
     {
       "bets": 3,
@@ -85,6 +85,23 @@
       "who": "chellgod",
       "win_pct": 0.5,
       "wins": 1
+    },
+    {
+      "bets": 2,
+      "losses": 1,
+      "pending": 0,
+      "pl": null,
+      "pushes": 0,
+      "record": "1-1-0",
+      "roi": null,
+      "stake": null,
+      "units_pl": null,
+      "units_roi": null,
+      "units_staked": null,
+      "unknown": 0,
+      "who": "Lockedin_Sportz",
+      "win_pct": 0.5,
+      "wins": 1
     }
   ],
   "source": "fixture:tracker_tabs.xlsx",
@@ -105,7 +122,7 @@
     "win_pct": 0.5,
     "wins": 1
   },
-  "synced_at": "2026-10-12T17:25:56.050717+00:00",
+  "synced_at": "2026-10-19T23:21:58.975713+00:00",
   "trent": {
     "bets": 3,
     "losses": 1,

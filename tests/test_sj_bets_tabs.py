@@ -85,26 +85,37 @@ def test_fade_pl_assumes_minus_110_on_100():
     assert FADE_AMERICAN == -110
 
 
-def test_tracker_tabs_xlsx_has_three_data_tabs():
+def test_tracker_tabs_xlsx_has_four_data_tabs():
     names = list_xlsx_sheets(TABS)
     assert names[0] == "Bets"
     assert PARLAY_TAB in names
     assert PUBLIC_TAB in names
+    from sj.bets import RECORD_SPLITS_TAB
+
+    assert RECORD_SPLITS_TAB in names
     book = load_local_workbook(TABS)
-    assert set(book) == {"Bets", PARLAY_TAB, PUBLIC_TAB}
+    assert set(book) == {"Bets", PARLAY_TAB, PUBLIC_TAB, RECORD_SPLITS_TAB}
 
 
-def test_export_writes_four_json_files_and_stable_summary_keys(tmp_path: Path):
+def test_export_writes_five_json_files_and_stable_summary_keys(tmp_path: Path):
     result = export_bets(from_path=TABS, store_dir=tmp_path)
     store = FileStore(tmp_path)
     bets = store.read_bets("bets")
     summary = store.read_bets("summary")
     parlays = store.read_bets("parlay_legs")
     warnings = store.read_bets("public_warnings")
+    splits = store.read_bets("record_splits")
     assert bets is not None and summary is not None
     assert parlays is not None and warnings is not None
-    assert bets["bet_count"] == 10
-    assert {b["who"] for b in bets["bets"]} == {"Trent", "Steve", "btidy216", "chellgod"}
+    assert splits is not None
+    assert bets["bet_count"] == 12
+    assert {b["who"] for b in bets["bets"]} == {
+        "Trent",
+        "Steve",
+        "btidy216",
+        "chellgod",
+        "Lockedin_Sportz",
+    }
     # P.11 keys stay put even though the board is no longer Trent/Steve-only.
     assert "trent" in summary and "steve" in summary and "all" in summary
     assert [row["who"] for row in summary["bettors"]] == [
@@ -112,11 +123,14 @@ def test_export_writes_four_json_files_and_stable_summary_keys(tmp_path: Path):
         "Trent",
         "btidy216",
         "chellgod",
+        "Lockedin_Sportz",
     ]
-    assert summary["all"]["bets"] == 10
+    assert summary["all"]["bets"] == 12
     assert parlays["leg_count"] == 8
     assert warnings["warning_count"] == 8
     assert result["parlay_legs"]["leg_count"] == 8
+    assert splits["split_count"] == result["record_splits"]["split_count"]
+    assert any(row["who"] == "Lockedin_Sportz" for row in splits["splits"])
 
 
 def test_legacy_xlsx_still_exports_empty_new_tabs(tmp_path: Path):
@@ -124,6 +138,7 @@ def test_legacy_xlsx_still_exports_empty_new_tabs(tmp_path: Path):
     assert result["bets"]["bet_count"] >= 500
     assert result["parlay_legs"]["leg_count"] == 0
     assert result["public_warnings"]["warning_count"] == 0
+    assert result["record_splits"]["split_count"] == 0
     assert result["summary"]["trent"]["bets"] > 200
 
 
@@ -132,6 +147,7 @@ def test_json_from_still_bets_only(tmp_path: Path):
     assert result["bets"]["bet_count"] == 40
     assert result["parlay_legs"]["leg_count"] == 0
     assert result["public_warnings"]["warning_count"] == 0
+    assert result["record_splits"]["split_count"] == 0
 
 
 def test_parlay_strips_value_prefix_and_kpis():
@@ -298,6 +314,11 @@ def test_extra_column_is_ignored():
 
     bets = normalize_rows(rows, headers)
     assert all("ignore-me" not in b.values() for b in bets)
+    assert {b["id"]: b.get("pick_class") for b in bets}["C-2"] == "Prop"
+    locked = next(b for b in bets if b["id"] == "Z-1")
+    assert locked["who"] == "Lockedin_Sportz"
+    assert locked["stake"] is None and locked["units"] is None
+    assert locked["pick_class"] == "Prop"
 
 
 def test_fetch_remote_workbook_xlsx(monkeypatch):
@@ -310,8 +331,10 @@ def test_fetch_remote_workbook_xlsx(monkeypatch):
     monkeypatch.setattr("sj.bets.fetch_sheet_workbook", boom)
     book, source = fetch_remote_workbook("drive-file-id")
     assert source == "drive-xlsx"
-    assert set(book) == {"Bets", PARLAY_TAB, PUBLIC_TAB}
-    assert len(book["Bets"][1]) == 10
+    from sj.bets import RECORD_SPLITS_TAB
+
+    assert set(book) == {"Bets", PARLAY_TAB, PUBLIC_TAB, RECORD_SPLITS_TAB}
+    assert len(book["Bets"][1]) == 12
 
 
 def test_fetch_remote_workbook_native_sheet(monkeypatch):
@@ -347,6 +370,9 @@ def test_laurencowling_no_units_and_header_lookup_tolerates_shifted_columns():
 
     # Summary / Leg Fade Summary are formula tabs and never read (no fixed rows).
     assert "Leg Fade Summary" not in TRACKER_TABS and "Summary" not in TRACKER_TABS
+    from sj.bets import RECORD_SPLITS_TAB
+
+    assert RECORD_SPLITS_TAB in TRACKER_TABS
     headers = ["Notes", "Result", "Bettor", "Bet ID", "Stake $", "Odds (American)",
                "To win/payout $ (total return)", "Units", "Date posted (CT)"]
     rows = [

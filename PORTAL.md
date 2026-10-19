@@ -72,7 +72,7 @@ destination list. Docs: [FITNESS.md](FITNESS.md).
 **Bets** lives at `/bets` (nav + home destination). Members-only tracker for
 public slips (data-driven bettors), parlay legs, and BetMGM public-money
 warnings. Same Google allowlist as Fantasy. Data is `sj bets` (Drive xlsx
-or native Sheet) → `bets/{bets,summary,parlay_legs,public_warnings}.json`
+or native Sheet) → `bets/{bets,summary,parlay_legs,public_warnings,record_splits}.json`
 on the hub bucket. Docs:
 [apps/www/README.md](apps/www/README.md) and `./scripts/setup-bets-infra.sh`.
 

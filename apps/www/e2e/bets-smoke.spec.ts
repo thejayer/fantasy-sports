@@ -10,6 +10,7 @@ test.describe("bets fixture board", () => {
     await expect(page.getByRole("navigation", { name: "Bet tracker sections" })).toBeVisible();
     await expect(page.getByRole("link", { name: "Parlay legs" })).toBeVisible();
     await expect(page.getByRole("link", { name: "Public fade" })).toBeVisible();
+    await expect(page.getByRole("link", { name: "Record splits" })).toBeVisible();
     await expect(page.getByRole("article").filter({ hasText: "All bettors" })).toBeVisible();
     await expect(page.getByRole("article").filter({ hasText: "@BookitWithTrent" })).toBeVisible();
     await expect(page.getByRole("article").filter({ hasText: "@stevewilldoit" })).toBeVisible();
@@ -30,6 +31,12 @@ test.describe("bets fixture board", () => {
     await expect(
       page.getByRole("navigation", { name: "Parlay filters" }).getByRole("link", { name: "Since NFL start" }),
     ).toBeVisible();
+    await page.goto("/bets?tab=splits");
+    await expect(page.getByRole("heading", { name: "All bettors" }).first()).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Record splits" }).first()).toBeVisible();
+    await expect(page.getByText(/1u fade/i).first()).toBeVisible();
+    await expect(page.getByText(/Fade edge/i).first()).toBeVisible();
+    await expect(page.getByRole("navigation", { name: "Record split filters" })).toBeVisible();
     await page.goto("/bets?tab=warnings");
     await expect(page.getByRole("heading", { name: "Fade the public" })).toBeVisible();
     await expect(page.getByRole("heading", { name: "Recent warnings" })).toBeVisible();

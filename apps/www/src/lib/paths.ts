@@ -14,7 +14,7 @@ export function hubDataRoot(): string {
 
 /**
  * Bet tracker JSON (`bets.json` / `summary.json` / `parlay_legs.json` /
- * `public_warnings.json`).
+ * `public_warnings.json` / `record_splits.json`).
  * Prod: `{SJ_HUB_DIR}/bets` on the hub bucket. Local / CI: committed fixtures.
  */
 export function betsDataRoots(): string[] {

@@ -9,6 +9,7 @@ import path from "path";
 import type { BetsDocument, BetRow } from "@/lib/bets";
 import type { ParlayDocument, ParlayLeg } from "@/lib/bets-parlay";
 import type { PublicDocument, PublicWarning } from "@/lib/bets-public";
+import type { SplitCheck, SplitRow, SplitsDocument } from "@/lib/bets-splits";
 import { betsDataRoots } from "@/lib/paths";
 import { getBetsActor } from "@/lib/session";
 
@@ -28,6 +29,18 @@ function isPublicWarning(value: unknown): value is PublicWarning {
   if (!value || typeof value !== "object") return false;
   const row = value as Record<string, unknown>;
   return typeof row.id === "string";
+}
+
+function isSplitRow(value: unknown): value is SplitRow {
+  if (!value || typeof value !== "object") return false;
+  const row = value as Record<string, unknown>;
+  return typeof row.who === "string" && typeof row.kind === "string";
+}
+
+function isSplitCheck(value: unknown): value is SplitCheck {
+  if (!value || typeof value !== "object") return false;
+  const row = value as Record<string, unknown>;
+  return typeof row.check === "string";
 }
 
 async function readFirstFile(name: string): Promise<string | null> {
@@ -98,4 +111,21 @@ export async function getPublicDocument(): Promise<PublicDocument> {
   if (!(await getBetsActor())) return empty;
   const raw = await readFirstFile("public_warnings.json");
   return raw ? (parsePublicDocument(raw) ?? empty) : empty;
+}
+
+function parseSplitsDocument(raw: string): SplitsDocument | null {
+  const parsed = parseJson(raw);
+  if (!parsed || typeof parsed !== "object") return null;
+  const doc = parsed as SplitsDocument;
+  const splits = Array.isArray(doc.splits) ? doc.splits.filter(isSplitRow) : [];
+  const sports = Array.isArray(doc.sports) ? doc.sports.filter(isSplitRow) : [];
+  const checks = Array.isArray(doc.checks) ? doc.checks.filter(isSplitCheck) : [];
+  return { ...doc, splits, sports, checks };
+}
+
+export async function getSplitsDocument(): Promise<SplitsDocument> {
+  const empty: SplitsDocument = { splits: [], sports: [], checks: [] };
+  if (!(await getBetsActor())) return empty;
+  const raw = await readFirstFile("record_splits.json");
+  return raw ? (parseSplitsDocument(raw) ?? empty) : empty;
 }

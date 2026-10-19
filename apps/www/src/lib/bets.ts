@@ -22,19 +22,20 @@ export const WINDOW_DATES: Record<BetWindow, string | null> = {
   nfl: NFL_START,
 };
 
-export const BET_TABS = ["bets", "parlays", "warnings"] as const;
+export const BET_TABS = ["bets", "parlays", "warnings", "splits"] as const;
 export type BetTab = (typeof BET_TABS)[number];
 
 export const TAB_LABELS: Record<BetTab, string> = {
   bets: "Bets",
   parlays: "Parlay legs",
   warnings: "Public fade",
+  splits: "Record splits",
 };
 
 /** Display overlay only — not the list of who appears on the board. */
 export const KNOWN_BETTORS: Record<
   string,
-  { name: string; handle: string; href: string }
+  { name: string; handle: string; href: string; hypothetical1u?: boolean }
 > = {
   Trent: {
     name: "Trent Attyah",
@@ -61,12 +62,29 @@ export const KNOWN_BETTORS: Record<
     handle: "laurencowling",
     href: "https://x.com/laurencowling",
   },
+  Lockedin_Sportz: {
+    name: "Lockedin_Sportz",
+    handle: "Lockedin_Sportz",
+    href: "https://x.com/Lockedin_Sportz",
+    hypothetical1u: true,
+  },
 };
 
-export function bettorMeta(who: string): { name: string; handle: string; href: string } {
+export function bettorMeta(who: string): {
+  name: string;
+  handle: string;
+  href: string;
+  hypothetical1u?: boolean;
+} {
   if (KNOWN_BETTORS[who]) return KNOWN_BETTORS[who];
   const handle = who.replace(/^@/, "").replace(/[^\w.]/g, "") || "unknown";
   return { name: who, handle, href: `https://x.com/${encodeURIComponent(handle)}` };
+}
+
+export function isHypothetical1u(who: string | null | undefined): boolean {
+  if (!who) return false;
+  if (KNOWN_BETTORS[who]?.hypothetical1u) return true;
+  return who.replace(/^@/, "").trim().toLowerCase() === "lockedin_sportz";
 }
 
 export function uniqueBettors(bets: Array<{ who: string }>): string[] {
@@ -113,6 +131,7 @@ export type BetRow = {
   url: string;
   notes: string;
   ps: string;
+  pick_class?: string;
 };
 
 export type BetsDocument = {
@@ -140,6 +159,7 @@ export type BettorKpis = {
   unitsStaked: number | null;
   unitsPl: number | null;
   unitsRoi: number | null;
+  flat1uPl: number | null;
 };
 
 export type BreakdownRow = BettorKpis & { key: string };
@@ -169,6 +189,7 @@ export function parseBetTab(raw: string | null | undefined): BetTab {
   const key = (raw || "").trim().toLowerCase();
   if (key === "parlays" || key === "parlay" || key === "legs") return "parlays";
   if (key === "warnings" || key === "public" || key === "fade") return "warnings";
+  if (key === "splits" || key === "split" || key === "record") return "splits";
   return "bets";
 }
 
@@ -354,6 +375,20 @@ export function dollarPl(bet: Pick<BetRow, "res" | "stake" | "dec" | "odds" | "t
   return towin > stake ? towin - stake : towin;
 }
 
+export function flat1uPl(
+  bet: Pick<BetRow, "res" | "dec" | "odds">,
+): number | null {
+  const res = normalizeResult(bet.res);
+  if (!isGraded(res)) return null;
+  if (res === "Push") return 0;
+  if (res === "L") return -1;
+  let dec = asNumber(bet.dec);
+  if (dec == null) dec = parseOdds(bet.odds, bet.dec).dec;
+  if (dec == null) dec = americanToDecimal(FADE_AMERICAN);
+  if (dec == null) return null;
+  return dec - 1;
+}
+
 export function unitsPl(bet: Pick<BetRow, "res" | "units" | "dec" | "odds">): number | null {
   const res = normalizeResult(bet.res);
   if (!isGraded(res)) return null;
@@ -385,6 +420,8 @@ export function bettorKpis(bets: BetRow[], who?: string | null): BettorKpis {
   let unitsStaked = 0;
   let unitsProfit = 0;
   let unitsN = 0;
+  let flat = 0;
+  let flatN = 0;
   for (const bet of rows) {
     const res = normalizeResult(bet.res);
     if (res === "W") wins += 1;
@@ -405,6 +442,11 @@ export function bettorKpis(bets: BetRow[], who?: string | null): BettorKpis {
       unitsProfit += uPl;
       unitsN += 1;
     }
+    const flatPl = flat1uPl(bet);
+    if (flatPl != null) {
+      flat += flatPl;
+      flatN += 1;
+    }
   }
   return {
     who: who ?? null,
@@ -422,6 +464,7 @@ export function bettorKpis(bets: BetRow[], who?: string | null): BettorKpis {
     unitsStaked: unitsN ? unitsStaked : null,
     unitsPl: unitsN ? unitsProfit : null,
     unitsRoi: unitsN ? ratio(unitsProfit, unitsStaked) : null,
+    flat1uPl: flatN ? flat : null,
   };
 }
 

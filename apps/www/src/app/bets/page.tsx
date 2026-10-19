@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import { BetsBoard, BetsEmpty, BetsTabs, BetsToolbar } from "@/components/BetsBoard";
 import { ParlayBoard, ParlayEmpty } from "@/components/ParlayBoard";
 import { PublicBoard, PublicEmpty } from "@/components/PublicBoard";
+import { SplitsBoard, SplitsEmpty } from "@/components/SplitsBoard";
 import {
   bettorKpis,
   filterBets,
@@ -19,10 +20,12 @@ import {
   uniqueParlaySports,
 } from "@/lib/bets-parlay";
 import { filterWarnings, publicKpis, uniqueWarningSports } from "@/lib/bets-public";
+import { uniqueSplitBettors } from "@/lib/bets-splits";
 import {
   getBetsDocument,
   getParlayDocument,
   getPublicDocument,
+  getSplitsDocument,
 } from "@/lib/bets-store";
 import { requireBetsActor } from "@/lib/session";
 
@@ -50,15 +53,17 @@ export default async function BetsPage({ searchParams }: Props) {
   const tab = parseBetTab(params.tab);
   const window = parseBetWindow(params.window);
   const sport = (params.sport || "").trim();
-  const [betsDoc, parlayDoc, publicDoc] = await Promise.all([
+  const [betsDoc, parlayDoc, publicDoc, splitsDoc] = await Promise.all([
     getBetsDocument(),
     getParlayDocument(),
     getPublicDocument(),
+    getSplitsDocument(),
   ]);
   const names = uniqueBettors(betsDoc.bets);
   const who = parseBettor(params.who, [
     ...names,
     ...uniqueParlayBettors(parlayDoc.legs),
+    ...uniqueSplitBettors(splitsDoc.splits),
   ]);
 
   const filtered = filterBets(betsDoc.bets, {
@@ -98,13 +103,14 @@ export default async function BetsPage({ searchParams }: Props) {
         <p className="hero-kicker">Public slips</p>
         <h1>Bets</h1>
         <p>
-          Tracked public posters — records, ROI, parlay-leg hit rates, and John
-          Ewing&apos;s BetMGM public-money fades. Members only.
+          Tracked public posters — records, ROI, parlay-leg hit rates, record
+          splits, and John Ewing&apos;s BetMGM public-money fades. Members only.
         </p>
         <p className="page-hero-meta">
           {betsDoc.bet_count ?? betsDoc.bets.length} slips ·{" "}
           {parlayDoc.leg_count ?? parlayDoc.legs.length} legs ·{" "}
-          {publicDoc.warning_count ?? publicDoc.warnings.length} warnings
+          {publicDoc.warning_count ?? publicDoc.warnings.length} warnings ·{" "}
+          {splitsDoc.split_count ?? splitsDoc.splits.length} splits
         </p>
       </section>
       <BetsToolbar actor={actor} />
@@ -137,6 +143,17 @@ export default async function BetsPage({ searchParams }: Props) {
             sport={sport}
             who={who}
             kpi={publicKpis(publicFiltered)}
+          />
+        )
+      ) : tab === "splits" ? (
+        !splitsDoc.splits.length ? (
+          <SplitsEmpty />
+        ) : (
+          <SplitsBoard
+            document={splitsDoc}
+            window={window}
+            sport={sport}
+            who={who}
           />
         )
       ) : !betsDoc.bets.length ? (

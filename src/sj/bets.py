@@ -1,9 +1,11 @@
 """Public-bet tracker — sheet ingest + KPI math (roadmap P.11).
 
-Reads the Bets tab (and optional Parlay Legs / BetMGM Public Warnings
-tabs) from a Drive file or a local xlsx/JSON fixture. Bettors are
-discovered from col B — no closed Trent/Steve list. Formula / summary
-tabs are ignored; KPIs come from raw rows only.
+Reads the Bets tab (and optional Parlay Legs / BetMGM Public Warnings /
+Record Splits tabs) from a Drive file or a local xlsx/JSON fixture.
+Bettors are discovered from the Bettor column — no closed Trent/Steve
+list. Summary / By-Sport formula tabs are ignored; KPIs come from raw
+rows. Record Splits is the one summary tab we do read — by header names
+and key columns, never fixed rows or A1 ranges.
 
 Live ingest looks up the Drive ``mimeType`` (read-only) and then either
 calls the Sheets API (native spreadsheet) or downloads an uploaded
@@ -37,7 +39,10 @@ DEFAULT_SHEET_ID = "1_F9HCU7uOPH5uo8cgXkxwKrvREolPid_ZoviVVcX3HU"
 DEFAULT_SHEET_TAB = "Bets"
 PARLAY_TAB = "Parlay Legs"
 PUBLIC_TAB = "BetMGM Public Warnings"
-TRACKER_TABS = (DEFAULT_SHEET_TAB, PARLAY_TAB, PUBLIC_TAB)
+RECORD_SPLITS_TAB = "Record Splits"
+TRACKER_TABS = (DEFAULT_SHEET_TAB, PARLAY_TAB, PUBLIC_TAB, RECORD_SPLITS_TAB)
+# Formula / layout tabs that must never be ingested even if present.
+FORMULA_TABS = frozenset({"Summary", "Leg Fade Summary"})
 DRIVE_READONLY_SCOPE = "https://www.googleapis.com/auth/drive.readonly"
 SHEETS_READONLY_SCOPE = "https://www.googleapis.com/auth/spreadsheets.readonly"
 READONLY_SCOPES = (DRIVE_READONLY_SCOPE, SHEETS_READONLY_SCOPE)
@@ -128,7 +133,13 @@ _HEADER_ALIASES: dict[str, tuple[str, ...]] = {
     "url": ("post url", "url"),
     "notes": ("notes",),
     "ps": ("single vs parlay", "ps"),
+    # Live tracker added this as column AE; match by name so extra columns
+    # (or a later insert) never shift the rest of the row.
+    "pick_class": ("pick class",),
 }
+
+# Bettors with no posted stake / units — any P/L is a hypothetical 1u figure.
+HYPOTHETICAL_1U_WHO = frozenset({"lockedin_sportz"})
 
 _SSML = {"m": "http://schemas.openxmlformats.org/spreadsheetml/2006/main"}
 
@@ -209,6 +220,11 @@ def normalize_who(value: Any) -> str:
         return "Steve"
     stripped = text[1:].strip() if text.startswith("@") else text
     return stripped or "Unknown"
+
+
+def is_hypothetical_1u(who: Any) -> bool:
+    """True when the sheet posts no stake/units (Lockedin_Sportz / Z-)."""
+    return _norm_key(who).lstrip("@") in HYPOTHETICAL_1U_WHO
 
 
 def unique_bettors(bets: Iterable[dict[str, Any]]) -> list[str]:
@@ -422,6 +438,25 @@ def dollar_pl(bet: dict[str, Any]) -> float | None:
     return towin - stake if towin > stake else towin
 
 
+def flat_1u_pl(bet: dict[str, Any]) -> float | None:
+    """P/L of a graded slip as if it were 1 unit. Missing odds assume −110."""
+    res = normalize_result(bet.get("res"))
+    if not is_graded(res):
+        return None
+    if res == "Push":
+        return 0.0
+    if res == "L":
+        return -1.0
+    dec = _as_float(bet.get("dec"))
+    if dec is None:
+        _odds, dec = parse_odds(bet.get("odds"), bet.get("dec"))
+    if dec is None:
+        dec = american_to_decimal(FADE_AMERICAN)
+    if dec is None:
+        return None
+    return dec - 1.0
+
+
 def units_pl(bet: dict[str, Any]) -> float | None:
     """Unit P/L when units exist and the result can be priced. Else None."""
     res = normalize_result(bet.get("res"))
@@ -442,15 +477,54 @@ def units_pl(bet: dict[str, Any]) -> float | None:
     return units * (dec - 1.0)
 
 
-def _header_map(headers: Iterable[Any]) -> dict[str, int]:
+def header_map(
+    headers: Iterable[Any],
+    aliases: dict[str, tuple[str, ...]] | None = None,
+) -> dict[str, int]:
+    """Map canonical field names to column indexes by header text, not order."""
+    spec = aliases or _HEADER_ALIASES
     index: dict[str, int] = {}
     normalized = [_norm_key(h) for h in headers]
-    for field, aliases in _HEADER_ALIASES.items():
+    for field, names in spec.items():
         for i, name in enumerate(normalized):
-            if name in aliases:
+            if name in names:
                 index[field] = i
                 break
     return index
+
+
+def _header_map(headers: Iterable[Any]) -> dict[str, int]:
+    return header_map(headers, _HEADER_ALIASES)
+
+
+def locate_header_row(
+    rows: list[list[Any]],
+    aliases: dict[str, tuple[str, ...]],
+    required: Iterable[str],
+) -> int | None:
+    """Index of the first row whose headers cover ``required`` fields.
+
+    Title / spacer rows above a table are skipped so sections can move.
+    """
+    needed = tuple(required)
+    for i, row in enumerate(rows):
+        mapping = header_map(row, aliases)
+        if all(key in mapping for key in needed):
+            return i
+    return None
+
+
+def cut_header_table(
+    rows: list[list[Any]],
+    aliases: dict[str, tuple[str, ...]],
+    required: Iterable[str],
+) -> tuple[list[str], list[list[Any]]]:
+    """Split a grid into (header cells, data rows) by header names."""
+    idx = locate_header_row(rows, aliases, required)
+    if idx is None:
+        return [], []
+    headers = ["" if h is None else str(h) for h in rows[idx]]
+    return headers, rows[idx + 1 :]
 
 
 def _cell(row: list[Any], mapping: dict[str, int], field: str) -> Any:
@@ -518,6 +592,7 @@ def normalize_row(row: dict[str, Any] | list[Any], headers: list[Any] | None = N
         "url": _sheet_text(source.get("url")),
         "notes": _sheet_text(source.get("notes")),
         "ps": _sheet_text(source.get("ps")),
+        "pick_class": _sheet_text(source.get("pick_class")),
     }
     if not bet["ps"]:
         bet["ps"] = "Parlay/multi-leg" if classify_parlay(bet) == "multi" else "Single"
@@ -732,25 +807,28 @@ def sheet_a1_range(tab: str) -> str:
     return "'" + tab.replace("'", "''") + "'"
 
 
-def read_xlsx_rows(
-    source: Path | str | bytes,
+def read_xlsx_grid(
+    source: Path | str | bytes | zipfile.ZipFile,
     sheet_name: str = DEFAULT_SHEET_TAB,
-) -> tuple[list[str], list[list[Any]]]:
-    """Read one worksheet as header + row lists (stdlib; no openpyxl)."""
+) -> list[list[Any]]:
+    """Read one worksheet as a raw grid (every used row, no header assumption)."""
     label = "xlsx"
-    zf_src: Path | str | BytesIO
-    if isinstance(source, (bytes, bytearray)):
-        zf_src = BytesIO(source)
+    own = False
+    if isinstance(source, zipfile.ZipFile):
+        zf = source
     else:
-        zf_src = source
-        label = str(source)
-    with zipfile.ZipFile(zf_src) as zf:
+        own = True
+        zf_src: Path | str | BytesIO
+        if isinstance(source, (bytes, bytearray)):
+            zf_src = BytesIO(source)
+        else:
+            zf_src = source
+            label = str(source)
+        zf = zipfile.ZipFile(zf_src)
+    try:
         wb = ET.fromstring(zf.read("xl/workbook.xml"))
         rels_root = ET.fromstring(zf.read("xl/_rels/workbook.xml.rels"))
-        rels = {
-            rel.get("Id"): rel.get("Target")
-            for rel in rels_root
-        }
+        rels = {rel.get("Id"): rel.get("Target") for rel in rels_root}
         ns_r = "{http://schemas.openxmlformats.org/officeDocument/2006/relationships}"
         target = None
         for sheet in wb.findall("m:sheets/m:sheet", _SSML):
@@ -778,10 +856,53 @@ def read_xlsx_rows(
             if max_idx < 0:
                 continue
             rows_out.append([cells.get(i, "") for i in range(max_idx + 1)])
-    if not rows_out:
+        return rows_out
+    finally:
+        if own:
+            zf.close()
+
+
+def _tab_header_spec(tab: str) -> tuple[dict[str, tuple[str, ...]], tuple[str, ...]] | None:
+    """Header aliases + required keys for a raw tracker tab. None = keep grid."""
+    if tab == RECORD_SPLITS_TAB:
+        return None
+    if tab == PARLAY_TAB:
+        from sj.bets_parlay import _HEADER_ALIASES as aliases
+
+        return aliases, ("id", "who")
+    if tab == PUBLIC_TAB:
+        from sj.bets_public import _HEADER_ALIASES as aliases
+
+        return aliases, ("id",)
+    return _HEADER_ALIASES, ("id", "who")
+
+
+def sheet_as_table(
+    grid: list[list[Any]],
+    tab: str = DEFAULT_SHEET_TAB,
+) -> tuple[list[str], list[list[Any]]]:
+    """Cut a grid at the header row for ``tab``. Record Splits stays a raw grid."""
+    spec = _tab_header_spec(tab)
+    if spec is None:
+        return [], list(grid)
+    aliases, required = spec
+    headers, rows = cut_header_table(grid, aliases, required)
+    if headers:
+        return headers, rows
+    if not grid:
         return [], []
-    headers = [str(h) for h in rows_out[0]]
-    return headers, rows_out[1:]
+    return ["" if h is None else str(h) for h in grid[0]], grid[1:]
+
+
+def read_xlsx_rows(
+    source: Path | str | bytes,
+    sheet_name: str = DEFAULT_SHEET_TAB,
+) -> tuple[list[str], list[list[Any]]]:
+    """Read one worksheet as header + row lists (stdlib; no openpyxl).
+
+    Headers are found by name, so title rows above the table are skipped.
+    """
+    return sheet_as_table(read_xlsx_grid(source, sheet_name), sheet_name)
 
 
 def load_local_rows(path: Path | str) -> list[dict[str, Any]]:
@@ -804,7 +925,7 @@ def load_local_workbook(
     out: dict[str, tuple[list[str], list[list[Any]]]] = {}
     for tab in TRACKER_TABS:
         if tab in names:
-            out[tab] = read_xlsx_rows(file, tab)
+            out[tab] = sheet_as_table(read_xlsx_grid(file, tab), tab)
     return out
 
 
@@ -885,8 +1006,7 @@ def fetch_sheet_values(
     values = payload.get("values") or []
     if not values:
         return [], []
-    headers = [str(h) for h in values[0]]
-    return headers, values[1:]
+    return sheet_as_table(values, tab)
 
 
 def list_remote_tabs(
@@ -932,7 +1052,7 @@ def fetch_sheet_workbook(
         if not values:
             out[tab] = ([], [])
             continue
-        out[tab] = ([str(h) for h in values[0]], values[1:])
+        out[tab] = sheet_as_table(values, tab)
     return out
 
 
@@ -1026,9 +1146,10 @@ def export_bets(
     store_dir: Path | str | None = None,
     source: str | None = None,
 ) -> dict[str, Any]:
-    """Normalize tracker tabs and write bets / summary / parlay_legs / public_warnings."""
+    """Normalize tracker tabs and write bets / summary / parlay / public / splits."""
     from sj.bets_parlay import build_parlay_document, normalize_parlay_rows
     from sj.bets_public import build_public_document, normalize_public_rows
+    from sj.bets_splits import build_splits_document, parse_splits_grid
 
     book: dict[str, tuple[list[str], list[list[Any]]]] = {}
     bets: list[dict[str, Any]]
@@ -1065,16 +1186,25 @@ def export_bets(
         source=src,
         sheet_id=sheet_id,
     )
+    _split_headers, split_grid = book.get(RECORD_SPLITS_TAB, ([], []))
+    splits_doc = build_splits_document(
+        parse_splits_grid(split_grid),
+        synced_at=document["synced_at"],
+        source=src,
+        sheet_id=sheet_id,
+    )
 
     write_bets(document, "bets", store_dir=store_dir)
     write_bets(summary, "summary", store_dir=store_dir)
     write_bets(parlay_doc, "parlay_legs", store_dir=store_dir)
     write_bets(public_doc, "public_warnings", store_dir=store_dir)
+    write_bets(splits_doc, "record_splits", store_dir=store_dir)
     return {
         "bets": document,
         "summary": summary,
         "parlay_legs": parlay_doc,
         "public_warnings": public_doc,
+        "record_splits": splits_doc,
     }
 
 

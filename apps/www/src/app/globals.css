@@ -2101,6 +2101,33 @@ a.news-card:focus-visible .news-card-read {
   margin-top: 0.35rem;
 }
 
+.bets-hyp-note {
+  margin: 0 0 0.65rem;
+  font-size: 13px;
+  color: color-mix(in srgb, var(--color-text) 62%, transparent);
+}
+
+.bets-table tr.is-fade-plus td {
+  box-shadow: inset 3px 0 0 var(--sj-win, #22c55e);
+}
+
+.bets-table tr.is-fade-edge {
+  background: color-mix(in srgb, var(--sj-win, #22c55e) 14%, transparent);
+}
+
+.bets-table tr.is-fade-edge td {
+  box-shadow: inset 3px 0 0 var(--sj-win, #22c55e);
+}
+
+.bets-fade-flag {
+  margin-left: 0.35rem;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--sj-win, #22c55e);
+}
+
 @media (max-width: 900px) {
   .bets-kpi-grid {
     grid-template-columns: 1fr;
