@@ -1,0 +1,35 @@
+{
+  "generated_from": "local fixtures",
+  "shots": [
+    {
+      "name": "apex-home",
+      "url": "http://127.0.0.1:3002/",
+      "file": "docs/portfolio/apex-home.png"
+    },
+    {
+      "name": "hub",
+      "url": "http://127.0.0.1:3000/",
+      "file": "docs/portfolio/hub.png"
+    },
+    {
+      "name": "rankings",
+      "url": "http://127.0.0.1:3000/rankings/fantasy",
+      "file": "docs/portfolio/rankings.png"
+    },
+    {
+      "name": "bets",
+      "url": "http://127.0.0.1:3002/bets",
+      "file": "docs/portfolio/bets.png"
+    },
+    {
+      "name": "fitness",
+      "url": "http://127.0.0.1:3003/",
+      "file": "docs/portfolio/fitness.png"
+    },
+    {
+      "name": "vibe",
+      "url": "http://127.0.0.1:3005/",
+      "file": "docs/portfolio/vibe.png"
+    }
+  ]
+}
