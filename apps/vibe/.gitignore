@@ -3,6 +3,7 @@ node_modules
 out
 e2e-vibe-data
 *.tsbuildinfo
-.env*.local
+.env*
+!.env.example
 test-results
 playwright-report

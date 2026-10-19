@@ -18,7 +18,7 @@ See [PORTAL.md](../../PORTAL.md) for domain routing and deploy.
 
 ```bash
 cd apps/www
-cp .env.example .env.local   # AUTH_DEV_BYPASS=1 opens /bets
+cp .env.example .env.local   # set AUTH_DEV_BYPASS=1 locally to skip Google for /bets
 npm install
 npm run dev                  # http://localhost:3002
 ```

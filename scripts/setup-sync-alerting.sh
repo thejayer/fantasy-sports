@@ -6,11 +6,14 @@
 #   - You can receive alert email (or pass an existing channel id)
 #
 # Run in Cloud Shell:
-#   ./scripts/setup-sync-alerting.sh
-#   # or override: NOTIFY_EMAIL=other@example.com ./scripts/setup-sync-alerting.sh
+#   NOTIFY_EMAIL=ops@example.com ./scripts/setup-sync-alerting.sh
+#   # or reuse: NOTIFICATION_CHANNEL=projects/.../notificationChannels/123
+#
+# Required (one of):
+#   NOTIFY_EMAIL=ops@example.com
+#   NOTIFICATION_CHANNEL=projects/.../notificationChannels/123
 #
 # Optional:
-#   NOTIFICATION_CHANNEL=projects/.../notificationChannels/123   # reuse one
 #   SJ_JOB=sj-sync
 #   STALE_HOURS=2   # unused here; freshness is watched via /api/health uptime
 
@@ -21,10 +24,11 @@ REGION="${GCP_REGION:-us-central1}"
 JOB="${SJ_JOB:-sj-sync}"
 POLICY_DISPLAY="${SJ_ALERT_POLICY:-Strictly Jayers sync job failed}"
 CHANNEL_DISPLAY="${SJ_CHANNEL_DISPLAY:-Strictly Jayers sync alerts}"
-NOTIFY_EMAIL="${NOTIFY_EMAIL:-austincwiley@gmail.com}"
+NOTIFY_EMAIL="${NOTIFY_EMAIL:-}"
 
 if [[ -z "${NOTIFY_EMAIL}" && -z "${NOTIFICATION_CHANNEL:-}" ]]; then
-  echo "Set NOTIFY_EMAIL=… or NOTIFICATION_CHANNEL=projects/.../notificationChannels/ID" >&2
+  echo "Set NOTIFY_EMAIL=ops@example.com or NOTIFICATION_CHANNEL=projects/.../notificationChannels/ID" >&2
+  echo "NOTIFY_EMAIL has no default — pass an ops address explicitly (do not hardcode a personal inbox)." >&2
   exit 1
 fi
 

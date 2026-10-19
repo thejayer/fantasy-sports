@@ -3,7 +3,8 @@ node_modules
 out
 *.tsbuildinfo
 next-env.d.ts
-.env*.local
+.env*
+!.env.example
 test-results
 playwright-report
 .playwright-hub-data
