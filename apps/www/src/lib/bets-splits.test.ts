@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 import { isHypothetical1u, parseBetTab } from "./bets";
 import {
   ALL_WHO,
+  coerceSplitKind,
   fadeTone,
   filterSplitRows,
   groupSplitsByWho,
@@ -59,6 +60,34 @@ describe("record splits helpers", () => {
     expect(fadeTone(rows[1])).toBe("edge");
     expect(fadeTone(row({ kind: "leg_team", fade_plus: true, fade_emphasis: false }))).toBe("plus");
     expect(fadeTone(row({ fade_plus: false, fade_emphasis: false, fade_1u: -1 }))).toBeNull();
+  });
+
+  it("coerces live display class labels when kind is other", () => {
+    expect(
+      coerceSplitKind(
+        row({
+          kind: "other",
+          klass: "single bets – player props",
+          source: "bets",
+        }),
+      ),
+    ).toBe("single_prop");
+    expect(
+      coerceSplitKind(row({ kind: "other", klass: "whole parlay tickets", source: "bets" })),
+    ).toBe("ticket");
+    const groups = groupSplitsByWho([
+      row({
+        who: "Lauren (laurencowling)",
+        kind: "other",
+        klass: "whole parlay tickets",
+        fade_1u: 2,
+        fade_plus: false,
+        fade_emphasis: false,
+      }),
+    ]);
+    expect(groups.map((g) => g.who)).toEqual(["laurencowling"]);
+    expect(groups[0].rows[0].kind).toBe("ticket");
+    expect(fadeTone(groups[0].rows[0])).toBe("edge");
   });
 
   it("filters by bettor and lists people other than *", () => {

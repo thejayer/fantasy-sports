@@ -4,6 +4,10 @@ on:
   push:
     branches: [main]
   pull_request:
+  # 826fba4 (squash of #227) created no workflow runs on the push to main —
+  # no path filter, no [skip ci], same YAML as #226 which did run. This
+  # lets Austin/Kliff re-run tests from the Actions tab if a push is dropped.
+  workflow_dispatch:
 
 permissions:
   contents: read

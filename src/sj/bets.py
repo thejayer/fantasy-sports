@@ -148,8 +148,33 @@ def bets_sync_enabled() -> bool:
     return os.environ.get("SJ_BETS_SYNC", "1") != "0"
 
 
+# Unicode dashes / minus → ASCII hyphen so "1u Fade P&L (−110)" matches.
+_DASH_TRANSLATE = str.maketrans(
+    {
+        "\u2212": "-",  # minus
+        "\u2010": "-",
+        "\u2011": "-",
+        "\u2012": "-",
+        "\u2013": "-",  # en dash
+        "\u2014": "-",  # em dash
+        "\u2015": "-",
+        "\ufe58": "-",
+        "\uff0d": "-",
+    }
+)
+
+
 def _norm_key(value: Any) -> str:
-    return re.sub(r"\s+", " ", str(value or "").strip().lower())
+    """Case-insensitive header key: dashes unified, punctuation collapsed.
+
+    Live Record Splits headers use a Unicode minus, parentheses, and
+    slashes (``1u Fade P&L (−110)``, ``Unknown/Void``). Matching is by
+    this normalized form, never by column letter.
+    """
+    text = str(value or "").strip().casefold().translate(_DASH_TRANSLATE)
+    # Keep * (all-bettors), _ (handles), $ % # + - .  Collapse other punctuation.
+    text = re.sub(r"[^a-z0-9_$%#+*.-]+", " ", text)
+    return re.sub(r"\s+", " ", text).strip()
 
 
 def _is_blank(value: Any) -> bool:
@@ -481,15 +506,32 @@ def header_map(
     headers: Iterable[Any],
     aliases: dict[str, tuple[str, ...]] | None = None,
 ) -> dict[str, int]:
-    """Map canonical field names to column indexes by header text, not order."""
+    """Map canonical field names to column indexes by header text, not order.
+
+    Aliases and sheet headers are both passed through ``_norm_key``. When
+    both a display column (``Bettor``, ``Class``) and a key column
+    (``Bettor key``, ``Class key``) match the same field, the key column
+    wins.
+    """
     spec = aliases or _HEADER_ALIASES
     index: dict[str, int] = {}
     normalized = [_norm_key(h) for h in headers]
     for field, names in spec.items():
+        alias_norms = [_norm_key(n) for n in names if _norm_key(n)]
+        best: tuple[int, int] | None = None
         for i, name in enumerate(normalized):
-            if name in names:
-                index[field] = i
-                break
+            if not name:
+                continue
+            for alias in alias_norms:
+                if name != alias:
+                    continue
+                score = len(alias)
+                if name.endswith(" key") or alias.endswith(" key"):
+                    score += 100
+                if best is None or score > best[0]:
+                    best = (score, i)
+        if best is not None:
+            index[field] = best[1]
     return index
 
 
