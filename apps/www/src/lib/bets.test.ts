@@ -19,6 +19,7 @@ import {
   stripValuePrefix,
   safeHttpUrl,
   bettorMeta,
+  isHypothetical1u,
   uniqueBettors,
   unitsPl,
   windowDate,
@@ -111,6 +112,7 @@ describe("data-driven bettors and fade math", () => {
   it("parses tabs and strips Value prefixes", () => {
     expect(parseBetTab("parlays")).toBe("parlays");
     expect(parseBetTab("warnings")).toBe("warnings");
+    expect(parseBetTab("splits")).toBe("splits");
     expect(parseBetTab("")).toBe("bets");
     expect(stripValuePrefix("Value")).toBe("");
     expect(stripValuePrefix("Value -6.5")).toBe("-6.5");
@@ -174,6 +176,7 @@ function baseBet(overrides: Partial<BetRow>): BetRow {
     url: "",
     notes: "",
     ps: "Single",
+    pick_class: "",
     ...overrides,
   };
 }
@@ -200,5 +203,44 @@ describe("laurencowling (LC): payout-only $ and no units", () => {
     expect(kpi.unitsRoi).toBeNull();
     expect(formatUnits(kpi.unitsPl)).toBe("—");
     expect(formatUnits(kpi.unitsPl)).not.toMatch(/NaN|0u/);
+  });
+});
+
+describe("Lockedin_Sportz: hypothetical 1u", () => {
+  it("maps the display overlay and labels missing stake as 1u", () => {
+    expect(bettorMeta("Lockedin_Sportz")).toEqual({
+      name: "Lockedin_Sportz",
+      handle: "Lockedin_Sportz",
+      href: "https://x.com/Lockedin_Sportz",
+      hypothetical1u: true,
+    });
+    const kpi = bettorKpis([
+      baseBet({
+        id: "Z-1",
+        who: "Lockedin_Sportz",
+        res: "W",
+        stake: null,
+        units: null,
+        odds: null,
+        dec: null,
+        towin: null,
+        pick_class: "Prop",
+      }),
+      baseBet({
+        id: "Z-2",
+        who: "Lockedin_Sportz",
+        res: "L",
+        stake: null,
+        units: null,
+        odds: null,
+        dec: null,
+        pick_class: "Prop",
+      }),
+    ]);
+    expect(kpi.pl).toBeNull();
+    expect(kpi.unitsPl).toBeNull();
+    expect(kpi.flat1uPl).toBeCloseTo(100 / 110 - 1, 6);
+    expect(formatUnits(kpi.flat1uPl)).not.toMatch(/NaN/);
+    expect(isHypothetical1u("Lockedin_Sportz")).toBe(true);
   });
 });

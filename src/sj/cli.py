@@ -519,12 +519,14 @@ def bets_cmd(
 ) -> None:
     """Refresh the public-bet tracker JSON (roadmap P.11).
 
-    Reads the Bets tab plus Parlay Legs and BetMGM Public Warnings when
-    those sheets exist. ``--from`` points at a local xlsx/JSON fixture.
-    Live ingest looks up the Drive mimeType (read-only) and then uses the
-    Sheets API or downloads an uploaded .xlsx. Writes ``bets/bets.json``,
-    ``bets/summary.json``, ``bets/parlay_legs.json``, and
-    ``bets/public_warnings.json``. Formula / summary tabs are ignored.
+    Reads the Bets tab plus Parlay Legs, BetMGM Public Warnings, and
+    Record Splits when those sheets exist. ``--from`` points at a local
+    xlsx/JSON fixture. Live ingest looks up the Drive mimeType (read-only)
+    and then uses the Sheets API or downloads an uploaded .xlsx. Writes
+    ``bets/bets.json``, ``bets/summary.json``, ``bets/parlay_legs.json``,
+    ``bets/public_warnings.json``, and ``bets/record_splits.json``.
+    Summary / By-Sport formula tabs are ignored; Record Splits is read by
+    header names (never fixed rows).
     """
     import os
 
@@ -566,11 +568,13 @@ def bets_cmd(
     )
     parlays = result.get("parlay_legs") or {}
     warnings = result.get("public_warnings") or {}
+    splits = result.get("record_splits") or {}
     typer.echo(
         f"bets: {document['bet_count']} rows"
         f"{f' ({who_bits})' if who_bits else ''} "
         f"legs={parlays.get('leg_count', 0)} "
         f"warnings={warnings.get('warning_count', 0)} "
+        f"splits={splits.get('split_count', 0)} "
         f"synced_at={document['synced_at']}"
     )
 

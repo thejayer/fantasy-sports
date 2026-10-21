@@ -1319,16 +1319,20 @@ Wired into the `www` CI job.
 - `/bets` on `apps/www`: members-only public-slip tracker (Auth.js + the
   same `ALLOWED_EMAILS` ∪ `hub_members.json` allowlist as Fantasy /
   Fitness). Bettors are data-driven from the Bets tab (Trent, Steve,
-  btidy216, chellgod, …) plus a combined all-bettors view. Tabs: Bets,
-  Parlay legs, Public fade. Public apex routes stay ungated. No service
-  worker on www.
+  btidy216, chellgod, LC, Lockedin_Sportz, …) plus a combined all-bettors
+  view. Tabs: Bets, Parlay legs, Public fade, Record splits. Public apex
+  routes stay ungated. No service worker on www.
 - Ingest: `sj bets` looks up the Drive file mimeType (`sj-bets-reader`
   SA; Drive + Sheets read-only). Native Sheet → Sheets API (whole used
   range, headers by name); uploaded `.xlsx` → `files.get?alt=media`.
   Writes `bets/bets.json` + `bets/summary.json` (stable `trent`/`steve`/
   `all` keys plus `bettors`) + `bets/parlay_legs.json` +
-  `bets/public_warnings.json`. Scheduler `32 9-23/2` America/Chicago.
-  KPI math is from raw rows only — formula / summary tabs ignored.
+  `bets/public_warnings.json` + `bets/record_splits.json`. Scheduler
+  `32 9-23/2` America/Chicago. KPI math is from raw Bets / Parlay Legs /
+  Public Warnings rows; Summary / By-Sport formula tabs ignored. Record
+  Splits is read by header names (Bettor / Source tab / Class / Sport),
+  never fixed rows. Lockedin_Sportz (Z-) has no stake/units — P/L is
+  hypothetical 1u.
   Ops: `./scripts/setup-bets-infra.sh`.
 
 ### P.10 Living rooms + portal pulse — LANDING

@@ -19,6 +19,7 @@ import {
   formatSyncedAt,
   formatUnits,
   gameWeekday,
+  isHypothetical1u,
   legsBucket,
   primeBucket,
   primeSlot,
@@ -57,7 +58,7 @@ export function BetsTabs({
 }: FilterState) {
   return (
     <nav className="bets-tabs" aria-label="Bet tracker sections">
-      {(["bets", "parlays", "warnings"] as const).map((key) => (
+      {(["bets", "parlays", "warnings", "splits"] as const).map((key) => (
         <Link
           key={key}
           href={betsHref({ tab: key, window, sport, who })}
@@ -93,6 +94,7 @@ function KpiCard({
   href?: string;
   kpi: BettorKpis;
 }) {
+  const hypothetical = isHypothetical1u(kpi.who);
   return (
     <article className="bets-card">
       <p className="bets-card-kicker">{handle ? `@${handle}` : "Combined"}</p>
@@ -106,26 +108,29 @@ function KpiCard({
         )}
       </h2>
       <p className="bets-record">{kpi.record}</p>
+      {hypothetical ? (
+        <p className="bets-hyp-note">No posted stake or units — P/L is hypothetical 1u.</p>
+      ) : null}
       <dl className="bets-dl">
         <div>
           <dt>Win %</dt>
           <dd>{formatPct(kpi.winPct)}</dd>
         </div>
         <div>
-          <dt>Net P/L $</dt>
-          <dd>{formatMoney(kpi.pl)}</dd>
+          <dt>{hypothetical ? "Hyp. 1u P/L" : "Net P/L $"}</dt>
+          <dd>{hypothetical ? formatUnits(kpi.flat1uPl) : formatMoney(kpi.pl)}</dd>
         </div>
         <div>
           <dt>ROI $</dt>
-          <dd>{formatPct(kpi.roi)}</dd>
+          <dd>{hypothetical ? "—" : formatPct(kpi.roi)}</dd>
         </div>
         <div>
           <dt>Units P/L</dt>
-          <dd>{formatUnits(kpi.unitsPl)}</dd>
+          <dd>{hypothetical ? formatUnits(kpi.flat1uPl) : formatUnits(kpi.unitsPl)}</dd>
         </div>
         <div>
           <dt>Units ROI</dt>
-          <dd>{formatPct(kpi.unitsRoi)}</dd>
+          <dd>{hypothetical ? "—" : formatPct(kpi.unitsRoi)}</dd>
         </div>
         <div>
           <dt>Bets</dt>
@@ -380,7 +385,8 @@ export function BetsBoard({
         <ul>
           <li>
             KPIs are computed from raw Bets-tab rows only. Summary / By Sport
-            formula tabs are ignored (their old row cap was wrong).
+            formula tabs are ignored. Record splits live on their own tab and
+            are read by header names.
           </li>
           <li>
             Trent mostly posts units without odds, so his dollar P/L covers only
