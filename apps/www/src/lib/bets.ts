@@ -59,7 +59,7 @@ export const KNOWN_BETTORS: Record<
     href: "https://x.com/chellgod",
   },
   laurencowling: {
-    name: "LC",
+    name: "Lauren (LC)",
     handle: "laurencowling",
     href: "https://x.com/laurencowling",
   },
