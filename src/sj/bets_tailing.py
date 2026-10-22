@@ -362,7 +362,12 @@ def enrich_leg(leg: dict[str, Any], parent: dict[str, Any] | None) -> dict[str, 
     res = normalize_result(leg.get("res"))
     odds_am = parse_american_odds(leg.get("odds"))
     implied = None
-    if is_sportsbook_platform(platform) and not is_prizepicks_style(platform):
+    if (
+        is_sportsbook_platform(platform)
+        and not is_prizepicks_style(platform)
+        and parent is not None
+        and bool(_sheet_text(parent.get("odds")))
+    ):
         implied = ticket_implied_decimal(parent_dec, ticket_n)
     row = {
         "id": _sheet_text(leg.get("id")),

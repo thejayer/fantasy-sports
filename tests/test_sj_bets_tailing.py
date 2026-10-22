@@ -12,6 +12,7 @@ from sj.bets import (
     DEFAULT_SHEET_TAB,
     FADE_AMERICAN,
     PARLAY_TAB,
+    _sheet_text,
     american_to_decimal,
     export_bets,
     header_map,
@@ -324,6 +325,70 @@ def test_unsigned_parent_odds_are_plus_money_decimal_wins():
     view = build_view(joined, "Pat")
     assert view["ml"]["record"] == "1-1-0"
     assert view["ml"]["ticket_implied_n"] == 2
+
+
+def test_not_shown_american_does_not_get_ticket_implied():
+    """Decimal from payout/stake is not a posted price. 'not shown' / Value are blank."""
+    assert _sheet_text("not shown") == ""
+    assert _sheet_text("Value") == ""
+    assert _sheet_text("1500") == "1500"
+    assert _sheet_text("500") == "500"
+    blank_parent = {
+        "id": "NS",
+        "bt": "parlay",
+        "n": 2,
+        "odds": "not shown",
+        "dec": 3.5,
+    }
+    value_parent = {
+        "id": "VL",
+        "bt": "parlay",
+        "n": 2,
+        "odds": "Value",
+        "dec": 4.0,
+    }
+    posted_parent = {
+        "id": "PS",
+        "bt": "parlay",
+        "n": 2,
+        "odds": "1500",
+        "dec": 16.0,
+    }
+
+    def _legs(parent_id: str) -> list[dict]:
+        return [
+            {
+                "id": f"{parent_id}-1",
+                "who": "Pat",
+                "parent": parent_id,
+                "res": "W",
+                "sel": "Club F ML",
+                "pick": "Team pick",
+                "leg_type": "ML",
+                "sport": "NFL",
+                "parent_n": 2,
+                "parent_bt": "Sportsbook/team parlay",
+            },
+            {
+                "id": f"{parent_id}-2",
+                "who": "Pat",
+                "parent": parent_id,
+                "res": "L",
+                "sel": "Club G ML",
+                "pick": "Team pick",
+                "leg_type": "ML",
+                "sport": "NFL",
+                "parent_n": 2,
+                "parent_bt": "Sportsbook/team parlay",
+            },
+        ]
+
+    hidden = join_legs(_legs("NS"), [blank_parent])
+    assert all(row["ticket_implied_dec"] is None for row in hidden)
+    placeholder = join_legs(_legs("VL"), [value_parent])
+    assert all(row["ticket_implied_dec"] is None for row in placeholder)
+    posted = join_legs(_legs("PS"), [posted_parent])
+    assert all(row["ticket_implied_dec"] == pytest.approx(16.0**0.5) for row in posted)
 
 
 def test_priced_sportsbook_ml_matches_trent_formula():
