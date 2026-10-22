@@ -7,13 +7,14 @@
 #   - permission: roles/secretmanager.secretAccessor on the secrets
 #
 # Usage:
-#   ./scripts/pull-hub-secrets.sh
-#   GCP_PROJECT=fantasy-sports-analytics ./scripts/pull-hub-secrets.sh
+#   GCP_PROJECT=<GCP_PROJECT_ID> ./scripts/pull-hub-secrets.sh
+# Real project id: GitHub repo secret GCP_PROJECT_ID (Austin).
 
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-PROJECT="${GCP_PROJECT:-fantasy-sports-analytics}"
+: "${GCP_PROJECT:?set GCP_PROJECT}"
+PROJECT="${GCP_PROJECT}"
 OUT="${ROOT}/apps/web/.env.local"
 ESPN_OUT="${ROOT}/.env.espn"
 

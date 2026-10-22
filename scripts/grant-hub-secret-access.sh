@@ -5,12 +5,14 @@
 #   ./scripts/grant-hub-secret-access.sh
 #
 # Override the runtime SA if you use a custom one:
-#   CLOUD_RUN_SA=sj-hub@fantasy-sports-analytics.iam.gserviceaccount.com \
+#   CLOUD_RUN_SA=<HUB_RUNTIME_SA_EMAIL> \
 #     ./scripts/grant-hub-secret-access.sh
+# Real project id: GitHub repo secret GCP_PROJECT_ID (Austin).
 
 set -euo pipefail
 
-PROJECT="${GCP_PROJECT:-fantasy-sports-analytics}"
+: "${GCP_PROJECT:?set GCP_PROJECT}"
+PROJECT="${GCP_PROJECT}"
 SECRETS=(
   sj-auth-secret
   sj-auth-google-id

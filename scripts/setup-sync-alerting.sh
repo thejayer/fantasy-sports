@@ -6,7 +6,8 @@
 #   - You can receive alert email (or pass an existing channel id)
 #
 # Run in Cloud Shell:
-#   NOTIFY_EMAIL=ops@example.com ./scripts/setup-sync-alerting.sh
+#   GCP_PROJECT=<GCP_PROJECT_ID> NOTIFY_EMAIL=ops@example.com ./scripts/setup-sync-alerting.sh
+# Real project id: GitHub repo secret GCP_PROJECT_ID (Austin).
 #   # or reuse: NOTIFICATION_CHANNEL=projects/.../notificationChannels/123
 #
 # Required (one of):
@@ -19,7 +20,8 @@
 
 set -euo pipefail
 
-PROJECT="${GCP_PROJECT:-fantasy-sports-analytics}"
+: "${GCP_PROJECT:?set GCP_PROJECT}"
+PROJECT="${GCP_PROJECT}"
 REGION="${GCP_REGION:-us-central1}"
 JOB="${SJ_JOB:-sj-sync}"
 POLICY_DISPLAY="${SJ_ALERT_POLICY:-Strictly Jayers sync job failed}"

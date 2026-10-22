@@ -8,9 +8,11 @@ Health Auto Export token and GitHub.
 |---|---|---|
 | `vibe.strictlyjayers.com` | `sj-vibe` | `{SJ_VIBE_DIR}/users/<email-hash>/vibe.json` |
 
-Prod mounts `gs://fantasy-sports-analytics-sj-data` at `/app/data/sj` and sets
+Prod mounts `gs://<GCS_BUCKET>` at `/app/data/sj` and sets
 `SJ_HUB_DIR=/app/data/sj` plus `SJ_VIBE_DIR=/app/data/sj/vibe`. Do **not**
-`mkdir` / `stat` that FUSE path in the entrypoint.
+`mkdir` / `stat` that FUSE path in the entrypoint. The live project and
+bucket are GitHub repository secrets (`GCP_PROJECT_ID`, `GCS_BUCKET`) —
+Austin holds them.
 
 ## Local
 
@@ -103,7 +105,7 @@ anyone connects GitHub.
 Runtime SA accessor (default Compute Engine SA):
 
 ```bash
-PROJECT_NUMBER="$(gcloud projects describe fantasy-sports-analytics --format='value(projectNumber)')"
+PROJECT_NUMBER="$(gcloud projects describe <GCP_PROJECT_ID> --format='value(projectNumber)')"
 SA="${PROJECT_NUMBER}-compute@developer.gserviceaccount.com"
 for name in sj-vibe-github-client-id sj-vibe-github-client-secret sj-vibe-token-key sj-vibe-cron-secret; do
   gcloud secrets add-iam-policy-binding "$name" \

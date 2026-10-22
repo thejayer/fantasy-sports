@@ -2,14 +2,16 @@
 # Add a new version to a Strictly Jayers hub secret (interactive).
 #
 # Usage:
-#   ./scripts/add-hub-secret-version.sh sj-auth-google-id
-#   ./scripts/add-hub-secret-version.sh sj-allowed-emails
+#   GCP_PROJECT=<GCP_PROJECT_ID> ./scripts/add-hub-secret-version.sh sj-auth-google-id
+#   GCP_PROJECT=<GCP_PROJECT_ID> ./scripts/add-hub-secret-version.sh sj-allowed-emails
+# Real project id: GitHub repo secret GCP_PROJECT_ID (Austin).
 #
 # You will be prompted to paste the secret value (input is not echoed).
 
 set -euo pipefail
 
-PROJECT="${GCP_PROJECT:-fantasy-sports-analytics}"
+: "${GCP_PROJECT:?set GCP_PROJECT}"
+PROJECT="${GCP_PROJECT}"
 NAME="${1:-}"
 
 if [[ -z "${NAME}" ]]; then

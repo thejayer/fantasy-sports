@@ -230,11 +230,14 @@ file — optional `sessionStorage` draft only.
 
 ## Production (Cloud Run) — preferred
 
-Hosted as Cloud Run service **`sj-hub`** in project **`fantasy-sports-analytics`**.
+Hosted as Cloud Run service **`sj-hub`** in project **`<GCP_PROJECT_ID>`**.
+Real project id, deployer SA, WIF provider path, and bucket live in GitHub
+repository secrets (`GCP_PROJECT_ID`, `GCP_DEPLOYER_SA`, `GCP_WIF_PROVIDER`,
+`GCS_BUCKET`) — Austin holds them; they are not committed here.
 
 App secrets (Google OAuth, allowlist, ESPN cookies, OpenAI recap key) live in **GCP Secret Manager**.
 Deploy workflows authenticate with **Workload Identity Federation** (no JSON key):
-pool/provider `github`, SA `ffa-deployer@fantasy-sports-analytics.iam.gserviceaccount.com`.
+pool/provider `github`, SA `<DEPLOYER_SA_EMAIL>`.
 
 ### One-time GCP setup (Cloud Shell)
 
@@ -242,6 +245,10 @@ pool/provider `github`, SA `ffa-deployer@fantasy-sports-analytics.iam.gserviceac
 cd fantasy-sports   # repo checkout on main
 git pull
 chmod +x scripts/*.sh
+
+# Scripts fail if these are unset (Austin / repo secrets).
+export GCP_PROJECT=<GCP_PROJECT_ID>
+export DEPLOYER_SA_NAME=<DEPLOYER_SA_NAME>
 
 # App secrets in Secret Manager (if you haven't already):
 ./scripts/create-hub-secrets.sh
@@ -331,7 +338,7 @@ If you need to set it manually:
 
 ```bash
 gcloud run services update sj-hub \
-  --project=fantasy-sports-analytics \
+  --project=<GCP_PROJECT_ID> \
   --region=us-central1 \
   --update-env-vars="AUTH_URL=https://fantasy.strictlyjayers.com,AUTH_TRUST_HOST=true"
 ```
@@ -342,7 +349,7 @@ Manager via `--set-secrets` (never baked into the image).
 
 ## Secrets (GCP Secret Manager)
 
-Source of truth is Secret Manager in project **`fantasy-sports-analytics`**.
+Source of truth is Secret Manager in project **`<GCP_PROJECT_ID>`**.
 Do not commit secret values.
 
 | Secret name | Env var | Used by |
@@ -384,7 +391,7 @@ and golf — plus the existing per-league cards. Local bypass: set
 
 | Env | Path (prod) | Mount | Owns |
 |---|---|---|---|
-| `SJ_DATA_DIR` | `/app/data/sj` | GCS **RW** (`…-sj-data`) | ESPN football/baseball from `sj sync` |
+| `SJ_DATA_DIR` | `/app/data/sj` | GCS **RW** (`<GCS_BUCKET>`) | ESPN football/baseball from `sj sync` |
 | `SJ_HUB_DIR` | `/app/data/sj` | same mount | Golf leagues, auction rooms, league feeds (`feed.json`), weekly recaps (`recaps/{period}.json`), recap usage caps (`recap_usage.json`), `hub_members.json` |
 
 Prod uses **one** RW mount. A second FUSE volume (`…-sj-hub`) failed Cloud Run
@@ -401,10 +408,10 @@ CD replaces the service's env vars on every push, so the switch lives in the
 repo, not on the service. To turn it on:
 
 1. Store the league channel's webhook URL in Secret Manager (once):
-   `printf %s "<webhook url>" | gcloud secrets create sj-discord-webhook --project fantasy-sports-analytics --data-file=-`
+   `printf %s "<webhook url>" | gcloud secrets create sj-discord-webhook --project <GCP_PROJECT_ID> --data-file=-`
 2. Let the hub's runtime service account read it (the account that already
    reads `sj-auth-secret`):
-   `gcloud secrets add-iam-policy-binding sj-discord-webhook --project fantasy-sports-analytics --member=serviceAccount:<hub runtime SA> --role=roles/secretmanager.secretAccessor`
+   `gcloud secrets add-iam-policy-binding sj-discord-webhook --project <GCP_PROJECT_ID> --member=serviceAccount:<hub runtime SA> --role=roles/secretmanager.secretAccessor`
 3. GitHub → Settings → Secrets and variables → Actions → **Variables** →
    `SJ_HOCKEY_INJURY_DISCORD` = `1`, then Actions → **deploy hub** → Run
    workflow (or wait for the next push to `main`).
@@ -439,6 +446,7 @@ fixtures cover football-main weeks 13–14 and football-dynasty week 14.
 ### Create / populate (Cloud Shell)
 
 ```bash
+export GCP_PROJECT=<GCP_PROJECT_ID>   # Austin / repo secret GCP_PROJECT_ID
 ./scripts/create-hub-secrets.sh
 ./scripts/add-hub-secret-version.sh sj-auth-secret
 ./scripts/add-hub-secret-version.sh sj-auth-google-id
@@ -454,13 +462,13 @@ Generate `AUTH_SECRET` without pasting:
 
 ```bash
 openssl rand -base64 32 | gcloud secrets versions add sj-auth-secret \
-  --project=fantasy-sports-analytics --data-file=-
+  --project=<GCP_PROJECT_ID> --data-file=-
 ```
 
 ### Optional: pull to a laptop
 
 ```bash
-./scripts/pull-hub-secrets.sh
+GCP_PROJECT=<GCP_PROJECT_ID> ./scripts/pull-hub-secrets.sh
 # writes apps/web/.env.local and .env.espn
 ```
 
@@ -470,7 +478,7 @@ Snapshots live in a Cloud Storage bucket, not on the web container's disk, so
 they survive Cloud Run restarts and stay identical across instances.
 
 ```
-Cloud Scheduler ──▶ Cloud Run Job (sj-sync) ──▶ gs://<project>-sj-data
+Cloud Scheduler ──▶ Cloud Run Job (sj-sync) ──▶ gs://<GCS_BUCKET>
                                                         │ (RW mount)
                                                         ▼
                                               Cloud Run service (sj-hub)
@@ -498,8 +506,8 @@ Cloud Scheduler ──▶ Cloud Run Job (sj-sync) ──▶ gs://<project>-sj-da
   back to the fixtures baked into the image.
 - **Projections / player map / draft sim / weekly / playoff odds:** `nightly
   refresh` exports under `store/` and promotes JSON to
-  `gs://…-sj-data/projections/`, `player_map/`, `draft_sim/`,
-  `weekly_projections/`, and `playoff_odds/` (WIF as `ffa-deployer`). Re-run
+  `gs://<GCS_BUCKET>/projections/`, `player_map/`, `draft_sim/`,
+  `weekly_projections/`, and `playoff_odds/` (WIF as `<DEPLOYER_SA_EMAIL>`). Re-run
   `./scripts/setup-github-deployer.sh` so the deployer has `objectUser` on the
   bucket. Mount the bucket on the hub (deploy-hub **bucket** input) to serve
   them. Playoff odds promote only when refresh wrote them from live `data/sj`
@@ -578,7 +586,7 @@ Equivalent CLI:
 
 ```bash
 gcloud run jobs execute sj-sync --args=backfill \
-  --region=us-central1 --project=fantasy-sports-analytics
+  --region=us-central1 --project=<GCP_PROJECT_ID>
 ```
 
 Deploy the sync job first if `sj-sync` does not exist yet (**deploy sync job**).
@@ -612,7 +620,7 @@ sj status                              # what's in the store
 
 ```bash
 cd apps/web
-../../scripts/pull-hub-secrets.sh
+GCP_PROJECT=<GCP_PROJECT_ID> ../../scripts/pull-hub-secrets.sh
 npm install
 npm run dev
 ```

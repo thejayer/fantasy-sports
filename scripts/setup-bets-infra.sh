@@ -1,26 +1,30 @@
 #!/usr/bin/env bash
 # One-time infrastructure for the Trent / Steve bet tracker (roadmap P.11):
-#   - sj-bets-reader service account (share the Drive file with this email)
+#   - bets reader service account (share the Drive file with this email)
 #   - Drive API + Sheets API (xlsx download and native-Sheet fallback)
 #   - objectUser on the hub/ESPN bucket so the job can write bets/bets.json
 #   - Cloud Run job sj-bets (same image as sj-sync) + Scheduler at :32
 #
 # Run in Cloud Shell after (or before) "deploy sync job":
-#   ./scripts/setup-bets-infra.sh
+#   GCP_PROJECT=<GCP_PROJECT_ID> SJ_BETS_SA=<BETS_READER_SA_NAME> \
+#     ./scripts/setup-bets-infra.sh
+# Real values: GitHub repo secret GCP_PROJECT_ID and <BETS_READER_SA_EMAIL> (Austin).
 #
 # Then Austin shares
 #   Trent & Steve Bet Tracker — 2026 Football Season
 #   (id 1_F9HCU7uOPH5uo8cgXkxwKrvREolPid_ZoviVVcX3HU)
-# with sj-bets-reader@PROJECT.iam.gserviceaccount.com as Viewer.
+# with <BETS_READER_SA_EMAIL> as Viewer.
 
 set -euo pipefail
 # shellcheck disable=SC2016
 
-PROJECT="${GCP_PROJECT:-fantasy-sports-analytics}"
+: "${GCP_PROJECT:?set GCP_PROJECT}"
+: "${SJ_BETS_SA:?set SJ_BETS_SA}"
+PROJECT="${GCP_PROJECT}"
 REGION="${GCP_REGION:-us-central1}"
 BUCKET="${SJ_BUCKET:-${PROJECT}-sj-data}"
 BETS_JOB="${SJ_BETS_JOB:-sj-bets}"
-BETS_SA_NAME="${SJ_BETS_SA:-sj-bets-reader}"
+BETS_SA_NAME="${SJ_BETS_SA}"
 BETS_SA="${BETS_SA_NAME}@${PROJECT}.iam.gserviceaccount.com"
 # Gamba updates :17 every 2h from 9:17 AM–11:17 PM CT. Read 15 minutes later.
 SCHEDULE="${SJ_BETS_SCHEDULE:-32 9-23/2 * * *}"

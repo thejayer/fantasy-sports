@@ -2,14 +2,16 @@
 # Map vibe.strictlyjayers.com → Cloud Run sj-vibe and print DNS steps.
 #
 # Run in Cloud Shell (needs gcloud auth + project access):
-#   ./scripts/setup-vibe-domain.sh
-#   ./scripts/setup-vibe-domain.sh --cutover   # after DNS/TLS are Ready: set SITE_URL
+#   GCP_PROJECT=<GCP_PROJECT_ID> ./scripts/setup-vibe-domain.sh
+#   GCP_PROJECT=<GCP_PROJECT_ID> ./scripts/setup-vibe-domain.sh --cutover
+# Real project id: GitHub repo secret GCP_PROJECT_ID (Austin).
 #
 # Apex strictlyjayers.com is the community portal (see setup-portal-domain.sh).
 
 set -euo pipefail
 
-PROJECT="${GCP_PROJECT:-fantasy-sports-analytics}"
+: "${GCP_PROJECT:?set GCP_PROJECT}"
+PROJECT="${GCP_PROJECT}"
 REGION="${GCP_REGION:-us-central1}"
 SERVICE="${SJ_VIBE_SERVICE:-sj-vibe}"
 BASE_DOMAIN="${SJ_BASE_DOMAIN:-strictlyjayers.com}"

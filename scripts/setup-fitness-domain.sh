@@ -2,15 +2,17 @@
 # Map fitness.strictlyjayers.com → Cloud Run sj-fitness and print DNS steps.
 #
 # Run in Cloud Shell (needs gcloud auth + project access):
-#   ./scripts/setup-fitness-domain.sh
-#   ./scripts/setup-fitness-domain.sh --cutover   # after DNS/TLS are Ready: set SITE_URL
+#   GCP_PROJECT=<GCP_PROJECT_ID> ./scripts/setup-fitness-domain.sh
+#   GCP_PROJECT=<GCP_PROJECT_ID> ./scripts/setup-fitness-domain.sh --cutover
+# Real project id: GitHub repo secret GCP_PROJECT_ID (Austin).
 #
 # Apex strictlyjayers.com is the community portal (see setup-portal-domain.sh).
 # Fantasy stays on fantasy.strictlyjayers.com (see setup-hub-domain.sh).
 
 set -euo pipefail
 
-PROJECT="${GCP_PROJECT:-fantasy-sports-analytics}"
+: "${GCP_PROJECT:?set GCP_PROJECT}"
+PROJECT="${GCP_PROJECT}"
 REGION="${GCP_REGION:-us-central1}"
 SERVICE="${SJ_FITNESS_SERVICE:-sj-fitness}"
 BASE_DOMAIN="${SJ_BASE_DOMAIN:-strictlyjayers.com}"

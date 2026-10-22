@@ -58,7 +58,9 @@ The live tracker id is an uploaded `.xlsx` in Drive today — no conversion
 needed. Austin shares that file with the reader SA as Viewer. Writes
 `bets/bets.json` + `bets/summary.json` + `bets/parlay_legs.json` +
 `bets/public_warnings.json` + `bets/record_splits.json` to the store
-(`gs://fantasy-sports-analytics-sj-data/bets/` when `SJ_GCS_BUCKET` is set).
+(`gs://<GCS_BUCKET>/bets/` when `SJ_GCS_BUCKET` is set). The live project,
+bucket, and bets-reader SA email are GitHub repository secrets / Austin
+(`GCP_PROJECT_ID`, `GCS_BUCKET`, `<BETS_READER_SA_EMAIL>`) — not committed here.
 KPI math is from raw Bets / Parlay Legs / Public Warnings rows — never the
 formula summary tabs.
 
@@ -74,7 +76,7 @@ sj bets
 One-time GCP: `./scripts/setup-bets-infra.sh` (SA, Drive + Sheets APIs,
 scheduler `32 9-23/2 * * *` America/Chicago). Image updates ride
 **deploy sync job**. Share the file with
-`sj-bets-reader@fantasy-sports-analytics.iam.gserviceaccount.com` as Viewer.
+`<BETS_READER_SA_EMAIL>` as Viewer.
 
 ## Google OAuth (one-time, Austin)
 
@@ -91,7 +93,7 @@ still open the Cloud Run URL directly.
 ## Cloud Run env (`sj-www`)
 
 Push CD (`.github/workflows/deploy-portal.yml`) now sets the hub auth secrets
-and mounts `gs://fantasy-sports-analytics-sj-data` **read-only** at
+and mounts `gs://<GCS_BUCKET>` **read-only** at
 `/app/data/sj` (uid/gid `1001`, semicolon `mount-options`). Do not
 `mkdir`/`stat` the FUSE mount in the entrypoint.
 
