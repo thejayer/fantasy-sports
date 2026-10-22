@@ -91,8 +91,9 @@ it is not readable from the Cloud Run service config:
 ./scripts/grant-hub-secret-access.sh
 ```
 
-Then **Actions → deploy dashboard → Run workflow**, set your `project_id`
-(the defaults bake seasons 2023-2025 and project 2026), and run it. The
+Then **Actions → deploy dashboard → Run workflow**. Blank `project_id` uses
+repository secret `GCP_PROJECT_ID` (same names as nightly refresh); the
+other defaults bake seasons 2023-2025 and project 2026. The
 final step prints the live URL -- `https://ffa-dashboard-xxx-uc.a.run.app`
 -- which is what you send your league. Re-running redeploys with fresh data.
 

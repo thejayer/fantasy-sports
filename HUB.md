@@ -260,12 +260,13 @@ Hub deploys automatically on merge to `main` when hub paths change (branch
 protection is the CI gate). Manual rollback / first-time:
 
 1. GitHub → **Actions** → **deploy hub** → **Run workflow**
-2. Defaults are fine (`fantasy-sports-analytics` / `us-central1` / `sj-hub`)
-3. Set **bucket** to `fantasy-sports-analytics-sj-data` after
-   `./scripts/setup-sync-infra.sh` (hub mounts it **RW** for ESPN + golf).
-   Push-to-`main` CD defaults to that bucket and remounts (clears any stale
-   dual-FUSE template). Manual deploy with blank **bucket** leaves volumes
-   unchanged (image-only rollback). Ignore deprecated **hub_bucket**.
+2. Region / service defaults (`us-central1` / `sj-hub`) are fine. Blank
+   **project_id** / **bucket** use repository secrets `GCP_PROJECT_ID` /
+   `GCS_BUCKET` (same names as nightly refresh).
+3. After `./scripts/setup-sync-infra.sh`, push-to-`main` CD remounts
+   `GCS_BUCKET` RW (clears any stale dual-FUSE template). Manual deploy
+   with blank **bucket** leaves volumes unchanged (image-only rollback).
+   Ignore deprecated **hub_bucket**.
 4. When it finishes, copy the printed URL
 
 ### Custom domain — `fantasy.strictlyjayers.com`
@@ -582,7 +583,7 @@ gcloud run jobs execute sj-sync --args=backfill \
 
 Deploy the sync job first if `sj-sync` does not exist yet (**deploy sync job**).
 Hub only sees backfilled seasons when deployed with the GCS bucket mounted
-(**deploy hub** → set **bucket** to `fantasy-sports-analytics-sj-data`).
+(**deploy hub** → blank **bucket** uses repository secret `GCS_BUCKET`).
 
 Seasons ESPN refuses (`invalid_league`) are skipped and reported on
 `backfill` without failing the run. Auth, network, and unknown errors still

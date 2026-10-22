@@ -4,6 +4,7 @@ name: deploy hub
 #
 # Auth: Workload Identity Federation (no JSON key). Pool/provider + SA binding
 # are one-time GCP setup — see scripts/setup-github-deployer.sh and HUB.md.
+# Project / WIF / deployer SA / bucket come from repository secrets (masked).
 #
 # Also needed:
 #   - Secret Manager secrets populated (scripts/create-hub-secrets.sh + add versions)
@@ -29,9 +30,9 @@ on:
   workflow_dispatch:
     inputs:
       project_id:
-        description: "GCP project ID"
-        required: true
-        default: "fantasy-sports-analytics"
+        description: "GCP project ID (blank = repository secret GCP_PROJECT_ID)"
+        required: false
+        default: ""
       region:
         description: "Cloud Run region"
         required: true
@@ -41,7 +42,7 @@ on:
         required: true
         default: "sj-hub"
       bucket:
-        description: "GCS bucket RW at /app/data/sj (ESPN + golf). Blank on manual = leave mounts; push CD defaults to …-sj-data"
+        description: "GCS bucket RW at /app/data/sj (ESPN + golf). Blank on manual = leave mounts; push CD defaults to repository secret GCS_BUCKET"
         required: false
         default: ""
       hub_bucket:
@@ -61,20 +62,12 @@ permissions:
   contents: read
   id-token: write
 
-env:
-  # WIF — pool `github`, provider `github`, SA `ffa-deployer`.
-  GCP_WORKLOAD_IDENTITY_PROVIDER: projects/1047753647109/locations/global/workloadIdentityPools/github/providers/github
-  GCP_SERVICE_ACCOUNT: ffa-deployer@fantasy-sports-analytics.iam.gserviceaccount.com
-  # Used only for first-create AUTH_URL fallback (avoids gcloud projects.describe /
-  # Cloud Resource Manager API on the deployer SA).
-  GCP_PROJECT_NUMBER: "1047753647109"
-
 jobs:
   deploy:
     runs-on: ubuntu-latest
     timeout-minutes: 40
     env:
-      PROJECT_ID: ${{ github.event.inputs.project_id || 'fantasy-sports-analytics' }}
+      PROJECT_ID: ${{ github.event.inputs.project_id || secrets.GCP_PROJECT_ID }}
       REGION: ${{ github.event.inputs.region || 'us-central1' }}
       SERVICE: ${{ github.event.inputs.service || 'sj-hub' }}
       # Push CD remounts the known prod bucket (single RW). Manual dispatch with
@@ -83,8 +76,10 @@ jobs:
       HUB_BUCKET: ${{ github.event.inputs.hub_bucket || '' }}
       MIN_INSTANCES: ${{ github.event.inputs.min_instances || '0' }}
       EVENT_NAME: ${{ github.event_name }}
-      DEFAULT_BUCKET: fantasy-sports-analytics-sj-data
+      DEFAULT_BUCKET: ${{ secrets.GCS_BUCKET }}
       AUTH_URL_INPUT: ${{ github.event.inputs.auth_url || '' }}
+      GCP_WIF_PROVIDER: ${{ secrets.GCP_WIF_PROVIDER }}
+      GCP_DEPLOYER_SA: ${{ secrets.GCP_DEPLOYER_SA }}
       # Hockey injury news -> Discord (HOCKEY-PORT.md H6). Off unless the repo
       # variable SJ_HOCKEY_INJURY_DISCORD is "1"; then the Secret Manager
       # secret sj-discord-webhook must exist (it is only referenced when on).
@@ -92,6 +87,52 @@ jobs:
       # Preferred public host after ./scripts/setup-hub-domain.sh --cutover
       PREFERRED_AUTH_HOST: fantasy.strictlyjayers.com
     steps:
+      - name: Require repository secrets
+        run: |
+          set -euo pipefail
+          missing=()
+          if [ -z "${GCP_WIF_PROVIDER}" ]; then
+            missing+=(GCP_WIF_PROVIDER)
+          fi
+          if [ -z "${GCP_DEPLOYER_SA}" ]; then
+            missing+=(GCP_DEPLOYER_SA)
+          fi
+          if [ -z "${PROJECT_ID}" ]; then
+            missing+=(GCP_PROJECT_ID)
+          fi
+          if [ "${EVENT_NAME}" = "push" ] && [ -z "${BUCKET}" ] && [ -z "${DEFAULT_BUCKET}" ]; then
+            missing+=(GCS_BUCKET)
+          fi
+          if [ "${#missing[@]}" -gt 0 ]; then
+            echo "::error::Missing GitHub Actions secrets: ${missing[*]}"
+            echo "Add them under Settings → Secrets and variables → Actions before this workflow can deploy:"
+            echo "  GCP_WIF_PROVIDER  — Workload Identity Federation provider resource path"
+            echo "  GCP_DEPLOYER_SA   — deployer service-account email"
+            echo "  GCP_PROJECT_ID    — GCP project ID (or pass the project_id workflow_dispatch input)"
+            echo "  GCS_BUCKET        — hub store bucket (push CD default, or pass the bucket workflow_dispatch input)"
+            exit 1
+          fi
+          # First-create Cloud Run URL uses the project number. Derive it from
+          # the WIF path (projects/<number>/...) so the workflow never stores it
+          # (avoids gcloud projects.describe / Cloud Resource Manager API).
+          case "${GCP_WIF_PROVIDER}" in
+            projects/*)
+              rest="${GCP_WIF_PROVIDER#projects/}"
+              num="${rest%%/*}"
+              case "$num" in
+                ""|*[!0-9]*)
+                  echo "::error::Could not parse project number from GCP_WIF_PROVIDER" >&2
+                  exit 1 ;;
+              esac
+              echo "GCP_PROJECT_NUMBER=$num" >> "$GITHUB_ENV"
+              ;;
+            *)
+              echo "::error::GCP_WIF_PROVIDER must be a projects/<number>/... resource path" >&2
+              exit 1
+              ;;
+          esac
+          echo "Deploy secrets are present."
+
       - name: Validate inputs
         run: |
           for pair in "project_id=$PROJECT_ID" "region=$REGION" "service=$SERVICE"; do
@@ -127,8 +168,8 @@ jobs:
       - id: auth
         uses: google-github-actions/auth@v3
         with:
-          workload_identity_provider: ${{ env.GCP_WORKLOAD_IDENTITY_PROVIDER }}
-          service_account: ${{ env.GCP_SERVICE_ACCOUNT }}
+          workload_identity_provider: ${{ secrets.GCP_WIF_PROVIDER }}
+          service_account: ${{ secrets.GCP_DEPLOYER_SA }}
 
       - uses: google-github-actions/setup-gcloud@v3
 
