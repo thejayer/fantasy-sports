@@ -6,6 +6,7 @@ import { describe, expect, it } from "vitest";
 import { americanToDecimal, parseBetTab } from "./bets";
 import {
   filterTailLegs,
+  pricedSportsbookLegs,
   SMALL_SAMPLE,
   tailBucket,
   tailSplits,
@@ -74,6 +75,24 @@ describe("tailing math", () => {
     const splits = tailSplits(rows);
     expect(splits.pick_group.map((row) => row.key)).toEqual(["Team pick", "Player prop"]);
     expect(splits.direction.find((row) => row.key === "Under")?.record).toBe("1-0-0");
+  });
+
+  it("priced sportsbook legs ignore PrizePicks and Surgical Six", () => {
+    const rows = [
+      leg({ id: "sb", res: "W", platform: "Sportsbook parlay", ticket_implied_dec: 1.7 }),
+      leg({ id: "pp", res: "W", platform: "PrizePicks", ticket_implied_dec: 1.7 }),
+      leg({
+        id: "sx",
+        res: "L",
+        platform: "Surgical Six (PrizePicks)",
+        ticket_implied_dec: 1.7,
+      }),
+      leg({ id: "bare", res: "W", platform: "Sportsbook parlay", ticket_implied_dec: null }),
+    ];
+    expect(pricedSportsbookLegs(rows).map((row) => row.id)).toEqual(["sb"]);
+    const rec = tailBucket(pricedSportsbookLegs(rows));
+    expect(rec.record).toBe("1-0-0");
+    expect(rec.ticket_implied_n).toBe(1);
   });
 });
 

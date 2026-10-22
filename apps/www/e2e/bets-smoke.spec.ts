@@ -42,6 +42,7 @@ test.describe("bets fixture board", () => {
     await expect(page.getByRole("navigation", { name: "Tail-leg filters" })).toBeVisible();
     await expect(page.getByRole("heading", { name: "By sport" })).toBeVisible();
     await expect(page.getByText(/Tail @/).first()).toBeVisible();
+    await expect(page.getByText(/Priced sportsbook legs/i).first()).toBeVisible();
     await expect(page.getByText(/approximate/i).first()).toBeVisible();
     await page.goto("/bets?tab=warnings");
     await expect(page.getByRole("heading", { name: "Fade the public" })).toBeVisible();

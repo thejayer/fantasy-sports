@@ -23,11 +23,13 @@ from sj.bets_tailing import (
     assumed_decimal,
     bucket_record,
     build_tailing_document,
+    build_view,
     extract_selection_odds,
     filter_tailing_legs,
     join_legs,
     month_bucket,
     normalize_leg_sport,
+    parent_decimal,
     parse_american_odds,
     platform_bucket,
     ticket_implied_decimal,
@@ -123,6 +125,8 @@ def test_value_and_blank_leg_odds_are_missing():
     assert parse_american_odds("Value ") is None
     assert parse_american_odds("-160") == -160
     assert parse_american_odds("+150") == 150
+    assert parse_american_odds("1500") == 1500
+    assert parse_american_odds("500") == 500
 
 
 def test_selection_text_odds_join_by_name_not_column():
@@ -196,6 +200,188 @@ def test_sport_remap_other_plus_league_and_buckets():
     assert platform_bucket("PrizePicks/DFS") == "PrizePicks"
     assert platform_bucket("Surgical Six") == "Surgical Six (PrizePicks)"
     assert platform_bucket("Sportsbook/team parlay") == "Sportsbook parlay"
+    assert platform_bucket("parlay") == "Sportsbook parlay"
+
+
+def test_parent_bt_on_leg_beats_bets_parlay_type():
+    """Live Bets 'Bet type' is just 'parlay'; platform lives on parent_bt."""
+    parent = {
+        "id": "P-BT",
+        "bt": "parlay",
+        "book": "",
+        "n": 2,
+        "odds": "+100",
+        "dec": 2.0,
+    }
+    raw_legs = [
+        {
+            "id": "P-BT-SX",
+            "who": "Pat",
+            "parent": "P-BT",
+            "res": "W",
+            "sel": "Club A ML",
+            "pick": "Team pick",
+            "leg_type": "ML",
+            "sport": "NFL",
+            "parent_n": 2,
+            "parent_bt": "Surgical Six",
+        },
+        {
+            "id": "P-BT-SB",
+            "who": "Pat",
+            "parent": "P-BT",
+            "res": "W",
+            "sel": "Club B ML",
+            "pick": "Team pick",
+            "leg_type": "ML",
+            "sport": "NFL",
+            "parent_n": 2,
+            "parent_bt": "Sportsbook/team parlay",
+        },
+        {
+            "id": "P-BT-PP",
+            "who": "Pat",
+            "parent": "P-BT",
+            "res": "L",
+            "sel": "Player A Over 1.5",
+            "pick": "Player prop",
+            "leg_type": "prop",
+            "sport": "NFL",
+            "dir": "Over",
+            "stat": "Receptions",
+            "parent_n": 2,
+            "parent_bt": "PrizePicks",
+        },
+        {
+            "id": "P-BT-BLANK",
+            "who": "Pat",
+            "parent": "P-BT",
+            "res": "L",
+            "sel": "Club C ML",
+            "pick": "Team pick",
+            "leg_type": "ML",
+            "sport": "NFL",
+            "parent_n": 2,
+            "parent_bt": "",
+        },
+    ]
+    joined = join_legs(raw_legs, [parent])
+    by_id = {row["id"]: row for row in joined}
+    assert by_id["P-BT-SX"]["platform"] == "Surgical Six (PrizePicks)"
+    assert by_id["P-BT-SB"]["platform"] == "Sportsbook parlay"
+    assert by_id["P-BT-PP"]["platform"] == "PrizePicks"
+    assert by_id["P-BT-BLANK"]["platform"] == "Sportsbook parlay"
+    # Per-leg price split is sportsbook-only.
+    assert by_id["P-BT-SB"]["ticket_implied_dec"] == pytest.approx(2.0**0.5)
+    assert by_id["P-BT-BLANK"]["ticket_implied_dec"] == pytest.approx(2.0**0.5)
+    assert by_id["P-BT-SX"]["ticket_implied_dec"] is None
+    assert by_id["P-BT-PP"]["ticket_implied_dec"] is None
+    doc = build_tailing_document(raw_legs, [parent], source="fixture:synthetic")
+    plats = {row["key"] for row in doc["views"][0]["splits"]["platform"]}
+    assert "Surgical Six (PrizePicks)" in plats
+    assert "PrizePicks" in plats
+    assert "Sportsbook parlay" in plats
+
+
+def test_unsigned_parent_odds_are_plus_money_decimal_wins():
+    """Unsigned 1500 / 500 are +1500 / +500; decimal column wins on conflict."""
+    assert parent_decimal({"odds": "1500", "dec": 16.0}) == pytest.approx(16.0)
+    assert parent_decimal({"odds": "500", "dec": 6.0}) == pytest.approx(6.0)
+    assert parent_decimal({"odds": "1500", "dec": None}) == pytest.approx(16.0)
+    assert parent_decimal({"odds": 500, "dec": None}) == pytest.approx(6.0)
+    # American says -200 (1.5), decimal says 16 — trust decimal.
+    assert parent_decimal({"odds": "-200", "dec": 16.0}) == pytest.approx(16.0)
+    joined = join_legs(
+        [
+            {
+                "id": "U-1",
+                "who": "Pat",
+                "parent": "U",
+                "res": "W",
+                "sel": "Club D ML",
+                "pick": "Team pick",
+                "leg_type": "ML",
+                "sport": "NFL",
+                "parent_n": 2,
+                "parent_bt": "Sportsbook/team parlay",
+            },
+            {
+                "id": "U-2",
+                "who": "Pat",
+                "parent": "U",
+                "res": "L",
+                "sel": "Club E ML",
+                "pick": "Team pick",
+                "leg_type": "ML",
+                "sport": "NFL",
+                "parent_n": 2,
+                "parent_bt": "Sportsbook/team parlay",
+            },
+        ],
+        [{"id": "U", "bt": "parlay", "n": 2, "odds": "1500", "dec": 16.0}],
+    )
+    assert all(row["ticket_implied_dec"] == pytest.approx(16.0**0.5) for row in joined)
+    view = build_view(joined, "Pat")
+    assert view["ml"]["record"] == "1-1-0"
+    assert view["ml"]["ticket_implied_n"] == 2
+
+
+def test_priced_sportsbook_ml_matches_trent_formula():
+    """Synthetic equivalent of the live priced-sportsbook set: 72-41 at ~61.6% BE.
+
+    Prototype 66-38 / 61.70% dropped two Oct 13 parents whose American
+    odds were unsigned (1500 / 500 = +1500 / +500). PrizePicks / Surgical
+    Six tickets are excluded even if a parent price is present.
+    """
+    implied = 1.0 / 0.616
+    rows = (
+        [
+            {
+                "res": "W",
+                "platform": "Sportsbook parlay",
+                "ticket_implied_dec": implied,
+                "leg_type": "Moneyline",
+                "pick": "Team pick",
+            }
+        ]
+        * 72
+        + [
+            {
+                "res": "L",
+                "platform": "Sportsbook parlay",
+                "ticket_implied_dec": implied,
+                "leg_type": "Moneyline",
+                "pick": "Team pick",
+            }
+        ]
+        * 41
+        + [
+            {
+                "res": "W",
+                "platform": "PrizePicks",
+                "ticket_implied_dec": 2.0,
+                "leg_type": "Moneyline",
+                "pick": "Team pick",
+            }
+        ]
+        * 10
+        + [
+            {
+                "res": "W",
+                "platform": "Surgical Six (PrizePicks)",
+                "ticket_implied_dec": 2.0,
+                "leg_type": "Moneyline",
+                "pick": "Team pick",
+            }
+        ]
+        * 5
+    )
+    view = build_view(rows, "Pat")
+    assert view["ml"]["record"] == "72-41-0"
+    assert view["ml"]["ticket_implied_be"] == pytest.approx(0.616, abs=0.002)
+    assert view["ml"]["ticket_implied_n"] == 113
+    # All-ML (old definition) would have been 87-41; priced sportsbook is 72-41.
+    assert view["overall"]["record"] == "87-41-0"
 
 
 def _synthetic_rows() -> tuple[list[dict], list[dict]]:
@@ -638,7 +824,10 @@ def test_trent_acceptance_from_live_or_env_fixture(tmp_path: Path):
         pick="Player prop",
         ou="Under",
     )
-    assert bucket_record(unders)["record"] == "23-10-1"
+    assert bucket_record(unders)["record"] == "22-10-1"
     ml = trent.get("ml") or {}
-    assert ml.get("record", "").startswith("66-38")
-    assert ml.get("ticket_implied_be") == pytest.approx(0.617, abs=0.015)
+    # Prototype 66-38 / 61.70% dropped two Oct 13 parents whose American
+    # odds were unsigned (1500 / 500 → +1500 / +500). Priced sportsbook
+    # legs only — not PrizePicks / Surgical Six.
+    assert ml.get("record", "").startswith("72-41")
+    assert ml.get("ticket_implied_be") == pytest.approx(0.616, abs=0.002)

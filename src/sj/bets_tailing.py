@@ -42,10 +42,12 @@ SMALL_SAMPLE = 20
 ASSUMED_AMERICAN = FADE_AMERICAN
 ODDS_NOTE = (
     "Leg odds are mostly missing (blank or a Value placeholder), so the "
-    "flat −110 tail / fade P&L is an approximation. Where the parent "
-    "parlay has a posted price, that price is split evenly across its "
-    "legs as an estimated per-leg breakeven."
+    "flat −110 tail / fade P&L is an approximation. Where a sportsbook "
+    "parent parlay has a posted price, that price is split evenly across "
+    "its legs as an estimated per-leg breakeven. PrizePicks and Surgical "
+    "Six tickets are not split."
 )
+SPORTSBOOK_PLATFORM = "Sportsbook parlay"
 
 SIZE_ORDER = ("2-3 legs", "4-5 legs", "6+ legs")
 MONTH_ORDER = (
@@ -112,20 +114,58 @@ def assumed_breakeven() -> float:
 
 
 def parse_american_odds(raw: Any) -> int | None:
-    """American odds from a cell. Blank / ``Value`` / non-prices → None."""
+    """American odds from a cell. Blank / ``Value`` / non-prices → None.
+
+    Unsigned integers ≥ 100 are plus money (``1500`` → ``+1500``).
+    """
     text = _sheet_text(raw)
     if not text:
         return None
-    _odds, dec = parse_odds(text)
-    if dec is None:
-        return None
     compact = text.replace(",", "").replace(" ", "")
-    if compact.startswith(("+", "-")) or (
-        re.fullmatch(r"-?\d+", compact) and abs(int(compact)) >= 100
-    ):
-        num = round(float(compact))
-        if abs(num) >= 100:
-            return num
+    if compact.startswith(("+", "-")):
+        try:
+            num = round(float(compact))
+        except ValueError:
+            return None
+        return num if abs(num) >= 100 else None
+    if re.fullmatch(r"\d+", compact):
+        num = int(compact)
+        return num if num >= 100 else None
+    return None
+
+
+def parent_decimal(parent: dict[str, Any] | None) -> float | None:
+    """Parent ticket decimal odds.
+
+    Unsigned American ≥ 100 is plus money. When a decimal-odds column
+    exists and disagrees with the American conversion, trust decimal.
+    """
+    if not parent:
+        return None
+    dec_hint = parent.get("dec")
+    dec: float | None = None
+    if isinstance(dec_hint, (int, float)) and math.isfinite(dec_hint) and dec_hint > 1:
+        dec = float(dec_hint)
+    else:
+        parsed_hint = None
+        if dec_hint is not None and not isinstance(dec_hint, bool):
+            try:
+                parsed_hint = float(str(dec_hint).strip())
+            except (TypeError, ValueError):
+                parsed_hint = None
+        if parsed_hint is not None and math.isfinite(parsed_hint) and parsed_hint > 1:
+            dec = parsed_hint
+    am = parse_american_odds(parent.get("odds"))
+    am_dec = american_to_decimal(float(am)) if am is not None else None
+    if dec is not None and am_dec is not None:
+        return dec
+    if dec is not None:
+        return dec
+    if am_dec is not None and am_dec > 1:
+        return am_dec
+    _odds, parsed = parse_odds(parent.get("odds"), parent.get("dec"))
+    if parsed is not None and parsed > 1:
+        return parsed
     return None
 
 
@@ -173,9 +213,24 @@ def platform_bucket(bet_type: Any, book: Any = None) -> str:
     if "kalshi" in key:
         return "Kalshi"
     if "parlay" in key or "sportsbook" in key or key in {"sgp", "s"}:
-        return "Sportsbook parlay"
+        return SPORTSBOOK_PLATFORM
     text = _sheet_text(bet_type) or _sheet_text(book)
     return text or "Other"
+
+
+def is_sportsbook_platform(platform: Any) -> bool:
+    return _norm_key(platform) == _norm_key(SPORTSBOOK_PLATFORM)
+
+
+def is_prizepicks_style(platform: Any) -> bool:
+    """PrizePicks / Surgical Six / DFS — do not split a parent ticket price."""
+    key = _norm_key(platform)
+    return (
+        "prizepicks" in key
+        or "prize picks" in key
+        or "surgical" in key
+        or key == "dfs"
+    )
 
 
 def normalize_leg_sport(sport: Any, league: Any = None) -> str:
@@ -244,18 +299,6 @@ def extract_selection_odds(text: Any) -> list[tuple[str, int]]:
     return out
 
 
-def _parent_decimal(parent: dict[str, Any] | None) -> float | None:
-    if not parent:
-        return None
-    dec = parent.get("dec")
-    if isinstance(dec, (int, float)) and math.isfinite(dec) and dec > 1:
-        return float(dec)
-    _odds, parsed = parse_odds(parent.get("odds"), parent.get("dec"))
-    if parsed is not None and parsed > 1:
-        return parsed
-    return None
-
-
 def _parent_n(leg: dict[str, Any], parent: dict[str, Any] | None) -> int | None:
     if parent and parent.get("n") is not None:
         return _as_int(parent.get("n"))
@@ -297,21 +340,30 @@ def assign_selection_odds(group: list[dict[str, Any]], parent: dict[str, Any]) -
 def enrich_leg(leg: dict[str, Any], parent: dict[str, Any] | None) -> dict[str, Any]:
     """Join one Parlay Legs row to its parent Bets row (header-derived fields)."""
     ticket_n = _parent_n(leg, parent)
-    parent_bt = ""
-    parent_book = ""
+    # Live Bets "Bet type" is just "parlay" for every parlay. The real
+    # platform lives on the Parlay Legs "Parent bet type" (parent_bt).
+    leg_bt = _sheet_text(leg.get("parent_bt"))
+    bets_bt = ""
+    bets_book = ""
     parent_dec = None
     if parent:
-        parent_bt = _sheet_text(parent.get("bt"))
-        parent_book = _sheet_text(parent.get("book"))
-        parent_dec = _parent_decimal(parent)
-    if not parent_bt:
-        parent_bt = _sheet_text(leg.get("parent_bt"))
+        bets_bt = _sheet_text(parent.get("bt"))
+        bets_book = _sheet_text(parent.get("book"))
+        parent_dec = parent_decimal(parent)
+    if leg_bt:
+        parent_bt = leg_bt
+        platform = platform_bucket(leg_bt)
+    else:
+        parent_bt = bets_bt
+        platform = platform_bucket(bets_bt, bets_book)
     sport = normalize_leg_sport(leg.get("sport"), leg.get("lg"))
     pick = pick_bucket(leg.get("pick"))
     ou = ou_bucket(leg.get("dir")) if pick == "Player prop" else ""
     res = normalize_result(leg.get("res"))
     odds_am = parse_american_odds(leg.get("odds"))
-    implied = ticket_implied_decimal(parent_dec, ticket_n)
+    implied = None
+    if is_sportsbook_platform(platform) and not is_prizepicks_style(platform):
+        implied = ticket_implied_decimal(parent_dec, ticket_n)
     row = {
         "id": _sheet_text(leg.get("id")),
         "who": _sheet_text(leg.get("who")) or "Unknown",
@@ -328,7 +380,7 @@ def enrich_leg(leg: dict[str, Any], parent: dict[str, Any] | None) -> dict[str, 
         "sel": _sheet_text(leg.get("sel")),
         "player": _sheet_text(leg.get("player")),
         "res": res,
-        "platform": platform_bucket(parent_bt, parent_book),
+        "platform": platform,
         "ticket_n": ticket_n,
         "ticket_size": ticket_size_bucket(ticket_n),
         "month": month_bucket(leg.get("gd"), leg.get("posted")),
@@ -500,16 +552,27 @@ def _slim_leg(row: dict[str, Any]) -> dict[str, Any]:
     }
 
 
+def is_priced_sportsbook_leg(row: dict[str, Any]) -> bool:
+    """Sportsbook parlay leg whose parent ticket has a posted price."""
+    if not is_sportsbook_platform(row.get("platform")):
+        return False
+    if is_prizepicks_style(row.get("platform")):
+        return False
+    implied = row.get("ticket_implied_dec")
+    return isinstance(implied, (int, float)) and implied > 1
+
+
 def build_view(rows: list[dict[str, Any]], who: str) -> dict[str, Any]:
     overall = bucket_record(rows)
     props = [row for row in rows if row.get("pick") == "Player prop"]
     teams = [row for row in rows if row.get("pick") == "Team pick"]
-    ml = [row for row in teams if row.get("leg_type") == "Moneyline"]
+    # `ml` is priced sportsbook legs (legacy key). Not PrizePicks / Surgical Six.
+    priced = [row for row in rows if is_priced_sportsbook_leg(row)]
     return {
         "who": who,
         "hypothetical_1u": is_hypothetical_1u(who) if who != ALL_WHO else False,
         "overall": overall,
-        "ml": bucket_record(ml) if ml else None,
+        "ml": bucket_record(priced) if priced else None,
         "splits": {
             "sport": group_buckets(rows, lambda r: _as_text(r.get("sport")) or "Other"),
             "pick_group": group_buckets(

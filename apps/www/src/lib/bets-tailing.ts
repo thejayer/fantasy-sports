@@ -7,6 +7,7 @@ import { americanToDecimal, FADE_AMERICAN, uniqueBettors } from "@/lib/bets";
 
 export const ALL_WHO = "*";
 export const SMALL_SAMPLE = 20;
+export const SPORTSBOOK_PLATFORM = "Sportsbook parlay";
 export const TAIL_SIZE_ORDER = ["2-3 legs", "4-5 legs", "6+ legs"] as const;
 export const TAIL_MONTH_ORDER = [
   "Jan",
@@ -256,6 +257,19 @@ export function uniqueTailValues(legs: TailLeg[], field: keyof TailLeg): string[
 
 export function uniqueTailBettors(legs: TailLeg[]): string[] {
   return uniqueBettors(legs);
+}
+
+export function isSportsbookPlatform(platform: string | null | undefined): boolean {
+  return (platform || "").trim().toLowerCase() === SPORTSBOOK_PLATFORM.toLowerCase();
+}
+
+export function pricedSportsbookLegs(legs: TailLeg[]): TailLeg[] {
+  return legs.filter(
+    (leg) =>
+      isSportsbookPlatform(leg.platform) &&
+      leg.ticket_implied_dec != null &&
+      leg.ticket_implied_dec > 1,
+  );
 }
 
 export function signalLabel(signal: TailSignal): string {

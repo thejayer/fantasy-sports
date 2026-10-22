@@ -12,6 +12,7 @@ import {
 import {
   ALL_WHO,
   signalLabel,
+  pricedSportsbookLegs,
   tailBucket,
   tailSplits,
   uniqueTailBettors,
@@ -146,6 +147,7 @@ export function TailingBoard({ document, legs, window, who, filters }: Props) {
     ou: filters.ou || "",
   };
   const overall = tailBucket(legs);
+  const priced = tailBucket(pricedSportsbookLegs(legs));
   const splits = tailSplits(legs);
   const focus = who || ALL_WHO;
   const meta = focus === ALL_WHO ? null : bettorMeta(focus);
@@ -269,10 +271,10 @@ export function TailingBoard({ document, legs, window, who, filters }: Props) {
               <dd>{overall.n}</dd>
             </div>
             <div>
-              <dt>Est. ticket BE</dt>
+              <dt>Priced sportsbook legs</dt>
               <dd>
-                {overall.ticket_implied_be != null
-                  ? `${formatPct(overall.ticket_implied_be)} · ${overall.ticket_implied_n} legs`
+                {priced.ticket_implied_n
+                  ? `${priced.record} · ${formatPct(priced.ticket_implied_be)} est. BE`
                   : "—"}
               </dd>
             </div>
@@ -295,7 +297,7 @@ export function TailingBoard({ document, legs, window, who, filters }: Props) {
         <TailTable caption="Team pick vs player prop" rows={splits.pick_group} />
         <TailTable caption="Prop over vs under" rows={splits.direction} />
         <TailTable caption="Prop stat category" rows={splits.stat} />
-        <TailTable caption="PrizePicks vs sportsbook" rows={splits.platform} />
+        <TailTable caption="By platform" rows={splits.platform} />
         <TailTable caption="Parent ticket size" rows={splits.ticket_size} />
         <TailTable caption="Month" rows={splits.month} />
         <TailTable caption="Team pick type" rows={splits.leg_type} />
@@ -313,9 +315,11 @@ export function TailingBoard({ document, legs, window, who, filters }: Props) {
             blank or the literal <code>Value</code> placeholder.
           </li>
           <li>
-            When a parent parlay has a posted price, that price is split evenly
-            across its legs (decimal to the 1/n power) and labeled as an
-            estimate. Moneyline favorites need more than 52.4% to break even.
+            When a sportsbook parent parlay has a posted price, that price is
+            split evenly across its legs (decimal to the 1/n power) and labeled
+            as an estimate — <strong>Priced sportsbook legs</strong>. PrizePicks
+            and Surgical Six tickets are not split. Moneyline favorites need
+            more than 52.4% to break even.
           </li>
           <li>
             Last synced: <strong>{formatSyncedAt(document.synced_at)}</strong>
