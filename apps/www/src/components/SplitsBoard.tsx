@@ -15,9 +15,11 @@ import {
   fadeTone,
   filterSplitRows,
   groupSplitsByWho,
+  isSplitKind,
   splitLabel,
   uniqueSplitBettors,
   uniqueSplitSports,
+  withCoercedKind,
   type SplitRow,
   type SplitsDocument,
 } from "@/lib/bets-splits";
@@ -106,7 +108,9 @@ export function SplitsBoard({ document, window, sport, who }: Props) {
   const sportRows = filterSplitRows(document.sports, {
     who: who || ALL_WHO,
     sport: sport || null,
-  }).filter((row) => row.kind !== "other");
+  })
+    .map(withCoercedKind)
+    .filter((row) => isSplitKind(row.kind));
 
   return (
     <div className="bets-board">

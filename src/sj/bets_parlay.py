@@ -17,6 +17,7 @@ from sj.bets import (
     _sheet_text,
     format_game_date,
     format_posted,
+    header_map,
     in_window,
     invert_result,
     normalize_result,
@@ -26,7 +27,7 @@ from sj.bets import (
 
 _HEADER_ALIASES: dict[str, tuple[str, ...]] = {
     "id": ("leg id", "id"),
-    "who": ("bettor", "who"),
+    "who": ("bettor key", "who key", "bettor", "who"),
     "parent": ("parent bet id", "parent", "bet id"),
     "n": ("leg #", "leg number", "n"),
     "url": ("parent post url", "post url", "url"),
@@ -98,15 +99,15 @@ def normalize_parlay_row(
         if "id" in row and "who" in row and "res" in row:
             source = row
         else:
-            mapping = _header_map_aliases(row.keys())
+            keys = list(row.keys())
+            mapping = _header_map_aliases(keys)
             if "id" not in mapping:
                 return None
-            source = {}
-            for field, aliases in _HEADER_ALIASES.items():
-                for key, val in row.items():
-                    if _norm_key(key) in aliases:
-                        source[field] = val
-                        break
+            values = list(row.values())
+            source = {
+                field: values[mapping[field]] if field in mapping else None
+                for field in _HEADER_ALIASES
+            }
     else:
         mapping = _header_map_aliases(headers or [])
         if "id" not in mapping:
@@ -160,15 +161,7 @@ def normalize_parlay_row(
 
 
 def _header_map_aliases(headers: Iterable[Any]) -> dict[str, int]:
-    # Local aliases — bets._header_map is Bets-tab only.
-    index: dict[str, int] = {}
-    normalized = [_norm_key(h) for h in headers]
-    for field, aliases in _HEADER_ALIASES.items():
-        for i, name in enumerate(normalized):
-            if name in aliases:
-                index[field] = i
-                break
-    return index
+    return header_map(headers, _HEADER_ALIASES)
 
 
 def normalize_parlay_rows(

@@ -4,6 +4,7 @@ import { BetsBoard, BetsEmpty, BetsTabs, BetsToolbar } from "@/components/BetsBo
 import { ParlayBoard, ParlayEmpty } from "@/components/ParlayBoard";
 import { PublicBoard, PublicEmpty } from "@/components/PublicBoard";
 import { SplitsBoard, SplitsEmpty } from "@/components/SplitsBoard";
+import { TailingBoard, TailingEmpty } from "@/components/TailingBoard";
 import {
   bettorKpis,
   filterBets,
@@ -21,11 +22,13 @@ import {
 } from "@/lib/bets-parlay";
 import { filterWarnings, publicKpis, uniqueWarningSports } from "@/lib/bets-public";
 import { uniqueSplitBettors } from "@/lib/bets-splits";
+import { filterTailLegs, uniqueTailBettors } from "@/lib/bets-tailing";
 import {
   getBetsDocument,
   getParlayDocument,
   getPublicDocument,
   getSplitsDocument,
+  getTailingDocument,
 } from "@/lib/bets-store";
 import { requireBetsActor } from "@/lib/session";
 
@@ -35,7 +38,7 @@ export const metadata: Metadata = {
   title: "Bets",
   robots: { index: false, follow: false },
   description:
-    "Members-only tracker for public slips, parlay legs, and BetMGM public-money fades.",
+    "Members-only tracker for public slips, parlay legs, tailing splits, and BetMGM public-money fades.",
 };
 
 type Props = {
@@ -44,6 +47,11 @@ type Props = {
     window?: string;
     sport?: string;
     who?: string;
+    pick?: string;
+    plat?: string;
+    size?: string;
+    month?: string;
+    ou?: string;
   }>;
 };
 
@@ -53,18 +61,29 @@ export default async function BetsPage({ searchParams }: Props) {
   const tab = parseBetTab(params.tab);
   const window = parseBetWindow(params.window);
   const sport = (params.sport || "").trim();
-  const [betsDoc, parlayDoc, publicDoc, splitsDoc] = await Promise.all([
+  const [betsDoc, parlayDoc, publicDoc, splitsDoc, tailingDoc] = await Promise.all([
     getBetsDocument(),
     getParlayDocument(),
     getPublicDocument(),
     getSplitsDocument(),
+    getTailingDocument(),
   ]);
   const names = uniqueBettors(betsDoc.bets);
   const who = parseBettor(params.who, [
     ...names,
     ...uniqueParlayBettors(parlayDoc.legs),
     ...uniqueSplitBettors(splitsDoc.splits),
+    ...uniqueTailBettors(tailingDoc.legs),
   ]);
+  const tailFilters = {
+    who: who || null,
+    sport: sport || null,
+    pick: (params.pick || "").trim() || null,
+    plat: (params.plat || "").trim() || null,
+    size: (params.size || "").trim() || null,
+    month: (params.month || "").trim() || null,
+    ou: (params.ou || "").trim() || null,
+  };
 
   const filtered = filterBets(betsDoc.bets, {
     window,
@@ -103,14 +122,16 @@ export default async function BetsPage({ searchParams }: Props) {
         <p className="hero-kicker">Public slips</p>
         <h1>Bets</h1>
         <p>
-          Tracked public posters — records, ROI, parlay-leg hit rates, record
-          splits, and John Ewing&apos;s BetMGM public-money fades. Members only.
+          Tracked public posters — records, ROI, parlay-leg hit rates, tailing
+          splits, record splits, and John Ewing&apos;s BetMGM public-money fades.
+          Members only.
         </p>
         <p className="page-hero-meta">
           {betsDoc.bet_count ?? betsDoc.bets.length} slips ·{" "}
           {parlayDoc.leg_count ?? parlayDoc.legs.length} legs ·{" "}
           {publicDoc.warning_count ?? publicDoc.warnings.length} warnings ·{" "}
-          {splitsDoc.split_count ?? splitsDoc.splits.length} splits
+          {splitsDoc.split_count ?? splitsDoc.splits.length} splits ·{" "}
+          {tailingDoc.settled_count ?? tailingDoc.legs.length} tail legs
         </p>
       </section>
       <BetsToolbar actor={actor} />
@@ -154,6 +175,18 @@ export default async function BetsPage({ searchParams }: Props) {
             window={window}
             sport={sport}
             who={who}
+          />
+        )
+      ) : tab === "tail" ? (
+        !tailingDoc.legs.length ? (
+          <TailingEmpty />
+        ) : (
+          <TailingBoard
+            document={tailingDoc}
+            legs={filterTailLegs(tailingDoc.legs, tailFilters)}
+            window={window}
+            who={who}
+            filters={tailFilters}
           />
         )
       ) : !betsDoc.bets.length ? (

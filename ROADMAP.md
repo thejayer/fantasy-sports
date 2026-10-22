@@ -1320,14 +1320,15 @@ Wired into the `www` CI job.
   same `ALLOWED_EMAILS` ∪ `hub_members.json` allowlist as Fantasy /
   Fitness). Bettors are data-driven from the Bets tab (Trent, Steve,
   btidy216, chellgod, LC, Lockedin_Sportz, …) plus a combined all-bettors
-  view. Tabs: Bets, Parlay legs, Public fade, Record splits. Public apex
-  routes stay ungated. No service worker on www.
+  view. Tabs: Bets, Parlay legs, Public fade, Record splits, Tail legs.
+  Public apex routes stay ungated. No service worker on www.
 - Ingest: `sj bets` looks up the Drive file mimeType (`sj-bets-reader`
   SA; Drive + Sheets read-only). Native Sheet → Sheets API (whole used
   range, headers by name); uploaded `.xlsx` → `files.get?alt=media`.
   Writes `bets/bets.json` + `bets/summary.json` (stable `trent`/`steve`/
   `all` keys plus `bettors`) + `bets/parlay_legs.json` +
-  `bets/public_warnings.json` + `bets/record_splits.json`. Scheduler
+  `bets/public_warnings.json` + `bets/record_splits.json` +
+  `bets/tailing_legs.json`. Scheduler
   `32 9-23/2` America/Chicago. KPI math is from raw Bets / Parlay Legs /
   Public Warnings rows; Summary / By-Sport formula tabs ignored. Record
   Splits is read by header names (Bettor / Source tab / Class / Sport),

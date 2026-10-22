@@ -2,6 +2,7 @@ import Link from "next/link";
 
 import { SignOutButton } from "@/components/SignOutButton";
 import {
+  BET_TABS,
   TAB_LABELS,
   type BetRow,
   type BetsDocument,
@@ -58,7 +59,7 @@ export function BetsTabs({
 }: FilterState) {
   return (
     <nav className="bets-tabs" aria-label="Bet tracker sections">
-      {(["bets", "parlays", "warnings", "splits"] as const).map((key) => (
+      {BET_TABS.map((key) => (
         <Link
           key={key}
           href={betsHref({ tab: key, window, sport, who })}

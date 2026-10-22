@@ -113,6 +113,8 @@ describe("data-driven bettors and fade math", () => {
     expect(parseBetTab("parlays")).toBe("parlays");
     expect(parseBetTab("warnings")).toBe("warnings");
     expect(parseBetTab("splits")).toBe("splits");
+    expect(parseBetTab("tail")).toBe("tail");
+    expect(parseBetTab("tailing")).toBe("tail");
     expect(parseBetTab("")).toBe("bets");
     expect(stripValuePrefix("Value")).toBe("");
     expect(stripValuePrefix("Value -6.5")).toBe("-6.5");
@@ -181,6 +183,13 @@ function baseBet(overrides: Partial<BetRow>): BetRow {
   };
 }
 
+describe("laurencowling display name", () => {
+  it("renders Lauren (LC) without changing the feed key", () => {
+    expect(bettorMeta("laurencowling").name).toBe("Lauren (LC)");
+    expect(bettorMeta("laurencowling").handle).toBe("laurencowling");
+  });
+});
+
 describe("laurencowling (LC): payout-only $ and no units", () => {
   it("prices a win from the posted payout when odds are not shown", () => {
     const bet = { res: "W", stake: 198.02, odds: "not shown", dec: 2.232, towin: 442 };
@@ -188,9 +197,9 @@ describe("laurencowling (LC): payout-only $ and no units", () => {
     expect(dollarPl({ ...bet, odds: "+150", towin: 999, stake: 100, dec: null })).toBeCloseTo(150, 6);
   });
 
-  it("shows LC display name and leaves units blank (no NaN / 0u)", () => {
+  it("shows Lauren (LC) and leaves units blank (no NaN / 0u)", () => {
     expect(bettorMeta("laurencowling")).toEqual({
-      name: "LC",
+      name: "Lauren (LC)",
       handle: "laurencowling",
       href: "https://x.com/laurencowling",
     });

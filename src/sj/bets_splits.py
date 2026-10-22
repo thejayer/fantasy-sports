@@ -48,19 +48,22 @@ FADE_EMPHASIS = frozenset({"single_prop", "ticket"})
 ALL_WHO = "*"
 
 # Main table + sport block share these column names (order never matters).
+# Live sheet strings (Unicode minus, parentheticals, "key" columns) are
+# listed verbatim; ``header_map`` / ``_norm_key`` fold punctuation.
 _SPLIT_ALIASES: dict[str, tuple[str, ...]] = {
-    "who": ("bettor", "who"),
+    "who": ("bettor key", "who key", "bettor", "who"),
     "source": ("source tab", "source", "tab"),
-    "klass": ("class", "pick class", "split"),
+    "klass": ("class key", "pick class", "class", "split"),
     "sport": ("sport", "sport category", "sport split"),
     "n": ("n", "bets", "tickets", "count", "#"),
     "w": ("w", "wins", "win"),
     "l": ("l", "losses", "loss"),
     "p": ("p", "push", "pushes"),
     "pending": ("pending",),
-    "unknown": ("unknown",),
+    "unknown": ("unknown/void", "unknown", "void"),
     "win_pct": ("win %", "win%", "win pct", "win percent"),
     "units_pl": (
+        "units p&l (posted units)",
         "posted units p&l",
         "posted units pnl",
         "units p&l",
@@ -69,6 +72,7 @@ _SPLIT_ALIASES: dict[str, tuple[str, ...]] = {
         "profit/loss units",
     ),
     "pl": (
+        "$ p&l (stake shown)",
         "$ p&l",
         "p&l $",
         "$ pnl",
@@ -76,9 +80,17 @@ _SPLIT_ALIASES: dict[str, tuple[str, ...]] = {
         "profit/loss $",
         "p/l $",
     ),
-    "staked": ("$ staked", "staked", "stake $", "stake"),
+    "staked": (
+        "$ staked (settled)",
+        "$ staked",
+        "staked",
+        "stake $",
+        "stake",
+    ),
     "flat_1u": ("flat 1u", "1u flat", "flat 1u p&l", "1u p&l"),
     "fade_1u": (
+        "1u fade p&l (\u2212110)",
+        "1u fade p&l (-110)",
         "1u fade at -110",
         "1u fade @ -110",
         "1u fade p&l at -110",
@@ -92,7 +104,7 @@ _SPLIT_ALIASES: dict[str, tuple[str, ...]] = {
 }
 
 _RECON_ALIASES: dict[str, tuple[str, ...]] = {
-    "check": ("check", "reconciliation", "test"),
+    "check": ("bets check", "legs check", "check", "reconciliation", "test"),
     "expected": ("expected", "sheet"),
     "actual": ("actual", "computed", "raw"),
     "delta": ("delta", "diff", "difference"),
@@ -110,12 +122,16 @@ def normalize_split_who(value: Any) -> str:
 
 def normalize_pick_class(value: Any) -> str:
     key = _norm_key(_sheet_text(value))
-    if key in {"team", "team pick", "team picks"}:
-        return "team"
-    if key in {"prop", "player prop", "player props", "props"}:
-        return "prop"
-    if key in {"parlay", "parlays", "ticket", "whole parlay", "parlay ticket"}:
+    if not key:
+        return ""
+    if "whole parlay" in key or key in {"parlay", "parlays", "ticket", "parlay ticket"}:
         return "parlay"
+    if "player prop" in key or key in {"prop", "props"}:
+        return "prop"
+    if "team pick" in key or key in {"team"}:
+        return "team"
+    if key.endswith(" props") or key == "prop":
+        return "prop"
     return key
 
 
@@ -162,10 +178,45 @@ def classify_header_row(row: Iterable[Any]) -> str | None:
         return "sport"
     if all(key in split_map for key in ("who", "source", "klass")):
         return "main"
-    recon_map = header_map(cells, _RECON_ALIASES)
-    if "check" in recon_map or ("expected" in recon_map and "actual" in recon_map):
+    if _is_recon_header(cells):
         return "recon"
     return None
+
+
+def _is_check_label(value: Any) -> bool:
+    key = _norm_key(_sheet_text(value))
+    return key.endswith(" check") or key in {"check", "bets check", "legs check"}
+
+
+def _is_recon_header(cells: list[Any]) -> bool:
+    """True for a recon *header* row, not a data row labeled ``Bets check``."""
+    recon_map = header_map(cells, _RECON_ALIASES)
+    if "expected" in recon_map:
+        exp = _norm_key(cells[recon_map["expected"]])
+        if exp in {"expected", "sheet"}:
+            return True
+    if "actual" in recon_map:
+        act = _norm_key(cells[recon_map["actual"]])
+        if act in {"actual", "computed", "raw"}:
+            return True
+    if "check" not in recon_map:
+        return False
+    header_words = {
+        "expected",
+        "actual",
+        "delta",
+        "status",
+        "ok",
+        "pass fail",
+        "result",
+        "sheet",
+    }
+    norms = [_norm_key(cell) for cell in cells if not _is_blank(cell)]
+    if any(name in header_words for name in norms):
+        return True
+    return bool(norms) and all(
+        _as_float(cell) is None for cell in cells if not _is_blank(cell)
+    )
 
 
 def _count(value: Any) -> int:
@@ -222,8 +273,11 @@ def normalize_check_row(
     row: list[Any],
     mapping: dict[str, int],
 ) -> dict[str, Any] | None:
-    check = _sheet_text(_cell(row, mapping, "check"))
+    check = _sheet_text(_cell(row, mapping, "check")) if "check" in mapping else ""
     if not check:
+        filled = [_sheet_text(cell) for cell in row if not _is_blank(cell)]
+        check = filled[0] if filled else ""
+    if not check or classify_header_row(row) is not None:
         return None
     return {
         "check": check,

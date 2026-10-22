@@ -524,9 +524,10 @@ def bets_cmd(
     xlsx/JSON fixture. Live ingest looks up the Drive mimeType (read-only)
     and then uses the Sheets API or downloads an uploaded .xlsx. Writes
     ``bets/bets.json``, ``bets/summary.json``, ``bets/parlay_legs.json``,
-    ``bets/public_warnings.json``, and ``bets/record_splits.json``.
-    Summary / By-Sport formula tabs are ignored; Record Splits is read by
-    header names (never fixed rows).
+    ``bets/public_warnings.json``, ``bets/record_splits.json``, and
+    ``bets/tailing_legs.json``. Summary / By-Sport formula tabs are
+    ignored; Record Splits is read by header names (never fixed rows).
+    Tailing legs joins Parlay Legs to Bets by parent id (header names).
     """
     import os
 
@@ -569,12 +570,14 @@ def bets_cmd(
     parlays = result.get("parlay_legs") or {}
     warnings = result.get("public_warnings") or {}
     splits = result.get("record_splits") or {}
+    tailing = result.get("tailing_legs") or {}
     typer.echo(
         f"bets: {document['bet_count']} rows"
         f"{f' ({who_bits})' if who_bits else ''} "
         f"legs={parlays.get('leg_count', 0)} "
         f"warnings={warnings.get('warning_count', 0)} "
         f"splits={splits.get('split_count', 0)} "
+        f"tail={tailing.get('settled_count', 0)} "
         f"synced_at={document['synced_at']}"
     )
 
