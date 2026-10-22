@@ -12,7 +12,9 @@ Auth.js + Google uses the same allowlist as Fantasy / Fitness
 stays public. There is **no service worker** on www — `/bets` is a
 server-rendered page, not a PWA.
 
-See [PORTAL.md](../../PORTAL.md) for domain routing and deploy.
+See [PORTAL.md](../../PORTAL.md) for domain routing and deploy. Vercel pilot
+settings (Root Directory, ignored build step, OIDC/WIF env) live in
+[VERCEL.md](./VERCEL.md).
 
 ## Local
 

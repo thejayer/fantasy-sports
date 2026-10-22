@@ -23,6 +23,22 @@ describe("portal chrome after Phase E audit", () => {
     expect(source).toMatch(/Open on X/);
   });
 
+  it("documents the Vercel pilot without a vercel.json output override", () => {
+    expect(existsSync(path.join(WWW_ROOT, "VERCEL.md"))).toBe(true);
+    expect(existsSync(path.join(WWW_ROOT, "scripts/vercel-ignore.sh"))).toBe(
+      true,
+    );
+    expect(existsSync(path.join(WWW_ROOT, "vercel.json"))).toBe(false);
+    const nextConfig = readFileSync(path.join(WWW_ROOT, "next.config.ts"), "utf8");
+    expect(nextConfig).toMatch(/output:\s*"standalone"/);
+    const vercelMd = readFileSync(path.join(WWW_ROOT, "VERCEL.md"), "utf8");
+    expect(vercelMd).toMatch(/Root Directory/);
+    expect(vercelMd).toMatch(/scripts\/vercel-ignore\.sh/);
+    expect(vercelMd).toMatch(/\/api\/auth\/callback\/google/);
+    expect(vercelMd).not.toMatch(/iam\.gserviceaccount\.com/);
+    expect(vercelMd).not.toMatch(/gs:\/\//);
+  });
+
   it("does not ship a service worker on the apex", () => {
     const files = [
       path.join(WWW_ROOT, "public/service-worker.js"),

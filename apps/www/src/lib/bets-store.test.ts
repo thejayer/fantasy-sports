@@ -5,9 +5,14 @@ import path from "node:path";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 const getBetsActor = vi.fn();
+const downloadGcsObject = vi.fn();
 
 vi.mock("@/lib/session", () => ({
   getBetsActor: () => getBetsActor(),
+}));
+
+vi.mock("@/lib/gcs", () => ({
+  downloadGcsObject: (objectKey: string) => downloadGcsObject(objectKey),
 }));
 
 async function loadStore() {
@@ -17,18 +22,24 @@ async function loadStore() {
 
 beforeEach(() => {
   getBetsActor.mockReset();
+  downloadGcsObject.mockReset();
+  downloadGcsObject.mockResolvedValue(null);
 });
 
 afterEach(() => {
   getBetsActor.mockReset();
+  downloadGcsObject.mockReset();
 });
 
 describe("getBetsDocument", () => {
   const previousBetsDir = process.env.SJ_BETS_DIR;
+  const previousSource = process.env.SJ_DATA_SOURCE;
 
   afterEach(() => {
     if (previousBetsDir === undefined) delete process.env.SJ_BETS_DIR;
     else process.env.SJ_BETS_DIR = previousBetsDir;
+    if (previousSource === undefined) delete process.env.SJ_DATA_SOURCE;
+    else process.env.SJ_DATA_SOURCE = previousSource;
   });
 
   it("returns empty when there is no allowlisted actor", async () => {
@@ -70,5 +81,22 @@ describe("getBetsDocument", () => {
     await expect(getPublicDocument()).resolves.toEqual({ warnings: [] });
     await expect(getSplitsDocument()).resolves.toEqual({ splits: [], sports: [], checks: [] });
     await expect(getTailingDocument()).resolves.toEqual({ views: [], legs: [] });
+    expect(downloadGcsObject).not.toHaveBeenCalled();
+  });
+
+  it("reads bets.json from GCS when SJ_DATA_SOURCE=gcs", async () => {
+    getBetsActor.mockResolvedValue({ email: "demo@example.com", source: "bypass" });
+    process.env.SJ_DATA_SOURCE = "gcs";
+    downloadGcsObject.mockImplementation(async (key: string) => {
+      if (key === "bets/bets.json") {
+        return JSON.stringify({ bets: [{ id: "gcs-1", who: "Gcs" }] });
+      }
+      return null;
+    });
+    const { getBetsDocument } = await loadStore();
+    await expect(getBetsDocument()).resolves.toMatchObject({
+      bets: [{ id: "gcs-1", who: "Gcs" }],
+    });
+    expect(downloadGcsObject).toHaveBeenCalledWith("bets/bets.json");
   });
 });
