@@ -14,12 +14,16 @@ import {
   displayWho,
   fadeTone,
   filterSplitRows,
+  formatCheckFlag,
   groupSplitsByWho,
+  isLegacySplitCheck,
+  isPairSplitCheck,
   isSplitKind,
   splitLabel,
   uniqueSplitBettors,
   uniqueSplitSports,
   withCoercedKind,
+  type SplitCheck,
   type SplitRow,
   type SplitsDocument,
 } from "@/lib/bets-splits";
@@ -36,6 +40,83 @@ function fadeClass(row: SplitRow): string | undefined {
   if (tone === "edge") return "is-fade-edge";
   if (tone === "plus") return "is-fade-plus";
   return undefined;
+}
+
+function checkWhoLabel(who: string): string {
+  if (who === ALL_WHO) return displayWho(who);
+  return bettorMeta(who).name;
+}
+
+function ChecksTables({ checks }: { checks: SplitCheck[] }) {
+  const pair = checks.filter(isPairSplitCheck);
+  const legacy = checks.filter(isLegacySplitCheck);
+  if (!pair.length && !legacy.length) return null;
+  return (
+    <>
+      {pair.length ? (
+        <section className="bets-breakdown">
+          <h3>Sheet checks</h3>
+          <div className="table-scroll">
+            <table className="bets-table">
+              <thead>
+                <tr>
+                  <th>Bettor</th>
+                  <th>Bets tab record</th>
+                  <th>Singles + tickets</th>
+                  <th>Bets check</th>
+                  <th>Parlay Legs record</th>
+                  <th>Leg splits</th>
+                  <th>Legs check</th>
+                </tr>
+              </thead>
+              <tbody>
+                {pair.map((row) => (
+                  <tr key={row.who}>
+                    <td data-label="Bettor">{checkWhoLabel(row.who || "")}</td>
+                    <td data-label="Bets tab record">{row.bets_record || "—"}</td>
+                    <td data-label="Singles + tickets">{row.singles_tickets || "—"}</td>
+                    <td data-label="Bets check">{formatCheckFlag(row.bets_check)}</td>
+                    <td data-label="Parlay Legs record">{row.legs_record || "—"}</td>
+                    <td data-label="Leg splits">{row.leg_splits || "—"}</td>
+                    <td data-label="Legs check">{formatCheckFlag(row.legs_check)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </section>
+      ) : null}
+      {legacy.length ? (
+        <section className="bets-breakdown">
+          <h3>{pair.length ? "Legacy sheet checks" : "Sheet checks"}</h3>
+          <div className="table-scroll">
+            <table className="bets-table">
+              <thead>
+                <tr>
+                  <th>Check</th>
+                  <th>Expected</th>
+                  <th>Actual</th>
+                  <th>Delta</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                {legacy.map((row) => (
+                  <tr key={row.check}>
+                    <td data-label="Check">{row.check}</td>
+                    <td data-label="Expected">{row.expected || "—"}</td>
+                    <td data-label="Actual">{row.actual || "—"}</td>
+                    <td data-label="Delta">{row.delta || "—"}</td>
+                    <td data-label="Status">{row.status || "—"}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </section>
+      ) : null}
+    </>
+  );
 }
 
 function SplitTable({
@@ -203,35 +284,7 @@ export function SplitsBoard({ document, window, sport, who }: Props) {
         showSport
       />
 
-      {document.checks.length ? (
-        <section className="bets-breakdown">
-          <h3>Sheet checks</h3>
-          <div className="table-scroll">
-            <table className="bets-table">
-              <thead>
-                <tr>
-                  <th>Check</th>
-                  <th>Expected</th>
-                  <th>Actual</th>
-                  <th>Delta</th>
-                  <th>Status</th>
-                </tr>
-              </thead>
-              <tbody>
-                {document.checks.map((row) => (
-                  <tr key={row.check}>
-                    <td data-label="Check">{row.check}</td>
-                    <td data-label="Expected">{row.expected || "—"}</td>
-                    <td data-label="Actual">{row.actual || "—"}</td>
-                    <td data-label="Delta">{row.delta || "—"}</td>
-                    <td data-label="Status">{row.status || "—"}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </section>
-      ) : null}
+      <ChecksTables checks={document.checks} />
 
       <aside className="bets-caveats" aria-label="Caveats">
         <h2>Caveats</h2>

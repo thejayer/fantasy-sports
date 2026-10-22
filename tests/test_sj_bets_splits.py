@@ -633,9 +633,12 @@ def test_live_headers_are_matched_in_any_column_order():
         ["Bets check", "Expected", "Actual", "Delta", "Status"],
         _RECON_ALIASES,
     )
-    assert recon["check"] == 0
+    assert recon["bets_check"] == 0
+    assert recon["expected"] == 1
+    assert "check" not in recon
     legs = header_map(["Legs check", "Expected", "Actual"], _RECON_ALIASES)
-    assert legs["check"] == 0
+    assert legs["legs_check"] == 0
+    assert "check" not in legs
 
 
 def test_live_record_splits_headers_parse_kinds_and_fade(tmp_path: Path):
@@ -724,3 +727,169 @@ def test_classify_live_headers_is_not_coordinate_based():
     assert classify_header_row(["Legs check", "Expected", "Actual"]) == "recon"
     # Data row labeled "Bets check" must not start a new header section.
     assert classify_header_row(["Bets check", "12", "12", "0", "Pass"]) is None
+
+
+# Live Record Splits reconciliation headers (tracker sheet). Columns move;
+# the two long record labels are matched by prefix/suffix, not a guessed
+# exact middle. Values are synthetic — not live bettor records.
+LIVE_RECON_HEADERS = [
+    "Bettor key",
+    "Bets tab record",
+    "Singles (team + prop) + tickets",
+    "Bets check",
+    "Parlay Legs record",
+    "Leg splits (team + prop)",
+    "Legs check",
+]
+
+
+def _recon_by_name(headers: list[str], values: dict[str, object]) -> list[object]:
+    return [values[name] for name in headers]
+
+
+def test_live_recon_headers_parse_record_pairs_and_flags():
+    """Read the live pair-table headers by name, never by column index."""
+    shuffled = [
+        "Legs check",
+        "Parlay Legs record",
+        "Bettor key",
+        "Leg splits vs legs tab",
+        "Bets tab record",
+        "Bets check",
+        "Singles / tickets + tickets",
+    ]
+    assert shuffled[0] != LIVE_RECON_HEADERS[0]
+    assert classify_header_row(LIVE_RECON_HEADERS) == "recon"
+    assert classify_header_row(shuffled) == "recon"
+    # A pair-table data row must not be treated as a new header.
+    assert (
+        classify_header_row(
+            ["alexhandle", "8-20-0", "8-20-0", True, "4-2-0", "4-2-0", False]
+        )
+        is None
+    )
+
+    rows = [
+        {
+            "Bettor key": "*",
+            "Bets tab record": "12-8-1",
+            "Singles (team + prop) + tickets": "12-8-1",
+            "Bets check": True,
+            "Parlay Legs record": "20-10-0",
+            "Leg splits (team + prop)": "20-10-0",
+            "Legs check": True,
+        },
+        {
+            "Bettor key": "alexhandle",
+            "Bets tab record": "8-20-0",
+            "Singles (team + prop) + tickets": "8-20-0",
+            "Bets check": "TRUE",
+            "Parlay Legs record": "4-2-0",
+            "Leg splits (team + prop)": "4-2-1",
+            "Legs check": False,
+        },
+        {
+            "Bettor key": "jordanh",
+            "Bets tab record": "3-2-1",
+            "Singles (team + prop) + tickets": "3-2-0",
+            "Bets check": False,
+            "Parlay Legs record": "1-1-0",
+            "Leg splits (team + prop)": "1-1-0",
+            "Legs check": "FALSE",
+        },
+        {
+            "Bettor key": "patk",
+            "Bets tab record": "2-2-0",
+            "Singles (team + prop) + tickets": "2-2-0",
+            "Bets check": True,
+            "Parlay Legs record": "0-1-0",
+            "Leg splits (team + prop)": "0-1-0",
+            "Legs check": True,
+        },
+        {
+            "Bettor key": "samw",
+            "Bets tab record": "1-0-0",
+            "Singles (team + prop) + tickets": "1-0-0",
+            "Bets check": True,
+            "Parlay Legs record": "5-3-0",
+            "Leg splits (team + prop)": "5-3-0",
+            "Legs check": True,
+        },
+        {
+            "Bettor key": "rileyq",
+            "Bets tab record": "0-1-0",
+            "Singles (team + prop) + tickets": "0-1-0",
+            "Bets check": True,
+            "Parlay Legs record": "2-2-0",
+            "Leg splits (team + prop)": "2-2-0",
+            "Legs check": True,
+        },
+        {
+            "Bettor key": "casey",
+            "Bets tab record": "4-4-0",
+            "Singles (team + prop) + tickets": "4-4-0",
+            "Bets check": True,
+            "Parlay Legs record": "3-3-0",
+            "Leg splits (team + prop)": "3-3-0",
+            "Legs check": True,
+        },
+    ]
+    grid = [
+        ["Record Splits"],
+        [],
+        LIVE_RECON_HEADERS,
+        *[_recon_by_name(LIVE_RECON_HEADERS, row) for row in rows],
+    ]
+    parsed = parse_splits_grid(grid)
+    assert len(parsed["checks"]) == 7
+    star = parsed["checks"][0]
+    assert star["who"] == "*"
+    assert star["bets_record"] == "12-8-1"
+    assert star["singles_tickets"] == "12-8-1"
+    assert star["bets_check"] is True
+    assert star["legs_record"] == "20-10-0"
+    assert star["leg_splits"] == "20-10-0"
+    assert star["legs_check"] is True
+    assert star.get("check") in {None, ""} or "check" not in star
+    alex = next(row for row in parsed["checks"] if row["who"] == "alexhandle")
+    assert alex["bets_check"] is True
+    assert alex["legs_check"] is False
+    assert alex["bets_record"] == "8-20-0"
+    assert alex["leg_splits"] == "4-2-1"
+    jordan = next(row for row in parsed["checks"] if row["who"] == "jordanh")
+    assert jordan["bets_check"] is False
+    assert jordan["legs_check"] is False
+    assert {row["who"] for row in parsed["checks"]} == {
+        "*",
+        "alexhandle",
+        "jordanh",
+        "patk",
+        "samw",
+        "rileyq",
+        "casey",
+    }
+    assert all(row.get("actual", "") == "" or "actual" not in row for row in parsed["checks"])
+
+    # Same values, columns in a different order, slightly different long labels.
+    shuffled_values = []
+    rename = {
+        "Singles (team + prop) + tickets": "Singles / tickets + tickets",
+        "Leg splits (team + prop)": "Leg splits vs legs tab",
+    }
+    for row in rows:
+        remapped = {rename.get(key, key): value for key, value in row.items()}
+        shuffled_values.append(_recon_by_name(shuffled, remapped))
+    shifted = parse_splits_grid([["spacer"], shuffled, *shuffled_values])
+    assert [row["who"] for row in shifted["checks"]] == [row["who"] for row in parsed["checks"]]
+    assert [row["bets_check"] for row in shifted["checks"]] == [
+        row["bets_check"] for row in parsed["checks"]
+    ]
+    assert [row["legs_check"] for row in shifted["checks"]] == [
+        row["legs_check"] for row in parsed["checks"]
+    ]
+    assert [row["singles_tickets"] for row in shifted["checks"]] == [
+        row["singles_tickets"] for row in parsed["checks"]
+    ]
+    assert [row["leg_splits"] for row in shifted["checks"]] == [
+        row["leg_splits"] for row in parsed["checks"]
+    ]

@@ -103,13 +103,68 @@ _SPLIT_ALIASES: dict[str, tuple[str, ...]] = {
     ),
 }
 
+# Per-bettor pair table (live tracker) plus the older Check / Expected / Actual block.
+# "Bets check" / "Legs check" are boolean columns on the pair table — they are
+# *not* aliases for the legacy name column (that was collapsing every row to
+# ``{check: "True"}``). Prefix/suffix matches for the two long record headers
+# live in ``_recon_header_map``.
 _RECON_ALIASES: dict[str, tuple[str, ...]] = {
-    "check": ("bets check", "legs check", "check", "reconciliation", "test"),
+    "who": ("bettor key", "who key", "bettor", "who"),
+    "bets_record": ("bets tab record",),
+    "singles_tickets": ("singles + tickets",),
+    "bets_check": ("bets check",),
+    "legs_record": ("parlay legs record",),
+    "leg_splits": ("leg splits",),
+    "legs_check": ("legs check",),
+    "check": ("check", "reconciliation", "test"),
     "expected": ("expected", "sheet"),
     "actual": ("actual", "computed", "raw"),
     "delta": ("delta", "diff", "difference"),
     "status": ("status", "ok", "pass/fail", "result"),
 }
+
+_TRUE_FLAGS = frozenset({"true", "yes", "y", "1", "pass", "ok"})
+_FALSE_FLAGS = frozenset({"false", "no", "n", "0", "fail"})
+
+
+def _recon_header_map(headers: Iterable[Any]) -> dict[str, int]:
+    """Exact aliases first; then prefix/suffix for the two long record headers."""
+    cells = list(headers)
+    mapping = header_map(cells, _RECON_ALIASES)
+    for i, cell in enumerate(cells):
+        name = _norm_key(cell)
+        if not name:
+            continue
+        if "singles_tickets" not in mapping and name.startswith("singles") and name.endswith(
+            "+ tickets"
+        ):
+            mapping["singles_tickets"] = i
+        if "leg_splits" not in mapping and name.startswith("leg splits"):
+            mapping["leg_splits"] = i
+    return mapping
+
+
+def _as_flag(value: Any) -> bool | None:
+    """Sheet TRUE/FALSE (bool or text) → Python bool. Blank stays None."""
+    if isinstance(value, bool):
+        return value
+    if _is_blank(value):
+        return None
+    key = _norm_key(_sheet_text(value))
+    if key in _TRUE_FLAGS:
+        return True
+    if key in _FALSE_FLAGS:
+        return False
+    return None
+
+
+def _mapped_norm(cells: list[Any], mapping: dict[str, int], field: str) -> str:
+    if field not in mapping:
+        return ""
+    idx = mapping[field]
+    if idx >= len(cells):
+        return ""
+    return _norm_key(cells[idx])
 
 
 def normalize_split_who(value: Any) -> str:
@@ -188,15 +243,37 @@ def _is_check_label(value: Any) -> bool:
     return key.endswith(" check") or key in {"check", "bets check", "legs check"}
 
 
+def _is_pair_recon_header(cells: list[Any], recon_map: dict[str, int]) -> bool:
+    """Live per-bettor table: Bettor key + record pairs + Bets/Legs check."""
+    bets_check = _mapped_norm(cells, recon_map, "bets_check") == "bets check"
+    legs_check = _mapped_norm(cells, recon_map, "legs_check") == "legs check"
+    if not (bets_check or legs_check):
+        return False
+    who = _mapped_norm(cells, recon_map, "who")
+    bets_rec = _mapped_norm(cells, recon_map, "bets_record")
+    legs_rec = _mapped_norm(cells, recon_map, "legs_record")
+    singles = _mapped_norm(cells, recon_map, "singles_tickets")
+    splits = _mapped_norm(cells, recon_map, "leg_splits")
+    return bool(
+        who in {"bettor key", "who key", "bettor", "who"}
+        or bets_rec == "bets tab record"
+        or legs_rec == "parlay legs record"
+        or (singles.startswith("singles") and singles.endswith("+ tickets"))
+        or splits.startswith("leg splits")
+    )
+
+
 def _is_recon_header(cells: list[Any]) -> bool:
     """True for a recon *header* row, not a data row labeled ``Bets check``."""
-    recon_map = header_map(cells, _RECON_ALIASES)
+    recon_map = _recon_header_map(cells)
+    if _is_pair_recon_header(cells, recon_map):
+        return True
     if "expected" in recon_map:
-        exp = _norm_key(cells[recon_map["expected"]])
+        exp = _mapped_norm(cells, recon_map, "expected")
         if exp in {"expected", "sheet"}:
             return True
     if "actual" in recon_map:
-        act = _norm_key(cells[recon_map["actual"]])
+        act = _mapped_norm(cells, recon_map, "actual")
         if act in {"actual", "computed", "raw"}:
             return True
     if "check" not in recon_map:
@@ -269,15 +346,67 @@ def normalize_split_row(
     }
 
 
+def _is_pair_recon_mapping(mapping: dict[str, int]) -> bool:
+    pair_fields = (
+        "bets_record",
+        "singles_tickets",
+        "legs_record",
+        "leg_splits",
+    )
+    if any(field in mapping for field in pair_fields):
+        return True
+    if "expected" in mapping or "actual" in mapping or "check" in mapping:
+        return False
+    return "who" in mapping and ("bets_check" in mapping or "legs_check" in mapping)
+
+
 def normalize_check_row(
     row: list[Any],
     mapping: dict[str, int],
 ) -> dict[str, Any] | None:
-    check = _sheet_text(_cell(row, mapping, "check")) if "check" in mapping else ""
+    if classify_header_row(row) is not None:
+        return None
+    if _is_pair_recon_mapping(mapping):
+        who = normalize_split_who(_cell(row, mapping, "who"))
+        bets_record = _sheet_text(_cell(row, mapping, "bets_record"))
+        singles = _sheet_text(_cell(row, mapping, "singles_tickets"))
+        bets_check = _as_flag(_cell(row, mapping, "bets_check"))
+        legs_record = _sheet_text(_cell(row, mapping, "legs_record"))
+        leg_splits = _sheet_text(_cell(row, mapping, "leg_splits"))
+        legs_check = _as_flag(_cell(row, mapping, "legs_check"))
+        if not who:
+            return None
+        if not any(
+            (
+                bets_record,
+                singles,
+                bets_check is not None,
+                legs_record,
+                leg_splits,
+                legs_check is not None,
+            )
+        ):
+            return None
+        return {
+            "who": who,
+            "bets_record": bets_record,
+            "singles_tickets": singles,
+            "bets_check": bets_check,
+            "legs_record": legs_record,
+            "leg_splits": leg_splits,
+            "legs_check": legs_check,
+        }
+    check_field = "check"
+    if "check" not in mapping:
+        if "bets_check" in mapping:
+            check_field = "bets_check"
+        elif "legs_check" in mapping:
+            check_field = "legs_check"
+    check = _sheet_text(_cell(row, mapping, check_field)) if check_field in mapping else ""
     if not check:
         filled = [_sheet_text(cell) for cell in row if not _is_blank(cell)]
         check = filled[0] if filled else ""
-    if not check or classify_header_row(row) is not None:
+    if not check:
         return None
     return {
         "check": check,
@@ -310,8 +439,11 @@ def parse_splits_grid(grid: list[list[Any]]) -> dict[str, list[dict[str, Any]]]:
         if kind is None:
             i += 1
             continue
-        aliases = _RECON_ALIASES if kind == "recon" else _SPLIT_ALIASES
-        mapping = header_map(grid[i], aliases)
+        mapping = (
+            _recon_header_map(grid[i])
+            if kind == "recon"
+            else header_map(grid[i], _SPLIT_ALIASES)
+        )
         i += 1
         block: list[list[Any]] = []
         saw_data = False

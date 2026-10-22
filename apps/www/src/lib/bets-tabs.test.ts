@@ -58,6 +58,14 @@ describe("record_splits fixture", () => {
     expect(doc.splits.some((row) => fadeTone(row) === "edge")).toBe(true);
     expect(doc.sports.some((row) => row.sport === "NFL")).toBe(true);
     expect(doc.checks.length).toBeGreaterThan(0);
+    const star = doc.checks.find((row) => row.who === "*");
+    expect(star?.bets_record).toMatch(/^\d+-\d+-\d+$/);
+    expect(star?.singles_tickets).toMatch(/^\d+-\d+-\d+$/);
+    expect(star?.legs_record).toMatch(/^\d+-\d+-\d+$/);
+    expect(star?.leg_splits).toMatch(/^\d+-\d+-\d+$/);
+    expect(typeof star?.bets_check).toBe("boolean");
+    expect(typeof star?.legs_check).toBe("boolean");
+    expect(doc.checks.every((row) => row.check == null || row.check === "")).toBe(true);
   });
 });
 
