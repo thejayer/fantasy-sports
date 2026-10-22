@@ -110,7 +110,7 @@ MULTI_TYPES = frozenset({"parlay", "sgp", "prizepicks/dfs"})
 # Sheet headers (current export) plus the shorter names from the product brief.
 _HEADER_ALIASES: dict[str, tuple[str, ...]] = {
     "id": ("bet id", "id"),
-    "who": ("bettor", "who"),
+    "who": ("bettor key", "who key", "bettor", "who"),
     "posted": ("date posted (ct)", "date posted", "posted"),
     "gd": ("game date", "gd"),
     "kt": ("game kickoff time (et)", "kickoff time (et)", "kt"),
@@ -583,15 +583,15 @@ def normalize_row(row: dict[str, Any] | list[Any], headers: list[Any] | None = N
         if "who" in row and "id" in row:
             source = row
         else:
-            mapping = _header_map(row.keys())
+            keys = list(row.keys())
+            mapping = _header_map(keys)
             if "id" not in mapping:
                 return None
-            source = {}
-            for field, aliases in _HEADER_ALIASES.items():
-                for key, val in row.items():
-                    if _norm_key(key) in aliases:
-                        source[field] = val
-                        break
+            values = list(row.values())
+            source = {
+                field: values[mapping[field]] if field in mapping else None
+                for field in _HEADER_ALIASES
+            }
     else:
         mapping = _header_map(headers or [])
         if "id" not in mapping:
@@ -1188,10 +1188,11 @@ def export_bets(
     store_dir: Path | str | None = None,
     source: str | None = None,
 ) -> dict[str, Any]:
-    """Normalize tracker tabs and write bets / summary / parlay / public / splits."""
+    """Normalize tracker tabs and write bets / summary / parlay / public / splits / tailing."""
     from sj.bets_parlay import build_parlay_document, normalize_parlay_rows
     from sj.bets_public import build_public_document, normalize_public_rows
     from sj.bets_splits import build_splits_document, parse_splits_grid
+    from sj.bets_tailing import build_tailing_document
 
     book: dict[str, tuple[list[str], list[list[Any]]]] = {}
     bets: list[dict[str, Any]]
@@ -1235,18 +1236,27 @@ def export_bets(
         source=src,
         sheet_id=sheet_id,
     )
+    tailing_doc = build_tailing_document(
+        parlay_doc.get("legs") or [],
+        document.get("bets") or [],
+        synced_at=document["synced_at"],
+        source=src,
+        sheet_id=sheet_id,
+    )
 
     write_bets(document, "bets", store_dir=store_dir)
     write_bets(summary, "summary", store_dir=store_dir)
     write_bets(parlay_doc, "parlay_legs", store_dir=store_dir)
     write_bets(public_doc, "public_warnings", store_dir=store_dir)
     write_bets(splits_doc, "record_splits", store_dir=store_dir)
+    write_bets(tailing_doc, "tailing_legs", store_dir=store_dir)
     return {
         "bets": document,
         "summary": summary,
         "parlay_legs": parlay_doc,
         "public_warnings": public_doc,
         "record_splits": splits_doc,
+        "tailing_legs": tailing_doc,
     }
 
 

@@ -10,6 +10,7 @@ import type { BetsDocument, BetRow } from "@/lib/bets";
 import type { ParlayDocument, ParlayLeg } from "@/lib/bets-parlay";
 import type { PublicDocument, PublicWarning } from "@/lib/bets-public";
 import type { SplitCheck, SplitRow, SplitsDocument } from "@/lib/bets-splits";
+import type { TailLeg, TailView, TailingDocument } from "@/lib/bets-tailing";
 import { betsDataRoots } from "@/lib/paths";
 import { getBetsActor } from "@/lib/session";
 
@@ -128,4 +129,32 @@ export async function getSplitsDocument(): Promise<SplitsDocument> {
   if (!(await getBetsActor())) return empty;
   const raw = await readFirstFile("record_splits.json");
   return raw ? (parseSplitsDocument(raw) ?? empty) : empty;
+}
+
+function isTailLeg(value: unknown): value is TailLeg {
+  if (!value || typeof value !== "object") return false;
+  const row = value as Record<string, unknown>;
+  return typeof row.id === "string" && typeof row.who === "string";
+}
+
+function isTailView(value: unknown): value is TailView {
+  if (!value || typeof value !== "object") return false;
+  const row = value as Record<string, unknown>;
+  return typeof row.who === "string" && row.overall != null && typeof row.overall === "object";
+}
+
+function parseTailingDocument(raw: string): TailingDocument | null {
+  const parsed = parseJson(raw);
+  if (!parsed || typeof parsed !== "object") return null;
+  const doc = parsed as TailingDocument;
+  const legs = Array.isArray(doc.legs) ? doc.legs.filter(isTailLeg) : [];
+  const views = Array.isArray(doc.views) ? doc.views.filter(isTailView) : [];
+  return { ...doc, legs, views };
+}
+
+export async function getTailingDocument(): Promise<TailingDocument> {
+  const empty: TailingDocument = { views: [], legs: [] };
+  if (!(await getBetsActor())) return empty;
+  const raw = await readFirstFile("tailing_legs.json");
+  return raw ? (parseTailingDocument(raw) ?? empty) : empty;
 }

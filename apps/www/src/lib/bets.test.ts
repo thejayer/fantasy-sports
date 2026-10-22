@@ -113,6 +113,8 @@ describe("data-driven bettors and fade math", () => {
     expect(parseBetTab("parlays")).toBe("parlays");
     expect(parseBetTab("warnings")).toBe("warnings");
     expect(parseBetTab("splits")).toBe("splits");
+    expect(parseBetTab("tail")).toBe("tail");
+    expect(parseBetTab("tailing")).toBe("tail");
     expect(parseBetTab("")).toBe("bets");
     expect(stripValuePrefix("Value")).toBe("");
     expect(stripValuePrefix("Value -6.5")).toBe("-6.5");

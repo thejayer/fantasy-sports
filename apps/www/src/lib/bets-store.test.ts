@@ -33,12 +33,18 @@ describe("getBetsDocument", () => {
 
   it("returns empty when there is no allowlisted actor", async () => {
     getBetsActor.mockResolvedValue(null);
-    const { getBetsDocument, getParlayDocument, getPublicDocument, getSplitsDocument } =
-      await loadStore();
+    const {
+      getBetsDocument,
+      getParlayDocument,
+      getPublicDocument,
+      getSplitsDocument,
+      getTailingDocument,
+    } = await loadStore();
     await expect(getBetsDocument()).resolves.toEqual({ bets: [] });
     await expect(getParlayDocument()).resolves.toEqual({ legs: [] });
     await expect(getPublicDocument()).resolves.toEqual({ warnings: [] });
     await expect(getSplitsDocument()).resolves.toEqual({ splits: [], sports: [], checks: [] });
+    await expect(getTailingDocument()).resolves.toEqual({ views: [], legs: [] });
   });
 
   it("treats corrupt JSON as empty so one file cannot 500 the board", async () => {
@@ -48,14 +54,21 @@ describe("getBetsDocument", () => {
     writeFileSync(path.join(dir, "parlay_legs.json"), "{not-json");
     writeFileSync(path.join(dir, "public_warnings.json"), "[]");
     writeFileSync(path.join(dir, "record_splits.json"), "{not-json");
+    writeFileSync(path.join(dir, "tailing_legs.json"), "{not-json");
     process.env.SJ_BETS_DIR = dir;
-    const { getBetsDocument, getParlayDocument, getPublicDocument, getSplitsDocument } =
-      await loadStore();
+    const {
+      getBetsDocument,
+      getParlayDocument,
+      getPublicDocument,
+      getSplitsDocument,
+      getTailingDocument,
+    } = await loadStore();
     await expect(getBetsDocument()).resolves.toMatchObject({
       bets: [{ id: "T-1", who: "Trent" }],
     });
     await expect(getParlayDocument()).resolves.toEqual({ legs: [] });
     await expect(getPublicDocument()).resolves.toEqual({ warnings: [] });
     await expect(getSplitsDocument()).resolves.toEqual({ splits: [], sports: [], checks: [] });
+    await expect(getTailingDocument()).resolves.toEqual({ views: [], legs: [] });
   });
 });

@@ -22,7 +22,7 @@ export const WINDOW_DATES: Record<BetWindow, string | null> = {
   nfl: NFL_START,
 };
 
-export const BET_TABS = ["bets", "parlays", "warnings", "splits"] as const;
+export const BET_TABS = ["bets", "parlays", "warnings", "splits", "tail"] as const;
 export type BetTab = (typeof BET_TABS)[number];
 
 export const TAB_LABELS: Record<BetTab, string> = {
@@ -30,6 +30,7 @@ export const TAB_LABELS: Record<BetTab, string> = {
   parlays: "Parlay legs",
   warnings: "Public fade",
   splits: "Record splits",
+  tail: "Tail legs",
 };
 
 /** Display overlay only — not the list of who appears on the board. */
@@ -190,6 +191,7 @@ export function parseBetTab(raw: string | null | undefined): BetTab {
   if (key === "parlays" || key === "parlay" || key === "legs") return "parlays";
   if (key === "warnings" || key === "public" || key === "fade") return "warnings";
   if (key === "splits" || key === "split" || key === "record") return "splits";
+  if (key === "tail" || key === "tailing" || key === "tail-legs") return "tail";
   return "bets";
 }
 
@@ -207,12 +209,24 @@ export function betsHref(opts: {
   window?: BetWindow;
   sport?: string;
   who?: string;
+  pick?: string;
+  plat?: string;
+  size?: string;
+  month?: string;
+  ou?: string;
 }): string {
   const params = new URLSearchParams();
   if (opts.tab && opts.tab !== "bets") params.set("tab", opts.tab);
   if (opts.window && opts.window !== "all") params.set("window", opts.window);
   if (opts.sport) params.set("sport", opts.sport);
   if (opts.who) params.set("who", opts.who);
+  if (opts.tab === "tail") {
+    if (opts.pick) params.set("pick", opts.pick);
+    if (opts.plat) params.set("plat", opts.plat);
+    if (opts.size) params.set("size", opts.size);
+    if (opts.month) params.set("month", opts.month);
+    if (opts.ou) params.set("ou", opts.ou);
+  }
   const query = params.toString();
   return query ? `/bets?${query}` : "/bets";
 }

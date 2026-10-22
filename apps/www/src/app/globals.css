@@ -2128,6 +2128,34 @@ a.news-card:focus-visible .news-card-read {
   color: var(--sj-win, #22c55e);
 }
 
+.bets-table tr.is-tail-plus td {
+  box-shadow: inset 3px 0 0 var(--sj-win, #22c55e);
+}
+
+.bets-table tr.is-tail-avoid td {
+  box-shadow: inset 3px 0 0 var(--sj-loss, #ef4444);
+}
+
+.bets-signal {
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.bets-signal-tail {
+  color: var(--sj-win, #22c55e);
+}
+
+.bets-signal-avoid {
+  color: var(--sj-loss, #ef4444);
+}
+
+.bets-signal-small,
+.bets-signal-marginal {
+  color: color-mix(in srgb, var(--color-text) 62%, transparent);
+}
+
 @media (max-width: 900px) {
   .bets-kpi-grid {
     grid-template-columns: 1fr;
