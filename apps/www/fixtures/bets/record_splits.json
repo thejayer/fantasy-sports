@@ -1,19 +1,59 @@
 {
-  "check_count": 2,
+  "check_count": 6,
   "checks": [
     {
-      "actual": "12",
-      "check": "Bets W vs splits",
-      "delta": "0",
-      "expected": "12",
-      "status": "Pass"
+      "bets_check": true,
+      "bets_record": "5-6-1",
+      "leg_splits": "6-6-0",
+      "legs_check": true,
+      "legs_record": "6-6-0",
+      "singles_tickets": "5-6-1",
+      "who": "*"
     },
     {
-      "actual": "8",
-      "check": "Parlay legs vs splits",
-      "delta": "0",
-      "expected": "8",
-      "status": "Pass"
+      "bets_check": true,
+      "bets_record": "1-1-0",
+      "leg_splits": "1-1-0",
+      "legs_check": true,
+      "legs_record": "1-1-0",
+      "singles_tickets": "1-1-0",
+      "who": "Trent"
+    },
+    {
+      "bets_check": false,
+      "bets_record": "1-2-1",
+      "leg_splits": "1-1-0",
+      "legs_check": true,
+      "legs_record": "1-1-0",
+      "singles_tickets": "1-1-1",
+      "who": "Steve"
+    },
+    {
+      "bets_check": true,
+      "bets_record": "1-1-0",
+      "leg_splits": "2-0-0",
+      "legs_check": true,
+      "legs_record": "2-0-0",
+      "singles_tickets": "1-1-0",
+      "who": "chellgod"
+    },
+    {
+      "bets_check": true,
+      "bets_record": "2-0-0",
+      "leg_splits": "1-1-0",
+      "legs_check": true,
+      "legs_record": "1-1-0",
+      "singles_tickets": "2-0-0",
+      "who": "btidy216"
+    },
+    {
+      "bets_check": true,
+      "bets_record": "1-1-0",
+      "leg_splits": "0-0-0",
+      "legs_check": true,
+      "legs_record": "0-0-0",
+      "singles_tickets": "1-1-0",
+      "who": "Lockedin_Sportz"
     }
   ],
   "kinds": [

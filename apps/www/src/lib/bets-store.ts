@@ -9,7 +9,7 @@ import path from "path";
 import type { BetsDocument, BetRow } from "@/lib/bets";
 import type { ParlayDocument, ParlayLeg } from "@/lib/bets-parlay";
 import type { PublicDocument, PublicWarning } from "@/lib/bets-public";
-import type { SplitCheck, SplitRow, SplitsDocument } from "@/lib/bets-splits";
+import { isSplitCheck, type SplitRow, type SplitsDocument } from "@/lib/bets-splits";
 import type { TailLeg, TailView, TailingDocument } from "@/lib/bets-tailing";
 import { betsDataRoots } from "@/lib/paths";
 import { getBetsActor } from "@/lib/session";
@@ -36,12 +36,6 @@ function isSplitRow(value: unknown): value is SplitRow {
   if (!value || typeof value !== "object") return false;
   const row = value as Record<string, unknown>;
   return typeof row.who === "string" && typeof row.kind === "string";
-}
-
-function isSplitCheck(value: unknown): value is SplitCheck {
-  if (!value || typeof value !== "object") return false;
-  const row = value as Record<string, unknown>;
-  return typeof row.check === "string";
 }
 
 async function readFirstFile(name: string): Promise<string | null> {

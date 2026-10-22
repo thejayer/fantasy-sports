@@ -6,7 +6,11 @@ import {
   coerceSplitKind,
   fadeTone,
   filterSplitRows,
+  formatCheckFlag,
   groupSplitsByWho,
+  isLegacySplitCheck,
+  isPairSplitCheck,
+  isSplitCheck,
   splitLabel,
   uniqueSplitBettors,
   type SplitRow,
@@ -98,6 +102,40 @@ describe("record splits helpers", () => {
     ];
     expect(uniqueSplitBettors(rows)).toEqual(["Lockedin_Sportz", "Trent"]);
     expect(filterSplitRows(rows, { who: "Trent" })).toHaveLength(1);
+  });
+});
+
+describe("sheet check row shape", () => {
+  it("accepts per-bettor record pairs and formats TRUE/FALSE", () => {
+    const pair = {
+      who: "*",
+      bets_record: "5-6-1",
+      singles_tickets: "5-6-1",
+      bets_check: true,
+      legs_record: "6-6-0",
+      leg_splits: "6-6-0",
+      legs_check: false,
+    };
+    expect(isPairSplitCheck(pair)).toBe(true);
+    expect(isLegacySplitCheck(pair)).toBe(false);
+    expect(isSplitCheck(pair)).toBe(true);
+    expect(formatCheckFlag(true)).toBe("TRUE");
+    expect(formatCheckFlag(false)).toBe("FALSE");
+    expect(formatCheckFlag("TRUE")).toBe("TRUE");
+    expect(formatCheckFlag(null)).toBe("—");
+    expect(
+      isSplitCheck({
+        check: "Bets W vs splits",
+        expected: "12",
+        actual: "12",
+        delta: "0",
+        status: "Pass",
+      }),
+    ).toBe(true);
+    expect(isSplitCheck({ check: "True", actual: "", expected: "", delta: "", status: "" })).toBe(
+      true,
+    );
+    expect(isSplitCheck({ actual: "", expected: "" })).toBe(false);
   });
 });
 

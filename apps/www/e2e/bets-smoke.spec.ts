@@ -38,6 +38,10 @@ test.describe("bets fixture board", () => {
     await expect(page.getByText(/1u fade/i).first()).toBeVisible();
     await expect(page.getByText(/Fade edge/i).first()).toBeVisible();
     await expect(page.getByRole("navigation", { name: "Record split filters" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Sheet checks" })).toBeVisible();
+    await expect(page.getByRole("columnheader", { name: "Bets tab record" })).toBeVisible();
+    await expect(page.getByRole("columnheader", { name: "Bets check" })).toBeVisible();
+    await expect(page.getByRole("columnheader", { name: "Legs check" })).toBeVisible();
     await page.goto("/bets?tab=tail");
     await expect(page.getByRole("navigation", { name: "Tail-leg filters" })).toBeVisible();
     await expect(page.getByRole("heading", { name: "By sport" })).toBeVisible();

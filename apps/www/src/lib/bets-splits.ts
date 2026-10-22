@@ -53,12 +53,51 @@ export type SplitRow = {
 };
 
 export type SplitCheck = {
-  check: string;
-  expected: string;
-  actual: string;
-  delta: string;
-  status: string;
+  who?: string;
+  bets_record?: string;
+  singles_tickets?: string;
+  bets_check?: boolean | string | null;
+  legs_record?: string;
+  leg_splits?: string;
+  legs_check?: boolean | string | null;
+  check?: string;
+  expected?: string;
+  actual?: string;
+  delta?: string;
+  status?: string;
 };
+
+export function isPairSplitCheck(row: SplitCheck): boolean {
+  return Boolean(
+    row.who &&
+      (row.bets_record ||
+        row.singles_tickets ||
+        row.legs_record ||
+        row.leg_splits ||
+        row.bets_check != null ||
+        row.legs_check != null),
+  );
+}
+
+export function isLegacySplitCheck(row: SplitCheck): boolean {
+  return typeof row.check === "string" && row.check.length > 0;
+}
+
+export function isSplitCheck(value: unknown): value is SplitCheck {
+  if (!value || typeof value !== "object") return false;
+  const row = value as SplitCheck;
+  return isPairSplitCheck(row) || isLegacySplitCheck(row);
+}
+
+export function formatCheckFlag(value: boolean | string | null | undefined): string {
+  if (value === true) return "TRUE";
+  if (value === false) return "FALSE";
+  if (value == null || value === "") return "—";
+  const key = String(value).trim().toLowerCase();
+  if (key === "true" || key === "yes" || key === "pass") return "TRUE";
+  if (key === "false" || key === "no" || key === "fail") return "FALSE";
+  return String(value);
+}
 
 export type SplitsDocument = {
   synced_at?: string;
