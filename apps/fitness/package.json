@@ -15,7 +15,7 @@
     "check:js": "node --check public/utils.js && node --check public/hevy-import.js && node --check public/data.js && node --check public/store.js && node --check public/timers.js && node --check public/analytics.js && node --check public/render.js && node --check public/events.js && node --check public/sync.js && node --check public/app.js && node --check public/sj-chrome.js && node --check public/service-worker.js && node --check scripts/verify-app.js"
   },
   "dependencies": {
-    "next": "16.3.8",
+    "next": "16.4.1",
     "next-auth": "^5.0.0-beta.32",
     "react": "^19.0.0",
     "react-dom": "^19.0.0"
@@ -26,7 +26,7 @@
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "eslint": "^9",
-    "eslint-config-next": "16.3.8",
+    "eslint-config-next": "16.4.1",
     "typescript": "^5",
     "vitest": "^4.1.11"
   },

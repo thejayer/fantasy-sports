@@ -13,7 +13,7 @@
     "test:e2e:auth": "AUTH_DEV_BYPASS=0 PORT=3006 PLAYWRIGHT_BASE_URL=http://127.0.0.1:3006 playwright test e2e/auth-redirect.spec.ts"
   },
   "dependencies": {
-    "next": "^16.4.0",
+    "next": "16.4.1",
     "next-auth": "^5.0.0-beta.32",
     "react": "^19.0.0",
     "react-dom": "^19.0.0"
@@ -24,7 +24,7 @@
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "eslint": "^9",
-    "eslint-config-next": "^16.4.0",
+    "eslint-config-next": "16.4.1",
     "typescript": "^5",
     "vitest": "^4.1.11"
   },
