@@ -1,17 +1,14 @@
 /**
- * Read bets/*.json from the GCS mount, else committed www fixtures.
- * Missing files are empty (EmptyState), not a 500.
+ * Read bets/*.json from the GCS mount (fs) or the bucket (gcs), else
+ * committed www fixtures. Missing files are empty (EmptyState), not a 500.
  */
-
-import { promises as fs } from "fs";
-import path from "path";
 
 import type { BetsDocument, BetRow } from "@/lib/bets";
 import type { ParlayDocument, ParlayLeg } from "@/lib/bets-parlay";
 import type { PublicDocument, PublicWarning } from "@/lib/bets-public";
 import { isSplitCheck, type SplitRow, type SplitsDocument } from "@/lib/bets-splits";
 import type { TailLeg, TailView, TailingDocument } from "@/lib/bets-tailing";
-import { betsDataRoots } from "@/lib/paths";
+import { readBetsText } from "@/lib/data-source";
 import { getBetsActor } from "@/lib/session";
 
 function isBetRow(value: unknown): value is BetRow {
@@ -39,17 +36,7 @@ function isSplitRow(value: unknown): value is SplitRow {
 }
 
 async function readFirstFile(name: string): Promise<string | null> {
-  for (const root of betsDataRoots()) {
-    const filePath = path.join(root, name);
-    try {
-      return await fs.readFile(filePath, "utf8");
-    } catch (err) {
-      const code = (err as NodeJS.ErrnoException).code;
-      if (code === "ENOENT") continue;
-      throw err;
-    }
-  }
-  return null;
+  return readBetsText(name);
 }
 
 function parseJson(raw: string): unknown | null {
