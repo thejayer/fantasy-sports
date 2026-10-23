@@ -110,7 +110,7 @@ MULTI_TYPES = frozenset({"parlay", "sgp", "prizepicks/dfs"})
 # Sheet headers (current export) plus the shorter names from the product brief.
 _HEADER_ALIASES: dict[str, tuple[str, ...]] = {
     "id": ("bet id", "id"),
-    "who": ("bettor", "who"),
+    "who": ("bettor key", "who key", "bettor", "who"),
     "posted": ("date posted (ct)", "date posted", "posted"),
     "gd": ("game date", "gd"),
     "kt": ("game kickoff time (et)", "kickoff time (et)", "kt"),
@@ -148,8 +148,33 @@ def bets_sync_enabled() -> bool:
     return os.environ.get("SJ_BETS_SYNC", "1") != "0"
 
 
+# Unicode dashes / minus → ASCII hyphen so "1u Fade P&L (−110)" matches.
+_DASH_TRANSLATE = str.maketrans(
+    {
+        "\u2212": "-",  # minus
+        "\u2010": "-",
+        "\u2011": "-",
+        "\u2012": "-",
+        "\u2013": "-",  # en dash
+        "\u2014": "-",  # em dash
+        "\u2015": "-",
+        "\ufe58": "-",
+        "\uff0d": "-",
+    }
+)
+
+
 def _norm_key(value: Any) -> str:
-    return re.sub(r"\s+", " ", str(value or "").strip().lower())
+    """Case-insensitive header key: dashes unified, punctuation collapsed.
+
+    Live Record Splits headers use a Unicode minus, parentheses, and
+    slashes (``1u Fade P&L (−110)``, ``Unknown/Void``). Matching is by
+    this normalized form, never by column letter.
+    """
+    text = str(value or "").strip().casefold().translate(_DASH_TRANSLATE)
+    # Keep * (all-bettors), _ (handles), $ % # + - .  Collapse other punctuation.
+    text = re.sub(r"[^a-z0-9_$%#+*.-]+", " ", text)
+    return re.sub(r"\s+", " ", text).strip()
 
 
 def _is_blank(value: Any) -> bool:
@@ -481,15 +506,32 @@ def header_map(
     headers: Iterable[Any],
     aliases: dict[str, tuple[str, ...]] | None = None,
 ) -> dict[str, int]:
-    """Map canonical field names to column indexes by header text, not order."""
+    """Map canonical field names to column indexes by header text, not order.
+
+    Aliases and sheet headers are both passed through ``_norm_key``. When
+    both a display column (``Bettor``, ``Class``) and a key column
+    (``Bettor key``, ``Class key``) match the same field, the key column
+    wins.
+    """
     spec = aliases or _HEADER_ALIASES
     index: dict[str, int] = {}
     normalized = [_norm_key(h) for h in headers]
     for field, names in spec.items():
+        alias_norms = [_norm_key(n) for n in names if _norm_key(n)]
+        best: tuple[int, int] | None = None
         for i, name in enumerate(normalized):
-            if name in names:
-                index[field] = i
-                break
+            if not name:
+                continue
+            for alias in alias_norms:
+                if name != alias:
+                    continue
+                score = len(alias)
+                if name.endswith(" key") or alias.endswith(" key"):
+                    score += 100
+                if best is None or score > best[0]:
+                    best = (score, i)
+        if best is not None:
+            index[field] = best[1]
     return index
 
 
@@ -541,15 +583,15 @@ def normalize_row(row: dict[str, Any] | list[Any], headers: list[Any] | None = N
         if "who" in row and "id" in row:
             source = row
         else:
-            mapping = _header_map(row.keys())
+            keys = list(row.keys())
+            mapping = _header_map(keys)
             if "id" not in mapping:
                 return None
-            source = {}
-            for field, aliases in _HEADER_ALIASES.items():
-                for key, val in row.items():
-                    if _norm_key(key) in aliases:
-                        source[field] = val
-                        break
+            values = list(row.values())
+            source = {
+                field: values[mapping[field]] if field in mapping else None
+                for field in _HEADER_ALIASES
+            }
     else:
         mapping = _header_map(headers or [])
         if "id" not in mapping:
@@ -1146,10 +1188,11 @@ def export_bets(
     store_dir: Path | str | None = None,
     source: str | None = None,
 ) -> dict[str, Any]:
-    """Normalize tracker tabs and write bets / summary / parlay / public / splits."""
+    """Normalize tracker tabs and write bets / summary / parlay / public / splits / tailing."""
     from sj.bets_parlay import build_parlay_document, normalize_parlay_rows
     from sj.bets_public import build_public_document, normalize_public_rows
     from sj.bets_splits import build_splits_document, parse_splits_grid
+    from sj.bets_tailing import build_tailing_document
 
     book: dict[str, tuple[list[str], list[list[Any]]]] = {}
     bets: list[dict[str, Any]]
@@ -1193,18 +1236,27 @@ def export_bets(
         source=src,
         sheet_id=sheet_id,
     )
+    tailing_doc = build_tailing_document(
+        parlay_doc.get("legs") or [],
+        document.get("bets") or [],
+        synced_at=document["synced_at"],
+        source=src,
+        sheet_id=sheet_id,
+    )
 
     write_bets(document, "bets", store_dir=store_dir)
     write_bets(summary, "summary", store_dir=store_dir)
     write_bets(parlay_doc, "parlay_legs", store_dir=store_dir)
     write_bets(public_doc, "public_warnings", store_dir=store_dir)
     write_bets(splits_doc, "record_splits", store_dir=store_dir)
+    write_bets(tailing_doc, "tailing_legs", store_dir=store_dir)
     return {
         "bets": document,
         "summary": summary,
         "parlay_legs": parlay_doc,
         "public_warnings": public_doc,
         "record_splits": splits_doc,
+        "tailing_legs": tailing_doc,
     }
 
 

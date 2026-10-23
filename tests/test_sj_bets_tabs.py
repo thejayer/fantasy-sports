@@ -97,7 +97,7 @@ def test_tracker_tabs_xlsx_has_four_data_tabs():
     assert set(book) == {"Bets", PARLAY_TAB, PUBLIC_TAB, RECORD_SPLITS_TAB}
 
 
-def test_export_writes_five_json_files_and_stable_summary_keys(tmp_path: Path):
+def test_export_writes_six_json_files_and_stable_summary_keys(tmp_path: Path):
     result = export_bets(from_path=TABS, store_dir=tmp_path)
     store = FileStore(tmp_path)
     bets = store.read_bets("bets")
@@ -105,9 +105,10 @@ def test_export_writes_five_json_files_and_stable_summary_keys(tmp_path: Path):
     parlays = store.read_bets("parlay_legs")
     warnings = store.read_bets("public_warnings")
     splits = store.read_bets("record_splits")
+    tailing = store.read_bets("tailing_legs")
     assert bets is not None and summary is not None
     assert parlays is not None and warnings is not None
-    assert splits is not None
+    assert splits is not None and tailing is not None
     assert bets["bet_count"] == 12
     assert {b["who"] for b in bets["bets"]} == {
         "Trent",
@@ -131,6 +132,9 @@ def test_export_writes_five_json_files_and_stable_summary_keys(tmp_path: Path):
     assert result["parlay_legs"]["leg_count"] == 8
     assert splits["split_count"] == result["record_splits"]["split_count"]
     assert any(row["who"] == "Lockedin_Sportz" for row in splits["splits"])
+    assert tailing["settled_count"] == result["tailing_legs"]["settled_count"]
+    assert tailing["tab"] == PARLAY_TAB
+    assert {v["who"] for v in tailing["views"]} >= {"*"}
 
 
 def test_legacy_xlsx_still_exports_empty_new_tabs(tmp_path: Path):
@@ -139,6 +143,7 @@ def test_legacy_xlsx_still_exports_empty_new_tabs(tmp_path: Path):
     assert result["parlay_legs"]["leg_count"] == 0
     assert result["public_warnings"]["warning_count"] == 0
     assert result["record_splits"]["split_count"] == 0
+    assert result["tailing_legs"]["settled_count"] == 0
     assert result["summary"]["trent"]["bets"] > 200
 
 
@@ -148,6 +153,7 @@ def test_json_from_still_bets_only(tmp_path: Path):
     assert result["parlay_legs"]["leg_count"] == 0
     assert result["public_warnings"]["warning_count"] == 0
     assert result["record_splits"]["split_count"] == 0
+    assert result["tailing_legs"]["settled_count"] == 0
 
 
 def test_parlay_strips_value_prefix_and_kpis():

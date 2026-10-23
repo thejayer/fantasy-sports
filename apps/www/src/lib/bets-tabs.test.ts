@@ -8,6 +8,7 @@ import { filterWarnings, publicKpis } from "./bets-public";
 import type { ParlayLeg } from "./bets-parlay";
 import type { PublicWarning } from "./bets-public";
 import { fadeTone, groupSplitsByWho, type SplitsDocument } from "./bets-splits";
+import { tailBucket, type TailingDocument } from "./bets-tailing";
 
 const FIX = path.resolve(__dirname, "../../fixtures/bets");
 
@@ -57,6 +58,28 @@ describe("record_splits fixture", () => {
     expect(doc.splits.some((row) => fadeTone(row) === "edge")).toBe(true);
     expect(doc.sports.some((row) => row.sport === "NFL")).toBe(true);
     expect(doc.checks.length).toBeGreaterThan(0);
+    const star = doc.checks.find((row) => row.who === "*");
+    expect(star?.bets_record).toMatch(/^\d+-\d+-\d+$/);
+    expect(star?.singles_tickets).toMatch(/^\d+-\d+-\d+$/);
+    expect(star?.legs_record).toMatch(/^\d+-\d+-\d+$/);
+    expect(star?.leg_splits).toMatch(/^\d+-\d+-\d+$/);
+    expect(typeof star?.bets_check).toBe("boolean");
+    expect(typeof star?.legs_check).toBe("boolean");
+    expect(doc.checks.every((row) => row.check == null || row.check === "")).toBe(true);
+  });
+});
+
+describe("tailing_legs fixture", () => {
+  it("has an All view and recomputes tail / fade from settled legs", () => {
+    const doc = JSON.parse(
+      readFileSync(path.join(FIX, "tailing_legs.json"), "utf8"),
+    ) as TailingDocument;
+    expect(doc.legs.length).toBeGreaterThan(0);
+    expect(doc.views.some((view) => view.who === "*")).toBe(true);
+    const all = tailBucket(doc.legs);
+    expect(all.record).toMatch(/^\d+-\d+-\d+$/);
+    expect(all.tail_110).toBeCloseTo(all.wins * (100 / 110) - all.losses);
+    expect(all.fade_110).toBeCloseTo(all.losses * (100 / 110) - all.wins);
   });
 });
 

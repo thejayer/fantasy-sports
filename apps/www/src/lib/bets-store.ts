@@ -1,16 +1,14 @@
 /**
- * Read bets/*.json from the GCS mount, else committed www fixtures.
- * Missing files are empty (EmptyState), not a 500.
+ * Read bets/*.json from the GCS mount (fs) or the bucket (gcs), else
+ * committed www fixtures. Missing files are empty (EmptyState), not a 500.
  */
-
-import { promises as fs } from "fs";
-import path from "path";
 
 import type { BetsDocument, BetRow } from "@/lib/bets";
 import type { ParlayDocument, ParlayLeg } from "@/lib/bets-parlay";
 import type { PublicDocument, PublicWarning } from "@/lib/bets-public";
-import type { SplitCheck, SplitRow, SplitsDocument } from "@/lib/bets-splits";
-import { betsDataRoots } from "@/lib/paths";
+import { isSplitCheck, type SplitRow, type SplitsDocument } from "@/lib/bets-splits";
+import type { TailLeg, TailView, TailingDocument } from "@/lib/bets-tailing";
+import { readBetsText } from "@/lib/data-source";
 import { getBetsActor } from "@/lib/session";
 
 function isBetRow(value: unknown): value is BetRow {
@@ -37,24 +35,8 @@ function isSplitRow(value: unknown): value is SplitRow {
   return typeof row.who === "string" && typeof row.kind === "string";
 }
 
-function isSplitCheck(value: unknown): value is SplitCheck {
-  if (!value || typeof value !== "object") return false;
-  const row = value as Record<string, unknown>;
-  return typeof row.check === "string";
-}
-
 async function readFirstFile(name: string): Promise<string | null> {
-  for (const root of betsDataRoots()) {
-    const filePath = path.join(root, name);
-    try {
-      return await fs.readFile(filePath, "utf8");
-    } catch (err) {
-      const code = (err as NodeJS.ErrnoException).code;
-      if (code === "ENOENT") continue;
-      throw err;
-    }
-  }
-  return null;
+  return readBetsText(name);
 }
 
 function parseJson(raw: string): unknown | null {
@@ -128,4 +110,32 @@ export async function getSplitsDocument(): Promise<SplitsDocument> {
   if (!(await getBetsActor())) return empty;
   const raw = await readFirstFile("record_splits.json");
   return raw ? (parseSplitsDocument(raw) ?? empty) : empty;
+}
+
+function isTailLeg(value: unknown): value is TailLeg {
+  if (!value || typeof value !== "object") return false;
+  const row = value as Record<string, unknown>;
+  return typeof row.id === "string" && typeof row.who === "string";
+}
+
+function isTailView(value: unknown): value is TailView {
+  if (!value || typeof value !== "object") return false;
+  const row = value as Record<string, unknown>;
+  return typeof row.who === "string" && row.overall != null && typeof row.overall === "object";
+}
+
+function parseTailingDocument(raw: string): TailingDocument | null {
+  const parsed = parseJson(raw);
+  if (!parsed || typeof parsed !== "object") return null;
+  const doc = parsed as TailingDocument;
+  const legs = Array.isArray(doc.legs) ? doc.legs.filter(isTailLeg) : [];
+  const views = Array.isArray(doc.views) ? doc.views.filter(isTailView) : [];
+  return { ...doc, legs, views };
+}
+
+export async function getTailingDocument(): Promise<TailingDocument> {
+  const empty: TailingDocument = { views: [], legs: [] };
+  if (!(await getBetsActor())) return empty;
+  const raw = await readFirstFile("tailing_legs.json");
+  return raw ? (parseTailingDocument(raw) ?? empty) : empty;
 }

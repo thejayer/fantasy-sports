@@ -3,9 +3,14 @@ import { describe, expect, it } from "vitest";
 import { isHypothetical1u, parseBetTab } from "./bets";
 import {
   ALL_WHO,
+  coerceSplitKind,
   fadeTone,
   filterSplitRows,
+  formatCheckFlag,
   groupSplitsByWho,
+  isLegacySplitCheck,
+  isPairSplitCheck,
+  isSplitCheck,
   splitLabel,
   uniqueSplitBettors,
   type SplitRow,
@@ -61,6 +66,34 @@ describe("record splits helpers", () => {
     expect(fadeTone(row({ fade_plus: false, fade_emphasis: false, fade_1u: -1 }))).toBeNull();
   });
 
+  it("coerces live display class labels when kind is other", () => {
+    expect(
+      coerceSplitKind(
+        row({
+          kind: "other",
+          klass: "single bets – player props",
+          source: "bets",
+        }),
+      ),
+    ).toBe("single_prop");
+    expect(
+      coerceSplitKind(row({ kind: "other", klass: "whole parlay tickets", source: "bets" })),
+    ).toBe("ticket");
+    const groups = groupSplitsByWho([
+      row({
+        who: "Lauren (laurencowling)",
+        kind: "other",
+        klass: "whole parlay tickets",
+        fade_1u: 2,
+        fade_plus: false,
+        fade_emphasis: false,
+      }),
+    ]);
+    expect(groups.map((g) => g.who)).toEqual(["laurencowling"]);
+    expect(groups[0].rows[0].kind).toBe("ticket");
+    expect(fadeTone(groups[0].rows[0])).toBe("edge");
+  });
+
   it("filters by bettor and lists people other than *", () => {
     const rows = [
       row({ who: ALL_WHO }),
@@ -69,6 +102,40 @@ describe("record splits helpers", () => {
     ];
     expect(uniqueSplitBettors(rows)).toEqual(["Lockedin_Sportz", "Trent"]);
     expect(filterSplitRows(rows, { who: "Trent" })).toHaveLength(1);
+  });
+});
+
+describe("sheet check row shape", () => {
+  it("accepts per-bettor record pairs and formats TRUE/FALSE", () => {
+    const pair = {
+      who: "*",
+      bets_record: "5-6-1",
+      singles_tickets: "5-6-1",
+      bets_check: true,
+      legs_record: "6-6-0",
+      leg_splits: "6-6-0",
+      legs_check: false,
+    };
+    expect(isPairSplitCheck(pair)).toBe(true);
+    expect(isLegacySplitCheck(pair)).toBe(false);
+    expect(isSplitCheck(pair)).toBe(true);
+    expect(formatCheckFlag(true)).toBe("TRUE");
+    expect(formatCheckFlag(false)).toBe("FALSE");
+    expect(formatCheckFlag("TRUE")).toBe("TRUE");
+    expect(formatCheckFlag(null)).toBe("—");
+    expect(
+      isSplitCheck({
+        check: "Bets W vs splits",
+        expected: "12",
+        actual: "12",
+        delta: "0",
+        status: "Pass",
+      }),
+    ).toBe(true);
+    expect(isSplitCheck({ check: "True", actual: "", expected: "", delta: "", status: "" })).toBe(
+      true,
+    );
+    expect(isSplitCheck({ actual: "", expected: "" })).toBe(false);
   });
 });
 

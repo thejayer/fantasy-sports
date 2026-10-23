@@ -12,7 +12,9 @@ Auth.js + Google uses the same allowlist as Fantasy / Fitness
 stays public. There is **no service worker** on www — `/bets` is a
 server-rendered page, not a PWA.
 
-See [PORTAL.md](../../PORTAL.md) for domain routing and deploy.
+See [PORTAL.md](../../PORTAL.md) for domain routing and deploy. Vercel pilot
+settings (Root Directory, ignored build step, OIDC/WIF env) live in
+[VERCEL.md](./VERCEL.md).
 
 ## Local
 
@@ -57,7 +59,8 @@ scopes via ADC) and then:
 The live tracker id is an uploaded `.xlsx` in Drive today — no conversion
 needed. Austin shares that file with the reader SA as Viewer. Writes
 `bets/bets.json` + `bets/summary.json` + `bets/parlay_legs.json` +
-`bets/public_warnings.json` + `bets/record_splits.json` to the store
+`bets/public_warnings.json` + `bets/record_splits.json` +
+`bets/tailing_legs.json` to the store
 (`gs://<GCS_BUCKET>/bets/` when `SJ_GCS_BUCKET` is set). The live project,
 bucket, and bets-reader SA email are GitHub repository secrets / Austin
 (`GCP_PROJECT_ID`, `GCS_BUCKET`, `<BETS_READER_SA_EMAIL>`) — not committed here.

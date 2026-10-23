@@ -11,9 +11,11 @@ from sj.bets import (
     FORMULA_TABS,
     RECORD_SPLITS_TAB,
     TRACKER_TABS,
+    _norm_key,
     cut_header_table,
     export_bets,
     flat_1u_pl,
+    header_map,
     is_hypothetical_1u,
     locate_header_row,
     normalize_row,
@@ -21,6 +23,8 @@ from sj.bets import (
     read_xlsx_grid,
 )
 from sj.bets_splits import (
+    _RECON_ALIASES,
+    _SPLIT_ALIASES,
     FADE_EMPHASIS,
     classify_header_row,
     normalize_pick_class,
@@ -211,6 +215,11 @@ def test_pick_class_column_is_read_by_name_even_as_column_ae():
         "Trailing junk",
     ]
     assert headers.index("Pick Class") == 30  # column AE
+    from sj.bets import header_map as bets_header_map
+
+    mapped = bets_header_map(headers)
+    assert mapped["pick_class"] == 30
+    assert mapped["posted"] == 2  # Date posted (CT) still matches after punctuation fold
     row = [""] * len(headers)
     row[0] = "Z-1"
     row[1] = "Lockedin_Sportz"
@@ -417,3 +426,470 @@ def test_write_xlsx_round_trip_shifted_splits(tmp_path: Path):
     assert result["bets"]["bets"][0]["who"] == "Lockedin_Sportz"
     kinds = {row["kind"] for row in result["record_splits"]["splits"] if row["who"] == "*"}
     assert kinds == {"single_team", "single_prop", "leg_team", "leg_prop", "ticket"}
+
+
+# Exact live Record Splits header strings (sj-bets-lj6mw). Synthetic values only.
+LIVE_FADE = "1u Fade P&L (\u2212110)"
+LIVE_MAIN_HEADERS = [
+    "Win %",
+    "Class",
+    "Bettor",
+    LIVE_FADE,
+    "W",
+    "L",
+    "P",
+    "Pending",
+    "Unknown/Void",
+    "Units P&L (posted units)",
+    "$ P&L (stake shown)",
+    "$ staked (settled)",
+    "Flat 1u",
+    "Source tab",
+    "Class key",
+    "Bettor key",
+]
+
+
+def _live_row(
+    *,
+    display_who: str,
+    key_who: str,
+    display_klass: str,
+    key_klass: str,
+    source: str,
+    w: int,
+    l: int,
+    p: int = 0,
+    pending: int = 0,
+    unknown: int = 0,
+    win_pct: float,
+    units_pl: float,
+    pl: float,
+    staked: float,
+    flat_1u: float,
+    fade_1u: float,
+) -> list[object]:
+    by_name = {
+        "Win %": win_pct,
+        "Class": display_klass,
+        "Bettor": display_who,
+        LIVE_FADE: fade_1u,
+        "W": w,
+        "L": l,
+        "P": p,
+        "Pending": pending,
+        "Unknown/Void": unknown,
+        "Units P&L (posted units)": units_pl,
+        "$ P&L (stake shown)": pl,
+        "$ staked (settled)": staked,
+        "Flat 1u": flat_1u,
+        "Source tab": source,
+        "Class key": key_klass,
+        "Bettor key": key_who,
+    }
+    return [by_name[name] for name in LIVE_MAIN_HEADERS]
+
+
+def live_splits_grid(*, pad: int = 6) -> list[list[object]]:
+    """Live header strings + synthetic bettors. Rows can sit anywhere."""
+    title = [["Record Splits"], ["Synthetic — not the live sheet"]]
+    pad_rows = [[""] for _ in range(pad)]
+    main = [
+        LIVE_MAIN_HEADERS,
+        _live_row(
+            display_who="Alex (alexhandle)",
+            key_who="alexhandle",
+            display_klass="whole parlay tickets",
+            key_klass="Parlay",
+            source="Bets",
+            w=8,
+            l=20,
+            win_pct=0.2857,
+            units_pl=4.2,
+            pl=210,
+            staked=800,
+            flat_1u=12.5,
+            fade_1u=22.0,
+        ),
+        _live_row(
+            display_who="Alex (alexhandle)",
+            key_who="alexhandle",
+            display_klass="single bets \u2013 player props",
+            key_klass="Player prop",
+            source="Bets",
+            w=1,
+            l=4,
+            win_pct=0.2,
+            units_pl=-3.1,
+            pl=-155,
+            staked=400,
+            flat_1u=-2.8,
+            fade_1u=3.64,
+        ),
+        _live_row(
+            display_who="Jordan (jordanh)",
+            key_who="jordanh",
+            display_klass="single bets \u2013 team picks",
+            key_klass="Team",
+            source="Bets",
+            w=3,
+            l=2,
+            p=1,
+            win_pct=0.6,
+            units_pl=1.1,
+            pl=55,
+            staked=500,
+            flat_1u=0.4,
+            fade_1u=-0.5,
+        ),
+        _live_row(
+            display_who="*",
+            key_who="*",
+            display_klass="parlay legs \u2013 team picks",
+            key_klass="Team pick",
+            source="Parlay Legs",
+            w=10,
+            l=6,
+            win_pct=0.625,
+            units_pl=2.0,
+            pl=100,
+            staked=600,
+            flat_1u=1.5,
+            fade_1u=-4.0,
+        ),
+        _live_row(
+            display_who="*",
+            key_who="*",
+            display_klass="parlay legs \u2013 player props",
+            key_klass="Player prop",
+            source="Parlay Legs",
+            w=7,
+            l=9,
+            win_pct=0.4375,
+            units_pl=-1.2,
+            pl=-60,
+            staked=700,
+            flat_1u=-2.0,
+            fade_1u=1.82,
+        ),
+    ]
+    recon = [
+        [],
+        ["Bets check", "Expected", "Actual", "Delta", "Status"],
+        ["Bets W vs splits", "12", "12", "0", "Pass"],
+        ["Legs check", "Expected", "Actual", "Delta", "Status"],
+        ["Parlay legs vs splits", "8", "8", "0", "Pass"],
+    ]
+    sport = [
+        [],
+        ["Sport split"],
+        [
+            "Sport",
+            "Bettor",
+            "Bettor key",
+            "Class",
+            "Class key",
+            "Source tab",
+            "W",
+            "L",
+            "P",
+            LIVE_FADE,
+        ],
+        ["NFL", "Alex (alexhandle)", "alexhandle", "whole parlay tickets", "Parlay", "Bets", 5, 12, 0, 14.0],
+        ["CFB", "Alex (alexhandle)", "alexhandle", "whole parlay tickets", "Parlay", "Bets", 3, 8, 0, 8.0],
+    ]
+    return [*title, *pad_rows, *main, *recon, *sport]
+
+
+def test_norm_key_folds_unicode_minus_and_punctuation():
+    assert _norm_key(LIVE_FADE) == _norm_key("1u fade p&l (-110)")
+    assert _norm_key("Unknown/Void") == "unknown void"
+    assert _norm_key("Units P&L (posted units)") == _norm_key("units p&l (posted units)")
+    assert _norm_key("Class key") == "class key"
+    assert _norm_key("Bets check") == "bets check"
+
+
+def test_header_map_prefers_key_columns_over_display():
+    headers = ["Bettor", "Class", "Bettor key", "Class key", "Source tab"]
+    mapping = header_map(headers, _SPLIT_ALIASES)
+    assert headers[mapping["who"]] == "Bettor key"
+    assert headers[mapping["klass"]] == "Class key"
+    # Display-only sheet still resolves.
+    display_only = header_map(["Bettor", "Class", "Source tab"], _SPLIT_ALIASES)
+    assert display_only["who"] == 0
+    assert display_only["klass"] == 1
+
+
+def test_live_headers_are_matched_in_any_column_order():
+    mapping = header_map(LIVE_MAIN_HEADERS, _SPLIT_ALIASES)
+    assert LIVE_MAIN_HEADERS[mapping["who"]] == "Bettor key"
+    assert LIVE_MAIN_HEADERS[mapping["klass"]] == "Class key"
+    assert LIVE_MAIN_HEADERS[mapping["fade_1u"]] == LIVE_FADE
+    assert LIVE_MAIN_HEADERS[mapping["unknown"]] == "Unknown/Void"
+    assert LIVE_MAIN_HEADERS[mapping["units_pl"]] == "Units P&L (posted units)"
+    assert LIVE_MAIN_HEADERS[mapping["pl"]] == "$ P&L (stake shown)"
+    assert LIVE_MAIN_HEADERS[mapping["staked"]] == "$ staked (settled)"
+    recon = header_map(
+        ["Bets check", "Expected", "Actual", "Delta", "Status"],
+        _RECON_ALIASES,
+    )
+    assert recon["bets_check"] == 0
+    assert recon["expected"] == 1
+    assert "check" not in recon
+    legs = header_map(["Legs check", "Expected", "Actual"], _RECON_ALIASES)
+    assert legs["legs_check"] == 0
+    assert "check" not in legs
+
+
+def test_live_record_splits_headers_parse_kinds_and_fade(tmp_path: Path):
+    compact = parse_splits_grid(live_splits_grid(pad=0))
+    shifted = parse_splits_grid(live_splits_grid(pad=11))
+    assert [row["kind"] for row in compact["splits"]] == [
+        row["kind"] for row in shifted["splits"]
+    ]
+    parsed = shifted
+    alex_ticket = next(
+        row
+        for row in parsed["splits"]
+        if row["who"] == "alexhandle" and row["kind"] == "ticket"
+    )
+    assert alex_ticket["record"] == "8-20-0"
+    assert alex_ticket["flat_1u"] == pytest.approx(12.5)
+    assert alex_ticket["fade_1u"] == pytest.approx(22.0)
+    assert alex_ticket["fade_plus"] is True
+    assert alex_ticket["fade_emphasis"] is True
+    assert alex_ticket["units_pl"] == pytest.approx(4.2)
+    assert alex_ticket["pl"] == pytest.approx(210)
+    assert alex_ticket["staked"] == pytest.approx(800)
+    alex_prop = next(
+        row
+        for row in parsed["splits"]
+        if row["who"] == "alexhandle" and row["kind"] == "single_prop"
+    )
+    assert alex_prop["fade_emphasis"] is True
+    assert alex_prop["klass"] == "prop"
+    # Display column would have been "Alex (alexhandle)" / long class labels.
+    assert all("(" not in row["who"] for row in parsed["splits"])
+    assert {row["kind"] for row in parsed["splits"]} == {
+        "ticket",
+        "single_prop",
+        "single_team",
+        "leg_team",
+        "leg_prop",
+    }
+    assert [row["check"] for row in parsed["checks"]] == [
+        "Bets W vs splits",
+        "Parlay legs vs splits",
+    ]
+    nfl = next(row for row in parsed["sports"] if row["sport"] == "NFL")
+    assert nfl["who"] == "alexhandle"
+    assert nfl["kind"] == "ticket"
+    assert nfl["fade_1u"] == pytest.approx(14.0)
+
+    path = tmp_path / "live-headers.xlsx"
+    write_xlsx(path, {RECORD_SPLITS_TAB: live_splits_grid(pad=4)})
+    exported = export_bets(from_path=path, store_dir=tmp_path / "out")
+    assert exported["record_splits"]["check_count"] == 2
+    assert any(
+        row["who"] == "alexhandle" and row["kind"] == "ticket"
+        for row in exported["record_splits"]["splits"]
+    )
+
+
+def test_display_class_labels_still_map_when_class_key_missing():
+    headers = [
+        "Bettor",
+        "Source tab",
+        "Class",
+        "W",
+        "L",
+        "P",
+        LIVE_FADE,
+    ]
+    grid = [
+        ["spacer"],
+        headers,
+        ["Pat", "Bets", "single bets \u2013 team picks", 2, 1, 0, -0.2],
+        ["Pat", "Bets", "whole parlay tickets", 1, 9, 0, 4.5],
+        ["Pat", "Parlay Legs", "parlay legs \u2013 player props", 3, 3, 0, 0.9],
+    ]
+    parsed = parse_splits_grid(grid)
+    kinds = {row["kind"] for row in parsed["splits"]}
+    assert kinds == {"single_team", "ticket", "leg_prop"}
+    ticket = next(row for row in parsed["splits"] if row["kind"] == "ticket")
+    assert ticket["fade_1u"] == pytest.approx(4.5)
+    assert ticket["fade_emphasis"] is True
+
+
+def test_classify_live_headers_is_not_coordinate_based():
+    assert classify_header_row(LIVE_MAIN_HEADERS) == "main"
+    assert classify_header_row(["Bets check", "Expected", "Actual"]) == "recon"
+    assert classify_header_row(["Legs check", "Expected", "Actual"]) == "recon"
+    # Data row labeled "Bets check" must not start a new header section.
+    assert classify_header_row(["Bets check", "12", "12", "0", "Pass"]) is None
+
+
+# Live Record Splits reconciliation headers (tracker sheet). Columns move;
+# the two long record labels are matched by prefix/suffix, not a guessed
+# exact middle. Values are synthetic — not live bettor records.
+LIVE_RECON_HEADERS = [
+    "Bettor key",
+    "Bets tab record",
+    "Singles (team + prop) + tickets",
+    "Bets check",
+    "Parlay Legs record",
+    "Leg splits (team + prop)",
+    "Legs check",
+]
+
+
+def _recon_by_name(headers: list[str], values: dict[str, object]) -> list[object]:
+    return [values[name] for name in headers]
+
+
+def test_live_recon_headers_parse_record_pairs_and_flags():
+    """Read the live pair-table headers by name, never by column index."""
+    shuffled = [
+        "Legs check",
+        "Parlay Legs record",
+        "Bettor key",
+        "Leg splits vs legs tab",
+        "Bets tab record",
+        "Bets check",
+        "Singles / tickets + tickets",
+    ]
+    assert shuffled[0] != LIVE_RECON_HEADERS[0]
+    assert classify_header_row(LIVE_RECON_HEADERS) == "recon"
+    assert classify_header_row(shuffled) == "recon"
+    # A pair-table data row must not be treated as a new header.
+    assert (
+        classify_header_row(
+            ["alexhandle", "8-20-0", "8-20-0", True, "4-2-0", "4-2-0", False]
+        )
+        is None
+    )
+
+    rows = [
+        {
+            "Bettor key": "*",
+            "Bets tab record": "12-8-1",
+            "Singles (team + prop) + tickets": "12-8-1",
+            "Bets check": True,
+            "Parlay Legs record": "20-10-0",
+            "Leg splits (team + prop)": "20-10-0",
+            "Legs check": True,
+        },
+        {
+            "Bettor key": "alexhandle",
+            "Bets tab record": "8-20-0",
+            "Singles (team + prop) + tickets": "8-20-0",
+            "Bets check": "TRUE",
+            "Parlay Legs record": "4-2-0",
+            "Leg splits (team + prop)": "4-2-1",
+            "Legs check": False,
+        },
+        {
+            "Bettor key": "jordanh",
+            "Bets tab record": "3-2-1",
+            "Singles (team + prop) + tickets": "3-2-0",
+            "Bets check": False,
+            "Parlay Legs record": "1-1-0",
+            "Leg splits (team + prop)": "1-1-0",
+            "Legs check": "FALSE",
+        },
+        {
+            "Bettor key": "patk",
+            "Bets tab record": "2-2-0",
+            "Singles (team + prop) + tickets": "2-2-0",
+            "Bets check": True,
+            "Parlay Legs record": "0-1-0",
+            "Leg splits (team + prop)": "0-1-0",
+            "Legs check": True,
+        },
+        {
+            "Bettor key": "samw",
+            "Bets tab record": "1-0-0",
+            "Singles (team + prop) + tickets": "1-0-0",
+            "Bets check": True,
+            "Parlay Legs record": "5-3-0",
+            "Leg splits (team + prop)": "5-3-0",
+            "Legs check": True,
+        },
+        {
+            "Bettor key": "rileyq",
+            "Bets tab record": "0-1-0",
+            "Singles (team + prop) + tickets": "0-1-0",
+            "Bets check": True,
+            "Parlay Legs record": "2-2-0",
+            "Leg splits (team + prop)": "2-2-0",
+            "Legs check": True,
+        },
+        {
+            "Bettor key": "casey",
+            "Bets tab record": "4-4-0",
+            "Singles (team + prop) + tickets": "4-4-0",
+            "Bets check": True,
+            "Parlay Legs record": "3-3-0",
+            "Leg splits (team + prop)": "3-3-0",
+            "Legs check": True,
+        },
+    ]
+    grid = [
+        ["Record Splits"],
+        [],
+        LIVE_RECON_HEADERS,
+        *[_recon_by_name(LIVE_RECON_HEADERS, row) for row in rows],
+    ]
+    parsed = parse_splits_grid(grid)
+    assert len(parsed["checks"]) == 7
+    star = parsed["checks"][0]
+    assert star["who"] == "*"
+    assert star["bets_record"] == "12-8-1"
+    assert star["singles_tickets"] == "12-8-1"
+    assert star["bets_check"] is True
+    assert star["legs_record"] == "20-10-0"
+    assert star["leg_splits"] == "20-10-0"
+    assert star["legs_check"] is True
+    assert star.get("check") in {None, ""} or "check" not in star
+    alex = next(row for row in parsed["checks"] if row["who"] == "alexhandle")
+    assert alex["bets_check"] is True
+    assert alex["legs_check"] is False
+    assert alex["bets_record"] == "8-20-0"
+    assert alex["leg_splits"] == "4-2-1"
+    jordan = next(row for row in parsed["checks"] if row["who"] == "jordanh")
+    assert jordan["bets_check"] is False
+    assert jordan["legs_check"] is False
+    assert {row["who"] for row in parsed["checks"]} == {
+        "*",
+        "alexhandle",
+        "jordanh",
+        "patk",
+        "samw",
+        "rileyq",
+        "casey",
+    }
+    assert all(row.get("actual", "") == "" or "actual" not in row for row in parsed["checks"])
+
+    # Same values, columns in a different order, slightly different long labels.
+    shuffled_values = []
+    rename = {
+        "Singles (team + prop) + tickets": "Singles / tickets + tickets",
+        "Leg splits (team + prop)": "Leg splits vs legs tab",
+    }
+    for row in rows:
+        remapped = {rename.get(key, key): value for key, value in row.items()}
+        shuffled_values.append(_recon_by_name(shuffled, remapped))
+    shifted = parse_splits_grid([["spacer"], shuffled, *shuffled_values])
+    assert [row["who"] for row in shifted["checks"]] == [row["who"] for row in parsed["checks"]]
+    assert [row["bets_check"] for row in shifted["checks"]] == [
+        row["bets_check"] for row in parsed["checks"]
+    ]
+    assert [row["legs_check"] for row in shifted["checks"]] == [
+        row["legs_check"] for row in parsed["checks"]
+    ]
+    assert [row["singles_tickets"] for row in shifted["checks"]] == [
+        row["singles_tickets"] for row in parsed["checks"]
+    ]
+    assert [row["leg_splits"] for row in shifted["checks"]] == [
+        row["leg_splits"] for row in parsed["checks"]
+    ]

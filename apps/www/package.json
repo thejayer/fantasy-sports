@@ -14,7 +14,10 @@
     "test:e2e:auth": "AUTH_DEV_BYPASS=0 PORT=3005 PLAYWRIGHT_BASE_URL=http://127.0.0.1:3005 playwright test e2e/bets-auth.spec.ts"
   },
   "dependencies": {
-    "next": "16.3.8",
+    "@google-cloud/storage": "^8.4.0",
+    "@vercel/oidc": "^4.0.3",
+    "google-auth-library": "^11.3.1",
+    "next": "16.4.1",
     "next-auth": "^5.0.0-beta.32",
     "react": "^19.0.0",
     "react-dom": "^19.0.0"
@@ -25,7 +28,7 @@
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "eslint": "^9",
-    "eslint-config-next": "16.3.8",
+    "eslint-config-next": "16.4.1",
     "typescript": "^5",
     "vitest": "^4.1.11"
   },
