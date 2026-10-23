@@ -204,7 +204,7 @@ six==1.17.0
     # via python-dateutil
 starlette==1.7.0
     # via streamlit
-streamlit==1.64.0
+streamlit==1.65.0
     # via ffa (pyproject.toml)
 threadpoolctl==3.6.0
     # via scikit-learn
