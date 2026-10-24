@@ -3,6 +3,7 @@ name: deploy sync job
 # Build and deploy the Strictly Jayers ESPN sync as a Cloud Run Job.
 #
 # Auth: Workload Identity Federation (see scripts/setup-github-deployer.sh).
+# Project / WIF / deployer SA / bucket come from repository secrets (masked).
 # One-time infra: scripts/setup-sync-infra.sh (bucket, IAM, Cloud Scheduler).
 #
 # Cloud Scheduler triggers this job on a cadence; one-click history load:
@@ -14,9 +15,9 @@ on:
   workflow_dispatch:
     inputs:
       project_id:
-        description: "GCP project ID"
-        required: true
-        default: "fantasy-sports-analytics"
+        description: "GCP project ID (blank = repository secret GCP_PROJECT_ID)"
+        required: false
+        default: ""
       region:
         description: "Cloud Run region"
         required: true
@@ -26,9 +27,9 @@ on:
         required: true
         default: "sj-sync"
       bucket:
-        description: "Cloud Storage bucket for snapshots"
-        required: true
-        default: "fantasy-sports-analytics-sj-data"
+        description: "Cloud Storage bucket for snapshots (blank = repository secret GCS_BUCKET)"
+        required: false
+        default: ""
       run_after_deploy:
         description: "Execute the job once after deploying (true/false)"
         required: true
@@ -46,23 +47,48 @@ permissions:
   contents: read
   id-token: write
 
-env:
-  GCP_WORKLOAD_IDENTITY_PROVIDER: projects/1047753647109/locations/global/workloadIdentityPools/github/providers/github
-  GCP_SERVICE_ACCOUNT: ffa-deployer@fantasy-sports-analytics.iam.gserviceaccount.com
-
 jobs:
   deploy:
     runs-on: ubuntu-latest
     timeout-minutes: 40
     env:
-      PROJECT_ID: ${{ inputs.project_id }}
+      PROJECT_ID: ${{ inputs.project_id || secrets.GCP_PROJECT_ID }}
       REGION: ${{ inputs.region }}
       JOB: ${{ inputs.job }}
-      BUCKET: ${{ inputs.bucket }}
+      BUCKET: ${{ inputs.bucket || secrets.GCS_BUCKET }}
       RUN_AFTER: ${{ inputs.run_after_deploy }}
       RANKINGS_PROVIDER: ${{ inputs.rankings_provider }}
       RANKINGS_MODEL: ${{ inputs.rankings_model }}
+      GCP_WIF_PROVIDER: ${{ secrets.GCP_WIF_PROVIDER }}
+      GCP_DEPLOYER_SA: ${{ secrets.GCP_DEPLOYER_SA }}
     steps:
+      - name: Require repository secrets
+        run: |
+          set -euo pipefail
+          missing=()
+          if [ -z "${GCP_WIF_PROVIDER}" ]; then
+            missing+=(GCP_WIF_PROVIDER)
+          fi
+          if [ -z "${GCP_DEPLOYER_SA}" ]; then
+            missing+=(GCP_DEPLOYER_SA)
+          fi
+          if [ -z "${PROJECT_ID}" ]; then
+            missing+=(GCP_PROJECT_ID)
+          fi
+          if [ -z "${BUCKET}" ]; then
+            missing+=(GCS_BUCKET)
+          fi
+          if [ "${#missing[@]}" -gt 0 ]; then
+            echo "::error::Missing GitHub Actions secrets: ${missing[*]}"
+            echo "Add them under Settings → Secrets and variables → Actions before this workflow can deploy:"
+            echo "  GCP_WIF_PROVIDER  — Workload Identity Federation provider resource path"
+            echo "  GCP_DEPLOYER_SA   — deployer service-account email"
+            echo "  GCP_PROJECT_ID    — GCP project ID (or pass the project_id workflow_dispatch input)"
+            echo "  GCS_BUCKET        — hub store bucket (or pass the bucket workflow_dispatch input)"
+            exit 1
+          fi
+          echo "Deploy secrets are present."
+
       - name: Validate inputs
         run: |
           for pair in "project_id=$PROJECT_ID" "region=$REGION" "job=$JOB" "bucket=$BUCKET"; do
@@ -92,8 +118,8 @@ jobs:
       - id: auth
         uses: google-github-actions/auth@v3
         with:
-          workload_identity_provider: ${{ env.GCP_WORKLOAD_IDENTITY_PROVIDER }}
-          service_account: ${{ env.GCP_SERVICE_ACCOUNT }}
+          workload_identity_provider: ${{ secrets.GCP_WIF_PROVIDER }}
+          service_account: ${{ secrets.GCP_DEPLOYER_SA }}
 
       - uses: google-github-actions/setup-gcloud@v3
 

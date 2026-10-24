@@ -61,8 +61,10 @@ Reuse the hub Secret Manager names. Do not put secret values in the repo.
 | `AUTH_DEV_BYPASS` | unset in prod | Local / CI only (`1` + `SJ_DEV_VIEWER_EMAIL`) |
 
 Push CD (`.github/workflows/deploy-fitness.yml`) sets those secrets and mounts
-`gs://fantasy-sports-analytics-sj-data` RW at `/app/data/sj` (uid/gid `1001`,
-semicolon `mount-options`). The default Compute Engine SA already has
+`gs://<GCS_BUCKET>` RW at `/app/data/sj` (uid/gid `1001`,
+semicolon `mount-options`). The live project and bucket are GitHub repository
+secrets (`GCP_PROJECT_ID`, `GCS_BUCKET`) — Austin holds them. The default
+Compute Engine SA already has
 `secretAccessor` on the auth secrets from
 `./scripts/grant-hub-secret-access.sh`. It also needs `objectUser` on that
 bucket (hub already granted this for the same SA).

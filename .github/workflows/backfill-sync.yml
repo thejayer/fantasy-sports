@@ -4,15 +4,16 @@ name: backfill sync
 # Does not rebuild/redeploy the job — deploy sync job first if sj-sync is missing.
 #
 # Auth: Workload Identity Federation (same pool/provider as deploy-sync-job).
+# Project / WIF / deployer SA come from repository secrets (masked).
 # Hub only sees the result when deployed with the GCS bucket mounted.
 
 on:
   workflow_dispatch:
     inputs:
       project_id:
-        description: "GCP project ID"
-        required: true
-        default: "fantasy-sports-analytics"
+        description: "GCP project ID (blank = repository secret GCP_PROJECT_ID)"
+        required: false
+        default: ""
       region:
         description: "Cloud Run region"
         required: true
@@ -38,22 +39,43 @@ permissions:
   contents: read
   id-token: write
 
-env:
-  GCP_WORKLOAD_IDENTITY_PROVIDER: projects/1047753647109/locations/global/workloadIdentityPools/github/providers/github
-  GCP_SERVICE_ACCOUNT: ffa-deployer@fantasy-sports-analytics.iam.gserviceaccount.com
-
 jobs:
   execute:
     runs-on: ubuntu-latest
     # Full registry backfill can take a while (many league-seasons + ESPN).
     timeout-minutes: 90
     env:
-      PROJECT_ID: ${{ inputs.project_id }}
+      PROJECT_ID: ${{ inputs.project_id || secrets.GCP_PROJECT_ID }}
       REGION: ${{ inputs.region }}
       JOB: ${{ inputs.job }}
       MODE: ${{ inputs.mode }}
       WAIT: ${{ inputs.wait }}
+      GCP_WIF_PROVIDER: ${{ secrets.GCP_WIF_PROVIDER }}
+      GCP_DEPLOYER_SA: ${{ secrets.GCP_DEPLOYER_SA }}
     steps:
+      - name: Require repository secrets
+        run: |
+          set -euo pipefail
+          missing=()
+          if [ -z "${GCP_WIF_PROVIDER}" ]; then
+            missing+=(GCP_WIF_PROVIDER)
+          fi
+          if [ -z "${GCP_DEPLOYER_SA}" ]; then
+            missing+=(GCP_DEPLOYER_SA)
+          fi
+          if [ -z "${PROJECT_ID}" ]; then
+            missing+=(GCP_PROJECT_ID)
+          fi
+          if [ "${#missing[@]}" -gt 0 ]; then
+            echo "::error::Missing GitHub Actions secrets: ${missing[*]}"
+            echo "Add them under Settings → Secrets and variables → Actions before this workflow can run:"
+            echo "  GCP_WIF_PROVIDER  — Workload Identity Federation provider resource path"
+            echo "  GCP_DEPLOYER_SA   — deployer service-account email"
+            echo "  GCP_PROJECT_ID    — GCP project ID (or pass the project_id workflow_dispatch input)"
+            exit 1
+          fi
+          echo "Deploy secrets are present."
+
       - name: Validate inputs
         run: |
           for pair in "project_id=$PROJECT_ID" "region=$REGION" "job=$JOB"; do
@@ -75,8 +97,8 @@ jobs:
       - id: auth
         uses: google-github-actions/auth@v3
         with:
-          workload_identity_provider: ${{ env.GCP_WORKLOAD_IDENTITY_PROVIDER }}
-          service_account: ${{ env.GCP_SERVICE_ACCOUNT }}
+          workload_identity_provider: ${{ secrets.GCP_WIF_PROVIDER }}
+          service_account: ${{ secrets.GCP_DEPLOYER_SA }}
 
       - uses: google-github-actions/setup-gcloud@v3
 
@@ -143,9 +165,9 @@ jobs:
             echo "| Waited | \`$WAIT\` |"
             echo "| Execution | \`${{ steps.exec.outputs.execution }}\` |"
             echo
-            echo "Snapshots land in \`gs://fantasy-sports-analytics-sj-data\`."
+            echo "Snapshots land in the hub store bucket (repository secret GCS_BUCKET)."
             echo "Hub only sees them when deployed with that bucket mounted"
-            echo "(Actions → **deploy hub** → set **bucket**)."
+            echo "(Actions → **deploy hub** → set **bucket**, or rely on push CD)."
             echo
             echo "Logs:"
             echo "\`\`\`"

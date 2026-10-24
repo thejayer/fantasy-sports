@@ -11,15 +11,17 @@ name: deploy dashboard
 # The password is bound with --set-secrets rather than --set-env-vars so it is
 # not readable from the Cloud Run service config.
 #
-# Then run this workflow from the Actions tab, filling in the project id.
+# Project / WIF / deployer SA come from repository secrets (masked in logs),
+# not plaintext workflow env. Missing secrets fail immediately with the names
+# to add under Settings → Secrets and variables → Actions.
 
 on:
   workflow_dispatch:
     inputs:
       project_id:
-        description: "GCP project ID"
-        required: true
-        default: "fantasy-sports-analytics"
+        description: "GCP project ID (blank = repository secret GCP_PROJECT_ID)"
+        required: false
+        default: ""
       region:
         description: "Cloud Run region"
         required: true
@@ -41,10 +43,6 @@ permissions:
   contents: read
   id-token: write
 
-env:
-  GCP_WORKLOAD_IDENTITY_PROVIDER: projects/1047753647109/locations/global/workloadIdentityPools/github/providers/github
-  GCP_SERVICE_ACCOUNT: ffa-deployer@fantasy-sports-analytics.iam.gserviceaccount.com
-
 jobs:
   deploy:
     runs-on: ubuntu-latest
@@ -52,13 +50,38 @@ jobs:
     # Inputs/secrets go through env vars, not ${{ }} interpolation directly in
     # shell, so a crafted input can't inject commands into the run blocks.
     env:
-      PROJECT_ID: ${{ inputs.project_id }}
+      PROJECT_ID: ${{ inputs.project_id || secrets.GCP_PROJECT_ID }}
       REGION: ${{ inputs.region }}
       SERVICE: ${{ inputs.service }}
       INGEST_SEASONS: ${{ inputs.ingest_seasons }}
       DASHBOARD_SEASON: ${{ inputs.dashboard_season }}
       PASSWORD_SECRET: ffa-dashboard-password
+      GCP_WIF_PROVIDER: ${{ secrets.GCP_WIF_PROVIDER }}
+      GCP_DEPLOYER_SA: ${{ secrets.GCP_DEPLOYER_SA }}
     steps:
+      - name: Require repository secrets
+        run: |
+          set -euo pipefail
+          missing=()
+          if [ -z "${GCP_WIF_PROVIDER}" ]; then
+            missing+=(GCP_WIF_PROVIDER)
+          fi
+          if [ -z "${GCP_DEPLOYER_SA}" ]; then
+            missing+=(GCP_DEPLOYER_SA)
+          fi
+          if [ -z "${PROJECT_ID}" ]; then
+            missing+=(GCP_PROJECT_ID)
+          fi
+          if [ "${#missing[@]}" -gt 0 ]; then
+            echo "::error::Missing GitHub Actions secrets: ${missing[*]}"
+            echo "Add them under Settings → Secrets and variables → Actions before this workflow can deploy:"
+            echo "  GCP_WIF_PROVIDER  — Workload Identity Federation provider resource path"
+            echo "  GCP_DEPLOYER_SA   — deployer service-account email"
+            echo "  GCP_PROJECT_ID    — GCP project ID (or pass the project_id workflow_dispatch input)"
+            exit 1
+          fi
+          echo "Deploy secrets are present."
+
       - name: Validate inputs
         run: |
           # project_id / region / service are interpolated into shell and,
@@ -83,8 +106,8 @@ jobs:
       - id: auth
         uses: google-github-actions/auth@v3
         with:
-          workload_identity_provider: ${{ env.GCP_WORKLOAD_IDENTITY_PROVIDER }}
-          service_account: ${{ env.GCP_SERVICE_ACCOUNT }}
+          workload_identity_provider: ${{ secrets.GCP_WIF_PROVIDER }}
+          service_account: ${{ secrets.GCP_DEPLOYER_SA }}
 
       - uses: google-github-actions/setup-gcloud@v3
 

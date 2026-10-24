@@ -2,15 +2,17 @@
 # Map strictlyjayers.com (+ optional www) → Cloud Run sj-www and print DNS steps.
 #
 # Run in Cloud Shell (needs gcloud auth + project access):
-#   ./scripts/setup-portal-domain.sh
-#   ./scripts/setup-portal-domain.sh --cutover   # after DNS/TLS Ready: set SITE_URL
-#   ./scripts/setup-portal-domain.sh --with-www  # also map www.strictlyjayers.com
+#   GCP_PROJECT=<GCP_PROJECT_ID> ./scripts/setup-portal-domain.sh
+#   GCP_PROJECT=<GCP_PROJECT_ID> ./scripts/setup-portal-domain.sh --cutover
+#   GCP_PROJECT=<GCP_PROJECT_ID> ./scripts/setup-portal-domain.sh --with-www
+# Real project id: GitHub repo secret GCP_PROJECT_ID (Austin).
 #
 # Fantasy stays on fantasy.strictlyjayers.com (see setup-hub-domain.sh).
 
 set -euo pipefail
 
-PROJECT="${GCP_PROJECT:-fantasy-sports-analytics}"
+: "${GCP_PROJECT:?set GCP_PROJECT}"
+PROJECT="${GCP_PROJECT}"
 REGION="${GCP_REGION:-us-central1}"
 SERVICE="${SJ_WWW_SERVICE:-sj-www}"
 BASE_DOMAIN="${SJ_BASE_DOMAIN:-strictlyjayers.com}"

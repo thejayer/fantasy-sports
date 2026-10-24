@@ -6,13 +6,15 @@
 #   - optional …-sj-hub bucket (reserved; dual FUSE mount is disabled on hub)
 #
 # Run in Cloud Shell:
-#   ./scripts/setup-sync-infra.sh
+#   GCP_PROJECT=<GCP_PROJECT_ID> ./scripts/setup-sync-infra.sh
+# Real project id: GitHub repo secret GCP_PROJECT_ID (Austin).
 #
 # Deploy the job itself with the "deploy sync job" GitHub Action.
 
 set -euo pipefail
 
-PROJECT="${GCP_PROJECT:-fantasy-sports-analytics}"
+: "${GCP_PROJECT:?set GCP_PROJECT}"
+PROJECT="${GCP_PROJECT}"
 REGION="${GCP_REGION:-us-central1}"
 BUCKET="${SJ_BUCKET:-${PROJECT}-sj-data}"
 HUB_BUCKET="${SJ_HUB_BUCKET:-${PROJECT}-sj-hub}"
@@ -243,7 +245,7 @@ Skip with SJ_AI_RANKINGS=0. Needs secrets sj-cfbd-api-key (optional; degrades)
 and sj-rankings-api-key (xAI / OpenAI-compatible). See HUB.md.
 
 Bet tracker (portal /bets): ./scripts/setup-bets-infra.sh creates
-sj-bets-reader + sj-bets-trigger (32 9-23/2, ${TIME_ZONE}).
+the bets reader SA + sj-bets-trigger (32 9-23/2, ${TIME_ZONE}).
 
 The scheduler runs "${SCHEDULE}" (${TIME_ZONE}). Override with SJ_SCHEDULE
 (and optional SJ_TIMEZONE), or:

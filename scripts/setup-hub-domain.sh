@@ -2,14 +2,16 @@
 # Map fantasy.strictlyjayers.com → Cloud Run sj-hub and print Spaceship DNS steps.
 #
 # Run in Cloud Shell (needs gcloud auth + project access):
-#   ./scripts/setup-hub-domain.sh
-#   ./scripts/setup-hub-domain.sh --cutover   # after DNS/TLS are Ready: set AUTH_URL
+#   GCP_PROJECT=<GCP_PROJECT_ID> ./scripts/setup-hub-domain.sh
+#   GCP_PROJECT=<GCP_PROJECT_ID> ./scripts/setup-hub-domain.sh --cutover
+# Real project id: GitHub repo secret GCP_PROJECT_ID (Austin).
 #
 # Apex strictlyjayers.com is the community portal (see setup-portal-domain.sh).
 
 set -euo pipefail
 
-PROJECT="${GCP_PROJECT:-fantasy-sports-analytics}"
+: "${GCP_PROJECT:?set GCP_PROJECT}"
+PROJECT="${GCP_PROJECT}"
 REGION="${GCP_REGION:-us-central1}"
 SERVICE="${SJ_SERVICE:-sj-hub}"
 BASE_DOMAIN="${SJ_BASE_DOMAIN:-strictlyjayers.com}"

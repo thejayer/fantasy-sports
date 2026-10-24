@@ -3,15 +3,19 @@
 # the Workload Identity Federation binding commands (no JSON key).
 #
 # Run in Cloud Shell:
-#   ./scripts/setup-github-deployer.sh
+#   GCP_PROJECT=<GCP_PROJECT_ID> DEPLOYER_SA_NAME=<DEPLOYER_SA_NAME> \
+#     ./scripts/setup-github-deployer.sh
+# Real values: GitHub repo secrets GCP_PROJECT_ID / GCP_DEPLOYER_SA (Austin).
 #
 # One-time WIF (pool + provider + SA binding) is documented below. Deploy
 # workflows authenticate via OIDC — do NOT create or store GCP_SA_KEY.
 
 set -euo pipefail
 
-PROJECT="${GCP_PROJECT:-fantasy-sports-analytics}"
-SA_NAME="${DEPLOYER_SA_NAME:-ffa-deployer}"
+: "${GCP_PROJECT:?set GCP_PROJECT}"
+: "${DEPLOYER_SA_NAME:?set DEPLOYER_SA_NAME}"
+PROJECT="${GCP_PROJECT}"
+SA_NAME="${DEPLOYER_SA_NAME}"
 SA_EMAIL="${SA_NAME}@${PROJECT}.iam.gserviceaccount.com"
 POOL="${WIF_POOL:-github}"
 PROVIDER="${WIF_PROVIDER:-github}"
@@ -115,7 +119,7 @@ gcloud iam service-accounts add-iam-policy-binding ${SA_EMAIL} \\
   --role="roles/iam.workloadIdentityUser" \\
   --member="principalSet://iam.googleapis.com/projects/${PROJECT_NUMBER}/locations/global/workloadIdentityPools/${POOL}/attribute.repository/${REPO}"
 
-Provider resource name (already hardcoded in deploy workflows):
+Provider resource name (store as GitHub secret GCP_WIF_PROVIDER):
   projects/${PROJECT_NUMBER}/locations/global/workloadIdentityPools/${POOL}/providers/${PROVIDER}
 
 After WIF works, delete any old JSON keys and the GitHub secret GCP_SA_KEY:

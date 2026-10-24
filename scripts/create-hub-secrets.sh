@@ -2,7 +2,8 @@
 # Create Strictly Jayers Secret Manager shells in GCP.
 #
 # Run in Cloud Shell (or any machine with gcloud authenticated):
-#   ./scripts/create-hub-secrets.sh
+#   GCP_PROJECT=<GCP_PROJECT_ID> ./scripts/create-hub-secrets.sh
+# Real project id: GitHub repo secret GCP_PROJECT_ID (Austin).
 #
 # This creates the secret *names* with a REPLACE_ME placeholder version.
 # You then add real values with:
@@ -11,7 +12,8 @@
 
 set -euo pipefail
 
-PROJECT="${GCP_PROJECT:-fantasy-sports-analytics}"
+: "${GCP_PROJECT:?set GCP_PROJECT}"
+PROJECT="${GCP_PROJECT}"
 REGION="${GCP_REGION:-us-central1}"
 
 SECRETS=(
