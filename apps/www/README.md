@@ -61,7 +61,9 @@ needed. Austin shares that file with the reader SA as Viewer. Writes
 `bets/bets.json` + `bets/summary.json` + `bets/parlay_legs.json` +
 `bets/public_warnings.json` + `bets/record_splits.json` +
 `bets/tailing_legs.json` to the store
-(`gs://<GCS_BUCKET>/bets/` when `SJ_GCS_BUCKET` is set). The live project,
+(`gs://<GCS_BUCKET>/bets/` when `SJ_GCS_BUCKET` is set). The same job then
+runs SJ Bot (`sj bot run`) into `bets/bot/` unless `SJ_BOT_SYNC=0`. Bot
+failures never fail the human export. The live project,
 bucket, and bets-reader SA email are GitHub repository secrets / Austin
 (`GCP_PROJECT_ID`, `GCS_BUCKET`, `<BETS_READER_SA_EMAIL>`) — not committed here.
 KPI math is from raw Bets / Parlay Legs / Public Warnings rows — never the
@@ -74,7 +76,16 @@ sj bets --from tests/fixtures/bets/tracker_tabs.xlsx \
 
 # Live Drive file (xlsx or native Sheet; share with the job SA as Viewer)
 sj bets
+
+# Paper bot (same store; never writes the sheet)
+sj bot seed --store-dir /tmp/sj-bot   # labeled simulated sample
+sj bot run                            # snapshot + grade + learn + pick
 ```
+
+SJ Bot artifacts: `bets/bot/board.json` (portal), timestamped
+`bets/bot/lines/{stamp}.json`, `picks.json`, `weights.json`,
+`scorecard.json`, `notes/{week}.json`. Staking is `SJ_BOT_STAKING=flat|kelly`
+(default flat 1u). The Google tracker stays read-only.
 
 One-time GCP: `./scripts/setup-bets-infra.sh` (SA, Drive + Sheets APIs,
 scheduler `32 9-23/2 * * *` America/Chicago). Image updates ride

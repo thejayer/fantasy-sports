@@ -122,5 +122,10 @@ Austin still needs to:
        gcloud run jobs execute ${BETS_JOB} --region=${REGION} --project=${PROJECT}
 
 Skip the reader job with SJ_BETS_SYNC=0 on the job env.
+Skip the paper bot post-step with SJ_BOT_SYNC=0 (default on).
+Standalone: gcloud run jobs execute ${BETS_JOB} --args=bot,run --region=${REGION}
+Optional bot env (all optional): SJ_BOT_STAKING, SJ_BOT_KELLY_FRACTION,
+SJ_BOT_KELLY_CAP, SJ_BOT_BANKROLL, SJ_BOT_UNIT, SJ_BOT_MIN_PICKS,
+SJ_BOT_MAX_PICKS, SJ_BOT_TIMEOUT, SJ_BOT_THROTTLE.
 ================================================================
 EOF

@@ -22,7 +22,7 @@ export const WINDOW_DATES: Record<BetWindow, string | null> = {
   nfl: NFL_START,
 };
 
-export const BET_TABS = ["bets", "parlays", "warnings", "splits", "tail"] as const;
+export const BET_TABS = ["bets", "parlays", "warnings", "splits", "tail", "bot"] as const;
 export type BetTab = (typeof BET_TABS)[number];
 
 export const TAB_LABELS: Record<BetTab, string> = {
@@ -31,7 +31,15 @@ export const TAB_LABELS: Record<BetTab, string> = {
   warnings: "Public fade",
   splits: "Record splits",
   tail: "Tail legs",
+  bot: "Bot",
 };
+
+/** Paper-betting simulation — never mixed into human totals or leaderboards. */
+export const BOT_WHO = "SJ Bot";
+
+export function isPaperBot(who: string | null | undefined): boolean {
+  return (who || "").trim().toLowerCase() === BOT_WHO.toLowerCase();
+}
 
 /** Display overlay only — not the list of who appears on the board. */
 export const KNOWN_BETTORS: Record<
@@ -92,6 +100,7 @@ export function uniqueBettors(bets: Array<{ who: string }>): string[] {
   const counts = new Map<string, number>();
   for (const bet of bets) {
     const who = bet.who || "Unknown";
+    if (isPaperBot(who)) continue;
     counts.set(who, (counts.get(who) ?? 0) + 1);
   }
   return [...counts.entries()]
@@ -192,6 +201,7 @@ export function parseBetTab(raw: string | null | undefined): BetTab {
   if (key === "warnings" || key === "public" || key === "fade") return "warnings";
   if (key === "splits" || key === "split" || key === "record") return "splits";
   if (key === "tail" || key === "tailing" || key === "tail-legs") return "tail";
+  if (key === "bot" || key === "sj-bot" || key === "paper") return "bot";
   return "bets";
 }
 
@@ -422,7 +432,9 @@ function ratio(num: number, den: number): number | null {
 }
 
 export function bettorKpis(bets: BetRow[], who?: string | null): BettorKpis {
-  const rows = who ? bets.filter((b) => b.who === who) : bets;
+  const rows = who
+    ? bets.filter((b) => b.who === who && !isPaperBot(b.who))
+    : bets.filter((b) => !isPaperBot(b.who));
   let wins = 0;
   let losses = 0;
   let pushes = 0;
@@ -490,6 +502,7 @@ export function filterBets(
   const sport = (opts.sport || "").trim().toLowerCase();
   const who = opts.who || "";
   return bets.filter((bet) => {
+    if (isPaperBot(bet.who)) return false;
     if (who && bet.who !== who) return false;
     if (!inWindow(bet, window)) return false;
     if (sport && (bet.sport || "").trim().toLowerCase() !== sport) return false;

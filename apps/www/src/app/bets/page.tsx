@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 
 import { BetsBoard, BetsEmpty, BetsTabs, BetsToolbar } from "@/components/BetsBoard";
+import { BotBoard, BotEmpty } from "@/components/BotBoard";
 import { ParlayBoard, ParlayEmpty } from "@/components/ParlayBoard";
 import { PublicBoard, PublicEmpty } from "@/components/PublicBoard";
 import { SplitsBoard, SplitsEmpty } from "@/components/SplitsBoard";
@@ -25,6 +26,7 @@ import { uniqueSplitBettors } from "@/lib/bets-splits";
 import { filterTailLegs, uniqueTailBettors } from "@/lib/bets-tailing";
 import {
   getBetsDocument,
+  getBotBoard,
   getParlayDocument,
   getPublicDocument,
   getSplitsDocument,
@@ -38,7 +40,7 @@ export const metadata: Metadata = {
   title: "Bets",
   robots: { index: false, follow: false },
   description:
-    "Members-only tracker for public slips, parlay legs, tailing splits, and BetMGM public-money fades.",
+    "Members-only tracker for public slips, parlay legs, tailing splits, BetMGM public-money fades, and SJ Bot paper bets.",
 };
 
 type Props = {
@@ -61,12 +63,13 @@ export default async function BetsPage({ searchParams }: Props) {
   const tab = parseBetTab(params.tab);
   const window = parseBetWindow(params.window);
   const sport = (params.sport || "").trim();
-  const [betsDoc, parlayDoc, publicDoc, splitsDoc, tailingDoc] = await Promise.all([
+  const [betsDoc, parlayDoc, publicDoc, splitsDoc, tailingDoc, botBoard] = await Promise.all([
     getBetsDocument(),
     getParlayDocument(),
     getPublicDocument(),
     getSplitsDocument(),
     getTailingDocument(),
+    getBotBoard(),
   ]);
   const names = uniqueBettors(betsDoc.bets);
   const who = parseBettor(params.who, [
@@ -188,6 +191,12 @@ export default async function BetsPage({ searchParams }: Props) {
             who={who}
             filters={tailFilters}
           />
+        )
+      ) : tab === "bot" ? (
+        !botBoard.open.length && !botBoard.recent.length ? (
+          <BotEmpty />
+        ) : (
+          <BotBoard document={botBoard} />
         )
       ) : !betsDoc.bets.length ? (
         <BetsEmpty />

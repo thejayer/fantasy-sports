@@ -107,6 +107,12 @@ describe("data-driven bettors and fade math", () => {
         baseBet({ who: "btidy216" }),
       ]),
     ).toEqual(["chellgod", "btidy216", "Trent"]);
+    expect(
+      uniqueBettors([
+        baseBet({ who: "Trent" }),
+        baseBet({ who: "SJ Bot" }),
+      ]),
+    ).toEqual(["Trent"]);
   });
 
   it("parses tabs and strips Value prefixes", () => {
@@ -115,6 +121,7 @@ describe("data-driven bettors and fade math", () => {
     expect(parseBetTab("splits")).toBe("splits");
     expect(parseBetTab("tail")).toBe("tail");
     expect(parseBetTab("tailing")).toBe("tail");
+    expect(parseBetTab("bot")).toBe("bot");
     expect(parseBetTab("")).toBe("bets");
     expect(stripValuePrefix("Value")).toBe("");
     expect(stripValuePrefix("Value -6.5")).toBe("-6.5");

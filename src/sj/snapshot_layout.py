@@ -84,15 +84,19 @@ def nhl_rel(league_id: str, season: int, name: str) -> str:
 
 
 def bets_rel(name: str) -> str:
-    """Side-concern bet tracker JSON (portal /bets, roadmap P.11).
+    """Side-concern bet tracker JSON (portal /bets, roadmap P.11 / P.12).
 
-    Stored at the store root (``bets/bets.json``, ``bets/summary.json``,
-    ``bets/parlay_legs.json``, ``bets/public_warnings.json``,
-    ``bets/record_splits.json``, ``bets/tailing_legs.json``) — not a
-    league-season path. Not listed in ``manifest.files``.
+    Store-root paths such as ``bets/bets.json`` and ``bets/bot/board.json``.
+    ``name`` may include slashes (SJ Bot artifacts under ``bets/bot/``).
+    Path parts that are ``.`` or ``..`` are dropped so ``....`` cannot
+    collapse into a parent hop. Not listed in ``manifest.files``.
     """
-    safe = str(name).strip().replace("..", "").replace("/", "")
-    return f"bets/{safe}.json"
+    raw = str(name).strip().replace("\\", "/").strip("/")
+    raw = raw.removesuffix(".json")
+    parts = [part for part in raw.split("/") if part and part not in {".", ".."}]
+    if not parts:
+        raise ValueError("empty bets path")
+    return "bets/" + "/".join(parts) + ".json"
 
 
 def ai_rankings_rel(name: str) -> str:

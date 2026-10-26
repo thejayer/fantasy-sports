@@ -355,6 +355,17 @@ def test_bets_sidecars_round_trip_without_index(tmp_path: Path):
     assert not (tmp_path / "index.json").exists()
 
 
+def test_bot_nested_bets_paths_round_trip_without_index(tmp_path: Path):
+    """P.12: bets/bot/{name}.json stays off index.json and off human sidecars."""
+    store = FileStore(tmp_path)
+    doc = {"kind": "sj_bot_board", "simulated": True, "who": "SJ Bot"}
+    path = store.write_bets(doc, "bot/board")
+    assert Path(path) == tmp_path / "bets" / "bot" / "board.json"
+    assert store.read_bets("bot/board") == doc
+    assert store.read_bets("bets") is None
+    assert not (tmp_path / "index.json").exists()
+
+
 def test_ai_rankings_sidecars_round_trip_without_index(tmp_path: Path):
     """7.16: ai_rankings/{board}/{week}.json is a store-root side concern."""
     store = FileStore(tmp_path)
