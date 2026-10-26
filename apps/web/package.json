@@ -16,7 +16,7 @@
     "verify:html-budget": "node scripts/check-html-budget.mjs"
   },
   "dependencies": {
-    "next": "16.4.1",
+    "next": "16.4.2",
     "next-auth": "^5.0.0-beta.32",
     "react": "^19.0.0",
     "react-dom": "^19.0.0"
