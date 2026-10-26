@@ -92,6 +92,7 @@ environment principal
 - `bets/public_warnings.json`
 - `bets/record_splits.json`
 - `bets/tailing_legs.json`
+- `bets/bot/board.json`
 
 A missing object is the same as `ENOENT`. Bets still fall through to committed
 `fixtures/bets`. `hub_members.json` has no fixture. Auth / network errors do

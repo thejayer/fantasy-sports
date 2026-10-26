@@ -12,6 +12,7 @@ test.describe("bets fixture board", () => {
     await expect(page.getByRole("link", { name: "Public fade" })).toBeVisible();
     await expect(page.getByRole("link", { name: "Record splits" })).toBeVisible();
     await expect(page.getByRole("link", { name: "Tail legs" })).toBeVisible();
+    await expect(page.getByRole("link", { name: "Bot" })).toBeVisible();
     await expect(page.getByRole("article").filter({ hasText: "All bettors" })).toBeVisible();
     await expect(page.getByRole("article").filter({ hasText: "@BookitWithTrent" })).toBeVisible();
     await expect(page.getByRole("article").filter({ hasText: "@stevewilldoit" })).toBeVisible();
@@ -48,6 +49,15 @@ test.describe("bets fixture board", () => {
     await expect(page.getByText(/Tail @/).first()).toBeVisible();
     await expect(page.getByText(/Priced sportsbook legs/i).first()).toBeVisible();
     await expect(page.getByText(/approximate/i).first()).toBeVisible();
+    await page.goto("/bets?tab=bot");
+    await expect(page.getByText(/Simulated sample data/i)).toBeVisible();
+    await expect(page.getByRole("heading", { name: "SJ Bot" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Bankroll" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Open bets" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Recent graded bets" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Signal weights" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "What I learned" })).toBeVisible();
+    await expect(page.getByText(/not mixed into the group totals/i)).toBeVisible();
     await page.goto("/bets?tab=warnings");
     await expect(page.getByRole("heading", { name: "Fade the public" })).toBeVisible();
     await expect(page.getByRole("heading", { name: "Recent warnings" })).toBeVisible();

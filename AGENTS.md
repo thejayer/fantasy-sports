@@ -8,7 +8,8 @@ This is a multi-product monorepo. See `README.md` (ffa engine), `HUB.md` (member
 
 - **ffa** — Python NFL analytics engine + Streamlit dashboard (`src/ffa`, CLI `ffa`).
 - **Strictly Jayers hub** — Next.js member hub (`apps/web`) plus the ESPN sync CLI `sj` (`src/sj`).
-- **Community portal** — Next.js apex site (`apps/www`) at `strictlyjayers.com`; deep-links to `fantasy.strictlyjayers.com` and `fitness.strictlyjayers.com` (no Auth.js / no snapshot store).
+- **Community portal** — Next.js apex site (`apps/www`) at `strictlyjayers.com`; deep-links to `fantasy.strictlyjayers.com` and `fitness.strictlyjayers.com`. `/bets` is Auth.js-gated and reads `bets/*.json` (plus `bets/bot/board.json` for SJ Bot). Other public pages do not touch the snapshot mount.
+- **SJ Bot (P.12)** — paper-betting simulation. `sj bot` subcommands + a post-step of `sj bets` (disable with `SJ_BOT_SYNC=0`). Writes `bets/bot/` only; never the Google tracker or human sidecars. Portal tab `/bets?tab=bot`. Committed board fixture is labeled simulated.
 - **Fitness** — Next.js + static PWA (`apps/fitness`) at `fitness.strictlyjayers.com` (`sj-fitness`). Local: port 3003. Auth.js / Google + the same `ALLOWED_EMAILS` ∪ `hub_members.json` allowlist as the hub; per-user JSON under `SJ_FITNESS_DIR`. See `FITNESS.md`. Do not put the service worker on the apex.
 - **Vibe Split** — Next.js (`apps/vibe`) at `vibe.strictlyjayers.com` (`sj-vibe`). Local: port 3005. Same Auth.js Google + allowlist as the hub; per-user JSON under `SJ_VIBE_DIR` (`/app/data/sj/vibe/users/<email-hash>/vibe.json`). Health Auto Export ingest + GitHub sync. See `VIBE.md`. Do not mkdir/stat the FUSE mount in the entrypoint.
 

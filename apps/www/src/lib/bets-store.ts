@@ -8,6 +8,7 @@ import type { ParlayDocument, ParlayLeg } from "@/lib/bets-parlay";
 import type { PublicDocument, PublicWarning } from "@/lib/bets-public";
 import { isSplitCheck, type SplitRow, type SplitsDocument } from "@/lib/bets-splits";
 import type { TailLeg, TailView, TailingDocument } from "@/lib/bets-tailing";
+import { EMPTY_BOT_BOARD, parseBotBoard, type BotBoard } from "@/lib/bets-bot";
 import { readBetsText } from "@/lib/data-source";
 import { getBetsActor } from "@/lib/session";
 
@@ -138,4 +139,15 @@ export async function getTailingDocument(): Promise<TailingDocument> {
   if (!(await getBetsActor())) return empty;
   const raw = await readFirstFile("tailing_legs.json");
   return raw ? (parseTailingDocument(raw) ?? empty) : empty;
+}
+
+export async function getBotBoard(): Promise<BotBoard> {
+  if (!(await getBetsActor())) return EMPTY_BOT_BOARD;
+  const raw = await readFirstFile("bot/board.json");
+  if (!raw) return EMPTY_BOT_BOARD;
+  try {
+    return parseBotBoard(JSON.parse(raw)) ?? EMPTY_BOT_BOARD;
+  } catch {
+    return EMPTY_BOT_BOARD;
+  }
 }

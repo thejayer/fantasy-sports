@@ -224,7 +224,7 @@ jobs:
             --task-timeout 10m
             --memory 512Mi --cpu 1
             --args=bets
-            --set-env-vars "SJ_GCS_BUCKET=$BUCKET,SJ_BETS_SHEET_ID=1_F9HCU7uOPH5uo8cgXkxwKrvREolPid_ZoviVVcX3HU"
+            --set-env-vars "SJ_GCS_BUCKET=$BUCKET,SJ_BETS_SHEET_ID=1_F9HCU7uOPH5uo8cgXkxwKrvREolPid_ZoviVVcX3HU,SJ_BOT_SYNC=1"
           )
           if gcloud iam service-accounts describe "$BETS_SA" --project "$PROJECT_ID" >/dev/null 2>&1; then
             BETS_ARGS+=(--service-account "$BETS_SA")
@@ -253,8 +253,9 @@ jobs:
           echo "Backfill every season (one-time, slower):"
           echo "  gcloud run jobs execute $JOB --args=backfill --region=$REGION --project=$PROJECT_ID"
           echo
-          echo "Bet tracker (after the sheet is shared with the job SA):"
+          echo "Bet tracker + SJ Bot (after the sheet is shared with the job SA):"
           echo "  gcloud run jobs execute sj-bets --region=$REGION --project=$PROJECT_ID"
+          echo "  gcloud run jobs execute sj-bets --args=bot,run --region=$REGION --project=$PROJECT_ID"
           echo "  ./scripts/setup-bets-infra.sh"
           echo
           echo "AI rankings (after sj-cfbd-api-key / sj-rankings-api-key exist):"

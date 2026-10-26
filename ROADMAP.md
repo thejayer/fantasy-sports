@@ -1315,6 +1315,17 @@ Wired into the `www` CI job.
   Spaceship click). Add the fitness origin/redirect to the existing Google
   OAuth client.
 
+### P.12 SJ Bot paper bettor — LANDING
+- Paper-only bot on `/bets?tab=bot`. Record, units, bankroll chart, open /
+  graded slips with reasons + signal weights, weekly "what I learned" note.
+  Seeded sample is labeled **simulated** in JSON and UI. Never mixed into
+  human totals or leaderboards.
+- Runs inside the existing `sj-bets` job (`sj bets` post-step + standalone
+  `sj bot snapshot|pick|grade|learn|run|seed|backtest`). Writes
+  `bets/bot/` on the same store. Consumes `record_splits` / `tailing_legs`
+  (read-only). ESPN public scoreboard odds behind `OddsProvider`.
+  `SJ_BOT_SYNC=0` skips the post-step. No new job, SA, or API key.
+
 ### P.11 Bet tracker — LANDING
 - `/bets` on `apps/www`: members-only public-slip tracker (Auth.js + the
   same `ALLOWED_EMAILS` ∪ `hub_members.json` allowlist as Fantasy /

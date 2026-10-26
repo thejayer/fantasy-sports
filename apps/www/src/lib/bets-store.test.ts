@@ -1,4 +1,4 @@
-import { mkdtempSync, writeFileSync } from "node:fs";
+import { mkdirSync, mkdtempSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
 
@@ -50,12 +50,18 @@ describe("getBetsDocument", () => {
       getPublicDocument,
       getSplitsDocument,
       getTailingDocument,
+      getBotBoard,
     } = await loadStore();
     await expect(getBetsDocument()).resolves.toEqual({ bets: [] });
     await expect(getParlayDocument()).resolves.toEqual({ legs: [] });
     await expect(getPublicDocument()).resolves.toEqual({ warnings: [] });
     await expect(getSplitsDocument()).resolves.toEqual({ splits: [], sports: [], checks: [] });
     await expect(getTailingDocument()).resolves.toEqual({ views: [], legs: [] });
+    await expect(getBotBoard()).resolves.toMatchObject({
+      record: "0-0-0",
+      open: [],
+      recent: [],
+    });
   });
 
   it("treats corrupt JSON as empty so one file cannot 500 the board", async () => {
@@ -66,6 +72,8 @@ describe("getBetsDocument", () => {
     writeFileSync(path.join(dir, "public_warnings.json"), "[]");
     writeFileSync(path.join(dir, "record_splits.json"), "{not-json");
     writeFileSync(path.join(dir, "tailing_legs.json"), "{not-json");
+    mkdirSync(path.join(dir, "bot"), { recursive: true });
+    writeFileSync(path.join(dir, "bot", "board.json"), "{not-json");
     process.env.SJ_BETS_DIR = dir;
     const {
       getBetsDocument,
@@ -73,6 +81,7 @@ describe("getBetsDocument", () => {
       getPublicDocument,
       getSplitsDocument,
       getTailingDocument,
+      getBotBoard,
     } = await loadStore();
     await expect(getBetsDocument()).resolves.toMatchObject({
       bets: [{ id: "T-1", who: "Trent" }],
@@ -81,6 +90,7 @@ describe("getBetsDocument", () => {
     await expect(getPublicDocument()).resolves.toEqual({ warnings: [] });
     await expect(getSplitsDocument()).resolves.toEqual({ splits: [], sports: [], checks: [] });
     await expect(getTailingDocument()).resolves.toEqual({ views: [], legs: [] });
+    await expect(getBotBoard()).resolves.toMatchObject({ record: "0-0-0", open: [] });
     expect(downloadGcsObject).not.toHaveBeenCalled();
   });
 

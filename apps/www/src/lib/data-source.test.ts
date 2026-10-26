@@ -69,6 +69,7 @@ describe("gcsObjectKey", () => {
     const { gcsObjectKey, hubMembersRelPath } = await loadSource();
     expect(gcsObjectKey(hubMembersRelPath())).toBe("hub_members.json");
     expect(gcsObjectKey("bets", "bets.json")).toBe("bets/bets.json");
+    expect(gcsObjectKey("bets", "bot/board.json")).toBe("bets/bot/board.json");
   });
 
   it("prefixes keys when SJ_GCS_PREFIX is set", async () => {
