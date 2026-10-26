@@ -1,0 +1,53 @@
+{
+  "events": [
+    {
+      "id": "syn-401",
+      "date": "2026-10-26T17:00:00Z",
+      "competitions": [
+        {
+          "id": "syn-401",
+          "date": "2026-10-26T17:00:00Z",
+          "competitors": [
+            {
+              "id": "91",
+              "homeAway": "away",
+              "score": "0",
+              "team": {
+                "id": "91",
+                "abbreviation": "RED",
+                "displayName": "Red River Foxes"
+              },
+              "records": [{ "type": "total", "summary": "6-2" }]
+            },
+            {
+              "id": "92",
+              "homeAway": "home",
+              "score": "0",
+              "team": {
+                "id": "92",
+                "abbreviation": "BAY",
+                "displayName": "Bayou Lanterns"
+              },
+              "records": [{ "type": "total", "summary": "4-4" }]
+            }
+          ],
+          "odds": [
+            {
+              "provider": { "id": "58", "name": "ESPN BET" },
+              "details": "RED -3.5",
+              "spread": 3.5,
+              "overUnder": 44.5,
+              "awayTeamOdds": { "favorite": true, "moneyLine": -162, "spreadOdds": -110 },
+              "homeTeamOdds": { "favorite": false, "moneyLine": 136, "spreadOdds": -110 },
+              "overOdds": -105,
+              "underOdds": -115
+            }
+          ],
+          "status": {
+            "type": { "state": "pre", "completed": false, "name": "STATUS_SCHEDULED" }
+          }
+        }
+      ]
+    }
+  ]
+}

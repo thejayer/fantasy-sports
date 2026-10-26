@@ -16,6 +16,7 @@ def _offline_nhl(monkeypatch):
     """
     monkeypatch.setenv("SJ_NHL_SYNC", "0")
     monkeypatch.setenv("SJ_DFO_SYNC", "0")  # never reach Daily Faceoff either
+    monkeypatch.setenv("SJ_BOT_SYNC", "0")  # never hit ESPN scoreboard from sj bets
 
 
 @pytest.fixture

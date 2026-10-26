@@ -135,6 +135,9 @@ def test_export_writes_six_json_files_and_stable_summary_keys(tmp_path: Path):
     assert tailing["settled_count"] == result["tailing_legs"]["settled_count"]
     assert tailing["tab"] == PARLAY_TAB
     assert {v["who"] for v in tailing["views"]} >= {"*"}
+    # Human export must not write or mix SJ Bot artifacts.
+    assert store.read_bets("bot/board") is None
+    assert "SJ Bot" not in {b["who"] for b in bets["bets"]}
 
 
 def test_legacy_xlsx_still_exports_empty_new_tabs(tmp_path: Path):

@@ -21,6 +21,12 @@ from sj.sync import (
 )
 
 app = typer.Typer(add_completion=False, no_args_is_help=True, help="Strictly Jayers hub tools")
+bot_app = typer.Typer(
+    add_completion=False,
+    no_args_is_help=True,
+    help="SJ Bot paper-betting (simulation only; roadmap P.12).",
+)
+app.add_typer(bot_app, name="bot")
 
 
 def _report_sync_outcome(
@@ -525,9 +531,12 @@ def bets_cmd(
     and then uses the Sheets API or downloads an uploaded .xlsx. Writes
     ``bets/bets.json``, ``bets/summary.json``, ``bets/parlay_legs.json``,
     ``bets/public_warnings.json``, ``bets/record_splits.json``, and
-    ``bets/tailing_legs.json``. Summary / By-Sport formula tabs are
-    ignored; Record Splits is read by header names (never fixed rows).
-    Tailing legs joins Parlay Legs to Bets by parent id (header names).
+    ``bets/tailing_legs.json``. When ``SJ_BOT_SYNC`` is not ``0`` (default
+    on) this also runs SJ Bot (snapshot / grade / learn / pick) into
+    ``bets/bot/`` — failures there never fail the human tracker export.
+    Summary / By-Sport formula tabs are ignored; Record Splits is read
+    by header names (never fixed rows). Tailing legs joins Parlay Legs
+    to Bets by parent id (header names). The Google tracker is read-only.
     """
     import os
 
@@ -579,6 +588,162 @@ def bets_cmd(
         f"splits={splits.get('split_count', 0)} "
         f"tail={tailing.get('settled_count', 0)} "
         f"synced_at={document['synced_at']}"
+    )
+    from sj.bot import bot_sync_enabled
+    from sj.bot.pipeline import maybe_run_after_bets
+
+    if bot_sync_enabled():
+        typer.echo(maybe_run_after_bets(store_dir))
+    else:
+        typer.echo("SJ_BOT_SYNC is off; bot skipped")
+
+
+@bot_app.command("snapshot")
+def bot_snapshot_cmd(
+    store_dir: Path | None = typer.Option(None, help="Write bets/bot/ here."),
+    day: str = typer.Option("", "--date", help="Slate date YYYY-MM-DD (default: today CT)."),
+) -> None:
+    """Pull ESPN scoreboard odds for NFL / CFB / NBA and store a timestamped tape."""
+    from datetime import date as date_cls
+
+    from sj.bot.pipeline import snapshot_lines
+
+    typer.echo(f"store: {describe_store(store_dir)}")
+    parsed = date_cls.fromisoformat(day) if day.strip() else None
+    try:
+        doc = snapshot_lines(store_dir=store_dir, day=parsed)
+    except Exception as exc:
+        typer.echo(f"error: {exc}", err=True)
+        raise typer.Exit(code=1) from exc
+    typer.echo(
+        f"bot snapshot: {doc.get('game_count', 0)} games "
+        f"slate={doc.get('slate_date')} source={doc.get('source')}"
+    )
+    for err in doc.get("errors") or []:
+        typer.echo(f"  warn: {err}", err=True)
+
+
+@bot_app.command("pick")
+def bot_pick_cmd(
+    store_dir: Path | None = typer.Option(None, help="Read/write bets/bot/ here."),
+    force: bool = typer.Option(False, "--force", help="Place even if today's slips exist."),
+) -> None:
+    """Place 3–8 paper bets from the latest snapshot + learning weights."""
+    from sj.bot.pipeline import build_board, place_picks
+
+    typer.echo(f"store: {describe_store(store_dir)}")
+    try:
+        doc = place_picks(store_dir=store_dir, force=force)
+        build_board(store_dir=store_dir)
+    except Exception as exc:
+        typer.echo(f"error: {exc}", err=True)
+        raise typer.Exit(code=1) from exc
+    pending = sum(1 for p in doc.get("picks") or [] if p.get("result") == "Pending")
+    typer.echo(f"bot picks: {len(doc.get('picks') or [])} total, {pending} open")
+
+
+@bot_app.command("grade")
+def bot_grade_cmd(
+    store_dir: Path | None = typer.Option(None, help="Read/write bets/bot/ here."),
+) -> None:
+    """Grade open paper bets from ESPN finals and attach CLV."""
+    from sj.bot.pipeline import build_board, grade_picks
+
+    typer.echo(f"store: {describe_store(store_dir)}")
+    try:
+        doc = grade_picks(store_dir=store_dir)
+        build_board(store_dir=store_dir)
+    except Exception as exc:
+        typer.echo(f"error: {exc}", err=True)
+        raise typer.Exit(code=1) from exc
+    newly = doc.get("_newly_graded") or []
+    typer.echo(f"bot grade: {len(newly)} newly settled")
+
+
+@bot_app.command("learn")
+def bot_learn_cmd(
+    store_dir: Path | None = typer.Option(None, help="Read/write bets/bot/ here."),
+    force_note: bool = typer.Option(False, "--force-note", help="Rewrite this week's note."),
+) -> None:
+    """Update per-signal weights from graded slips and write the weekly note."""
+    from sj.bot.pipeline import build_board, learn_from_results
+
+    typer.echo(f"store: {describe_store(store_dir)}")
+    try:
+        result = learn_from_results(store_dir=store_dir, force_note=force_note)
+        build_board(store_dir=store_dir)
+    except Exception as exc:
+        typer.echo(f"error: {exc}", err=True)
+        raise typer.Exit(code=1) from exc
+    note = result.get("note") or {}
+    typer.echo(f"bot learn: graded={result.get('graded', 0)} week={note.get('week', '—')}")
+
+
+@bot_app.command("run")
+def bot_run_cmd(
+    store_dir: Path | None = typer.Option(None, help="Read/write bets/bot/ here."),
+) -> None:
+    """Snapshot, grade, learn, then pick — same pass the sj-bets job runs."""
+    from sj.bot.pipeline import run_bot
+
+    typer.echo(f"store: {describe_store(store_dir)}")
+    try:
+        result = run_bot(store_dir=store_dir)
+    except Exception as exc:
+        typer.echo(f"error: {exc}", err=True)
+        raise typer.Exit(code=1) from exc
+    board = result.get("board") or {}
+    typer.echo(
+        f"bot run: {board.get('record', '0-0-0')} "
+        f"open={len(board.get('open') or [])} "
+        f"units={board.get('units_pl', 0)}"
+    )
+
+
+@bot_app.command("seed")
+def bot_seed_cmd(
+    store_dir: Path | None = typer.Option(None, help="Write the simulated sample here."),
+) -> None:
+    """Write the labeled simulated sample so the Bot tab is not empty on day one."""
+    from sj.bot.sample import write_seed
+
+    typer.echo(f"store: {describe_store(store_dir)}")
+    board = write_seed(store_dir)
+    typer.echo(
+        f"bot seed: simulated board {board.get('record')} "
+        f"({board.get('pick_count')} slips)"
+    )
+
+
+@bot_app.command("backtest")
+def bot_backtest_cmd(
+    store_dir: Path | None = typer.Option(None, help="Write backtest artifacts here."),
+    days: int = typer.Option(5, "--days", help="Synthetic days to replay."),
+) -> None:
+    """Replay a canned ESPN-shaped slate through snapshot → pick → grade → learn."""
+    from datetime import datetime, timedelta, timezone
+
+    from sj.bot.odds import FixtureOddsProvider
+    from sj.bot.pipeline import run_bot
+    from sj.bot.sample import SEED_START, backtest_slates
+
+    typer.echo(f"store: {describe_store(store_dir)}")
+    slates = backtest_slates(days)
+    provider = FixtureOddsProvider(slates)
+    last = None
+    for offset in range(days):
+        day = SEED_START + timedelta(days=offset)
+        now = datetime(day.year, day.month, day.day, 12, 0, tzinfo=timezone.utc)
+        last = run_bot(
+            store_dir=store_dir,
+            provider=provider,
+            now=now,
+            simulated=True,
+        )
+    board = (last or {}).get("board") or {}
+    typer.echo(
+        f"bot backtest: simulated {board.get('record', '0-0-0')} "
+        f"over {days} days, units={board.get('units_pl', 0)}"
     )
 
 
