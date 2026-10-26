@@ -157,7 +157,7 @@ pydantic-settings==2.15.0
     # via nflreadpy
 pydeck==0.9.3
     # via streamlit
-pygments==2.20.0
+pygments==2.21.0
     # via
     #   pytest
     #   rich
