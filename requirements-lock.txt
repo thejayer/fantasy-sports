@@ -68,7 +68,7 @@ h11==0.16.0
     # via uvicorn
 httptools==0.9.0
     # via streamlit
-idna==3.18
+idna==3.20
     # via
     #   anyio
     #   requests
