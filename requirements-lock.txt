@@ -122,7 +122,7 @@ pluggy==1.6.0
     # via
     #   pytest
     #   pytest-cov
-polars==1.43.1
+polars==2.0.0
     # via nflreadpy
 polars-runtime-32==1.43.1
     # via polars
