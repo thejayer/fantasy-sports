@@ -22,7 +22,7 @@ Fitness restyles the training-log PWA onto the same tokens (`FITNESS.md`).
   Public Community / AI / People / Watch / Palworld routes never require a
   session. Do not put a service worker on the apex.
 - **Snapshot / hub data**: `sj-www` mounts the hub bucket **read-only** so
-  `/bets` can read `hub_members.json` and `bets/{bets,parlay_legs,public_warnings,record_splits,tailing_legs}.json`. Home and other
+  `/bets` can read `hub_members.json` and `bets/{bets,parlay_legs,public_warnings,record_splits,tailing_legs,options}.json`. Home and other
   public pages do not touch that mount.
 - **Product boundary**: Discord / Palworld / Watch / AI / People live on
   the apex; leagues, tools, and auction rooms live on the hub.
@@ -70,10 +70,12 @@ card); missing shots use a monogram. Edit `INFLUENTIAL_PEOPLE` in
 destination list. Docs: [FITNESS.md](FITNESS.md).
 
 **Bets** lives at `/bets` (nav + home destination). Members-only tracker for
-public slips (data-driven bettors), parlay legs, tailing splits, and BetMGM public-money
-warnings. Same Google allowlist as Fantasy. Data is `sj bets` (Drive xlsx
-or native Sheet) → `bets/{bets,summary,parlay_legs,public_warnings,record_splits,tailing_legs}.json`
-on the hub bucket. Docs:
+public slips (data-driven bettors), parlay legs, tailing splits, BetMGM public-money
+warnings, and posted options fills (`?tab=options`). Same Google allowlist as
+Fantasy. Data is `sj bets` (Drive xlsx or native Sheet) →
+`bets/{bets,summary,parlay_legs,public_warnings,record_splits,tailing_legs,options}.json`
+on the hub bucket. Options stay in `options.json` and never fold into betting
+totals. Docs:
 [apps/www/README.md](apps/www/README.md) and `./scripts/setup-bets-infra.sh`.
 
 Home also ships a **Coming up** event strip and **Meet the crew** links into

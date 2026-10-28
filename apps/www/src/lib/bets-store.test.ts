@@ -50,12 +50,14 @@ describe("getBetsDocument", () => {
       getPublicDocument,
       getSplitsDocument,
       getTailingDocument,
+      getOptionsDocument,
     } = await loadStore();
     await expect(getBetsDocument()).resolves.toEqual({ bets: [] });
     await expect(getParlayDocument()).resolves.toEqual({ legs: [] });
     await expect(getPublicDocument()).resolves.toEqual({ warnings: [] });
     await expect(getSplitsDocument()).resolves.toEqual({ splits: [], sports: [], checks: [] });
     await expect(getTailingDocument()).resolves.toEqual({ views: [], legs: [] });
+    await expect(getOptionsDocument()).resolves.toEqual({ trades: [], traders: [] });
   });
 
   it("treats corrupt JSON as empty so one file cannot 500 the board", async () => {
@@ -66,6 +68,7 @@ describe("getBetsDocument", () => {
     writeFileSync(path.join(dir, "public_warnings.json"), "[]");
     writeFileSync(path.join(dir, "record_splits.json"), "{not-json");
     writeFileSync(path.join(dir, "tailing_legs.json"), "{not-json");
+    writeFileSync(path.join(dir, "options.json"), "{not-json");
     process.env.SJ_BETS_DIR = dir;
     const {
       getBetsDocument,
@@ -73,6 +76,7 @@ describe("getBetsDocument", () => {
       getPublicDocument,
       getSplitsDocument,
       getTailingDocument,
+      getOptionsDocument,
     } = await loadStore();
     await expect(getBetsDocument()).resolves.toMatchObject({
       bets: [{ id: "T-1", who: "Trent" }],
@@ -81,6 +85,7 @@ describe("getBetsDocument", () => {
     await expect(getPublicDocument()).resolves.toEqual({ warnings: [] });
     await expect(getSplitsDocument()).resolves.toEqual({ splits: [], sports: [], checks: [] });
     await expect(getTailingDocument()).resolves.toEqual({ views: [], legs: [] });
+    await expect(getOptionsDocument()).resolves.toEqual({ trades: [], traders: [] });
     expect(downloadGcsObject).not.toHaveBeenCalled();
   });
 
@@ -98,5 +103,24 @@ describe("getBetsDocument", () => {
       bets: [{ id: "gcs-1", who: "Gcs" }],
     });
     expect(downloadGcsObject).toHaveBeenCalledWith("bets/bets.json");
+  });
+
+  it("reads options.json from GCS when SJ_DATA_SOURCE=gcs", async () => {
+    getBetsActor.mockResolvedValue({ email: "demo@example.com", source: "bypass" });
+    process.env.SJ_DATA_SOURCE = "gcs";
+    downloadGcsObject.mockImplementation(async (key: string) => {
+      if (key === "bets/options.json") {
+        return JSON.stringify({
+          trades: [{ id: "O-1", trader: "Sample Trader A" }],
+          traders: [{ name: "Sample Trader A", trades: 1, pl: 0, wins: 0, losses: 0, open: 0, has_daily_recap: false }],
+        });
+      }
+      return null;
+    });
+    const { getOptionsDocument } = await loadStore();
+    await expect(getOptionsDocument()).resolves.toMatchObject({
+      trades: [{ id: "O-1", trader: "Sample Trader A" }],
+    });
+    expect(downloadGcsObject).toHaveBeenCalledWith("bets/options.json");
   });
 });

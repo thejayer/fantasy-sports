@@ -513,11 +513,16 @@ def bets_cmd(
         "--from",
         help="Read a local xlsx or Gamba JSON fixture instead of Drive/Sheets.",
     ),
+    options_from: Path | None = typer.Option(
+        None,
+        "--options-from",
+        help="Read a local simulated options JSON instead of SJ_OPTIONS_SHEET_ID.",
+    ),
     store_dir: Path | None = typer.Option(
         None, help="Write bets/ here instead of the configured store."
     ),
 ) -> None:
-    """Refresh the public-bet tracker JSON (roadmap P.11).
+    """Refresh the public-bet tracker JSON (roadmap P.11 / P.12).
 
     Reads the Bets tab plus Parlay Legs, BetMGM Public Warnings, and
     Record Splits when those sheets exist. ``--from`` points at a local
@@ -528,6 +533,11 @@ def bets_cmd(
     ``bets/tailing_legs.json``. Summary / By-Sport formula tabs are
     ignored; Record Splits is read by header names (never fixed rows).
     Tailing legs joins Parlay Legs to Bets by parent id (header names).
+
+    After a successful bets export, optionally writes ``bets/options.json``
+    from the Options Tracker sheet (``SJ_OPTIONS_SHEET_ID``) when
+    ``SJ_OPTIONS_SYNC`` is on, or from ``--options-from``. Options failures
+    never fail the bets export and never touch betting totals.
     """
     import os
 
@@ -580,6 +590,19 @@ def bets_cmd(
         f"tail={tailing.get('settled_count', 0)} "
         f"synced_at={document['synced_at']}"
     )
+    from sj.bets_options import maybe_export_options
+
+    options = maybe_export_options(
+        from_path=options_from,
+        store_dir=store_dir,
+        log=lambda msg: typer.echo(msg, err=True),
+    )
+    if options is not None:
+        typer.echo(
+            f"options: {options.get('trade_count', 0)} trades "
+            f"traders={len(options.get('traders') or [])} "
+            f"synced_at={options.get('synced_at')}"
+        )
 
 
 @app.command("ai-rankings")

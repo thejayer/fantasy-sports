@@ -8,6 +8,11 @@ import type { ParlayDocument, ParlayLeg } from "@/lib/bets-parlay";
 import type { PublicDocument, PublicWarning } from "@/lib/bets-public";
 import { isSplitCheck, type SplitRow, type SplitsDocument } from "@/lib/bets-splits";
 import type { TailLeg, TailView, TailingDocument } from "@/lib/bets-tailing";
+import {
+  isOptionTrade,
+  isOptionTrader,
+  type OptionsDocument,
+} from "@/lib/bets-options";
 import { readBetsText } from "@/lib/data-source";
 import { getBetsActor } from "@/lib/session";
 
@@ -138,4 +143,22 @@ export async function getTailingDocument(): Promise<TailingDocument> {
   if (!(await getBetsActor())) return empty;
   const raw = await readFirstFile("tailing_legs.json");
   return raw ? (parseTailingDocument(raw) ?? empty) : empty;
+}
+
+function parseOptionsDocument(raw: string): OptionsDocument | null {
+  const parsed = parseJson(raw);
+  if (!parsed || typeof parsed !== "object") return null;
+  const doc = parsed as OptionsDocument;
+  const trades = Array.isArray(doc.trades) ? doc.trades.filter(isOptionTrade) : [];
+  const traders = Array.isArray(doc.traders)
+    ? doc.traders.filter(isOptionTrader)
+    : [];
+  return { ...doc, trades, traders };
+}
+
+export async function getOptionsDocument(): Promise<OptionsDocument> {
+  const empty: OptionsDocument = { trades: [], traders: [] };
+  if (!(await getBetsActor())) return empty;
+  const raw = await readFirstFile("options.json");
+  return raw ? (parseOptionsDocument(raw) ?? empty) : empty;
 }

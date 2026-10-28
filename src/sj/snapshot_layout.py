@@ -88,8 +88,9 @@ def bets_rel(name: str) -> str:
 
     Stored at the store root (``bets/bets.json``, ``bets/summary.json``,
     ``bets/parlay_legs.json``, ``bets/public_warnings.json``,
-    ``bets/record_splits.json``, ``bets/tailing_legs.json``) — not a
-    league-season path. Not listed in ``manifest.files``.
+    ``bets/record_splits.json``, ``bets/tailing_legs.json``,
+    ``bets/options.json``) — not a league-season path. Not listed in
+    ``manifest.files``. Options P/L never folds into betting totals.
     """
     safe = str(name).strip().replace("..", "").replace("/", "")
     return f"bets/{safe}.json"

@@ -61,6 +61,7 @@ jobs:
       RANKINGS_MODEL: ${{ inputs.rankings_model }}
       GCP_WIF_PROVIDER: ${{ secrets.GCP_WIF_PROVIDER }}
       GCP_DEPLOYER_SA: ${{ secrets.GCP_DEPLOYER_SA }}
+      SJ_OPTIONS_SHEET_ID: ${{ secrets.SJ_OPTIONS_SHEET_ID }}
     steps:
       - name: Require repository secrets
         run: |
@@ -238,6 +239,16 @@ jobs:
           else
             gcloud run jobs create "$BETS_JOB" "${BETS_ARGS[@]}"
           fi
+          # Options tracker — sheet id from repo secret only (never a literal).
+          # --update-env-vars keeps existing bets env when the secret is unset.
+          if [ -n "${SJ_OPTIONS_SHEET_ID:-}" ]; then
+            gcloud run jobs update "$BETS_JOB" \
+              --project "$PROJECT_ID" --region "$REGION" \
+              --update-env-vars "SJ_OPTIONS_SHEET_ID=${SJ_OPTIONS_SHEET_ID},SJ_OPTIONS_SYNC=1"
+            echo "sj-bets options export enabled (SJ_OPTIONS_SYNC=1)"
+          else
+            echo "SJ_OPTIONS_SHEET_ID secret unset — options export stays off"
+          fi
 
       - name: Run once after deploy
         if: ${{ inputs.run_after_deploy == 'true' }}
@@ -256,6 +267,8 @@ jobs:
           echo "Bet tracker (after the sheet is shared with the job SA):"
           echo "  gcloud run jobs execute sj-bets --region=$REGION --project=$PROJECT_ID"
           echo "  ./scripts/setup-bets-infra.sh"
+          echo "Options tracker (after SJ_OPTIONS_SHEET_ID secret + Viewer share):"
+          echo "  gcloud run jobs execute sj-bets --region=$REGION --project=$PROJECT_ID"
           echo
           echo "AI rankings (after sj-cfbd-api-key / sj-rankings-api-key exist):"
           echo "  gcloud run jobs execute $JOB --args=ai-rankings,--board,cfb --region=$REGION --project=$PROJECT_ID"

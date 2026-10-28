@@ -60,16 +60,27 @@ The live tracker id is an uploaded `.xlsx` in Drive today — no conversion
 needed. Austin shares that file with the reader SA as Viewer. Writes
 `bets/bets.json` + `bets/summary.json` + `bets/parlay_legs.json` +
 `bets/public_warnings.json` + `bets/record_splits.json` +
-`bets/tailing_legs.json` to the store
+`bets/tailing_legs.json` + `bets/options.json` to the store
 (`gs://<GCS_BUCKET>/bets/` when `SJ_GCS_BUCKET` is set). The live project,
 bucket, and bets-reader SA email are GitHub repository secrets / Austin
 (`GCP_PROJECT_ID`, `GCS_BUCKET`, `<BETS_READER_SA_EMAIL>`) — not committed here.
 KPI math is from raw Bets / Parlay Legs / Public Warnings rows — never the
-formula summary tabs.
+formula summary tabs. Options P/L is a separate sidecar (`bets/options.json`)
+and never folds into those totals.
+
+Options ingest is off unless `SJ_OPTIONS_SYNC=1`. The Options Tracker sheet
+id comes from `SJ_OPTIONS_SHEET_ID` (GitHub secret / job env — never a
+literal in the repo). Share that sheet Viewer-only with the same reader SA.
+Failures there never fail the bets export.
 
 ```bash
 # Offline fixture → local JSON (what CI / the fallback UI use)
 sj bets --from tests/fixtures/bets/tracker_tabs.xlsx \
+  --store-dir apps/www/fixtures
+
+# Simulated options sidecar (does not require SJ_OPTIONS_SYNC)
+sj bets --from tests/fixtures/bets/tracker_tabs.xlsx \
+  --options-from tests/fixtures/bets/options_simulated.json \
   --store-dir apps/www/fixtures
 
 # Live Drive file (xlsx or native Sheet; share with the job SA as Viewer)

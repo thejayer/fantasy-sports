@@ -2107,6 +2107,65 @@ a.news-card:focus-visible .news-card-read {
   color: color-mix(in srgb, var(--color-text) 62%, transparent);
 }
 
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.options-charts {
+  display: grid;
+  gap: var(--space-5);
+  margin: var(--space-5) 0;
+}
+
+.options-chart-wrap {
+  margin: 0;
+  padding-top: var(--space-4);
+  border-top: 2px solid var(--color-divider);
+}
+
+.options-chart-wrap figcaption {
+  margin: 0 0 0.6rem;
+  font-size: 14px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  font-weight: 700;
+}
+
+.options-chart {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.options-chart-axis {
+  stroke: var(--color-divider);
+  stroke-width: 1;
+}
+
+.options-chart-line {
+  fill: none;
+  stroke-width: 2;
+}
+
+.options-chart-label {
+  fill: color-mix(in srgb, var(--color-text) 55%, transparent);
+  font-size: 11px;
+}
+
+.options-pl-open,
+.options-pl-blank {
+  color: color-mix(in srgb, var(--color-text) 58%, transparent);
+  font-style: italic;
+}
+
 .bets-table tr.is-fade-plus td {
   box-shadow: inset 3px 0 0 var(--sj-win, #22c55e);
 }
