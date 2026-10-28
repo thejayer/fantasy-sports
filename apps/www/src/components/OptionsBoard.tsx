@@ -216,7 +216,7 @@ export function OptionsBoard({
 
   return (
     <div className="bets-board">
-      <div className="bets-filters" aria-label="Options filters">
+      <div className="bets-filters" role="navigation" aria-label="Options filters">
         <FilterChips
           label="Trader"
           allHref={optionsHref({ type, status })}
