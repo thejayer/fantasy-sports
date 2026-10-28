@@ -12,6 +12,7 @@ test.describe("bets fixture board", () => {
     await expect(page.getByRole("link", { name: "Public fade" })).toBeVisible();
     await expect(page.getByRole("link", { name: "Record splits" })).toBeVisible();
     await expect(page.getByRole("link", { name: "Tail legs" })).toBeVisible();
+    await expect(page.getByRole("link", { name: "Options" })).toBeVisible();
     await expect(page.getByRole("article").filter({ hasText: "All bettors" })).toBeVisible();
     await expect(page.getByRole("article").filter({ hasText: "@BookitWithTrent" })).toBeVisible();
     await expect(page.getByRole("article").filter({ hasText: "@stevewilldoit" })).toBeVisible();
@@ -48,6 +49,13 @@ test.describe("bets fixture board", () => {
     await expect(page.getByText(/Tail @/).first()).toBeVisible();
     await expect(page.getByText(/Priced sportsbook legs/i).first()).toBeVisible();
     await expect(page.getByText(/approximate/i).first()).toBeVisible();
+    await page.goto("/bets?tab=options");
+    await expect(page.getByRole("navigation", { name: "Options filters" })).toBeVisible();
+    await expect(page.getByRole("article").filter({ hasText: "Sample Trader A" })).toBeVisible();
+    await expect(page.getByRole("article").filter({ hasText: "Sample Trader B" })).toBeVisible();
+    await expect(page.getByText("not posted").first()).toBeVisible();
+    await expect(page.getByRole("img", { name: /Cumulative posted P\/L/i }).first()).toBeVisible();
+    await expect(page.getByText(/posted screenshots and fills/i)).toBeVisible();
     await page.goto("/bets?tab=warnings");
     await expect(page.getByRole("heading", { name: "Fade the public" })).toBeVisible();
     await expect(page.getByRole("heading", { name: "Recent warnings" })).toBeVisible();

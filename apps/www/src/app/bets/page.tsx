@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 
 import { BetsBoard, BetsEmpty, BetsTabs, BetsToolbar } from "@/components/BetsBoard";
+import { OptionsBoard, OptionsEmpty } from "@/components/OptionsBoard";
 import { ParlayBoard, ParlayEmpty } from "@/components/ParlayBoard";
 import { PublicBoard, PublicEmpty } from "@/components/PublicBoard";
 import { SplitsBoard, SplitsEmpty } from "@/components/SplitsBoard";
@@ -21,10 +22,17 @@ import {
   uniqueParlaySports,
 } from "@/lib/bets-parlay";
 import { filterWarnings, publicKpis, uniqueWarningSports } from "@/lib/bets-public";
+import {
+  filterOptionTrades,
+  parseOptionFilter,
+  uniqueOptionTraders,
+  uniqueOptionValues,
+} from "@/lib/bets-options";
 import { uniqueSplitBettors } from "@/lib/bets-splits";
 import { filterTailLegs, uniqueTailBettors } from "@/lib/bets-tailing";
 import {
   getBetsDocument,
+  getOptionsDocument,
   getParlayDocument,
   getPublicDocument,
   getSplitsDocument,
@@ -38,7 +46,7 @@ export const metadata: Metadata = {
   title: "Bets",
   robots: { index: false, follow: false },
   description:
-    "Members-only tracker for public slips, parlay legs, tailing splits, and BetMGM public-money fades.",
+    "Members-only tracker for public slips, options fills, parlay legs, tailing splits, and BetMGM public-money fades.",
 };
 
 type Props = {
@@ -52,6 +60,8 @@ type Props = {
     size?: string;
     month?: string;
     ou?: string;
+    type?: string;
+    status?: string;
   }>;
 };
 
@@ -61,20 +71,31 @@ export default async function BetsPage({ searchParams }: Props) {
   const tab = parseBetTab(params.tab);
   const window = parseBetWindow(params.window);
   const sport = (params.sport || "").trim();
-  const [betsDoc, parlayDoc, publicDoc, splitsDoc, tailingDoc] = await Promise.all([
-    getBetsDocument(),
-    getParlayDocument(),
-    getPublicDocument(),
-    getSplitsDocument(),
-    getTailingDocument(),
-  ]);
+  const [betsDoc, parlayDoc, publicDoc, splitsDoc, tailingDoc, optionsDoc] =
+    await Promise.all([
+      getBetsDocument(),
+      getParlayDocument(),
+      getPublicDocument(),
+      getSplitsDocument(),
+      getTailingDocument(),
+      getOptionsDocument(),
+    ]);
   const names = uniqueBettors(betsDoc.bets);
   const who = parseBettor(params.who, [
     ...names,
     ...uniqueParlayBettors(parlayDoc.legs),
     ...uniqueSplitBettors(splitsDoc.splits),
     ...uniqueTailBettors(tailingDoc.legs),
+    ...uniqueOptionTraders(optionsDoc.trades),
   ]);
+  const optionType = parseOptionFilter(
+    params.type,
+    uniqueOptionValues(optionsDoc.trades, "type"),
+  );
+  const optionStatus = parseOptionFilter(
+    params.status,
+    uniqueOptionValues(optionsDoc.trades, "status"),
+  );
   const tailFilters = {
     who: who || null,
     sport: sport || null,
@@ -123,15 +144,16 @@ export default async function BetsPage({ searchParams }: Props) {
         <h1>Bets</h1>
         <p>
           Tracked public posters — records, ROI, parlay-leg hit rates, tailing
-          splits, record splits, and John Ewing&apos;s BetMGM public-money fades.
-          Members only.
+          splits, record splits, John Ewing&apos;s BetMGM public-money fades,
+          and posted options fills. Members only.
         </p>
         <p className="page-hero-meta">
           {betsDoc.bet_count ?? betsDoc.bets.length} slips ·{" "}
           {parlayDoc.leg_count ?? parlayDoc.legs.length} legs ·{" "}
           {publicDoc.warning_count ?? publicDoc.warnings.length} warnings ·{" "}
           {splitsDoc.split_count ?? splitsDoc.splits.length} splits ·{" "}
-          {tailingDoc.settled_count ?? tailingDoc.legs.length} tail legs
+          {tailingDoc.settled_count ?? tailingDoc.legs.length} tail legs ·{" "}
+          {optionsDoc.trade_count ?? optionsDoc.trades.length} option rows
         </p>
       </section>
       <BetsToolbar actor={actor} />
@@ -187,6 +209,23 @@ export default async function BetsPage({ searchParams }: Props) {
             window={window}
             who={who}
             filters={tailFilters}
+          />
+        )
+      ) : tab === "options" ? (
+        !optionsDoc.trades.length ? (
+          <OptionsEmpty />
+        ) : (
+          <OptionsBoard
+            document={optionsDoc}
+            trades={filterOptionTrades(optionsDoc.trades, {
+              trader: who || null,
+              type: optionType || null,
+              status: optionStatus || null,
+            })}
+            traders={optionsDoc.traders}
+            who={who}
+            type={optionType}
+            status={optionStatus}
           />
         )
       ) : !betsDoc.bets.length ? (

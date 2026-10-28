@@ -5,7 +5,7 @@ name: deploy portal
 # Auth: Workload Identity Federation (same deployer SA as the hub).
 # Project / WIF / deployer SA / bucket come from repository secrets (masked).
 # Public site plus members-only /bets (Auth.js + GCS mount for hub_members
-# and bets/bets.json). Reuses sj-hub Secret Manager names.
+# and bets/{bets,options,...}.json). Reuses sj-hub Secret Manager names.
 #
 # Deploys on merge to main when apps/www changes, and on workflow_dispatch.
 
