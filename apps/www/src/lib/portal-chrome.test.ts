@@ -31,12 +31,24 @@ describe("portal chrome after Phase E audit", () => {
     expect(existsSync(path.join(WWW_ROOT, "vercel.json"))).toBe(false);
     const nextConfig = readFileSync(path.join(WWW_ROOT, "next.config.ts"), "utf8");
     expect(nextConfig).toMatch(/output:\s*"standalone"/);
+    expect(nextConfig).toMatch(/casinoRewrites/);
+    expect(nextConfig).toMatch(/async rewrites/);
     const vercelMd = readFileSync(path.join(WWW_ROOT, "VERCEL.md"), "utf8");
     expect(vercelMd).toMatch(/Root Directory/);
     expect(vercelMd).toMatch(/scripts\/vercel-ignore\.sh/);
     expect(vercelMd).toMatch(/\/api\/auth\/callback\/google/);
     expect(vercelMd).not.toMatch(/iam\.gserviceaccount\.com/);
     expect(vercelMd).not.toMatch(/gs:\/\//);
+  });
+
+  it("gates /casino in robots and uses a hard nav anchor when configured", () => {
+    const robots = readFileSync(path.join(APP_DIR, "robots.ts"), "utf8");
+    expect(robots).toMatch(/"\/casino"/);
+    const layout = readFileSync(path.join(APP_DIR, "layout.tsx"), "utf8");
+    expect(layout).toMatch(/label:\s*"Casino"/);
+    expect(layout).toMatch(/href:\s*"\/casino"/);
+    expect(layout).toMatch(/anchor:\s*true/);
+    expect(layout).toMatch(/casinoEnabled/);
   });
 
   it("does not ship a service worker on the apex", () => {

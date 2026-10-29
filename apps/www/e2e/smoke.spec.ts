@@ -26,6 +26,13 @@ test.describe("portal smoke", () => {
     await expect(
       page.getByRole("heading", { name: /Meet the crew/i }),
     ).toBeVisible();
+    await expect(page.getByRole("navigation", { name: "More" }).getByRole("link", { name: /^Casino$/ })).toHaveCount(0);
+    await expect(page.locator(".apex-room").filter({ hasText: "Casino" })).toHaveCount(0);
+  });
+
+  test("casino is a 404 when the proxy is off", async ({ page }) => {
+    const res = await page.goto("/casino");
+    expect(res?.status()).toBe(404);
   });
 
   test("watch embed and tonight framing", async ({ page }) => {

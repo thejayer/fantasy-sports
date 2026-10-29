@@ -6,11 +6,20 @@ The fantasy member hub stays on **https://fantasy.strictlyjayers.com**
 (`apps/web`). This app never proxies or rewrites league routes — it deep-links
 with absolute URLs so Auth.js cookies and snapshot data stay on the hub host.
 
-**Bets** (`/bets`) is the one members-only surface on this host (roadmap P.11).
+**Bets** (`/bets`) is the built-in members-only surface on this host (roadmap P.11).
 Auth.js + Google uses the same allowlist as Fantasy / Fitness
 (`ALLOWED_EMAILS` ∪ `{SJ_HUB_DIR}/hub_members.json`). The rest of the apex
 stays public. There is **no service worker** on www — `/bets` is a
 server-rendered page, not a PWA.
+
+**Casino** (`/casino`) is an optional rewrite to a separately deployed app.
+Set `CASINO_URL` at **build** time (Docker `ARG` / repo secret `CASINO_URL`).
+When set, `/casino` and `/casino/*` are rewritten (not redirected) to
+`${CASINO_URL}/casino` and `${CASINO_URL}/casino/*`, behind the same
+sign-in gate as `/bets`. When unset, `/casino` is a 404 and the nav link
+is hidden. Image files under `/casino` still proxy (middleware skips
+those extensions — accepted as a soft gate). The upstream URL itself is
+directly reachable.
 
 See [PORTAL.md](../../PORTAL.md) for domain routing and deploy. Vercel pilot
 settings (Root Directory, ignored build step, OIDC/WIF env) live in
@@ -31,6 +40,7 @@ npm run dev                  # http://localhost:3002
 | `AUTH_URL` | Auth.js public origin (same as `SITE_URL` in prod) |
 | `FANTASY_HUB_URL` | Absolute link to the hub (default production host) |
 | `FITNESS_URL` | Absolute link to the fitness log (default production host) |
+| `CASINO_URL` | Optional `/casino` rewrite origin (build-time; empty = off) |
 | `DISCORD_INVITE_URL` | Optional Discord CTA override (default baked in) |
 | `PALWORLD_INFO_URL` | Optional extra Palworld link on `/palworld` |
 | `PALWORLD_STATUS` | Optional public world-status line (never IPs/passwords) |
@@ -120,3 +130,4 @@ and mounts `gs://<GCS_BUCKET>` **read-only** at
 | `AUTH_GOOGLE_SECRET` | secret `sj-auth-google-secret:latest` | Same Google OAuth client |
 | `ALLOWED_EMAILS` | secret `sj-allowed-emails:latest` | Same env allowlist as Fantasy |
 | `SJ_HUB_DIR` | `/app/data/sj` | `hub_members.json` + `bets/` |
+| `CASINO_URL` | Docker build arg from repo secret `CASINO_URL` | Optional `/casino` rewrite; empty = off |

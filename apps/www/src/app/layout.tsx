@@ -66,8 +66,14 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const { fantasyHubUrl, fitnessUrl, vibeUrl, siteUrl, discordInviteUrl } =
-    getSiteConfig();
+  const {
+    fantasyHubUrl,
+    fitnessUrl,
+    vibeUrl,
+    siteUrl,
+    discordInviteUrl,
+    casinoEnabled,
+  } = getSiteConfig();
 
   return (
     <html lang="en" className={archivo.variable}>
@@ -108,6 +114,9 @@ export default function RootLayout({
                 { label: "People", href: "/people" },
                 { label: "Watch", href: "/watch" },
                 { label: "Palworld", href: "/palworld" },
+                ...(casinoEnabled
+                  ? [{ label: "Casino", href: "/casino", anchor: true }]
+                  : []),
               ]}
             />
             <div className="sj-side-foot">

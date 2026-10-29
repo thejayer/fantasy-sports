@@ -1,3 +1,5 @@
+import { isCasinoConfigured } from "@/lib/casino";
+
 /**
  * Apex portal config. Fantasy is a separate Cloud Run host — never route
  * through this app with a relative `/leagues` path.
@@ -11,6 +13,8 @@ export type SiteConfig = {
   palworldInfoUrl: string | null;
   /** Public world line only — never put IPs or passwords here. */
   palworldStatus: string | null;
+  /** True when CASINO_URL is set — nav + members gate, never the raw URL. */
+  casinoEnabled: boolean;
 };
 
 /** Crew Discord invite — override with DISCORD_INVITE_URL on sj-www if rotated. */
@@ -45,5 +49,6 @@ export function getSiteConfig(): SiteConfig {
       optionalUrl(process.env.DISCORD_INVITE_URL) || DEFAULT_DISCORD_INVITE_URL,
     palworldInfoUrl: optionalUrl(process.env.PALWORLD_INFO_URL),
     palworldStatus: process.env.PALWORLD_STATUS?.trim() || null,
+    casinoEnabled: isCasinoConfigured(),
   };
 }

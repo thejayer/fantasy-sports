@@ -11,7 +11,7 @@
     "test": "vitest run",
     "test:e2e": "playwright test e2e/smoke.spec.ts",
     "test:e2e:bets": "playwright test e2e/bets-smoke.spec.ts",
-    "test:e2e:auth": "AUTH_DEV_BYPASS=0 PORT=3005 PLAYWRIGHT_BASE_URL=http://127.0.0.1:3005 playwright test e2e/bets-auth.spec.ts"
+    "test:e2e:auth": "AUTH_DEV_BYPASS=0 PORT=3005 PLAYWRIGHT_BASE_URL=http://127.0.0.1:3005 CASINO_URL=http://127.0.0.1:9 playwright test e2e/bets-auth.spec.ts"
   },
   "dependencies": {
     "@google-cloud/storage": "^8.4.0",

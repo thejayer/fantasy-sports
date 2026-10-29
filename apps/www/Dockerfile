@@ -4,8 +4,10 @@
 #   docker build -f apps/www/Dockerfile -t sj-www .
 #
 # Public marketing surface plus a members-only /bets page (Auth.js + GCS
-# mount for hub_members.json and bets/bets.json). Do not mkdir the FUSE
-# mount in the entrypoint — a slow mount hangs the Cloud Run PORT probe.
+# mount for hub_members.json and bets/bets.json). Optional /casino rewrite
+# when CASINO_URL is passed as a build arg (empty = off). Do not mkdir
+# the FUSE mount in the entrypoint — a slow mount hangs the Cloud Run
+# PORT probe.
 
 FROM node:22-bookworm-slim AS deps
 WORKDIR /app/apps/www
@@ -16,10 +18,13 @@ FROM deps AS build
 WORKDIR /app
 COPY apps/www ./apps/www
 WORKDIR /app/apps/www
+# Rewrites read CASINO_URL at `next build`. Empty default keeps /casino a 404.
+ARG CASINO_URL=
 ENV NEXT_TELEMETRY_DISABLED=1 \
     SITE_URL=https://strictlyjayers.com \
     FANTASY_HUB_URL=https://fantasy.strictlyjayers.com \
-    FITNESS_URL=https://fitness.strictlyjayers.com
+    FITNESS_URL=https://fitness.strictlyjayers.com \
+    CASINO_URL=$CASINO_URL
 RUN npm run build
 
 FROM node:22-bookworm-slim AS runtime
@@ -37,12 +42,14 @@ RUN chmod +x /app/docker-entrypoint.sh \
     && chown -R sjwww:sjwww /app/apps/www
 USER sjwww
 
+ARG CASINO_URL=
 ENV NODE_ENV=production \
     PORT=8080 \
     HOSTNAME=0.0.0.0 \
     SITE_URL=https://strictlyjayers.com \
     FANTASY_HUB_URL=https://fantasy.strictlyjayers.com \
-    FITNESS_URL=https://fitness.strictlyjayers.com
+    FITNESS_URL=https://fitness.strictlyjayers.com \
+    CASINO_URL=$CASINO_URL
 
 EXPOSE 8080
 ENTRYPOINT ["/app/docker-entrypoint.sh"]
