@@ -200,6 +200,7 @@ jobs:
           FANTASY_HUB_URL: https://fantasy.strictlyjayers.com
           FITNESS_URL: https://fitness.strictlyjayers.com
           DISCORD_INVITE_URL: https://discord.gg/example
+          CASINO_URL: http://127.0.0.1:9
 
       - name: Audit dependencies
         # braces has no patched release (`braces *`); it only sits under

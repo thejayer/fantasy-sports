@@ -75,6 +75,16 @@ function RoomGlyph({ id }: { id: DestinationId }) {
       </svg>
     );
   }
+  if (id === "casino") {
+    return (
+      <svg {...common}>
+        <rect x="5" y="5" width="14" height="14" />
+        <circle cx="9" cy="9" r="1.2" fill="currentColor" stroke="none" />
+        <circle cx="15" cy="15" r="1.2" fill="currentColor" stroke="none" />
+        <path d="M8 16l8-8" />
+      </svg>
+    );
+  }
   return (
     <svg {...common}>
       <circle cx="12" cy="12" r="8" />
@@ -98,14 +108,20 @@ function destinationHref(
   if (id === "ai") return "/ai";
   if (id === "people") return "/people";
   if (id === "bets") return "/bets";
+  if (id === "casino") return "/casino";
   return "/palworld";
 }
 
 export const revalidate = 1800;
 
 export default async function HomePage() {
-  const { fantasyHubUrl, fitnessUrl, discordInviteUrl, palworldStatus } =
-    getSiteConfig();
+  const {
+    fantasyHubUrl,
+    fitnessUrl,
+    discordInviteUrl,
+    palworldStatus,
+    casinoEnabled,
+  } = getSiteConfig();
   const copy = portalCopy;
   const items = copy.destinations.items;
   const events = upcomingPortalEvents(copy.events.items);
@@ -141,7 +157,9 @@ export default async function HomePage() {
   }
 
   const primary = copy.destinations.primary.map(buildDestination);
-  const secondary = copy.destinations.secondary.map(buildDestination);
+  const secondary = copy.destinations.secondary
+    .filter((id) => id !== "casino" || casinoEnabled)
+    .map(buildDestination);
 
   return (
     <main className="apex-home">

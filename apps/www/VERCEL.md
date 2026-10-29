@@ -63,6 +63,7 @@ and the GCS/WIF vars. No JSON key files.
 | `SJ_GCS_PREFIX` | Object-key prefix; omit when the FUSE mount is the bucket root |
 | `FANTASY_HUB_URL` | Absolute hub URL (defaults to production host) |
 | `FITNESS_URL` | Absolute fitness URL (defaults to production host) |
+| `CASINO_URL` | Optional `/casino` rewrite origin (needed at **build** time; empty = `/casino` 404) |
 | `VIBE_URL` | Absolute vibe URL (defaults to production host) |
 | `DISCORD_INVITE_URL` | Discord CTA override |
 | `PALWORLD_STATUS` | Public Palworld line only — never IPs or passwords |

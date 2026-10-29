@@ -5,7 +5,9 @@ name: deploy portal
 # Auth: Workload Identity Federation (same deployer SA as the hub).
 # Project / WIF / deployer SA / bucket come from repository secrets (masked).
 # Public site plus members-only /bets (Auth.js + GCS mount for hub_members
-# and bets/{bets,options,...}.json). Reuses sj-hub Secret Manager names.
+# and bets/{bets,options,...}.json). Optional /casino rewrite when the
+# CASINO_URL repository secret is set (empty / missing = off). Reuses
+# sj-hub Secret Manager names.
 #
 # Deploys on merge to main when apps/www changes, and on workflow_dispatch.
 
@@ -182,7 +184,9 @@ jobs:
           IMAGE="$REGION-docker.pkg.dev/$PROJECT_ID/sj/www:${{ github.sha }}"
           echo "IMAGE=$IMAGE" >> "$GITHUB_ENV"
           gcloud auth configure-docker "$REGION-docker.pkg.dev" --quiet
-          docker build -f apps/www/Dockerfile -t "$IMAGE" .
+          docker build -f apps/www/Dockerfile \
+            --build-arg "CASINO_URL=${{ secrets.CASINO_URL }}" \
+            -t "$IMAGE" .
           docker push "$IMAGE"
 
       - name: Resolve SITE_URL and deploy

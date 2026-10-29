@@ -17,10 +17,11 @@ Fitness restyles the training-log PWA onto the same tokens (`FITNESS.md`).
 ## Why two hosts
 
 - **Auth.js cookies** for the hub stay on `fantasy.strictlyjayers.com`.
-  The apex now has a **second**, scoped Auth.js install for `/bets` only
-  (same Google client + allowlist; callback host `strictlyjayers.com`).
-  Public Community / AI / People / Watch / Palworld routes never require a
-  session. Do not put a service worker on the apex.
+  The apex now has a **second**, scoped Auth.js install for `/bets` (and
+  `/casino` when `CASINO_URL` is set) — same Google client + allowlist;
+  callback host `strictlyjayers.com`. Public Community / AI / People /
+  Watch / Palworld routes never require a session. Do not put a service
+  worker on the apex.
 - **Snapshot / hub data**: `sj-www` mounts the hub bucket **read-only** so
   `/bets` can read `hub_members.json` and `bets/{bets,parlay_legs,public_warnings,record_splits,tailing_legs,options}.json`. Home and other
   public pages do not touch that mount.
@@ -37,7 +38,8 @@ https://fantasy.strictlyjayers.com
 
 Configured via `FANTASY_HUB_URL` (default production host). There is no Next.js
 rewrite, reverse proxy, or same-origin `/leagues` path on the apex — that would
-break Auth.js and couple deploys.
+break Auth.js and couple deploys. The one exception is an **optional**
+`/casino` rewrite (below), which is off unless `CASINO_URL` is set.
 
 Discord CTA defaults to the crew invite (`lib/site.ts`); override with
 `DISCORD_INVITE_URL` on `sj-www` if the code rotates. Palworld is a real
@@ -77,6 +79,17 @@ Fantasy. Data is `sj bets` (Drive xlsx or native Sheet) →
 on the hub bucket. Options stay in `options.json` and never fold into betting
 totals. Docs:
 [apps/www/README.md](apps/www/README.md) and `./scripts/setup-bets-infra.sh`.
+
+**Casino** is an optional members-only path at `/casino` (nav + home
+destination when configured). When the `CASINO_URL` repo secret is set,
+`sj-www` rewrites `/casino` and `/casino/*` to `${CASINO_URL}/casino` and
+`${CASINO_URL}/casino/*` (same-origin, not a redirect). The same Auth.js
+gate as `/bets` sends signed-out visitors to `/login?callbackUrl=/casino`.
+Unset / empty `CASINO_URL` leaves `/casino` as a 404 — no proxy, no nav
+link. Enable by setting the GitHub Actions secret `CASINO_URL` and
+redeploying `sj-www` (`CASINO_URL` is a Docker **build** arg; Next bakes
+the rewrite at `next build`). Soft-gate trade-off: image extensions skip
+portal middleware, and the upstream origin is reachable on its own.
 
 Home also ships a **Coming up** event strip and **Meet the crew** links into
 hub `/u/{handle}` profiles (edit handles in `lib/content.ts`). The hub chrome

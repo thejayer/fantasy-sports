@@ -88,6 +88,12 @@ describe("portal destinations", () => {
     expect(portalCopy.destinations.secondary).toContain("bets");
   });
 
+  it("includes a Casino destination (shown only when configured)", () => {
+    expect(portalCopy.destinations.items.casino.title).toBe("Casino");
+    expect(portalCopy.destinations.items.casino.action).toBe("Open Casino");
+    expect(portalCopy.destinations.secondary).toContain("casino");
+  });
+
   it("splits primary rooms from compact stubs", () => {
     expect([...portalCopy.destinations.primary]).toEqual([
       "fantasy",
@@ -100,6 +106,7 @@ describe("portal destinations", () => {
       "people",
       "bets",
       "palworld",
+      "casino",
     ]);
     expect(portalCopy.destinations.items.fantasy.title).toBe("Fantasy");
   });
