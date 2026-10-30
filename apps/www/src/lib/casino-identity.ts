@@ -22,7 +22,16 @@ export const DEFAULT_USER_NAME = "Player";
 
 /** What the casino proxy needs from the Auth.js session. */
 export type CasinoMember = {
-  /** Auth.js `token.sub` (exposed as `session.user.id` by auth.ts). */
+  /**
+   * The Google account subject, captured once at sign-in (auth.ts) and
+   * stable across sign-ins. The preferred id input.
+   */
+  googleSub?: string | null;
+  /**
+   * Auth.js `token.sub` (exposed as `session.user.id`). Without a database
+   * adapter Auth.js makes this a random UUID on every sign-in, so it is only
+   * a last resort and never a stable member id.
+   */
   id?: string | null;
   name?: string | null;
   username?: string | null;
@@ -39,28 +48,42 @@ function clean(value: string | null | undefined): string {
 
 /**
  * Opaque stable id. Preference order:
- *  - salt set: HMAC-SHA256(salt, "sj:" + (sub | email)), hex, 24 chars;
- *  - no salt: plain SHA-256 of the sub (never of an email, which is guessable),
- *    hex, 24 chars. Returns null when nothing safe can be derived.
+ *  - salt set: HMAC-SHA256(salt, "sj:" + input), hex, 24 chars, where input is
+ *    the first of: the Google subject, the lowercased email (sessions minted
+ *    before the subject was captured), the Auth.js `token.sub`;
+ *  - no salt: plain SHA-256 of the Google subject, else of the Auth.js sub
+ *    (never of an email, which is guessable), hex, 24 chars.
+ * Returns null when nothing safe can be derived.
  */
-export function casinoUserId(
-  member: CasinoMember,
-  env: IdentityEnv = process.env,
-): string | null {
+export function casinoUserId(member: CasinoMember, env: IdentityEnv = process.env): string | null {
+  const googleSub = clean(member.googleSub);
   const sub = clean(member.id);
   const email = clean(member.email).toLowerCase();
   const salt = clean(env.CASINO_USER_ID_SALT);
 
   if (salt) {
-    const input = sub || email;
+    const input = googleSub || email || sub;
     if (!input) return null;
-    return createHmac("sha256", salt)
-      .update(`sj:${input}`)
-      .digest("hex")
-      .slice(0, USER_ID_LENGTH);
+    return createHmac("sha256", salt).update(`sj:${input}`).digest("hex").slice(0, USER_ID_LENGTH);
   }
-  if (!sub) return null;
-  return createHash("sha256").update(sub).digest("hex").slice(0, USER_ID_LENGTH);
+  const unsalted = googleSub || sub;
+  if (!unsalted) return null;
+  return createHash("sha256").update(unsalted).digest("hex").slice(0, USER_ID_LENGTH);
+}
+
+/**
+ * Auth.js jwt-callback helper: on sign-in, keep the Google account subject
+ * (`account.providerAccountId`) on the token. Without a database adapter,
+ * Auth.js sets `token.sub` to a fresh random UUID on every sign-in, so this is
+ * the only stable per-member value. Returns the token unchanged otherwise.
+ */
+export function withGoogleSub<T extends Record<string, unknown>>(
+  token: T,
+  account: { provider?: string | null; providerAccountId?: string | null } | null | undefined,
+): T & { googleSub?: string } {
+  const id = clean(account?.providerAccountId);
+  if (account?.provider === "google" && id) return { ...token, googleSub: id };
+  return token;
 }
 
 function looksLikeEmailPart(candidate: string, email: string): boolean {
