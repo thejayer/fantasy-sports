@@ -98,3 +98,21 @@ export async function readBetsText(name: string): Promise<string | null> {
   }
   return null;
 }
+
+/**
+ * A JSON snapshot file under the hub root (e.g. `index.json`,
+ * `football-main/2026/manifest.json`), as text. `rel` is a relative path of
+ * plain segments; anything else (`..`, absolute, odd characters) reads as
+ * missing. Same gcs-then-fs order as the other readers.
+ */
+export async function readHubFile(rel: string): Promise<string | null> {
+  const parts = rel.split("/");
+  if (!parts.length || !parts.every((p) => /^[A-Za-z0-9][A-Za-z0-9._-]*$/.test(p) && p !== "..")) {
+    return null;
+  }
+  if (dataSourceMode() === "gcs") {
+    const fromGcs = await readGcsObject(gcsObjectKey(...parts));
+    if (fromGcs !== null) return fromGcs;
+  }
+  return readFsFile(path.join(hubDataRoot(), ...parts));
+}

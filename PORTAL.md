@@ -122,6 +122,21 @@ operator IAM steps (grant `roles/run.invoker` to the portal runtime account,
 then remove `allUsers`) are in
 [apps/www/README.md](apps/www/README.md#operator-iam-private-sj-casino).
 
+**Casino team linking (fantasy matchup chips).** Members link their own
+fantasy team in each ESPN league from the casino ("Link my teams"); the
+casino pays chips for that team's matchup wins. The portal's part:
+`GET/POST/DELETE /casino/api/links` (the picker's leagues and teams come from
+the hub snapshots read through `SJ_HUB_DIR`; a pick is checked against them
+before the casino stores it) and `POST /casino/api/links/sync` (reports the
+member's own linked teams' decided results to the casino's `/api/grants`).
+These explicit routes sit under `/casino/**`, so the sign-in gate applies and
+they take precedence over the catch-all proxy. The portal's calls to the
+casino's private endpoints add `x-sj-service: casino-grants`; the proxy sets it
+only from server code and still strips every browser `x-sj-*` header first, and
+the casino accepts it only with `SJ_TRUST_HEADERS=1`. Hub-native leagues (golf)
+are not offered. No new env var, secret, IAM role or scheduler. The rules,
+caps and storage are in the casino repo's `docs/fantasy-links.md`.
+
 Home also ships a **Coming up** event strip and **Meet the crew** links into
 hub `/u/{handle}` profiles (edit handles in `lib/content.ts`). The hub chrome
 links back with **Community** → `strictlyjayers.com` (`COMMUNITY_SITE_URL`).
