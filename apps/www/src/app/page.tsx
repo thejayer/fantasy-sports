@@ -11,6 +11,7 @@ import {
   upcomingPortalEvents,
   type DestinationId,
 } from "@/lib/content";
+import { CasinoToday } from "@/components/CasinoToday";
 import { getSiteConfig } from "@/lib/site";
 import { loadWatchPlaylist } from "@/lib/watch";
 
@@ -352,6 +353,8 @@ export default async function HomePage() {
           })}
         </ul>
       </section>
+
+      {casinoEnabled ? <CasinoToday /> : null}
 
       <section
         id="crew"

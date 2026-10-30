@@ -28,6 +28,7 @@ test.describe("portal smoke", () => {
     ).toBeVisible();
     await expect(page.getByRole("navigation", { name: "More" }).getByRole("link", { name: /^Casino$/ })).toHaveCount(0);
     await expect(page.locator(".apex-room").filter({ hasText: "Casino" })).toHaveCount(0);
+    await expect(page.locator("#casino-today")).toHaveCount(0);
   });
 
   test("casino is a 404 when the proxy is off", async ({ page }) => {
