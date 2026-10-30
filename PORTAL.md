@@ -96,7 +96,7 @@ adds exactly two request headers to every upstream call, next to the
 
 | Header | Value |
 |---|---|
-| `x-sj-user-id` | Opaque, stable member id: 24 hex chars. With `CASINO_USER_ID_SALT` set it is `HMAC-SHA256(salt, "sj:" + <Auth.js sub>)`, truncated; **without** the salt it falls back to a plain `SHA-256(sub)`, truncated (stable but unkeyed — set the salt in production). Never an email. Omitted if no sub is available and there is no salt. |
+| `x-sj-user-id` | Opaque, stable member id: 24 hex chars. With `CASINO_USER_ID_SALT` set it is `HMAC-SHA256(salt, "sj:" + <input>)`, hex, truncated to 24 chars, where the input is the member's Google account subject (captured at sign-in), else (sessions minted before that was captured) the lowercased email, else the Auth.js `sub`; **without** the salt it falls back to a plain `SHA-256` of the subject, truncated (stable but unkeyed — set the salt in production). Never an email. Omitted if nothing usable is available and there is no salt. Auth.js has no database adapter here, so its own `sub` is a random UUID per sign-in and is not used when anything stable exists. |
 | `x-sj-user-name` | Display name: session `name`, then `username`, then `Player`. Never the email or its local part (such a name is skipped). Trimmed to 40 characters, URI-encoded UTF-8 (`decodeURIComponent` it). |
 
 Every client-supplied `x-sj-*` header (any case) is dropped before the proxy

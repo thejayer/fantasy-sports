@@ -18,7 +18,13 @@ async function getMember(): Promise<CasinoMember | null> {
   const session = await auth();
   if (!session) return null;
   const user = (session.user ?? {}) as CasinoMember;
-  return { id: user.id, name: user.name, username: user.username, email: user.email };
+  return {
+    googleSub: user.googleSub,
+    id: user.id,
+    name: user.name,
+    username: user.username,
+    email: user.email,
+  };
 }
 
 function handle(request: Request): Promise<Response> {
