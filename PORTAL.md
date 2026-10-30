@@ -89,6 +89,32 @@ account. Everything under `/casino/**`, images included, needs the same
 Auth.js sign-in as `/bets`: signed-out pages redirect to
 `/login?callbackUrl=/casino`, signed-out assets and API calls get `401`.
 Unset / empty `CASINO_URL` leaves `/casino` a 404 — no proxy, no nav link.
+
+**Member identity headers (casino chat).** For a signed-in member the proxy
+adds exactly two request headers to every upstream call, next to the
+`Authorization: Bearer <Google ID token>`:
+
+| Header | Value |
+|---|---|
+| `x-sj-user-id` | Opaque, stable member id: 24 hex chars. With `CASINO_USER_ID_SALT` set it is `HMAC-SHA256(salt, "sj:" + <Auth.js sub>)`, truncated; **without** the salt it falls back to a plain `SHA-256(sub)`, truncated (stable but unkeyed — set the salt in production). Never an email. Omitted if no sub is available and there is no salt. |
+| `x-sj-user-name` | Display name: session `name`, then `username`, then `Player`. Never the email or its local part (such a name is skipped). Trimmed to 40 characters, URI-encoded UTF-8 (`decodeURIComponent` it). |
+
+Every client-supplied `x-sj-*` header (any case) is dropped before the proxy
+adds its own, signed in or not, so a browser cannot spoof identity. Trust
+comes from the ID token: Cloud Run IAM only lets the `sj-www` runtime service
+account invoke `sj-casino`, so only the portal can reach it with these
+headers. `sj-casino` must therefore stay private (no `allUsers`).
+
+Chat needs no websockets: `GET /casino/api/chat?since=…` polling and `POST`
+JSON bodies stream through unchanged; status codes (including `429`, with
+`retry-after`) and JSON bodies pass through. Responses under `/casino/api/*`
+keep the upstream `cache-control`, and get `cache-control: no-store` when the
+casino sent none.
+
+`CASINO_USER_ID_SALT` is an optional repo secret that `deploy-portal.yml`
+sets as a runtime env var on `sj-www` (never printed; empty leaves the
+existing value; no commas — generate with `openssl rand -hex 32`). Changing
+it changes every member id.
 `deploy-portal.yml` sets `CASINO_URL` from the repo secret as a runtime env
 var (also a build arg, for the nav link only) and makes no IAM changes; the
 operator IAM steps (grant `roles/run.invoker` to the portal runtime account,

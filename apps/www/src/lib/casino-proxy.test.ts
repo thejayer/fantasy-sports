@@ -9,13 +9,15 @@ import {
 } from "./casino-proxy";
 
 const UPSTREAM = "https://casino.example";
+const EMAIL = "pat.jay@example.com";
+const MEMBER = { id: "1234567890", name: "Pat Jay", email: EMAIL };
 
 function makeDeps(
   overrides: Partial<CasinoProxyDeps> & { fetchImpl?: typeof fetch } = {},
 ): CasinoProxyDeps {
   return {
     upstream: UPSTREAM,
-    isSignedIn: async () => true,
+    getMember: async () => MEMBER,
     authMode: undefined,
     getToken: async () => "id-token",
     fetchImpl: (async () => new Response("ok")) as unknown as typeof fetch,
@@ -98,25 +100,25 @@ describe("rewriteLocation", () => {
 
 describe("proxyCasino", () => {
   it("is a 404 when CASINO_URL is unset, even for signed-out visitors", async () => {
-    const isSignedIn = vi.fn(async () => false);
+    const getMember = vi.fn(async () => null);
     for (const upstream of [null, undefined]) {
       const saved = process.env.CASINO_URL;
       delete process.env.CASINO_URL;
       const res = await proxyCasino(
         portal("/casino"),
-        makeDeps({ upstream: upstream as null, isSignedIn }),
+        makeDeps({ upstream: upstream as null, getMember }),
       );
       if (saved !== undefined) process.env.CASINO_URL = saved;
       expect(res.status).toBe(404);
     }
-    expect(isSignedIn).not.toHaveBeenCalled();
+    expect(getMember).not.toHaveBeenCalled();
   });
 
   it("redirects signed-out page requests to /login and never calls upstream", async () => {
     const fetchImpl = vi.fn() as unknown as typeof fetch;
     const res = await proxyCasino(
       portal("/casino?room=2", { headers: { accept: "text/html" } }),
-      makeDeps({ isSignedIn: async () => false, fetchImpl }),
+      makeDeps({ getMember: async () => null, fetchImpl }),
     );
     expect(res.status).toBe(307);
     expect(res.headers.get("location")).toBe(
@@ -127,7 +129,7 @@ describe("proxyCasino", () => {
 
   it("returns 401 for signed-out images and API calls", async () => {
     const fetchImpl = vi.fn() as unknown as typeof fetch;
-    const deps = makeDeps({ isSignedIn: async () => false, fetchImpl });
+    const deps = makeDeps({ getMember: async () => null, fetchImpl });
     expect((await proxyCasino(portal("/casino/cards/x.jpg"), deps)).status).toBe(401);
     expect(
       (await proxyCasino(portal("/casino/api/spin", { method: "POST", body: "{}" }), deps)).status,
@@ -241,5 +243,165 @@ describe("proxyCasino", () => {
         )
       ).status,
     ).toBe(504);
+  });
+
+  describe("member identity", () => {
+    function sentHeaders(fetchImpl: ReturnType<typeof vi.fn>): Headers {
+      return new Headers((fetchImpl.mock.calls[0] as unknown as [URL, RequestInit])[1].headers);
+    }
+
+    it("adds x-sj-user-id and x-sj-user-name for a signed-in member", async () => {
+      const fetchImpl = vi.fn(async () => new Response("ok"));
+      await proxyCasino(
+        portal("/casino/api/chat"),
+        makeDeps({
+          fetchImpl: fetchImpl as unknown as typeof fetch,
+          env: { CASINO_USER_ID_SALT: "salt" },
+        }),
+      );
+      const sent = sentHeaders(fetchImpl);
+      expect(sent.get("x-sj-user-id")).toMatch(/^[0-9a-f]{24}$/);
+      expect(sent.get("x-sj-user-id")).not.toContain("1234567890");
+      expect(sent.get("x-sj-user-name")).toBe("Pat%20Jay");
+    });
+
+    it("strips spoofed x-sj-* headers (any case) even when signed in", async () => {
+      const fetchImpl = vi.fn(async () => new Response("ok"));
+      await proxyCasino(
+        portal("/casino/api/chat", {
+          headers: {
+            "X-SJ-User-Id": "attacker",
+            "x-sj-user-name": "Admin",
+            "X-Sj-Role": "admin",
+            "x-sj-anything": "1",
+          },
+        }),
+        makeDeps({
+          fetchImpl: fetchImpl as unknown as typeof fetch,
+          getMember: async () => ({ id: "42", name: "Real Name" }),
+          env: {},
+        }),
+      );
+      const sent = sentHeaders(fetchImpl);
+      expect([...sent.keys()].filter((k) => k.startsWith("x-sj-")).sort()).toEqual([
+        "x-sj-user-id",
+        "x-sj-user-name",
+      ]);
+      expect(sent.get("x-sj-user-id")).not.toBe("attacker");
+      expect(sent.get("x-sj-user-name")).toBe("Real%20Name");
+      expect(sent.has("x-sj-role")).toBe(false);
+    });
+
+    it("sends no spoofed identity when the member has no derivable id", async () => {
+      const fetchImpl = vi.fn(async () => new Response("ok"));
+      await proxyCasino(
+        portal("/casino/api/chat", { headers: { "x-sj-user-id": "attacker" } }),
+        makeDeps({
+          fetchImpl: fetchImpl as unknown as typeof fetch,
+          getMember: async () => ({ email: EMAIL }),
+          env: {},
+        }),
+      );
+      const sent = sentHeaders(fetchImpl);
+      expect(sent.has("x-sj-user-id")).toBe(false);
+      expect(sent.get("x-sj-user-name")).toBe("Player");
+    });
+
+    it("never puts the email (or its local part) in any forwarded header", async () => {
+      const fetchImpl = vi.fn(async () => new Response("ok"));
+      await proxyCasino(
+        portal("/casino/api/chat?since=0", {
+          headers: { accept: "application/json", "user-agent": "vitest" },
+        }),
+        makeDeps({
+          fetchImpl: fetchImpl as unknown as typeof fetch,
+          getMember: async () => ({ id: "42", name: EMAIL, username: "pat.jay", email: EMAIL }),
+          env: { CASINO_USER_ID_SALT: "salt" },
+        }),
+      );
+      const all = [...sentHeaders(fetchImpl).entries()]
+        .map(([k, v]) => `${k}: ${v}`)
+        .join("\n")
+        .toLowerCase();
+      expect(all).not.toContain(EMAIL);
+      expect(all).not.toContain("pat.jay");
+      expect(all).not.toContain("%40");
+      expect(all).toContain("x-sj-user-name: player");
+    });
+
+    it("does not call the casino when signed out (no identity to forward)", async () => {
+      const fetchImpl = vi.fn(async () => new Response("ok"));
+      const res = await proxyCasino(
+        portal("/casino/api/chat", { method: "POST", headers: { "x-sj-user-id": "attacker" } }),
+        makeDeps({ fetchImpl: fetchImpl as unknown as typeof fetch, getMember: async () => null }),
+      );
+      expect(res.status).toBe(401);
+      expect(fetchImpl).not.toHaveBeenCalled();
+    });
+  });
+
+  describe("chat polling and /casino/api caching", () => {
+    it("forwards GET /casino/api/chat?since=… and passes 429 JSON, retry-after and no-store", async () => {
+      const fetchImpl = vi.fn(async () =>
+        new Response(JSON.stringify({ error: "slow down" }), {
+          status: 429,
+          headers: { "content-type": "application/json", "retry-after": "3" },
+        }),
+      );
+      const res = await proxyCasino(
+        portal("/casino/api/chat?since=1730000000000", { headers: { accept: "application/json" } }),
+        makeDeps({ fetchImpl: fetchImpl as unknown as typeof fetch }),
+      );
+      expect((fetchImpl.mock.calls[0] as unknown as [URL])[0].toString()).toBe(
+        `${UPSTREAM}/casino/api/chat?since=1730000000000`,
+      );
+      expect(res.status).toBe(429);
+      expect(res.headers.get("content-type")).toBe("application/json");
+      expect(res.headers.get("retry-after")).toBe("3");
+      expect(res.headers.get("cache-control")).toBe("no-store");
+      expect(await res.json()).toEqual({ error: "slow down" });
+    });
+
+    it("forwards POST JSON bodies to the chat endpoint", async () => {
+      const fetchImpl = vi.fn(async (_url: URL, init: RequestInit) => {
+        const body = await new Response(init.body as ReadableStream).text();
+        return new Response(body, { status: 200, headers: { "content-type": "application/json" } });
+      });
+      const res = await proxyCasino(
+        portal("/casino/api/chat", {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({ text: "hello" }),
+        }),
+        makeDeps({ fetchImpl: fetchImpl as unknown as typeof fetch }),
+      );
+      expect(res.status).toBe(200);
+      expect(await res.json()).toEqual({ text: "hello" });
+      expect(res.headers.get("cache-control")).toBe("no-store");
+      const init = (fetchImpl.mock.calls[0] as unknown as [URL, RequestInit])[1];
+      expect(new Headers(init.headers).get("content-type")).toBe("application/json");
+    });
+
+    it("keeps an upstream cache-control on /casino/api/*", async () => {
+      const fetchImpl = vi.fn(async () =>
+        new Response("{}", { headers: { "cache-control": "private, max-age=5" } }),
+      );
+      const res = await proxyCasino(
+        portal("/casino/api/state"),
+        makeDeps({ fetchImpl: fetchImpl as unknown as typeof fetch }),
+      );
+      expect(res.headers.get("cache-control")).toBe("private, max-age=5");
+    });
+
+    it("does not add no-store to non-API assets or pages", async () => {
+      const fetchImpl = vi.fn(async () => new Response("img"));
+      for (const path of ["/casino/cards/x.jpg", "/casino/apiary", "/casino"]) {
+        const res = await proxyCasino(
+          portal(path),
+          makeDeps({ fetchImpl: fetchImpl as unknown as typeof fetch }),
+        );
+        expect(res.headers.has("cache-control")).toBe(false);
+      }
+    });
   });
 });

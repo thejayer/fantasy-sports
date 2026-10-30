@@ -1,4 +1,5 @@
 import { auth } from "@/auth";
+import type { CasinoMember } from "@/lib/casino-identity";
 import { proxyCasino } from "@/lib/casino-proxy";
 
 /**
@@ -9,14 +10,19 @@ import { proxyCasino } from "@/lib/casino-proxy";
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-async function isSignedIn(): Promise<boolean> {
-  if (process.env.AUTH_DEV_BYPASS === "1") return true;
+/** Signed-in member from the Auth.js session, or null. */
+async function getMember(): Promise<CasinoMember | null> {
+  if (process.env.AUTH_DEV_BYPASS === "1") {
+    return { id: "dev-bypass", name: "Dev" };
+  }
   const session = await auth();
-  return Boolean(session);
+  if (!session) return null;
+  const user = (session.user ?? {}) as CasinoMember;
+  return { id: user.id, name: user.name, username: user.username, email: user.email };
 }
 
 function handle(request: Request): Promise<Response> {
-  return proxyCasino(request, { isSignedIn });
+  return proxyCasino(request, { getMember });
 }
 
 export const GET = handle;
