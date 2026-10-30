@@ -1,7 +1,6 @@
 import { afterEach, describe, expect, it } from "vitest";
 
 import {
-  casinoRewrites,
   casinoUpstream,
   isCasinoConfigured,
   isCasinoPath,
@@ -28,22 +27,12 @@ describe("casinoUpstream", () => {
   });
 });
 
-describe("casinoRewrites", () => {
-  it("returns no rules when the feature is off", () => {
+describe("isCasinoConfigured", () => {
+  it("follows CASINO_URL at call time", () => {
     delete process.env.CASINO_URL;
-    expect(casinoRewrites()).toEqual([]);
     expect(isCasinoConfigured()).toBe(false);
-  });
-
-  it("rewrites /casino and /casino/* onto the upstream (not a redirect)", () => {
-    const rules = casinoRewrites("https://casino.example");
-    expect(rules).toEqual([
-      { source: "/casino", destination: "https://casino.example/casino" },
-      {
-        source: "/casino/:path*",
-        destination: "https://casino.example/casino/:path*",
-      },
-    ]);
+    process.env.CASINO_URL = "https://casino.example";
+    expect(isCasinoConfigured()).toBe(true);
   });
 });
 

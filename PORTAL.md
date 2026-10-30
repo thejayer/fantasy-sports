@@ -39,7 +39,7 @@ https://fantasy.strictlyjayers.com
 Configured via `FANTASY_HUB_URL` (default production host). There is no Next.js
 rewrite, reverse proxy, or same-origin `/leagues` path on the apex — that would
 break Auth.js and couple deploys. The one exception is an **optional**
-`/casino` rewrite (below), which is off unless `CASINO_URL` is set.
+`/casino` proxy (below), which is off unless `CASINO_URL` is set.
 
 Discord CTA defaults to the crew invite (`lib/site.ts`); override with
 `DISCORD_INVITE_URL` on `sj-www` if the code rotates. Palworld is a real
@@ -81,15 +81,19 @@ totals. Docs:
 [apps/www/README.md](apps/www/README.md) and `./scripts/setup-bets-infra.sh`.
 
 **Casino** is an optional members-only path at `/casino` (nav + home
-destination when configured). When the `CASINO_URL` repo secret is set,
-`sj-www` rewrites `/casino` and `/casino/*` to `${CASINO_URL}/casino` and
-`${CASINO_URL}/casino/*` (same-origin, not a redirect). The same Auth.js
-gate as `/bets` sends signed-out visitors to `/login?callbackUrl=/casino`.
-Unset / empty `CASINO_URL` leaves `/casino` as a 404 — no proxy, no nav
-link. Enable by setting the GitHub Actions secret `CASINO_URL` and
-redeploying `sj-www` (`CASINO_URL` is a Docker **build** arg; Next bakes
-the rewrite at `next build`). Soft-gate trade-off: image extensions skip
-portal middleware, and the upstream origin is reachable on its own.
+destination when configured). When `CASINO_URL` is set, `sj-www` proxies
+`/casino` and `/casino/*` through a Route Handler
+(`apps/www/src/app/casino/[[...path]]`) to the private `sj-casino` Cloud Run
+service, calling it with a Google ID token from the portal's runtime service
+account. Everything under `/casino/**`, images included, needs the same
+Auth.js sign-in as `/bets`: signed-out pages redirect to
+`/login?callbackUrl=/casino`, signed-out assets and API calls get `401`.
+Unset / empty `CASINO_URL` leaves `/casino` a 404 — no proxy, no nav link.
+`deploy-portal.yml` sets `CASINO_URL` from the repo secret as a runtime env
+var (also a build arg, for the nav link only) and makes no IAM changes; the
+operator IAM steps (grant `roles/run.invoker` to the portal runtime account,
+then remove `allUsers`) are in
+[apps/www/README.md](apps/www/README.md#operator-iam-private-sj-casino).
 
 Home also ships a **Coming up** event strip and **Meet the crew** links into
 hub `/u/{handle}` profiles (edit handles in `lib/content.ts`). The hub chrome

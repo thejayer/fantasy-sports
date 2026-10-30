@@ -31,8 +31,8 @@ describe("portal chrome after Phase E audit", () => {
     expect(existsSync(path.join(WWW_ROOT, "vercel.json"))).toBe(false);
     const nextConfig = readFileSync(path.join(WWW_ROOT, "next.config.ts"), "utf8");
     expect(nextConfig).toMatch(/output:\s*"standalone"/);
-    expect(nextConfig).toMatch(/casinoRewrites/);
-    expect(nextConfig).toMatch(/async rewrites/);
+    // /casino is an authenticated Route Handler, not a next.config rewrite.
+    expect(nextConfig).not.toMatch(/rewrites/);
     const vercelMd = readFileSync(path.join(WWW_ROOT, "VERCEL.md"), "utf8");
     expect(vercelMd).toMatch(/Root Directory/);
     expect(vercelMd).toMatch(/scripts\/vercel-ignore\.sh/);
@@ -49,6 +49,19 @@ describe("portal chrome after Phase E audit", () => {
     expect(layout).toMatch(/href:\s*"\/casino"/);
     expect(layout).toMatch(/anchor:\s*true/);
     expect(layout).toMatch(/casinoEnabled/);
+  });
+
+  it("proxies /casino through a gated Route Handler", () => {
+    const route = path.join(APP_DIR, "casino/[[...path]]/route.ts");
+    expect(existsSync(route)).toBe(true);
+    const source = readFileSync(route, "utf8");
+    expect(source).toMatch(/proxyCasino/);
+    expect(source).toMatch(/auth\(\)/);
+    const middleware = readFileSync(
+      path.join(WWW_ROOT, "src/middleware.ts"),
+      "utf8",
+    );
+    expect(middleware).toMatch(/"\/casino\/:path\*"/);
   });
 
   it("does not ship a service worker on the apex", () => {

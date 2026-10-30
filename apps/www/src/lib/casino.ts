@@ -1,12 +1,8 @@
 /**
- * Optional /casino path proxy. Upstream comes only from CASINO_URL.
- * Unset or invalid → no rewrite, no nav, /casino is a 404.
+ * Optional /casino proxy config. Upstream comes only from CASINO_URL, read at
+ * request time by the Route Handler (lib/casino-proxy.ts).
+ * Unset or invalid → no proxy, no nav, /casino is a 404.
  */
-
-export type CasinoRewrite = {
-  source: string;
-  destination: string;
-};
 
 function trimTrailingSlash(value: string): string {
   return value.replace(/\/+$/, "");
@@ -38,20 +34,4 @@ export function isCasinoConfigured(
 
 export function isCasinoPath(pathname: string): boolean {
   return pathname === "/casino" || pathname.startsWith("/casino/");
-}
-
-/**
- * Next.js `rewrites()` entries (afterFiles). Covers HTML and static assets
- * under /casino — middleware's matcher skips image extensions, so the
- * rewrite is what forwards `/casino/*.png` (accepted soft gate).
- */
-export function casinoRewrites(
-  raw: string | null | undefined = process.env.CASINO_URL,
-): CasinoRewrite[] {
-  const upstream = casinoUpstream(raw);
-  if (!upstream) return [];
-  return [
-    { source: "/casino", destination: `${upstream}/casino` },
-    { source: "/casino/:path*", destination: `${upstream}/casino/:path*` },
-  ];
 }
