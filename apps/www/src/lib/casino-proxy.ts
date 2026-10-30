@@ -128,6 +128,12 @@ export type CasinoProxyDeps = {
   getToken?: (audience: string) => Promise<string | null>;
   fetchImpl?: typeof fetch;
   timeoutMs?: number;
+  /**
+   * Extra `x-sj-*` headers set by the portal's own server code (never taken
+   * from the browser: every client `x-sj-*` header is stripped first). Used
+   * to mark the portal's own calls to the casino's private grant endpoints.
+   */
+  serviceHeaders?: Record<string, string>;
 };
 
 function notFound(): Response {
@@ -161,6 +167,9 @@ export async function proxyCasino(
   const headers = filterRequestHeaders(request.headers);
   const identity = casinoIdentityHeaders(member, deps.env ?? process.env);
   for (const [name, value] of Object.entries(identity)) headers.set(name, value);
+  for (const [name, value] of Object.entries(deps.serviceHeaders ?? {})) {
+    if (name.toLowerCase().startsWith(SJ_HEADER_PREFIX)) headers.set(name, value);
+  }
   const authMode = "authMode" in deps ? deps.authMode : process.env.CASINO_AUTH;
   if (authMode?.trim().toLowerCase() !== "none") {
     const token = await (deps.getToken ?? getCasinoIdToken)(target.origin);

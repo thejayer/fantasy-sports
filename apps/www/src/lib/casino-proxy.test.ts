@@ -470,3 +470,29 @@ describe("proxyCasino", () => {
     });
   });
 });
+
+describe("proxyCasino serviceHeaders", () => {
+  it("sets the portal's own x-sj-service header, and a browser's is always stripped", async () => {
+    const seen: Headers[] = [];
+    const fetchImpl = (async (_u: URL, init: RequestInit) => {
+      seen.push(new Headers(init.headers));
+      return new Response("ok");
+    }) as unknown as typeof fetch;
+    const browser = portal("/casino/api/grants", {
+      method: "POST",
+      headers: { "x-sj-service": "casino-grants", "x-sj-user-id": "forged" },
+      body: "{}",
+    });
+    await proxyCasino(browser, makeDeps({ fetchImpl }));
+    expect(seen[0].get("x-sj-service")).toBeNull();
+    expect(seen[0].get("x-sj-user-id")).not.toBe("forged");
+
+    await proxyCasino(
+      portal("/casino/api/grants", { method: "POST", body: "{}" }),
+      makeDeps({ fetchImpl, serviceHeaders: { "x-sj-service": "casino-grants", "x-other": "no" } }),
+    );
+    expect(seen[1].get("x-sj-service")).toBe("casino-grants");
+    // Only x-sj-* names are honoured.
+    expect(seen[1].get("x-other")).toBeNull();
+  });
+});
