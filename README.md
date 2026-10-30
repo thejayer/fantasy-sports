@@ -61,7 +61,7 @@ around the season:
   start/sit, playoff odds, draft sim).
 - **Portal** (`apps/www`) — public community home. Absolute links into the
   hub and fitness; `/bets` is the built-in signed-in page on this host.
-  Optional `/casino` rewrite when `CASINO_URL` is set (off / 404 otherwise).
+  Optional sign-in-gated `/casino` proxy when `CASINO_URL` is set (off / 404 otherwise).
 - **Fitness** (`apps/fitness`) and **Vibe** (`apps/vibe`) — sibling apps
   with the same Google sign-in as the hub, per-member JSON stores, no
   shared guest log.

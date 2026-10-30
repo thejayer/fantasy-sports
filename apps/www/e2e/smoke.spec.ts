@@ -35,6 +35,12 @@ test.describe("portal smoke", () => {
     expect(res?.status()).toBe(404);
   });
 
+  test("casino assets are not served when the proxy is off", async ({ request }) => {
+    const res = await request.get("/casino/cards/x.jpg", { maxRedirects: 0 });
+    expect(res.status()).not.toBe(200);
+    expect(res.status()).toBe(404);
+  });
+
   test("watch embed and tonight framing", async ({ page }) => {
     await page.goto("/watch");
     await expect(page.getByRole("heading", { name: /^Watch$/i })).toBeVisible();

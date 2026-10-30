@@ -5,9 +5,11 @@ name: deploy portal
 # Auth: Workload Identity Federation (same deployer SA as the hub).
 # Project / WIF / deployer SA / bucket come from repository secrets (masked).
 # Public site plus members-only /bets (Auth.js + GCS mount for hub_members
-# and bets/{bets,options,...}.json). Optional /casino rewrite when the
-# CASINO_URL repository secret is set (empty / missing = off). Reuses
-# sj-hub Secret Manager names.
+# and bets/{bets,options,...}.json). Optional authenticated /casino proxy
+# when the CASINO_URL repository secret is set (empty / missing = off): the
+# secret is a docker build arg (nav link) and a runtime env var on sj-www
+# (never printed). The workflow makes no IAM changes; see apps/www/README.md.
+# Reuses sj-hub Secret Manager names.
 #
 # Deploys on merge to main when apps/www changes, and on workflow_dispatch.
 
@@ -190,6 +192,8 @@ jobs:
           docker push "$IMAGE"
 
       - name: Resolve SITE_URL and deploy
+        env:
+          CASINO_URL: ${{ secrets.CASINO_URL }}
         run: |
           RUN_URL="$(gcloud run services describe "$SERVICE" \
             --project "$PROJECT_ID" --region "$REGION" \
@@ -216,6 +220,15 @@ jobs:
           # --update-env-vars merges; --set-env-vars would wipe Discord /
           # Palworld / YOUTUBE_PLAYLIST_ID and any other ops-set keys.
           # Same Google + allowlist secrets as sj-hub / sj-fitness.
+          ENV_VARS="SITE_URL=$SITE_URL,AUTH_URL=$SITE_URL,AUTH_TRUST_HOST=true,SJ_HUB_DIR=/app/data/sj,FANTASY_HUB_URL=$FANTASY_HUB_URL,FITNESS_URL=$FITNESS_URL"
+          # Runtime upstream for the /casino proxy. Merged in only when the
+          # secret is set, so an unset secret never wipes an existing value.
+          if [ -n "${CASINO_URL:-}" ]; then
+            ENV_VARS="$ENV_VARS,CASINO_URL=$CASINO_URL"
+            echo "CASINO_URL: set from repository secret (value not printed)"
+          else
+            echo "CASINO_URL: secret not set — leaving the service value unchanged"
+          fi
           ARGS=(
             --project "$PROJECT_ID"
             --region "$REGION"
@@ -227,7 +240,7 @@ jobs:
             --min-instances "$MIN_INSTANCES"
             --max-instances 3
             --cpu-boost
-            --update-env-vars "SITE_URL=$SITE_URL,AUTH_URL=$SITE_URL,AUTH_TRUST_HOST=true,SJ_HUB_DIR=/app/data/sj,FANTASY_HUB_URL=$FANTASY_HUB_URL,FITNESS_URL=$FITNESS_URL"
+            --update-env-vars "$ENV_VARS"
             --set-secrets "AUTH_SECRET=sj-auth-secret:latest,AUTH_GOOGLE_ID=sj-auth-google-id:latest,AUTH_GOOGLE_SECRET=sj-auth-google-secret:latest,ALLOWED_EMAILS=sj-allowed-emails:latest"
           )
           if [ -z "$BUCKET" ] && [ "$EVENT_NAME" = "push" ]; then
