@@ -292,6 +292,71 @@ describe("proxyCasino", () => {
       expect(sent.has("x-sj-role")).toBe(false);
     });
 
+    it("adds x-sj-user-alias (the email-based id) for a member with a subject and an email", async () => {
+      const fetchImpl = vi.fn(async () => new Response("ok"));
+      await proxyCasino(
+        portal("/casino/api/chat"),
+        makeDeps({
+          fetchImpl: fetchImpl as unknown as typeof fetch,
+          getMember: async () => ({ googleSub: "1234567890", id: "uuid", name: "Pat Jay", email: EMAIL }),
+          env: { CASINO_USER_ID_SALT: "salt" },
+        }),
+      );
+      const sent = sentHeaders(fetchImpl);
+      expect(sent.get("x-sj-user-id")).toMatch(/^[0-9a-f]{24}$/);
+      expect(sent.get("x-sj-user-alias")).toMatch(/^[0-9a-f]{24}$/);
+      expect(sent.get("x-sj-user-alias")).not.toBe(sent.get("x-sj-user-id"));
+      expect(sent.get("x-sj-user-alias")).not.toContain("pat");
+    });
+
+    it("sends no alias without a Google subject (old session)", async () => {
+      const fetchImpl = vi.fn(async () => new Response("ok"));
+      await proxyCasino(
+        portal("/casino/api/chat"),
+        makeDeps({
+          fetchImpl: fetchImpl as unknown as typeof fetch,
+          getMember: async () => ({ id: "uuid", name: "Pat Jay", email: EMAIL }),
+          env: { CASINO_USER_ID_SALT: "salt" },
+        }),
+      );
+      const sent = sentHeaders(fetchImpl);
+      expect(sent.has("x-sj-user-id")).toBe(true);
+      expect(sent.has("x-sj-user-alias")).toBe(false);
+    });
+
+    it("strips a client-sent x-sj-user-alias (any case), signed in or not", async () => {
+      for (const member of [
+        { id: "uuid", name: "Pat", email: EMAIL }, // no alias of its own
+        { googleSub: "1234567890", id: "uuid", name: "Pat", email: EMAIL }, // own alias replaces it
+      ]) {
+        const fetchImpl = vi.fn(async () => new Response("ok"));
+        await proxyCasino(
+          portal("/casino/api/chat", {
+            headers: { "X-SJ-User-Alias": "attacker", "x-sj-user-id": "attacker" },
+          }),
+          makeDeps({
+            fetchImpl: fetchImpl as unknown as typeof fetch,
+            getMember: async () => member,
+            env: { CASINO_USER_ID_SALT: "salt" },
+          }),
+        );
+        const sent = sentHeaders(fetchImpl);
+        expect(sent.get("x-sj-user-alias")).not.toBe("attacker");
+        expect(sent.get("x-sj-user-id")).not.toBe("attacker");
+      }
+      // A member with no derivable id gets no alias at all, whatever the client sent.
+      const fetchImpl = vi.fn(async () => new Response("ok"));
+      await proxyCasino(
+        portal("/casino/api/chat", { headers: { "x-sj-user-alias": "attacker" } }),
+        makeDeps({
+          fetchImpl: fetchImpl as unknown as typeof fetch,
+          getMember: async () => ({ email: EMAIL }),
+          env: {},
+        }),
+      );
+      expect(sentHeaders(fetchImpl).has("x-sj-user-alias")).toBe(false);
+    });
+
     it("sends no spoofed identity when the member has no derivable id", async () => {
       const fetchImpl = vi.fn(async () => new Response("ok"));
       await proxyCasino(
