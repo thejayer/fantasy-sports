@@ -194,6 +194,7 @@ jobs:
       - name: Resolve SITE_URL and deploy
         env:
           CASINO_URL: ${{ secrets.CASINO_URL }}
+          CASINO_USER_ID_SALT: ${{ secrets.CASINO_USER_ID_SALT }}
         run: |
           RUN_URL="$(gcloud run services describe "$SERVICE" \
             --project "$PROJECT_ID" --region "$REGION" \
@@ -228,6 +229,20 @@ jobs:
             echo "CASINO_URL: set from repository secret (value not printed)"
           else
             echo "CASINO_URL: secret not set — leaving the service value unchanged"
+          fi
+          # Optional key for the opaque member id the proxy sends to sj-casino
+          # (x-sj-user-id). Same rules as CASINO_URL: never printed, an empty
+          # secret leaves the existing value alone. Commas would split
+          # --update-env-vars, so reject them without echoing the value.
+          if [ -n "${CASINO_USER_ID_SALT:-}" ]; then
+            if [[ "$CASINO_USER_ID_SALT" == *,* ]]; then
+              echo "::error::CASINO_USER_ID_SALT must not contain commas (use e.g. openssl rand -hex 32)"
+              exit 1
+            fi
+            ENV_VARS="$ENV_VARS,CASINO_USER_ID_SALT=$CASINO_USER_ID_SALT"
+            echo "CASINO_USER_ID_SALT: set from repository secret (value not printed)"
+          else
+            echo "CASINO_USER_ID_SALT: secret not set — leaving the service value unchanged"
           fi
           ARGS=(
             --project "$PROJECT_ID"

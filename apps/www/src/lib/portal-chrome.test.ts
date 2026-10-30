@@ -64,6 +64,16 @@ describe("portal chrome after Phase E audit", () => {
     expect(middleware).toMatch(/"\/casino\/:path\*"/);
   });
 
+  it("exposes the stable Auth.js subject so /casino can derive a member id", () => {
+    const authTs = readFileSync(path.join(WWW_ROOT, "src/auth.ts"), "utf8");
+    expect(authTs).toMatch(/token\.sub/);
+    const route = readFileSync(
+      path.join(APP_DIR, "casino/[[...path]]/route.ts"),
+      "utf8",
+    );
+    expect(route).toMatch(/getMember/);
+  });
+
   it("does not ship a service worker on the apex", () => {
     const files = [
       path.join(WWW_ROOT, "public/service-worker.js"),

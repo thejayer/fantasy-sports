@@ -3,11 +3,19 @@
  *
  * Signed-in Strictly Jayers members only. The portal calls the private
  * sj-casino Cloud Run service with its own Google ID token; the browser's
- * Cookie / Authorization headers never reach the casino.
+ * Cookie / Authorization headers never reach the casino. The signed-in
+ * member's opaque id and display name ride along as `x-sj-*` headers (client
+ * supplied `x-sj-*` headers are always stripped first).
  */
 
 import { casinoUpstream } from "@/lib/casino";
 import { casinoSignedOutResponse } from "@/lib/casino-gate";
+import {
+  SJ_HEADER_PREFIX,
+  casinoIdentityHeaders,
+  type CasinoMember,
+  type IdentityEnv,
+} from "@/lib/casino-identity";
 import { getCasinoIdToken } from "@/lib/casino-token";
 
 export const CASINO_BASE_PATH = "/casino";
@@ -33,7 +41,13 @@ const BLOCKED_REQUEST_HEADERS = new Set([
   "expect",
 ]);
 
-const BLOCKED_REQUEST_PREFIXES = ["x-middleware-", "x-nextjs-", "x-vercel-"];
+const BLOCKED_REQUEST_PREFIXES = [
+  "x-middleware-",
+  "x-nextjs-",
+  "x-vercel-",
+  // Identity headers are set by the portal only; never trust the browser's.
+  SJ_HEADER_PREFIX,
+];
 
 /** The only upstream response headers handed to the browser. */
 const PASSTHROUGH_RESPONSE_HEADERS = [
@@ -45,7 +59,16 @@ const PASSTHROUGH_RESPONSE_HEADERS = [
   "vary",
   "content-language",
   "content-disposition",
+  // Lets a chat client back off after a 429.
+  "retry-after",
 ];
+
+/** Dynamic casino API (chat polling, state): never cache. */
+const API_PREFIX = `${CASINO_BASE_PATH}/api`;
+
+export function isCasinoApiPath(pathname: string): boolean {
+  return pathname === API_PREFIX || pathname.startsWith(`${API_PREFIX}/`);
+}
 
 export function filterRequestHeaders(incoming: Headers): Headers {
   const out = new Headers();
@@ -93,8 +116,13 @@ export function filterResponseHeaders(
 export type CasinoProxyDeps = {
   /** Defaults to `casinoUpstream()` (CASINO_URL, read at request time). */
   upstream?: string | null;
-  /** Sign-in check shared with /bets (Auth.js session). */
-  isSignedIn: () => Promise<boolean>;
+  /**
+   * The signed-in member (Auth.js session shared with /bets), or null when
+   * signed out.
+   */
+  getMember: () => Promise<CasinoMember | null>;
+  /** Defaults to process.env (CASINO_USER_ID_SALT). */
+  env?: IdentityEnv;
   /** "none" skips the ID token (tests). Defaults to process.env.CASINO_AUTH. */
   authMode?: string | undefined;
   getToken?: (audience: string) => Promise<string | null>;
@@ -124,12 +152,15 @@ export async function proxyCasino(
   const base = deps.upstream === undefined ? casinoUpstream() : deps.upstream;
   if (!base) return notFound();
 
-  if (!(await deps.isSignedIn())) return casinoSignedOutResponse(request);
+  const member = await deps.getMember();
+  if (!member) return casinoSignedOutResponse(request);
 
   const target = upstreamUrl(base, request);
   if (!target) return notFound();
 
   const headers = filterRequestHeaders(request.headers);
+  const identity = casinoIdentityHeaders(member, deps.env ?? process.env);
+  for (const [name, value] of Object.entries(identity)) headers.set(name, value);
   const authMode = "authMode" in deps ? deps.authMode : process.env.CASINO_AUTH;
   if (authMode?.trim().toLowerCase() !== "none") {
     const token = await (deps.getToken ?? getCasinoIdToken)(target.origin);
@@ -163,8 +194,12 @@ export async function proxyCasino(
     return new Response("Casino is unavailable.", { status: 502 });
   }
 
+  const responseHeaders = filterResponseHeaders(upstream.headers, target.origin);
+  if (isCasinoApiPath(target.pathname) && !responseHeaders.has("cache-control")) {
+    responseHeaders.set("cache-control", "no-store");
+  }
   return new Response(upstream.body, {
     status: upstream.status,
-    headers: filterResponseHeaders(upstream.headers, target.origin),
+    headers: responseHeaders,
   });
 }

@@ -30,6 +30,11 @@ When unset, `/casino` is a 404, the nav link is hidden and robots disallows
   5 minutes before expiry, and sends it upstream as `Authorization: Bearer`.
   With no metadata server (local dev) no token is sent; `CASINO_AUTH=none`
   skips the token explicitly (tests).
+- **Member identity.** Signed-in requests carry `x-sj-user-id` (opaque,
+  keyed hash of the Auth.js subject) and `x-sj-user-name` (display name, never
+  the email); any client-sent `x-sj-*` header is stripped. Contract and salt
+  details are in [PORTAL.md](../../PORTAL.md). `/casino/api/*` responses get
+  `cache-control: no-store` unless the casino sets its own.
 - **What is forwarded.** Request and response bodies stream. Upstream status,
   `content-type`, `cache-control`, `etag`, `last-modified`, `set-cookie` (all
   values) and `location` (made relative when it points at the casino origin)
@@ -97,6 +102,7 @@ npm run dev                  # http://localhost:3002
 | `FANTASY_HUB_URL` | Absolute link to the hub (default production host) |
 | `FITNESS_URL` | Absolute link to the fitness log (default production host) |
 | `CASINO_URL` | Optional `/casino` proxy upstream (runtime; also a build arg for the nav link; empty = off) |
+| `CASINO_USER_ID_SALT` | Optional server-only key for the opaque `x-sj-user-id` forwarded to the casino |
 | `DISCORD_INVITE_URL` | Optional Discord CTA override (default baked in) |
 | `PALWORLD_INFO_URL` | Optional extra Palworld link on `/palworld` |
 | `PALWORLD_STATUS` | Optional public world-status line (never IPs/passwords) |
@@ -187,4 +193,5 @@ and mounts `gs://<GCS_BUCKET>` **read-only** at
 | `ALLOWED_EMAILS` | secret `sj-allowed-emails:latest` | Same env allowlist as Fantasy |
 | `SJ_HUB_DIR` | `/app/data/sj` | `hub_members.json` + `bets/` |
 | `CASINO_URL` | repo secret `CASINO_URL` (set by `deploy-portal.yml`, never printed) | Optional `/casino` proxy upstream; unset secret leaves the service value unchanged |
+| `CASINO_USER_ID_SALT` | optional repo secret (set by `deploy-portal.yml`, never printed) | HMAC key for `x-sj-user-id`; unset = plain SHA-256 of the subject |
 | `CASINO_AUTH` | unset | `none` skips the Google ID token (tests only) |
