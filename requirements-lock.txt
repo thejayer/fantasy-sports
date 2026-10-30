@@ -35,6 +35,8 @@ click==8.4.2
     # via
     #   streamlit
     #   uvicorn
+cloudpickle==3.1.2
+    # via joblib
 coverage==7.15.2
     # via pytest-cov
 cryptography==50.0.0
@@ -105,6 +107,8 @@ numpy==2.4.6
     #   scikit-learn
     #   scipy
     #   streamlit
+opentelemetry-api==1.45.2
+    # via google-api-core
 packaging==26.3
     # via
     #   altair
@@ -122,9 +126,9 @@ pluggy==1.6.0
     # via
     #   pytest
     #   pytest-cov
-polars==1.43.1
+polars==2.0.0
     # via nflreadpy
-polars-runtime-32==1.43.1
+polars-runtime-32==2.0.0
     # via polars
 proto-plus==1.29.0
     # via google-api-core
@@ -220,6 +224,7 @@ typing-extensions==4.16.0
     # via
     #   altair
     #   anyio
+    #   opentelemetry-api
     #   pydantic
     #   pydantic-core
     #   referencing
