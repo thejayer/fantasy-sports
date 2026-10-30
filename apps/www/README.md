@@ -31,8 +31,9 @@ When unset, `/casino` is a 404, the nav link is hidden and robots disallows
   With no metadata server (local dev) no token is sent; `CASINO_AUTH=none`
   skips the token explicitly (tests).
 - **Member identity.** Signed-in requests carry `x-sj-user-id` (opaque,
-  keyed hash of the Auth.js subject) and `x-sj-user-name` (display name, never
-  the email); any client-sent `x-sj-*` header is stripped. Contract and salt
+  keyed hash of the Google account subject), `x-sj-user-alias` (optional: the
+  earlier email-keyed hash, so the casino can move an old profile once) and
+  `x-sj-user-name` (display name, never the email); any client-sent `x-sj-*` header is stripped. Contract and salt
   details are in [PORTAL.md](../../PORTAL.md). `/casino/api/*` responses get
   `cache-control: no-store` unless the casino sets its own.
 - **What is forwarded.** Request and response bodies stream. Upstream status,

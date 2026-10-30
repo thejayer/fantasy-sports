@@ -3,6 +3,10 @@
  *
  * Contract (see PORTAL.md):
  *   x-sj-user-id    opaque, stable id; never an email.
+ *   x-sj-user-alias optional. The id this member had before sessions carried
+ *                   the Google subject (the email-based hash), so the casino
+ *                   can move that profile to x-sj-user-id once. Same format as
+ *                   x-sj-user-id, never equal to it, never an email.
  *   x-sj-user-name  display name, <= 40 chars, URI-encoded UTF-8; never an
  *                   email or its local part.
  *
@@ -15,6 +19,7 @@ import { createHash, createHmac } from "node:crypto";
 
 export const SJ_HEADER_PREFIX = "x-sj-";
 export const USER_ID_HEADER = "x-sj-user-id";
+export const USER_ALIAS_HEADER = "x-sj-user-alias";
 export const USER_NAME_HEADER = "x-sj-user-name";
 export const USER_ID_LENGTH = 24;
 export const USER_NAME_MAX_CHARS = 40;
@@ -35,7 +40,7 @@ export type CasinoMember = {
   id?: string | null;
   name?: string | null;
   username?: string | null;
-  /** Only used as a last-resort hash input (salt required); never forwarded. */
+  /** Hash input only (salt required): the fallback id for old sessions and the alias; never forwarded. */
   email?: string | null;
 };
 
@@ -69,6 +74,22 @@ export function casinoUserId(member: CasinoMember, env: IdentityEnv = process.en
   const unsalted = googleSub || sub;
   if (!unsalted) return null;
   return createHash("sha256").update(unsalted).digest("hex").slice(0, USER_ID_LENGTH);
+}
+
+/**
+ * Bridge id for members whose earlier sessions were keyed on their email.
+ * Only when the session has BOTH a Google subject and an email (the primary id
+ * is then the subject's hash) and a salt is set: HMAC-SHA256(salt,
+ * "sj:" + lowercased email), hex, 24 chars. Null otherwise, and never equal to
+ * the primary id.
+ */
+export function casinoUserAlias(member: CasinoMember, env: IdentityEnv = process.env): string | null {
+  const googleSub = clean(member.googleSub);
+  const email = clean(member.email).toLowerCase();
+  const salt = clean(env.CASINO_USER_ID_SALT);
+  if (!salt || !googleSub || !email) return null;
+  const alias = createHmac("sha256", salt).update(`sj:${email}`).digest("hex").slice(0, USER_ID_LENGTH);
+  return alias === casinoUserId(member, env) ? null : alias;
 }
 
 /**
@@ -118,6 +139,10 @@ export function casinoIdentityHeaders(
     [USER_NAME_HEADER]: casinoUserName(member),
   };
   const id = casinoUserId(member, env);
-  if (id) headers[USER_ID_HEADER] = id;
+  if (id) {
+    headers[USER_ID_HEADER] = id;
+    const alias = casinoUserAlias(member, env);
+    if (alias) headers[USER_ALIAS_HEADER] = alias;
+  }
   return headers;
 }

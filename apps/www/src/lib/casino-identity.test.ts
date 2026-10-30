@@ -4,6 +4,7 @@ import { describe, expect, it } from "vitest";
 
 import {
   casinoIdentityHeaders,
+  casinoUserAlias,
   casinoUserId,
   casinoUserName,
   withGoogleSub,
@@ -165,5 +166,50 @@ describe("casinoIdentityHeaders", () => {
     expect(casinoIdentityHeaders({ name: "Pat" }, {})).toEqual({
       "x-sj-user-name": "Pat",
     });
+  });
+});
+
+describe("casinoUserAlias (email bridge for pre-subject profiles)", () => {
+  const env = { CASINO_USER_ID_SALT: SALT };
+  const both = { googleSub: "1234567890", id: "uuid", email: "  Pat@Example.COM " };
+
+  it("is the email-based id when the session has a subject and an email", () => {
+    const alias = casinoUserAlias(both, env);
+    expect(alias).toBe(modIdFormat(SALT, "pat@example.com"));
+    expect(alias).toMatch(/^[0-9a-f]{24}$/);
+    expect(alias).not.toBe(casinoUserId(both, env));
+    // It is exactly what an old (pre-subject) session sends as its primary id.
+    expect(alias).toBe(casinoUserId({ id: "uuid-old", email: "pat@example.com" }, env));
+  });
+
+  it("is absent without a subject (old session: the primary already is the email id)", () => {
+    expect(casinoUserAlias({ id: "uuid", email: "pat@example.com" }, env)).toBeNull();
+  });
+
+  it("is absent without an email, without a salt, or with nothing", () => {
+    expect(casinoUserAlias({ googleSub: "1234567890", id: "uuid" }, env)).toBeNull();
+    expect(casinoUserAlias(both, {})).toBeNull();
+    expect(casinoUserAlias(both, { CASINO_USER_ID_SALT: "  " })).toBeNull();
+    expect(casinoUserAlias({}, env)).toBeNull();
+  });
+
+  it("is never equal to the primary id, even if the subject equals the email", () => {
+    const m = { googleSub: "pat@example.com", email: "pat@example.com" };
+    expect(casinoUserId(m, env)).toBe(modIdFormat(SALT, "pat@example.com"));
+    expect(casinoUserAlias(m, env)).toBeNull();
+  });
+
+  it("never contains the email or the subject", () => {
+    const alias = casinoUserAlias(both, env) ?? "";
+    expect(alias).not.toContain("pat");
+    expect(alias).not.toContain("1234567890");
+  });
+
+  it("is added to the identity headers only when it applies", () => {
+    const h = casinoIdentityHeaders({ ...both, name: "Pat" }, env);
+    expect(Object.keys(h).sort()).toEqual(["x-sj-user-alias", "x-sj-user-id", "x-sj-user-name"]);
+    expect(h["x-sj-user-alias"]).toBe(casinoUserAlias(both, env));
+    const old = casinoIdentityHeaders({ id: "uuid", email: "pat@example.com", name: "Pat" }, env);
+    expect(Object.keys(old).sort()).toEqual(["x-sj-user-id", "x-sj-user-name"]);
   });
 });
