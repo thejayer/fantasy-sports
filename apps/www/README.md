@@ -41,6 +41,18 @@ When unset, `/casino` is a 404, the nav link is hidden and robots disallows
   come back. The browser's `Cookie` and `Authorization` headers, `host` and
   hop-by-hop headers are never forwarded. Redirects are not followed; the
   upstream call has a timeout (`502` on failure, `504` on timeout).
+- **Home-page box ("Casino today").** When `CASINO_URL` is set, the home page
+  shows today's top three wins and hottest machines. The browser asks
+  `GET /casino/portal-summary` (inside the sign-in gate; signed out is a bare
+  `401` and the box is simply absent). That Route Handler calls the casino's
+  `/casino/api/home-summary` **server-side through the same proxy path**
+  (ID token, identity headers, origin pinned), validates and trims the JSON
+  (display names and chips only), and caches it in memory for 30 seconds,
+  shared by every member. If the casino is slow (4 s timeout) or down it serves
+  the last good copy for up to 5 minutes, then answers `503` and the box is
+  hidden. The home page itself stays statically cached. **Deploy order:** this
+  needs the casino's `/api/home-summary` (casino leaderboards PR), so ship the
+  casino first; until then the box just doesn't appear.
 - **Config.** `CASINO_URL` is read at **request time**. `deploy-portal.yml`
   sets it as a Cloud Run env var on `sj-www` from the repo secret (never
   printed). It is also a Docker build arg, but only so the prerendered nav and
