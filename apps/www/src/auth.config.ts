@@ -6,7 +6,8 @@ import Google from "next-auth/providers/google";
  * Node-only callbacks (members-file allowlist) live in `auth.ts`.
  *
  * Same Google client + allowlist as `apps/web` — one SJ identity.
- * Cookies stay on the apex (strictlyjayers.com). Only /bets is gated.
+ * Cookies stay on the apex (strictlyjayers.com). /bets is gated; /casino
+ * is gated too when CASINO_URL is set.
  */
 export const authConfig = {
   providers: [Google],

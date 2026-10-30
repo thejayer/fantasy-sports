@@ -96,7 +96,7 @@ export const portalCopy = {
     support: "Every Strictly Jayers app in one place.",
     marker: "SITES",
     primary: ["fantasy", "fitness", "discord", "watch"] as const,
-    secondary: ["ai", "people", "bets", "palworld"] as const,
+    secondary: ["ai", "people", "bets", "palworld", "casino"] as const,
     items: {
       fitness: {
         index: "02",
@@ -161,6 +161,14 @@ export const portalCopy = {
         body: "Co-op when the world’s up — join details live on the room page, passwords stay in Discord.",
         action: "Open Palworld",
         actionPending: "Soon",
+      },
+      casino: {
+        index: "09",
+        kicker: "Play",
+        title: "Casino",
+        body: "Members-only tables. Same Google allowlist as Bets and Fantasy.",
+        action: "Open Casino",
+        actionPending: "Open Casino",
       },
     } satisfies Record<string, DestinationItem>,
   },

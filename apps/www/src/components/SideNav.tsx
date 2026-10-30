@@ -8,12 +8,14 @@ export type SideNavItem = {
   href: string;
   /** External/cross-origin link: plain <a>, never marked active. */
   external?: boolean;
+  /** Same-origin full page load (no client nav) — use for proxied paths. */
+  anchor?: boolean;
   /** Path prefixes (besides href) that should mark this item active. */
   match?: string[];
 };
 
 export function isSideNavActive(pathname: string, item: SideNavItem): boolean {
-  if (item.external) return false;
+  if (item.external || item.anchor) return false;
   const paths = [item.href.split("#")[0] || "/", ...(item.match ?? [])];
   return paths.some((path) =>
     path === "/" ? pathname === "/" : pathname === path || pathname.startsWith(`${path}/`),
@@ -37,8 +39,13 @@ export function SideNav({
       <nav className="sj-side-nav" aria-label={label}>
         {items.map((item) => {
           const active = isSideNavActive(pathname, item);
-          return item.external ? (
-            <a key={item.label} className="sj-side-item" href={item.href} rel="noopener noreferrer">
+          return item.external || item.anchor ? (
+            <a
+              key={item.label}
+              className="sj-side-item"
+              href={item.href}
+              rel={item.external ? "noopener noreferrer" : undefined}
+            >
               {item.label}
             </a>
           ) : (

@@ -60,7 +60,8 @@ around the season:
   Hall of Shame, scoring lab, and football tools (trade desk, waivers,
   start/sit, playoff odds, draft sim).
 - **Portal** (`apps/www`) — public community home. Absolute links into the
-  hub and fitness; `/bets` is the one signed-in page on this host.
+  hub and fitness; `/bets` is the built-in signed-in page on this host.
+  Optional sign-in-gated `/casino` proxy when `CASINO_URL` is set (off / 404 otherwise).
 - **Fitness** (`apps/fitness`) and **Vibe** (`apps/vibe`) — sibling apps
   with the same Google sign-in as the hub, per-member JSON stores, no
   shared guest log.
@@ -94,7 +95,7 @@ categories and season-points analysis, not a half-built MLB/NHL engine.
 | Layer | Choice |
 |---|---|
 | Apps | Next.js 16 (Turbopack locally, standalone on Cloud Run) |
-| Auth | Auth.js + Google on hub, fitness, vibe, and portal `/bets` |
+| Auth | Auth.js + Google on hub, fitness, vibe, and portal `/bets` (plus `/casino` when configured) |
 | Design | Shared `packages/sj-ui` (Modernist tokens, vendored per app) |
 | Snapshots | `sj` CLI → JSON (`fixtures/sj` in CI; live store in production) |
 | Analytics | Python 3.11+ `ffa` — pytest-offline, Parquet + DuckDB locally |

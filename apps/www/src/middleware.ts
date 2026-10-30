@@ -7,7 +7,9 @@ import {
   apexRedirectUrl,
   shouldRedirectWwwToApex,
 } from "@/lib/apex-host";
-import { isBetsProtectedPath } from "@/lib/bets-gate";
+import { isMembersProtectedPath } from "@/lib/bets-gate";
+import { isCasinoPath } from "@/lib/casino";
+import { casinoSignedOutResponse } from "@/lib/casino-gate";
 import { safeCallbackUrl } from "@/lib/safe-redirect";
 
 const { auth } = NextAuth(authConfig);
@@ -27,14 +29,21 @@ function apexRedirect(request: NextRequest): NextResponse | null {
 }
 
 /**
- * Auth.js only on /bets (and /api/bets). Public apex routes never construct
- * a session so sj-www stays up before AUTH_SECRET is mounted.
+ * Auth.js on /bets (and /api/bets) plus /casino/** when CASINO_URL is set.
+ * Public apex routes never construct a session so sj-www stays up before
+ * AUTH_SECRET is mounted. The main matcher skips image extensions, so a
+ * second matcher entry pulls every /casino/** path (images included) in;
+ * the casino Route Handler re-checks the session as defense in depth.
  */
 const withBetsAuth = auth((request) => {
   if (process.env.AUTH_DEV_BYPASS === "1") {
     return NextResponse.next();
   }
   if (!request.auth) {
+    if (isCasinoPath(request.nextUrl.pathname)) {
+      // Pages redirect to sign-in; assets / API calls get a 401.
+      return casinoSignedOutResponse(request, { absolute: true });
+    }
     const url = new URL("/login", request.nextUrl.origin);
     url.searchParams.set(
       "callbackUrl",
@@ -48,7 +57,7 @@ const withBetsAuth = auth((request) => {
 export default function middleware(request: NextRequest) {
   const redirected = apexRedirect(request);
   if (redirected) return redirected;
-  if (!isBetsProtectedPath(request.nextUrl.pathname)) {
+  if (!isMembersProtectedPath(request.nextUrl.pathname)) {
     return NextResponse.next();
   }
   // next-auth types this wrapper as an App Route handler (req + ctx).
@@ -58,5 +67,7 @@ export default function middleware(request: NextRequest) {
 export const config = {
   matcher: [
     "/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp|woff2)$).*)",
+    // Image extensions are excluded above; /casino/** must still be gated.
+    "/casino/:path*",
   ],
 };

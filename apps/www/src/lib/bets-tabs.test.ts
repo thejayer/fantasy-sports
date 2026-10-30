@@ -69,6 +69,27 @@ describe("record_splits fixture", () => {
   });
 });
 
+describe("options fixture tab", () => {
+  it("has simulated trades and posted-only trader cards", () => {
+    const doc = JSON.parse(
+      readFileSync(path.join(FIX, "options.json"), "utf8"),
+    ) as {
+      simulated: boolean;
+      trades: { id: string; trader: string; pl: number | null; status: string }[];
+      traders: { name: string; has_daily_recap: boolean; open: number }[];
+      footnote: string;
+    };
+    expect(doc.simulated).toBe(true);
+    expect(doc.trades.length).toBeGreaterThan(0);
+    expect(doc.footnote).toMatch(/posted screenshots/);
+    expect(doc.trades.some((row) => row.status === "Open" && row.pl == null)).toBe(
+      true,
+    );
+    expect(doc.traders.some((row) => row.has_daily_recap)).toBe(true);
+    expect(doc.traders.some((row) => row.open > 0)).toBe(true);
+  });
+});
+
 describe("tailing_legs fixture", () => {
   it("has an All view and recomputes tail / fade from settled legs", () => {
     const doc = JSON.parse(

@@ -916,6 +916,10 @@ def _tab_header_spec(tab: str) -> tuple[dict[str, tuple[str, ...]], tuple[str, .
         from sj.bets_public import _HEADER_ALIASES as aliases
 
         return aliases, ("id",)
+    if tab in {"Trades", "Traders"}:
+        from sj.bets_options import options_header_spec
+
+        return options_header_spec(tab)
     return _HEADER_ALIASES, ("id", "who")
 
 

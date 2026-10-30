@@ -25,7 +25,7 @@ attrs==26.1.0
     # via
     #   jsonschema
     #   referencing
-certifi==2026.7.22
+certifi==2026.10.19
     # via requests
 cffi==2.1.0
     # via cryptography
@@ -35,6 +35,8 @@ click==8.4.2
     # via
     #   streamlit
     #   uvicorn
+cloudpickle==3.1.2
+    # via joblib
 coverage==7.15.2
     # via pytest-cov
 cryptography==50.0.0
@@ -54,7 +56,7 @@ google-auth==2.56.2
     #   google-cloud-storage
 google-cloud-core==2.7.0
     # via google-cloud-storage
-google-cloud-storage==3.16.0
+google-cloud-storage==3.17.1
     # via ffa (pyproject.toml)
 google-crc32c==1.9.0
     # via
@@ -68,7 +70,7 @@ h11==0.16.0
     # via uvicorn
 httptools==0.9.0
     # via streamlit
-idna==3.18
+idna==3.20
     # via
     #   anyio
     #   requests
@@ -105,6 +107,8 @@ numpy==2.4.6
     #   scikit-learn
     #   scipy
     #   streamlit
+opentelemetry-api==1.45.2
+    # via google-api-core
 packaging==26.3
     # via
     #   altair
@@ -124,7 +128,7 @@ pluggy==1.6.0
     #   pytest-cov
 polars==2.0.0
     # via nflreadpy
-polars-runtime-32==1.43.1
+polars-runtime-32==2.0.0
     # via polars
 proto-plus==1.29.0
     # via google-api-core
@@ -157,7 +161,7 @@ pydantic-settings==2.15.0
     # via nflreadpy
 pydeck==0.9.3
     # via streamlit
-pygments==2.20.0
+pygments==2.21.0
     # via
     #   pytest
     #   rich
@@ -220,6 +224,7 @@ typing-extensions==4.16.0
     # via
     #   altair
     #   anyio
+    #   opentelemetry-api
     #   pydantic
     #   pydantic-core
     #   referencing

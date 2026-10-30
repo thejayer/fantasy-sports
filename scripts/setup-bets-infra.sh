@@ -31,6 +31,9 @@ SCHEDULE="${SJ_BETS_SCHEDULE:-32 9-23/2 * * *}"
 TIME_ZONE="${SJ_TIMEZONE:-America/Chicago}"
 SCHEDULER_JOB="${SJ_BETS_SCHEDULER_JOB:-sj-bets-trigger}"
 SHEET_ID="${SJ_BETS_SHEET_ID:-1_F9HCU7uOPH5uo8cgXkxwKrvREolPid_ZoviVVcX3HU}"
+# Options tracker sheet id is never defaulted — set SJ_OPTIONS_SHEET_ID in the
+# environment / GitHub secret. Do not commit the id.
+OPTIONS_SHEET_ID="${SJ_OPTIONS_SHEET_ID:-}"
 
 echo "Project:     ${PROJECT}"
 echo "Region:      ${REGION}"
@@ -74,6 +77,12 @@ if gcloud run jobs describe "${BETS_JOB}" \
     --region="${REGION}" \
     --service-account="${BETS_SA}" \
     --set-env-vars "SJ_BETS_SHEET_ID=${SHEET_ID}"
+  if [ -n "${OPTIONS_SHEET_ID}" ]; then
+    gcloud run jobs update "${BETS_JOB}" \
+      --project="${PROJECT}" \
+      --region="${REGION}" \
+      --update-env-vars "SJ_OPTIONS_SHEET_ID=${OPTIONS_SHEET_ID},SJ_OPTIONS_SYNC=${SJ_OPTIONS_SYNC:-1}"
+  fi
   echo "updated ${BETS_JOB} to run as ${BETS_SA}"
 else
   echo "Cloud Run job ${BETS_JOB} does not exist yet."
@@ -122,5 +131,12 @@ Austin still needs to:
        gcloud run jobs execute ${BETS_JOB} --region=${REGION} --project=${PROJECT}
 
 Skip the reader job with SJ_BETS_SYNC=0 on the job env.
+
+Options tracker (P.12) — same SA, separate sheet, read-only:
+  1. Share "Strictly Jayers Options Tracker" with ${BETS_SA} as Viewer
+  2. Set GitHub secret SJ_OPTIONS_SHEET_ID (or pass SJ_OPTIONS_SHEET_ID here)
+  3. Redeploy the sync job, then:
+       gcloud run jobs execute ${BETS_JOB} --region=${REGION} --project=${PROJECT}
+  SJ_OPTIONS_SYNC is off unless set. Options failures never fail the bets export.
 ================================================================
 EOF

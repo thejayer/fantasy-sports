@@ -4,7 +4,10 @@
 #   docker build -f apps/www/Dockerfile -t sj-www .
 #
 # Public marketing surface plus a members-only /bets page (Auth.js + GCS
-# mount for hub_members.json and bets/bets.json). Do not mkdir the FUSE
+# mount for hub_members.json and bets/bets.json). Optional /casino proxy:
+# the Route Handler reads CASINO_URL at runtime (Cloud Run env var set by
+# deploy-portal.yml); the build arg below only lets the statically rendered
+# nav / home show the Casino link (empty = off). Do not mkdir the FUSE
 # mount in the entrypoint — a slow mount hangs the Cloud Run PORT probe.
 
 FROM node:22-bookworm-slim AS deps
@@ -16,10 +19,14 @@ FROM deps AS build
 WORKDIR /app
 COPY apps/www ./apps/www
 WORKDIR /app/apps/www
+# Build-time only so prerendered pages know whether to link Casino. The proxy
+# itself reads CASINO_URL at runtime. Empty default = no nav link.
+ARG CASINO_URL=
 ENV NEXT_TELEMETRY_DISABLED=1 \
     SITE_URL=https://strictlyjayers.com \
     FANTASY_HUB_URL=https://fantasy.strictlyjayers.com \
-    FITNESS_URL=https://fitness.strictlyjayers.com
+    FITNESS_URL=https://fitness.strictlyjayers.com \
+    CASINO_URL=$CASINO_URL
 RUN npm run build
 
 FROM node:22-bookworm-slim AS runtime
@@ -37,6 +44,7 @@ RUN chmod +x /app/docker-entrypoint.sh \
     && chown -R sjwww:sjwww /app/apps/www
 USER sjwww
 
+# CASINO_URL is a runtime env var on the Cloud Run service (not baked here).
 ENV NODE_ENV=production \
     PORT=8080 \
     HOSTNAME=0.0.0.0 \

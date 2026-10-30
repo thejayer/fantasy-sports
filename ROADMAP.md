@@ -1336,6 +1336,21 @@ Wired into the `www` CI job.
   hypothetical 1u.
   Ops: `./scripts/setup-bets-infra.sh`.
 
+### P.12 Options tracker — LANDING
+- `/bets?tab=options` on `apps/www` (same Auth.js gate as Bets). Trader
+  cards, filterable trades table, cumulative posted-P/L chart. Blank P/L
+  is **not posted**; open rows stay Open and are never marked to market.
+  Footnote: data comes only from posted screenshots and fills.
+- Ingest: after `sj bets` writes the betting sidecars, `maybe_export_options`
+  reads the Options Tracker sheet (`Trades` + `Traders` by header name;
+  Summary / Legend & Notes ignored) when `SJ_OPTIONS_SYNC` is on.
+  `SJ_OPTIONS_SHEET_ID` is required for the live pull (secret / job env —
+  never a literal). Writes `bets/options.json` only. Failure never fails
+  the bets export. Options P/L never folds into `bets.json` / `summary.json`
+  / `record_splits.json`.
+- Offline fixture: `tests/fixtures/bets/options_simulated.json` (invented
+  traders / URLs) → `apps/www/fixtures/bets/options.json`.
+
 ### P.10 Living rooms + portal pulse — LANDING
 Phase E of the sitewide UX pass (A–D shipped in #153).
 - Home **pulse strip** under the hero: next dated event, Watch feed title/count

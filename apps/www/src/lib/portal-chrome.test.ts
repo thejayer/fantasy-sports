@@ -31,12 +31,47 @@ describe("portal chrome after Phase E audit", () => {
     expect(existsSync(path.join(WWW_ROOT, "vercel.json"))).toBe(false);
     const nextConfig = readFileSync(path.join(WWW_ROOT, "next.config.ts"), "utf8");
     expect(nextConfig).toMatch(/output:\s*"standalone"/);
+    // /casino is an authenticated Route Handler, not a next.config rewrite.
+    expect(nextConfig).not.toMatch(/rewrites/);
     const vercelMd = readFileSync(path.join(WWW_ROOT, "VERCEL.md"), "utf8");
     expect(vercelMd).toMatch(/Root Directory/);
     expect(vercelMd).toMatch(/scripts\/vercel-ignore\.sh/);
     expect(vercelMd).toMatch(/\/api\/auth\/callback\/google/);
     expect(vercelMd).not.toMatch(/iam\.gserviceaccount\.com/);
     expect(vercelMd).not.toMatch(/gs:\/\//);
+  });
+
+  it("gates /casino in robots and uses a hard nav anchor when configured", () => {
+    const robots = readFileSync(path.join(APP_DIR, "robots.ts"), "utf8");
+    expect(robots).toMatch(/"\/casino"/);
+    const layout = readFileSync(path.join(APP_DIR, "layout.tsx"), "utf8");
+    expect(layout).toMatch(/label:\s*"Casino"/);
+    expect(layout).toMatch(/href:\s*"\/casino"/);
+    expect(layout).toMatch(/anchor:\s*true/);
+    expect(layout).toMatch(/casinoEnabled/);
+  });
+
+  it("proxies /casino through a gated Route Handler", () => {
+    const route = path.join(APP_DIR, "casino/[[...path]]/route.ts");
+    expect(existsSync(route)).toBe(true);
+    const source = readFileSync(route, "utf8");
+    expect(source).toMatch(/proxyCasino/);
+    expect(source).toMatch(/auth\(\)/);
+    const middleware = readFileSync(
+      path.join(WWW_ROOT, "src/middleware.ts"),
+      "utf8",
+    );
+    expect(middleware).toMatch(/"\/casino\/:path\*"/);
+  });
+
+  it("exposes the stable Auth.js subject so /casino can derive a member id", () => {
+    const authTs = readFileSync(path.join(WWW_ROOT, "src/auth.ts"), "utf8");
+    expect(authTs).toMatch(/token\.sub/);
+    const route = readFileSync(
+      path.join(APP_DIR, "casino/[[...path]]/route.ts"),
+      "utf8",
+    );
+    expect(route).toMatch(/getMember/);
   });
 
   it("does not ship a service worker on the apex", () => {

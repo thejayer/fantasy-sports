@@ -63,6 +63,7 @@ and the GCS/WIF vars. No JSON key files.
 | `SJ_GCS_PREFIX` | Object-key prefix; omit when the FUSE mount is the bucket root |
 | `FANTASY_HUB_URL` | Absolute hub URL (defaults to production host) |
 | `FITNESS_URL` | Absolute fitness URL (defaults to production host) |
+| `CASINO_URL` | Optional `/casino` proxy upstream (read at runtime; also set at **build** time for the nav link; empty = `/casino` 404). No metadata server on Vercel, so no ID token is sent |
 | `VIBE_URL` | Absolute vibe URL (defaults to production host) |
 | `DISCORD_INVITE_URL` | Discord CTA override |
 | `PALWORLD_STATUS` | Public Palworld line only — never IPs or passwords |
@@ -92,6 +93,7 @@ environment principal
 - `bets/public_warnings.json`
 - `bets/record_splits.json`
 - `bets/tailing_legs.json`
+- `bets/options.json`
 
 A missing object is the same as `ENOENT`. Bets still fall through to committed
 `fixtures/bets`. `hub_members.json` has no fixture. Auth / network errors do

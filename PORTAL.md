@@ -17,12 +17,13 @@ Fitness restyles the training-log PWA onto the same tokens (`FITNESS.md`).
 ## Why two hosts
 
 - **Auth.js cookies** for the hub stay on `fantasy.strictlyjayers.com`.
-  The apex now has a **second**, scoped Auth.js install for `/bets` only
-  (same Google client + allowlist; callback host `strictlyjayers.com`).
-  Public Community / AI / People / Watch / Palworld routes never require a
-  session. Do not put a service worker on the apex.
+  The apex now has a **second**, scoped Auth.js install for `/bets` (and
+  `/casino` when `CASINO_URL` is set) — same Google client + allowlist;
+  callback host `strictlyjayers.com`. Public Community / AI / People /
+  Watch / Palworld routes never require a session. Do not put a service
+  worker on the apex.
 - **Snapshot / hub data**: `sj-www` mounts the hub bucket **read-only** so
-  `/bets` can read `hub_members.json` and `bets/{bets,parlay_legs,public_warnings,record_splits,tailing_legs}.json`. Home and other
+  `/bets` can read `hub_members.json` and `bets/{bets,parlay_legs,public_warnings,record_splits,tailing_legs,options}.json`. Home and other
   public pages do not touch that mount.
 - **Product boundary**: Discord / Palworld / Watch / AI / People live on
   the apex; leagues, tools, and auction rooms live on the hub.
@@ -37,7 +38,8 @@ https://fantasy.strictlyjayers.com
 
 Configured via `FANTASY_HUB_URL` (default production host). There is no Next.js
 rewrite, reverse proxy, or same-origin `/leagues` path on the apex — that would
-break Auth.js and couple deploys.
+break Auth.js and couple deploys. The one exception is an **optional**
+`/casino` proxy (below), which is off unless `CASINO_URL` is set.
 
 Discord CTA defaults to the crew invite (`lib/site.ts`); override with
 `DISCORD_INVITE_URL` on `sj-www` if the code rotates. Palworld is a real
@@ -70,11 +72,54 @@ card); missing shots use a monogram. Edit `INFLUENTIAL_PEOPLE` in
 destination list. Docs: [FITNESS.md](FITNESS.md).
 
 **Bets** lives at `/bets` (nav + home destination). Members-only tracker for
-public slips (data-driven bettors), parlay legs, tailing splits, and BetMGM public-money
-warnings. Same Google allowlist as Fantasy. Data is `sj bets` (Drive xlsx
-or native Sheet) → `bets/{bets,summary,parlay_legs,public_warnings,record_splits,tailing_legs}.json`
-on the hub bucket. Docs:
+public slips (data-driven bettors), parlay legs, tailing splits, BetMGM public-money
+warnings, and posted options fills (`?tab=options`). Same Google allowlist as
+Fantasy. Data is `sj bets` (Drive xlsx or native Sheet) →
+`bets/{bets,summary,parlay_legs,public_warnings,record_splits,tailing_legs,options}.json`
+on the hub bucket. Options stay in `options.json` and never fold into betting
+totals. Docs:
 [apps/www/README.md](apps/www/README.md) and `./scripts/setup-bets-infra.sh`.
+
+**Casino** is an optional members-only path at `/casino` (nav + home
+destination when configured). When `CASINO_URL` is set, `sj-www` proxies
+`/casino` and `/casino/*` through a Route Handler
+(`apps/www/src/app/casino/[[...path]]`) to the private `sj-casino` Cloud Run
+service, calling it with a Google ID token from the portal's runtime service
+account. Everything under `/casino/**`, images included, needs the same
+Auth.js sign-in as `/bets`: signed-out pages redirect to
+`/login?callbackUrl=/casino`, signed-out assets and API calls get `401`.
+Unset / empty `CASINO_URL` leaves `/casino` a 404 — no proxy, no nav link.
+
+**Member identity headers (casino chat).** For a signed-in member the proxy
+adds exactly two request headers to every upstream call, next to the
+`Authorization: Bearer <Google ID token>`:
+
+| Header | Value |
+|---|---|
+| `x-sj-user-id` | Opaque, stable member id: 24 hex chars. With `CASINO_USER_ID_SALT` set it is `HMAC-SHA256(salt, "sj:" + <Auth.js sub>)`, truncated; **without** the salt it falls back to a plain `SHA-256(sub)`, truncated (stable but unkeyed — set the salt in production). Never an email. Omitted if no sub is available and there is no salt. |
+| `x-sj-user-name` | Display name: session `name`, then `username`, then `Player`. Never the email or its local part (such a name is skipped). Trimmed to 40 characters, URI-encoded UTF-8 (`decodeURIComponent` it). |
+
+Every client-supplied `x-sj-*` header (any case) is dropped before the proxy
+adds its own, signed in or not, so a browser cannot spoof identity. Trust
+comes from the ID token: Cloud Run IAM only lets the `sj-www` runtime service
+account invoke `sj-casino`, so only the portal can reach it with these
+headers. `sj-casino` must therefore stay private (no `allUsers`).
+
+Chat needs no websockets: `GET /casino/api/chat?since=…` polling and `POST`
+JSON bodies stream through unchanged; status codes (including `429`, with
+`retry-after`) and JSON bodies pass through. Responses under `/casino/api/*`
+keep the upstream `cache-control`, and get `cache-control: no-store` when the
+casino sent none.
+
+`CASINO_USER_ID_SALT` is an optional repo secret that `deploy-portal.yml`
+sets as a runtime env var on `sj-www` (never printed; empty leaves the
+existing value; no commas — generate with `openssl rand -hex 32`). Changing
+it changes every member id.
+`deploy-portal.yml` sets `CASINO_URL` from the repo secret as a runtime env
+var (also a build arg, for the nav link only) and makes no IAM changes; the
+operator IAM steps (grant `roles/run.invoker` to the portal runtime account,
+then remove `allUsers`) are in
+[apps/www/README.md](apps/www/README.md#operator-iam-private-sj-casino).
 
 Home also ships a **Coming up** event strip and **Meet the crew** links into
 hub `/u/{handle}` profiles (edit handles in `lib/content.ts`). The hub chrome

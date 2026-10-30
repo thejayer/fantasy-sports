@@ -1,6 +1,15 @@
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it } from "vitest";
 
-import { isBetsAuthPublicPath, isBetsProtectedPath } from "./bets-gate";
+import {
+  isBetsAuthPublicPath,
+  isBetsProtectedPath,
+  isMembersProtectedPath,
+  membersLoginTitle,
+} from "./bets-gate";
+
+afterEach(() => {
+  delete process.env.CASINO_URL;
+});
 
 describe("bets path gate", () => {
   it("protects /bets and /api/bets only", () => {
@@ -12,10 +21,39 @@ describe("bets path gate", () => {
     expect(isBetsProtectedPath("/login")).toBe(false);
     expect(isBetsProtectedPath("/api/auth/signin")).toBe(false);
     expect(isBetsProtectedPath("/api/health")).toBe(false);
+    expect(isBetsProtectedPath("/casino")).toBe(false);
   });
 
   it("keeps login and Auth.js public", () => {
     expect(isBetsAuthPublicPath("/login")).toBe(true);
     expect(isBetsAuthPublicPath("/api/auth/callback/google")).toBe(true);
+  });
+});
+
+describe("members path gate", () => {
+  it("always includes /bets and never /casino when the proxy is off", () => {
+    delete process.env.CASINO_URL;
+    expect(isMembersProtectedPath("/bets")).toBe(true);
+    expect(isMembersProtectedPath("/api/bets/export")).toBe(true);
+    expect(isMembersProtectedPath("/casino")).toBe(false);
+    expect(isMembersProtectedPath("/casino/table.png")).toBe(false);
+    expect(isMembersProtectedPath("/")).toBe(false);
+  });
+
+  it("adds /casino when CASINO_URL is set", () => {
+    process.env.CASINO_URL = "https://casino.example";
+    expect(isMembersProtectedPath("/casino")).toBe(true);
+    expect(isMembersProtectedPath("/casino/")).toBe(true);
+    expect(isMembersProtectedPath("/casino/app")).toBe(true);
+    expect(isMembersProtectedPath("/bets")).toBe(true);
+    expect(isMembersProtectedPath("/ai")).toBe(false);
+    expect(isBetsProtectedPath("/casino")).toBe(false);
+  });
+
+  it("titles the login page from the callback path", () => {
+    expect(membersLoginTitle("/bets")).toBe("Sign in to Bets");
+    expect(membersLoginTitle("/bets?tab=options")).toBe("Sign in to Bets");
+    expect(membersLoginTitle("/casino")).toBe("Sign in to Casino");
+    expect(membersLoginTitle("/casino/app")).toBe("Sign in to Casino");
   });
 });

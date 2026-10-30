@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 
 import { auth, signIn } from "@/auth";
 import { GoogleSignInButton } from "@/components/GoogleSignInButton";
+import { membersLoginTitle } from "@/lib/bets-gate";
 import { getSiteConfig } from "@/lib/site";
 import { safeCallbackUrl } from "@/lib/safe-redirect";
 
@@ -30,7 +31,7 @@ export default async function LoginPage({ searchParams }: Props) {
     <main className="login-page">
       <section className="page-hero" aria-label="Sign in">
         <p className="hero-kicker">Members</p>
-        <h1>Sign in to Bets</h1>
+        <h1>{membersLoginTitle(callbackUrl)}</h1>
         <p>
           Same Strictly Jayers Google allowlist as Fantasy and Fitness. The rest
           of the site stays public.

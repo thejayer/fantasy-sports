@@ -22,7 +22,14 @@ export const WINDOW_DATES: Record<BetWindow, string | null> = {
   nfl: NFL_START,
 };
 
-export const BET_TABS = ["bets", "parlays", "warnings", "splits", "tail"] as const;
+export const BET_TABS = [
+  "bets",
+  "parlays",
+  "warnings",
+  "splits",
+  "tail",
+  "options",
+] as const;
 export type BetTab = (typeof BET_TABS)[number];
 
 export const TAB_LABELS: Record<BetTab, string> = {
@@ -31,6 +38,7 @@ export const TAB_LABELS: Record<BetTab, string> = {
   warnings: "Public fade",
   splits: "Record splits",
   tail: "Tail legs",
+  options: "Options",
 };
 
 /** Display overlay only — not the list of who appears on the board. */
@@ -192,6 +200,7 @@ export function parseBetTab(raw: string | null | undefined): BetTab {
   if (key === "warnings" || key === "public" || key === "fade") return "warnings";
   if (key === "splits" || key === "split" || key === "record") return "splits";
   if (key === "tail" || key === "tailing" || key === "tail-legs") return "tail";
+  if (key === "options" || key === "option" || key === "opts") return "options";
   return "bets";
 }
 
@@ -214,6 +223,8 @@ export function betsHref(opts: {
   size?: string;
   month?: string;
   ou?: string;
+  type?: string;
+  status?: string;
 }): string {
   const params = new URLSearchParams();
   if (opts.tab && opts.tab !== "bets") params.set("tab", opts.tab);
@@ -226,6 +237,10 @@ export function betsHref(opts: {
     if (opts.size) params.set("size", opts.size);
     if (opts.month) params.set("month", opts.month);
     if (opts.ou) params.set("ou", opts.ou);
+  }
+  if (opts.tab === "options") {
+    if (opts.type) params.set("type", opts.type);
+    if (opts.status) params.set("status", opts.status);
   }
   const query = params.toString();
   return query ? `/bets?${query}` : "/bets";
