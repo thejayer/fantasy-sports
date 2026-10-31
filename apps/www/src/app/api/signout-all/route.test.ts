@@ -57,7 +57,7 @@ describe("POST /api/signout-all", () => {
     const res = await post({ origin: ENV.SITE_URL });
     expect(res.status).toBe(303);
     expect(signOut).toHaveBeenCalledOnce();
-    expect(res.headers.get("location")).toBe(`${ENV.SITE_URL}/signed-out`);
+    expect(res.headers.get("location")).toBe("/signed-out");
   });
 
   it("does nothing on GET", async () => {

@@ -12,7 +12,7 @@ import {
 } from "@/components/AccountIcons";
 import { SignOutDialog } from "@/components/SignOutDialog";
 import { useMounted } from "@/lib/use-mounted";
-import { initialsOf, safeAvatar, type MeResponse, type MenuItem } from "@/lib/account-menu";
+import { SIGN_OUT_ALL_PATH, initialsOf, safeAvatar, type MeResponse, type MenuItem } from "@/lib/account-menu";
 
 const ICONS: Record<MenuItem["id"], () => React.JSX.Element> = {
   profile: IconUser,
@@ -209,7 +209,7 @@ export function AvatarMenu({ initial = null }: { initial?: MeResponse | null }) 
         onClose={() => {
           setConfirm(false);
         }}
-        action={me?.signOut}
+        action={me?.signOut ?? SIGN_OUT_ALL_PATH}
         returnFocusTo={trigger}
       />
     </>

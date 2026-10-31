@@ -1,8 +1,10 @@
 import { describe, expect, it } from "vitest";
 
+import { SIGN_OUT_BODY as DIALOG_BODY, SIGN_OUT_TITLE as DIALOG_TITLE } from "@/components/SignOutDialog";
 import {
   LINK_TEAMS_PATH,
   SIGN_OUT_ALL_PATH,
+  SIGN_OUT_BODY,
   SIGN_OUT_TITLE,
   accountMenuItems,
   initialsOf,
@@ -29,6 +31,8 @@ describe("account menu", () => {
   it("asks the same question everywhere", () => {
     expect(SIGN_OUT_TITLE).toBe("Sign out of all Strictly Jayers sites?");
     expect(SIGN_OUT_ALL_PATH).toBe("/api/signout-all");
+    expect(DIALOG_TITLE).toBe(SIGN_OUT_TITLE);
+    expect(DIALOG_BODY).toBe(SIGN_OUT_BODY);
   });
 
   it("answers signed-out with no user", () => {

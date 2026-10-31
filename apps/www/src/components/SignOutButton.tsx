@@ -1,8 +1,7 @@
 "use client";
 
-import { useState } from "react";
-
-import { SignOutDialog } from "@/components/SignOutDialog";
+import { SignOutButton as ConfirmButton } from "@/components/SignOutDialog";
+import { SIGN_OUT_ALL_PATH } from "@/lib/account-menu";
 
 /** A Sign out button that opens the shared "Sign out of all Strictly Jayers sites?" confirm. */
 export function SignOutButton({
@@ -12,13 +11,9 @@ export function SignOutButton({
   className?: string;
   children?: React.ReactNode;
 }) {
-  const [open, setOpen] = useState(false);
   return (
-    <>
-      <button type="button" className={className} onClick={() => setOpen(true)}>
-        {children}
-      </button>
-      <SignOutDialog open={open} onClose={() => setOpen(false)} />
-    </>
+    <ConfirmButton action={SIGN_OUT_ALL_PATH} className={className}>
+      {children}
+    </ConfirmButton>
   );
 }

@@ -148,21 +148,53 @@ re-checks on every call) and Sign out. The avatar menu (Profile, Link teams,
 Settings, Sign out) is one component in the www sidebar and a matching one in
 the casino; both read the same menu from `GET /api/me`, which never returns an
 email or id. On phones the menu and the sign-out confirm are bottom sheets.
-Hub, fitness and vibe only point their profile link at `{www}/profile`.
+Hub, fitness and vibe point their profile link at `{www}/profile`.
 
-Sign out asks "Sign out of all Strictly Jayers sites?" and POSTs
-`/api/signout-all` (same-origin only). There is no shared cookie, so it signs
-out here, then redirects (303) through a hop route on each other site
-(`/api/auth/signout-chain?t=...`: hub, then fitness, then vibe) and back to
-`/signed-out`. The `t` token carries only site keys, never URLs: each site maps
-the keys to its own configured URLs, so there is no open redirect through
-`return` or `next` params. It is an HMAC (derived from `AUTH_SECRET`) with a
-2-minute expiry; a bad or expired token is a 400 and signs nobody out. It is
-stateless, so it is not single-use; all it can do is sign out the browser that
-presents it. The chain needs the same `AUTH_SECRET` on all four apps (as the
-deploy workflows already mount); without one only this site is signed out.
-Deploy order: hub, fitness and vibe first (or together), then www, then the
-casino.
+**Sign out is sign out of everything, from any site.** The Sign out button in
+www, hub, fitness and vibe (and the casino's) asks the same question, "Sign out
+of all Strictly Jayers sites?", and then POSTs to its own site's sign-out-all
+route (same-origin only; a link or an image on another page can't trigger it):
+`/api/signout-all` on www, `/api/auth/signout-all` on hub, fitness and vibe. The
+confirm is one component (`SignOutDialog.tsx`, the same file in www, hub and
+vibe; fitness mirrors it in `sj-chrome.js`; styles are `.sj-confirm*` in
+`packages/sj-ui`), and the chain is one module (`src/lib/signout-chain.ts`, the
+same file in all four apps). `packages/sj-ui/check.sh` fails CI if any copy
+drifts.
+
+There is no shared cookie, so the chain signs out here, then redirects (303)
+through a hop route on each other site (`/api/auth/signout-chain?t=...`) and
+ends on www `/signed-out`. The `t` token carries only site keys, never URLs:
+each site maps the keys to its own configured URLs, so there is no open
+redirect through `return` or `next` params. It is an HMAC (derived from
+`AUTH_SECRET`) with a 2-minute expiry; a bad or expired token is a 400 and
+signs nobody out. It is stateless, so it is not single-use; all it can do is
+sign out the browser that presents it. The chain needs the same `AUTH_SECRET`
+on all four apps (Kliff confirmed prod mounts one; the deploy workflows do too).
+
+*Order.* The site you press Sign out on is cleared first, before anything
+else, so the press always does at least what it did before. Then the browser
+goes to www (the account everyone has; it ends the chain on its own page), then
+hub, fitness and vibe in that fixed order, skipping the site it started on,
+and finally lands on www `/signed-out`. Pressing it on www is hub, fitness,
+vibe; on hub it is www, fitness, vibe; on fitness www, hub, vibe; on vibe www,
+hub, fitness. The casino starts at www and has no hop of its own.
+
+*Failure.* Every hop signs out only the site it is on and only after the token
+checks out, so a failed hop can never leave things worse than before the chain
+existed. If a hop is unreachable the browser stops there with an error and the
+sites not yet reached stay signed in, exactly as they did when Sign out was
+local-only; pressing Sign out again on any of them starts a fresh chain. A
+missing `AUTH_SECRET`, or no other site configured, falls back to signing out
+here only and landing where the old button did (`/login`; www `/signed-out`).
+A bad, tampered or expired token is a 400 and clears nothing. A cross-site
+POST to a sign-out-all route is a 403 and clears nothing.
+
+Deploy order: hub, fitness and vibe first (they gain the sign-out-all route and
+the confirm; their old local-only button goes away with it), then www, then the
+casino. Until www is deployed a hub, fitness or vibe press still signs out here
+and then 404s at the www hop, so ship them together. Fitness is a cached PWA:
+its service worker cache name is bumped (`sj-fitness-v10`) so installed copies
+pick up the new button.
 
 Home also ships a **Coming up** event strip and **Meet the crew** links into
 hub `/u/{handle}` profiles (edit handles in `lib/content.ts`). The hub chrome

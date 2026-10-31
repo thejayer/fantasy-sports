@@ -79,24 +79,86 @@
     }
     wrap.hidden = false;
     signOut.hidden = false;
-    signOut.addEventListener("click", async () => {
-      try {
-        const csrfRes = await fetch("/api/auth/csrf", { credentials: "same-origin" });
-        const csrf = csrfRes.ok ? await csrfRes.json() : {};
-        const body = new URLSearchParams();
-        if (csrf.csrfToken) body.set("csrfToken", csrf.csrfToken);
-        body.set("callbackUrl", "/login");
-        await fetch("/api/auth/signout", {
-          method: "POST",
-          credentials: "same-origin",
-          headers: { "content-type": "application/x-www-form-urlencoded" },
-          body,
-        });
-      } catch {
-        /* still leave */
+    signOut.addEventListener("click", () => openSignOutConfirm(signOut));
+  }
+
+  /*
+    The same confirm as www, hub and vibe (their React SignOutDialog; styles in
+    sj-ui .sj-confirm*). "Sign out" posts a form to this site's own
+    /api/auth/signout-all, which signs fitness out and walks the browser
+    through the other Strictly Jayers sites. Keep the words in step with
+    SignOutDialog.tsx; packages/sj-ui/check.sh checks them.
+  */
+  const SIGN_OUT_TITLE = "Sign out of all Strictly Jayers sites?";
+  const SIGN_OUT_BODY = "You'll need to sign in with Google again.";
+  const SIGN_OUT_ACTION = "/api/auth/signout-all";
+
+  function openSignOutConfirm(opener) {
+    if (document.querySelector('[data-sj-confirm="signout"]')) return;
+    const make = (tag, className, text) => {
+      const el = document.createElement(tag);
+      if (className) el.className = className;
+      if (text) el.textContent = text;
+      return el;
+    };
+    const scrim = make("div", "sj-confirm-scrim");
+    scrim.dataset.sjConfirm = "signout";
+    const dialog = make("div", "sj-confirm");
+    dialog.setAttribute("role", "alertdialog");
+    dialog.setAttribute("aria-modal", "true");
+    dialog.setAttribute("aria-labelledby", "sj-confirm-title");
+    dialog.setAttribute("aria-describedby", "sj-confirm-body");
+    const grip = make("span", "sj-confirm-grip");
+    grip.setAttribute("aria-hidden", "true");
+    const title = make("h2", "", SIGN_OUT_TITLE);
+    title.id = "sj-confirm-title";
+    const body = make("p", "", SIGN_OUT_BODY);
+    body.id = "sj-confirm-body";
+    const form = make("form", "sj-confirm-actions");
+    form.method = "post";
+    form.action = SIGN_OUT_ACTION;
+    const confirm = make("button", "sj-confirm-btn sj-confirm-btn-danger", "Sign out");
+    confirm.type = "submit";
+    const cancel = make("button", "sj-confirm-btn", "Cancel");
+    cancel.type = "button";
+    form.append(confirm, cancel);
+    dialog.append(grip, title, body, form);
+    scrim.append(dialog);
+
+    function close() {
+      document.removeEventListener("keydown", onKey);
+      scrim.remove();
+      if (opener && opener.focus) opener.focus();
+    }
+    function onKey(event) {
+      if (event.key === "Escape") {
+        event.preventDefault();
+        close();
+        return;
       }
-      location.replace("/login");
+      if (event.key !== "Tab") return;
+      const focusable = dialog.querySelectorAll("button:not([disabled])");
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        first.focus();
+      }
+    }
+    cancel.addEventListener("click", close);
+    scrim.addEventListener("mousedown", (event) => {
+      if (event.target === scrim) close();
     });
+    form.addEventListener("submit", () => {
+      confirm.disabled = true;
+      confirm.textContent = "Signing out…";
+    });
+    document.addEventListener("keydown", onKey);
+    document.body.append(scrim);
+    cancel.focus();
   }
 
   if (window.__sjFitness?.user) {

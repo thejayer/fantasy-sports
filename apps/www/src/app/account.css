@@ -1,5 +1,5 @@
 /*
-  Account UI: the avatar menu, the sign-out confirm and the /profile page.
+  Account UI: the avatar menu and the /profile page (the sign-out confirm is shared, in sj-ui).
   Only sj-ui tokens, so it follows the theme. Class prefix: acct-.
   Phones and tablets (<960px) get a bottom sheet and a stacked profile.
 */
@@ -242,46 +242,11 @@
   display: none;
 }
 
-/* ---- Sign-out confirm ---- */
-.acct-scrim[data-acct-layer="signout"] {
-  display: grid;
-  place-items: center;
-  padding: var(--sj-space-4);
-}
-.acct-dialog {
-  width: min(420px, 100%);
-  padding: var(--sj-space-6);
-  border: 1px solid var(--sj-hairline);
-  border-radius: var(--sj-radius-surface);
-  background: var(--sj-surface-1);
-  color: var(--sj-text);
-  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.5);
-}
-.acct-dialog h2 {
-  margin: 0 0 var(--sj-space-2);
-  font: 700 var(--sj-h2) / var(--sj-h2-lh) var(--sj-font);
-}
-.acct-dialog p {
-  margin: 0 0 var(--sj-space-6);
-  color: var(--sj-muted);
-  font-size: 14px;
-  line-height: 1.5;
-}
-.acct-dialog-actions {
-  display: flex;
-  flex-direction: row-reverse;
-  gap: var(--sj-space-3);
-}
-.acct-dialog-actions .acct-btn {
-  flex: 1;
-}
-
 @media (max-width: 959px) {
   .acct-scrim-menu {
     background: color-mix(in srgb, var(--sj-bg) 62%, transparent);
   }
-  .acct-menu,
-  .acct-scrim[data-acct-layer="signout"] .acct-dialog {
+  .acct-menu {
     left: 0;
     right: 0;
     bottom: 0;
@@ -291,16 +256,6 @@
     border-bottom: 0;
     padding: var(--sj-space-2) var(--sj-space-4) calc(var(--sj-space-4) + env(safe-area-inset-bottom, 0px));
     animation: acct-sheet-in 0.18s ease-out;
-  }
-  .acct-scrim[data-acct-layer="signout"] {
-    display: flex;
-    align-items: flex-end;
-    padding: 0;
-  }
-  .acct-scrim[data-acct-layer="signout"] .acct-dialog {
-    position: relative;
-    width: 100%;
-    padding-top: var(--sj-space-2);
   }
   .acct-sheet-grip {
     display: block;
@@ -321,9 +276,6 @@
     background: var(--sj-surface-2);
     font-weight: 600;
   }
-  .acct-dialog-actions {
-    flex-direction: column;
-  }
 }
 @keyframes acct-sheet-in {
   from {
@@ -332,8 +284,7 @@
   }
 }
 @media (prefers-reduced-motion: reduce) {
-  .acct-menu,
-  .acct-dialog {
+  .acct-menu {
     animation: none !important;
   }
 }

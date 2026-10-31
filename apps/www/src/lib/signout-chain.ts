@@ -6,10 +6,15 @@ import { createHmac, randomBytes, timingSafeEqual } from "node:crypto";
  * Each site keeps its own host-only session cookie, so one site cannot clear
  * another's. The browser is walked through a hop route on each site instead:
  *
- *   www  POST /api/signout-all             signs www out, 303 to the first hop
- *   hub  GET  /api/auth/signout-chain?t=…  signs that site out, 303 to the next hop
+ *   any site  POST /api/signout-all (www) or /api/auth/signout-all (the others)
+ *             same-origin only; signs THIS site out, 303 to the first hop
+ *   next site GET  /api/auth/signout-chain?t=…  signs that site out, 303 onward
  *   …
- *   www  GET  /signed-out                  the landing page
+ *   www       GET  /signed-out                  the landing page
+ *
+ * Order: the site you clicked on is cleared first (so a failed hop can never
+ * leave you signed in where you pressed the button), then www (the account
+ * home: team links, mod tools, bets), then the rest in a fixed order.
  *
  * What keeps this from being an open redirect or a CSRF sign-out:
  *  - No URL ever travels in a query string. The token names the sites still to
@@ -20,10 +25,10 @@ import { createHmac, randomBytes, timingSafeEqual } from "node:crypto";
  *    Auth.js secret (all four sites mount the same one in production) with a
  *    purpose label, so it can never be mistaken for, or turned into, a session.
  *    A hop with a missing, bad or expired token signs nobody out.
- *  - The chain is only started by a same-origin POST on www, behind a confirm.
+ *  - The chain is only started by a same-origin POST, behind a confirm.
  *
  * This file is identical in apps/www, apps/web, apps/fitness and apps/vibe;
- * keep the four copies in step.
+ * packages/sj-ui/check.sh fails if the copies drift, so keep them in step.
  */
 
 export type SiteKey = "www" | "hub" | "fitness" | "vibe";
@@ -163,4 +168,68 @@ export async function runHop(token: string | null, deps: HopDeps): Promise<Respo
   }
   await deps.signOutLocal();
   return chainStep(deps.urls, deps.secret, verified.rest, now);
+}
+
+/**
+ * Who to visit after `start` signed itself out: www first (the account home),
+ * then the other sites in a fixed order. Never includes `start`.
+ */
+export function sitesAfter(start: SiteKey): SiteKey[] {
+  return SITE_KEYS.filter((key) => key !== start);
+}
+
+/**
+ * True when a state-changing request really came from one of our own pages:
+ * its Origin is this site (or the request's own origin), or, with no Origin,
+ * the browser says Sec-Fetch-Site is same-origin. A cross-site form post
+ * always carries a foreign Origin, so it never passes.
+ */
+export function isSameOriginRequest(request: Request, siteUrl: string): boolean {
+  const origin = request.headers.get("origin");
+  if (origin) {
+    const allowed = new Set<string>();
+    for (const base of [siteUrl, request.url]) {
+      try {
+        allowed.add(new URL(base).origin);
+      } catch {
+        // ignore an unparseable base
+      }
+    }
+    return allowed.has(origin);
+  }
+  return request.headers.get("sec-fetch-site") === "same-origin";
+}
+
+export type StartDeps = {
+  /** Which site this is. */
+  self: SiteKey;
+  secret: string | undefined;
+  urls: SiteUrls;
+  /** Clears this site's own session. */
+  signOutLocal: () => Promise<unknown>;
+  /** Same-origin path to land on when there is nowhere to chain to (no shared secret, or no other site configured). */
+  localLanding: string;
+  now?: number;
+};
+
+/**
+ * Start "sign out of every site" from this site. Call it from a POST route.
+ *
+ * 1. A request that is not same-origin is refused (403) and signs nobody out.
+ * 2. This site is signed out, unconditionally. From here on, a failing hop can
+ *    only leave the OTHER sites as they are today, never this one.
+ * 3. The browser is handed to the next hop with a fresh signed token, or, when
+ *    no hop is possible (no shared secret configured), to `localLanding`,
+ *    which is exactly what a plain local sign out did before.
+ */
+export async function startChain(request: Request, deps: StartDeps): Promise<Response> {
+  if (!isSameOriginRequest(request, deps.urls[deps.self] ?? "")) {
+    return new Response("Forbidden", { status: 403, headers: { "cache-control": "no-store" } });
+  }
+  await deps.signOutLocal();
+  const secret = deps.secret ?? "";
+  const rest = sitesAfter(deps.self);
+  const canChain = secret && (nextHop(deps.urls, rest) || httpBase(deps.urls.www));
+  if (!canChain) return redirect(deps.localLanding);
+  return chainStep(deps.urls, secret, rest, deps.now ?? Date.now());
 }

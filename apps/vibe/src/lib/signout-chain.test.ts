@@ -4,9 +4,12 @@ import {
   CHAIN_TTL_MS,
   chainStep,
   hopUrl,
+  isSameOriginRequest,
   nextHop,
   runHop,
   signChain,
+  sitesAfter,
+  startChain,
   verifyChain,
   type SiteKey,
   type SiteUrls,
@@ -141,5 +144,123 @@ describe("runHop", () => {
     const res = await runHop(signChain(SECRET, [], NOW), { secret: undefined, urls, signOutLocal, now: NOW });
     expect(res.status).toBe(400);
     expect(signOutLocal).not.toHaveBeenCalled();
+  });
+});
+
+describe("sitesAfter", () => {
+  it("puts www first, then the rest in a fixed order, never the starting site", () => {
+    expect(sitesAfter("www")).toEqual(["hub", "fitness", "vibe"]);
+    expect(sitesAfter("hub")).toEqual(["www", "fitness", "vibe"]);
+    expect(sitesAfter("fitness")).toEqual(["www", "hub", "vibe"]);
+    expect(sitesAfter("vibe")).toEqual(["www", "hub", "fitness"]);
+  });
+});
+
+describe("isSameOriginRequest", () => {
+  const SITE = "https://hub.example.test";
+  const req = (headers: Record<string, string>) =>
+    new Request("https://hub.example.test/api/auth/signout-all", { method: "POST", headers });
+
+  it("accepts this site's own origin", () => {
+    expect(isSameOriginRequest(req({ origin: SITE }), SITE)).toBe(true);
+  });
+  it("accepts the request's own origin when the configured URL differs", () => {
+    expect(isSameOriginRequest(req({ origin: "https://hub.example.test" }), "https://other.test")).toBe(true);
+  });
+  it("rejects a foreign origin", () => {
+    expect(isSameOriginRequest(req({ origin: "https://evil.test" }), SITE)).toBe(false);
+    expect(isSameOriginRequest(req({ origin: "null" }), SITE)).toBe(false);
+    expect(isSameOriginRequest(req({ origin: "https://hub.example.test.evil.test" }), SITE)).toBe(false);
+    // another Strictly Jayers site is still a different origin
+    expect(isSameOriginRequest(req({ origin: "https://www.example.test" }), SITE)).toBe(false);
+  });
+  it("falls back to Sec-Fetch-Site without an Origin", () => {
+    expect(isSameOriginRequest(req({ "sec-fetch-site": "same-origin" }), SITE)).toBe(true);
+    expect(isSameOriginRequest(req({ "sec-fetch-site": "cross-site" }), SITE)).toBe(false);
+    expect(isSameOriginRequest(req({ "sec-fetch-site": "same-site" }), SITE)).toBe(false);
+  });
+  it("rejects when the browser says nothing", () => {
+    expect(isSameOriginRequest(req({}), SITE)).toBe(false);
+  });
+});
+
+describe("startChain", () => {
+  const post = (headers: Record<string, string>) =>
+    new Request("https://hub.example.test/api/auth/signout-all", { method: "POST", headers });
+  const base = (signOutLocal: () => Promise<unknown>) => ({
+    self: "hub" as SiteKey,
+    secret: SECRET as string | undefined,
+    urls,
+    signOutLocal,
+    localLanding: "/login",
+    now: NOW,
+  });
+
+  it("refuses a cross-site start and signs nobody out", async () => {
+    const signOutLocal = vi.fn(async () => undefined);
+    const res = await startChain(post({ origin: "https://evil.test" }), base(signOutLocal));
+    expect(res.status).toBe(403);
+    expect(signOutLocal).not.toHaveBeenCalled();
+    expect((await startChain(post({}), base(signOutLocal))).status).toBe(403);
+    expect(signOutLocal).not.toHaveBeenCalled();
+  });
+
+  it("signs this site out first, then hops to www with the rest signed in the token", async () => {
+    const order: string[] = [];
+    const res = await startChain(
+      post({ origin: "https://hub.example.test" }),
+      base(async () => {
+        order.push("local");
+      }),
+    );
+    order.push("redirect");
+    expect(order).toEqual(["local", "redirect"]);
+    expect(res.status).toBe(303);
+    const loc = new URL(res.headers.get("location") ?? "");
+    expect(loc.origin).toBe("https://www.example.test");
+    expect(loc.pathname).toBe("/api/auth/signout-chain");
+    expect(verifyChain(SECRET, tokenOf(loc.href), NOW)?.rest).toEqual(["fitness", "vibe"]);
+  });
+
+  it("walks the whole chain from vibe and ends on the www landing page", async () => {
+    let location = (
+      await startChain(post({ origin: "https://vibe.example.test" }), {
+        ...base(async () => undefined),
+        self: "vibe",
+      })
+    ).headers.get("location");
+    const visited: string[] = [];
+    for (let i = 0; i < 6 && location && !location.endsWith("/signed-out"); i += 1) {
+      visited.push(new URL(location).origin);
+      const res = await runHop(tokenOf(location), { secret: SECRET, urls, signOutLocal: async () => undefined, now: NOW });
+      location = res.headers.get("location");
+    }
+    expect(visited).toEqual(["https://www.example.test", "https://hub.example.test", "https://fit.example.test"]);
+    expect(location).toBe("https://www.example.test/signed-out");
+  });
+
+  it("without a shared secret it only signs this site out and lands where a plain sign out did", async () => {
+    const signOutLocal = vi.fn(async () => undefined);
+    const res = await startChain(post({ origin: "https://hub.example.test" }), { ...base(signOutLocal), secret: undefined });
+    expect(signOutLocal).toHaveBeenCalledOnce();
+    expect(res.status).toBe(303);
+    expect(res.headers.get("location")).toBe("/login");
+  });
+
+  it("falls back to the local landing page when no other site is configured", async () => {
+    const res = await startChain(post({ origin: "https://hub.example.test" }), {
+      ...base(async () => undefined),
+      urls: { hub: "https://hub.example.test" },
+    });
+    expect(res.headers.get("location")).toBe("/login");
+  });
+
+  it("a hop that fails later never un-signs this site: the local sign out already ran", async () => {
+    const signOutLocal = vi.fn(async () => undefined);
+    const res = await startChain(post({ origin: "https://hub.example.test" }), base(signOutLocal));
+    const t = tokenOf(res.headers.get("location") ?? "");
+    const bad = await runHop(`${t}x`, { secret: SECRET, urls, signOutLocal: vi.fn(async () => undefined), now: NOW });
+    expect(bad.status).toBe(400);
+    expect(signOutLocal).toHaveBeenCalledOnce();
   });
 });
