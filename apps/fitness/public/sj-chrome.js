@@ -27,7 +27,7 @@
     if (el.tagName === "A") el.setAttribute("href", fantasy);
   });
   document.querySelectorAll("[data-sj-settings]").forEach((el) => {
-    if (el.tagName === "A") el.setAttribute("href", fantasy + "/settings");
+    if (el.tagName === "A") el.setAttribute("href", community + "/profile");
   });
   document.querySelectorAll("[data-sj-vibe]").forEach((el) => {
     if (el.tagName === "A") el.setAttribute("href", vibe);

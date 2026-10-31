@@ -58,7 +58,7 @@ export async function Chrome({ current, children }: Props) {
         </div>
         <div className="sj-side-foot">
           <SideProfile
-            settingsUrl={`${fantasyHubUrl}/settings`}
+            profileUrl={`${communitySiteUrl}/profile`}
             initialUser={session?.user ?? null}
           />
           <form

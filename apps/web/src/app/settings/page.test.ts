@@ -12,8 +12,9 @@ describe("profile settings route (appearance home)", () => {
     "utf8",
   );
 
-  it("header name links to /settings and no longer hosts appearance pickers", () => {
-    expect(layout).toMatch(/href="\/settings"/);
+  it("header name links to the www profile page and no longer hosts appearance pickers", () => {
+    expect(layout).toMatch(/href=\{`\$\{communityUrl\}\/profile`\}/);
+    expect(layout).not.toMatch(/href="\/settings"/);
     expect(layout).toMatch(/className="nav-user"/);
     expect(layout).not.toMatch(/<AccentPicker/);
     expect(layout).not.toMatch(/<ThemeToggle/);

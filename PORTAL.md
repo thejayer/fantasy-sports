@@ -123,9 +123,9 @@ then remove `allUsers`) are in
 [apps/www/README.md](apps/www/README.md#operator-iam-private-sj-casino).
 
 **Casino team linking (fantasy matchup chips).** Members link their own
-fantasy team in each ESPN league from the casino ("Link my teams"); the
-casino pays chips for that team's matchup wins. The portal's part:
-`GET/POST/DELETE /casino/api/links` (the picker's leagues and teams come from
+fantasy team in each ESPN league on the profile page (`/profile#linked-teams`,
+see below; the casino links there); the casino pays chips for that team's matchup wins. The portal's part:
+`GET/POST/DELETE /casino/api/links` (the leagues and teams come from
 the hub snapshots read through `SJ_HUB_DIR`; a pick is checked against them
 before the casino stores it) and `POST /casino/api/links/sync` (reports the
 member's own linked teams' decided results to the casino's `/api/grants`).
@@ -136,6 +136,33 @@ only from server code and still strips every browser `x-sj-*` header first, and
 the casino accepts it only with `SJ_TRUST_HEADERS=1`. Hub-native leagues (golf)
 are not offered. No new env var, secret, IAM role or scheduler. The rules,
 caps and storage are in the casino repo's `docs/fantasy-links.md`.
+
+**Profile and sign out (one account menu everywhere).** `/profile` on this
+site is the one profile page for every Strictly Jayers site. It is members-only
+(sign-in gate always on, `noindex`) and has: Overview (links to hub `/settings`
+for name, avatar and bio), Linked teams (the team linking that used to be an
+inline picker in the casino; same `/casino/api/links*` routes), Casino stats
+(links to the casino with `?card=me`, which opens your own player card), Mods
+only (the link review list; only rendered for casino mods, and the casino
+re-checks on every call) and Sign out. The avatar menu (Profile, Link teams,
+Settings, Sign out) is one component in the www sidebar and a matching one in
+the casino; both read the same menu from `GET /api/me`, which never returns an
+email or id. On phones the menu and the sign-out confirm are bottom sheets.
+Hub, fitness and vibe only point their profile link at `{www}/profile`.
+
+Sign out asks "Sign out of all Strictly Jayers sites?" and POSTs
+`/api/signout-all` (same-origin only). There is no shared cookie, so it signs
+out here, then redirects (303) through a hop route on each other site
+(`/api/auth/signout-chain?t=...`: hub, then fitness, then vibe) and back to
+`/signed-out`. The `t` token carries only site keys, never URLs: each site maps
+the keys to its own configured URLs, so there is no open redirect through
+`return` or `next` params. It is an HMAC (derived from `AUTH_SECRET`) with a
+2-minute expiry; a bad or expired token is a 400 and signs nobody out. It is
+stateless, so it is not single-use; all it can do is sign out the browser that
+presents it. The chain needs the same `AUTH_SECRET` on all four apps (as the
+deploy workflows already mount); without one only this site is signed out.
+Deploy order: hub, fitness and vibe first (or together), then www, then the
+casino.
 
 Home also ships a **Coming up** event strip and **Meet the crew** links into
 hub `/u/{handle}` profiles (edit handles in `lib/content.ts`). The hub chrome

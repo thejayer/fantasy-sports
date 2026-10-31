@@ -1,16 +1,24 @@
-import { signOut } from "@/auth";
+"use client";
 
-export function SignOutButton() {
+import { useState } from "react";
+
+import { SignOutDialog } from "@/components/SignOutDialog";
+
+/** A Sign out button that opens the shared "Sign out of all Strictly Jayers sites?" confirm. */
+export function SignOutButton({
+  className = "acct-btn acct-btn-danger",
+  children = "Sign out",
+}: {
+  className?: string;
+  children?: React.ReactNode;
+}) {
+  const [open, setOpen] = useState(false);
   return (
-    <form
-      action={async () => {
-        "use server";
-        await signOut({ redirectTo: "/" });
-      }}
-    >
-      <button className="bets-signout" type="submit">
-        Sign out
+    <>
+      <button type="button" className={className} onClick={() => setOpen(true)}>
+        {children}
       </button>
-    </form>
+      <SignOutDialog open={open} onClose={() => setOpen(false)} />
+    </>
   );
 }

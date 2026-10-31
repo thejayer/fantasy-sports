@@ -25,7 +25,11 @@ export function MobileNav({
         Community
       </a>
       {showAdmin ? <Link href="/admin">Admin</Link> : null}
-      {showProfile ? <Link href="/settings">Profile</Link> : null}
+      {showProfile ? (
+        <a href={`${communityUrl}/profile`} rel="noopener noreferrer">
+          Profile
+        </a>
+      ) : null}
     </nav>
   );
 }

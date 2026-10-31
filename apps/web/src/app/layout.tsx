@@ -142,9 +142,9 @@ export default async function RootLayout({
             <div className="sj-side-foot">
               {profileLabel ? (
                 <Link
-                  href="/settings"
+                  href={`${communityUrl}/profile`}
                   className="nav-user"
-                  title={session?.user?.email ?? "Profile & appearance"}
+                  title="Profile"
                 >
                   <MemberAvatar
                     name={profileLabel}

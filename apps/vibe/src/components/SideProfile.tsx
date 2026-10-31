@@ -9,13 +9,14 @@ export const SHARED_THEME_INIT_SCRIPT = `try{var m=document.cookie.match(/(?:^|;
 
 /**
  * Sidebar footer profile row (avatar + name). Every app links to the one
- * shared Profile & settings page on the hub (`{hub}/settings`).
+ * profile page on www (`{www}/profile`).
  */
 export function SideProfile({
-  settingsUrl,
+  profileUrl,
   initialUser = null,
 }: {
-  settingsUrl: string;
+  /** The one profile page on www (`{www}/profile`). */
+  profileUrl: string;
   /** Server-known user; when omitted the row asks /api/auth/session. */
   initialUser?: SessionUser | null;
 }) {
@@ -47,8 +48,8 @@ export function SideProfile({
   return (
     <a
       className="sj-side-item sj-side-profile"
-      href={settingsUrl}
-      title="Profile & settings"
+      href={profileUrl}
+      title="Profile"
       rel="noopener noreferrer"
     >
       <span className="sj-side-avatar" aria-hidden>

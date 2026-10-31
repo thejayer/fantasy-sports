@@ -4,6 +4,7 @@ import {
   isBetsAuthPublicPath,
   isBetsProtectedPath,
   isMembersProtectedPath,
+  isProfilePath,
   membersLoginTitle,
 } from "./bets-gate";
 
@@ -40,6 +41,22 @@ describe("members path gate", () => {
     expect(isMembersProtectedPath("/")).toBe(false);
   });
 
+  it("always protects /profile, with or without the casino", () => {
+    delete process.env.CASINO_URL;
+    expect(isProfilePath("/profile")).toBe(true);
+    expect(isMembersProtectedPath("/profile")).toBe(true);
+    expect(isMembersProtectedPath("/profile/")).toBe(true);
+    expect(isMembersProtectedPath("/profile/anything")).toBe(true);
+    process.env.CASINO_URL = "https://casino.example";
+    expect(isMembersProtectedPath("/profile")).toBe(true);
+    // Look-alikes stay public.
+    expect(isProfilePath("/profiles")).toBe(false);
+    expect(isProfilePath("/people")).toBe(false);
+    expect(isMembersProtectedPath("/signed-out")).toBe(false);
+    expect(isMembersProtectedPath("/api/me")).toBe(false);
+    expect(isMembersProtectedPath("/api/signout-all")).toBe(false);
+  });
+
   it("adds /casino when CASINO_URL is set", () => {
     process.env.CASINO_URL = "https://casino.example";
     expect(isMembersProtectedPath("/casino")).toBe(true);
@@ -55,5 +72,7 @@ describe("members path gate", () => {
     expect(membersLoginTitle("/bets?tab=options")).toBe("Sign in to Bets");
     expect(membersLoginTitle("/casino")).toBe("Sign in to Casino");
     expect(membersLoginTitle("/casino/app")).toBe("Sign in to Casino");
+    expect(membersLoginTitle("/profile")).toBe("Sign in to your profile");
+    expect(membersLoginTitle("/profile#linked-teams")).toBe("Sign in to your profile");
   });
 });
