@@ -8,9 +8,15 @@ export function isBetsProtectedPath(pathname: string): boolean {
   return false;
 }
 
-/** /bets always; /casino only when CASINO_URL is set (else /casino is a 404). */
+/** The signed-in member's own profile page. */
+export function isProfilePath(pathname: string): boolean {
+  return pathname === "/profile" || pathname.startsWith("/profile/");
+}
+
+/** /bets and /profile always; /casino only when CASINO_URL is set (else /casino is a 404). */
 export function isMembersProtectedPath(pathname: string): boolean {
   if (isBetsProtectedPath(pathname)) return true;
+  if (isProfilePath(pathname)) return true;
   return isCasinoConfigured() && isCasinoPath(pathname);
 }
 
@@ -23,6 +29,9 @@ export function isBetsAuthPublicPath(pathname: string): boolean {
 export function membersLoginTitle(callbackUrl: string): string {
   if (isCasinoPath(callbackUrl.split("?")[0] ?? callbackUrl)) {
     return "Sign in to Casino";
+  }
+  if (isProfilePath(callbackUrl.split("?")[0]?.split("#")[0] ?? callbackUrl)) {
+    return "Sign in to your profile";
   }
   return "Sign in to Bets";
 }

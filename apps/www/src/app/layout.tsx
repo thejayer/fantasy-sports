@@ -1,7 +1,8 @@
 import Link from "next/link";
 
 import { ACCENT_INIT_SCRIPT } from "@/components/AccentPicker";
-import { SHARED_THEME_INIT_SCRIPT, SideProfile } from "@/components/SideProfile";
+import { AvatarMenu } from "@/components/AvatarMenu";
+import { SHARED_THEME_INIT_SCRIPT } from "@/components/SideProfile";
 import { portalCopy } from "@/lib/content";
 import { getSiteConfig } from "@/lib/site";
 import { AppSwitcher } from "@/components/AppSwitcher";
@@ -9,6 +10,7 @@ import { SideNav } from "@/components/SideNav";
 import localFont from "next/font/local";
 import type { Metadata } from "next";
 import "./globals.css";
+import "./account.css";
 import "../sj-ui/index.css";
 
 /** Self-hosted so Docker/CI builds do not fetch Google Fonts at compile time. */
@@ -120,7 +122,7 @@ export default function RootLayout({
               ]}
             />
             <div className="sj-side-foot">
-              <SideProfile settingsUrl={`${fantasyHubUrl}/settings`} />
+              <AvatarMenu />
             </div>
           </header>
           {children}

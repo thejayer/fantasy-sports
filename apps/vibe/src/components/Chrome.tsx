@@ -1,6 +1,7 @@
 import Link from "next/link";
 
-import { auth, signOut } from "@/auth";
+import { auth } from "@/auth";
+import { SignOutButton } from "@/components/SignOutDialog";
 import { SideProfile } from "@/components/SideProfile";
 import { getVibeSiteConfig } from "@/lib/site";
 import { AppSwitcher } from "@/components/AppSwitcher";
@@ -58,19 +59,13 @@ export async function Chrome({ current, children }: Props) {
         </div>
         <div className="sj-side-foot">
           <SideProfile
-            settingsUrl={`${fantasyHubUrl}/settings`}
+            profileUrl={`${communitySiteUrl}/profile`}
             initialUser={session?.user ?? null}
           />
-          <form
-            action={async () => {
-              "use server";
-              await signOut({ redirectTo: "/login" });
-            }}
-          >
-            <button className="sj-side-signout" type="submit">
-              Sign out
-            </button>
-          </form>
+          <SignOutButton
+            action="/api/auth/signout-all"
+            className="sj-side-signout"
+          />
         </div>
       </header>
       <div>{children}</div>

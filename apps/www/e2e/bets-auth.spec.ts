@@ -1,7 +1,7 @@
 import { expect, test } from "@playwright/test";
 
 /**
- * Auth gate for /bets and /casino/** (when CASINO_URL is set at runtime).
+ * Auth gate for /bets, /profile and /casino/** (when CASINO_URL is set at runtime).
  * Run with AUTH_DEV_BYPASS=0 so guests hit sign-in.
  */
 test.describe("bets auth redirect", () => {
@@ -15,6 +15,55 @@ test.describe("bets auth redirect", () => {
     ).toBeVisible();
     await expect(
       page.getByRole("button", { name: /Continue with Google/i }),
+    ).toBeVisible();
+  });
+
+  test("signed-out /profile redirects to sign-in", async ({
+    page,
+  }) => {
+    await page.goto("/profile");
+    await expect(page).toHaveURL(/\/login/);
+    const url = new URL(page.url());
+    expect(url.searchParams.get("callbackUrl")).toBe("/profile");
+    await expect(
+      page.getByRole("heading", { name: "Sign in to your profile" }),
+    ).toBeVisible();
+  });
+
+  test("account menu data and sign-out endpoints stay safe when signed out", async ({
+    request,
+  }) => {
+    const me = await request.get("/api/me");
+    expect(me.status()).toBe(200);
+    const body = await me.json();
+    expect(body.signedIn).toBe(false);
+    expect(JSON.stringify(body)).not.toMatch(/@/);
+
+    // Sign out only runs from a POST made by one of our own pages.
+    const get = await request.get("/api/signout-all", { maxRedirects: 0 });
+    expect(get.status()).toBe(405);
+    const foreign = await request.post("/api/signout-all", {
+      maxRedirects: 0,
+      headers: { origin: "https://evil.example" },
+    });
+    expect(foreign.status()).toBe(403);
+
+    // A hop link with no valid token signs nobody out and goes nowhere.
+    for (const t of ["", "x", "e30.AAAA"]) {
+      const hop = await request.get(
+        `/api/auth/signout-chain?t=${encodeURIComponent(t)}`,
+        { maxRedirects: 0 },
+      );
+      expect(hop.status()).toBe(400);
+      expect(hop.headers()["location"]).toBeUndefined();
+    }
+  });
+
+  test("the signed-out landing page is public", async ({ page }) => {
+    await page.goto("/signed-out");
+    await expect(page).toHaveURL(/\/signed-out/);
+    await expect(
+      page.getByRole("heading", { name: /signed out/i }),
     ).toBeVisible();
   });
 

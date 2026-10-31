@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import localFont from "next/font/local";
 import Link from "next/link";
-import { auth, signOut } from "@/auth";
+import { auth } from "@/auth";
+import { SignOutButton } from "@/components/SignOutDialog";
 import { ACCENT_INIT_SCRIPT } from "@/components/AccentPicker";
 import { MemberAvatar } from "@/components/MemberAvatar";
 import { MobileNav } from "@/components/MobileNav";
@@ -142,9 +143,9 @@ export default async function RootLayout({
             <div className="sj-side-foot">
               {profileLabel ? (
                 <Link
-                  href="/settings"
+                  href={`${communityUrl}/profile`}
                   className="nav-user"
-                  title={session?.user?.email ?? "Profile & appearance"}
+                  title="Profile"
                 >
                   <MemberAvatar
                     name={profileLabel}
@@ -155,16 +156,10 @@ export default async function RootLayout({
                 </Link>
               ) : null}
               {session?.user ? (
-                <form
-                  action={async () => {
-                    "use server";
-                    await signOut({ redirectTo: "/login" });
-                  }}
-                >
-                  <button className="sj-side-signout" type="submit">
-                    Sign out
-                  </button>
-                </form>
+                <SignOutButton
+                  action="/api/auth/signout-all"
+                  className="sj-side-signout"
+                />
               ) : null}
             </div>
           </header>

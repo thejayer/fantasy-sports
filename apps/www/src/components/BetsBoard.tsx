@@ -79,7 +79,7 @@ export function BetsToolbar({ actor }: { actor: BetsActor }) {
         Signed in as {actor.email}
         {actor.source === "bypass" ? " (dev bypass)" : ""}
       </span>
-      {actor.source === "session" ? <SignOutButton /> : null}
+      {actor.source === "session" ? <SignOutButton className="bets-signout" /> : null}
     </p>
   );
 }

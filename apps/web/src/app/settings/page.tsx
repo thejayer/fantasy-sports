@@ -6,7 +6,8 @@ import { MemberAvatar } from "@/components/MemberAvatar";
 import { ProfileAvatarForm } from "@/components/ProfileAvatarForm";
 import { ProfileBioForm } from "@/components/ProfileBioForm";
 import { ProfileUsernameForm } from "@/components/ProfileUsernameForm";
-import { auth, signOut } from "@/auth";
+import { auth } from "@/auth";
+import { SignOutButton } from "@/components/SignOutDialog";
 import { getViewer } from "@/lib/viewer";
 import { requireSession, devBypassEnabled } from "@/lib/session";
 
@@ -158,16 +159,10 @@ export default async function SettingsPage() {
       </section>
 
       {!bypass ? (
-        <form
-          action={async () => {
-            "use server";
-            await signOut({ redirectTo: "/login" });
-          }}
-        >
-          <button className="button secondary" type="submit">
-            Sign out
-          </button>
-        </form>
+        <SignOutButton
+          action="/api/auth/signout-all"
+          className="button secondary"
+        />
       ) : null}
     </main>
   );
