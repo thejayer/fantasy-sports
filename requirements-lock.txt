@@ -94,7 +94,7 @@ markupsafe==3.0.3
     # via jinja2
 mdurl==0.1.2
     # via markdown-it-py
-narwhals==2.24.0
+narwhals==2.28.0
     # via
     #   altair
     #   scikit-learn
