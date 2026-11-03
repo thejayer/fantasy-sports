@@ -9,11 +9,13 @@ import {
 } from "@/lib/golf";
 import { writeGolfLeagueSnapshot } from "@/lib/golf-store";
 import { requireSession } from "@/lib/session";
+import { golfWritesEnabled, GOLF_WRITES_PAUSED } from "@/lib/golf-rollout-gate";
 
 export const dynamic = "force-dynamic";
 
 export async function POST(request: Request) {
   await requireSession();
+  if (!golfWritesEnabled()) return NextResponse.json({ error: GOLF_WRITES_PAUSED, code: "GOLF_WRITES_PAUSED" }, { status: 503 });
 
   let body: Partial<CreateGolfLeagueInput>;
   try {

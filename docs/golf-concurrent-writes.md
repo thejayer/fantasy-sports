@@ -19,11 +19,52 @@ transaction; standings, draft, and index publication retain their existing model
 
 ## Configuration and rollout
 
+### Enforced hold in this PR
+
+`SJ_GOLF_WRITES_ENABLED` defaults to paused and enables mutations only when its
+runtime value is exactly `1`. The production Docker image defaults to `0`.
+The hub deploy workflow explicitly writes `0` into the service environment on
+**every push and manual dispatch**, overriding an inherited value. There is no
+activation input, repository-variable switch, or evidence-checkbox shortcut in
+this workflow. Merging code can continue to deploy unrelated hub updates, but
+cannot automatically activate these writers.
+
+Paused auction GETs only read the existing mounted document; they do not advance
+timers, enter the application GCS/metadata client, acquire locks, or persist state.
+The FUSE layer can still perform its normal reads. Auction creation,
+actions/finalization, lineup submission, and golf-season creation return 503 with
+`GOLF_WRITES_PAUSED`. The document and snapshot writers also reject direct calls
+before storage work. Other hub features retain their existing behavior.
+
+This hold deliberately supplies **no production activation path**. A subsequent
+reviewed activation decision must provide evidence tied to the candidate SHA,
+runtime identity, service, bucket/prefix, and revisions: staged permission and
+concurrency validation; quiescence/drainage of every older unconditional writer;
+then explicit authorization to enable writes. Current workflow dispatches cannot
+perform that activation, including dispatches aimed at a staging service. No
+staging or production operations are performed by the tests or this PR work.
+The workflow rejects commas/line breaks in the resolved auth URL and validates
+the resolved bucket so those values cannot inject another environment binding.
+The forced pause is also the last binding in the deployed environment argument.
+
+For isolated local fixtures, explicitly set `SJ_GOLF_WRITES_ENABLED=1`; the
+Playwright fixture server does this against its disposable local hub directory.
+Do not use that fixture setting as deployment approval.
+
+The hold is not a security boundary against an operator able to replace the
+image, edit the workflow, or change Cloud Run environment variables directly.
+Such an operator can bypass it by setting `1`; those actions require separate
+authorization and evidence. Older revisions do not honor this new flag. A paused
+new revision does not prove that older writers or in-flight requests are drained.
+
+### Storage configuration for a future activation
+
 `SJ_HUB_GCS_BUCKET` must name the same bucket mounted at `SJ_HUB_DIR`, with the
-same league/season prefix (currently the bucket root). The hub deploy workflow
-sets it from its mounted bucket input. Manual hub deploys now require an explicit
-bucket; push deploys use the existing repository bucket setting. Cloud Run fails
-closed for golf mutations when this setting is missing; it never substitutes
+same league/season prefix (currently the bucket root). Push deploys bind it to
+the configured mounted bucket, while keeping writes paused. Blank manual deploys
+retain existing mounts and leave this value empty; a later activation must first
+configure and verify the exact bucket. Cloud Run fails closed for enabled golf
+mutations when this setting is missing; it never substitutes
 FUSE file locks for GCS generation preconditions.
 
 The attached runtime service account needs existing object read, create, and
@@ -50,6 +91,12 @@ temporary files and an in-memory GCS API emulator. It forces overlapping bids,
 delayed polling, timer transitions, and lineup saves, including conditional
 upload conflicts and permission failures. These tests do not certify live
 identity, IAM, GCS/FUSE consistency, or drainage of deployed revisions.
+It also proves the paused routes and direct writers reject before storage and
+that expired auction polling remains read-only. `golf-rollout-workflow.test.ts`
+parses the actual workflow and applies its deployed binding to the runtime gate,
+including inherited enablement and configured-bucket bypass attempts. It also
+executes the actual deploy step under Bash with a verified local `gcloud` stub,
+captures arguments for push/manual paths, and never authenticates or deploys.
 
 Storage contract references:
 - https://docs.cloud.google.com/storage/docs/json_api/v1/objects/get

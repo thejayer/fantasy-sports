@@ -12,6 +12,7 @@ import type { buildGolfSnapshot } from "@/lib/golf";
 import { hubDataRoot } from "@/lib/hub-paths";
 import { mutateGolfDocument } from "@/lib/golf-document-store";
 import type { GolfLineupsFile } from "@/lib/golf-lineup";
+import { assertGolfWritesEnabled } from "@/lib/golf-rollout-gate";
 
 async function readIndex(
   root: string,
@@ -37,6 +38,7 @@ export async function writeGolfLeagueSnapshot(
   snapshot: ReturnType<typeof buildGolfSnapshot>,
   options: { preserveLineups?: boolean } = {},
 ): Promise<{ root: string; path: string }> {
+  assertGolfWritesEnabled();
   const root = hubDataRoot();
   const seasonDir = path.join(
     root,

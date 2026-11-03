@@ -12,6 +12,7 @@ import {
 import { GolfLineupValidationError, saveGolfTeamLineup } from "@/lib/golf-lineup-store";
 import { enforceTeamAction } from "@/lib/franchise-acl";
 import { requireSession } from "@/lib/session";
+import { golfWritesEnabled, GOLF_WRITES_PAUSED } from "@/lib/golf-rollout-gate";
 
 export const dynamic = "force-dynamic";
 
@@ -19,6 +20,7 @@ type Props = { params: Promise<{ leagueId: string }> };
 
 export async function POST(request: Request, { params }: Props) {
   await requireSession();
+  if (!golfWritesEnabled()) return NextResponse.json({ error: GOLF_WRITES_PAUSED, code: "GOLF_WRITES_PAUSED" }, { status: 503 });
   const { leagueId } = await params;
 
   let body: {

@@ -8,6 +8,7 @@ import {
 } from "@/lib/golf-auction-store";
 import { enforceAuctionControl } from "@/lib/franchise-acl";
 import { requireSession } from "@/lib/session";
+import { golfWritesEnabled, GOLF_WRITES_PAUSED } from "@/lib/golf-rollout-gate";
 
 export const dynamic = "force-dynamic";
 
@@ -23,7 +24,7 @@ function seasonFrom(request: Request, bodySeason?: number): number | null {
   return null;
 }
 
-/** GET room (ticks timers). POST creates lobby if missing. */
+/** GET is read-only while paused; enabled rooms tick via conditional writes. */
 export async function GET(request: Request, { params }: Props) {
   await requireSession();
   const { leagueId } = await params;
@@ -40,6 +41,7 @@ export async function GET(request: Request, { params }: Props) {
 
 export async function POST(request: Request, { params }: Props) {
   await requireSession();
+  if (!golfWritesEnabled()) return NextResponse.json({ error: GOLF_WRITES_PAUSED, code: "GOLF_WRITES_PAUSED" }, { status: 503 });
   const { leagueId } = await params;
   const denied = await enforceAuctionControl(leagueId);
   if (denied) return denied;

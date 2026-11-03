@@ -5,6 +5,7 @@ import path from "node:path";
 import { setTimeout as delay } from "node:timers/promises";
 
 import { hubDataRoot } from "@/lib/hub-paths";
+import { assertGolfWritesEnabled } from "@/lib/golf-rollout-gate";
 
 type Mutation<T, R> = { value?: T; result: R };
 type Token = { access_token: string; expires_in: number };
@@ -114,6 +115,8 @@ export async function mutateGolfDocument<T, R>(
   relative: string,
   mutate: (current: T | null) => Mutation<T, R>,
 ): Promise<R> {
+  // Check before identity lookup, lock creation, reads, callbacks, or writes.
+  assertGolfWritesEnabled();
   const name = objectName(relative);
   const bucket = process.env.SJ_HUB_GCS_BUCKET?.trim();
   if (bucket) return cloudMutation(bucket, name, mutate);
@@ -121,4 +124,14 @@ export async function mutateGolfDocument<T, R>(
     throw new Error("SJ_HUB_GCS_BUCKET is required for concurrent golf writes on Cloud Run");
   }
   return localMutation(name, mutate);
+}
+
+/** Paused auction reads must neither tick timers nor enter a mutation path. */
+export async function readGolfDocument<T>(relative: string): Promise<T | null> {
+  try {
+    return JSON.parse(await fs.readFile(path.join(hubDataRoot(), objectName(relative)), "utf8")) as T;
+  } catch (error) {
+    if ((error as NodeJS.ErrnoException).code === "ENOENT") return null;
+    throw error;
+  }
 }

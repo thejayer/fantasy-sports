@@ -50,6 +50,8 @@ export default defineConfig({
       PORT: String(port),
       SJ_DATA_DIR: process.env.SJ_DATA_DIR ?? fixturesDir,
       SJ_HUB_DIR: process.env.SJ_HUB_DIR ?? hubDir,
+      // Isolated fixture server only; deployment workflows always force 0.
+      SJ_GOLF_WRITES_ENABLED: "1",
       // AUTH_DEV_BYPASS has no session to resolve a franchise from, so the
       // roadmap 7.1 viewer layer needs an impersonation address to exercise
       // (see lib/viewer.ts). Matches the email the admin-center spec adds.

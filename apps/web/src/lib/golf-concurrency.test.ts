@@ -5,10 +5,11 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { buildGolfSnapshot } from "./golf";
 import { createAuctionRoom, nominatePlayer, startAuctionRoom } from "./golf-auction-room";
 import { mutateGolfDocument } from "./golf-document-store";
-import { readAuctionRoom } from "./golf-auction-store";
+import { readAuctionRoom, updateAuctionRoom } from "./golf-auction-store";
 import { saveGolfTeamLineup } from "./golf-lineup-store";
 import { writeGolfLeagueSnapshot } from "./golf-store";
 import type { LeagueSnapshot } from "./data";
+import { GolfWritesPausedError } from "./golf-rollout-gate";
 
 const mocks = vi.hoisted(() => ({ league: vi.fn(), acl: vi.fn() }));
 vi.mock("@/lib/data", () => ({ getLeagueSnapshot: mocks.league }));
@@ -20,6 +21,7 @@ vi.mock("next/cache", () => ({ revalidateTag: vi.fn() }));
 import { POST as action } from "../app/api/golf/leagues/[leagueId]/auction/actions/route";
 import { GET as poll, POST as createRoom } from "../app/api/golf/leagues/[leagueId]/auction/route";
 import { POST as lineupPost } from "../app/api/golf/leagues/[leagueId]/lineups/route";
+import { POST as createLeague } from "../app/api/golf/leagues/route";
 
 type Stored = { generation: number; value: unknown };
 let root: string;
@@ -57,6 +59,7 @@ beforeEach(async () => {
   vi.stubEnv("SJ_HUB_DIR", root);
   vi.stubEnv("SJ_HUB_GCS_BUCKET", "offline-test-bucket");
   vi.stubEnv("K_SERVICE", "offline-test-service");
+  vi.stubEnv("SJ_GOLF_WRITES_ENABLED", "1");
   mocks.acl.mockReset().mockResolvedValue(null);
   mocks.league.mockReset();
   documents = new Map(); writes = 0; pauseMedia = undefined;
@@ -99,6 +102,59 @@ afterEach(async () => {
 });
 
 describe("authoritative conditional golf writes", () => {
+  it.each([undefined, "", "0", "true", "01", "1 "])("fails closed before storage when activation is %j", async enabled => {
+    vi.stubEnv("SJ_GOLF_WRITES_ENABLED", enabled);
+    const change = vi.fn(() => ({ value: {}, result: true }));
+    await expect(mutateGolfDocument("a.json", change)).rejects.toBeInstanceOf(GolfWritesPausedError);
+    expect(change).not.toHaveBeenCalled();
+    expect(fetch).not.toHaveBeenCalled();
+    expect(await fs.readdir(root)).toEqual([]);
+  });
+
+  it.each(["start", "nominate", "bid", "pass", "finalize"])("pauses auction action %s before any storage work", async name => {
+    vi.stubEnv("SJ_GOLF_WRITES_ENABLED", "0");
+    const response = await action(request({ action: name, season: 2026, revision: 1 }), props());
+    expect(response.status).toBe(503);
+    expect(await response.json()).toMatchObject({ code: "GOLF_WRITES_PAUSED" });
+    expect(fetch).not.toHaveBeenCalled();
+    expect(await fs.readdir(root)).toEqual([]);
+  });
+
+  it("pauses creation, lineups, and direct snapshot writes even with a configured bucket", async () => {
+    vi.stubEnv("SJ_GOLF_WRITES_ENABLED", "0");
+    expect((await createLeague(request({}))).status).toBe(503);
+    expect((await createRoom(request({ season: 2026 }), props())).status).toBe(503);
+    expect((await lineupPost(request({}), props())).status).toBe(503);
+    await expect(writeGolfLeagueSnapshot(league() as Parameters<typeof writeGolfLeagueSnapshot>[0])).rejects.toBeInstanceOf(GolfWritesPausedError);
+    expect(fetch).not.toHaveBeenCalled();
+    expect(await fs.readdir(root)).toEqual([]);
+  });
+
+  it("serves an expired paused auction without ticking, locking, or persisting", async () => {
+    vi.stubEnv("SJ_GOLF_WRITES_ENABLED", "0");
+    const room = bidding();
+    room.current!.bid_ends_at = "2000-01-01T00:00:00Z";
+    room.current!.high_bid = 5; room.current!.high_bidder_team_id = 2;
+    const file = path.join(root, roomKey);
+    await fs.mkdir(path.dirname(file), { recursive: true });
+    const original = JSON.stringify(room);
+    await fs.writeFile(file, original, "utf8");
+    const response = await poll(new Request("http://localhost/api/golf?season=2026"), props());
+    expect(response.status).toBe(200);
+    expect((await response.json()).room).toEqual(room);
+    expect(await fs.readFile(file, "utf8")).toBe(original);
+    expect((await fs.readdir(path.dirname(file))).sort()).toEqual(["auction_room.json"]);
+    await expect(updateAuctionRoom("golf-race", 2026, current => ({ result: current }))).rejects.toBeInstanceOf(GolfWritesPausedError);
+    expect(fetch).not.toHaveBeenCalled();
+  });
+
+  it("does not replace the pause with unsafe local-disk fallback", async () => {
+    vi.stubEnv("SJ_GOLF_WRITES_ENABLED", "0");
+    vi.stubEnv("K_SERVICE", ""); vi.stubEnv("SJ_HUB_GCS_BUCKET", "");
+    await expect(mutateGolfDocument("a.json", () => ({ value: {}, result: true }))).rejects.toBeInstanceOf(GolfWritesPausedError);
+    expect(await fs.readdir(root)).toEqual([]);
+  });
+
   it("initializes a missing room once when creation requests overlap", async () => {
     const snapshot = league();
     snapshot.settings!.golf = { ...(snapshot.settings!.golf as object), draft: { style: "auction", budget: 100 } };

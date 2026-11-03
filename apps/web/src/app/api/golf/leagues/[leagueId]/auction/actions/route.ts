@@ -7,6 +7,7 @@ import { markFinalized, nominatePlayer, passBid, placeBid, startAuctionRoom } fr
 import { readAuctionRoom, updateAuctionRoom } from "@/lib/golf-auction-store";
 import { enforceAuctionControl, enforceAuctionFinalize, enforceTeamAction } from "@/lib/franchise-acl";
 import { requireSession } from "@/lib/session";
+import { golfWritesEnabled, GOLF_WRITES_PAUSED } from "@/lib/golf-rollout-gate";
 
 export const dynamic = "force-dynamic";
 type Props = { params: Promise<{ leagueId: string }> };
@@ -14,6 +15,7 @@ type ActionBody = { action?: string; season?: number; revision?: number; team_id
 
 export async function POST(request: Request, { params }: Props) {
   await requireSession();
+  if (!golfWritesEnabled()) return NextResponse.json({ error: GOLF_WRITES_PAUSED, code: "GOLF_WRITES_PAUSED" }, { status: 503 });
   const { leagueId } = await params;
   let body: ActionBody;
   try { body = await request.json() as ActionBody; }

@@ -18,7 +18,8 @@ import {
 import type { LeagueSnapshot } from "@/lib/data";
 
 import { hubDataRoot } from "@/lib/hub-paths";
-import { mutateGolfDocument } from "@/lib/golf-document-store";
+import { mutateGolfDocument, readGolfDocument } from "@/lib/golf-document-store";
+import { golfWritesEnabled } from "@/lib/golf-rollout-gate";
 
 function writableDataRoot(): string {
   return hubDataRoot();
@@ -47,6 +48,9 @@ export async function updateAuctionRoom<R>(
 }
 
 export async function readAuctionRoom(leagueId: string, season: number): Promise<AuctionRoom | null> {
+  if (!golfWritesEnabled()) {
+    return readGolfDocument<AuctionRoom>(`${leagueId}/${season}/auction_room.json`);
+  }
   return updateAuctionRoom(leagueId, season, room => ({ result: room }));
 }
 

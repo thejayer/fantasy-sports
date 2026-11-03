@@ -70,6 +70,7 @@ RUN groupadd --gid 1001 sjhub \
 USER sjhub
 
 ENV NODE_ENV=production \
+    SJ_GOLF_WRITES_ENABLED=0 \
     PORT=8080 \
     HOSTNAME=0.0.0.0 \
     SJ_DATA_DIR=/app/data/sj \
