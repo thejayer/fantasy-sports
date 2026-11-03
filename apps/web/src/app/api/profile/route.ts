@@ -6,6 +6,8 @@
 import { NextResponse } from "next/server";
 
 import {
+  effectiveAllowlist,
+  parseAllowedEmailsEnv,
   setMemberAvatarUrl,
   setMemberBio,
   setMemberDisplayName,
@@ -25,6 +27,8 @@ type Body = {
   /** HTTPS avatar override; "" clears back to the Google photo. */
   avatar_url?: string;
 };
+
+class ProfileAccessDeniedError extends Error {}
 
 export async function PATCH(request: Request) {
   await requireSession();
@@ -63,8 +67,19 @@ export async function PATCH(request: Request) {
     if (body.bio !== undefined) validateBio(body.bio);
     if (body.avatar_url !== undefined) validateImageUrl(body.avatar_url);
 
-    const email = viewer.email;
+    const email = viewer.email.trim().toLowerCase();
     const written = await updateHubMembers((file) => {
+      // Authorize against the latest file inside the mutation queue: a valid
+      // session may outlive membership removal and must not recreate that row.
+      if (
+        !devBypassEnabled() &&
+        !effectiveAllowlist(
+          parseAllowedEmailsEnv(process.env.ALLOWED_EMAILS),
+          file,
+        ).has(email)
+      ) {
+        throw new ProfileAccessDeniedError("membership required");
+      }
       let next = file;
       if (body.display_name !== undefined) {
         next = setMemberDisplayName(next, email, body.display_name);
@@ -87,6 +102,9 @@ export async function PATCH(request: Request) {
       avatar_url: member?.avatar_url ?? null,
     });
   } catch (err) {
+    if (err instanceof ProfileAccessDeniedError) {
+      return NextResponse.json({ error: err.message }, { status: 403 });
+    }
     return NextResponse.json(
       { error: err instanceof Error ? err.message : "failed to save profile" },
       { status: 400 },
