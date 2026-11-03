@@ -4,10 +4,11 @@ import { getLeagueSnapshot } from "@/lib/data";
 import {
   readAuctionRoom,
   roomFromLeagueSnapshot,
-  writeAuctionRoom,
+  updateAuctionRoom,
 } from "@/lib/golf-auction-store";
 import { enforceAuctionControl } from "@/lib/franchise-acl";
 import { requireSession } from "@/lib/session";
+import { golfWritesEnabled, GOLF_WRITES_PAUSED } from "@/lib/golf-rollout-gate";
 
 export const dynamic = "force-dynamic";
 
@@ -23,7 +24,7 @@ function seasonFrom(request: Request, bodySeason?: number): number | null {
   return null;
 }
 
-/** GET room (ticks timers). POST creates lobby if missing. */
+/** GET is read-only while paused; enabled rooms tick via conditional writes. */
 export async function GET(request: Request, { params }: Props) {
   await requireSession();
   const { leagueId } = await params;
@@ -35,13 +36,12 @@ export async function GET(request: Request, { params }: Props) {
   if (!room) {
     return NextResponse.json({ error: "auction room not found" }, { status: 404 });
   }
-  // Persist timer transitions so all clients see the same phase.
-  await writeAuctionRoom(room);
   return NextResponse.json({ room });
 }
 
 export async function POST(request: Request, { params }: Props) {
   await requireSession();
+  if (!golfWritesEnabled()) return NextResponse.json({ error: GOLF_WRITES_PAUSED, code: "GOLF_WRITES_PAUSED" }, { status: 503 });
   const { leagueId } = await params;
   const denied = await enforceAuctionControl(leagueId);
   if (denied) return denied;
@@ -80,8 +80,9 @@ export async function POST(request: Request, { params }: Props) {
       bid_window_ms: body.bid_window_ms,
       bid_hard_cap_ms: body.bid_hard_cap_ms,
     });
-    await writeAuctionRoom(room);
-    return NextResponse.json({ room }, { status: 201 });
+    return await updateAuctionRoom(leagueId, season, current => current
+      ? { result: NextResponse.json({ room: current }, { status: current.phase === "finalized" ? 409 : 200 }) }
+      : { room, result: NextResponse.json({ room }, { status: 201 }) });
   } catch (err) {
     return NextResponse.json(
       { error: err instanceof Error ? err.message : "failed to create room" },

@@ -3,7 +3,6 @@
  * Uncached — do not route through getLeagueSnapshot.
  */
 
-import { promises as fs } from "fs";
 import path from "path";
 
 import {
@@ -19,6 +18,8 @@ import {
 import type { LeagueSnapshot } from "@/lib/data";
 
 import { hubDataRoot } from "@/lib/hub-paths";
+import { mutateGolfDocument, readGolfDocument } from "@/lib/golf-document-store";
+import { golfWritesEnabled } from "@/lib/golf-rollout-gate";
 
 function writableDataRoot(): string {
   return hubDataRoot();
@@ -33,31 +34,24 @@ export function auctionRoomPath(leagueId: string, season: number): string {
   );
 }
 
-async function atomicWrite(filePath: string, payload: unknown): Promise<void> {
-  await fs.mkdir(path.dirname(filePath), { recursive: true });
-  const tmp = `${filePath}.${process.pid}.${Date.now()}.tmp`;
-  await fs.writeFile(tmp, `${JSON.stringify(payload, null, 2)}\n`, "utf8");
-  await fs.rename(tmp, filePath);
-}
-
-export async function readAuctionRoom(
+/** Timer transitions and actions share the same conditional document write. */
+export async function updateAuctionRoom<R>(
   leagueId: string,
   season: number,
-): Promise<AuctionRoom | null> {
-  const filePath = auctionRoomPath(leagueId, season);
-  try {
-    const raw = await fs.readFile(filePath, "utf8");
-    const room = JSON.parse(raw) as AuctionRoom;
-    return tickAuctionRoom(room, new Date());
-  } catch (err) {
-    const code = (err as NodeJS.ErrnoException).code;
-    if (code === "ENOENT") return null;
-    throw err;
-  }
+  change: (room: AuctionRoom | null) => { room?: AuctionRoom; result: R },
+): Promise<R> {
+  return mutateGolfDocument<AuctionRoom, R>(`${leagueId}/${season}/auction_room.json`, current => {
+    const ticked = current ? tickAuctionRoom(current, new Date()) : null;
+    const next = change(ticked);
+    return { value: next.room ?? (ticked !== current ? ticked ?? undefined : undefined), result: next.result };
+  });
 }
 
-export async function writeAuctionRoom(room: AuctionRoom): Promise<void> {
-  await atomicWrite(auctionRoomPath(room.league_id, room.season), room);
+export async function readAuctionRoom(leagueId: string, season: number): Promise<AuctionRoom | null> {
+  if (!golfWritesEnabled()) {
+    return readGolfDocument<AuctionRoom>(`${leagueId}/${season}/auction_room.json`);
+  }
+  return updateAuctionRoom(leagueId, season, room => ({ result: room }));
 }
 
 /** Create lobby room from a league snapshot (auction leagues only). */
@@ -94,10 +88,10 @@ export async function saveAuctionRoomIfNewer(
   expectedRevision: number,
   next: AuctionRoom,
 ): Promise<{ ok: true; room: AuctionRoom } | { ok: false; room: AuctionRoom }> {
-  const current = await readAuctionRoom(next.league_id, next.season);
-  if (current && current.revision !== expectedRevision) {
-    return { ok: false, room: current };
-  }
-  await writeAuctionRoom(next);
-  return { ok: true, room: next };
+  return updateAuctionRoom<{ ok: true; room: AuctionRoom } | { ok: false; room: AuctionRoom }>(next.league_id, next.season, current => {
+    if (current && current.revision !== expectedRevision) {
+      return { result: { ok: false, room: current } as const };
+    }
+    return { room: next, result: { ok: true, room: next } as const };
+  });
 }

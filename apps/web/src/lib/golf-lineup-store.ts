@@ -1,38 +1,33 @@
-/**
- * Server-only golf lineup writes. Keep out of client bundles.
- */
-
+/** Merge only one team's event into the authoritative lineups concern. */
 import type { LeagueSnapshot } from "@/lib/data";
-import type { GolfWeekLineup } from "@/lib/golf-lineup";
+import type { GolfLineupsFile, GolfWeekLineup } from "@/lib/golf-lineup";
+import { mutateGolfDocument } from "@/lib/golf-document-store";
+import { hubDataRoot } from "@/lib/hub-paths";
 import { writeGolfLeagueSnapshot } from "@/lib/golf-store";
 
-/**
- * Patch one team's event lineup onto a loaded snapshot and persist v2 under
- * the writable store (merges fixture index when empty).
- */
+export class GolfLineupValidationError extends Error {}
+
 export async function saveGolfTeamLineup(options: {
   league: LeagueSnapshot;
   teamId: number;
   eventId: string;
-  lineup: GolfWeekLineup;
-}): Promise<{ root: string; path: string }> {
-  const { league, teamId, eventId, lineup } = options;
-  if (!league.lineups) {
-    throw new Error("league has no lineups concern");
+  prepare: (current: GolfLineupsFile) => GolfWeekLineup;
+}): Promise<{ root: string; path: string; lineup: GolfWeekLineup }> {
+  const { league, teamId, eventId, prepare } = options;
+  if (!league.lineups) throw new Error("league has no lineups concern");
+  const manifest = `${league.league_id}/${league.season}/manifest.json`;
+  const initialized = await mutateGolfDocument<unknown, boolean>(manifest, current => ({ result: current !== null }));
+  if (!initialized) {
+    await writeGolfLeagueSnapshot(league as Parameters<typeof writeGolfLeagueSnapshot>[0], { preserveLineups: true });
   }
-  const teams = { ...league.lineups.teams };
-  const key = String(teamId);
-  teams[key] = { ...(teams[key] ?? {}), [eventId]: lineup };
-  const next: LeagueSnapshot = {
-    ...league,
-    lineups: {
-      ...league.lineups,
-      current_event_id: league.lineups.current_event_id ?? eventId,
-      teams,
-    },
-  };
-  // writeGolfLeagueSnapshot accepts create snapshots; pass through fields.
-  return writeGolfLeagueSnapshot(
-    next as Parameters<typeof writeGolfLeagueSnapshot>[0],
-  );
+  const relative = `${league.league_id}/${league.season}/lineups.json`;
+  return mutateGolfDocument<GolfLineupsFile, { root: string; path: string; lineup: GolfWeekLineup }>(relative, current => {
+    const lineups = current ?? league.lineups!;
+    const lineup = prepare(lineups);
+    const key = String(teamId);
+    return {
+      value: { ...lineups, teams: { ...lineups.teams, [key]: { ...(lineups.teams[key] ?? {}), [eventId]: lineup } } },
+      result: { root: hubDataRoot(), path: manifest, lineup },
+    };
+  });
 }

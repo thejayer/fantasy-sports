@@ -163,6 +163,6 @@ export async function finalizeAuctionRoom(
     scoreboard,
   } satisfies ReturnType<typeof buildGolfSnapshot>;
 
-  await writeGolfLeagueSnapshot(snapshot);
+  await writeGolfLeagueSnapshot(snapshot, { preserveLineups: true });
   return snapshot as unknown as LeagueSnapshot;
 }

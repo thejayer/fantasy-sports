@@ -10,6 +10,9 @@ import path from "path";
 
 import type { buildGolfSnapshot } from "@/lib/golf";
 import { hubDataRoot } from "@/lib/hub-paths";
+import { mutateGolfDocument } from "@/lib/golf-document-store";
+import type { GolfLineupsFile } from "@/lib/golf-lineup";
+import { assertGolfWritesEnabled } from "@/lib/golf-rollout-gate";
 
 async function readIndex(
   root: string,
@@ -33,7 +36,9 @@ async function readIndex(
  */
 export async function writeGolfLeagueSnapshot(
   snapshot: ReturnType<typeof buildGolfSnapshot>,
+  options: { preserveLineups?: boolean } = {},
 ): Promise<{ root: string; path: string }> {
+  assertGolfWritesEnabled();
   const root = hubDataRoot();
   const seasonDir = path.join(
     root,
@@ -61,7 +66,7 @@ export async function writeGolfLeagueSnapshot(
   for (const team of snapshot.teams) {
     rosterById[String(team.team_id)] = team.roster ?? [];
   }
-  const lineups =
+  const lineups: GolfLineupsFile =
     "lineups" in snapshot && snapshot.lineups
       ? snapshot.lineups
       : {
@@ -95,7 +100,25 @@ export async function writeGolfLeagueSnapshot(
     "scoreboard.json": scoreboard,
   } as const;
 
+  // Decide preservation before publishing any replacement roster/standings.
+  // Ordinary explicit league recreation still replaces all its concerns.
+  await mutateGolfDocument<GolfLineupsFile, void>(`${snapshot.league_id}/${snapshot.season}/lineups.json`, current => {
+    if (options.preserveLineups && current && Object.keys(current.teams).length) {
+      const rosters = new Map(snapshot.teams.filter(t => t.roster.length).map(t =>
+        [String(t.team_id), new Set(t.roster.map(p => Number(p.id)))]));
+      const sameTeams = Object.keys(current.teams).sort().join() === [...rosters.keys()].sort().join();
+      const sameEvents = current.events.map(e => e.event_id).sort().join() === lineups.events.map(e => e.event_id).sort().join();
+      const compatible = sameTeams && sameEvents && Object.entries(current.teams).every(([id, events]) =>
+        Object.values(events).every(lined => [...lined.starters, lined.captain, lined.alt1, lined.alt2]
+          .filter(p => p != null).every(p => rosters.get(id)!.has(Number(p)))));
+      if (!compatible) throw new Error("cannot preserve lineups for a different roster or event schedule");
+      return { result: undefined };
+    }
+    return { value: lineups, result: undefined };
+  });
+
   for (const [name, payload] of Object.entries(files)) {
+    if (name === "lineups.json") continue;
     await fs.writeFile(
       path.join(seasonDir, name),
       `${JSON.stringify(payload, null, 2)}\n`,
