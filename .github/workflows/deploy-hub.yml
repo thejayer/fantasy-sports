@@ -42,7 +42,7 @@ on:
         required: true
         default: "sj-hub"
       bucket:
-        description: "GCS bucket RW at /app/data/sj (ESPN + golf). Blank on manual = leave mounts; push CD defaults to repository secret GCS_BUCKET"
+        description: "GCS bucket RW at /app/data/sj (ESPN + golf). Required on manual deploy; push CD defaults to repository secret GCS_BUCKET"
         required: false
         default: ""
       hub_bucket:
@@ -71,7 +71,8 @@ jobs:
       REGION: ${{ github.event.inputs.region || 'us-central1' }}
       SERVICE: ${{ github.event.inputs.service || 'sj-hub' }}
       # Push CD remounts the known prod bucket (single RW). Manual dispatch with
-      # blank bucket leaves volumes unchanged (rollback image-only).
+      # Manual deploys require the bucket so conditional writes and the mount
+      # cannot silently address different stores.
       BUCKET: ${{ github.event.inputs.bucket || '' }}
       HUB_BUCKET: ${{ github.event.inputs.hub_bucket || '' }}
       MIN_INSTANCES: ${{ github.event.inputs.min_instances || '0' }}
@@ -238,6 +239,14 @@ jobs:
           # Hub-native golf/members share the ESPN store path. Dual GCS FUSE
           # mounts (RO ESPN + RW hub bucket) failed Cloud Run PORT probes.
           # Sync skips platform:hub and refuses sport=golf overwrite.
+          # Conditional golf writes must address the same bucket as the mount.
+          if [ -z "$BUCKET" ] && [ "$EVENT_NAME" = "push" ]; then
+            BUCKET="$DEFAULT_BUCKET"
+          fi
+          if [ -z "$BUCKET" ]; then
+            echo "::error::Specify bucket: concurrent golf writes require an explicit GCS bucket."
+            exit 1
+          fi
           ARGS=(
             --project "$PROJECT_ID"
             --region "$REGION"
@@ -249,7 +258,7 @@ jobs:
             --min-instances "$MIN_INSTANCES"
             --max-instances 5
             --cpu-boost
-            --set-env-vars "SJ_SYNC_ON_START=0,AUTH_TRUST_HOST=true,SJ_DATA_DIR=/app/data/sj,SJ_HUB_DIR=/app/data/sj,AUTH_URL=$AUTH_URL,SJ_RECAP_MODEL=gpt-5.6-luna,SJ_HOCKEY_INJURY_DISCORD=$HOCKEY_INJURY_DISCORD"
+            --set-env-vars "SJ_SYNC_ON_START=0,AUTH_TRUST_HOST=true,SJ_DATA_DIR=/app/data/sj,SJ_HUB_DIR=/app/data/sj,SJ_HUB_GCS_BUCKET=$BUCKET,AUTH_URL=$AUTH_URL,SJ_RECAP_MODEL=gpt-5.6-luna,SJ_HOCKEY_INJURY_DISCORD=$HOCKEY_INJURY_DISCORD"
             --set-secrets "$SECRETS"
           )
           if [ -n "$HUB_BUCKET" ]; then

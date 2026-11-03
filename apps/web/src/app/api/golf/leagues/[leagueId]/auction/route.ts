@@ -4,7 +4,7 @@ import { getLeagueSnapshot } from "@/lib/data";
 import {
   readAuctionRoom,
   roomFromLeagueSnapshot,
-  writeAuctionRoom,
+  updateAuctionRoom,
 } from "@/lib/golf-auction-store";
 import { enforceAuctionControl } from "@/lib/franchise-acl";
 import { requireSession } from "@/lib/session";
@@ -35,8 +35,6 @@ export async function GET(request: Request, { params }: Props) {
   if (!room) {
     return NextResponse.json({ error: "auction room not found" }, { status: 404 });
   }
-  // Persist timer transitions so all clients see the same phase.
-  await writeAuctionRoom(room);
   return NextResponse.json({ room });
 }
 
@@ -80,8 +78,9 @@ export async function POST(request: Request, { params }: Props) {
       bid_window_ms: body.bid_window_ms,
       bid_hard_cap_ms: body.bid_hard_cap_ms,
     });
-    await writeAuctionRoom(room);
-    return NextResponse.json({ room }, { status: 201 });
+    return await updateAuctionRoom(leagueId, season, current => current
+      ? { result: NextResponse.json({ room: current }, { status: current.phase === "finalized" ? 409 : 200 }) }
+      : { room, result: NextResponse.json({ room }, { status: 201 }) });
   } catch (err) {
     return NextResponse.json(
       { error: err instanceof Error ? err.message : "failed to create room" },

@@ -8,9 +8,8 @@ import {
   golfSettingsFromLeagueSettings,
   lineupClock,
   validateWeekLineup,
-  type GolfWeekLineup,
 } from "@/lib/golf-lineup";
-import { saveGolfTeamLineup } from "@/lib/golf-lineup-store";
+import { GolfLineupValidationError, saveGolfTeamLineup } from "@/lib/golf-lineup-store";
 import { enforceTeamAction } from "@/lib/franchise-acl";
 import { requireSession } from "@/lib/session";
 
@@ -76,47 +75,32 @@ export async function POST(request: Request, { params }: Props) {
       .map((p) => (p.id == null ? null : Number(p.id)))
       .filter((id): id is number => id != null && !Number.isNaN(id)),
   );
-  const previous = league.lineups.teams[String(teamId)]?.[eventId] ?? null;
-  const now = lineupClock(league.synced_at);
   const draft = {
     starters: (body.starters ?? []).map(Number),
     captain: Number(body.captain),
     alt1: body.alt1 == null ? null : Number(body.alt1),
     alt2: body.alt2 == null ? null : Number(body.alt2),
   };
-  const error = validateWeekLineup(draft, {
-    rosterIds,
-    golf,
-    teeTimes: event.tee_times,
-    previous,
-    now,
-    events: league.lineups.events,
-    teamLineups: league.lineups.teams[String(teamId)],
-    eventId,
-  });
-  if (error) {
-    return NextResponse.json({ error }, { status: 400 });
-  }
-
-  const saved_at = new Date().toISOString();
-  const lineup: GolfWeekLineup = applyLocks(
-    {
-      ...draft,
-      saved_at,
-      locked_at: previous?.locked_at ?? null,
-      locks: previous?.locks ?? {},
-      source: "manual",
-    },
-    event.tee_times,
-    now,
-  );
-
   try {
     const written = await saveGolfTeamLineup({
       league,
       teamId,
       eventId,
-      lineup,
+      prepare: current => {
+        const latestEvent = current.events.find(e => e.event_id === eventId);
+        if (!latestEvent) throw new GolfLineupValidationError("event not found");
+        const previous = current.teams[String(teamId)]?.[eventId] ?? null;
+        const now = lineupClock(league.synced_at);
+        const error = validateWeekLineup(draft, {
+          rosterIds, golf, teeTimes: latestEvent.tee_times, previous, now,
+          events: current.events, teamLineups: current.teams[String(teamId)], eventId,
+        });
+        if (error) throw new GolfLineupValidationError(error);
+        return applyLocks({
+          ...draft, saved_at: new Date().toISOString(),
+          locked_at: previous?.locked_at ?? null, locks: previous?.locks ?? {}, source: "manual",
+        }, latestEvent.tee_times, now);
+      },
     });
     revalidateTag(SJ_SNAPSHOTS_CACHE_TAG, "max");
     return NextResponse.json({
@@ -126,9 +110,12 @@ export async function POST(request: Request, { params }: Props) {
       team_id: teamId,
       event_id: eventId,
       path: written.path,
-      lineup,
+      lineup: written.lineup,
     });
   } catch (err) {
+    if (err instanceof GolfLineupValidationError) {
+      return NextResponse.json({ error: err.message }, { status: 400 });
+    }
     console.error("[sj-hub] golf lineup save failed", err);
     return NextResponse.json(
       { error: "failed to save golf lineup" },

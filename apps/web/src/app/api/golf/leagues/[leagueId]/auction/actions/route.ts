@@ -1,158 +1,81 @@
 import { revalidateTag } from "next/cache";
 import { NextResponse } from "next/server";
-
 import { SJ_SNAPSHOTS_CACHE_TAG } from "@/lib/cache-tags";
 import { getLeagueSnapshot } from "@/lib/data";
 import { finalizeAuctionRoom } from "@/lib/golf-auction-finalize";
-import {
-  markFinalized,
-  nominatePlayer,
-  passBid,
-  placeBid,
-  startAuctionRoom,
-  tickAuctionRoom,
-  type AuctionRoom,
-} from "@/lib/golf-auction-room";
-import {
-  readAuctionRoom,
-  writeAuctionRoom,
-} from "@/lib/golf-auction-store";
-import {
-  enforceAuctionControl,
-  enforceAuctionFinalize,
-  enforceTeamAction,
-} from "@/lib/franchise-acl";
+import { markFinalized, nominatePlayer, passBid, placeBid, startAuctionRoom } from "@/lib/golf-auction-room";
+import { readAuctionRoom, updateAuctionRoom } from "@/lib/golf-auction-store";
+import { enforceAuctionControl, enforceAuctionFinalize, enforceTeamAction } from "@/lib/franchise-acl";
 import { requireSession } from "@/lib/session";
 
 export const dynamic = "force-dynamic";
-
 type Props = { params: Promise<{ leagueId: string }> };
-
-type ActionBody = {
-  action?: string;
-  season?: number;
-  revision?: number;
-  team_id?: number;
-  player_id?: number;
-  amount?: number;
-};
+type ActionBody = { action?: string; season?: number; revision?: number; team_id?: number; player_id?: number; amount?: number };
 
 export async function POST(request: Request, { params }: Props) {
   await requireSession();
   const { leagueId } = await params;
-
   let body: ActionBody;
-  try {
-    body = (await request.json()) as ActionBody;
-  } catch {
-    return NextResponse.json({ error: "invalid JSON" }, { status: 400 });
-  }
-
+  try { body = await request.json() as ActionBody; }
+  catch { return NextResponse.json({ error: "invalid JSON" }, { status: 400 }); }
   const action = String(body.action ?? "");
   const season = Number(body.season);
   const revision = Number(body.revision);
+  const teamId = Number(body.team_id);
+  const playerId = Number(body.player_id);
+  const amount = Number(body.amount);
   if (!Number.isInteger(season) || !Number.isInteger(revision)) {
-    return NextResponse.json(
-      { error: "season and revision are required" },
-      { status: 400 },
-    );
+    return NextResponse.json({ error: "season and revision are required" }, { status: 400 });
   }
-
-  let room = await readAuctionRoom(leagueId, season);
-  if (!room) {
-    return NextResponse.json({ error: "auction room not found" }, { status: 404 });
+  if (!["start", "nominate", "bid", "pass", "finalize"].includes(action)) {
+    return NextResponse.json({ error: "action must be start|nominate|bid|pass|finalize" }, { status: 400 });
   }
-  room = tickAuctionRoom(room, new Date());
-  if (room.revision !== revision) {
-    await writeAuctionRoom(room);
-    return NextResponse.json(
-      { error: "revision conflict", room },
-      { status: 409 },
-    );
+  if (["nominate", "bid", "pass"].includes(action) && !Number.isInteger(teamId)) {
+    return NextResponse.json({ error: "team_id is required" }, { status: 400 });
   }
+  if (action === "nominate" && !Number.isInteger(playerId)) {
+    return NextResponse.json({ error: "player_id is required" }, { status: 400 });
+  }
+  if (action === "bid" && !Number.isInteger(amount)) {
+    return NextResponse.json({ error: "amount is required" }, { status: 400 });
+  }
+  // Async authorization must not be replayed by a storage CAS retry.
+  const denied = action === "start" ? await enforceAuctionControl(leagueId)
+    : action === "finalize" ? await enforceAuctionFinalize(leagueId)
+    : await enforceTeamAction(leagueId, teamId);
+  if (denied) return denied;
 
   try {
-    let next: AuctionRoom;
-    const now = new Date();
-    switch (action) {
-      case "start": {
-        const denied = await enforceAuctionControl(leagueId);
-        if (denied) return denied;
-        next = startAuctionRoom(room, now);
-        break;
-      }
-      case "nominate": {
-        const teamId = Number(body.team_id);
-        const playerId = Number(body.player_id);
-        if (!Number.isInteger(teamId) || !Number.isInteger(playerId)) {
-          return NextResponse.json(
-            { error: "team_id and player_id are required" },
-            { status: 400 },
-          );
-        }
-        const denied = await enforceTeamAction(leagueId, teamId);
-        if (denied) return denied;
-        next = nominatePlayer(room, teamId, playerId, now);
-        break;
-      }
-      case "bid": {
-        const teamId = Number(body.team_id);
-        const amount = Number(body.amount);
-        if (!Number.isInteger(teamId) || !Number.isInteger(amount)) {
-          return NextResponse.json(
-            { error: "team_id and amount are required" },
-            { status: 400 },
-          );
-        }
-        const denied = await enforceTeamAction(leagueId, teamId);
-        if (denied) return denied;
-        next = placeBid(room, teamId, amount, now);
-        break;
-      }
-      case "pass": {
-        const teamId = Number(body.team_id);
-        if (!Number.isInteger(teamId)) {
-          return NextResponse.json(
-            { error: "team_id is required" },
-            { status: 400 },
-          );
-        }
-        const denied = await enforceTeamAction(leagueId, teamId);
-        if (denied) return denied;
-        next = passBid(room, teamId, now);
-        break;
-      }
-      case "finalize": {
-        const denied = await enforceAuctionFinalize(leagueId);
-        if (denied) return denied;
-        const league = await getLeagueSnapshot(leagueId, season);
-        if (!league) {
-          return NextResponse.json(
-            { error: "golf league not found" },
-            { status: 404 },
-          );
-        }
-        await finalizeAuctionRoom(room, league);
-        next = markFinalized(room, now);
-        await writeAuctionRoom(next);
-        revalidateTag(SJ_SNAPSHOTS_CACHE_TAG, "max");
-        return NextResponse.json({ room: next, finalized: true });
-      }
-      default:
-        return NextResponse.json(
-          { error: "action must be start|nominate|bid|pass|finalize" },
-          { status: 400 },
-        );
+    if (action === "finalize") {
+      const room = await readAuctionRoom(leagueId, season);
+      if (!room) return NextResponse.json({ error: "auction room not found" }, { status: 404 });
+      if (room.revision !== revision) return NextResponse.json({ error: "revision conflict", room }, { status: 409 });
+      if (room.phase !== "complete") return NextResponse.json({ error: `cannot finalize from phase ${room.phase}`, room }, { status: 400 });
+      const league = await getLeagueSnapshot(leagueId, season);
+      if (!league) return NextResponse.json({ error: "golf league not found" }, { status: 404 });
+      // Repeating an interrupted finalize preserves accepted lineup submissions.
+      await finalizeAuctionRoom(room, league);
     }
-    await writeAuctionRoom(next);
-    return NextResponse.json({ room: next });
-  } catch (err) {
-    return NextResponse.json(
-      {
-        error: err instanceof Error ? err.message : "action failed",
-        room,
-      },
-      { status: 400 },
-    );
+    const response = await updateAuctionRoom<NextResponse>(leagueId, season, room => {
+      if (!room) return { result: NextResponse.json({ error: "auction room not found" }, { status: 404 }) };
+      if (room.revision !== revision) {
+        return { result: NextResponse.json({ error: "revision conflict", room }, { status: 409 }) };
+      }
+      try {
+        const now = new Date();
+        const next = action === "start" ? startAuctionRoom(room, now)
+          : action === "nominate" ? nominatePlayer(room, teamId, playerId, now)
+          : action === "bid" ? placeBid(room, teamId, amount, now)
+          : action === "pass" ? passBid(room, teamId, now)
+          : markFinalized(room, now);
+        return { room: next, result: NextResponse.json({ room: next, ...(action === "finalize" ? { finalized: true } : {}) }) };
+      } catch (error) {
+        return { result: NextResponse.json({ error: error instanceof Error ? error.message : "action failed", room }, { status: 400 }) };
+      }
+    });
+    if (action === "finalize" && response.ok) revalidateTag(SJ_SNAPSHOTS_CACHE_TAG, "max");
+    return response;
+  } catch (error) {
+    return NextResponse.json({ error: error instanceof Error ? error.message : "storage unavailable" }, { status: 503 });
   }
 }
