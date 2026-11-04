@@ -35,11 +35,8 @@ updates:
         patterns:
           - "streamlit"
           - "pyarrow"
-    # espn-api 0.46.0 still requires urllib3<=2.2.3. Drop this ignore when
-    # espn-api publishes a release that lifts the cap.
-    ignore:
-      - dependency-name: urllib3
-        versions: [">2.2.3"]
+    # (urllib3 is no longer ignored above 2.2.3: espn-api 1.0.1 lifted its
+    # urllib3<=2.2.3 cap, and the lockfile now pins espn-api 1.0.1 + urllib3 2.8.0.)
 
   - package-ecosystem: github-actions
     directory: /
