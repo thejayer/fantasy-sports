@@ -68,8 +68,6 @@ googleapis-common-protos==1.75.0
     # via google-api-core
 h11==0.16.0
     # via uvicorn
-httptools==0.9.0
-    # via streamlit
 idna==3.20
     # via
     #   anyio
@@ -118,7 +116,7 @@ pandas==3.0.5
     # via
     #   ffa (pyproject.toml)
     #   streamlit
-pillow==12.3.0
+pillow==13.0.0
     # via streamlit
 platformdirs==4.11.0
     # via nflreadpy
@@ -208,12 +206,10 @@ six==1.17.0
     # via python-dateutil
 starlette==1.7.0
     # via streamlit
-streamlit==1.65.0
+streamlit==1.66.1
     # via ffa (pyproject.toml)
 threadpoolctl==3.6.0
     # via scikit-learn
-toml==0.10.2
-    # via streamlit
 tomli==2.4.1
     # via coverage
 tqdm==4.70.0
