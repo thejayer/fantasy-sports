@@ -27,7 +27,7 @@ attrs==26.1.0
     #   referencing
 certifi==2026.10.19
     # via requests
-cffi==2.1.0
+cffi==2.1.1
     # via cryptography
 charset-normalizer==3.4.9
     # via requests
