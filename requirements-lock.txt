@@ -49,7 +49,7 @@ google-api-core==2.40.0
     # via
     #   google-cloud-core
     #   google-cloud-storage
-google-auth==2.56.2
+google-auth==2.62.0
     # via
     #   google-api-core
     #   google-cloud-core
