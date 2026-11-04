@@ -30,7 +30,7 @@
     "eslint": "^9",
     "eslint-config-next": "16.4.1",
     "typescript": "^5",
-    "vitest": "^4.1.11"
+    "vitest": "^4.1.12"
   },
   "_overrides_note": [
     "zod 4.6.7 clears GHSA-mrhx-c7xc-m3w5. @vercel/oidc@4.0.3 still pins",
