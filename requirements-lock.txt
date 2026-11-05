@@ -211,7 +211,7 @@ streamlit==1.66.1
     # via ffa (pyproject.toml)
 threadpoolctl==3.6.0
     # via scikit-learn
-tomli==2.4.1
+tomli==2.5.0
     # via coverage
 tqdm==4.70.0
     # via nflreadpy
