@@ -131,7 +131,7 @@ polars-runtime-32==2.0.0
     # via polars
 proto-plus==1.29.0
     # via google-api-core
-protobuf==7.35.1
+protobuf==7.36.2
     # via
     #   google-api-core
     #   googleapis-common-protos
