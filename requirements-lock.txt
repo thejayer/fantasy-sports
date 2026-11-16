@@ -215,7 +215,7 @@ tomli==2.5.0
     # via coverage
 tqdm==4.70.1
     # via nflreadpy
-typer==0.27.3
+typer==0.29.1
     # via ffa (pyproject.toml)
 typing-extensions==4.16.0
     # via
