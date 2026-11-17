@@ -170,7 +170,7 @@ pytest==9.1.1
     #   pytest-cov
 pytest-cov==7.1.0
     # via ffa (pyproject.toml)
-python-dateutil==2.9.0.post0
+python-dateutil==3.0.0
     # via pandas
 python-dotenv==1.2.2
     # via pydantic-settings
@@ -232,6 +232,8 @@ typing-inspection==0.4.4
     # via
     #   pydantic
     #   pydantic-settings
+tzdata==2026.6
+    # via python-dateutil
 urllib3==2.8.0
     # via
     #   espn-api
