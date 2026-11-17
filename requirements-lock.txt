@@ -17,7 +17,7 @@ annotated-doc==0.0.5
     # via typer
 annotated-types==0.8.0
     # via pydantic
-anyio==4.14.2
+anyio==4.16.0
     # via
     #   starlette
     #   streamlit
@@ -31,7 +31,7 @@ cffi==2.1.1
     # via cryptography
 charset-normalizer==3.4.9
     # via requests
-click==8.4.2
+click==8.5.1
     # via
     #   streamlit
     #   uvicorn
