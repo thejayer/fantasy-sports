@@ -232,6 +232,8 @@ typing-inspection==0.4.4
     # via
     #   pydantic
     #   pydantic-settings
+tzdata==2026.6
+    # via python-dateutil
 urllib3==2.8.0
     # via
     #   espn-api
