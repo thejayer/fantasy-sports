@@ -335,7 +335,7 @@ def from_excel_serial(value: Any) -> datetime | None:
     ):
         try:
             raw = text.replace("+00:00", "+0000") if "%z" in fmt else text
-            parsed = datetime.strptime(raw, fmt)  # noqa: DTZ007
+            parsed = datetime.strptime(raw, fmt)
             if parsed.tzinfo is None:
                 return parsed.replace(tzinfo=timezone.utc)
             return parsed
