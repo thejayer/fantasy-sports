@@ -33,7 +33,7 @@
     "eslint-config-next": "16.4.6",
     "jsdom": "^31.0.1",
     "typescript": "^5",
-    "vitest": "^5.1.0"
+    "vitest": "^5.1.1"
   },
   "_overrides_note": [
     "Revisited under Next 16.4.1 (GHSA-2464-fhr4-w9xw image-opt RCE on <=16.4.0).",
