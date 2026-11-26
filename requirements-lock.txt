@@ -25,7 +25,7 @@ attrs==26.1.0
     # via
     #   jsonschema
     #   referencing
-certifi==2026.10.19
+certifi==2026.11.20
     # via requests
 cffi==2.1.1
     # via cryptography
@@ -62,7 +62,7 @@ google-crc32c==1.9.0
     # via
     #   google-cloud-storage
     #   google-resumable-media
-google-resumable-media==2.10.0
+google-resumable-media==2.11.0
     # via google-cloud-storage
 googleapis-common-protos==1.75.0
     # via google-api-core
@@ -149,12 +149,12 @@ pyasn1-modules==0.4.2
     # via google-auth
 pycparser==3.0
     # via cffi
-pydantic==2.14.3
+pydantic==2.14.4
     # via
     #   ffa (pyproject.toml)
     #   nflreadpy
     #   pydantic-settings
-pydantic-core==2.50.4
+pydantic-core==2.50.5
     # via pydantic
 pydantic-settings==2.15.0
     # via nflreadpy
@@ -164,7 +164,7 @@ pygments==2.21.0
     # via
     #   pytest
     #   rich
-pytest==9.1.1
+pytest==9.2.0
     # via
     #   ffa (pyproject.toml)
     #   pytest-cov
